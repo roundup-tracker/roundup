@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.46 $
+:Version: $Revision: 1.47 $
 
 .. contents::
 
@@ -80,43 +80,50 @@ at so you may start playing. Three users will be set up:
 Installation
 ============
 
+Note: some systems, such as Debian and NetBSD, already have Roundup
+      installed. Try running the command "roundup-admin" with no arguments,
+      and if it runs you may skip the `Basic Installation Steps`_
+      below.
+
 Set aside 15-30 minutes. Please make sure you're using a supported version of
-Python -- see `testing your python`_. There's four steps to follow in your
+Python -- see `testing your python`_. There's several steps to follow in your
 installation:
 
-1. `basic installation steps`_ that all installers must follow
-2. then optionally `configure a web interface`_
-3. and optionally `configure an email interface`_
-4. `shared environment steps`_ to take if you're installing on a shared
+1. `basic installation steps`_ if Roundup is not installed on your system
+2. `configuring your first tracker`_ that all installers must follow
+3. then optionally `configure a web interface`_
+4. and optionally `configure an email interface`_
+5. `shared environment steps`_ to take if you're installing on a shared
    UNIX machine and want to restrict local access to roundup
-
-Most users will only need to follow the first step, since the environment will
-be a trusted one.
 
 
 Basic Installation Steps
 ------------------------
 
-1. To install the Roundup support code into your Python tree and
-   Roundup scripts into /usr/local/bin (substitute that path for whatever is
-   appropriate on your system). You need to have write permissions
-   for these locations, eg. being root on unix::
+To install the Roundup support code into your Python tree and
+Roundup scripts into /usr/local/bin (substitute that path for whatever is
+appropriate on your system). You need to have write permissions
+for these locations, eg. being root on unix::
 
-       python setup.py install
+    python setup.py install
 
-   If you would like to place the Roundup scripts in a directory other
-   than ``/usr/local/bin``, then specify the preferred location with
-   ``--install-script``. For example, to install them in
-   ``/opt/roundup/bin``::
+If you would like to place the Roundup scripts in a directory other
+than ``/usr/local/bin``, then specify the preferred location with
+``--install-script``. For example, to install them in
+``/opt/roundup/bin``::
 
-       python setup.py install --install-scripts=/opt/roundup/bin
+    python setup.py install --install-scripts=/opt/roundup/bin
 
-   You can also use the ``--prefix`` option to use a completely different
-   base directory, if you do not want to use administrator rights. If you
-   choose to do this, take note of the message at the end of installation
-   and modify the python path accordingly.
+You can also use the ``--prefix`` option to use a completely different
+base directory, if you do not want to use administrator rights. If you
+choose to do this, take note of the message at the end of installation
+and modify the python path accordingly.
 
-2. To create a Roundup tracker (necessary to do before you can
+
+Configuring your first tracker
+------------------------------
+
+1. To create a Roundup tracker (necessary to do before you can
    use the software in any real fashion), you need to set up a "tracker
    home":
 
@@ -176,7 +183,7 @@ Basic Installation Steps
 
       Once this is done, the tracker has been created.
 
-3. At this point, your tracker is set up, but doesn't have a nice user
+2. At this point, your tracker is set up, but doesn't have a nice user
    interface. To set that up, we need to `configure a web interface`_ and
    optionally `configure an email interface`_. If you want to try your
    new tracker out, assuming ``TRACKER_WEB`` is set to
