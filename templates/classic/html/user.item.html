@@ -78,7 +78,7 @@ You are not allowed to view this page.
 </table>
 </form>
 
-<table class="otherinfo" tal:condition="context/queries">
+<table class="otherinfo" tal:condition="python:context.queries and context.is_view_ok()">
  <tr><th colspan="3" class="header">Queries</th></tr>
  <tr><th>Name</th><th colspan="2">Actions</th></tr>
  <tr tal:repeat="query context/queries">
