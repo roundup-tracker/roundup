@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.1 2002-09-26 04:15:07 richard Exp $
+# $Id: dbinit.py,v 1.2 2002-09-26 23:59:08 richard Exp $
 
 import os
 
@@ -42,6 +42,8 @@ def open(name=None):
     user = Class(db, "user", username=String(), password=Password(),
         address=String(), alternate_addresses=String(), roles=String())
     user.setkey("username")
+
+    # add any additional database schema configuration here
 
     #
     # SECURITY SETTINGS
@@ -99,6 +101,9 @@ def init(adminpw):
     user.create(username="admin", password=adminpw,
         address=config.ADMIN_EMAIL, roles='Admin')
     user.create(username="anonymous", roles='Anonymous')
+
+    # add any additional database create steps here - but only if you
+    # haven't initialised the database with the admin "initialise" command
 
     db.commit()
 

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.46 2002-09-26 03:45:09 richard Exp $
+# $Id: client.py,v 1.47 2002-09-26 23:59:08 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -424,7 +424,10 @@ class Client:
         if self.debug:
             self.headers_sent = headers
 
-    def set_cookie(self, user, password):
+    def set_cookie(self, user):
+        ''' Set up a session cookie for the user and store away the user's
+            login info against the session.
+        '''
         # TODO generate a much, much stronger session key ;)
         self.session = binascii.b2a_base64(repr(random.random())).strip()
 
@@ -498,9 +501,7 @@ class Client:
             self.error_message.append(_('No such user "%(name)s"')%locals())
             return
 
-        # and that the password is correct
-        pw = self.db.user.get(self.userid, 'password')
-        if password != pw:
+        if not self.verifyPassword(self.userid, password):
             self.make_user_anonymous()
             self.error_message.append(_('Incorrect password'))
             return
@@ -511,7 +512,12 @@ class Client:
             raise Unauthorised, _("You do not have permission to login")
 
         # set the session cookie
-        self.set_cookie(self.user, password)
+        self.set_cookie(self.user)
+
+    def verifyPassword(self, userid, password):
+        ''' Verify the password that the user has supplied
+        '''
+        return password == self.db.user.get(self.userid, 'password')
 
     def loginPermission(self):
         ''' Determine whether the user has permission to log in.
@@ -577,8 +583,14 @@ class Client:
         self.user = cl.get(self.userid, 'username')
         # re-open the database for real, using the user
         self.opendb(self.user)
-        password = self.db.user.get(self.userid, 'password')
-        self.set_cookie(self.user, password)
+
+        # update the user's session
+        if self.session:
+            self.db.sessions.set(self.session, user=self.user,
+                last_use=time.time())
+        else:
+            # new session cookie
+            self.set_cookie(self.user)
 
         # nice message
         message = _('You are now registered, welcome!')
