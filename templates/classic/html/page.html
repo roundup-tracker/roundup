@@ -177,9 +177,10 @@ See issue.search.html in the classic template for examples.
  <ul class="search-checkboxes"
      tal:define="value python:request.form.getvalue(name)">
  <li tal:repeat="s python:db[db_klass].list()">
-  <input type="checkbox" tal:attributes="name name; id string:name-${s/id};
+  <input type="checkbox" tal:attributes="name name; id string:$name-${s/id};
     value s/id; checked python:value == s.id" />
-  <label tal:attributes="for string:$name-${s/id}" tal:content="s/name" />
+  <label tal:attributes="for string:$name-${s/id}"
+         tal:content="python:s[db_content]" />
  </li>
  <li metal:define-slot="no_value_item">
   <input type="checkbox" value="-1" tal:attributes="name name;
