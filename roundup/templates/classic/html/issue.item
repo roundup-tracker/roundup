@@ -42,7 +42,8 @@ You are not allowed to view this page.
  <th nowrap>Nosy List</th>
  <td>
   <span tal:replace="structure context/nosy/field" />
-  <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone')" />
+  <span tal:replace="structure
+python:db.user.classhelp('username,realname,address,phone')" /><br>
  </td>
 </tr>
 
@@ -114,13 +115,15 @@ You are not allowed to view this page.
 
  <table class="messages" tal:condition="context/messages">
   <tr><th colspan=4 class="header">Messages</th></tr>
-  <tr><th>Message</th><th>Author</th><th>Date</th><th>Summary</th></tr>
   <tr tal:repeat="msg context/messages/reverse">
    <td><a tal:attributes="href string:msg${msg/id}"
           tal:content="string:msg${msg/id}"></a></td>
    <td tal:content="msg/author">author</td>
-   <td tal:content="msg/date">date</td>
+   <td nowrap tal:content="msg/date/pretty">date</td>
    <td tal:content="msg/summary">summary</td>
+   <td>
+    <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
+   </td>
   </tr>
  </table>
 

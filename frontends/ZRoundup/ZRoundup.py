@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.15 2002-10-16 06:48:50 richard Exp $
+# $Id: ZRoundup.py,v 1.16 2002-10-18 03:34:58 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -38,7 +38,7 @@ import urlparse
 from Globals import InitializeClass, HTMLFile
 from OFS.SimpleItem import Item
 from OFS.PropertyManager import PropertyManager
-from Acquisition import Implicit
+from Acquisition import Explicit, Implicit
 from Persistence import Persistent
 from AccessControl import ClassSecurityInfo
 from AccessControl import ModuleSecurityInfo
@@ -119,8 +119,8 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
 
     icon = "misc_/ZRoundup/icon"
 
-    security.declarePrivate('_opendb')
-    def _opendb(self):
+    security.declarePrivate('roundup_opendb')
+    def roundup_opendb(self):
         '''Open the roundup instance database for a transaction.
         '''
         instance = roundup.instance.open(self.instance_home)
@@ -131,7 +131,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         url = urlparse.urlparse( self.absolute_url() )
         path = url[2]
         path_components = path.split( '/' )
-                                                
+
         # special case when roundup is '/' in this virtual host,
         if path == "/" :
             env['SCRIPT_NAME'] = "/"
@@ -151,6 +151,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             # It doesn't occur with apache/roundup.cgi, though.
             form = FormWrapper(self.REQUEST.form)
 
+        print (env['SCRIPT_NAME'], env['PATH_INFO'])
         return instance.Client(instance, request, env, form)
 
     security.declareProtected('View', 'index_html')
@@ -170,7 +171,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             RESPONSE.setHeader( "Location" , url )
             return RESPONSE
 
-        client = self._opendb()
+        client = self.roundup_opendb()
         # fake the path that roundup should use
         client.split_path = ['index']
         return client.main()
@@ -178,10 +179,26 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
     def __getitem__(self, item):
         '''All other URL accesses are passed throuh to roundup
         '''
+        return PathElement(self, item)
+
+class PathElement(Item, Implicit, Persistent):
+    def __init__(self, parent, path):
+        self.parent = parent
+        self.path = path
+
+    def __getitem__(self, item):
+        ''' Get a subitem.
+        '''
+        return PathElement(self.path + '/' + item)
+
+    def __call__(self, *args, **kw):
+        ''' Actually call through to roundup to handle the request.
+        '''
+        print '*****', self.path
         try:
-            client = self._opendb()
+            client = self.parent.roundup_opendb()
             # fake the path that roundup should use
-            client.path = item
+            client.path = self.path
             # and call roundup to do something 
             client.main()
             return ''
@@ -193,8 +210,6 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             traceback.print_exc()
             # all other exceptions in roundup are valid
             raise
-        raise KeyError, item
-
 
 InitializeClass(ZRoundup)
 modulesecurity.apply(globals())

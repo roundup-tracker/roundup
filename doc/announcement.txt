@@ -11,6 +11,7 @@ looking into fixing it for the next patch release.
 Roundup requires python 2.1.3 or later for correct operation.
 
 We've had a good crack at bugs (thanks to all who contributed!):
+
 - fixed filter() with no sort/group (sf bug 618614)
 - fixed register with no session (sf bug 618611)
 - fixed log / pid file path handling in roundup-server (sf bug 617981)

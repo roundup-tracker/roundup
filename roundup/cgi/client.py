@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.54 2002-10-17 06:11:25 richard Exp $
+# $Id: client.py,v 1.55 2002-10-18 03:34:58 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -663,6 +663,11 @@ class Client:
             :required=property,property,...
              The named properties are required to be filled in the form.
 
+            :remove:<propname>=id(s)
+             The ids will be removed from the multilink property.
+            :add:<propname>=id(s)
+             The ids will be added to the multilink property.
+
         '''
         cl = self.db.classes[self.classname]
 
@@ -1141,6 +1146,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
         If a ":required" parameter is supplied, then the names property values
         must be supplied or a ValueError will be raised.
+
+        Other special form values:
+         :remove:<propname>=id(s)
+          The ids will be removed from the multilink property.
+         :add:<propname>=id(s)
+          The ids will be added to the multilink property.
     '''
     required = []
     if form.has_key(':required'):
@@ -1154,19 +1165,37 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     keys = form.keys()
     properties = cl.getprops()
     for key in keys:
-        if not properties.has_key(key):
+        # see if we're performing a special multilink action
+        mlaction = 'set'
+        if key.startswith(':remove:'):
+            propname = key[8:]
+            mlaction = 'remove'
+        elif key.startswith(':add:'):
+            propname = key[5:]
+            mlaction = 'add'
+        else:
+            propname = key
+
+
+        # does the property exist?
+        if not properties.has_key(propname):
+            if mlaction != 'set':
+                raise ValueError, 'You have submitted a remove action for'\
+                    ' the property "%s" which doesn\'t exist'%propname
             continue
-        proptype = properties[key]
+        proptype = properties[propname]
 
         # Get the form value. This value may be a MiniFieldStorage or a list
         # of MiniFieldStorages.
         value = form[key]
 
+        print (mlaction, propname, value)
+
         # make sure non-multilinks only get one value
         if not isinstance(proptype, hyperdb.Multilink):
             if isinstance(value, type([])):
                 raise ValueError, 'You have submitted more than one value'\
-                    ' for the %s property'%key
+                    ' for the %s property'%propname
             # we've got a MiniFieldStorage, so pull out the value and strip
             # surrounding whitespace
             value = value.value.strip()
@@ -1180,23 +1209,23 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             if not value:
                 # ignore empty password values
                 continue
-            if not form.has_key('%s:confirm'%key):
+            if not form.has_key('%s:confirm'%propname):
                 raise ValueError, 'Password and confirmation text do not match'
-            confirm = form['%s:confirm'%key]
+            confirm = form['%s:confirm'%propname]
             if isinstance(confirm, type([])):
                 raise ValueError, 'You have submitted more than one value'\
-                    ' for the %s property'%key
+                    ' for the %s property'%propname
             if value != confirm.value:
                 raise ValueError, 'Password and confirmation text do not match'
             value = password.Password(value)
         elif isinstance(proptype, hyperdb.Date):
             if value:
-                value = date.Date(form[key].value.strip())
+                value = date.Date(value.value.strip())
             else:
                 continue
         elif isinstance(proptype, hyperdb.Interval):
             if value:
-                value = date.Interval(form[key].value.strip())
+                value = date.Interval(value.value.strip())
             else:
                 continue
         elif isinstance(proptype, hyperdb.Link):
@@ -1211,12 +1240,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                         value = db.classes[link].lookup(value)
                     except KeyError:
                         raise ValueError, _('property "%(propname)s": '
-                            '%(value)s not a %(classname)s')%{'propname':key, 
-                            'value': value, 'classname': link}
+                            '%(value)s not a %(classname)s')%{
+                            'propname': propname, 'value': value,
+                            'classname': link}
                     except TypeError, message:
                         raise ValueError, _('you may only enter ID values '
                             'for property "%(propname)s": %(message)s')%{
-                            'propname':key, 'message': message}
+                            'propname': propname, 'message': message}
         elif isinstance(proptype, hyperdb.Multilink):
             if isinstance(value, type([])):
                 # it's a list of MiniFieldStorages
@@ -1235,37 +1265,66 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                     except KeyError:
                         raise ValueError, _('property "%(propname)s": '
                             '"%(value)s" not an entry of %(classname)s')%{
-                            'propname':key, 'value': entry, 'classname': link}
+                            'propname': propname, 'value': entry,
+                            'classname': link}
                     except TypeError, message:
                         raise ValueError, _('you may only enter ID values '
                             'for property "%(propname)s": %(message)s')%{
-                            'propname':key, 'message': message}
+                            'propname': propname, 'message': message}
                 l.append(entry)
             l.sort()
-            value = l
+
+            # now use that list of ids to modify the multilink
+            if mlaction == 'set':
+                value = l
+            else:
+                # we're modifying the list - get the current list of ids
+                try:
+                    existing = cl.get(nodeid, propname)
+                except KeyError:
+                    existing = []
+                if mlaction == 'remove':
+                    # remove - handle situation where the id isn't in the list
+                    for entry in l:
+                        try:
+                            existing.remove(entry)
+                        except ValueError:
+                            raise ValueError, _('property "%(propname)s": '
+                                '"%(value)s" not currently in list')%{
+                                'propname': propname, 'value': entry}
+                else:
+                    # add - easy, just don't dupe
+                    for entry in l:
+                        if entry not in existing:
+                            existing.append(entry)
+                value = existing
+                value.sort()
+
         elif isinstance(proptype, hyperdb.Boolean):
-            props[key] = value = value.lower() in ('yes', 'true', 'on', '1')
+            value = value.lower() in ('yes', 'true', 'on', '1')
+            props[propname] = value
         elif isinstance(proptype, hyperdb.Number):
-            props[key] = value = int(value)
+            props[propname] = value = int(value)
 
         # register this as received if required?
-        if key in required and value is not None:
-            required.remove(key)
+        if propname in required and value is not None:
+            required.remove(propname)
 
         # get the old value
         if nodeid:
             try:
-                existing = cl.get(nodeid, key)
+                existing = cl.get(nodeid, propname)
             except KeyError:
                 # this might be a new property for which there is no existing
                 # value
-                if not properties.has_key(key): raise
+                if not properties.has_key(propname):
+                    raise
 
             # if changed, set it
             if value != existing:
-                props[key] = value
+                props[propname] = value
         else:
-            props[key] = value
+            props[propname] = value
 
     # see if all the required properties have been supplied
     if required:

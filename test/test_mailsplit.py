@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.11 2002-09-10 00:19:55 richard Exp $
+# $Id: test_mailsplit.py,v 1.12 2002-10-18 03:34:58 richard Exp $
 
 import unittest, cStringIO
 
@@ -207,6 +207,12 @@ userfoo@foo.com
         s = '    Four space indent.\n\n    Four space indent.\nNo indent.'
         summary, content = parseContent(s, 0, 0)
         self.assertEqual(content, s)
+
+    def testMultilineSummary(self):
+        s = 'This is a long sentence that would normally\nbe split. More words.'
+        summary, content = parseContent(s, 0, 0)
+        self.assertEqual(summary, 'This is a long sentence that would '
+            'normally\nbe split.')
 
 def suite():
    return unittest.makeSuite(MailsplitTestCase, 'test')

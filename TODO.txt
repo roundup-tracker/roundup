@@ -59,13 +59,12 @@ pending web       multilink item removal action (with retirement)
 pending web       search "refinement" - pre-fill the search page with the
                   current search parameters
 pending web       column-heading sort stuff isn't implemented
-pending web       handle :remove:<propname> and :add:<propname> which specify
-                  item ids to remove / add in <propname> multilink.
 
 active  web       UNIX init.d script for roundup-server
 bug     docs      need to mention somewhere how sorting works
                   - it's mentioned in the design doc
                   - multilink sorting by length is dumb
 bug     web       query editing isn't fully implemented
+bug     web       no testing for parsePropsFromForm
 ======= ========= =============================================================
 
