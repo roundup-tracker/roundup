@@ -31,7 +31,7 @@
    </tal:block>
   </p>
 
-  <form method="POST">
+  <form method="POST" tal:attributes="action request/base">
    <p class="classblock"
        tal:condition="python:request.user.hasPermission('View', 'issue')">
     <b>Issues</b><br>
@@ -69,7 +69,8 @@
       href="user?:template=item">Add User</a>
   </p>
 
-  <form method="POST" tal:condition="python:request.user.username=='anonymous'">
+  <form method="POST" tal:condition="python:request.user.username=='anonymous'"
+        tal:attributes="action request/base">
    <p class="userblock">
     <b>Login</b><br>
     <input size="10" name="__login_name"><br>
