@@ -7,6 +7,7 @@ Fixed:
 - replaced MutlilinkIterator with multilinkGenerator (thanks Bob Ippolito)
 - fixed broken csv import in roundup.admin module
 - fixed braino in HTMLClass.filter() (sf bug 1124213)
+- change ZTUtils Iterator to always iter() its sequence argument
 
 
 2005-02-16 0.8.0
