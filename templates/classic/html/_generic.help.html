@@ -5,7 +5,9 @@
       <meta http-equiv="Content-Type"
        tal:attributes="content string:text/html;; charset=${request/client/charset}" />
       <tal:block tal:condition="python:request.form.has_key('property')">
-      <title i18n:translate=""><span tal:replace="property" i18n:name="property" /> help</title>
+      <title i18n:translate=""><span i18n:name="property"
+       tal:replace="property" /> help - <span i18n:name="tracker"
+       tal:replace="config/TRACKER_NAME" /></title>
       <script language="Javascript" type="text/javascript"
           tal:content="structure string:
           // this is the name of the field in the original form that we're working on
