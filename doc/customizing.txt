@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.155 $
+:Version: $Revision: 1.156 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -76,7 +76,10 @@ section "ConfigParser -- Configuration file parser":
 
 __ http://docs.python.org/lib/module-ConfigParser.html
 
-The configuration variables available are:
+Configuration variables may be referred to in lower or upper case. In code,
+variables not in the "main" section are referred to using their section and
+name, so "domain" in the section "mail" becomes MAIL_DOMAIN. The
+configuration variables available are:
 
 Section **main**
  database -- ``db``
@@ -88,11 +91,15 @@ Section **main**
   or relative to the directory containig this config file.
 
  admin_email -- ``roundup-admin``
-  Email address that roundup will complain to if it runs into trouble.
+  Email address that roundup will complain to if it runs into trouble. If
+  the email address doesn't contain an ``@`` part, the MAIL_DOMAIN defined
+  below is used.
 
  dispatcher_email -- ``roundup-admin``
   The 'dispatcher' is a role that can get notified of new items to the
-  database. It is used by the ERROR_MESSAGES_TO config setting.
+  database. It is used by the ERROR_MESSAGES_TO config setting. If the
+  email address doesn't contain an ``@`` part, the MAIL_DOMAIN defined
+  below is used.
 
  email_from_tag -- default *blank*
   Additional text to include in the "name" part of the From: address used
