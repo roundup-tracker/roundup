@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.138 2002-07-14 04:03:13 richard Exp $
+# $Id: cgi_client.py,v 1.139 2002-07-14 06:14:40 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -407,7 +407,6 @@ function help_window(helpurl, width, height) {
                 columns = d['COLUMNS']
                 filterspec = d['FILTERSPEC']
                 pagesize = d.get('PAGESIZE', '50')
-
             else:
                 # nope - fall back on the old way of doing it
                 self.classname = 'issue'
@@ -1137,7 +1136,7 @@ function help_window(helpurl, width, height) {
         # re-open the database as "admin"
         self.opendb('admin')
 
-        # TODO: pre-check the required fields and username key property
+        # create the new user
         cl = self.db.user
         try:
             props = parsePropsFromForm(self.db, cl, self.form)
@@ -1146,6 +1145,8 @@ function help_window(helpurl, width, height) {
             action = self.form['__destination_url'].value
             self.login(message, action=action)
             return 0
+
+        # log the new user in
         self.user = cl.get(uid, 'username')
         # re-open the database for real, using the user
         self.opendb(self.user)
@@ -1175,8 +1176,6 @@ function help_window(helpurl, width, height) {
         self.db.commit()
 
         # expire us in a long, long time
-        # TODO: hrm, how long should this be, and how many sessions can one
-        # user have?
         expire = Cookie._getdate(86400*365)
 
         # generate the cookie path - make sure it has a trailing '/'
@@ -1233,7 +1232,7 @@ function help_window(helpurl, width, height) {
         sessions = self.db.getclass('__sessions')
 
         # age sessions, remove when they haven't been used for a week
-        # TODO: this doesn't need to be done every access
+        # TODO: this shouldn't be done every access
         week = date.Interval('7d')
         now = date.Date()
         for sessid in sessions.list():
@@ -1500,6 +1499,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.138  2002/07/14 04:03:13  richard
+# Implemented a switch to disable journalling for a Class. CGI session
+# database now uses it.
+#
 # Revision 1.137  2002/07/10 07:00:30  richard
 # removed debugging
 #

@@ -8,6 +8,7 @@ Fixed:
  . made the unit tests run again - they were quite b0rken
  . #571170 ] gdbm deadlock
  . #576241 ] MultiLink problems in parsePropsFromForm
+ . fixed the date module so that Date(". - 2d") works
 
 Feature:
  . cleaned up the indexer code:

@@ -1,4 +1,8 @@
-Implementation plan for 0.5 release:
+General Roundup project TODO list. Note that some of these are semi-formed
+ideas. Those ideas that don't make the cutoff for the next major release are
+punted automatically into the subsequent major release TODO.
+
+For 0.5 release:
 
 State    Description
 ------------------------------------------------------------------------------
@@ -15,11 +19,15 @@ pending  journalling: fix the journal bloat
          related: Re-enable link backrefs from messages
                   feature request #568714
 pending  alternative user auth: at least an LDAP implementation
-active   security overhaul: see doc/security.txt
-done     - switch to sessions for web authentication (RJ)
+active   security overhaul: see doc/security.txt (RJ)
+done     - switch to sessions for web authentication
          - authenticate over a secure connection
          - implement and use the new logical control mechanisms
          - use digital signatures in mailgw
+active   implement an RDB backend (RJ)
+done     - further split the *dbm backends from the core code, allowing
+           easier non-dict-like backends (eg metakit, RDB)
+         - write a backend for gadfly
 pending  fix double-submit by having new-item-submit redirect at end
 pending  split instance.open() into open() and login()
 pending  range searching of values (dates in particular)
