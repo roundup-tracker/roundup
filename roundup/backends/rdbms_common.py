@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.88 2004-04-02 05:58:45 richard Exp $
+# $Id: rdbms_common.py,v 1.89 2004-04-05 07:13:10 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2024,34 +2024,23 @@ class Class(hyperdb.Class):
             args = args + v
 
         # "grouping" is just the first-order sorting in the SQL fetch
-        # can modify it...)
         orderby = []
         ordercols = []
-        if group[0] is not None and group[1] is not None:
-            if group[0] != '-':
-                orderby.append('_'+group[1])
-                ordercols.append('_'+group[1])
-            else:
-                orderby.append('_'+group[1]+' desc')
-                ordercols.append('_'+group[1])
-
-        # now add in the sorting
-        group = ''
-        if sort[0] is not None and sort[1] is not None:
-            direction, colname = sort
-            if direction != '-':
-                if colname == 'id':
-                    orderby.append(colname)
+        mlsort = []
+        for sortby in group, sort:
+            sdir, prop = sortby
+            if sdir and prop:
+                if isinstance(props[prop], Multilink):
+                    mlsort.append(sortby)
+                    continue
+                elif prop == 'id':
+                    o = 'id'
                 else:
-                    orderby.append('_'+colname)
-                    ordercols.append('_'+colname)
-            else:
-                if colname == 'id':
-                    orderby.append(colname+' desc')
-                    ordercols.append(colname)
-                else:
-                    orderby.append('_'+colname+' desc')
-                    ordercols.append('_'+colname)
+                    o = '_'+prop
+                    ordercols.append(o)
+                if sdir == '-':
+                    o += ' desc'
+                orderby.append(o)
 
         # construct the SQL
         frum = ','.join(frum)
@@ -2059,14 +2048,14 @@ class Class(hyperdb.Class):
             where = ' where ' + (' and '.join(where))
         else:
             where = ''
-        cols = ['id']
+        cols = ['distinct(id)']
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))
         else:
             order = ''
         cols = ','.join(cols)
-        sql = 'select %s from %s %s%s%s'%(cols, frum, where, group, order)
+        sql = 'select %s from %s %s%s'%(cols, frum, where, order)
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
@@ -2079,7 +2068,28 @@ class Class(hyperdb.Class):
 
         # return the IDs (the first column)
         # XXX numeric ids
-        return [str(row[0]) for row in l]
+        l =  [str(row[0]) for row in l]
+
+        if not mlsort:
+            return l
+
+        # ergh. someone wants to sort by a multilink.
+        r = []
+        for id in l:
+            m = []
+            for ml in mlsort:
+                m.append(self.get(id, ml[1]))
+            r.append((id, m))
+        i = 0
+        for sortby in mlsort:
+            def sortfun(a, b, dir=sortby[i]):
+                if dir == '-':
+                    return cmp(b[1][i], a[1][i])
+                else:
+                    return cmp(a[1][i], b[1][i])
+            r.sort(sortfun)
+            i += 1
+        return [i[0] for i in r]
 
     def count(self):
         '''Get the number of nodes in this class.

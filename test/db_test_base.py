@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.20 2004-03-24 04:57:25 richard Exp $ 
+# $Id: db_test_base.py,v 1.21 2004-04-05 07:13:10 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -891,6 +891,11 @@ class DBTest(MyTestCase):
         ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
         # descending should sort 1d, 1:10, None
         ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '4', '3'])
+
+    def testFilteringMultilinkSort(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
+        ae(filt(None, {}, ('-','nosy'), (None,None)), ['3', '4', '1', '2'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors

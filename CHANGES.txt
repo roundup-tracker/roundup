@@ -19,6 +19,7 @@ Fixed:
   download links (sf bug 927745)
 - all uses of TRACKER_WEB now ensure it ends with a '/'
 - roundup-admin install checks for existing tracker in target home
+- grouping (and sorting) by multilink in RDBMS backends (sf bug 655702)
 
 
 2004-03-27 0.7.0b2
