@@ -15,9 +15,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.3 2001-11-12 22:38:48 richard Exp $
+# $Id: install_util.py,v 1.4 2001-11-12 23:14:40 jhermann Exp $
 
-import os, sha
+import os, sha, shutil
+
+sgml_file_types = [".xml", ".ent", ".html", ".filter", ".index", ".item"]
+hash_file_types = [".py", ".sh", ".conf", ".cgi", '']
+slast_file_types = [".css"]
+
+digested_file_types = sgml_file_types + hash_file_types + slast_file_types
 
 
 def checkDigest(filename):
@@ -72,36 +78,66 @@ class DigestFile:
         file, ext = os.path.splitext(self.filename)
 
         # ".filter", ".index", ".item" are roundup-specific
-        if ext in [".xml", ".ent", ".html", ".filter", ".index", ".item"]:
+        if ext in sgml_file_types:
             self.file.write("<!-- SHA: %s -->\n" % (self.digest.hexdigest(),))
-        elif ext in [".py", ".sh", ".conf", ".cgi", '']:
+        elif ext in hash_file_types:
             self.file.write("#SHA: %s\n" % (self.digest.hexdigest(),))
-        elif ext in [".css"]:
+        elif ext in slast_file_types:
             self.file.write("/* SHA: %s */\n" % (self.digest.hexdigest(),))
 
         self.file.close()
+
+
+def copyDigestedFile(src, dst, copystat=1):
+    """ Copy data from `src` to `dst`, adding a fingerprint to `dst`.
+        If `copystat` is true, the file status is copied, too
+        (like shutil.copy2).
+    """
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
+
+    dummy, ext = os.path.splitext(src)
+    if ext not in digested_file_types:
+        if copystat:
+            return shutil.copy2(srcname, dstname)
+        else:
+            return shutil.copyfile(srcname, dstname)
+
+    fsrc = None
+    fdst = None
+    try:
+        fsrc = open(src, 'r')
+        fdst = DigestFile(dst)
+        shutil.copyfileobj(fsrc, fdst)
+    finally:
+        if fdst: fdst.close()
+        if fsrc: fsrc.close()
+
+    if copystat: shutil.copystat(src, dst)
 
 
 def test():
     import sys
 
     testdata = open(sys.argv[0], 'r').read()
-    testfile = "digest_test.py"
 
-    out = DigestFile(testfile)
-    out.write(testdata)
-    out.close()
+    for ext in digested_file_types:
+        testfile = "__digest_test" + ext
 
-    assert checkDigest(testfile), "digest ok w/o modification"
+        out = DigestFile(testfile)
+        out.write(testdata)
+        out.close()
 
-    mod = open(testfile, 'r+')
-    mod.seek(0)
-    mod.write('# changed!')
-    mod.close()
+        assert checkDigest(testfile), "digest ok w/o modification"
 
-    assert not checkDigest(testfile), "digest fails after modification"
+        mod = open(testfile, 'r+')
+        mod.seek(0)
+        mod.write('# changed!')
+        mod.close()
 
-    os.remove(testfile)
+        assert not checkDigest(testfile), "digest fails after modification"
+
+        os.remove(testfile)
 
 
 if __name__ == '__main__':
@@ -109,6 +145,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/11/12 22:38:48  richard
+# bleah typo
+#
 # Revision 1.2  2001/11/12 22:37:13  richard
 # Handle all the various file formats in roundup
 #
