@@ -90,7 +90,6 @@ class Database(rdbms_common.Database):
     arg = '%s'
 
     def sql_open_connection(self):
-        raise NotImplementedError, "Please don't use me just yet..."
         db = getattr(self.config, 'POSTGRESQL_DATABASE')
         try:
             conn = psycopg.connect(**db)
@@ -159,6 +158,11 @@ class Database(rdbms_common.Database):
                 name))
             c.execute('CREATE INDEX %ss_key_idx ON %ss(%s_key)'%(name, name,
                 name))
+
+    def fix_version_3_tables(self):
+        rdbms_common.Database.fix_version_3_tables(self)
+        self.cursor.execute('''CREATE INDEX words_both_idx ON public.__words
+            USING btree (_word, _textid)''')
 
     def add_actor_column(self):
         # update existing tables to have the new actor column
