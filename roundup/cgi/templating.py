@@ -1146,7 +1146,7 @@ class StringHTMLProperty(HTMLProperty):
                 # make sure s1 is a valid tracker classname
                 cl = self._db.getclass(s1)
                 if not cl.hasnode(s2):
-                    raise KeyError, 'oops'
+                    return s
                 return '<a href="%s%s">%s</a>'%(s1, s2, s)
             except KeyError:
                 return s
