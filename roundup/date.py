@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.54 2003-04-23 11:48:05 richard Exp $
+# $Id: date.py,v 1.54.2.1 2003-11-04 12:39:54 anthonybaxter Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -204,23 +204,30 @@ class Date:
             if month > 12: year += 1; month -= 12
 
         # now do the days, now that we know what month we're in
-        mdays = calendar.mdays
-        if month == 2 and calendar.isleap(year): month_days = 29
-        else: month_days = mdays[month]
-        while month < 1 or month > 12 or day < 0 or day > month_days:
+        def get_mdays(year,month):
+            if month == 2 and calendar.isleap(year): return 29
+            else: return calendar.mdays[month]
+            
+        while month < 1 or month > 12 or day < 0 or day > get_mdays(year,month):
             # now to day under/over
-            if day < 0: month -= 1; day += month_days
-            elif day > month_days: month += 1; day -= month_days
+            if day < 0: 
+                # When going backwards, decrement month, then increment days
+                month -= 1
+                day += get_mdays(year,month)
+            elif day > get_mdays(year,month): 
+                # When going forwards, decrement days, then increment month
+                day -= get_mdays(year,month)
+                month += 1
 
             # possibly fix up the month so we're within range
             while month < 1 or month > 12:
-                if month < 1: year -= 1; month += 12
+                if month < 1: year -= 1; month += 12 ; day += 31
                 if month > 12: year += 1; month -= 12
 
-            # re-figure the number of days for this month
-            if month == 2 and calendar.isleap(year): month_days = 29
-            else: month_days = mdays[month]
         return (year, month, day, hour, minute, second, 0, 0, 0)
+
+    def differenceDate(self, other):
+        "Return the difference between this date and another date"
 
     def applyInterval(self, interval):
         ''' Apply the interval to this date
@@ -246,29 +253,29 @@ class Date:
 
         assert isinstance(other, Date), 'May only subtract Dates or Intervals'
 
-        # TODO this code will fall over laughing if the dates cross
-        # leap years, phases of the moon, ....
+        return self.dateDelta(other)
+
+    def dateDelta(self, other):
+        """ Produce an Interval of the difference between this date
+            and another date. Only returns days:hours:minutes:seconds.
+        """
+        # Returning intervals larger than a day is almost
+        # impossible - months, years, weeks, are all so imprecise.
         a = calendar.timegm((self.year, self.month, self.day, self.hour,
             self.minute, self.second, 0, 0, 0))
         b = calendar.timegm((other.year, other.month, other.day,
             other.hour, other.minute, other.second, 0, 0, 0))
         diff = a - b
-        if diff < 0:
+        if diff > 0:
             sign = 1
-            diff = -diff
         else:
             sign = -1
+            diff = -diff
         S = diff%60
         M = (diff/60)%60
-        H = (diff/(60*60))%60
-        if H>1: S = 0
-        d = (diff/(24*60*60))%30
-        if d>1: H = S = M = 0
-        m = (diff/(30*24*60*60))%12
-        if m>1: H = S = M = 0
-        y = (diff/(365*24*60*60))
-        if y>1: d = H = S = M = 0
-        return Interval((y, m, d, H, M, S), sign=sign)
+        H = (diff/(60*60))%24
+        d = diff/(24*60*60)
+        return Interval((0, 0, d, H, M, S), sign=sign)
 
     def __cmp__(self, other):
         """Compare this date to another date."""
