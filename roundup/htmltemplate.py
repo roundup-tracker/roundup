@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.38 2001-10-31 06:58:51 richard Exp $
+# $Id: htmltemplate.py,v 1.39 2001-11-03 01:43:47 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -526,11 +526,12 @@ class IndexTemplate(TemplateFunctions):
             w('<form action="index">\n')
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_display_form, show_customization)
+            # make sure that the sorting doesn't get lost either
+            if sort:
+                w('<input type="hidden" name=":sort" value="%s">'%
+                    ','.join(sort))
             w('</form>\n')
 
-        # make sure that the sorting doesn't get lost either
-        if sort:
-            w('<input type="hidden" name=":sort" value="%s">'%','.join(sort))
 
         # now display the index section
         w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
@@ -606,6 +607,10 @@ class IndexTemplate(TemplateFunctions):
             w('<form action="index">\n')
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_display_form, show_customization)
+            # make sure that the sorting doesn't get lost either
+            if sort:
+                w('<input type="hidden" name=":sort" value="%s">'%
+                    ','.join(sort))
             w('</form>\n')
 
 
@@ -843,6 +848,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2001/10/31 06:58:51  richard
+# Added the wrap="hard" attribute to the textarea of the note field so the
+# messages wrap sanely.
+#
 # Revision 1.37  2001/10/31 06:24:35  richard
 # Added do_stext to htmltemplate, thanks Brad Clements.
 #
