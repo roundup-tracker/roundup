@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.49 2002-07-18 11:41:10 richard Exp $
+#$Id: back_anydbm.py,v 1.50 2002-07-18 11:50:58 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -730,17 +730,29 @@ class Class(hyperdb.Class):
                 if value is not None and not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'%key
 
-            elif isinstance(prop, Number):
+            elif value is not None and isinstance(prop, Number):
                 try:
                     int(value)
-                except TypeError:
-                    raise TypeError, 'new property "%s" not numeric' % propname
+                except ValueError:
+                    try:
+                        float(value)
+                    except ValueError:
+                        raise TypeError, 'new property "%s" not numeric'%key
 
-            elif isinstance(prop, Boolean):
-                try:
-                    int(value)
-                except TypeError:
-                    raise TypeError, 'new property "%s" is not boolean' % propname
+            elif value is not None and isinstance(prop, Boolean):
+                if isinstance(value, type('')):
+                    s = value.lower()
+                    if s in ('0', 'false', 'no'):
+                        value = 0
+                    elif s in ('1', 'true', 'yes'):
+                        value = 1
+                    else:
+                        raise TypeError, 'new property "%s" not boolean'%key
+                else:
+                    try:
+                        int(value)
+                    except TypeError:
+                        raise TypeError, 'new property "%s" not boolean'%key
 
         # make sure there's data where there needs to be
         for key, prop in self.properties.items():
@@ -1024,11 +1036,14 @@ class Class(hyperdb.Class):
                 propvalues[propname] = value
 
             elif value is not None and isinstance(prop, Number):
-                # TODO: should we store floats too?
                 try:
                     int(value)
-                except TypeError:
-                    raise TypeError, 'new property "%s" not numeric' % propname
+                except ValueError:
+                    try:
+                        float(value)
+                    except ValueError:
+                        raise TypeError, 'new property "%s" not '\
+                            'numeric'%propname
 
             elif value is not None and isinstance(prop, Boolean):
                 if isinstance(value, type('')):
@@ -1043,7 +1058,7 @@ class Class(hyperdb.Class):
                 else:
                     try:
                         int(value)
-                    except TypeError:
+                    except ValueError:
                         raise TypeError, 'new property "%s" not '\
                             'boolean'%propname
 
@@ -1688,6 +1703,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.49  2002/07/18 11:41:10  richard
+#added tests for boolean type, and fixes to anydbm backend
+#
 #Revision 1.48  2002/07/18 11:17:31  gmcm
 #Add Number and Boolean types to hyperdb.
 #Add conversion cases to web, mail & admin interfaces.

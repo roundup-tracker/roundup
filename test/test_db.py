@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.32 2002-07-18 11:41:10 richard Exp $ 
+# $Id: test_db.py,v 1.33 2002-07-18 11:50:58 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -111,16 +111,23 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(self.db.issue.get('1', "foo"), a)
 
     def testBooleanChange(self):
-        self.db.user.create(username='foo', assignable='1')
+        self.db.user.create(username='foo', assignable=1)
         a = self.db.user.get('1', 'assignable')
         self.db.user.set('1', assignable='false')
         self.assertNotEqual(self.db.user.get('1', 'assignable'), a)
         self.db.user.set('1', assignable='FaLse')
         self.db.user.set('1', assignable='nO')
-        self.db.user.set('1', assignable='0')
+        self.db.user.set('1', assignable=0)
         self.db.user.set('1', assignable='tRuE')
         self.db.user.set('1', assignable='yEs')
-        self.db.user.set('1', assignable='1')
+        self.db.user.set('1', assignable=1)
+
+    def testNumberChange(self):
+        self.db.user.create(username='foo', age='1')
+        a = self.db.user.get('1', 'age')
+        self.db.user.set('1', age='3')
+        self.assertNotEqual(self.db.user.get('1', 'age'), a)
+        self.db.user.set('1', age='1.0')
 
     def xtestNewProperty(self):
         ' make sure a new property is added ok '
@@ -186,7 +193,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(num_files, self.db.numfiles())
         self.assertEqual(num_files2, self.db.numfiles())
 
-    def xtestExceptions(self):
+    def testExceptions(self):
         # this tests the exceptions that should be raised
         ar = self.assertRaises
 
@@ -255,6 +262,15 @@ class anydbmDBTestCase(MyTestCase):
         # invalid multilink index
         ar(IndexError, self.db.issue.set, '6', title='foo', status='1',
             nosy=['10'])
+        # invalid number value
+        ar(TypeError, self.db.user.create, username='foo', age='a')
+        # invalid boolean value
+        ar(TypeError, self.db.user.create, username='foo', assignable='fubar')
+        self.db.user.create(username='foo')
+        # invalid number value
+        ar(TypeError, self.db.user.set, '3', username='foo', age='a')
+        # invalid boolean value
+        ar(TypeError, self.db.user.set, '3', username='foo', assignable='fubar')
 
     def xtestJournals(self):
         self.db.issue.addprop(fixer=Link("user", do_journal='yes'))
@@ -546,6 +562,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2002/07/18 11:41:10  richard
+# added tests for boolean type, and fixes to anydbm backend
+#
 # Revision 1.31  2002/07/14 23:17:45  richard
 # minor change to make testing easier
 #
