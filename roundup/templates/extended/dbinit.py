@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.13 2001-10-30 00:54:45 richard Exp $
+# $Id: dbinit.py,v 1.14 2001-11-21 02:34:18 richard Exp $
 
 import os
 
@@ -110,7 +110,7 @@ def open(name=None):
                     assignedto=Link("user"), priority=Link("priority"), 
                     status=Link("status"), product=Link("product"), 
                     platform=Multilink("platform"), version=String(),
-                    supportcall=Multilink("support"))
+                    targetversion=String(), supportcall=Multilink("support"))
 
     import detectors
     detectors.init(db)
@@ -176,6 +176,12 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/10/30 00:54:45  richard
+# Features:
+#  . #467129 ] Lossage when username=e-mail-address
+#  . #473123 ] Change message generation for author
+#  . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
+#
 # Revision 1.12  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.

@@ -1,4 +1,4 @@
-<!-- $Id: issue.item,v 1.6 2001-11-14 21:35:22 richard Exp $-->
+<!-- $Id: issue.item,v 1.7 2001-11-21 02:34:18 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -13,10 +13,18 @@
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Product</span></td>
     <td class="form-text" valign=middle><display call="menu('product')">
-    version:<display call="field('version', 5)"></td>
-    <td width=1% nowrap align=right><span class="form-label">Platform</span></td>
-    <td class="form-text" valign=middle><display call="checklist('platform')"></td>
+    <span class="form-label">version:</span><display call="field('version', 5)"></td>
+    <td rowspan=2 width=1% nowrap align=right><span class="form-label">Platform</span></td>
+    <td rowspan=2 class="form-text" valign=middle><display call="checklist('platform')"></td>
 </tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right>&nbsp;</td>
+    <td align=left><span class="form-label">Target Version</span>
+     <display call="field('targetversion', 5)">
+    </td>
+</tr>
+
 
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Created</span></td>

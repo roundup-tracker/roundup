@@ -15,6 +15,7 @@ Feature:
  . users may attach files to issues (and support in ext) through the web now
  . incorporated patch from Roch'e Compaan implementing attachments in nosy
    e-mail
+ . added a target version field to the extended issue schema
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
