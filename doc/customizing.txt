@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.113 $
+:Version: $Revision: 1.114 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2077,12 +2077,12 @@ templating through the "journal" method of the item*::
 Defining new web actions
 ------------------------
 
-You may define new actions to be triggered by the ``@action`` form
-variable. These are added to the tracker ``interfaces.py`` as methods on
-the ``Client`` class. 
+You may define new actions to be triggered by the ``@action`` form variable.
+These are added to the tracker ``interfaces.py`` as ``Action`` classes that get
+called by the the ``Client`` class.
 
-Adding action methods takes three steps; first you `define the new
-action method`_, then you `register the action method`_ with the cgi
+Adding action classes takes three steps; first you `define the new
+action class`_, then you `register the action class`_ with the cgi
 interface so it may be triggered by the ``@action`` form variable.
 Finally you `use the new action`_ in your HTML form.
 
@@ -2090,41 +2090,41 @@ See "`setting up a "wizard" (or "druid") for controlled adding of
 issues`_" for an example.
 
 
-Define the new action method
+Define the new action class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The action methods have the following interface::
+The action classes have the following interface::
 
-    def myActionMethod(self):
-        ''' Perform some action. No return value is required.
-        '''
+ class MyAction(Action):
+     def handle(self):
+         ''' Perform some action. No return value is required.
+         '''
 
-The *self* argument is an instance of your tracker ``instance.Client``
+The *self.client* attribute is an instance of your tracker ``instance.Client``
 class - thus it's mostly implemented by ``roundup.cgi.Client``. See the
 docstring of that class for details of what it can do.
 
 The method will typically check the ``self.form`` variable's contents.
 It may then:
 
-- add information to ``self.ok_message`` or ``self.error_message``
-- change the ``self.template`` variable to alter what the user will see
+- add information to ``self.client.ok_message`` or ``self.client.error_message``
+- change the ``self.client.template`` variable to alter what the user will see
   next
 - raise Unauthorised, SendStaticFile, SendFile, NotFound or Redirect
-  exceptions
+  exceptions (import them from roundup.cgi.exceptions)
 
 
-Register the action method
+Register the action class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The method is now written, but isn't available to the user until you add
-it to the `instance.Client`` class ``actions`` variable, like so::
+The class is now written, but isn't available to the user until you add it to
+the ``instance.Client`` class ``actions`` variable, like so::
 
-    actions = client.Class.actions + (
-        ('myaction', 'myActionMethod'),
+    actions = client.Client.actions + (
+        ('myaction', myActionClass),
     )
 
-This maps the action name "myaction" to the action method we defined.
-
+This maps the action name "myaction" to the action class we defined.
 
 Use the new action
 ~~~~~~~~~~~~~~~~~~
@@ -2748,7 +2748,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
     <form method="POST" onSubmit="return submit_once()"
           enctype="multipart/form-data">
       <input type="hidden" name="@template" value="add_page1">
-      <input type="hidden" name="@action" value="page1submit">
+      <input type="hidden" name="@action" value="page1_submit">
 
       <strong>Category:</strong>
       <tal:block tal:replace="structure context/category/menu" />
@@ -2772,7 +2772,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
     </form>
 
    Note that later in the form, I test the value of "cat" include form
-   elements that are appropriate. For example::
+   elements that are appropriate. For exsample::
 
     <tal:block tal:condition="python:cat in '6 10 13 14 15 16 17'.split()">
      <tr>
@@ -2789,25 +2789,26 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
    of 6, 10, 13, 14, 15, 16 or 17.
 
 3. Determine what actions need to be taken between the pages - these are
-   usually to validate user choices and determine what page is next. Now
-   encode those actions in methods on the ``interfaces.Client`` class
-   and insert hooks to those actions in the "actions" attribute on that
-   class, like so::
+   usually to validate user choices and determine what page is next. Now encode
+   those actions in a new ``Action`` class and insert hooks to those actions in
+   the "actions" attribute on on the ``interfaces.Client`` class, like so (see 
+   `defining new web actions`_)::
+
+    class Page1SubmitAction(Action):
+        def handle(self):
+            ''' Verify that the user has selected a category, and then move
+                on to page 2.
+            '''
+            category = self.form['category'].value
+            if category == '-1':
+                self.error_message.append('You must select a category of report')
+                return
+            # everything's ok, move on to the next page
+            self.template = 'add_page2'
 
     actions = client.Client.actions + (
-        ('page1_submit', 'page1SubmitAction'),
+        ('page1_submit', Page1SubmitAction),
     )
-
-    def page1SubmitAction(self):
-        ''' Verify that the user has selected a category, and then move
-            on to page 2.
-        '''
-        category = self.form['category'].value
-        if category == '-1':
-            self.error_message.append('You must select a category of report')
-            return
-        # everything's ok, move on to the next page
-        self.template = 'add_page2'
 
 4. Use the usual "new" action as the ``@action`` on the final page, and
    you're done (the standard context/submit method can do this for you).

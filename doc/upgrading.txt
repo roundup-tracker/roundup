@@ -3,13 +3,24 @@ Upgrading to newer versions of Roundup
 ======================================
 
 Please read each section carefully and edit your tracker home files
-accordingly. Note that there is informaiton about upgrade procedures in the
+accordingly. Note that there is information about upgrade procedures in the
 `administration guide`_.
 
 .. contents::
 
 Migrating from 0.6 to 0.7
 =========================
+
+0.7.0 Extending the cgi interface
+---------------------------------
+
+Before 0.7.0 adding or extending web actions was done by overriding or adding
+methods on the Client class. Though this approach still works to provide
+backwards compatibility, it is recommended you upgrade to the new approach, as
+described in the `Defining new web actions`__ section of the customization
+documentation.
+
+__  customizing.html#defining-new-web-actions
 
 0.7.0 Getting the current user id
 ---------------------------------
