@@ -74,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.153 2004-07-28 02:29:45 richard Exp $
+$Id: mailgw.py,v 1.154 2004-09-07 10:40:15 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -905,9 +905,11 @@ not find a text/plain part to use.
                     recipients=recipients, date=date.Date('.'),
                     summary=summary, content=content, files=files,
                     messageid=messageid, inreplyto=inreplyto, **msg_props)
-            except exceptions.Reject:
-                pass
-            else:
+            except exceptions.Reject, error:
+                raise MailUsageError, '''
+Mail message was rejected by a detector.
+%s
+'''%error
                 # attach the message to the node
                 if nodeid:
                     # add the message to the node's list

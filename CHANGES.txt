@@ -36,6 +36,8 @@ Fixed:
 - removed references to py2.3+ boolean values (sf bug 995682)
 - fix static file path normalisation in security check (thanks David Linke)
 - less specific messages for login failures (thanks Chris Withers)
+- Reject raised against email messages should result in email rejection, not
+  discarding of the message
 
 
 2004-07-21 0.7.6
