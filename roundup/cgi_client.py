@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.149 2002-07-30 20:04:38 gmcm Exp $
+# $Id: cgi_client.py,v 1.150 2002-07-30 20:43:18 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -710,7 +710,7 @@ function help_window(helpurl, width, height) {
         if keys and not self.form.has_key('__login_name'):
             try:
                 userid = self.db.user.lookup(self.user)
-                if not self.db.security.hasPermission('Edit', userid):
+                if not self.db.security.hasPermission('Edit', userid, cn):
                     message = _('You do not have permission to edit %s' %cn)
                 else:
                     props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
@@ -1695,6 +1695,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.149  2002/07/30 20:04:38  gmcm
+# Adapt metakit backend to new security scheme.
+# Put some more permission checks in cgi_client.
+#
 # Revision 1.148  2002/07/30 16:09:11  gmcm
 # Simple optimization.
 #
