@@ -107,9 +107,11 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 </table>
 </tal:block>
 
-<p tal:condition="context/id" tal:content="structure string:Created on
-  <b>${context/creation}</b> by <b>${context/creator}</b>, last
-  changed <b>${context/activity}</b> by <b>${context/actor}</b>.">activity info
+<p tal:condition="context/id" i18n:translate="">
+ Created on <b><tal:x replace="context/creation" i18n:name="creation" /></b>
+ by <b><tal:x replace="context/creator" i18n:name="creator" /></b>,
+ last changed <b><tal:x replace="context/activity" i18n:name="activity" /></b>
+ by <b><tal:x replace="context/actor" i18n:name="actor" /></b>.
 </p>
 
 <table class="files" tal:condition="context/files">
@@ -139,7 +141,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
          tal:attributes="action string:issue${context/id}">
     <input type="hidden" name="@remove@files" tal:attributes="value file/id">
     <input type="hidden" name="@action" value="edit">
-    <input type="submit" value="remove">
+    <input type="submit" value="remove" i18n:attributes="value">
    </form>
   </td>
  </tr>
@@ -150,15 +152,17 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
  <tal:block tal:repeat="msg context/messages/reverse">
   <tr>
    <th><a tal:attributes="href string:msg${msg/id}"
-          tal:content="string:msg${msg/id} (view)"></a></th>
-   <th tal:content="string:Author: ${msg/author}">author</th>
-   <th tal:content="string:Date: ${msg/date}">date</th>
+    i18n:translate="">msg<tal:x replace="msg/id" i18n:name="id" /> (view)</a></th>
+   <th i18n:translate="">Author: <tal:x replace="msg/author"
+       i18n:name="author" /></th>
+   <th i18n:translate="">Date: <tal:x replace="msg/date"
+       i18n:name="date" /></th>
    <th>
     <form style="padding:0" tal:condition="context/is_edit_ok"
           tal:attributes="action string:issue${context/id}">
      <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
      <input type="hidden" name="@action" value="edit">
-     <input type="submit" value="remove">
+     <input type="submit" value="remove" i18n:attributes="value">
     </form>
    </th>
   </tr>
