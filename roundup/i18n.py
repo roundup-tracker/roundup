@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: i18n.py,v 1.4 2004-02-11 23:55:08 richard Exp $
+#
+# $Id: i18n.py,v 1.5 2004-05-14 10:40:47 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -45,7 +45,9 @@ except ImportError:
     # fall-back to dummy on errors (returning the english text)
     _ = lambda text: text
 else:
-    # and for now, we JUST implement the dummy in any case
-    _ = lambda text: text
+    # use roundup messages
+    gettext.textdomain("roundup")
+    # export gettext function
+    _ = gettext.gettext
 
 # vim: set filetype=python ts=4 sw=4 et si
