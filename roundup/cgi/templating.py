@@ -916,7 +916,8 @@ class DateHTMLProperty(HTMLProperty):
             return interval.pretty()
         return str(interval)
 
-    def pretty(self, format='%d %B %Y'):
+    _marker = []
+    def pretty(self, format=_marker):
         ''' Render the date in a pretty format (eg. month names, spaces).
 
             The format string is a standard python strftime format string.
@@ -924,13 +925,16 @@ class DateHTMLProperty(HTMLProperty):
             string, then it'll be stripped from the output. This is handy
             for the situatin when a date only specifies a month and a year.
         '''
-        return self._value.pretty()
+        if format is not self._marker:
+            return self._value.pretty(format)
+        else:
+            return self._value.pretty()
 
     def local(self, offset):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
         return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._name, self._value.local())
+            self._name, self._value.local(offset))
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
