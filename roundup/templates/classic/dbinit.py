@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.32 2003-01-27 16:32:50 kedder Exp $
+# $Id: dbinit.py,v 1.33 2003-01-27 16:40:37 kedder Exp $
 
 import os
 
@@ -67,7 +67,6 @@ def open(name=None):
                     alternate_addresses=String(),
                     queries=Multilink('query'), roles=String(),
                     timezone=String())
-)
     user.setkey("username")
 
     # FileClass automatically gets these properties:
