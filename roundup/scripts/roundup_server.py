@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.18 2003-02-06 05:43:49 richard Exp $
+$Id: roundup_server.py,v 1.19 2003-02-26 04:51:41 richard Exp $
 """
 
 # python version check
@@ -86,9 +86,9 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.wfile.write(cgitb.breaker())
                 self.wfile.write(cgitb.html())
             except:
-                self.wfile.write("<pre>")
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
+                self.wfile.write("<pre>")
                 self.wfile.write(cgi.escape(s.getvalue()))
                 self.wfile.write("</pre>\n")
         sys.stdin = save_stdin

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.98 2003-02-26 04:08:04 richard Exp $
+# $Id: client.py,v 1.99 2003-02-26 04:51:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -6,6 +6,7 @@ WWW request handler (also used in the stand-alone server).
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, MimeWriter, smtplib, socket, quopri
+import stat, rfc822
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
@@ -21,6 +22,8 @@ class  Unauthorised(HTTPException):
 class  NotFound(HTTPException):
        pass
 class  Redirect(HTTPException):
+       pass
+class  NotModified(HTTPException):
        pass
 
 # XXX actually _use_ FormError
@@ -235,7 +238,12 @@ class Client:
         except SendFile, designator:
             self.serve_file(designator)
         except SendStaticFile, file:
-            self.serve_static_file(str(file))
+            try:
+                self.serve_static_file(str(file))
+            except NotModified:
+                # send the 304 response
+                self.request.send_response(304)
+                self.request.end_headers()
         except Unauthorised, message:
             self.classname = None
             self.template = ''
@@ -422,11 +430,26 @@ class Client:
         self.write(file.get(nodeid, 'content'))
 
     def serve_static_file(self, file):
+        # see if there's an if-modified-since...
+        ims = self.request.headers.getheader('if-modified-since')
+        # cgi will put the header in the env var
+        if not ims and self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
+            ims = self.env['HTTP_IF_MODIFIED_SINCE']
+        filename = os.path.join(self.instance.config.TEMPLATES, file)
+        lmt = os.stat(filename)[stat.ST_MTIME]
+        if ims:
+            ims = rfc822.parsedate(ims)[:6]
+            lmtt = time.gmtime(lmt)[:6]
+            if lmtt <= ims:
+                raise NotModified
+
         # we just want to serve up the file named
         mt = mimetypes.guess_type(str(file))[0]
+        if not mt:
+            mt = 'text/plain'
         self.additional_headers['Content-Type'] = mt
-        self.write(open(os.path.join(self.instance.config.TEMPLATES,
-            file)).read())
+        self.additional_headers['Last-Modifed'] = rfc822.formatdate(lmt)
+        self.write(open(filename).read())
 
     def renderContext(self):
         ''' Return a PageTemplate for the named page
