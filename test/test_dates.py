@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.8 2002-01-16 07:02:57 richard Exp $ 
+# $Id: test_dates.py,v 1.9 2002-02-21 06:57:39 richard Exp $ 
 
 import unittest, time
 
@@ -70,6 +70,8 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '%s-%02d-%02d.19:25:00'%(y, m, d))
         date = Date("8:47:11", -5)
         ae(str(date), '%s-%02d-%02d.13:47:11'%(y, m, d))
+        # TODO: assert something
+        Date() + Interval('- 2y 2m')
 
     def testInterval(self):
         ae = self.assertEqual
@@ -87,6 +89,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/01/16 07:02:57  richard
+#  . lots of date/interval related changes:
+#    - more relaxed date format for input
+#
 # Revision 1.7  2001/08/13 23:01:53  richard
 # fixed a 2.1-ism
 #

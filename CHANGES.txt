@@ -14,6 +14,12 @@ Feature:
    - access using the admin "class list" interface
    - limited to admin-only
    - requires the csv module from object-craft (url given if it's missing)
+ . Added popup help for classes using the classhelp html template function.
+   - add <display call="classhelp('priority', 'id,name,description')">
+     to an item page, and it generates a link to a popup window which displays
+     the id, name and description for the priority class. The description
+     field won't exist in most installations, but it will be added to the
+     default templates.
 
 Fixed:
  . Clean up mail handling, multipart handling.

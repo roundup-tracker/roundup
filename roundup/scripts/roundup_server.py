@@ -18,7 +18,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.2 2002-01-29 20:07:15 jhermann Exp $
+$Id: roundup_server.py,v 1.3 2002-02-21 06:57:39 richard Exp $
 """
 
 # python version check
@@ -158,6 +158,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['SCRIPT_NAME'] = ''
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
+        env['HOST'] = self.headers['host']
 
         decoded_query = query.replace('+', ' ')
 
@@ -248,6 +249,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/01/29 20:07:15  jhermann
+# Conversion to generated script stubs
+#
 # Revision 1.1  2002/01/29 19:53:08  jhermann
 # Moved scripts from top-level dir to roundup.scripts subpackage
 #

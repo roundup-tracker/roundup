@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.9 2002-02-15 07:08:45 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.10 2002-02-21 06:57:39 richard Exp $ 
 
 import unittest, cgi, time
 
@@ -24,7 +24,7 @@ class Class:
         elif attribute == 'filename':
             return 'file.foo'
         elif attribute == 'date':
-            return date.Date('2000-01-01')
+            return date.Date() + date.Interval('- 2y 2m')
         elif attribute == 'interval':
             return date.Interval('-3d')
         elif attribute == 'link':
@@ -330,12 +330,21 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
         #self.assertEqual(self.tf.do_list('multilink'),'')
         pass
 
+    def testClasshelp(self):
+        self.assertEqual(self.tf.do_classhelp('theclass', 'prop1,prop2'),
+            '<a href="javascript:help_window(\'classhelp?classname=theclass'
+            '&properties=prop1,prop2\')"><b>(?)</b></a>')
+
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/02/15 07:08:45  richard
+#  . Alternate email addresses are now available for users. See the MIGRATION
+#    file for info on how to activate the feature.
+#
 # Revision 1.8  2002/02/06 03:47:16  richard
 #  . #511586 ] unittest FAIL: testReldate_date
 #
