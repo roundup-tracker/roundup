@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.114 $
+:Version: $Revision: 1.115 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -892,15 +892,15 @@ of:
  - Also handle the ":queryname" variable and save off the query to the
    user's query list.
 
-Each of the actions is implemented by a corresponding ``*actionAction*``
-(where "action" is the name of the action) method on the
-``roundup.cgi.Client`` class, which also happens to be available in your
-tracker instance as ``interfaces.Client``. So if you need to define new
-actions, you may add them there (see `defining new web actions`_).
+Each of the actions is implemented by a corresponding ``*XxxAction*`` (where
+"Xxx" is the name of the action) class in the ``roundup.cgi.actions`` module.
+These classes are registered with ``roundup.cgi.client.Client`` which also
+happens to be available in your tracker instance as ``interfaces.Client``. So
+if you need to define new actions, you may add them there (see `defining new
+web actions`_).
 
-Each action also has a corresponding ``*actionPermission*`` (where
-"action" is the name of the action) method which determines whether the
-action is permissible given the current user. The base permission checks
+Each action class also has a ``*permission*`` method which determines whether
+the action is permissible given the current user. The base permission checks
 are:
 
 **login**
@@ -2101,7 +2101,7 @@ The action classes have the following interface::
          '''
 
 The *self.client* attribute is an instance of your tracker ``instance.Client``
-class - thus it's mostly implemented by ``roundup.cgi.Client``. See the
+class - thus it's mostly implemented by ``roundup.cgi.client.Client``. See the
 docstring of that class for details of what it can do.
 
 The method will typically check the ``self.form`` variable's contents.
@@ -2826,27 +2826,36 @@ would be::
 
     admin:aamrgyQfDFSHw
 
-Each user of Roundup must still have their information stored in the
-Roundup database - we just use the passwd file to check their password.
-To do this, we add the following code to our ``Client`` class in the
-tracker home ``interfaces.py`` module::
+Each user of Roundup must still have their information stored in the Roundup
+database - we just use the passwd file to check their password. To do this, we
+need to override the standard ``verifyPassword`` method defined in
+``roundup.cgi.actions.LoginAction`` and register the new class with our
+``Client`` class in the tracker home ``interfaces.py`` module::
 
-    def verifyPassword(self, userid, password):
-        # get the user's username
-        username = self.db.user.get(userid, 'username')
+    from roundup.cgi.actions import LoginAction    
 
-        # the passwords are stored in the "passwd.txt" file in the
-        # tracker home
-        file = os.path.join(self.db.config.TRACKER_HOME, 'passwd.txt')
+    class ExternalPasswordLoginAction(LoginAction):
+        def verifyPassword(self, userid, password):
+            # get the user's username
+            username = self.db.user.get(userid, 'username')
 
-        # see if we can find a match
-        for ent in [line.strip().split(':') for line in
-                                            open(file).readlines()]:
-            if ent[0] == username:
-                return crypt.crypt(password, ent[1][:2]) == ent[1]
+            # the passwords are stored in the "passwd.txt" file in the
+            # tracker home
+            file = os.path.join(self.db.config.TRACKER_HOME, 'passwd.txt')
 
-        # user doesn't exist in the file
-        return 0
+            # see if we can find a match
+            for ent in [line.strip().split(':') for line in
+                                                open(file).readlines()]:
+                if ent[0] == username:
+                    return crypt.crypt(password, ent[1][:2]) == ent[1]
+
+            # user doesn't exist in the file
+            return 0
+
+    class Client(client.Client):
+        actions = client.Client.actions + (
+            ('login', ExternalPasswordLoginAction)
+        )
 
 What this does is look through the file, line by line, looking for a
 name that matches.
@@ -3201,9 +3210,10 @@ for more information about doing this.
 
 To authenticate off the LDAP store (rather than using the passwords in the
 roundup user database) you'd use the same python-ldap module inside an
-extension to the cgi interface. You'd do this by adding a method called
-"verifyPassword" to the Client class in your tracker's interfaces.py
-module. The method is implemented by default as::
+extension to the cgi interface. You'd do this by overriding the method called
+"verifyPassword" on the LoginAction class in your tracker's interfaces.py
+module (see `using an external password validation source`_). The method is
+implemented by default as::
 
     def verifyPassword(self, userid, password):
         ''' Verify the password that the user has supplied

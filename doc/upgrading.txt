@@ -18,9 +18,11 @@ Before 0.7.0 adding or extending web actions was done by overriding or adding
 methods on the Client class. Though this approach still works to provide
 backwards compatibility, it is recommended you upgrade to the new approach, as
 described in the `Defining new web actions`__ section of the customization
-documentation.
+documentation. You might also want to take a look at the `Using an external
+password validation source`__ example.
 
-__  customizing.html#defining-new-web-actions
+__ customizing.html#defining-new-web-actions
+__ customizing.html#using-an-external-password-validation-source
 
 0.7.0 Getting the current user id
 ---------------------------------
