@@ -37,6 +37,7 @@ Fixed:
    function.  This adds about 20+ seconds in the display of an issue if
    your database has a 1000 or more issues in it.
  . added missing documentation for a few of the config option values
+ . file upload broke if you didn't supply a change note
 
 2002-03-25 - 0.4.1
 Feature:
