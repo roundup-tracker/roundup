@@ -403,6 +403,7 @@ class HTMLClass(HTMLPermissions):
         ''' Return a list of items from this class, filtered and sorted
             by the current requested filterspec/filter/sort/group args
         '''
+        # XXX allow direct specification of the filterspec etc.
         if request is not None:
             filterspec = request.filterspec
             sort = request.sort
