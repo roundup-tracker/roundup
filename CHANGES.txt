@@ -24,6 +24,9 @@ Feature:
 - HTML generated is now HTML4 (or optionally XHTML) compliant (sf feature
   814314 and sf patch 834620)
 - default stylesheet turns off sidebar when printing
+- allow direct supply of filter() arguments (thanks Godefroid Chapelle)
+- improved body_title slot (sf patch 873502)
+- HTMLLinkProperty field() method renders as a field now (thanks darryl)
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
@@ -44,11 +47,9 @@ Fixed:
 - recalculate SHA on template files when installed tracker used as
   template (sf bug 827510)
 - fixed ZRoundup (sf bug 624380)
-- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
-  allowing "db/file_with_status/-1/status/menu" to generate a useful
-  widget
-- The mail gateway now searches recursively for the text/plain and the
+- the mail gateway now searches recursively for the text/plain and the
   attachments of a message (sf bug 841241).
+- fixed display of feedback messages in some situations (sf bug 739545)
 
 Cleanup:
 - replace curuserid attribute on Database with the extended getuid() method.
@@ -62,9 +63,19 @@ Cleanup:
 - tidied up forms in default stylesheet
 - force textareas to use monospace fonts, lessening surprise on the user
 
+
 2004-??-?? 0.6.5
 Fixed:
 - mailgw handling of subject-line errors
+- allow serving of non-"file"-Class file content (eg. paper_file)
+- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
+  allowing "db/file_with_status/-1/status/menu" to generate a useful
+  widget
+- fixed content-type when templates are serving up xml (thanks Godefroid
+  Chapelle)
+- fixed IE double-submit when it shouldn't (sf bug 842254)
+- fixed check for JS pop()/push() to make more general (sf bug 877504)
+- fix re-enabling queries (sf bug 861940)
 
 
 2003-12-17 0.6.4
