@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.54 2002-01-14 05:16:51 richard Exp $
+# $Id: htmltemplate.py,v 1.55 2002-01-14 06:45:03 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -179,23 +179,16 @@ class TemplateFunctions:
         elif isinstance(propclass, hyperdb.Multilink):
             list = linkcl.list()
             list.sort(sortfunc)
-            k = linkcl.labelprop()
             l = []
-            # special treatment for nosy list
-            if property == 'nosy':
-                input_value = []
-            else:
-                input_value = value
-            for v in value:
-                lab = linkcl.get(v, k)
-                if property != 'nosy':
-                    l.append('<a href="issue%s">%s: %s</a>'%(v,v,lab))
-                else:
-                    input_value.append(lab)
+            # map the id to the label property
+	    # TODO: allow reversion to the older <select> box style display
+            if not showid:
+            	k = linkcl.labelprop()
+                value = [linkcl.get(v, k) for v in value]
             if size is None:
                 size = '10'
             l.insert(0,'<input name="%s" size="%s" value="%s">'%(property, 
-                size, ','.join(input_value)))
+                size, ','.join(value)))
             s = "<br>\n".join(l)
         else:
             s = _('Plain: bad propclass "%(propclass)s"')%locals()
@@ -889,6 +882,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.54  2002/01/14 05:16:51  richard
+# The submit buttons need a name attribute or mozilla won't submit without a
+# file upload. Yeah, that's bloody obscure. Grr.
+#
 # Revision 1.53  2002/01/14 04:03:32  richard
 # How about that ... date fields have never worked ...
 #

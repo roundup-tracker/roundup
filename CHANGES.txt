@@ -18,6 +18,7 @@ Fixed:
    instance_config instead of the mish-mash of classes. This will make
    switching to a ConfigParser setup easier too, I hope.
  . #502951 ] adding new properties to old database
+ . #502953 ] nosy-like treatment of other multilinks
 
 
 2002-01-08 - 0.4.0b1
