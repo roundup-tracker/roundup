@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.129 2002-06-20 23:52:11 richard Exp $
+# $Id: cgi_client.py,v 1.130 2002-06-27 12:01:53 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -561,15 +561,20 @@ function help_window(helpurl, width, height) {
             w('</tr>')
         w('</table>')
 
-    def shownode(self, message=None):
+    def shownode(self, message=None, num_re=re.compile('^\d+$')):
         ''' display an item
         '''
         cn = self.classname
         cl = self.db.classes[cn]
+        if self.form.has_key(':multilink'):
+            link = self.form[':multilink'].value
+            designator, linkprop = link.split(':')
+            xtra = ' for <a href="%s">%s</a>' % (designator, designator)
+        else:
+            xtra = ''
 
         # possibly perform an edit
         keys = self.form.keys()
-        num_re = re.compile('^\d+$')
         # don't try to set properties if the user has just logged in
         if keys and not self.form.has_key('__login_name'):
             try:
@@ -599,7 +604,7 @@ function help_window(helpurl, width, height) {
         id = self.nodeid
         if cl.getkey():
             id = cl.get(id, cl.getkey())
-        self.pagehead('%s: %s'%(self.classname.capitalize(), id), message)
+        self.pagehead('%s: %s %s'%(self.classname.capitalize(), id, xtra), message)
 
         nodeid = self.nodeid
 
@@ -763,6 +768,12 @@ function help_window(helpurl, width, height) {
         '''
         cn = self.classname
         cl = self.db.classes[cn]
+        if self.form.has_key(':multilink'):
+            link = self.form[':multilink'].value
+            designator, linkprop = link.split(':')
+            xtra = ' for <a href="%s">%s</a>' % (designator, designator)
+        else:
+            xtra = ''
 
         # possibly perform a create
         keys = self.form.keys()
@@ -790,8 +801,9 @@ function help_window(helpurl, width, height) {
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
-        self.pagehead(_('New %(classname)s')%{'classname':
-            self.classname.capitalize()}, message)
+        self.pagehead(_('New %(classname)s %(xtra)s')%{
+                'classname': self.classname.capitalize(),
+                'xtra': xtra }, message)
 
         # call the template
         newitem = htmltemplate.NewItemTemplate(self, self.instance.TEMPLATES,
@@ -843,6 +855,12 @@ function help_window(helpurl, width, height) {
         cn = self.classname
         cl = self.db.classes[cn]
         props = parsePropsFromForm(self.db, cl, self.form)
+        if self.form.has_key(':multilink'):
+            link = self.form[':multilink'].value
+            designator, linkprop = link.split(':')
+            xtra = ' for <a href="%s">%s</a>' % (designator, designator)
+        else:
+            xtra = ''
 
         # possibly perform a create
         keys = self.form.keys()
@@ -867,14 +885,15 @@ function help_window(helpurl, width, height) {
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
 
-        self.pagehead(_('New %(classname)s')%{'classname':
-             self.classname.capitalize()}, message)
+        self.pagehead(_('New %(classname)s %(xtra)s')%{
+                'classname': self.classname.capitalize(),
+                'xtra': xtra }, message)
         newitem = htmltemplate.NewItemTemplate(self, self.instance.TEMPLATES,
             self.classname)
         newitem.render(self.form)
         self.pagefoot()
 
-    def showuser(self, message=None):
+    def showuser(self, message=None, num_re=re.compile('^\d+$')):
         '''Display a user page for editing. Make sure the user is allowed
             to edit this node, and also check for password changes.
         '''
@@ -893,7 +912,6 @@ function help_window(helpurl, width, height) {
         # perform any editing
         #
         keys = self.form.keys()
-        num_re = re.compile('^\d+$')
         if keys:
             try:
                 props = parsePropsFromForm(self.db, user, self.form,
@@ -1294,12 +1312,11 @@ class ExtendedClient(Client):
     default_index_columns = ['activity','status','title','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
 
-def parsePropsFromForm(db, cl, form, nodeid=0):
+def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     '''Pull properties for the given class out of the form.
     '''
     props = {}
     keys = form.keys()
-    num_re = re.compile('^\d+$')
     for key in keys:
         if not cl.properties.has_key(key):
             continue
@@ -1375,6 +1392,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.129  2002/06/20 23:52:11  richard
+# Better handling of unauth attempt to edit stuff
+#
 # Revision 1.128  2002/06/12 21:28:25  gmcm
 # Allow form to set user-properties on a Fileclass.
 # Don't assume that a Fileclass is named "files".
