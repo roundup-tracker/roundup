@@ -15,15 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.6 2001-08-07 00:24:43 richard Exp $
-
-import urlparse, os
+# $Id: interfaces.py,v 1.7 2001-10-09 07:38:58 richard Exp $
 
 import instance_config
 from roundup import cgi_client, mailgw 
 
 class Client(cgi_client.Client): 
-    ''' derives basic mail gateway implementation from the standard module, 
+    ''' derives basic CGI implementation from the standard module, 
         with any specific extensions 
     ''' 
     TEMPLATES = instance_config.TEMPLATES
@@ -38,6 +36,9 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.5  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

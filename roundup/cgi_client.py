@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.29 2001-10-09 07:25:59 richard Exp $
+# $Id: cgi_client.py,v 1.30 2001-10-09 07:38:58 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -30,7 +30,6 @@ class NotFound(ValueError):
 
 class Client:
     '''
-
     A note about login
     ------------------
 
@@ -504,7 +503,6 @@ class Client:
 
         # and that the password is correct
         pw = self.db.user.get(uid, 'password')
-        print password, pw, `pw`
         if password != self.db.user.get(uid, 'password'):
             self.make_user_anonymous()
             return self.login(message='Incorrect password')
@@ -649,6 +647,79 @@ class Client:
     def __del__(self):
         self.db.close()
 
+
+class ExtendedClient(Client): 
+    '''Includes pages and page heading information that relate to the
+       extended schema.
+    ''' 
+    showsupport = Client.shownode
+    showtimelog = Client.shownode
+    newsupport = Client.newnode
+    newtimelog = Client.newnode
+
+    default_index_sort = ['-activity']
+    default_index_group = ['priority']
+    default_index_filter = []
+    default_index_columns = ['activity','status','title','assignedto']
+    default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
+
+    def pagehead(self, title, message=None):
+        url = self.env['SCRIPT_NAME'] + '/' #self.env.get('PATH_INFO', '/')
+        machine = self.env['SERVER_NAME']
+        port = self.env['SERVER_PORT']
+        if port != '80': machine = machine + ':' + port
+        base = urlparse.urlunparse(('http', machine, url, None, None, None))
+        if message is not None:
+            message = '<div class="system-msg">%s</div>'%message
+        else:
+            message = ''
+        style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
+        user_name = self.user or ''
+        if self.user == 'admin':
+            admin_links = ' | <a href="list_classes">Class List</a>'
+        else:
+            admin_links = ''
+        if self.user not in (None, 'anonymous'):
+            userid = self.db.user.lookup(self.user)
+            user_info = '''
+<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
+<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">My Support</a> |
+<a href="user%s">My Details</a> | <a href="logout">Logout</a>
+'''%(userid, userid, userid)
+        else:
+            user_info = '<a href="login">Login</a>'
+        if self.user is not None:
+            add_links = '''
+| Add
+<a href="newissue">Issue</a>,
+<a href="newsupport">Support</a>,
+<a href="newuser">User</a>
+'''
+        else:
+            add_links = ''
+        self.write('''<html><head>
+<title>%s</title>
+<style type="text/css">%s</style>
+</head>
+<body bgcolor=#ffffff>
+%s
+<table width=100%% border=0 cellspacing=0 cellpadding=2>
+<tr class="location-bar"><td><big><strong>%s</strong></big></td>
+<td align=right valign=bottom>%s</td></tr>
+<tr class="location-bar">
+<td align=left>All
+<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
+<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
+| Unassigned
+<a href="issue?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
+<a href="support?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
+%s
+%s</td>
+<td align=right>%s</td>
+</table>
+'''%(title, style, message, title, user_name, add_links, admin_links,
+    user_info))
+
 def parsePropsFromForm(cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
     '''
@@ -706,6 +777,10 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.28  2001/10/08 00:34:31  richard
 # Change message was stuffing up for multilinks with no key property.
 #
