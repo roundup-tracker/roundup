@@ -1,8 +1,5 @@
-                                    Roundup
-                                    =======
-
-1. Building Releases
-====================
+Building Releases
+=================
 
 Roundup is currently a source-only release - it has no binary components. I
 want it to stay that way, too.
@@ -10,46 +7,50 @@ want it to stay that way, too.
 This means that we only need to ever build source releases. This is done by
 running:
 
-  0. Edit setup.py and doc/announcement.txt to reflect the new version and
-     appropriate announcments.
-  1. python setup.py clean --all
-  2. Edit setup.py to ensure that all information therein (version, contact
-     information etc) is correct.
-  3. python setup.py sdist --manifest-only
-  4. Check the MANIFEST to make sure that any new files are included. If
-     they are not, edit MANIFEST.in to include them. "Documentation" for
-     MANIFEST.in may be found in disutils.filelist._parse_template_line.
-  5. python setup.py sdist
-     (if you find sdist a little verbose, add "--quiet" to the end of the
-      command)
+1. Edit roundup/__init__.py and doc/announcement.txt to reflect the new
+   version and appropriate announcements.
+2. python setup.py clean --all
+3. Edit setup.py to ensure that all information therein (version, contact
+   information etc) is correct.
+4. python setup.py sdist --manifest-only
+5. Check the MANIFEST to make sure that any new files are included. If
+   they are not, edit MANIFEST.in to include them. "Documentation" for
+   MANIFEST.in may be found in disutils.filelist._parse_template_line.
+6. python setup.py sdist
+   (if you find sdist a little verbose, add "--quiet" to the end of the
+    command)
 
-So, those commands in a nice, cut'n'pasteable form :)
-python setup.py clean --all
-python setup.py sdist --manifest-only
-python setup.py sdist --quiet
+So, those commands in a nice, cut'n'pasteable form::
 
-or, for the sad RedHat users:
-python2 setup.py clean --all
-python2 setup.py sdist --manifest-only
-python2 setup.py sdist --quiet
+ python setup.py clean --all
+ python setup.py sdist --manifest-only
+ python setup.py sdist --quiet
+
+or, for the sad RedHat users::
+
+ python2 setup.py clean --all
+ python2 setup.py sdist --manifest-only
+ python2 setup.py sdist --quiet
 
 
-2. Distributing Releases
-========================
+Distributing Releases
+=====================
 
 Once a release is built, follow these steps:
-  1. FTP the tar.gz from the dist directory to to the "incoming" directory on
-     "upload.sourceforge.net".
-  2. Make a quick release at:
-      http://sourceforge.net/project/admin/qrs.php?package_id=&group_id=31577
-  3. Add a news item at:
-      https://sourceforge.net/news/submit.php?group_id=31577
-     using the top of doc/announcement.txt
-  4. Send doc/announcement.txt to python-announce@python.org
-  5. Notify any other news services as appropriate...
+
+1. FTP the tar.gz from the dist directory to to the "incoming" directory on
+   "upload.sourceforge.net".
+2. Make a quick release at:
+    http://sourceforge.net/project/admin/qrs.php?package_id=&group_id=31577
+3. Add a news item at:
+    https://sourceforge.net/news/submit.php?group_id=31577
+   using the top of doc/announcement.txt
+4. Send doc/announcement.txt to python-announce@python.org
+5. Notify any other news services as appropriate...
 
 
-3. Author
-=========
+Author
+======
+
 richard@users.sourceforge.net
 
