@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.89 2002-09-25 02:10:24 richard Exp $
+$Id: mailgw.py,v 1.90 2002-09-25 05:13:34 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -900,7 +900,7 @@ def parseContent(content, keep_citations, keep_body,
             # see if there's a response somewhere inside this section (ie.
             # no blank line between quoted message and response)
             for line in lines[1:]:
-                if line[0] not in '>|':
+                if line and line[0] not in '>|':
                     break
             else:
                 # we keep quoted bits if specified in the config

@@ -29,6 +29,8 @@ are given with the most recent entry first.
 - replaced the content() callback ickiness with Page Template macro usage
 - changed the default CSS style to be less offensive to some ;)
 - better handling of Page Template compilation errors
+- handle multiple unrelated indexed classes
+- #614188 ] Exception in mailgw.py
 
 
 2002-09-13 0.5.0 beta2
