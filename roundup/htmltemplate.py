@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.57 2002-01-14 23:31:21 richard Exp $
+# $Id: htmltemplate.py,v 1.58 2002-01-15 00:50:03 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -549,7 +549,7 @@ class IndexTemplate(TemplateFunctions):
         # display the filter section
         if (show_display_form and 
                 self.instance.FILTER_POSITION in ('top and bottom', 'top')):
-            w('<form action="index">\n')
+            w('<form action="%s">\n'%self.classname)
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
@@ -631,7 +631,7 @@ class IndexTemplate(TemplateFunctions):
         # display the filter section
         if (show_display_form and hasattr(self.instance, 'FILTER_POSITION') and
                 self.instance.FILTER_POSITION in ('top and bottom', 'bottom')):
-            w('<form action="index">\n')
+            w('<form action="%s">\n'%self.classname)
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
@@ -884,6 +884,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.57  2002/01/14 23:31:21  richard
+# reverted the change that had plain() hyperlinking the link displays -
+# that's what link() is for!
+#
 # Revision 1.56  2002/01/14 07:04:36  richard
 #  . plain rendering of links in the htmltemplate now generate a hyperlink to
 #    the linked node's page.
