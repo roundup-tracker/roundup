@@ -1,4 +1,6 @@
-I'm proud to release this 8th major feature release of Roundup.
+I'm proud to release this 8th major feature release of Roundup. This is
+currently a DEVELOPMENT release, meaning it probably has bugs. If you want
+a STABLE release, use 0.7.x
 
 First up, big thanks go to alexander smishlajev who has done some really
 good work getting the i18n and new configuration components of this release
@@ -11,6 +13,15 @@ together a What's New page:
 
 This is a bugfix release, fixing:
 
+- note about how to run roundup demo in Windows (sf bug 1082090)
+- fix API for templating utils extensions - remove "utils" arg (sf bug 1081981)
+- back_sqlite.py is missing "import time" (sf bug 1081959)
+- fix (list) popup (sf bug 1083570)
+- fix some security assertions (sf bug 1085481)
+- 'roundup-server -S' always writes [trackers] section heading (sf bug 1088878)
+- fix port number as int in mysql connection info (sf bug 1082530)
+- fix setup.py to work with <Python2.3 (sf bug 1082801)
+- fix permissions checks in cgi templating (sf bug 1082755)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

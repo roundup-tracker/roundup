@@ -59,8 +59,12 @@ Fixed:
 - removed safeget() from the API (sf bug 994750)
 - demo tracker is always set up on localhost (sf bug 1049101)
 
+2004-10-06 0.7.11
+Fixed:
+- index args URL generation broken in .10 (sf bug 1096027)
 
-2004-10-?? 0.7.10
+
+2004-10-04 0.7.10
 Fixed:
 - reset ID counters if the database is cleared (thanks William)
 - apply IE caching "fix" to automatically serve up all pages expired
