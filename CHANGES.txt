@@ -1,11 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-10-?? - 0.3.0 ?final?
+2001-10-?? - 0.3.0 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
  . 'unread' to 'chatting' automagic status change was b0rken.
  . Anonymous user lockout wasn't working.
+ . roundup-server now works on Windows, thanks Juergen Hermann.
+ . Fixed install documentation, also thanks Juergen Hermann.
+ . Fixed some URL issues in roundup.cgi, again thanks Juergen Hermann.
 
 2001-10-23 - 0.3.0 pre 3
 Feature:

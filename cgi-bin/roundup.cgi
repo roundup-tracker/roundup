@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.13 2001-10-05 02:23:24 richard Exp $
+# $Id: roundup.cgi,v 1.14 2001-10-27 00:22:35 richard Exp $
 
 # python version check
 import sys
@@ -62,7 +62,7 @@ except:
 def main(out, err):
     import os, string
     import roundup.instance
-    path = string.split(os.environ['PATH_INFO'], '/')
+    path = string.split(os.environ.get('PATH_INFO', '/'), '/')
     instance = path[1]
     os.environ['INSTANCE_NAME'] = instance
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
@@ -88,7 +88,8 @@ def main(out, err):
         w('<html><head><title>Roundup instances index</title><head>\n')
         w('<body><h1>Roundup instances index</h1><ol>\n')
         for instance in ROUNDUP_INSTANCE_HOMES.keys():
-            w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
+            w('<li><a href="%s/%s/index">%s</a>\n'%(
+                os.environ['SCRIPT_NAME'], urllib.quote(instance),
                 instance))
         w('</ol></body></html>')
 
@@ -99,6 +100,8 @@ out, err = sys.stdout, sys.stderr
 try:
     sys.stdout = sys.stderr = LOG
     main(out, err)
+except SystemExit:
+    pass
 except:
     sys.stdout, sys.stderr = out, err
     out.write('Content-Type: text/html\n\n')
@@ -108,6 +111,26 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/10/05 02:23:24  richard
+#  . roundup-admin create now prompts for property info if none is supplied
+#    on the command-line.
+#  . hyperdb Class getprops() method may now return only the mutable
+#    properties.
+#  . Login now uses cookies, which makes it a whole lot more flexible. We can
+#    now support anonymous user access (read-only, unless there's an
+#    "anonymous" user, in which case write access is permitted). Login
+#    handling has been moved into cgi_client.Client.main()
+#  . The "extended" schema is now the default in roundup init.
+#  . The schemas have had their page headings modified to cope with the new
+#    login handling. Existing installations should copy the interfaces.py
+#    file from the roundup lib directory to their instance home.
+#  . Incorrectly had a Bizar Software copyright on the cgitb.py module from
+#    Ping - has been removed.
+#  . Fixed a whole bunch of places in the CGI interface where we should have
+#    been returning Not Found instead of throwing an exception.
+#  . Fixed a deviation from the spec: trying to modify the 'id' property of
+#    an item now throws an exception.
+#
 # Revision 1.12  2001/10/01 05:55:41  richard
 # Fixes to the top-level index
 #
