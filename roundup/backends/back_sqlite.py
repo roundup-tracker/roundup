@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.31 2004-07-27 00:57:18 richard Exp $
+# $Id: back_sqlite.py,v 1.32 2004-07-27 11:11:03 a1s Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -172,7 +172,7 @@ class Database(rdbms_common.Database):
 
                     # re-create and populate the new table
                     self.create_multilink_table(spec, propname)
-                    sql = '''insert into %s (linkid, nodeid) values 
+                    sql = '''insert into %s (linkid, nodeid) values
                         (%s, %s)'''%(tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
                         self.sql(sql, (int(linkid), int(nodeid)))
@@ -328,4 +328,4 @@ class IssueClass(sqliteClass, rdbms_common.IssueClass):
 class FileClass(sqliteClass, rdbms_common.FileClass):
     pass
 
-
+# vim: set et sts=4 sw=4 :
