@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.4 2001-07-27 06:25:35 richard Exp $
+# $Id: hyperdb.py,v 1.5 2001-07-29 04:05:37 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -98,8 +98,13 @@ class Class:
         If an id in a link or multilink property does not refer to a valid
         node, an IndexError is raised.
         """
+        if propvalues.has_key('id'):
+            raise KeyError, '"id" is reserved'
+
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
+
+        # new node's id
         newid = str(self.count() + 1)
 
         # validate propvalues
@@ -194,6 +199,8 @@ class Class:
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
         """
+        if propname == 'id':
+            return nodeid
 #        nodeid = str(nodeid)
         d = self.db.getnode(self.classname, nodeid)
         return d[propname]
@@ -224,8 +231,13 @@ class Class:
         """
         if not propvalues:
             return
+
+        if propvalues.has_key('id'):
+            raise KeyError, '"id" is reserved'
+
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
+
 #        nodeid = str(nodeid)
         node = self.db.getnode(self.classname, nodeid)
         if node.has_key(self.db.RETIRED_FLAG):
@@ -696,7 +708,9 @@ class Class:
 
     def getprops(self):
         """Return a dictionary mapping property names to property objects."""
-        return self.properties
+        d = self.properties.copy()
+        d['id'] = String()
+        return d
 
     def addprop(self, **properties):
         """Add properties to this class.
@@ -753,6 +767,11 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/27 06:25:35  richard
+# Fixed some of the exceptions so they're the right type.
+# Removed the str()-ification of node ids so we don't mask oopsy errors any
+# more.
+#
 # Revision 1.3  2001/07/27 05:17:14  richard
 # just some comments
 #

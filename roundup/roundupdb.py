@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.3 2001-07-23 07:14:41 richard Exp $
+# $Id: roundupdb.py,v 1.4 2001-07-29 04:05:37 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -107,8 +107,9 @@ class Class(hyperdb.Class):
         d['creator'] = hyperdb.Link("user")
         return d
 
-    # New methods:
-
+    #
+    # Detector interface
+    #
     def audit(self, event, detector):
         """Register a detector
         """
@@ -118,6 +119,7 @@ class Class(hyperdb.Class):
         """Register a detector
         """
         self.reactors[event].append(detector)
+
 
 class FileClass(Class):
     def create(self, **propvalues):
@@ -245,6 +247,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/23 07:14:41  richard
+# Moved the database backends off into backends.
+#
 # Revision 1.2  2001/07/22 12:09:32  richard
 # Final commit of Grande Splite
 #
