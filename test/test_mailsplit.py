@@ -1,4 +1,4 @@
-# $Id: test_mailsplit.py,v 1.1 2001-08-03 07:18:22 richard Exp $
+# $Id: test_mailsplit.py,v 1.2 2001-08-03 07:23:09 richard Exp $
 
 import unittest, cStringIO
 
@@ -7,28 +7,25 @@ from roundup.mailgw import parseContent
 class MailsplitTestCase(unittest.TestCase):
     def testPreComment(self):
         s = '''
-i will have to think about this later...not a 1.0.4 thing I don't
-think...too much thought involved!
+blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah
+blah blah blah blah blah blah blah blah blah blah blah!
 
-issue_tracker@bizarsoftware.com.au wrote:
-> Hey, is there a reason why we can't just leave shop_domain and
-> secure_domain blank and user the REQUEST.whatever_the_machine_name_is
-> for most users? And then specify that if you're going to have
-> secure_domain, you've got to have shop_domain too?
+issue_tracker@foo.com wrote:
+> blah blah blah blahblah blahblah blahblah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah?  blah blah blah blah blah
+> blah blah blah blah blah blah blah...  blah blah blah blah.  blah blah
+> blah blah blah blah?  blah blah blah blah blah blah!  blah blah!
 >
 > -------
-> nosy: richard, tejay
-> ___________________________
+> nosy: userfoo, userken
+> _________________________________________________
 > Roundup issue tracker
-> issue_tracker@bizarsoftware.com.au
-> http://dirk.adroit/cgi-bin/roundup.cgi/issue_tracker/
+> issue_tracker@foo.com
+> http://foo.com/cgi-bin/roundup.cgi/issue_tracker/
 
 --
-Terry Kerr (terry@bizarsoftware.com.au)
-Bizar Software Pty Ltd (www.bizarsoftware.com.au)
-Phone: +61 3 9563 4461
-Fax: +61 3 9563 3856
-ICQ: 79303381
+blah blah blah signature
+userfoo@foo.com
 '''
         summary, content = parseContent(s)
         print '\n====\n', summary
@@ -37,28 +34,28 @@ ICQ: 79303381
 
     def testPostComment(self):
         s = '''
-issue_tracker@bizarsoftware.com.au wrote:
-> Hey, is there a reason why we can't just leave shop_domain and
-> secure_domain blank and user the REQUEST.whatever_the_machine_name_is
-> for most users? And then specify that if you're going to have
-> secure_domain, you've got to have shop_domain too?
+issue_tracker@foo.com wrote:
+> blah blah blah blahblah blahblah blahblah blah blah blah blah blah
+> blah
+> blah blah blah blah blah blah blah blah blah?  blah blah blah blah
+> blah
+> blah blah blah blah blah blah blah...  blah blah blah blah.  blah
+> blah
+> blah blah blah blah?  blah blah blah blah blah blah!  blah blah!
 >
 > -------
-> nosy: richard, tejay
-> ___________________________
+> nosy: userfoo, userken
+> _________________________________________________
 > Roundup issue tracker
-> issue_tracker@bizarsoftware.com.au
-> http://dirk.adroit/cgi-bin/roundup.cgi/issue_tracker/
+> issue_tracker@foo.com
+> http://foo.com/cgi-bin/roundup.cgi/issue_tracker/
 
-i will have to think about this later...not a 1.0.4 thing I don't
-think...too much thought involved!
+blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah
+blah blah blah blah blah blah blah blah blah blah blah!
 
 --
-Terry Kerr (terry@bizarsoftware.com.au)
-Bizar Software Pty Ltd (www.bizarsoftware.com.au)
-Phone: +61 3 9563 4461
-Fax: +61 3 9563 3856
-ICQ: 79303381
+blah blah blah signature
+userfoo@foo.com
 '''
         summary, content = parseContent(s)
         print '\n====\n', summary
@@ -85,6 +82,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/08/03 07:18:22  richard
+# Implemented correct mail splitting (was taking a shortcut). Added unit
+# tests. Also snips signatures now too.
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
