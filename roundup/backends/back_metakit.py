@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70 2004-04-02 05:58:45 richard Exp $
+# $Id: back_metakit.py,v 1.71 2004-05-18 15:17:19 wc2so1 Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -339,7 +339,8 @@ class _Database(hyperdb.Database, roundupdb.Database):
     def setid(self, classname, maxid):
         ''' No-op in metakit
         '''
-        pass
+        cls = self.getclass(classname)
+        cls.setid(int(maxid))
 
     def numfiles(self):
         '''Get number of files in storage, even across subdirectories.
@@ -410,6 +411,9 @@ class Class(hyperdb.Class):
         # default is to journal changes
         self.do_journal = 1
 
+    def setid(self, maxid):
+        self.maxid = maxid + 1
+        
     def enableJournalling(self):
         '''Turn journalling on for this class
         '''
