@@ -6,6 +6,7 @@ Feature:
  . #467129 ] Lossage when username=e-mail-address
  . #473123 ] Change message generation for author
  . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
+ . Added Structured Text rendering to htmltemplate, thanks Brad Clements.
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
