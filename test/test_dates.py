@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.34 2004-11-29 14:30:55 a1s Exp $
+# $Id: test_dates.py,v 1.35 2004-11-29 14:34:10 a1s Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -170,7 +170,7 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval(' - 1 d 2:50 ')), '- 1d 2:50')
         ae(str(Interval(' 14:00 ')), '+ 14:00')
         ae(str(Interval(' 0:04:33 ')), '+ 0:04:33')
-        ae(str(Interval(8.*3600)), '+ 08:00')
+        ae(str(Interval(8.*3600)), '+ 8:00')
 
     def testIntervalInitDate(self):
         ae = self.assertEqual
