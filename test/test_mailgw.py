@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.30 2002-09-12 04:21:20 richard Exp $
+# $Id: test_mailgw.py,v 1.31 2002-09-20 05:08:00 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -79,7 +79,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         # check we can load the package
         self.instance = instance.open(self.dirname)
         # and open the database
-        self.db = self.instance.open('sekrit')
+        self.db = self.instance.open('admin')
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
             roles='User')
         self.db.user.create(username='richard', address='richard@test',

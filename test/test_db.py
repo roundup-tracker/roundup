@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.51 2002-09-20 01:20:32 richard Exp $ 
+# $Id: test_db.py,v 1.52 2002-09-20 05:08:00 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -31,7 +31,7 @@ def setupSchema(db, create, module):
         assignable=Boolean(), age=Number(), roles=String())
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
-        comment=String(indexme="yes"))
+        comment=String(indexme="yes"), fooz=Password())
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
         foo=Interval(), files=Multilink("file"), assignedto=Link('user'))
@@ -39,6 +39,7 @@ def setupSchema(db, create, module):
     session.disableJournalling()
     db.post_init()
     if create:
+        user.create(username="admin", roles='Admin')
         status.create(name="unread")
         status.create(name="in-progress")
         status.create(name="testing")
@@ -74,9 +75,9 @@ class anydbmDBTestCase(MyTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = anydbm.Database(config, 'test')
+        self.db = anydbm.Database(config, 'admin')
         setupSchema(self.db, 1, anydbm)
-        self.db2 = anydbm.Database(config, 'test')
+        self.db2 = anydbm.Database(config, 'admin')
         setupSchema(self.db2, 0, anydbm)
 
     def testStringChange(self):
@@ -150,8 +151,8 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.user.get('1', "assignable"), None)
 
     def testNumberChange(self):
-        self.db.user.create(username='foo', age=1)
-        self.assertEqual(1, self.db.user.get('1', 'age'))
+        nid = self.db.user.create(username='foo', age=1)
+        self.assertEqual(1, self.db.user.get(nid, 'age'))
         self.db.user.set('1', age=3)
         self.assertNotEqual(self.db.user.get('1', 'age'), 1)
         self.db.user.set('1', age=1.0)
@@ -305,9 +306,9 @@ class anydbmDBTestCase(MyTestCase):
         # key property
         # 
         # key must be a String
-        ar(TypeError, self.db.user.setkey, 'password')
+        ar(TypeError, self.db.file.setkey, 'fooz')
         # key must exist
-        ar(KeyError, self.db.user.setkey, 'fubar')
+        ar(KeyError, self.db.file.setkey, 'fubar')
 
         #
         # class get
@@ -347,11 +348,11 @@ class anydbmDBTestCase(MyTestCase):
         ar(TypeError, self.db.user.create, username='foo', age='a')
         # invalid boolean value
         ar(TypeError, self.db.user.create, username='foo', assignable='true')
-        self.db.user.create(username='foo')
+        nid = self.db.user.create(username='foo')
         # invalid number value
-        ar(TypeError, self.db.user.set, '3', username='foo', age='a')
+        ar(TypeError, self.db.user.set, nid, username='foo', age='a')
         # invalid boolean value
-        ar(TypeError, self.db.user.set, '3', username='foo', assignable='true')
+        ar(TypeError, self.db.user.set, nid, username='foo', assignable='true')
 
     def testJournals(self):
         self.db.user.create(username="mary")
@@ -364,7 +365,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(1, len(journal))
         (nodeid, date_stamp, journaltag, action, params) = journal[0]
         self.assertEqual(nodeid, '1')
-        self.assertEqual(journaltag, 'test')
+        self.assertEqual(journaltag, self.db.user.lookup('admin'))
         self.assertEqual(action, 'create')
         keys = params.keys()
         keys.sort()
@@ -385,7 +386,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(2, len(journal))
         (nodeid, date_stamp, journaltag, action, params) = journal[1]
         self.assertEqual('1', nodeid)
-        self.assertEqual('test', journaltag)
+        self.assertEqual('1', journaltag)
         self.assertEqual('link', action)
         self.assertEqual(('issue', '1', 'assignedto'), params)
 
@@ -396,7 +397,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(3, len(journal))
         (nodeid, date_stamp, journaltag, action, params) = journal[2]
         self.assertEqual('1', nodeid)
-        self.assertEqual('test', journaltag)
+        self.assertEqual('1', journaltag)
         self.assertEqual('unlink', action)
         self.assertEqual(('issue', '1', 'assignedto'), params)
 
@@ -525,11 +526,11 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        db = anydbm.Database(config, 'test')
+        db = anydbm.Database(config, 'admin')
         setupSchema(db, 1, anydbm)
         self.db = anydbm.Database(config)
         setupSchema(self.db, 0, anydbm)
-        self.db2 = anydbm.Database(config, 'test')
+        self.db2 = anydbm.Database(config, 'admin')
         setupSchema(self.db2, 0, anydbm)
 
     def testExceptions(self):
@@ -549,9 +550,9 @@ class bsddbDBTestCase(anydbmDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = bsddb.Database(config, 'test')
+        self.db = bsddb.Database(config, 'admin')
         setupSchema(self.db, 1, bsddb)
-        self.db2 = bsddb.Database(config, 'test')
+        self.db2 = bsddb.Database(config, 'admin')
         setupSchema(self.db2, 0, bsddb)
 
 class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
@@ -561,11 +562,11 @@ class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        db = bsddb.Database(config, 'test')
+        db = bsddb.Database(config, 'admin')
         setupSchema(db, 1, bsddb)
         self.db = bsddb.Database(config)
         setupSchema(self.db, 0, bsddb)
-        self.db2 = bsddb.Database(config, 'test')
+        self.db2 = bsddb.Database(config, 'admin')
         setupSchema(self.db2, 0, bsddb)
 
 
@@ -576,9 +577,9 @@ class bsddb3DBTestCase(anydbmDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = bsddb3.Database(config, 'test')
+        self.db = bsddb3.Database(config, 'admin')
         setupSchema(self.db, 1, bsddb3)
-        self.db2 = bsddb3.Database(config, 'test')
+        self.db2 = bsddb3.Database(config, 'admin')
         setupSchema(self.db2, 0, bsddb3)
 
 class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
@@ -588,11 +589,11 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        db = bsddb3.Database(config, 'test')
+        db = bsddb3.Database(config, 'admin')
         setupSchema(db, 1, bsddb3)
         self.db = bsddb3.Database(config)
         setupSchema(self.db, 0, bsddb3)
-        self.db2 = bsddb3.Database(config, 'test')
+        self.db2 = bsddb3.Database(config, 'admin')
         setupSchema(self.db2, 0, bsddb3)
 
 
@@ -607,7 +608,7 @@ class gadflyDBTestCase(anydbmDBTestCase):
             shutil.rmtree(config.DATABASE)
         config.GADFLY_DATABASE = ('test', config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = gadfly.Database(config, 'test')
+        self.db = gadfly.Database(config, 'admin')
         setupSchema(self.db, 1, gadfly)
 
     def testIDGeneration(self):
@@ -623,7 +624,7 @@ class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
             shutil.rmtree(config.DATABASE)
         config.GADFLY_DATABASE = ('test', config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        db = gadfly.Database(config, 'test')
+        db = gadfly.Database(config, 'admin')
         setupSchema(db, 1, gadfly)
         self.db = gadfly.Database(config)
         setupSchema(self.db, 0, gadfly)
@@ -636,7 +637,7 @@ class sqliteDBTestCase(anydbmDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = sqlite.Database(config, 'test')
+        self.db = sqlite.Database(config, 'admin')
         setupSchema(self.db, 1, sqlite)
 
     def testIDGeneration(self):
@@ -649,7 +650,7 @@ class sqliteReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        db = sqlite.Database(config, 'test')
+        db = sqlite.Database(config, 'admin')
         setupSchema(db, 1, sqlite)
         self.db = sqlite.Database(config)
         setupSchema(self.db, 0, sqlite)
@@ -664,10 +665,8 @@ class metakitDBTestCase(anydbmDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = metakit.Database(config, 'test')
+        self.db = metakit.Database(config, 'admin')
         setupSchema(self.db, 1, metakit)
-        #self.db2 = metakit.Database(config, 'test')
-        #setupSchema(self.db2, 0, metakit)
 
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
@@ -708,12 +707,10 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        db = metakit.Database(config, 'test')
+        db = metakit.Database(config, 'admin')
         setupSchema(db, 1, metakit)
         self.db = metakit.Database(config)
         setupSchema(self.db, 0, metakit)
-#        self.db2 = metakit.Database(config, 'test')
-#        setupSchema(self.db2, 0, metakit)
 
 def suite():
     l = [
@@ -723,19 +720,18 @@ def suite():
 #    return unittest.TestSuite(l)
 
     try:
-        import sqlite
-        l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
-        l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
-    except:
-        print 'sqlite module not found, skipping gadfly DBTestCase'
-#    return unittest.TestSuite(l)
-
-    try:
         import gadfly
         l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
         l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
     except:
         print 'gadfly module not found, skipping gadfly DBTestCase'
+
+    try:
+        import sqlite
+        l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
+        l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
+    except:
+        print 'sqlite module not found, skipping gadfly DBTestCase'
 
     try:
         import bsddb

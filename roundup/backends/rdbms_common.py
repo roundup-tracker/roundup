@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.8 2002-09-20 01:48:34 richard Exp $
+# $Id: rdbms_common.py,v 1.9 2002-09-20 05:08:00 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -114,6 +114,15 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # commit
         self.conn.commit()
+
+        # figure the "curuserid"
+        if self.journaltag is None:
+            self.curuserid = None
+        elif self.journaltag == 'admin':
+            # admin user may not exist, but always has ID 1
+            self.curuserid = '1'
+        else:
+            self.curuserid = self.user.lookup(self.journaltag)
 
     def reindex(self):
         for klass in self.classes.values():
@@ -461,7 +470,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # add the special props
         node = node.copy()
         node['creation'] = node['activity'] = date.Date()
-        node['creator'] = self.journaltag
+        node['creator'] = self.curuserid
 
         # default the non-multilink columns
         for col, prop in cl.properties.items():
@@ -769,7 +778,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if creator:
             journaltag = creator
         else:
-            journaltag = self.journaltag
+            journaltag = self.curuserid
         if creation:
             journaldate = creation.serialise()
         else:
@@ -1199,7 +1208,7 @@ class Class(hyperdb.Class):
             if d.has_key('creator'):
                 return d['creator']
             else:
-                return self.db.journaltag
+                return self.db.curuserid
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
@@ -1788,7 +1797,7 @@ class Class(hyperdb.Class):
             d['id'] = String()
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
-            d['creator'] = hyperdb.String()
+            d['creator'] = hyperdb.Link('user')
         return d
 
     def addprop(self, **properties):

@@ -48,10 +48,16 @@ class _Database(hyperdb.Database):
     # --- defined in ping's spec
     def __getattr__(self, classname):
         if classname == 'curuserid':
+            if self.journaltag is None:
+                return None
+
             try:
                 self.curuserid = x = int(self.classes['user'].lookup(self.journaltag))
             except KeyError:
-                x = 0
+                if self.journaltag == 'admin':
+                    self.curuserid = x = 1
+                else:
+                    x = 0
             return x
         elif classname == 'transactions':
             return self.dirty
@@ -194,7 +200,7 @@ class Class:
         self.privateprops = { 'id' : hyperdb.String(),
                               'activity' : hyperdb.Date(),
                               'creation' : hyperdb.Date(),
-                              'creator'  : hyperdb.String() }
+                              'creator'  : hyperdb.Link('user') }
         self.auditors = {'create': [], 'set': [], 'retire': []} # event -> list of callables
         self.reactors = {'create': [], 'set': [], 'retire': []} # ditto
         view = self.__getview()
@@ -291,7 +297,7 @@ class Class:
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
         if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
+            raise hyperdb.DatabaseError, 'Database open read-only'
         view = self.getview(1)
         # node must exist & not be retired
         id = int(nodeid)
@@ -341,7 +347,7 @@ class Class:
                 # must be a string or None
                 if value is not None and not isinstance(value, type('')):
                     raise ValueError, 'property "%s" link value be a string'%(
-                        propname)
+                        key)
                 # Roundup sets to "unselected" by passing None
                 if value is None:
                     value = 0   

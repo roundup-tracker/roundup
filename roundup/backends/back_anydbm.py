@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.82 2002-09-20 01:20:31 richard Exp $
+#$Id: back_anydbm.py,v 1.83 2002-09-20 05:08:00 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -73,10 +73,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         os.umask(0002)
 
     def post_init(self):
-        '''Called once the schema initialisation has finished.'''
+        ''' Called once the schema initialisation has finished.
+        '''
         # reindex the db if necessary
         if self.indexer.should_reindex():
             self.reindex()
+
+        # figure the "curuserid"
+        if self.journaltag is None:
+            self.curuserid = None
+        elif self.journaltag == 'admin':
+            # admin user may not exist, but always has ID 1
+            self.curuserid = '1'
+        else:
+            self.curuserid = self.user.lookup(self.journaltag)
 
     def reindex(self):
         for klass in self.classes.values():
@@ -237,11 +247,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'addnode', (self, classname, nodeid, node)
 
-        # add in the "calculated" properties (dupe so we don't affect
-        # calling code's node assumptions)
-        node = node.copy()
-        node['creator'] = self.journaltag
-        node['creation'] = node['activity'] = date.Date()
+        # we'll be supplied these props if we're doing an import
+        if not node.has_key('creator'):
+            # add in the "calculated" properties (dupe so we don't affect
+            # calling code's node assumptions)
+            node = node.copy()
+            node['creator'] = self.curuserid
+            node['creation'] = node['activity'] = date.Date()
 
         self.newnodes.setdefault(classname, {})[nodeid] = 1
         self.cache.setdefault(classname, {})[nodeid] = node
@@ -631,7 +643,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if creator:
             journaltag = creator
         else:
-            journaltag = self.journaltag
+            journaltag = self.curuserid
         if creation:
             journaldate = creation.serialise()
         else:
@@ -949,7 +961,10 @@ class Class(hyperdb.Class):
                 value = pwd
             d[propname] = value
 
-        # extract the extraneous journalling gumpf and nuke it
+        # add the node and journal
+        self.db.addnode(self.classname, newid, d)
+
+        # extract the journalling stuff and nuke it
         if d.has_key('creator'):
             creator = d['creator']
             del d['creator']
@@ -963,8 +978,6 @@ class Class(hyperdb.Class):
         if d.has_key('activity'):
             del d['activity']
 
-        # add the node and journal
-        self.db.addnode(self.classname, newid, d)
         self.db.addjournal(self.classname, newid, 'create', d, creator,
             creation)
         return newid
@@ -1020,9 +1033,19 @@ class Class(hyperdb.Class):
                 raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
-                return self.db.getjournal(self.classname, nodeid)[0][2]
+                num_re = re.compile('^\d+$')
+                value = self.db.getjournal(self.classname, nodeid)[0][2]
+                if num_re.match(value):
+                    return value
+                else:
+                    # old-style "username" journal tag
+                    try:
+                        return self.db.user.lookup(value)
+                    except KeyError:
+                        # user's been retired, return admin
+                        return '1'
             else:
-                return self.db.journaltag
+                return self.db.curuserid
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
@@ -1779,9 +1802,7 @@ class Class(hyperdb.Class):
             d['id'] = String()
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
-            # can't be a link to user because the user might have been
-            # retired since the journal entry was created
-            d['creator'] = hyperdb.String()
+            d['creator'] = hyperdb.Link('user')
         return d
 
     def addprop(self, **properties):

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_schema.py,v 1.11 2002-09-12 04:21:21 richard Exp $ 
+# $Id: test_schema.py,v 1.12 2002-09-20 05:08:00 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -43,7 +43,8 @@ class SchemaTestCase(unittest.TestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = back_anydbm.Database(config, 'test')
+        self.db = back_anydbm.Database(config, 'admin')
+        self.db.post_init()
         self.db.clear()
 
     def tearDown(self):

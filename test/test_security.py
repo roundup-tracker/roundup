@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.4 2002-09-10 00:19:55 richard Exp $
+# $Id: test_security.py,v 1.5 2002-09-20 05:08:00 richard Exp $
 
 import os, unittest, shutil
 
@@ -32,7 +32,7 @@ class PermissionTest(MyTestCase):
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = anydbm.Database(config, 'test')
+        self.db = anydbm.Database(config, 'admin')
         setupSchema(self.db, 1, anydbm)
 
     def testInterfaceSecurity(self):
@@ -66,7 +66,6 @@ class PermissionTest(MyTestCase):
         self.db.security.getPermission('View', 'issue')
 
     def testDBinit(self):
-        self.db.user.create(username="admin", roles='Admin')
         self.db.user.create(username="anonymous", roles='User')
 
     def testAccessControls(self):
