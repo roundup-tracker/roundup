@@ -874,7 +874,7 @@ class HTMLUser(HTMLItem):
         ''' Is the user allowed to View the current class?
             Also check whether this is the current user's info.
         '''
-        return self._db.security.hasPermission('Edit', self._client.userid,
+        return self._db.security.hasPermission('View', self._client.userid,
             self._classname) or (self._nodeid == self._client.userid and
             self._db.user.get(self._client.userid, 'username') != 'anonymous')
 
@@ -914,6 +914,26 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         if isinstance(other, HTMLProperty):
             return cmp(self._value, other._value)
         return cmp(self._value, other)
+
+    def is_edit_ok(self):
+        ''' Is the user allowed to Edit the current class?
+        '''
+        thing = HTMLDatabase(self._client)[self._classname]
+        if self._nodeid:
+            # this is a special-case for the User class where permission's
+            # on a per-item basis :(
+            thing = thing.getItem(self._nodeid)
+        return thing.is_edit_ok()
+
+    def is_view_ok(self):
+        ''' Is the user allowed to View the current class?
+        '''
+        thing = HTMLDatabase(self._client)[self._classname]
+        if self._nodeid:
+            # this is a special-case for the User class where permission's
+            # on a per-item basis :(
+            thing = thing.getItem(self._nodeid)
+        return thing.is_view_ok()
 
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
