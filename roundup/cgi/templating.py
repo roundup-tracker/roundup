@@ -323,7 +323,13 @@ class HTMLClass(HTMLPermissions):
             klass = HTMLUser
         else:
             klass = HTMLItem
-        l = [klass(self._client, self.classname, x) for x in self._klass.list()]
+
+        # get the list and sort it nicely
+        l = self._klass.list()
+        sortfunc = make_sort_function(self._db, self._prop.classname)
+        l.sort(sortfunc)
+
+        l = [klass(self._client, self.classname, x) for x in l]
         return l
 
     def csv(self):
