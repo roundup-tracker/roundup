@@ -38,14 +38,15 @@ class ActionTestCase(unittest.TestCase):
         self.client.form = self.form
 
 class ShowActionTestCase(ActionTestCase):
-    _nocheck = "don't compare exception values (the exception is enough)"
     def assertRaisesMessage(self, exception, callable, message, *args,
-            **kwargs):
+                            **kwargs):
+        """An extension of assertRaises, which also checks the exception
+        message. We need this because we rely on exception messages when
+        redirecting.
+        """
         try:
             callable(*args, **kwargs)
         except exception, msg:
-            if message is self._nocheck:
-                return
             self.assertEqual(str(msg), message)
         else:
             if hasattr(excClass,'__name__'):
@@ -61,7 +62,7 @@ class ShowActionTestCase(ActionTestCase):
         self.assertRaises(ValueError, action.handle)
 
         self.form.value.append(MiniFieldStorage('@type', 'issue'))
-        self.assertRaisesMessage(SeriousError, action.handle, self._nocheck)
+        self.assertRaises(SeriousError, action.handle)
 
         self.form.value.append(MiniFieldStorage('@number', '1'))
         self.assertRaisesMessage(Redirect, action.handle, 'BASE/issue1')
