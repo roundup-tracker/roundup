@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.77 $
+:Version: $Revision: 1.78 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2452,7 +2452,15 @@ very useful, and relatively easy to stop.
                     roles=String(), queries=Multilink("query"),
                     vacation=Boolean())
 
-2. edit your detector ``nosyreactor.py`` so that the ``nosyreaction()``
+2. So that users may edit the vacation flags, add something like the
+   following to your ``user.item`` template::
+
+     <tr>
+      <th>On Vacation</th> 
+      <td tal:content="structure context/vacation/field">vacation</td> 
+     </tr> 
+
+3. edit your detector ``nosyreactor.py`` so that the ``nosyreaction()``
    consists of::
 
     def nosyreaction(db, cl, nodeid, oldvalues):
