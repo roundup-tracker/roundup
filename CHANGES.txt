@@ -18,7 +18,12 @@ Feature:
 - added mod_python interface (see installation.txt)
 
 
-2004-??-?? 0.7.6
+2004-??-?? 0.7.7
+Fixed:
+- ZRoundup's search interface works now (sf bug 994957)
+
+
+2004-07-21 0.7.6
 Fixed:
 - rdbms backend full text search failure after import (sf bug 980314)
 - rdbms backends not filtering correctly on link=None
