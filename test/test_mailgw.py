@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.9 2002-02-05 14:15:29 grubert Exp $
+# $Id: test_mailgw.py,v 1.10 2002-02-12 08:08:55 grubert Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -105,6 +105,15 @@ http://some.useful.url/issue1
 ___________________________________________________
 ''')
 
+    # BUG
+    # def testMultipart(self):
+    # 	'''With more than one part'''
+    #	see MultipartEnc tests: but if there is more than one part
+    #	we return a multipart/mixed and the boundary contains
+    #	the ip address of the test machine. 
+
+    # BUG should test some binary attamchent too.
+	
     def testFollowup(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -296,6 +305,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/02/05 14:15:29  grubert
+#  . respect encodings in non multipart messages.
+#
 # Revision 1.8  2002/02/04 09:40:21  grubert
 #  . add test for multipart messages with first part being encoded.
 #

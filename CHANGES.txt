@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2002-02-?? - ?????
 Fixed:
+ . Clean up mail handling, multipart handling.
  . respect encodings in non multipart messages.
  . makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace
    does it.

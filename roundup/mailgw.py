@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.62 2002-02-05 14:15:29 grubert Exp $
+$Id: mailgw.py,v 1.63 2002-02-12 08:08:55 grubert Exp $
 '''
 
 
@@ -260,6 +260,25 @@ class MailGW:
 
         writer.lastpart()
         return msg
+
+    def get_part_data_decoded(self,part):
+        encoding = part.getencoding()
+        data = None
+        if encoding == 'base64':
+            # BUG: is base64 really used for text encoding or
+            # are we inserting zip files here. 
+            data = binascii.a2b_base64(part.fp.read())
+        elif encoding == 'quoted-printable':
+            # the quopri module wants to work with files
+            decoded = cStringIO.StringIO()
+            quopri.decode(part.fp, decoded)
+            data = decoded.getvalue()
+        elif encoding == 'uuencoded':
+            data = binascii.a2b_uu(part.fp.read())
+        else:
+            # take it as text
+            data = part.fp.read()
+        return data
 
     def handle_message(self, message):
         ''' message - a Message instance
@@ -474,6 +493,32 @@ Unknown address: %s
         #
         content_type =  message.gettype()
         attachments = []
+        # General multipart handling:
+        #   Take the first text/plain part, anything else is considered an 
+        #   attachment.
+        # multipart/mixed: multiple "unrelated" parts.
+        # multipart/signed (rfc 1847): 
+        #   The control information is carried in the second of the two 
+        #   required body parts.
+        #   ACTION: Default, so if content is text/plain we get it.
+        # multipart/encrypted (rfc 1847): 
+        #   The control information is carried in the first of the two 
+        #   required body parts.
+        #   ACTION: Not handleable as the content is encrypted.
+        # multipart/related (rfc 1872, 2112, 2387):
+        #   The Multipart/Related content-type addresses the MIME representation         
+        #   of compound objects.
+        #   ACTION: Default. If we are lucky there is a text/plain.
+        #   TODO: One should use the start part and look for an Alternative
+        #   that is text/plain.
+        # multipart/Alternative (rfc 1872, 1892):
+        #   only in "related" ?
+        # multipart/report (rfc 1892):
+        #   e.g. mail system delivery status reports.
+        #   ACTION: Default. Could be ignored or used for Delivery Notification 
+        #   flagging.
+        # multipart/form-data:
+        #   For web forms only.
         if content_type == 'multipart/mixed':
             # skip over the intro to the first boundary
             part = message.getPart()
@@ -486,32 +531,8 @@ Unknown address: %s
                 # parse it
                 subtype = part.gettype()
                 if subtype == 'text/plain' and not content:
-                    # add all text/plain parts to the message content
-                    # BUG (in code or comment) only add the first one. 
-                    if content is None:
-                        # try name on Content-Type
-                        # maybe add name to non text content ?
-                        name = part.getparam('name')
-                        # assume first part is the mail
-                        encoding = part.getencoding()
-                        if encoding == 'base64':
-                            # BUG: is base64 really used for text encoding or
-                            # are we inserting zip files here. 
-                            data = binascii.a2b_base64(part.fp.read())
-                        elif encoding == 'quoted-printable':
-                            # the quopri module wants to work with files
-                            decoded = cStringIO.StringIO()
-                            quopri.decode(part.fp, decoded)
-                            data = decoded.getvalue()
-                        elif encoding == 'uuencoded':
-                            data = binascii.a2b_uu(part.fp.read())
-                        else:
-                            # take it as text
-                            data = part.fp.read()
-                        content = data
-                    else:
-                        content = content + part.fp.read()
-
+                    # The first text/plain part is the message content.
+                    content = self.get_part_data_decoded(part) 
                 elif subtype == 'message/rfc822':
                     # handle message/rfc822 specially - the name should be
                     # the subject of the actual e-mail embedded here
@@ -520,21 +541,11 @@ Unknown address: %s
                     name = mailmess.getheader('subject')
                     part.fp.seek(i)
                     attachments.append((name, 'message/rfc822', part.fp.read()))
-
                 else:
                     # try name on Content-Type
                     name = part.getparam('name')
                     # this is just an attachment
-                    encoding = part.getencoding()
-                    if encoding == 'base64':
-                        data = binascii.a2b_base64(part.fp.read())
-                    elif encoding == 'quoted-printable':
-                        # the quopri module wants to work with files
-                        decoded = cStringIO.StringIO()
-                        quopri.decode(part.fp, decoded)
-                        data = decoded.getvalue()
-                    elif encoding == 'uuencoded':
-                        data = binascii.a2b_uu(part.fp.read())
+                    data = self.get_part_data_decoded(part) 
                     attachments.append((name, part.gettype(), data))
             if content is None:
                 raise MailUsageError, '''
@@ -553,8 +564,7 @@ not find a text/plain part to use.
                     break
                 # parse it
                 if part.gettype() == 'text/plain' and not content:
-                    # this one's our content
-                    content = part.fp.read()
+                    content = self.get_part_data_decoded(part) 
             if content is None:
                 raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
@@ -568,22 +578,7 @@ not find a text/plain part to use.
 '''
 
         else:
-            encoding = message.getencoding()
-            if encoding == 'base64':
-                # BUG: is base64 really used for text encoding or
-                # are we inserting zip files here. 
-                data = binascii.a2b_base64(message.fp.read())
-            elif encoding == 'quoted-printable':
-                # the quopri module wants to work with files
-                decoded = cStringIO.StringIO()
-                quopri.decode(message.fp, decoded)
-                data = decoded.getvalue()
-            elif encoding == 'uuencoded':
-                data = binascii.a2b_uu(message.fp.read())
-            else:
-                # take it as text
-                data = message.fp.read()
-            content = data
+            content = self.get_part_data_decoded(message) 
  
         summary, content = parseContent(content)
 
@@ -791,6 +786,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.62  2002/02/05 14:15:29  grubert
+#  . respect encodings in non multipart messages.
+#
 # Revision 1.61  2002/02/04 09:40:21  grubert
 #  . add test for multipart messages with first part being encoded.
 #
