@@ -1687,25 +1687,18 @@ class LinkHTMLProperty(HTMLProperty):
         return '\n'.join(l)
 #    def checklist(self, ...)
 
-class MultilinkIterator:
-    def __init__(self, classname, client, values):
-        self.classname = classname
-        self.client = client
-        self.values = values
-        self.id = -1
-    def next(self):
-        '''Return the next item, but skip inaccessible items.'''
-        check = self.client.db.security.hasPermission
-        userid = self.client.userid
-        while 1:
-            self.id += 1
-            if self.id >= len(self.values):
-                raise StopIteration
-            value = self.values[self.id]
-            if check('View', userid, self.classname, itemid=value):
-                return HTMLItem(self.client, self.classname, value)
-    def __iter__(self):
-        return self
+
+def multilinkGenerator(classname, client, values):
+    id = -1
+    check = client.db.security.hasPermission
+    userid = client.userid
+    while 1:
+        id += 1
+        if id >= len(values):
+            raise StopIteration
+        value = values[id]
+        if check('View', userid, classname, itemid=value):
+            yield HTMLItem(client, classname, value)
 
 
 class MultilinkHTMLProperty(HTMLProperty):
@@ -1733,7 +1726,7 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __iter__(self):
         ''' iterate and return a new HTMLItem
         '''
-        return MultilinkIterator(self._prop.classname, self._client,
+        return multilinkGenerator(self._prop.classname, self._client,
             self._value)
 
     def reverse(self):
@@ -1741,7 +1734,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         '''
         l = self._value[:]
         l.reverse()
-        return MultilinkIterator(self._prop.classname, self._client, l)
+        return multilinkGenerator(self._prop.classname, self._client, l)
 
     def sorted(self, property):
         ''' Return this multilink sorted by the given property '''

@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2005-??-?? 0.8.1
+Fixed:
+- replaced MutlilinkIterator with multilinkGenerator (thanks Bob Ippolito)
+
+
 2005-02-16 0.8.0
 Fixed:
 - fix roundup-server log and PID file paths to be absolute
