@@ -25,9 +25,6 @@ Fixed:
   (bug #798659).
 - Remove empty lines before sending strings off to the csv parser 
   (bug #821364).
-- Date arithmetic was utterly broken, and has been for a long time.
-  Date +/- Interval now works, and Date - Date also works (produces
-  an Interval.
 - Centralised conversion of user-input data to hyperdb values (bug #802405,
   bug #817217, rfe #816994)
 
@@ -45,11 +42,14 @@ Cleanup:
 Fixed:
 - Fixed detectors fix incorrectly fixed in bugfix release 0.6.2
 - Added note to upgrading doc for detectors fix in 0.6.2
-- added script to help migrating queries from pre-0.6 trackers
+- Added script to help migrating queries from pre-0.6 trackers
 - Fixed "documentation" of getnodeids in roundup.hyperdb
-- added flush() to DevNull (sf bug #835365)
-- fixed javascript for help window for only one checkbox case
-- handle socket timeout exception (thanks Marcus Priesch)
+- Added flush() to DevNull (sf bug #835365)
+- Fixed javascript for help window for only one checkbox case
+- Date arithmetic was utterly broken, and has been for a long time.
+  Date +/- Interval now works, and Date - Date also works (produces
+  an Interval.
+- Handle socket timeout exception (thanks Marcus Priesch)
 
 
 2003-09-29 0.6.2

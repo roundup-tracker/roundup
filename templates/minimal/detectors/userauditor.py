@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: userauditor.py,v 1.1 2003-06-24 04:16:35 richard Exp $
+#$Id: userauditor.py,v 1.2 2003-11-11 22:25:37 richard Exp $
 
 def audit_user_fields(db, cl, nodeid, newvalues):
     ''' Make sure user properties are valid.
@@ -42,4 +42,3 @@ def init(db):
     db.user.audit('create', audit_user_fields)
 
 # vim: set filetype=python ts=4 sw=4 et si
-#SHA: d4aea7465d4b7ca78de71ed9e73e09ce29b1b111
