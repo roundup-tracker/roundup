@@ -35,6 +35,21 @@
 </tr>
 
 <tr>
+ <th>Topic:</th>
+ <td>
+  <select name="topic">
+   <option value="">don't care</option>
+   <option value="">------------</option>
+   <option tal:repeat="s db/keyword/list" tal:attributes="value s/name"
+           tal:content="s/name">topic to filter on</option>
+  </select>
+ </td>
+ <td><input type="checkbox" name=":columns" value="topic" checked></td>
+ <td><input type="radio" name=":sort" value="topic"></td>
+ <td><input type="radio" name=":group" value="topic"></td>
+</tr>
+
+<tr>
  <th>Created:</th>
  <td><input name="activity"></td>
  <td><input type="checkbox" name=":columns" value="created"></td>

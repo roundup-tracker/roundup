@@ -22,7 +22,7 @@
  <th nowrap>Superseder</th>
  <td>
   <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
-  <span tal:replace="structure python:db.issue.classhelp('id,title', label='list', width=500)" />
+  <span tal:replace="structure python:db.issue.classhelp('id,title')" />
   <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
    <br>View: <a tal:attributes="href string:issue${sup/id}"
                 tal:content="sup/id"></a>
@@ -31,15 +31,18 @@
  <th nowrap>Nosy List</th>
  <td>
   <span tal:replace="structure context/nosy/field" />
-  <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone', label='list', width=500)" />
+  <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone')" />
  </td>
 </tr>
 
 <tr>
  <th nowrap>Assigned To</th>
  <td tal:content="structure context/assignedto/menu">assignedto menu</td>
- <td>&nbsp;</td>
- <td>&nbsp;</td>
+ <th nowrap>Topics</th>
+ <td>
+  <span tal:replace="structure context/topic/field" />
+  <span tal:replace="structure db/keyword/classhelp" />
+ </td>
 </tr>
 
 <tr>

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.27 2002-09-11 01:18:24 richard Exp $
+# $Id: dbinit.py,v 1.28 2002-09-11 02:49:56 richard Exp $
 
 import os
 
@@ -93,7 +93,7 @@ def open(name=None):
     # SECURITY SETTINGS
     #
     # new permissions for this schema
-    for cl in 'issue', 'file', 'msg', 'user':
+    for cl in 'issue', 'file', 'msg', 'user', 'keyword':
         db.security.addPermission(name="Edit", klass=cl,
             description="User is allowed to edit "+cl)
         db.security.addPermission(name="View", klass=cl,
@@ -101,7 +101,7 @@ def open(name=None):
 
     # Assign the access and edit permissions for issue, file and message
     # to regular users now
-    for cl in 'issue', 'file', 'msg':
+    for cl in 'issue', 'file', 'msg', 'keyword':
         p = db.security.getPermission('View', cl)
         db.security.addPermissionToRole('User', p)
         p = db.security.getPermission('Edit', cl)

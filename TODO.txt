@@ -45,8 +45,6 @@ pending web: search "refinement"
 pending web: UNIX init.d script for roundup-server
 pending web: rewritten documentation (can come after the beta though so stuff
              is settled) ... including relevant file names in customisation doc
-pending admin: have "set" command be applicable to all items in a class
-pending admin: add "unset" command
 pending dist: include the HTML in docs
 
 bug web: request.url is incorrect in cgi-bin environments
@@ -78,6 +76,8 @@ done web: fix double-submit by having new-item-submit redirect at end
 done web: daemonify roundup-server (fork, logfile, pidfile)
 done web: modify cgitb to display PageTemplate errors better
 done web: have roundup.cgi pick up instance config from the environment 
+done admin: have "set" command be applicable to all items in a class, and also
+            be able to unset properties (ie. set to None)
 
 rejected instance: the use of non-Python configuration files (ConfigParser)
 

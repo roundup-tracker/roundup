@@ -348,17 +348,24 @@ class HTMLClass:
              for x in self._klass.filter(None, filterspec, sort, group)]
         return l
 
-    def classhelp(self, properties, label='?', width='400', height='400'):
-        '''pop up a javascript window with class help
+    def classhelp(self, properties=None, label='list', width='500',
+            height='400'):
+        ''' Pop up a javascript window with class help
 
-           This generates a link to a popup window which displays the 
-           properties indicated by "properties" of the class named by
-           "classname". The "properties" should be a comma-separated list
-           (eg. 'id,name,description').
+            This generates a link to a popup window which displays the 
+            properties indicated by "properties" of the class named by
+            "classname". The "properties" should be a comma-separated list
+            (eg. 'id,name,description'). Properties defaults to all the
+            properties of a class (excluding id, creator, created and
+            activity).
 
-           You may optionally override the label displayed, the width and
-           height. The popup window will be resizable and scrollable.
+            You may optionally override the label displayed, the width and
+            height. The popup window will be resizable and scrollable.
         '''
+        if properties is None:
+            properties = self._klass.getprops(protected=0).keys()
+            properties.sort()
+            properties = ','.join(properties)
         return '<a href="javascript:help_window(\'%s?:template=help&' \
             ':contentonly=1&properties=%s\', \'%s\', \'%s\')"><b>'\
             '(%s)</b></a>'%(self.classname, properties, width, height, label)

@@ -5,6 +5,7 @@
    <th tal:condition="request/show/priority">Priority</th>
    <th tal:condition="request/show/id">ID</th>
    <th tal:condition="request/show/activity">Activity</th>
+   <th tal:condition="request/show/topic">Topic</th>
    <th tal:condition="request/show/title">Title</th>
    <th tal:condition="request/show/status">Status</th>
    <th tal:condition="request/show/creator">Created&nbsp;By</th>
@@ -22,6 +23,7 @@
    <td tal:condition="request/show/id" tal:content="i/id"></td>
    <td tal:condition="request/show/activity"
        tal:content="i/activity/reldate"></td>
+   <td tal:condition="request/show/topic" tal:content="i/topic"></td>
    <td tal:condition="request/show/title">
     <a tal:attributes="href string:issue${i/id}"
        tal:content="python:str(i.title) or '[no title]'">title</a>

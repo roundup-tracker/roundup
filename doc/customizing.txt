@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.27 $
+:Version: $Revision: 1.28 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -974,7 +974,7 @@ template issue item edit form - from the "issue.item" template)::
   <th nowrap>Superseder</th>
   <td>
    <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
-   <span tal:replace="structure python:db.issue.classhelp('id,title', label='list', width=500)" />
+   <span tal:replace="structure python:db.issue.classhelp('id,title')" />
    <span tal:condition="context/superseder">
     <br>View: <span tal:replace="structure python:context.superseder.link(showid=1)" />
    </span>
@@ -982,7 +982,7 @@ template issue item edit form - from the "issue.item" template)::
   <th nowrap>Nosy List</th>
   <td>
    <span tal:replace="structure context/nosy/field" />
-   <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone', label='list', width=500)" />
+   <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone')" />
   </td>
  </tr>
  
@@ -1293,7 +1293,7 @@ To get everything to line up properly we will put everything in a table,
 and put a nice big header on it so the user has an idea what is happening::
 
     <table class="form">
-     <tr class="strong-header"><td colspan=2>Category</td></tr>
+     <tr><th class="header" colspan=2>Category</th></tr>
 
 Next we need the actual field that the user is going to enter the new
 category. The "context.name.field(size=60)" bit tells roundup to generate a
@@ -1303,7 +1303,7 @@ this is that when the user types something in to the form, a new category
 will be created with that name::
 
     <tr>
-     <td nowrap>Name</td>
+     <th nowrap>Name</th>
      <td tal:content="structure python:context.name.field(size=60)">name</td>
     </tr>
 
@@ -1326,10 +1326,10 @@ So putting it all together, and closing the table and form we get::
   <input type="hidden" name=":required" value="name">
 
   <table class="form">
-   <tr class="strong-header"><td colspan=2>Category</td></tr>
+   <tr><th class="header" colspan=2>Category</th></tr>
 
    <tr>
-    <td nowrap>Name</td>
+    <th nowrap>Name</th>
     <td tal:content="structure python:context.name.field(size=60)">name</td>
    </tr>
 
@@ -1362,8 +1362,7 @@ it is entirely up to your sense of aesthetics::
 
    <th nowrap>Category</th>
    <td><span tal:replace="structure context/category/field" />
-       <span tal:replace="structure python:db.category.classhelp('name',
-             label='list', width=500)" />
+       <span tal:replace="structure db/category/classhelp" />
    </td>
 
 First we define a nice header so that the user knows what the next section
