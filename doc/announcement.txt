@@ -1,16 +1,16 @@
-            Roundup 0.3.0 - an issue tracking system
+            Roundup 0.3.1b1 - an issue tracking system
 
-This release contains several new features which will require migration, so
-please read MIGRATION.txt!
+If you are upgrading from pre-0.3.0, please read MIGRATION.txt.
+
+Roundup requires python 2.1.1 for correct operation. Support for dumbdbm has
+been disabled until python 2.1.2 and 2.2 are released.
 
 Big stuff in this release:
-  - lots of bug fixes, thanks to all users for their great feedback!
-  - much more flexible administration tool
-  - much better handling of errors
-  - more configuration options
-  - CGI login uses cookies instead of basic auth
-  - passwords are encoded in the database
-  - much, much more: see the CHANGES file for details.
+  - Use of transactions to prevent partial data commits
+  - Zope Product front-end
+  - Nicer, more consistent change message generation
+  - Several bug fixes
+  - Much, much more: see the CHANGES file for details.
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/

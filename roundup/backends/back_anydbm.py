@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.18 2001-12-16 10:53:38 richard Exp $
+#$Id: back_anydbm.py,v 1.19 2001-12-17 03:52:48 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -245,6 +245,36 @@ class Database(hyperdb.Database):
         res = res + db.keys()
         return res
 
+
+    #
+    # Files - special node properties
+    #
+    def filename(self, classname, nodeid, property=None):
+        '''Determine what the filename for the given node and optionally property is.
+        '''
+        # TODO: split into multiple files directories
+        if property:
+            return os.path.join(self.dir, 'files', '%s%s.%s'%(classname,
+                nodeid, property))
+        else:
+            # roundupdb.FileClass never specified the property name, so don't include it
+            return os.path.join(self.dir, 'files', '%s%s'%(classname,
+                nodeid))
+
+    def storefile(self, classname, nodeid, property, content):
+        '''Store the content of the file in the database. The property may be None, in
+           which case the filename does not indicate which property is being saved.
+        '''
+        name = self.filename(classname, nodeid, property)
+        open(name + '.tmp', 'wb').write(content)
+        self.transactions.append((self._doStoreFile, (name, )))
+
+    def getfile(self, classname, nodeid, property):
+        '''Store the content of the file in the database.
+        '''
+        return open(self.filename(classname, nodeid, property), 'rb').read()
+
+
     #
     # Journal
     #
@@ -291,11 +321,20 @@ class Database(hyperdb.Database):
         '''
         if DEBUG:
             print 'commit', (self,)
-        # lock the DB
+        # TODO: lock the DB
+
+        # keep a handle to all the database files opened
+        self.databases = {}
+
+        # now, do all the transactions
         for method, args in self.transactions:
-            # TODO: optimise this, duh!
             method(*args)
-        # unlock the DB
+
+        # now close all the database files
+        for db in self.databases.values():
+            db.close()
+        del self.databases
+        # TODO: unlock the DB
 
         # all transactions committed, back to normal
         self.cache = {}
@@ -306,17 +345,31 @@ class Database(hyperdb.Database):
     def _doSaveNode(self, classname, nodeid, node):
         if DEBUG:
             print '_doSaveNode', (self, classname, nodeid, node)
-        db = self.getclassdb(classname, 'c')
+
+        # get the database handle
+        db_name = 'nodes.%s'%classname
+        if self.databases.has_key(db_name):
+            db = self.databases[db_name]
+        else:
+            db = self.databases[db_name] = self.getclassdb(classname, 'c')
+
         # now save the marshalled data
         db[nodeid] = marshal.dumps(node)
-        db.close()
 
     def _doSaveJournal(self, classname, nodeid, action, params):
         if DEBUG:
             print '_doSaveJournal', (self, classname, nodeid, action, params)
         entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
             params)
-        db = self._opendb('journals.%s'%classname, 'c')
+
+        # get the database handle
+        db_name = 'journals.%s'%classname
+        if self.databases.has_key(db_name):
+            db = self.databases[db_name]
+        else:
+            db = self.databases[db_name] = self._opendb(db_name, 'c')
+
+        # now insert the journal entry
         if db.has_key(nodeid):
             s = db[nodeid]
             l = marshal.loads(db[nodeid])
@@ -324,13 +377,20 @@ class Database(hyperdb.Database):
         else:
             l = [entry]
         db[nodeid] = marshal.dumps(l)
-        db.close()
+
+    def _doStoreFile(self, name, **databases):
+        # the file is currently ".tmp" - move it to its real name to commit
+        os.rename(name+".tmp", name)
 
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
         if DEBUG:
             print 'rollback', (self, )
+        for method, args in self.transactions:
+            # delete temporary files
+            if method == self._doStoreFile:
+                os.remove(args[0]+".tmp")
         self.cache = {}
         self.dirtynodes = {}
         self.newnodes = {}
@@ -338,6 +398,10 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.18  2001/12/16 10:53:38  richard
+#take a copy of the node dict so that the subsequent set
+#operation doesn't modify the oldvalues structure
+#
 #Revision 1.17  2001/12/14 23:42:57  richard
 #yuck, a gdbm instance tests false :(
 #I've left the debugging code in - it should be removed one day if we're ever

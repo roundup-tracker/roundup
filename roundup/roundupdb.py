@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.33 2001-12-16 10:53:37 richard Exp $
+# $Id: roundupdb.py,v 1.34 2001-12-17 03:52:48 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -188,28 +188,14 @@ class FileClass(Class):
         content = propvalues['content']
         del propvalues['content']
         newid = Class.create(self, **propvalues)
-        self.setcontent(self.classname, newid, content)
+        self.db.storefile(self.classname, newid, None, content)
         return newid
-
-    def filename(self, classname, nodeid):
-        # TODO: split into multiple files directories
-        return os.path.join(self.db.dir, 'files', '%s%s'%(classname, nodeid))
-
-    def setcontent(self, classname, nodeid, content):
-        ''' set the content file for this file
-        '''
-        open(self.filename(classname, nodeid), 'wb').write(content)
-
-    def getcontent(self, classname, nodeid):
-        ''' get the content file for this file
-        '''
-        return open(self.filename(classname, nodeid), 'rb').read()
 
     def get(self, nodeid, propname, default=_marker):
         ''' trap the content propname and get it from the file
         '''
         if propname == 'content':
-            return self.getcontent(self.classname, nodeid)
+            return self.db.getfile(self.classname, nodeid, None)
         if default is not _marker:
             return Class.get(self, nodeid, propname, default)
         else:
@@ -506,6 +492,10 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2001/12/16 10:53:37  richard
+# take a copy of the node dict so that the subsequent set
+# operation doesn't modify the oldvalues structure
+#
 # Revision 1.32  2001/12/15 23:48:35  richard
 # Added ROUNDUPDBSENDMAILDEBUG so one can test the sendmail method without
 # actually sending mail :)

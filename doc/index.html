@@ -2,7 +2,7 @@
 <title>Roundup: an Issue-Tracking System for Knowledge Workers</title>
 </head><body>
 
-<h1 align=center>Roundup (0.3.0)</h1>
+<h1 align=center>Roundup (0.3.1)</h1>
 <h3 align=center>An Issue-Tracking System for Knowledge Workers</h2>
 
 <h1>Contents</h1>
@@ -46,12 +46,14 @@
 
 <h2><a name="requires">Prerequisites</a></h2>
 
-<dl>
-	<dd>Python 2.1.1 is required for the correct operation of roundup
-</dl>
+<p>
+Python 2.1.1 is required for the correct operation of roundup.
+</p>
 
+<p>
 Download the latest version from
 <a href="http://www.python.org/">http://www.python.org/</a>.
+</p>
 
 
 
@@ -342,96 +344,176 @@ Usage:
 </table>
 
 <p>
-<table border=1 cellspacing=0>
+<table width=100% border=1 cellspacing=0>
 <tr><th colspan=2>Command Help</th></tr>
-<tr><td valign=top><strong>history</strong></td>
-    <td><tt>history designator</tt><p>
-    Lists the journal entries for the node identified by the designator.
-</td></tr>
-    
-<tr><td valign=top><strong>find</strong></td>
-    <td><tt>find classname propname=value ...</tt><p>
-    Find the nodes of the given class with a given property value. The
-    value may be either the nodeid of the linked node, or its key value.
-</td></tr>
-    
-<tr><td valign=top><strong>list</strong></td>
-    <td><tt>list classname [property]</tt><p>
-    Lists all instances of the given class along. If the property is not
-    specified, the  "label" property is used. The label property is tried
-    in order: the key, "name", "title" and then the first property,
-    alphabetically.
-</td></tr>
-    
-<tr><td valign=top><strong>retire</strong></td>
-    <td><tt>retire designator[,designator]*</tt><p>
-    This action indicates that a particular node is not to be retrieved by
-    the list or find commands, and its key value may be re-used.
-</td></tr>
-    
-<tr><td valign=top><strong>create</strong></td>
-    <td><tt>create classname property=value ...</tt><p>
-    This creates a new entry of the given class using the property
-    name=value arguments provided on the command line after the "create"
-    command.
-</td></tr>
-    
-<tr><td valign=top><strong>get</strong></td>
-    <td><tt>get property designator[,designator]*</tt><p>
-    Retrieves the property value of the nodes specified by the designators.
-</td></tr>
-    
-<tr><td valign=top><strong>spec</strong></td>
-    <td><tt>spec classname</tt><p>
-    This lists the properties for a given class.
-</td></tr>
-    
-<tr><td valign=top><strong>set</strong></td>
-    <td><tt>set designator[,designator]* propname=value ...</tt><p>
-    Sets the property to the value for all designators given.
-</td></tr>
 
-<tr><td valign=top><strong>init</strong></td>
-    <td><tt>init [template [backend [admin password]]]</tt><p>
-    The command will prompt for the instance home directory (if not supplied
-    through INSTANCE_HOME or the -i option. The template, backend and admin
-    password may be specified on the command-line as arguments, in that order.
-</td></tr>
+
+<tr><td valign=top><strong>commit</strong></td>
+    <td><tt>Usage: commit</tt><p>
+<pre>
+The changes made during an interactive session are not
+automatically written to the database - they must be committed
+using this command.
+
+One-off commands on the command-line are automatically committed if
+they are successful.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>create</strong></td>
+    <td><tt>Usage: create classname property=value ...</tt><p>
+<pre>
+This creates a new entry of the given class using the property
+name=value arguments provided on the command line after the "create"
+command.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>display</strong></td>
+    <td><tt>Usage: display designator</tt><p>
+<pre>
+This lists the properties and their associated values for the given
+node.
+
+</pre></td></tr>
+
 
 <tr><td valign=top><strong>export</strong></td>
-    <td><tt>export class[,class] destination_dir</tt><p>
-    This action exports the current data from the database into
-    comma-separated files that are placed in the nominated destination
-    directory. The journals are not exported.
-</td></tr>
+    <td><tt>Usage: export class[,class] destination_dir</tt><p>
+<pre>
+This action exports the current data from the database into
+tab-separated-value files that are placed in the nominated destination
+directory. The journals are not exported.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>find</strong></td>
+    <td><tt>Usage: find classname propname=value ...</tt><p>
+<pre>
+Find the nodes of the given class with a given link property value. The
+value may be either the nodeid of the linked node, or its key value.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>get</strong></td>
+    <td><tt>Usage: get property designator[,designator]*</tt><p>
+<pre>
+Retrieves the property value of the nodes specified by the designators.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>help</strong></td>
+    <td><tt>Usage: help topic</tt><p>
+<pre>
+commands  -- list commands
+<command> -- help specific to a command
+initopts  -- init command options
+all       -- all available help
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>history</strong></td>
+    <td><tt>Usage: history designator</tt><p>
+<pre>
+Lists the journal entries for the node identified by the designator.
+
+</pre></td></tr>
+
 
 <tr><td valign=top><strong>import</strong></td>
-    <td><tt>import class file</tt><p>
-    The file must define the same properties as the class (including having
-    a "header" line with those property names.)
-</td></tr>
-    
-<tr><td valign=top><strong>freshen</strong></td>
-    <td><tt>freshen</tt><p>
-        <strong>**DO NOT USE**</strong>
-        <p>
-    This currently kills databases!!!!
-    <p>
-    This action should generally not be used. It reads in an instance
-    database and writes it again. In the future, is may also update
-    instance code to account for changes in templates. It's probably wise
-    not to use it anyway. Until we're sure it won't break things...
-</td></tr>
+    <td><tt>Usage: import class file</tt><p>
+<pre>
+The file must define the same properties as the class (including having
+a "header" line with those property names.) The new nodes are added to
+the existing database - if you want to create a new database using the
+imported data, then create a new database (or, tediously, retire all
+the old data.)
 
-<tr><td><strong>help</strong></td>
-    <td><tt>help [command]</tt><p>
-    Short help about roundup-admin or the specific command.
-    </td></tr>
+</pre></td></tr>
 
-<tr><td><strong>morehelp</strong></td>
-    <td><tt>morehelp</tt><p>
-    All available help from the roundup-admin tool.
-    </td></tr>
+
+<tr><td valign=top><strong>initialise</strong></td>
+    <td><tt>Usage: initialise [template [backend [admin password]]]</tt><p>
+<pre>
+The command will prompt for the instance home directory (if not supplied
+through INSTANCE_HOME or the -i option. The template, backend and admin
+password may be specified on the command-line as arguments, in that
+order.
+
+See also initopts help.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>list</strong></td>
+    <td><tt>Usage: list classname [property]</tt><p>
+<pre>
+Lists all instances of the given class. If the property is not
+specified, the  "label" property is used. The label property is tried
+in order: the key, "name", "title" and then the first property,
+alphabetically.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>retire</strong></td>
+    <td><tt>Usage: retire designator[,designator]*</tt><p>
+<pre>
+This action indicates that a particular node is not to be retrieved by
+the list or find commands, and its key value may be re-used.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>rollback</strong></td>
+    <td><tt>Usage: rollback</tt><p>
+<pre>
+The changes made during an interactive session are not
+automatically written to the database - they must be committed
+manually. This command undoes all those changes, so a commit
+immediately after would make no changes to the database.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>set</strong></td>
+    <td><tt>Usage: set designator[,designator]* propname=value ...</tt><p>
+<pre>
+Sets the property to the value for all designators given.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>specification</strong></td>
+    <td><tt>Usage: specification classname</tt><p>
+<pre>
+This lists the properties for a given class.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>table</strong></td>
+    <td><tt>Usage: table classname [property[,property]*]</tt><p>
+<pre>
+Lists all instances of the given class. If the properties are not
+specified, all properties are displayed. By default, the column widths
+are the width of the property names. The width may be explicitly defined
+by defining the property as "name:width". For example::
+  roundup> table priority id,name:10
+  Id Name
+  1  fatal-bug 
+  2  bug       
+  3  usability 
+  4  feature   
+
+</pre></td></tr>
+
 </table>
 
 <p>
@@ -1197,7 +1279,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.21 2001-12-13 00:20:01 richard Exp $
+$Id: index.html,v 1.22 2001-12-17 03:52:47 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>

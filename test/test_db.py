@@ -15,12 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.11 2001-12-10 23:17:20 richard Exp $ 
+# $Id: test_db.py,v 1.12 2001-12-17 03:52:48 richard Exp $ 
 
 import unittest, os, shutil
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, Class, DatabaseError
+from roundup.roundupdb import FileClass
 
 def setupSchema(db, create):
     status = Class(db, "status", name=String())
@@ -33,6 +34,7 @@ def setupSchema(db, create):
     Class(db, "user", username=String(), password=Password())
     Class(db, "issue", title=String(), status=Link("status"),
         nosy=Multilink("user"))
+    FileClass(db, "file", name=String(), type=String())
     db.commit()
 
 class MyTestCase(unittest.TestCase):
@@ -46,7 +48,7 @@ class anydbmDBTestCase(MyTestCase):
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
+        os.makedirs('_test_dir/files')
         self.db = anydbm.Database('_test_dir', 'test')
         setupSchema(self.db, 1)
 
@@ -73,6 +75,11 @@ class anydbmDBTestCase(MyTestCase):
 
     def testTransactions(self):
         num_issues = len(self.db.issue.list())
+        files_dir = os.path.join('_test_dir', 'files')
+        if os.path.exists(files_dir):
+            num_files = len(os.listdir(files_dir))
+        else:
+            num_files = 0
         self.db.issue.create(title="don't commit me!", status='1')
         self.assertNotEqual(num_issues, len(self.db.issue.list()))
         self.db.rollback()
@@ -83,6 +90,18 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(num_issues, len(self.db.issue.list()))
         self.db.rollback()
         self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.file.create(name="test", type="text/plain", content="hi")
+        self.db.rollback()
+        self.assertEqual(num_files, len(os.listdir(files_dir)))
+        self.db.file.create(name="test", type="text/plain", content="hi")
+        self.db.commit()
+        self.assertNotEqual(num_files, len(os.listdir(files_dir)))
+        num_files2 = len(os.listdir(files_dir))
+        self.db.file.create(name="test", type="text/plain", content="hi")
+        self.db.rollback()
+        self.assertNotEqual(num_files, len(os.listdir(files_dir)))
+        self.assertEqual(num_files2, len(os.listdir(files_dir)))
+
 
     def testExceptions(self):
         # this tests the exceptions that should be raised
@@ -156,7 +175,7 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
+        os.makedirs('_test_dir/files')
         db = anydbm.Database('_test_dir', 'test')
         setupSchema(db, 1)
         self.db = anydbm.Database('_test_dir')
@@ -178,7 +197,7 @@ class bsddbDBTestCase(anydbmDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
+        os.makedirs('_test_dir/files')
         self.db = bsddb.Database('_test_dir', 'test')
         setupSchema(self.db, 1)
 
@@ -188,7 +207,7 @@ class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
+        os.makedirs('_test_dir/files')
         db = bsddb.Database('_test_dir', 'test')
         setupSchema(db, 1)
         self.db = bsddb.Database('_test_dir')
@@ -201,7 +220,7 @@ class bsddb3DBTestCase(anydbmDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
+        os.makedirs('_test_dir/files')
         self.db = bsddb3.Database('_test_dir', 'test')
         setupSchema(self.db, 1)
 
@@ -211,7 +230,7 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
+        os.makedirs('_test_dir/files')
         db = bsddb3.Database('_test_dir', 'test')
         setupSchema(db, 1)
         self.db = bsddb3.Database('_test_dir')
@@ -241,6 +260,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/12/10 23:17:20  richard
+# Added transaction tests to test_db
+#
 # Revision 1.10  2001/12/03 21:33:39  richard
 # Fixes so the tests use commit and not close
 #
