@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.92 2003-02-18 03:58:18 richard Exp $
+# $Id: client.py,v 1.93 2003-02-18 04:56:29 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -821,13 +821,25 @@ class Client:
         ''' Use the props in all_props to perform edit and creation, then
             use the link specs in all_links to do linking.
         '''
+#        print '='*75
+#        print 'ALL_PROPS', all_props
         # figure dependencies and re-work links
         deps = {}
         links = {}
         for cn, nodeid, propname, vlist in all_links:
+            if not all_props.has_key((cn, nodeid)):
+                # link item to link to doesn't (and won't) exist
+                continue
             for value in vlist:
+                if not all_props.has_key(value):
+                    # link item to link to doesn't (and won't) exist
+                    continue
                 deps.setdefault((cn, nodeid), []).append(value)
                 links.setdefault(value, []).append((cn, nodeid, propname))
+
+#        print '*'*75
+#        print 'LINKS', links
+#        print 'DEPS', deps
 
         # figure chained dependencies ordering
         order = []
@@ -839,10 +851,12 @@ class Client:
                 if done.has_key(needed):
                     continue
                 tlist = deps.get(needed, [])
+#                print 'SOLVING', needed, tlist
                 for target in tlist:
                     if not done.has_key(target):
                         break
                 else:
+#                    print 'DONE', needed
                     done[needed] = 1
                     order.append(needed)
                     change = 1
@@ -1558,22 +1572,7 @@ class Client:
             if not props.get('content', ''):
                 del all_props[(cn, id)]
 
-        # clean up the links, removing ones that aren't possible
-        l = []
-        for entry in all_links:
-            (cn, nodeid, propname, destlist) = entry
-            source = (cn, nodeid)
-            if not all_props.has_key(source) or not all_props[source]:
-                # nothing to create - don't try to link
-                continue
-                # nothing to create - don't try to link
-                continue
-            for dest in destlist[:]:
-                if not all_props.has_key(dest) or not all_props[dest]:
-                    destlist.remove(dest)
-            l.append(entry)
-
-        return all_props, l
+        return all_props, all_links
 
 def fixNewlines(text):
     ''' Homogenise line endings.
