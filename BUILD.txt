@@ -28,6 +28,11 @@ python setup.py clean --all
 python setup.py sdist --manifest-only
 python setup.py sdist --quiet
 
+or, for the sad RedHat users:
+python2 setup.py clean --all
+python2 setup.py sdist --manifest-only
+python2 setup.py sdist --quiet
+
 
 2. Distributing Releases
 ========================
