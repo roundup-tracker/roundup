@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.2 2004-07-25 12:44:16 a1s Exp $
+# $Id: configuration.py,v 1.3 2004-07-25 13:12:59 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -9,7 +9,7 @@ import os
 import time
 import ConfigParser
 
-from roundup import instance, rlog
+from roundup import rlog
 # XXX i don't think this module needs string translation, does it?
 
 ### Exceptions
@@ -543,9 +543,10 @@ class Config:
             try:
                 import logging
                 _logging = logging
-            except ImportError, msg:
-                raise instance.TrackerError, \
-                    'Python logging module unavailable: %s' % msg
+            except ImportError, _err:
+                _option = self._get_option("LOGGING_CONFIG")
+                raise OptionValueError(_option, _file,
+                    "Python logging module is not available: %s" % _err)
             _logging.fileConfig(_file)
         else:
             _logging = rlog.BasicLogging()
