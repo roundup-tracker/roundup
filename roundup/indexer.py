@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.8 2002-07-09 21:53:38 gmcm Exp $
+#$Id: indexer.py,v 1.9 2002-07-14 06:11:16 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -41,11 +41,16 @@ class Indexer:
         self.changed = 0
 
         # see if we need to reindex because of a change in code
+        version = os.path.join(self.indexdb_path, 'version')
         if (not os.path.exists(self.indexdb_path) or
-                not os.path.exists(os.path.join(self.indexdb_path, 'version'))):
-            # TODO: if the version file exists (in the future) we'll want to
-            # check the value in it - for now the file itself is a flag
+                not os.path.exists(version)):
+            # for now the file itself is a flag
             self.force_reindex()
+        elif os.path.exists(version):
+            version = open(version).read()
+            # check the value and reindex if it's not the latest
+            if version != '1':
+                self.force_reindex()
 
     def force_reindex(self):
         '''Force a reindex condition
@@ -244,8 +249,8 @@ class Indexer:
             try:
                 f = open(self.indexdb + segment, 'rb')
             except IOError, error:
-                if error.errno != errno.ENOENT:
-                    raise
+                # probably just nonexistent segment index file
+                if error.errno != errno.ENOENT: raise
             else:
                 pickle_str = zlib.decompress(f.read())
                 f.close()
@@ -275,10 +280,9 @@ class Indexer:
         for segment in self.segments:
             try:
                 os.remove(self.indexdb + segment)
-            except OSError:
+            except OSError, error:
                 # probably just nonexistent segment index file
-                # TODO: make sure it's an EEXIST
-                pass
+                if error.errno != errno.EEXIST: raise
 
         # First write the much simpler filename/fileid dictionaries
         dbfil = {'WORDS':None, 'FILES':self.files, 'FILEIDS':self.fileids}
@@ -329,6 +333,12 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.8  2002/07/09 21:53:38  gmcm
+#Optimize Class.find so that the propspec can contain a set of ids to match.
+#This is used by indexer.search so it can do just one find for all the index matches.
+#This was already confusing code, but for common terms (lots of index matches),
+#it is enormously faster.
+#
 #Revision 1.7  2002/07/09 21:38:43  richard
 #Only save the index if the thing is loaded and changed. Also, don't load
 #the index just for a save.
