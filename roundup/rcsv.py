@@ -5,12 +5,10 @@ needed by Roundup using the Python 2.3 csv module.
 """
 
 from roundup.i18n import _
-error = """Sorry, you need a module compatible with the csv module.
-Either upgrade your Python to 2.3 or later, or get and install
-the csv module from:
+error = """
+Sorry, you need a csv module. Either upgrade your Python to 2.3 or later,
+or get and install the csv module from:
 http://www.object-craft.com.au/projects/csv/
-
-These two csv modules are different but Roundup can use either.
 """
 try:
     import csv
