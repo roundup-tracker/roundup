@@ -2,22 +2,21 @@
 #
 # Copyright (c) 2001, 2002 Zope Corporation and Contributors.
 # All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
-# FOR A PARTICULAR PURPOSE
-# 
+# FOR A PARTICULAR PURPOSE.
+#
 ##############################################################################
-"""Parse XML and compile to TALInterpreter intermediate code.
 """
-__docformat__ = 'restructuredtext'
+Parse XML and compile to TALInterpreter intermediate code.
+"""
 
-import string
 from XMLParser import XMLParser
-from TALDefs import *
+from TALDefs import XML_NS, ZOPE_I18N_NS, ZOPE_METAL_NS, ZOPE_TAL_NS
 from TALGenerator import TALGenerator
 
 class TALParser(XMLParser):
@@ -59,13 +58,15 @@ class TALParser(XMLParser):
             # attrs is a dict of {name: value}
             attrlist = attrs.items()
             attrlist.sort() # For definiteness
-        name, attrlist, taldict, metaldict = self.process_ns(name, attrlist)
+        name, attrlist, taldict, metaldict, i18ndict \
+              = self.process_ns(name, attrlist)
         attrlist = self.xmlnsattrs() + attrlist
-        self.gen.emitStartElement(name, attrlist, taldict, metaldict)
+        self.gen.emitStartElement(name, attrlist, taldict, metaldict, i18ndict)
 
     def process_ns(self, name, attrlist):
         taldict = {}
         metaldict = {}
+        i18ndict = {}
         fixedattrlist = []
         name, namebase, namens = self.fixname(name)
         for key, value in attrlist:
@@ -78,10 +79,14 @@ class TALParser(XMLParser):
             elif ns == 'tal':
                 taldict[keybase] = value
                 item = item + ("tal",)
+            elif ns == 'i18n':
+                assert 0, "dealing with i18n: " + `(keybase, value)`
+                i18ndict[keybase] = value
+                item = item + ('i18n',)
             fixedattrlist.append(item)
-        if namens in ('metal', 'tal'):
+        if namens in ('metal', 'tal', 'i18n'):
             taldict['tal tag'] = namens
-        return name, fixedattrlist, taldict, metaldict
+        return name, fixedattrlist, taldict, metaldict, i18ndict
 
     def xmlnsattrs(self):
         newlist = []
@@ -90,7 +95,7 @@ class TALParser(XMLParser):
                 key = "xmlns:" + prefix
             else:
                 key = "xmlns"
-            if uri in (ZOPE_METAL_NS, ZOPE_TAL_NS):
+            if uri in (ZOPE_METAL_NS, ZOPE_TAL_NS, ZOPE_I18N_NS):
                 item = (key, uri, "xmlns")
             else:
                 item = (key, uri)
@@ -100,7 +105,7 @@ class TALParser(XMLParser):
 
     def fixname(self, name):
         if ' ' in name:
-            uri, name = string.split(name, ' ')
+            uri, name = name.split(' ')
             prefix = self.nsDict[uri]
             prefixed = name
             if prefix:
@@ -110,6 +115,8 @@ class TALParser(XMLParser):
                 ns = 'tal'
             elif uri == ZOPE_METAL_NS:
                 ns = 'metal'
+            elif uri == ZOPE_I18N_NS:
+                ns = 'i18n'
             return (prefixed, name, ns)
         return (name, name, None)
 
