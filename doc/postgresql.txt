@@ -29,36 +29,6 @@ you wish to test against a different database.
 The test database will be called "rounduptest".
 
 
-Additional configuration
-========================
-
-To initialise and use PostgreSQL database roundup's configuration file
-(``config.py`` in the tracker's home directory) should be ammended with
-the following constants (substituting real values, obviously)::
-
-    POSTGRESQL_DATABASE = {'database': 'rounduptest'}
-
-Note that it's usually a good idea to explicitly specify the user which is
-to be used access the database too, to avoid permissions problems. If
-postgresql is not local, or a different user is to be used, then more
-information may be supplied::
-
-    POSTGRESQL_DATABASE = {
-        'host': 'localhost', 'port': 5432,
-        'database': 'roundup'
-        'user': 'roundup', 'password': 'roundup',
-    }
-
-Also note that you can leave some values out of
-``POSTGRESQL_DATABASE``: 'host' and 'port' are not necessary when
-connecting to a local database and 'password'
-is optional if postgres trusts local connections.
-
-The user specified in ``user`` must have rights to create a new database
-and to connect to the "template1" database, used while initializing roundup.
-
-
-
 Credit
 ======
 
