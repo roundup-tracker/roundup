@@ -91,7 +91,6 @@ You are not allowed to view this page.
  </tr>
 </table>
 
-<tal:block tal:condition="python:context.id and context.is_view_ok()">
- <tal:block tal:replace="structure context/history" />
-</tal:block>
+<tal:block tal:condition="python:context.id and context.is_view_ok()"
+           tal:replace="structure context/history" />
 

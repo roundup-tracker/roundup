@@ -30,12 +30,10 @@ pending mailgw    Allow multiple email addresses at one gw with different
                    vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
 
 pending project   switch to a Roundup instance for Roundup bug/feature tracking
-pending project   have the demo allow anonymous login
 pending security  an LDAP user database implementation
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
 pending security  use digital signatures in mailgw
-pending security  submission protection (ok, I've forgotten what this is)
 pending web       I18N
 pending web       Better message summary display (feature request #520244)
 pending web       Navigating around the issues (feature request #559149)
@@ -48,9 +46,6 @@ pending web       re-enable auth by basic http auth
 pending web       search "refinement" - pre-fill the search page with the
                   current search parameters
 pending web       UNIX init.d script for roundup-server
-pending web       rewritten documentation (can come after the beta though so
-                  stuff is settled) ... including relevant file names in
-                  customisation doc
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
 
