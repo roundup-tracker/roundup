@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.152 2002-07-31 22:04:14 richard Exp $
+# $Id: cgi_client.py,v 1.153 2002-07-31 22:40:50 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -764,6 +764,7 @@ function help_window(helpurl, width, height) {
             filterspec = self.index_filterspec(filter, queries.get(self.nodeid, 'klass'))
             if self.form.has_key('search_text'):
                 search_text = self.form['search_text'].value
+                search_text = urllib.quote(search_text)
             else:
                 search_text = ''
             if self.form.has_key(':pagesize'):
@@ -782,15 +783,9 @@ function help_window(helpurl, width, height) {
             url += '&:pagesize=%s' % pagesize
             if search_text:
                 url += '&search_text=%s' % search_text
-            qname = self.form['name'].value
-            chgd = []
-            if qname != queries.get(self.nodeid, 'name'):
-                chgd.append('name')
             if url != queries.get(self.nodeid, 'url'):
-                chgd.append('url')
-            if chgd:
-                queries.set(self.nodeid, name=qname, url=url)
-                message = _('%(changes)s edited ok')%{'changes': ', '.join(chgd)}
+                queries.set(self.nodeid, url=url)
+                message = _('url edited ok')
             else:
                 message = _('nothing changed')
         else:
@@ -1357,7 +1352,7 @@ function help_window(helpurl, width, height) {
         # re-open the database for real, using the user
         self.opendb(self.user)
         password = cl.get(uid, 'password')
-        self.set_cookie(self.user, self.form['password'].value)
+        self.set_cookie(self.user, password)
         return 1
 
     def set_cookie(self, user, password):
@@ -1696,6 +1691,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.152  2002/07/31 22:04:14  richard
+# cleanup
+#
 # Revision 1.151  2002/07/30 21:37:43  richard
 # oops, thanks Duncan Booth for spotting this one
 #

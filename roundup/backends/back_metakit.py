@@ -46,6 +46,8 @@ class _Database(hyperdb.Database):
             except KeyError:
                 x = 0
             return x
+        elif classname == 'transactions':
+            return self.dirty
         return self.getclass(classname)
     def getclass(self, classname):
         return self.classes[classname]
@@ -479,10 +481,11 @@ class Class:
         row._isdel = 1
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, _RETIRE, {})
-        iv = self.getindexview(1)
-        ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
-        if ndx > -1:
-            iv.delete(ndx)
+        if self.keyname:
+            iv = self.getindexview(1)
+            ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
+            if ndx > -1:
+                iv.delete(ndx)
         self.db.dirty = 1
         self.fireReactors('retire', nodeid, None)
     def history(self, nodeid):
@@ -732,7 +735,24 @@ class Class:
                 try:
                     prop = getattr(v, propname)
                 except AttributeError:
+                    print "MK has no property %s" % propname
                     continue
+                propclass = self.ruprops.get(propname, None)
+                if propclass is None:
+                    propclass = self.privateprops.get(propname, None)
+                    if propclass is None:
+                        print "Schema has no property %s" % propname
+                        continue
+                if isinstance(propclass, hyperdb.Link):
+                    linkclass = self.db.getclass(propclass.classname)
+                    lv = linkclass.getview()
+                    lv = lv.rename('id', propname)
+                    v = v.join(lv, prop, 1)
+                    if linkclass.getprops().has_key('order'):
+                        propname = 'order'
+                    else:
+                        propname = linkclass.labelprop()
+                    prop = getattr(v, propname)
                 if isreversed:
                     rev.append(prop)
                 sortspec.append(prop)

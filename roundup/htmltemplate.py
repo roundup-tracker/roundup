@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.107 2002-07-30 05:27:30 richard Exp $
+# $Id: htmltemplate.py,v 1.108 2002-07-31 22:40:50 gmcm Exp $
 
 __doc__ = """
 Template engine.
@@ -832,13 +832,15 @@ class TemplateFunctions:
         for k,v in query.items():
             query[k] = v[0].split(',')
         pagesize = query.get(':pagesize',['25'])[0]
+        search_text = query.get('search_text', [''])[0]
+        search_text = urllib.unquote(search_text)
         for k,v in query.items():
             if k[0] != ':':
                 filterspec[k] = v
         ixtmplt = IndexTemplate(self.client, self.templates, classname)
         qform = '<form onSubmit="return submit_once()" action="%s%s">\n'%(
             self.classname,self.nodeid)
-        qform += ixtmplt.filter_form(query.get('search_text', ''),
+        qform += ixtmplt.filter_form(search_text,
                                      query.get(':filter', []),
                                      query.get(':columns', []),
                                      query.get(':group', []),
@@ -931,6 +933,10 @@ class IndexTemplate(TemplateFunctions):
 
     def buildurl(self, filterspec, search_text, filter, columns, sort, group, pagesize):
         d = {'pagesize':pagesize, 'pagesize':pagesize, 'classname':self.classname}
+        if search_text:
+            d['searchtext'] = 'search_text=%s&' % search_text
+        else:
+            d['searchtext'] = ''
         d['filter'] = ','.join(map(urllib.quote,filter))
         d['columns'] = ','.join(map(urllib.quote,columns))
         d['sort'] = ','.join(map(urllib.quote,sort))
@@ -940,7 +946,7 @@ class IndexTemplate(TemplateFunctions):
             vals = ','.join(map(urllib.quote,vals))
             tmp.append('%s=%s' % (col, vals))
         d['filters'] = '&'.join(tmp)
-        return '%(classname)s?%(filters)s&:sort=%(sort)s&:filter=%(filter)s&:group=%(group)s&:columns=%(columns)s&:pagesize=%(pagesize)s' % d
+        return '%(classname)s?%(searchtext)s%(filters)s&:sort=%(sort)s&:filter=%(filter)s&:group=%(group)s&:columns=%(columns)s&:pagesize=%(pagesize)s' % d
     
     col_re=re.compile(r'<property\s+name="([^>]+)">')
     def render(self, filterspec={}, search_text='', filter=[], columns=[], 
@@ -989,8 +995,8 @@ class IndexTemplate(TemplateFunctions):
         for name in columns:
             cname = name.capitalize()
             if show_display_form:
-                sb = self.sortby(name, filterspec, columns, filter, group,
-                    sort, pagesize, startwith)
+                sb = self.sortby(name, search_text, filterspec, columns, filter, 
+                        group, sort, pagesize)
                 anchor = "%s?%s"%(self.classname, sb)
                 w('<td><span class="list-header"><a href="%s">%s</a>'
                     '</span></td>\n'%(anchor, cname))
@@ -1286,13 +1292,15 @@ class IndexTemplate(TemplateFunctions):
             w(' </tr>\n')
         w('</table>\n')
 
-    def sortby(self, sort_name, filterspec, columns, filter, group, sort,
-            pagesize, startwith):
+    def sortby(self, sort_name, search_text, filterspec, columns, filter, group, sort,
+            pagesize):
         ''' Figure the link for a column heading so we can sort by that
             column
         '''
         l = []
         w = l.append
+        if search_text:
+            w('search_text=%s' % search_text)
         for k, v in filterspec.items():
             k = urllib.quote(k)
             if type(v) == type([]):
@@ -1306,7 +1314,7 @@ class IndexTemplate(TemplateFunctions):
         if group:
             w(':group=%s'%','.join(map(urllib.quote, group)))
         w(':pagesize=%s' % pagesize)
-        w(':startwith=%s' % startwith)
+        w(':startwith=0')
 
         # handle the sorting - if we're already sorting by this column,
         # then reverse the sorting, otherwise set the sorting to be this
@@ -1433,6 +1441,9 @@ class NewItemTemplate(ItemTemplate):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.107  2002/07/30 05:27:30  richard
+# nicer error messages, and a bugfix
+#
 # Revision 1.106  2002/07/30 02:41:04  richard
 # Removed the confusing, ugly two-column sorting stuff. Column heading clicks
 # now only sort on one column. Nice and simple and obvious.
