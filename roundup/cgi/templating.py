@@ -939,14 +939,16 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 current[k] = old
 
                     elif isinstance(prop, hyperdb.Date) and args[k]:
-                        d = date.Date(args[k]).local(timezone)
+                        d = date.Date(args[k],
+                            translator=self._client).local(timezone)
                         cell.append('%s: %s'%(k, str(d)))
                         if current.has_key(k):
                             cell[-1] += ' -> %s' % current[k]
                             current[k] = str(d)
 
                     elif isinstance(prop, hyperdb.Interval) and args[k]:
-                        val = str(date.Interval(args[k]))
+                        val = str(date.Interval(args[k],
+                            translator=self._client))
                         cell.append('%s: %s'%(k, val))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
@@ -1407,14 +1409,14 @@ class DateHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-	ret = date.Date('.')
+	ret = date.Date('.', translator=self._client)
 
 	if isinstance(str_interval, basestring):
 		sign = 1
 		if str_interval[0] == '-':
 			sign = -1
 			str_interval = str_interval[1:]
-		interval = date.Interval(str_interval)
+		interval = date.Interval(str_interval, translator=self._client)
 		if sign > 0:
 			ret = ret + interval
 		else:
@@ -1435,7 +1437,7 @@ class DateHTMLProperty(HTMLProperty):
                 raw_value = None
             else:
                 if isinstance(default, basestring):
-                    raw_value = Date(default)
+                    raw_value = Date(default, translator=self._client)
                 elif isinstance(default, date.Date):
                     raw_value = default
 		elif isinstance(default, DateHTMLProperty):
@@ -1470,7 +1472,7 @@ class DateHTMLProperty(HTMLProperty):
             return ''
 
         # figure the interval
-        interval = self._value - date.Date('.')
+        interval = self._value - date.Date('.', translator=self._client)
         if pretty:
             return interval.pretty()
         return str(interval)
