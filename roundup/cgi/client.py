@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.108 2003-03-19 02:50:40 richard Exp $
+# $Id: client.py,v 1.109 2003-03-20 04:02:52 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -787,7 +787,7 @@ please visit the following URL:
                 return 0
             except smtplib.SMTPException, msg:
                 self.error_message.append("Error: couldn't send email: %s"%msg)
-            return 0
+                return 0
         return 1
 
     def registerPermission(self, props):
@@ -855,8 +855,8 @@ please visit the following URL:
         message = _('You are now registered, welcome!')
 
         # redirect to the user's page
-        raise Redirect, '%suser%s?@ok_message=%s&@template=%s'%(self.base,
-            self.userid, urllib.quote(message), urllib.quote(self.template))
+        raise Redirect, '%suser%s?@ok_message=%s'%(self.base,
+            self.userid, urllib.quote(message))
 
     def passResetAction(self):
         ''' Handle password reset requests.
