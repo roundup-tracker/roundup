@@ -930,16 +930,25 @@ class LinkHTMLProperty(HTMLProperty):
             s = ''
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
         for optionid in options:
-            option = linkcl.get(optionid, k)
+            # get the option value, and if it's None use an empty string
+            option = linkcl.get(optionid, k) or ''
+
+            # figure if this option is selected
             s = ''
             if optionid == self._value:
                 s = 'selected '
+
+            # figure the label
             if showid:
                 lab = '%s%s: %s'%(self._prop.classname, optionid, option)
             else:
                 lab = option
+
+            # truncate if it's too long
             if size is not None and len(lab) > size:
                 lab = lab[:size-3] + '...'
+
+            # and generate
             lab = cgi.escape(lab)
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
@@ -967,14 +976,21 @@ class LinkHTMLProperty(HTMLProperty):
             sort_on = ('+', linkcl.labelprop())
         options = linkcl.filter(None, conditions, sort_on, (None, None))
         for optionid in options:
-            option = linkcl.get(optionid, k)
+            # get the option value, and if it's None use an empty string
+            option = linkcl.get(optionid, k) or ''
+
+            # figure if this option is selected
             s = ''
             if value in [optionid, option]:
                 s = 'selected '
+
+            # figure the label
             if showid:
                 lab = '%s%s: %s'%(self._prop.classname, optionid, option)
             else:
                 lab = option
+
+            # truncate if it's too long
             if size is not None and len(lab) > size:
                 lab = lab[:size-3] + '...'
             if additional:
@@ -982,6 +998,8 @@ class LinkHTMLProperty(HTMLProperty):
                 for propname in additional:
                     m.append(linkcl.get(optionid, propname))
                 lab = lab + ' (%s)'%', '.join(map(str, m))
+
+            # and generate
             lab = cgi.escape(lab)
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
@@ -1078,14 +1096,20 @@ class MultilinkHTMLProperty(HTMLProperty):
         l = ['<select multiple name="%s" size="%s">'%(self._name, height)]
         k = linkcl.labelprop(1)
         for optionid in options:
-            option = linkcl.get(optionid, k)
+            # get the option value, and if it's None use an empty string
+            option = linkcl.get(optionid, k) or ''
+
+            # figure if this option is selected
             s = ''
             if optionid in value or option in value:
                 s = 'selected '
+
+            # figure the label
             if showid:
                 lab = '%s%s: %s'%(self._prop.classname, optionid, option)
             else:
                 lab = option
+            # truncate if it's too long
             if size is not None and len(lab) > size:
                 lab = lab[:size-3] + '...'
             if additional:
@@ -1093,6 +1117,8 @@ class MultilinkHTMLProperty(HTMLProperty):
                 for propname in additional:
                     m.append(linkcl.get(optionid, propname))
                 lab = lab + ' (%s)'%', '.join(m)
+
+            # and generate
             lab = cgi.escape(lab)
             l.append('<option %svalue="%s">%s</option>'%(s, optionid,
                 lab))
@@ -1299,7 +1325,6 @@ class HTMLRequest:
         d['env'] = e
         return '''
 form: %(form)s
-url: %(url)r
 base: %(base)r
 classname: %(classname)r
 template: %(template)r
