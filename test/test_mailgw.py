@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.29 2002-09-10 02:37:28 richard Exp $
+# $Id: test_mailgw.py,v 1.30 2002-09-12 04:21:20 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -92,6 +92,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
     def tearDown(self):
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             os.remove(os.environ['SENDMAILDEBUG'])
+        self.db.close()
         try:
             shutil.rmtree(self.dirname)
         except OSError, error:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.44 2002-09-10 03:01:20 richard Exp $ 
+# $Id: test_db.py,v 1.45 2002-09-12 04:21:20 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -47,6 +47,9 @@ def setupSchema(db, create, module):
 
 class MyTestCase(unittest.TestCase):
     def tearDown(self):
+        self.db.close()
+        if hasattr(self, 'db2'):
+            self.db2.close()
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
 

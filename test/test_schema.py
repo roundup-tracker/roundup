@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_schema.py,v 1.10 2002-09-10 03:01:20 richard Exp $ 
+# $Id: test_schema.py,v 1.11 2002-09-12 04:21:21 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -47,6 +47,7 @@ class SchemaTestCase(unittest.TestCase):
         self.db.clear()
 
     def tearDown(self):
+        self.db.close()
         shutil.rmtree('_test_dir')
 
     def testA_Status(self):
