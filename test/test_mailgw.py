@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.73 2004-10-24 10:01:58 a1s Exp $
+# $Id: test_mailgw.py,v 1.74 2005-02-14 05:54:41 richard Exp $
 
 # TODO: test bcc
 
@@ -979,7 +979,6 @@ This is a test submission of a new issue.
         self.assertEqual(l, [self.richard_id, self.mary_id])
         return nodeid
 
-
     def testDejaVu(self):
         self.assertRaises(IgnoreLoop, self._handle_mail,
             '''Content-Type: text/plain;
@@ -1006,6 +1005,19 @@ Message-Id: <dummy_test_message_id>
 Subject: Re: [issue] Testing...
 
 Hi, I'm on holidays, and this is a dumb auto-responder.
+''')
+
+    def testAutoReplyEmailsAreIgnored(self):
+        self.assertRaises(IgnoreBulk, self._handle_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: Re: [issue] Out of office AutoReply: Back next week
+
+Hi, I'm back in the office next week
 ''')
 
 def test_suite():
