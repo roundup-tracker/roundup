@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.77 2002-02-20 05:05:29 richard Exp $
+# $Id: htmltemplate.py,v 1.78 2002-02-21 06:23:00 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -655,7 +655,11 @@ class TemplateFunctions:
         else:
             return _('[Submit: not called from item]')
 
-
+    def do_classhelp(self, classname, colums):
+        '''pop up a javascript window with class help
+        '''
+        return '<a href="javascript:help_window(\'classhelp?classname=%s&' \
+            'columns=%s\')"><b>(?)</b></a>'%(classname, columns)
 #
 #   INDEX TEMPLATES
 #
@@ -1077,6 +1081,12 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.77  2002/02/20 05:05:29  richard
+#  . Added simple editing for classes that don't define a templated interface.
+#    - access using the admin "class list" interface
+#    - limited to admin-only
+#    - requires the csv module from object-craft (url given if it's missing)
+#
 # Revision 1.76  2002/02/16 09:10:52  richard
 # oops
 #

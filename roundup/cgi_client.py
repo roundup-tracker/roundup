@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.105 2002-02-20 05:52:10 richard Exp $
+# $Id: cgi_client.py,v 1.106 2002-02-21 06:23:00 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -52,6 +52,11 @@ class Client:
         self.env = env
         self.path = env['PATH_INFO']
         self.split_path = self.path.split('/')
+        url = self.env['SCRIPT_NAME'] + '/'
+        machine = self.env['SERVER_NAME']
+        port = self.env['SERVER_PORT']
+        if port != '80': machine = machine + ':' + port
+        self.base = urlparse.urlunparse(('http', machine, url, None,None,None))
 
         if form is None:
             self.form = cgi.FieldStorage(environ=env)
@@ -80,7 +85,7 @@ class Client:
         if self.debug:
             self.headers_sent = headers
 
-    single_submit_script = '''
+    global_javascript = '''
 <script language="javascript">
 submitted = false;
 function submit_once() {
@@ -91,15 +96,14 @@ function submit_once() {
     submitted = true;
     return 1;
 }
+function help_window(helpurl) {
+    helpwin = window.open(%(base)s + helpurl, 'HelpWindow',
+       'scrollbars=yes,resizable=yes,toolbar=no,height=400,width=400');
+}
 </script>
 '''
 
     def pagehead(self, title, message=None):
-        url = self.env['SCRIPT_NAME'] + '/'
-        machine = self.env['SERVER_NAME']
-        port = self.env['SERVER_PORT']
-        if port != '80': machine = machine + ':' + port
-        base = urlparse.urlunparse(('http', machine, url, None, None, None))
         if message is not None:
             message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
@@ -127,12 +131,12 @@ function submit_once() {
 ''')
         else:
             add_links = ''
-        single_submit_script = self.single_submit_script
+        global_javascript = self.global_javascript%self.__dict__
         self.write(_('''<html><head>
 <title>%(title)s</title>
 <style type="text/css">%(style)s</style>
 </head>
-%(single_submit_script)s
+%(global_javascript)s
 <body bgcolor=#ffffff>
 %(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
@@ -1160,11 +1164,6 @@ class ExtendedClient(Client):
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
 
     def pagehead(self, title, message=None):
-        url = self.env['SCRIPT_NAME'] + '/' #self.env.get('PATH_INFO', '/')
-        machine = self.env['SERVER_NAME']
-        port = self.env['SERVER_PORT']
-        if port != '80': machine = machine + ':' + port
-        base = urlparse.urlunparse(('http', machine, url, None, None, None))
         if message is not None:
             message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
@@ -1194,12 +1193,12 @@ class ExtendedClient(Client):
 ''')
         else:
             add_links = ''
-        single_submit_script = self.single_submit_script
+        global_javascript = self.global_javascript%self.__dict__
         self.write(_('''<html><head>
 <title>%(title)s</title>
 <style type="text/css">%(style)s</style>
 </head>
-%(single_submit_script)s
+%(global_javascript)s
 <body bgcolor=#ffffff>
 %(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
@@ -1299,6 +1298,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.105  2002/02/20 05:52:10  richard
+# better error handling
+#
 # Revision 1.104  2002/02/20 05:45:17  richard
 # Use the csv module for generating the form entry so it's correct.
 # [also noted the sf.net feature request id in the change log]
