@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.4.2.1 2003-01-15 22:38:14 richard Exp $
+# $Id: test_cgi.py,v 1.4.2.2 2003-03-21 21:43:04 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
@@ -87,10 +87,10 @@ class FormTestCase(unittest.TestCase):
     def testEmptyStringSet(self):
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
-            makeForm({'title': ''}), nodeid), {'title': ''})
+            makeForm({'title': ''}), nodeid), {'title': None})
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
-            makeForm({'title': ' '}), nodeid), {'title': ''})
+            makeForm({'title': ' '}), nodeid), {'title': None})
 
     #
     # Link
