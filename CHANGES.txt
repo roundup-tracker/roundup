@@ -73,6 +73,7 @@ Fixed:
 - only look for CSV files when importing (thanks Dan Grassi)
 - can now unset values in CSV editing (sf bug 704788)
 - finally, tables autosize columns (sf bug 609070)
+- added creation to index columns (sf bug 708247)
 
 
 2003-??-?? 0.5.7

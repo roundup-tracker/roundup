@@ -17,6 +17,7 @@ You are not allowed to view this page.
   <tr>
    <th tal:condition="request/show/priority">Priority</th>
    <th tal:condition="request/show/id">ID</th>
+   <th tal:condition="request/show/creation">Creation</th>
    <th tal:condition="request/show/activity">Activity</th>
    <th tal:condition="request/show/topic">Topic</th>
    <th tal:condition="request/show/title">Title</th>
@@ -34,6 +35,8 @@ You are not allowed to view this page.
   <tr tal:attributes="class python:['normal', 'alt'][repeat['i'].index%6/3]">
    <td tal:condition="request/show/priority" tal:content="i/priority"></td>
    <td tal:condition="request/show/id" tal:content="i/id"></td>
+   <td nowrap tal:condition="request/show/creation"
+       tal:content="i/creation/reldate"></td>
    <td nowrap tal:condition="request/show/activity"
        tal:content="i/activity/reldate"></td>
    <td tal:condition="request/show/topic" tal:content="i/topic"></td>
