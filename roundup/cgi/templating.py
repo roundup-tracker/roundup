@@ -614,7 +614,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         check = self._db.security.hasPermission
         userid = self._client.userid
 
-        l = [HTMLItem(self._client, self.classname, x)
+        l = [HTMLItem(self._client, self.classname, id)
              for id in self._klass.filter(None, filterspec, sort, group)
              if check('View', userid, self.classname, itemid=id)]
         return l
@@ -1688,18 +1688,6 @@ class LinkHTMLProperty(HTMLProperty):
 #    def checklist(self, ...)
 
 
-def multilinkGenerator(classname, client, values):
-    id = -1
-    check = client.db.security.hasPermission
-    userid = client.userid
-    while 1:
-        id += 1
-        if id >= len(values):
-            raise StopIteration
-        value = values[id]
-        if check('View', userid, classname, itemid=value):
-            yield HTMLItem(client, classname, value)
-
 
 class MultilinkHTMLProperty(HTMLProperty):
     ''' Multilink HTMLProperty
@@ -1723,18 +1711,26 @@ class MultilinkHTMLProperty(HTMLProperty):
         ''' no extended attribute accesses make sense here '''
         raise AttributeError, attr
 
+    def multilinkGenerator(self, values):
+        '''Used to iterate over only the View'able items in a class.'''
+        check = self._db.security.hasPermission
+        userid = self._client.userid
+        classname = self._prop.classname
+        for value in values:
+            if check('View', userid, classname, itemid=value):
+                yield HTMLItem(self._client, classname, value)
+
     def __iter__(self):
         ''' iterate and return a new HTMLItem
         '''
-        return multilinkGenerator(self._prop.classname, self._client,
-            self._value)
+        return self.multilinkGenerator(self._value)
 
     def reverse(self):
         ''' return the list in reverse order
         '''
         l = self._value[:]
         l.reverse()
-        return multilinkGenerator(self._prop.classname, self._client, l)
+        return self.multilinkGenerator(l)
 
     def sorted(self, property):
         ''' Return this multilink sorted by the given property '''
