@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.5 2002-03-14 23:59:24 richard Exp $
+$Id: roundup_server.py,v 1.6 2002-08-30 08:33:28 richard Exp $
 """
 
 # python version check
@@ -26,7 +26,7 @@ import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
 import BaseHTTPServer
 
 # Roundup modules of use here
-from roundup import cgitb, cgi_client
+from roundup.cgi import cgitb, client
 import roundup.instance
 from roundup.i18n import _
 
@@ -68,9 +68,9 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         sys.stdin = self.rfile
         try:
             self.inner_run_cgi()
-        except cgi_client.NotFound:
+        except client.NotFound:
             self.send_error(404, self.path)
-        except cgi_client.Unauthorised:
+        except client.Unauthorised:
             self.send_error(403, self.path)
         except:
             # it'd be nice to be able to detect if these are going to have
@@ -127,7 +127,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             instance_home = self.ROUNDUP_INSTANCE_HOMES[instance_name]
             instance = roundup.instance.open(instance_home)
         else:
-            raise cgi_client.NotFound
+            raise client.NotFound
 
         # figure out what the rest of the path is
         if len(l_path) > 2:
@@ -161,8 +161,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         decoded_query = query.replace('+', ' ')
 
         # do the roundup thang
-        client = instance.Client(instance, self, env)
-        client.main()
+        c = instance.Client(instance, self, env)
+        c.main()
 
 def usage(message=''):
     if message:
@@ -247,6 +247,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/03/14 23:59:24  richard
+#  . #517734 ] web header customisation is obscure
+#
 # Revision 1.4  2002/02/21 07:02:54  richard
 # The correct var is "HTTP_HOST"
 #

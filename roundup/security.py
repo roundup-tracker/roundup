@@ -66,8 +66,8 @@ class Security:
             description="User may register through the email")
 
         # initialise the permissions and roles needed for the UIs
-        from roundup import cgi_client
-        cgi_client.initialiseSecurity(self)
+        from roundup.cgi import client
+        client.initialiseSecurity(self)
         from roundup import mailgw
         mailgw.initialiseSecurity(self)
 

@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.13 2002-08-16 04:26:00 richard Exp $
+# $Id: interfaces.py,v 1.14 2002-08-30 08:31:01 richard Exp $
 
 import instance_config
 from roundup import mailgw 
-from roundup import cgi_client
+from roundup.cgi import client
 
-class Client(cgi_client.Client): 
+class Client(client.Client): 
     ''' derives basic CGI implementation from the standard module, 
         with any specific extensions 
     ''' 
@@ -35,6 +35,9 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2002/08/16 04:26:00  richard
+# preparation for moving cgi modules around
+#
 # Revision 1.12  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
