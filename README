@@ -74,11 +74,11 @@ Apache:
     /home/httpd/html/roundup/roundup.cgi script will be treated as a CGI
     script.
  3. Add the following to your /etc/httpd/conf/httpd.conf:
-snip >>>
+------8<------- snip here ------8<-------
 RewriteEngine on
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=HTTP_CGI_AUTHORIZATION:%1,t=application/x-httpd-cgi,l]
-<<< snip
+------8<------- snip here ------8<-------
    note: the RewriteRule must be on one line - no breaks
  4. Re-start your apache to re-load the config
  5. Load up the page "/roundup/roundup.cgi/"
