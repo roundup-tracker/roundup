@@ -19,16 +19,22 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
     def test_HTMLDatabase___getitem__(self):
         db = HTMLDatabase(self.client)
         self.assert_(isinstance(db['issue'], HTMLClass))
-        self.assert_(isinstance(db['user'], HTMLUserClass))
-        self.assert_(isinstance(db['issue1'], HTMLItem))
-        self.assert_(isinstance(db['user1'], HTMLUser))
+        # following assertions are invalid
+        # since roundup/cgi/templating.py r1.173.
+        # HTMLItem is function, not class,
+        # but HTMLUserClass and HTMLUser are passed on.
+        # these classes are no more.  they have ceased to be.
+        #self.assert_(isinstance(db['user'], HTMLUserClass))
+        #self.assert_(isinstance(db['issue1'], HTMLItem))
+        #self.assert_(isinstance(db['user1'], HTMLUser))
 
     def test_HTMLDatabase___getattr__(self):
         db = HTMLDatabase(self.client)
         self.assert_(isinstance(db.issue, HTMLClass))
-        self.assert_(isinstance(db.user, HTMLUserClass))
-        self.assert_(isinstance(db.issue1, HTMLItem))
-        self.assert_(isinstance(db.user1, HTMLUser))
+        # see comment in test_HTMLDatabase___getitem__
+        #self.assert_(isinstance(db.user, HTMLUserClass))
+        #self.assert_(isinstance(db.issue1, HTMLItem))
+        #self.assert_(isinstance(db.user1, HTMLUser))
 
     def test_HTMLDatabase_classes(self):
         db = HTMLDatabase(self.client)
@@ -242,3 +248,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
+# vim: set et sts=4 sw=4 :
