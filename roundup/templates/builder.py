@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: templatebuilder.py,v 1.14 2002-02-05 09:59:05 grubert Exp $
+# $Id: builder.py,v 1.1 2002-08-16 04:25:03 richard Exp $
 import errno, re
 
 __doc__ = """
@@ -89,6 +89,9 @@ if __name__ == "__main__":
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/02/05 09:59:05  grubert
+#  . makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace does it.
+#
 # Revision 1.13  2001/11/22 15:46:42  jhermann
 # Added module docstrings to all modules.
 #

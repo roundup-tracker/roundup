@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.35 2002-06-17 23:14:44 richard Exp $
+# $Id: setup.py,v 1.36 2002-08-16 04:25:01 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -25,7 +25,7 @@ from distutils.command.build_scripts import build_scripts
 import sys, os, string
 from glob import glob
 
-from roundup.templatebuilder import makeHtmlBase
+from roundup.templates.builder import makeHtmlBase
 
 
 #############################################################################
@@ -189,6 +189,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2002/06/17 23:14:44  richard
+# . #569415 ] {version}
+#
 # Revision 1.34  2002/05/29 01:16:16  richard
 # Sorry about this huge checkin! It's fixing a lot of related stuff in one go
 # though.
