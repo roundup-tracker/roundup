@@ -347,7 +347,7 @@ class HTMLClass(HTMLPermissions):
         ''' Return this class' designator (classname) '''
         return self._classname
 
-    def getItem(self, itemid, num_re=re.compile('\d+')):
+    def getItem(self, itemid, num_re=re.compile('-?\d+')):
         ''' Get an item of this class by its item id.
         '''
         # make sure we're looking at an itemid
