@@ -1687,6 +1687,7 @@ submitted = false;
 function submit_once() {
     if (submitted) {
         alert("Your request is being processed.\\nPlease be patient.");
+        event.returnValue = 0;    // work-around for IE
         return 0;
     }
     submitted = true;

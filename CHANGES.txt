@@ -5,9 +5,12 @@ are given with the most recent entry first.
 Fixed:
 - mailgw handling of subject-line errors
 - allow serving of non-"file"-Class file content (eg. paper_file)
-- allow negative (new) ids in getItem
+- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
+  allowing "db/file_with_status/-1/status/menu" to generate a useful
+  widget
 - fixed content-type when templates are serving up xml (thanks Godefroid
   Chapelle)
+- fixed IE double-submit when it shouldn't (sf bug 842254)
 
 
 2003-12-17 0.6.4
