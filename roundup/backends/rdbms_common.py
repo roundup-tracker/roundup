@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.60 2003-09-04 00:47:01 richard Exp $
+# $Id: rdbms_common.py,v 1.61 2003-09-06 20:01:10 jlgijsbers Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -145,14 +145,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # commit
         self.conn.commit()
 
-        # figure the "curuserid"
-        if self.journaltag is None:
-            self.curuserid = None
-        elif self.journaltag == 'admin':
-            # admin user may not exist, but always has ID 1
-            self.curuserid = '1'
-        else:
-            self.curuserid = self.user.lookup(self.journaltag)
+        self.figure_curuserid()
 
     def reindex(self):
         for klass in self.classes.values():

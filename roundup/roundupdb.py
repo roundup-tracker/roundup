@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.87 2003-09-06 07:27:30 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.88 2003-09-06 20:02:23 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -71,6 +71,16 @@ class Database:
             # Greenwich :)
             timezone = 0
         return timezone
+
+    def figure_curuserid(self):
+        """Figure out the 'curuserid'."""
+        if self.journaltag is None:
+            self.curuserid = None
+        elif self.journaltag == 'admin':
+            # admin user may not exist, but always has ID 1
+            self.curuserid = '1'
+        else:
+            self.curuserid = self.user.lookup(self.journaltag)
 
     def confirm_registration(self, otk):
         props = self.otks.getall(otk)
