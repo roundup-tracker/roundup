@@ -9,6 +9,8 @@ Fixed:
  . #571170 ] gdbm deadlock
  . #576241 ] MultiLink problems in parsePropsFromForm
  . #516854 ] "My Issues" and redisplay
+ . htmltemplate do_menu with additional properties had problems when they
+   weren't set
 
 
 2002-06-24 0.4.2
