@@ -2,7 +2,6 @@
 <html>
   <head>
       <link rel="stylesheet" type="text/css" href="@@file/style.css" />
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8;" />
       <tal:block tal:condition="python:request.form.has_key('property')">
       <title tal:content="string:${request/form/property/value} help">Property</title>
       <script language="Javascript" type="text/javascript" 
