@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.106 2003-02-26 23:42:50 richard Exp $
+#$Id: back_anydbm.py,v 1.107 2003-02-28 03:33:46 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -447,28 +447,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db = self.getclassdb(classname)
         count = count + len(db.keys())
         return count
-
-    def getnodeids(self, classname, db=None):
-        if __debug__:
-            print >>hyperdb.DEBUG, 'getnodeids', (self, classname, db)
-
-        res = []
-
-        # start off with the new nodes
-        if self.newnodes.has_key(classname):
-            res += self.newnodes[classname].keys()
-
-        if db is None:
-            db = self.getclassdb(classname)
-        res = res + db.keys()
-
-        # remove the uncommitted, destroyed nodes
-        if self.destroyednodes.has_key(classname):
-            for nodeid in self.destroyednodes[classname].keys():
-                if db.has_key(nodeid):
-                    res.remove(nodeid)
-
-        return res
 
 
     #
@@ -1435,7 +1413,7 @@ class Class(hyperdb.Class):
             raise TypeError, 'No key property set for class %s'%self.classname
         cldb = self.db.getclassdb(self.classname)
         try:
-            for nodeid in self.db.getnodeids(self.classname, cldb):
+            for nodeid in self.getnodeids(cldb):
                 node = self.db.getnode(self.classname, nodeid, cldb)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
@@ -1474,7 +1452,7 @@ class Class(hyperdb.Class):
         cldb = self.db.getclassdb(self.classname)
         l = []
         try:
-            for id in self.db.getnodeids(self.classname, db=cldb):
+            for id in self.getnodeids(db=cldb):
                 node = self.db.getnode(self.classname, id, db=cldb)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
@@ -1518,7 +1496,7 @@ class Class(hyperdb.Class):
         l = []
         cldb = self.db.getclassdb(self.classname)
         try:
-            for nodeid in self.db.getnodeids(self.classname, cldb):
+            for nodeid in self.getnodeids(cldb):
                 node = self.db.getnode(self.classname, nodeid, cldb)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
@@ -1540,7 +1518,7 @@ class Class(hyperdb.Class):
         cn = self.classname
         cldb = self.db.getclassdb(cn)
         try:
-            for nodeid in self.db.getnodeids(cn, cldb):
+            for nodeid in self.getnodeids(cldb):
                 node = self.db.getnode(cn, nodeid, cldb)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
@@ -1549,6 +1527,30 @@ class Class(hyperdb.Class):
             cldb.close()
         l.sort()
         return l
+
+    def getnodeids(self, db=None):
+        ''' Return a list of ALL nodeids
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getnodeids', (self, self.classname, db)
+
+        res = []
+
+        # start off with the new nodes
+        if self.db.newnodes.has_key(classname):
+            res += self.db.newnodes[classname].keys()
+
+        if db is None:
+            db = self.db.getclassdb(classname)
+        res = res + db.keys()
+
+        # remove the uncommitted, destroyed nodes
+        if self.db.destroyednodes.has_key(classname):
+            for nodeid in self.db.destroyednodes[classname].keys():
+                if db.has_key(nodeid):
+                    res.remove(nodeid)
+
+        return res
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None), num_re = re.compile('^\d+$')):
@@ -1635,7 +1637,7 @@ class Class(hyperdb.Class):
         cldb = self.db.getclassdb(cn)
         try:
             # TODO: only full-scan once (use items())
-            for nodeid in self.db.getnodeids(cn, cldb):
+            for nodeid in self.getnodeids(cldb):
                 node = self.db.getnode(cn, nodeid, cldb)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue

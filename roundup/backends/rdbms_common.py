@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.37 2003-02-27 11:07:36 richard Exp $
+# $Id: rdbms_common.py,v 1.38 2003-02-28 03:33:46 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -714,21 +714,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'countnodes', (self, sql)
         self.cursor.execute(sql)
         return self.cursor.fetchone()[0]
-
-    def getnodeids(self, classname, retired=0):
-        ''' Retrieve all the ids of the nodes for a particular Class.
-
-            Set retired=None to get all nodes. Otherwise it'll get all the 
-            retired or non-retired nodes, depending on the flag.
-        '''
-        # flip the sense of the flag if we don't want all of them
-        if retired is not None:
-            retired = not retired
-        sql = 'select id from _%s where __retired__ <> %s'%(classname, self.arg)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'getnodeids', (self, sql, retired)
-        self.cursor.execute(sql, (retired,))
-        return [x[0] for x in self.cursor.fetchall()]
 
     def addjournal(self, classname, nodeid, action, params, creator=None,
             creation=None):
@@ -1690,7 +1675,23 @@ class Class(hyperdb.Class):
     def list(self):
         ''' Return a list of the ids of the active nodes in this class.
         '''
-        return self.db.getnodeids(self.classname, retired=0)
+        return self.getnodeids(retired=0)
+
+    def getnodeids(self, retired=None):
+        ''' Retrieve all the ids of the nodes for a particular Class.
+
+            Set retired=None to get all nodes. Otherwise it'll get all the 
+            retired or non-retired nodes, depending on the flag.
+        '''
+        # flip the sense of the flag if we don't want all of them
+        if retired is not None:
+            retired = not retired
+        sql = 'select id from _%s where __retired__ <> %s'%(self.classname,
+            self.db.arg)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getnodeids', (self, sql, retired)
+        self.db.cursor.execute(sql, (retired,))
+        return [x[0] for x in self.db.cursor.fetchall()]
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):

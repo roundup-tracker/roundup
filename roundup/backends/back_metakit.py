@@ -610,7 +610,7 @@ class Class:
                 try:
                     v = int(value)
                 except ValueError:
-                    raise TypeError, "%s (%s) is not numeric" % (key, repr(value))
+                    raise TypeError, "%s (%s) is not numeric"%(key, repr(value))
                 setattr(row, key, v)
                 changes[key] = oldvalue
                 propvalues[key] = value
@@ -619,7 +619,7 @@ class Class:
                 if value is None:
                     bv = 0
                 elif value not in (0,1):
-                    raise TypeError, "%s (%s) is not boolean" % (key, repr(value))
+                    raise TypeError, "%s (%s) is not boolean"%(key, repr(value))
                 else:
                     bv = value 
                 setattr(row, key, bv)
@@ -815,6 +815,12 @@ class Class:
     def list(self):
         l = []
         for row in self.getview().select(_isdel=0):
+            l.append(str(row.id))
+        return l
+
+    def getnodeids(self):
+        l = []
+        for row in self.getview():
             l.append(str(row.id))
         return l
 
@@ -1098,11 +1104,12 @@ class Class:
         view = self.getview(1)
         for i in range(len(propnames)):
             value = eval(proplist[i])
+            if not value:
+                continue
             propname = propnames[i]
             prop = properties[propname]
             if propname == 'id':
-                newid = value
-                value = int(value)
+                newid = value = int(value)
             elif isinstance(prop, hyperdb.Date):
                 value = int(calendar.timegm(value))
             elif isinstance(prop, hyperdb.Interval):
@@ -1111,20 +1118,33 @@ class Class:
                 value = int(value)
             elif isinstance(prop, hyperdb.Boolean):
                 value = int(value)
-            elif isinstance(prop, hyperdb.Link):
+            elif isinstance(prop, hyperdb.Link) and value:
                 value = int(value)
             elif isinstance(prop, hyperdb.Multilink):
-                value = map(int, value)
+                # we handle multilinks separately
+                continue
             d[propname] = value
         # is the item retired?
         if int(proplist[-1]):
             d['_isdel'] = 1
-        # XXX this is BROKEN for reasons I don't understand!
-        ndx = view.append(d)
+        view.append(d)
 
+        ndx = view.find(id=newid)
+        row = view[ndx]
+        for i in range(len(propnames)):
+            value = eval(proplist[i])
+            propname = propnames[i]
+            prop = properties[propname]
+            if not isinstance(prop, hyperdb.Multilink):
+                continue
+            sv = getattr(row, propname)
+            for entry in value:
+                sv.append(int(entry))
+
+        self.db.dirty = 1
         creator = d.get('creator', 0)
         creation = d.get('creation', 0)
-        self.db.addjournal(self.classname, newid, _CREATE, {}, creator,
+        self.db.addjournal(self.classname, str(newid), _CREATE, {}, creator,
             creation)
         return newid
 
