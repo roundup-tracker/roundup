@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.33 $
+:Version: $Revision: 1.34 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1025,6 +1025,28 @@ batch           run the current index args through a filter and return a
                 list of items (see `hyperdb item wrapper`_, and
                 `batching`_)
 =============== ============================================================
+
+The form variable
+:::::::::::::::::
+
+The form variable is a little special because it's actually a python
+FieldStorage object. That means that you have two ways to access its
+contents. For example, to look up the CGI form value for the variable
+"name", use the path expression::
+
+   request/form/name/value
+
+or the python expression::
+
+   python:request.form['name'].value
+
+Note the "item" access used in the python case, and also note the explicit
+"value" attribute we have to access. That's because the form variables are
+stored as MiniFieldStorages. If there's more than one "name" value in
+the form, then the above will break since ``request/form/name`` is actually a
+*list* of MiniFieldStorages. So it's best to know beforehand what you're
+dealing with.
+
 
 The db variable
 ~~~~~~~~~~~~~~~
