@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.75 2002-02-16 08:43:23 richard Exp $
+# $Id: htmltemplate.py,v 1.76 2002-02-16 09:10:52 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -851,7 +851,7 @@ class IndexTemplate(TemplateFunctions):
             show_customization )
         w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
         names = []
-        seen = []
+        seen = {}
         for name in all_filters + all_columns:
             if self.properties.has_key(name) and not seen.has_key(name):
                 names.append(name)
@@ -1070,6 +1070,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.75  2002/02/16 08:43:23  richard
+#  . #517906 ] Attribute order in "View customisation"
+#
 # Revision 1.74  2002/02/16 08:39:42  richard
 #  . #516854 ] "My Issues" and redisplay
 #
