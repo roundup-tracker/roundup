@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.26 2003-08-12 01:14:11 richard Exp $
+$Id: roundup_server.py,v 1.26.2.1 2003-09-04 23:30:28 richard Exp $
 """
 
 # python version check
@@ -40,20 +40,11 @@ from roundup.i18n import _
 # Make sure the NAME part doesn't include any url-unsafe characters like 
 # spaces, as these confuse the cookie handling in browsers like IE.
 TRACKER_HOMES = {
-    'bar': '/tmp/bar',
+#    'example': '/path/to/example',
 }
 
 ROUNDUP_USER = None
 
-
-# Where to log debugging information to. Use an instance of DevNull if you
-# don't want to log anywhere.
-# TODO: actually use this stuff
-#class DevNull:
-#    def write(self, info):
-#        pass
-#LOG = open('/var/log/roundup.cgi.log', 'a')
-#LOG = DevNull()
 
 #
 ##  end configuration
