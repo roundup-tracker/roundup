@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.43 2001-10-24 00:01:42 richard Exp $
+# $Id: cgi_client.py,v 1.44 2001-10-28 23:03:08 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -76,7 +76,7 @@ class Client:
         self.headers_done = 1
 
     def pagehead(self, title, message=None):
-        url = self.env['SCRIPT_NAME'] + '/' #self.env.get('PATH_INFO', '/')
+        url = self.env['SCRIPT_NAME'] + '/'
         machine = self.env['SERVER_NAME']
         port = self.env['SERVER_PORT']
         if port != '80': machine = machine + ':' + port
@@ -86,11 +86,27 @@ class Client:
         else:
             message = ''
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
-        if self.user is not None:
-            userid = self.db.user.lookup(self.user)
-            user_info = '(login: <a href="user%s">%s</a>)'%(userid, self.user)
+        user_name = self.user or ''
+        if self.user == 'admin':
+            admin_links = ' | <a href="list_classes">Class List</a>'
         else:
-            user_info = ''
+            admin_links = ''
+        if self.user not in (None, 'anonymous'):
+            userid = self.db.user.lookup(self.user)
+            user_info = '''
+<a href="issue?assignedto=%s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="user%s">My Details</a> | <a href="logout">Logout</a>
+'''%(userid, userid)
+        else:
+            user_info = '<a href="login">Login</a>'
+        if self.user is not None:
+            add_links = '''
+| Add
+<a href="newissue">Issue</a>,
+<a href="newuser">User</a>
+'''
+        else:
+            add_links = ''
         self.write('''<html><head>
 <title>%s</title>
 <style type="text/css">%s</style>
@@ -98,9 +114,19 @@ class Client:
 <body bgcolor=#ffffff>
 %s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%s</strong></big> %s</td></tr>
+<tr class="location-bar"><td><big><strong>%s</strong></big></td>
+<td align=right valign=bottom>%s</td></tr>
+<tr class="location-bar">
+<td align=left>All
+<a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
+| Unassigned
+<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
+%s
+%s</td>
+<td align=right>%s</td>
 </table>
-'''%(title, style, message, title, user_info))
+'''%(title, style, message, title, user_name, add_links, admin_links,
+    user_info))
 
     def pagefoot(self):
         if self.debug:
@@ -848,6 +874,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.43  2001/10/24 00:01:42  richard
+# More fixes to lockout logic.
+#
 # Revision 1.42  2001/10/23 23:56:03  richard
 # HTML typo
 #
