@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.21 2001-11-26 22:55:56 richard Exp $
+# $Id: roundupdb.py,v 1.22 2001-11-27 03:00:50 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -410,15 +410,24 @@ class IssueClass(Class):
         ''' Add a signature to the e-mail with some useful information
         '''
         web = self.ISSUE_TRACKER_WEB + 'issue'+ nodeid
-        return '''%s
-%s
-%s
-%s
-'''%('_'*len(web), self.INSTANCE_NAME, self.ISSUE_TRACKER_EMAIL, web,
-    '_'*len(web))
+        email = '"%s" <%s>'%(self.INSTANCE_NAME, self.ISSUE_TRACKER_EMAIL)
+        line = '_' * max(len(web), len(email))
+        return '%s\n%s\n%s\n%s'%(line, email, web, line)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.20  2001/11/25 10:11:14  jhermann
 # Typo fix
 #
