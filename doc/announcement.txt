@@ -1,17 +1,25 @@
 =================================================
-SC-Track Roundup 0.6.4 - an issue tracking system
+SC-Track Roundup 0.6.5 - an issue tracking system
 =================================================
 
 I'm pleased to announce this maintenance release of Roundup which fixes
 some bugs:
 
-- fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
-- fixed date arithmetic to limit hours-per-day to 24, not 60
-- fixed activity displaying as future because of Date arithmetic fix in 0.6.3
-  (sf bug 842027).
-- hard-coded python2.3-ism (socket.timeout) fixed
-- fix Windows service mode for roundup-server (sf bug 819890)
-- fixed #white in cgitb (thanks Henrik Levkowetz)
+- mailgw handles of subject-line errors better
+- allow serving of FileClass file content when the class isn't called
+  "file" (eg. messages and other FileClasses)
+- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
+  allowing "db/file_with_status/-1/status/menu" to generate a useful
+  widget
+- fixed content-type when templates are serving up xml (thanks Godefroid
+  Chapelle)
+- fixed IE double-submit when it shouldn't (sf bug 842254)
+- fixed check for JS pop()/push() to make more general (sf bug 877504)
+- fix re-enabling queries (sf bug 861940)
+- use supplied content-type on file uploads before trying filename
+- fixed roundup-reminder script to use default schema (thanks Klamer Schutte)
+- fixed edit action / parsePropsFromForm to handle index-page edits better
+- safer logging from HTTP server (sf bug 896917)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation. 

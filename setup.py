@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.5 2003-12-16 20:58:26 richard Exp $
+# $Id: setup.py,v 1.55.2.6 2004-02-15 23:27:44 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -188,14 +188,22 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.4 release fixes some bugs:
-- fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
-- fixed date arithmetic to limit hours-per-day to 24, not 60
-- fixed activity displaying as future because of Date arithmetic fix in 0.6.3
-  (sf bug 842027).
-- hard-coded python2.3-ism (socket.timeout) fixed
-- fix Windows service mode for roundup-server (sf bug 819890)
-- fixed #white in cgitb (thanks Henrik Levkowetz)
+The 0.6.5 release fixes some bugs:
+- mailgw handling of subject-line errors
+- allow serving of FileClass file content when the class isn't called
+  "file" (eg. messages and other FileClasses)
+- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
+  allowing "db/file_with_status/-1/status/menu" to generate a useful
+  widget
+- fixed content-type when templates are serving up xml (thanks Godefroid
+  Chapelle)
+- fixed IE double-submit when it shouldn't (sf bug 842254)
+- fixed check for JS pop()/push() to make more general (sf bug 877504)
+- fix re-enabling queries (sf bug 861940)
+- use supplied content-type on file uploads before trying filename
+- fixed roundup-reminder script to use default schema (thanks Klamer Schutte)
+- fixed edit action / parsePropsFromForm to handle index-page edits better
+- safer logging from HTTP server (sf bug 896917)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
