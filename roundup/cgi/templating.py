@@ -517,12 +517,12 @@ class HTMLItem(HTMLPermissions):
         history.sort()
         if direction == 'descending':
             history.reverse()
-            for prop_n in self._props:
+            for prop_n in self._props.keys():
                 prop = self[prop_n]
                 if isinstance(prop, HTMLProperty):
                     current[prop_n] = prop.plain()
                     # make link if hrefable
-                    if prop_n in self._props and isinstance(self._props[prop_n], hyperdb.Link):
+                    if isinstance(self._props[prop_n], hyperdb.Link):
                         classname = self._props[prop_n].classname
                         if os.path.exists(os.path.join(self._db.config.TEMPLATES, classname + '.item')):
                             current[prop_n] = '<a href="%s%s">%s</a>'%(classname,
@@ -626,40 +626,40 @@ class HTMLItem(HTMLPermissions):
                                 else:
                                     old = label;
                                 cell.append('%s: %s' % (k,old))
-                                if k in current:
+                                if current.has_key(k):
                                     cell[-1] += ' -> %s'%current[k]
                                     current[k] = old
 
                         elif isinstance(prop, hyperdb.Date) and args[k]:
                             d = date.Date(args[k])
                             cell.append('%s: %s'%(k, str(d)))
-                            if k in current:
+                            if current.has_key(k):
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = str(d)
 
                         elif isinstance(prop, hyperdb.Interval) and args[k]:
                             d = date.Interval(args[k])
                             cell.append('%s: %s'%(k, str(d)))
-                            if k in current:
+                            if current.has_key(k):
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = str(d)
 
                         elif isinstance(prop, hyperdb.String) and args[k]:
                             cell.append('%s: %s'%(k, cgi.escape(args[k])))
-                            if k in current:
+                            if current.has_key(k):
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = cgi.escape(args[k])
 
                         elif not args[k]:
-                            if k not in current:
-                                cell.append('%s: (no value)'%k)
-                            else:
+                            if current.has_key(k):
                                 cell.append('%s: %s'%(k, current[k]))
                                 current[k] = '(no value)'
+                            else:
+                                cell.append('%s: (no value)'%k)
 
                         else:
                             cell.append('%s: %s'%(k, str(args[k])))
-                            if k in current:
+                            if current.has_key(k):
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = str(args[k])
                     else:
