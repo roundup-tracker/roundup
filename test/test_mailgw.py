@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.46.2.1 2004-04-01 00:07:35 richard Exp $
+# $Id: test_mailgw.py,v 1.46.2.2 2004-04-09 01:28:58 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 import rfc822
@@ -95,6 +95,14 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
+    def handleMessage(self, message):
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        nodeid = handler.main(message)
+        # handler will probably close & reopen the db
+        self.db = handler.db
+        return nodeid
+
     def testEmptyMessage(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -105,9 +113,7 @@ Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        nodeid = handler.main(message)
+        nodeid = self.handleMessage(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
@@ -124,9 +130,7 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        nodeid = handler.main(message)
+        nodeid = self.handleMessage(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
@@ -150,15 +154,31 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        nodeid = handler.main(message)
+        nodeid = self.handleMessage(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4'])
+
+    def testNewUser(self):
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Frank Fiddle <frank@fiddle.com>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+This is a test submission of a new issue.
+''')
+        userlist = self.db.user.list()
+        nodeid = self.handleMessage(message)
+        if os.path.exists(os.environ['SENDMAILDEBUG']):
+            error = open(os.environ['SENDMAILDEBUG']).read()
+            self.assertEqual('no error', error)
+        self.assertNotEqual(userlist, self.db.user.list(),
+            "user not created when it should have been")
 
     def testAlternateAddress(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -171,9 +191,7 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 ''')
         userlist = self.db.user.list()
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        nodeid = self.handleMessage(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
@@ -191,9 +209,7 @@ Subject: Testing...
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        nodeid = self.handleMessage(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
@@ -208,11 +224,9 @@ Subject: [issue] Testing... [nosy=mary; assignedto=richard]
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
         # TODO: fix the damn config - this is apalling
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        handler.main(message)
+        nodeid = self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -267,9 +281,7 @@ Subject: [issue1] Testing...
 
 This is a second followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -312,9 +324,7 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4', '5', '6'])
@@ -362,9 +372,7 @@ Subject: Re: Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -410,9 +418,7 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -459,9 +465,7 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -508,9 +512,7 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -556,9 +558,7 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -604,9 +604,7 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -650,9 +648,7 @@ In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4', '5', '6'])
@@ -672,9 +668,7 @@ In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing... [nosy=-richard]
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
         self.assertEqual(l, ['3'])
@@ -702,9 +696,7 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 '''
         message = cStringIO.StringIO(s)
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        self.assertRaises(Unauthorized, handler.main, message)
+        self.assertRaises(Unauthorized, self.handleMessage, message)
         m = self.db.user.list()
         m.sort()
         self.assertEqual(l, m)
@@ -712,10 +704,8 @@ This is a test submission of a new issue.
         # now with the permission
         p = self.db.security.getPermission('Email Registration')
         self.db.security.role['anonymous'].permissions=[p]
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
         message = cStringIO.StringIO(s)
-        handler.main(message)
+        self.handleMessage(message)
         m = self.db.user.list()
         m.sort()
         self.assertNotEqual(l, m)
@@ -736,9 +726,7 @@ Content-Transfer-Encoding: quoted-printable
 A message with encoding (encoded oe =F6)
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -792,9 +780,7 @@ Content-Transfer-Encoding: quoted-printable
 A message with first part encoded (encoded oe =F6)
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -851,9 +837,7 @@ xxxxxx
 
 --bCsyhTFzCvuiizWE--
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
         messages = self.db.issue.get('1', 'messages')
         messages.sort()
         file = self.db.msg.get(messages[-1], 'files')[0]
@@ -872,9 +856,7 @@ Subject: Re: "[issue1] Testing... "
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -940,9 +922,7 @@ Blah blah wrote:
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        self.handleMessage(message)
 
         # figure the new message id
         newmessages = self.db.issue.get(nodeid, 'messages')
