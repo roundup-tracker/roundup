@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.25 2004-05-04 05:56:54 richard Exp $
+#$Id: actions.py,v 1.26 2004-05-06 02:03:42 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -459,17 +459,21 @@ class _EditAction(Action):
 class EditItemAction(_EditAction):
     def lastUserActivity(self):
         if self.form.has_key(':lastactivity'):
-            return date.Date(self.form[':lastactivity'].value)
+            d = date.Date(self.form[':lastactivity'].value)
         elif self.form.has_key('@lastactivity'):
-            return date.Date(self.form['@lastactivity'].value)
+            d = date.Date(self.form['@lastactivity'].value)
         else:
             return None
+        d.second = int(d.second)
 
     def lastNodeActivity(self):
         cl = getattr(self.client.db, self.classname)
-        return cl.get(self.nodeid, 'activity')
+        activity = cl.get(self.nodeid, 'activity').local(0)
+        activity.second = int(activity.second)
+        return activity
 
     def detectCollision(self, user_activity, node_activity):
+        print (user_activity, node_activity)
         if user_activity:
             return user_activity < node_activity
 
