@@ -22,6 +22,11 @@ Feature:
  . stripping of the email message body can now be controlled through the
    config variables EMAIL_KEEP_QUOTED_TEXT and EMAIL_LEAVE_BODY_UNCHANGED.
  . all database files created are now group readable and writable.
+ . added option to automatically add the authors and recipients of messages
+   to the nosy lists with the options ADD_AUTHOR_TO_NOSY (default 'new') and
+   ADD_RECIPIENTS_TO_NOSY (default 'new'). These settings emulate the current
+   behaviour. Setting them to 'yes' will add the author/recipients to the nosy
+   on messages that create issues and followup messages.
 
 Fixed:
  . stop sending blank (whitespace-only) notes
@@ -31,7 +36,7 @@ Fixed:
    to the nodes that are actually linked to in the "field" template
    function.  This adds about 20+ seconds in the display of an issue if
    your database has a 1000 or more issues in it.
-
+ . added missing documentation for a few of the config option values
 
 2002-03-25 - 0.4.1
 Feature:

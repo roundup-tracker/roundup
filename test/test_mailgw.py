@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.16 2002-03-19 21:58:11 grubert Exp $
+# $Id: test_mailgw.py,v 1.17 2002-05-02 07:56:34 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -93,10 +93,30 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
-        handler.main(message)
+        nodeid = handler.main(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
+        self.assertEqual(self.db.issue.get(nodeid, 'nosy'), ['2', '3'])
+
+    def testNewIssueNosy(self):
+        self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork
+To: issue_tracker@fill.me.in.
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+This is a test submission of a new issue.
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        nodeid = handler.main(message)
+        if os.path.exists(os.environ['SENDMAILDEBUG']):
+            error = open(os.environ['SENDMAILDEBUG']).read()
+            self.assertEqual('no error', error)
+        self.assertEqual(self.db.issue.get(nodeid, 'nosy'), ['2', '3'])
 
     def testAlternateAddress(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -321,6 +341,237 @@ http://some.useful.url/issue1
 ___________________________________________________
 ''')
 
+    def testFollowupNosyAuthor(self):
+        self.testNewIssue()
+        self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: john@test
+To: issue_tracker@fill.me.in.
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@fill.me.in.
+TO: chef@bork.bork.bork, richard@test
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test
+From: john <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+john <john@test> added the comment:
+
+This is a followup
+
+
+----------
+nosy: +john
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+
+''')
+
+    def testFollowupNosyRecipients(self):
+        self.testNewIssue()
+        self.instance.ADD_RECIPIENTS_TO_NOSY = 'yes'
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard@test
+To: issue_tracker@fill.me.in.
+Cc: john@test
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@fill.me.in.
+TO: chef@bork.bork.bork
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork
+From: richard <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+richard <richard@test> added the comment:
+
+This is a followup
+
+
+----------
+nosy: +john
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+
+''')
+
+    def testFollowupNosyAuthorAndCopy(self):
+        self.testNewIssue()
+        self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.db.config.MESSAGES_TO_AUTHOR = 'yes'
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: john@test
+To: issue_tracker@fill.me.in.
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@fill.me.in.
+TO: john@test, chef@bork.bork.bork, richard@test
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: john@test, chef@bork.bork.bork, richard@test
+From: john <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+john <john@test> added the comment:
+
+This is a followup
+
+
+----------
+nosy: +john
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+
+''')
+
+    def testFollowupNoNosyAuthor(self):
+        self.testNewIssue()
+        self.instance.ADD_AUTHOR_TO_NOSY = 'no'
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: john@test
+To: issue_tracker@fill.me.in.
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@fill.me.in.
+TO: chef@bork.bork.bork, richard@test
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test
+From: john <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+john <john@test> added the comment:
+
+This is a followup
+
+
+----------
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+
+''')
+
+    def testFollowupNoNosyRecipients(self):
+        self.testNewIssue()
+        self.instance.ADD_RECIPIENTS_TO_NOSY = 'no'
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard@test
+To: issue_tracker@fill.me.in.
+Cc: john@test
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@fill.me.in.
+TO: chef@bork.bork.bork
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork
+From: richard <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+richard <richard@test> added the comment:
+
+This is a followup
+
+
+----------
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+
+''')
+
     def testEnc01(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -423,14 +674,17 @@ class ExtMailgwTestCase(MailgwTestCase):
     schema = 'extended'
 
 def suite():
-    l = [unittest.makeSuite(MailgwTestCase, 'test'),
-#         unittest.makeSuite(ExtMailgwTestCase, 'test')
+    l = [unittest.makeSuite(MailgwTestCase),
+         unittest.makeSuite(ExtMailgwTestCase, 'test')
     ]
     return unittest.TestSuite(l)
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/03/19 21:58:11  grubert
+#  . for python2.1 test_mailgw compareString allows an extra trailing empty line (for quopri.
+#
 # Revision 1.15  2002/03/19 06:37:00  richard
 # Made the email checking spit out a diff - much easier to spot the problem!
 #

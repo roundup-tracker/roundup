@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.67 2002-04-23 15:46:49 rochecompaan Exp $
+$Id: mailgw.py,v 1.68 2002-05-02 07:56:34 richard Exp $
 '''
 
 
@@ -131,7 +131,7 @@ class MailGW:
     def main(self, fp):
         ''' fp - the file from which to read the Message.
         '''
-        self.handle_Message(Message(fp))
+        return self.handle_Message(Message(fp))
 
     def handle_Message(self, message):
         '''Handle an RFC822 Message
@@ -493,7 +493,14 @@ Unknown address: %s
             r = recipient[1].strip().lower()
             if r == tracker_email or not r:
                 continue
-            recipients.append(self.db.uidFromAddress(recipient))
+
+            # look up the recipient - create if necessary (and we're
+            # allowed to)
+            recipient = self.db.uidFromAddress(recipient, create)
+
+            # if all's well, add the recipient to the list
+            if recipient:
+                recipients.append(recipient)
 
         #
         # handle message-id and in-reply-to
@@ -638,25 +645,13 @@ not find a text/plain part to use.
                             current_status == resolved_id):
                         props['status'] = chatting_id
 
-            # add nosy in arguments to issue's nosy list
-            if not props.has_key('nosy'): props['nosy'] = []
-            n = {}
+            # update the nosy list
+            current = {}
             for nid in cl.get(nodeid, 'nosy'):
-                n[nid] = 1
-            for value in props['nosy']:
-                if self.db.hasnode('user', value):
-                    nid = value
-                else: 
-                    continue
-                if n.has_key(nid): continue
-                n[nid] = 1
-            props['nosy'] = n.keys()
-            # add assignedto to the nosy list
-            if props.has_key('assignedto'):
-                assignedto = props['assignedto']
-                if assignedto not in props['nosy']:
-                    props['nosy'].append(assignedto)
+                current[nid] = 1
+            self.updateNosy(props, author, recipients, current)
 
+            # create the message
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files, messageid=messageid,
@@ -711,30 +706,7 @@ There was a problem with the message you sent:
             props['messages'] = [message_id]
 
             # set up (clean) the nosy list
-            nosy = props.get('nosy', [])
-            n = {}
-            for value in nosy:
-                nid = value
-                if n.has_key(nid): continue
-                n[nid] = 1
-            props['nosy'] = n.keys()
-            # add on the recipients of the message
-            for recipient in recipients:
-                if not n.has_key(recipient):
-                    props['nosy'].append(recipient)
-                    n[recipient] = 1
-
-            # add the author to the nosy list
-            if not n.has_key(author):
-                props['nosy'].append(author)
-                n[author] = 1
-
-            # add assignedto to the nosy list
-            if properties.has_key('assignedto') and props.has_key('assignedto'):
-                assignedto = props['assignedto']
-                if not n.has_key(assignedto):
-                    props['nosy'].append(assignedto)
-                    n[assignedto] = 1
+            self.updateNosy(props, author, recipients)
 
             # and attempt to create the new node
             try:
@@ -747,6 +719,50 @@ There was a problem with the message you sent:
 
             # commit the new node(s) to the DB
             self.db.commit()
+
+        return nodeid
+
+    def updateNosy(self, props, author, recipients, current=None):
+        '''Determine what the nosy list should be given:
+
+            props:      properties specified on the subject line of the message
+            author:     the sender of the message
+            recipients: the recipients (to, cc) of the message
+            current:    if the issue already exists, this is the current nosy
+                        list, as a dictionary.
+        '''
+        if current is None:
+            current = {}
+            ok = ('new', 'yes')
+        else:
+            ok = ('yes',)
+
+        # add nosy in arguments to issue's nosy list
+        nosy = props.get('nosy', [])
+        for value in nosy:
+            if not self.db.hasnode('user', value):
+                continue
+            if not current.has_key(value):
+                current[value] = 1
+
+        # add the author to the nosy list
+        if getattr(self.instance, 'ADD_AUTHOR_TO_NOSY', 'new') in ok:
+            if not current.has_key(author):
+                current[author] = 1
+
+        # add on the recipients of the message
+        if getattr(self.instance, 'ADD_RECIPIENTS_TO_NOSY', 'new') in ok:
+            for recipient in recipients:
+                if not current.has_key(recipient):
+                    current[recipient] = 1
+
+        # add assignedto to the nosy list
+        if props.has_key('assignedto'):
+            assignedto = props['assignedto']
+            if not current.has_key(assignedto):
+                current[assignedto] = 1
+
+        props['nosy'] = current.keys()
 
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
@@ -812,6 +828,11 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.67  2002/04/23 15:46:49  rochecompaan
+#  . stripping of the email message body can now be controlled through
+#    the config variables EMAIL_KEEP_QUOTED_TEST and
+#    EMAIL_LEAVE_BODY_UNCHANGED.
+#
 # Revision 1.66  2002/03/14 23:59:24  richard
 #  . #517734 ] web header customisation is obscure
 #

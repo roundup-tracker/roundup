@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.14 2002-04-23 15:46:49 rochecompaan Exp $
+# $Id: instance_config.py,v 1.15 2002-05-02 07:56:34 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -66,28 +66,40 @@ ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
 # Where to place the web filtering HTML on the index page
-FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
+FILTER_POSITION = 'bottom'          # one of 'top', 'bottom', 'top and bottom'
 
 # Deny or allow anonymous access to the web interface
-ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
+ANONYMOUS_ACCESS = 'deny'           # either 'deny' or 'allow'
 
 # Deny or allow anonymous users to register through the web interface
-ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
+ANONYMOUS_REGISTER = 'deny'         # either 'deny' or 'allow'
 
 # Deny or allow anonymous users to register through the mail interface
-ANONYMOUS_REGISTER_MAIL = 'deny'     # either 'deny' or 'allow'
+ANONYMOUS_REGISTER_MAIL = 'deny'    # either 'deny' or 'allow'
 
 # Send nosy messages to the author of the message
-MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
+MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
+
+# Does the author of a message get placed on the nosy list automatically?
+# If 'new' is used, then the author will only be added when a message
+# creates a new issue. If 'yes', then the author will be added on followups
+# too. If 'no', they're never added to the nosy.
+ADD_AUTHOR_TO_NOSY = 'new'          # one of 'yes', 'no', 'new'
+
+# Do the recipients (To:, Cc:) of a message get placed on the nosy list?
+# If 'new' is used, then the recipients will only be added when a message
+# creates a new issue. If 'yes', then the recipients will be added on followups
+# too. If 'no', they're never added to the nosy.
+ADD_RECIPIENTS_TO_NOSY = 'new'      # either 'yes', 'no', 'new'
 
 # Where to place the email signature
-EMAIL_SIGNATURE_POSITION = 'bottom'
+EMAIL_SIGNATURE_POSITION = 'bottom' # one of 'top', 'bottom', 'none'
 
 # Keep email citations
-EMAIL_KEEP_QUOTED_TEXT = 'no'
+EMAIL_KEEP_QUOTED_TEXT = 'no'       # either 'yes' or 'no'
 
 # Preserve the email body as is
-EMAIL_LEAVE_BODY_UNCHANGED = 'no'
+EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 
 # Default class to use in the mailgw if one isn't supplied in email
 # subjects. To disable, comment out the variable below or leave it blank.
@@ -150,6 +162,11 @@ USER_INDEX = {
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/04/23 15:46:49  rochecompaan
+#  . stripping of the email message body can now be controlled through
+#    the config variables EMAIL_KEEP_QUOTED_TEST and
+#    EMAIL_LEAVE_BODY_UNCHANGED.
+#
 # Revision 1.13  2002/03/14 23:59:24  richard
 #  . #517734 ] web header customisation is obscure
 #
