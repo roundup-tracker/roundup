@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.93.2.4 $
+:Version: $Revision: 1.93.2.5 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -16,7 +16,7 @@ What You Can Do
 Before you get too far, it's probably worth having a quick read of the Roundup
 `design documentation`_.
 
-Customisation of Roundup can take one of five forms:
+Customisation of Roundup can take one of six forms:
 
 1. `tracker configuration`_ file changes
 2. database, or `tracker schema`_ changes

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.55.2.3 $
+:Version: $Revision: 1.55.2.4 $
 
 .. contents::
 
@@ -80,10 +80,10 @@ at so you may start playing. Three users will be set up:
 Installation
 ============
 
-Note: some systems, such as Debian and NetBSD, already have Roundup
-      installed. Try running the command "roundup-admin" with no arguments,
-      and if it runs you may skip the `Basic Installation Steps`_
-      below and go straight to `configuring your first tracker`_.
+:Note: Some systems, such as Debian and NetBSD, already have Roundup
+       installed. Try running the command "roundup-admin" with no arguments,
+       and if it runs you may skip the `Basic Installation Steps`_
+       below and go straight to `configuring your first tracker`_.
 
 Set aside 15-30 minutes. Please make sure you're using a supported version of
 Python -- see `testing your python`_. There's several steps to follow in your

@@ -139,7 +139,10 @@ search page using the macros detailed in the customisation doc section
 __ customizing.html#searching-on-categories
 
 Also, the url field in the query class no longer starts with a '?'. You'll need
-to remove this question mark from the url field to support queries.
+to remove this question mark from the url field to support queries. There's
+a script in the "tools" directory called ``migrate-queries.py`` that should
+automatically change any existing queries for you. As always, make a backup
+of your database before running such a script.
 
 
 0.6.0 Notes for metakit backend users
