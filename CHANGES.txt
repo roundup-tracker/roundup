@@ -1,10 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2004-02-25 0.6.7
+2004-??-?? 0.6.7
 Fixed:
 - made error on create consistent with edit when user enters invalid data
   for Multilink and Link form fields (sf bug 904072)
+- made errors from bad input in the quick "Show issue:" form more
+  user-friendly (sf bug 904064)
 
 
 2004-02-25 0.6.6

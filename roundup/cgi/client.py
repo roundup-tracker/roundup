@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.11 2004-02-24 23:37:10 richard Exp $
+# $Id: client.py,v 1.130.2.12 2004-02-25 23:23:56 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -26,6 +26,23 @@ class  Redirect(HTTPException):
        pass
 class  NotModified(HTTPException):
        pass
+class SeriousError(Exception):
+    ''' Raised when we can't reasonably display an error message on a
+        templated page.
+
+        The exception value will be displayed in the error page, HTML
+        escaped.
+    '''
+    def __str__(self):
+        return '''
+<html><head><title>Roundup issue tracker: An error has occurred</title>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
+ <link rel="stylesheet" type="text/css" href="_file/style.css">
+</head>
+<body class="body" marginwidth="0" marginheight="0">
+ <p class="error-message">%s</p>
+</body></html>
+'''%cgi.escape(self.args[0])
 
 # set to indicate to roundup not to actually _send_ email
 # this var must contain a file to write the mail to
@@ -262,6 +279,8 @@ class Client:
 
             # render the content
             self.write(self.renderContext())
+        except SeriousError, message:
+            self.write(str(message))
         except Redirect, url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
@@ -1458,7 +1477,6 @@ You should then receive another email with the new password.
             return 0
         return 1
 
-
     def showAction(self, typere=re.compile('[@:]type'),
             numre=re.compile('[@:]number')):
         ''' Show a node of a particular class/id
@@ -1470,7 +1488,18 @@ You should then receive another email with the new password.
             elif numre.match(key):
                 n = self.form[key].value.strip()
         if not t:
-            raise ValueError, 'Invalid %s number'%t
+            raise ValueError, 'No type specified'
+            return
+        if not n:
+            raise SeriousError, _('No ID entered')
+            return
+        try:
+            int(n)
+        except ValueError:
+            d = {'input': n, 'classname': t}
+            raise SeriousError, _(
+                '"%(input)s" is not an ID (%(classname)s ID required)')%d
+            return
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
         raise Redirect, url
 
