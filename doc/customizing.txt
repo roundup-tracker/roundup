@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.25 $
+:Version: $Revision: 1.26 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -11,7 +11,7 @@ Customising Roundup
 
 
 What You Can Do
----------------
+===============
 
 Customisation of Roundup can take one of five forms:
 
@@ -28,30 +28,25 @@ includes adding or removing properties from classes.
 
 
 Trackers in a Nutshell
-----------------------
+======================
 
 Trackers have the following structure:
 
-+-------------------+--------------------------------------------------------+
-|config.py          |Holds the basic `tracker configuration`_                |
-+-------------------+--------------------------------------------------------+
-|dbinit.py          |Holds the `tracker schema`_                             |
-+-------------------+--------------------------------------------------------+
-|interfaces.py      |Defines the Web and E-Mail interfaces for the tracker   |
-+-------------------+--------------------------------------------------------+
-|select_db.py       |Selects the database back-end for the tracker           |
-+-------------------+--------------------------------------------------------+
-|db/                |Holds the tracker's database                            |
-+-------------------+--------------------------------------------------------+
-|db/files/          |Holds the tracker's upload files and messages           |
-+-------------------+--------------------------------------------------------+
-|detectors/         |Auditors and reactors for this tracker                  |
-+-------------------+--------------------------------------------------------+
-|html/              |Web interface templates, images and style sheets        |
-+-------------------+--------------------------------------------------------+
+=================== ========================================================
+Tracker File        Description
+=================== ========================================================
+config.py           Holds the basic `tracker configuration`_                 
+dbinit.py           Holds the `tracker schema`_                              
+interfaces.py       Defines the Web and E-Mail interfaces for the tracker    
+select_db.py        Selects the database back-end for the tracker            
+db/                 Holds the tracker's database                             
+db/files/           Holds the tracker's upload files and messages            
+detectors/          Auditors and reactors for this tracker                   
+html/               Web interface templates, images and style sheets         
+=================== ======================================================== 
 
 Tracker Configuration
----------------------
+=====================
 
 The config.py located in your tracker home contains the basic
 configuration for the web and e-mail components of roundup's interfaces. This
@@ -183,7 +178,7 @@ tracker is attempted.::
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
 Tracker Schema
---------------
+==============
 
 Note: if you modify the schema, you'll most likely need to edit the
       `web interface`_ HTML template files and `detectors`_ to reflect
@@ -241,7 +236,7 @@ tracker. The "classic" schema looks like this::
 XXX security definitions
 
 Classes and Properties - creating a new information store
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------------------
 
 In the tracker above, we've defined 7 classes of information:
 
@@ -275,7 +270,7 @@ issue (which is stored as a single number) we reduce the chance that someone
 mis-types a priority or status - or simply makes a new one up.
 
 Class and Items
-:::::::::::::::
+~~~~~~~~~~~~~~~
 
 A Class defines a particular class (or type) of data that will be stored in the
 database. A class comprises one or more properties, which given the information
@@ -285,7 +280,7 @@ items. They have a special immutable property called id. We sometimes refer to
 this as the itemid.
 
 Properties
-::::::::::
+~~~~~~~~~~
 
 A Class is comprised of one or more properties of the following types:
 
@@ -303,7 +298,7 @@ A Class is comprised of one or more properties of the following types:
   The value is a list of integers.
 
 FileClass
-:::::::::
+~~~~~~~~~
 
 FileClasses save their "content" attribute off in a separate file from the rest
 of the database. This reduces the number of large entries in the database,
@@ -312,7 +307,7 @@ command-line tools to operate on the files. They are stored in the files sub-
 directory of the db directory in your tracker.
 
 IssueClass
-::::::::::
+~~~~~~~~~~
 
 IssueClasses automatically include the "messages", "files", "nosy", and
 "superseder" properties.
@@ -331,7 +326,7 @@ records in the item's journal). The "creator" property holds a link to the user
 that created the issue.
 
 setkey(property)
-::::::::::::::::
+~~~~~~~~~~~~~~~~
 
 Select a String property of the class to be the key property. The key property
 muse be unique, and allows references to the items in the class by the content
@@ -349,20 +344,20 @@ or::
 Note, the same thing can be done in the web and e-mail interfaces.
 
 create(information)
-:::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~
 
 Create an item in the database. This is generally used to create items in the
 "definitional" classes like "priority" and "status".
 
 
 Examples of adding to your schema
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 TODO
 
 
 Detectors - adding behaviour to your tracker
---------------------------------------------
+============================================
 .. _detectors:
 
 The detectors in your tracker fire before (*auditors*) and after (*reactors*)
@@ -399,7 +394,7 @@ XXX give the example here.
 
 
 Database Content
-----------------
+================
 
 Note: if you modify the content of definitional classes, you'll most likely
        need to edit the tracker `detectors`_ to reflect your changes.
@@ -422,7 +417,7 @@ XXX example
 
 
 Web Interface
--------------
+=============
 
 The web is provided by the roundup.cgi.client module and is used by
 roundup.cgi, roundup-server and ZRoundup.
@@ -434,7 +429,7 @@ the access through its main() method. This means that you can do pretty much
 anything you want as a web interface to your tracker.
 
 Repurcussions of changing the tracker schema
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 If you choose to change the `tracker schema`_ you will need to ensure the web
 interface knows about it:
@@ -445,7 +440,7 @@ interface knows about it:
    page's content arguments.
 
 How requests are processed
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 The basic processing of a web request proceeds as follows:
 
@@ -469,7 +464,7 @@ In some situations, exceptions occur:
   this exception percolates up to the CGI interface that called the client
 
 Determining web context
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 To determine the "context" of a request, we look at the URL and the special
 request variable ``:template``. The URL path after the tracker identifier
@@ -516,7 +511,7 @@ which defaults to:
 
 
 Performing actions in web requests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 
 When a user requests a web page, they may optionally also request for an
 action to take place. As described in `how requests are processed`_, the
@@ -570,7 +565,7 @@ Each of the actions is implemented by a corresponding *actionAction* (where
 "action" is the name of the action) method on
 the roundup.cgi.Client class, which also happens to be in your tracker as
 interfaces.Client. So if you need to define new actions, you may add them
-there (see `definining new web actions`_).
+there (see `defining new web actions`_).
 
 Each action also has a corresponding *actionPermission* (where
 "action" is the name of the action) method which determines
@@ -605,7 +600,7 @@ search
 
 
 Default templates
-~~~~~~~~~~~~~~~~~
+-----------------
 
 Most customisation of the web view can be done by modifying the templates in
 the tracker **html** directory. There are several types of files in there:
@@ -634,12 +629,12 @@ style.css
   a static file that is served up as-is
 
 Overall Look - "page" template
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 XXX
 
 How the templates work
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 Roundup's templates consist of special attributes on your template tags. These
 attributes form the Template Attribute Language, or TAL. The commands are:
@@ -761,7 +756,7 @@ Python Expressions - eg. ``python: 1+1``
    a method.
 
 Information available to templates
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 
 The following variables are available to templates.
 
@@ -791,7 +786,7 @@ The following variables are available to templates.
   XXX a special variable
 
 The context variable
-::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~
 
 The *context* variable is one of three things based on the current context
 (see `determining web context`_ for how we figure this out):
@@ -812,7 +807,7 @@ The only real difference between cases 2 and 3 above are:
 
 
 The request variable
-::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~
 
 The request variable is packed with information about the current request.
 
@@ -838,7 +833,7 @@ Variable    Holds
 =========== ================================================================
 columns     dictionary of the columns to display in an index page
 show        a convenience access to columns - request/show/colname will
-              be true if the columns should be displayed, false otherwise
+            be true if the columns should be displayed, false otherwise
 sort        index sort column (direction, column name)
 group       index grouping property (direction, column name)
 filter      properties to filter the index on
@@ -848,7 +843,7 @@ search_text text to perform a full-text search on for an index
 
 
 Displaying Properties
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 Properties appear in the user interface in three contexts: in indices, in
 editors, and as search arguments.
@@ -859,13 +854,13 @@ displayed in an editable field.
 
 
 Index Views
-~~~~~~~~~~~
+-----------
 
 This is one of the class context views. It is also the default view for
 classes. The template used is "*classname*.index".
 
 Index View Specifiers
-:::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~~
 
 An index view specifier (URL fragment) looks like this (whitespace has been
 added for clarity)::
@@ -873,7 +868,7 @@ added for clarity)::
      /issue?status=unread,in-progress,resolved&
             topic=security,ui&
             :group=+priority&
-            :sort=-activity&
+            :sort==activity&
             :filters=status,topic&
             :columns=title,status,fixer
 
@@ -899,12 +894,12 @@ the "status" and "topic" properties, and the table includes columns for the
 "title", "status", and "fixer" properties.
 
 Filtering of indexes
-::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~
 
 TODO
 
 Searching Views
-~~~~~~~~~~~~~~~
+---------------
 
 This is one of the class context views. The template used is typically
 "*classname*.search".
@@ -912,7 +907,7 @@ This is one of the class context views. The template used is typically
 TODO
 
 Item Views
-~~~~~~~~~~
+----------
 
 The basic view of a hyperdb item is provided by the "*classname*.item"
 template. It generally has three sections; an "editor", a "spool" and a
@@ -921,7 +916,7 @@ template. It generally has three sections; an "editor", a "spool" and a
 
 
 Editor Section
-::::::::::::::
+~~~~~~~~~~~~~~
 
 The editor section is used to manipulate the item - it may be a
 static display if the user doesn't have permission to edit the item.
@@ -994,7 +989,7 @@ template can use the ":note" and ":file" fields, which are added to the
 standard change note message generated by Roundup.
 
 Spool Section
-:::::::::::::
+~~~~~~~~~~~~~
 
 The spool section lists related information like the messages and files of
 an issue.
@@ -1003,7 +998,7 @@ TODO
 
 
 History Section
-:::::::::::::::
+~~~~~~~~~~~~~~~
 
 The final section displayed is the history of the item - its database journal.
 This is generally generated with the template::
@@ -1021,9 +1016,14 @@ through the "journal" method of the item*::
 
 *where each journal entry is an HTMLJournalEntry.*
 
+Defining new web actions
+------------------------
+
+XXX
+
 
 Access Controls
----------------
+===============
 
 A set of Permissions are built in to the security module by default:
 
@@ -1067,7 +1067,7 @@ You may use the ``roundup-admin`` "``security``" command to display the
 current Role and Permission configuration in your tracker.
 
 Adding a new Permission
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 When adding a new Permission, you will need to:
 
@@ -1080,7 +1080,350 @@ When adding a new Permission, you will need to:
 
 
 
------------------
+An example of adding a new field to a roundup schema
+====================================================
+
+Introduction
+------------
+
+To make the classic schema of roundup useful as a todo tracking system
+for a group of systems administrators, it needed an extra data field
+per issue: a category.
+
+This would let sysads quickly list all todos in their particular
+area of interest without having to do complex queries, and without
+relying on the spelling capabilities of other sysads (a losing
+proposition at best).
+
+Adding a field to the database
+------------------------------
+
+This is the easiest part of the change. The category would just be a plain
+string, nothing fancy. To change what is in the database you need to add
+some lines to the ``open()`` function in ``dbinit.py``::
+
+    category = Class(db, "category", name=String())
+    category.setkey("name")
+
+Here we are setting up a chunk of the database which we are calling
+"category". It contains a string, which we are refering to as "name" for
+lack of a more imaginative title. Then we are setting the key of this chunk
+of the database to be that "name". This is equivalent to an index for
+database types. This also means that there can only be one category with a
+given name.
+
+Adding the above lines allows us to create categories, but they're not tied
+to the issues that we are going to be creating. It's just a list of categories
+off on its own, which isn't much use. We need to link it in with the issues.
+To do that, find the lines in the ``open()`` function in ``dbinit.py`` which
+set up the "issue" class, and then add a link to the category::
+
+    issue = IssueClass(db, "issue", ... , category=Multilink("category"), ... )
+
+The Multilink() means that each issue can have many categories. If you were
+adding something with a more one to one relationship use Link() instead.
+
+That is all you need to do to change the schema. The rest of the effort is
+fiddling around so you can actually use the new category.
+
+Setting up security on the new objects
+--------------------------------------
+
+By default only the admin user can look at and change objects. This doesn't
+suit us, as we want any user to be able to create new categories as
+required, and obviously everyone needs to be able to view the categories of
+issues for it to be useful.
+
+We therefore need to change the security of the category objects. This is
+also done in the ``open()`` function of ``dbinit.py``.
+
+There are currently two loops which set up permissions and then assign them
+to various roles. Simply add the new "category" to both lists::
+
+    # new permissions for this schema
+    for cl in 'issue', 'file', 'msg', 'user', 'category':
+        db.security.addPermission(name="Edit", klass=cl,
+            description="User is allowed to edit "+cl)
+        db.security.addPermission(name="View", klass=cl,
+            description="User is allowed to access "+cl)
+
+    # Assign the access and edit permissions for issue, file and message
+    # to regular users now
+    for cl in 'issue', 'file', 'msg', 'category':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Edit', cl)
+        db.security.addPermissionToRole('User', p)
+
+So you are in effect doing the following::
+
+    db.security.addPermission(name="Edit", klass='category',
+        description="User is allowed to edit "+'category')
+    db.security.addPermission(name="View", klass='category',
+        description="User is allowed to access "+'category')
+
+which is creating two permission types; that of editing and viewing
+"category" objects respectively. Then the following lines assign those new
+permissions to the "User" role, so that normal users can view and edit
+"category" objects::
+
+    p = db.security.getPermission('View', 'category')
+    db.security.addPermissionToRole('User', p)
+
+    p = db.security.getPermission('Edit', 'category')
+    db.security.addPermissionToRole('User', p)
+
+This is all the work that needs to be done for the database. It will store
+categories, and let users view and edit them. Now on to the interface
+stuff.
+
+Changing the web left hand frame
+--------------------------------
+
+We need to give the users the ability to create new categories, and the
+place to put the link to this functionality is in the left hand function
+bar, under the "Issues" area. The file that defines how this area looks is
+``html/page``, which is what we are going to be editing next.
+
+If you look at this file you can see that it contains a lot of "classblock"
+sections which are chunks of HTML that will be included or excluded in the
+output depending on whether the condition in the classblock is met. Under
+the end of the classblock for issue is where we are going to add the
+category code::
+
+  <p class="classblock"
+     tal:condition="python:request.user.hasPermission('View', 'category')">
+   <b>Categories</b><br>
+   <a tal:condition="python:request.user.hasPermission('Edit', 'category')"
+      href="category?:template=item">New Category<br></a>
+  </p>
+
+The first two lines is the classblock definition, which sets up a condition
+that only users who have "View" permission to the "category" object will
+have this section included in their output. Next comes a plain "Categories"
+header in bold. Everyone who can view categories will get that.
+
+Next comes the link to the editing area of categories. This link will only
+appear if the condition is matched: that condition being that the user has
+"Edit" permissions for the "category" objects. If they do have permission
+then they will get a link to another page which will let the user add new
+categories.
+
+Note that if you have permission to view but not edit categories then all
+you will see is a "Categories" header with nothing underneath it. This is
+obviously not very good interface design, but will do for now. I just claim
+that it is so I can add more links in this section later on. However to fix
+the problem you could change the condition in the classblock statement, so
+that only users with "Edit" permission would see the "Categories" stuff.
+
+Setting up a page to edit categories
+------------------------------------
+
+We defined code in the previous section which let users with the
+appropriate permissions see a link to a page which would let them edit
+conditions. Now we have to write that page.
+
+The link was for the item template for the category object. This translates
+into the system looking for a file called ``category.item`` in the ``html``
+tracker directory. This is the file that we are going to write now.
+
+First we add an id tag in a comment which doesn't affect the outcome
+of the code at all but is essential for managing the changes to this
+file. It is useful for debugging however, if you load a page in a
+browser and look at the page source, you can see which sections come
+from which files by looking for these comments::
+
+    <!-- dollarId: category.item,v 1.3 2002/05/22 00:32:34 me Exp dollar-->
+
+Next we need to setup up a standard HTML form, which is the whole
+purpose of this file. We link to some handy javascript which sends the form
+through only once. This is to stop users hitting the send button
+multiple times when they are impatient and thus having the form sent
+multiple times::
+
+    <form method="POST" onSubmit="return submit_once()"
+          enctype="multipart/form-data">
+
+Next we define some code which sets up the minimum list of fields that we
+require the user to enter. There will be only one field, that of "name", so
+they user better put something in it otherwise the whole form is pointless::
+
+    <input type="hidden" name=":required" value="name">
+
+To get everything to line up properly we will put everything in a table,
+and put a nice big header on it so the user has an idea what is happening::
+
+    <table class="form">
+     <tr class="strong-header"><td colspan=2>Category</td></tr>
+
+Next we need the actual field that the user is going to enter the new
+category. The "context.name.field(size=60)" bit tells roundup to generate a
+normal HTML field of size 60, and the contents of that field will be the
+"name" variable of the current context (which is "category"). The upshot of
+this is that when the user types something in to the form, a new category
+will be created with that name::
+
+    <tr>
+     <td nowrap>Name</td>
+     <td tal:content="structure python:context.name.field(size=60)">name</td>
+    </tr>
+
+Finally a submit button so that the user can submit the new category::
+
+    <tr>
+     <td>&nbsp;</td>
+     <td colspan=3 tal:content="structure context/submit">
+      submit button will go here
+     </td>
+    </tr>
+
+So putting it all together, and closing the table and form we get::
+
+ <!-- dollarId: category.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
+
+ <form method="POST" onSubmit="return submit_once()"
+       enctype="multipart/form-data">
+
+  <input type="hidden" name=":required" value="name">
+
+  <table class="form">
+   <tr class="strong-header"><td colspan=2>Category</td></tr>
+
+   <tr>
+    <td nowrap>Name</td>
+    <td tal:content="structure python:context.name.field(size=60)">name</td>
+   </tr>
+
+   <tr>
+    <td>&nbsp;</td>
+    <td colspan=3 tal:content="structure context/submit">
+     submit button will go here
+    </td>
+   </tr>
+  </table>
+ </form>
+
+This is quite a lot to just ask the user one simple question, but
+there is a lot of setup for basically one line (the form line) to do
+its work. To add another field to "category" would involve one more line
+(well maybe a few extra to get the formatting correct).
+
+Adding the category to the issue
+--------------------------------
+
+We now have the ability to create issues to our hearts content, but
+that is pointless unless we can assign categories to issues.  Just like
+the ``html/category.item`` file was used to define how to add a new
+category, the ``html/issue.item`` is used to define how a new issue is
+created.
+
+Just like ``category.issue`` this file defines a form which has a table to lay
+things out. It doesn't matter where in the table we add new stuff,
+it is entirely up to your sense of aesthetics::
+
+   <th nowrap>Category</th>
+   <td><span tal:replace="structure context/category/field" />
+       <span tal:replace="structure python:db.category.classhelp('name',
+             label='list', width=500)" />
+   </td>
+
+First we define a nice header so that the user knows what the next section
+is, then the middle line does what we are most interested in. This
+``context/category/field`` gets replaced with a field which contains the
+category in the current context (the current context being the new issue).
+
+The classhelp lines generate a link (labelled "list") to a popup window
+which contains the list of currently known categories.
+
+Searching on categories
+-----------------------
+
+We can add categories, and create issues with categories. The next obvious
+thing that we would like to be would be to search issues based on their
+category, so that any one working on the web server could look at all
+issues in the category "Web" for example.
+
+If you look in the html/page file and look for the "Search Issues" you will
+see that it looks something like ``<a href="issue?:template=search">Search
+Issues</a>`` which shows us that when you click on "Search Issues" it will
+be looking for a ``issue.search`` file to display. So that is indeed the file
+that we are going to change.
+
+If you look at this file it should be starting to seem familiar. It is a
+simple HTML form using a table to define structure. You can add the new
+category search code anywhere you like within that form::
+
+    <tr>
+     <th>Category:</th>
+     <td>
+      <select name="category">
+       <option value="">don't care</option>
+       <option value="">------------</option>
+       <option tal:repeat="s db/category/list" tal:attributes="value s/name"
+               tal:content="s/name">category to filter on</option>
+      </select>
+     </td>
+     <td><input type="checkbox" name=":columns" value="category" checked></td>
+     <td><input type="radio" name=":sort" value="category"></td>
+     <td><input type="radio" name=":group" value="category"></td>
+    </tr>
+
+Most of this is straightforward to anyone who knows HTML. It is just
+setting up a select list followed by a checkbox and a couple of radio
+buttons. 
+
+The ``tal:repeat`` part repeats the tag for every item in the "category"
+table and setting "s" to be each category in turn.
+
+The ``tal:attributes`` part is setting up the ``value=`` part of the option tag
+to be the name part of "s" which is the current category in the loop.
+
+The ``tal:content`` part is setting the contents of the option tag to be the
+name part of "s" again. For objects more complex than category, obviously
+you would put an id in the value, and the descriptive part in the content;
+but for category they are the same.
+
+Adding category to the default view
+-----------------------------------
+
+We can now add categories, add issues with categories, and search issues
+based on categories. This is everything that we need to do, however there
+is some more icing that we would like. I think the category of an issue is
+important enough that it should be displayed by default when listing all
+the issues.
+
+Unfortunately, this is a bit less obvious than the previous steps. The code
+defining how the issues look is in ``html/issue.index``. This is a large table
+with a form down the bottom for redisplaying and so forth. 
+
+Firstly we need to add an appropriate header to the start of the table::
+
+    <th tal:condition="request/show/category">Category</th>
+
+The condition part of this statement is so that if the user has selected
+not to see the Category column then they won't.
+
+The rest of the table is a loop which will go through every issue that
+matches the display criteria. The loop variable is "i" - which means that
+every issue gets assigned to "i" in turn.
+
+The new part of code to display the category will look like this::
+
+    <td tal:condition="request/show/category" tal:content="i/category"></td>
+
+The condition is the same as above: only display the condition when the
+user hasn't asked for it to be hidden. The next part is to set the content
+of the cell to be the category part of "i" - the current issue.
+
+Finally we have to edit ``html/page`` again. This time to tell it that when the
+user clicks on "Unnasigned Issues" or "All Issues" that the category should
+be displayed. If you scroll down the page file, you can see the links with
+lots of options. The option that we are interested in is the ``:columns=`` one
+which tells roundup which fields of the issue to display. Simply add
+"category" to that list and it all should work.
+
+
+-------------------
 
 Back to `Table of Contents`_
 

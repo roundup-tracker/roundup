@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.6 $
+:Version: $Revision: 1.7 $
 
 .. contents::
 
@@ -15,22 +15,20 @@ Web Interface
 
 Index views may be modified by the following arguments:
 
-+-----------+--------------------------------------------------------------+
-| :sort     | sort by prop name, optionally preceeded with '-'             |
-|           | to give descending or nothing for ascending sorting.         |
-+-----------+--------------------------------------------------------------+
-| :group    | group by prop name, optionally preceeded with '-' or         |
-|           | to sort in descending or nothing for ascending order.        |
-+-----------+--------------------------------------------------------------+
-| :filter   | selects which props should be displayed in the filter        |
-|           | section. Default is all.                                     |
-+-----------+--------------------------------------------------------------+
-| :columns  | selects the columns that should be displayed.                |
-|           | Default is all.                                              |
-+-----------+--------------------------------------------------------------+
-| propname  | selects the values the item properties given by propname     |
-|           | must have (very basic search/filter).                        |
-+-----------+--------------------------------------------------------------+
+========== =============================================================
+Argument   Description
+========== =============================================================
+:sort      sort by prop name, optionally preceeded with '-'
+           to give descending or nothing for ascending sorting.
+:group     group by prop name, optionally preceeded with '-' or
+           to sort in descending or nothing for ascending order.
+:filter    selects which props should be displayed in the filter
+           section. Default is all.           
+:columns   selects the columns that should be displayed.
+           Default is all.                     
+propname   selects the values the item properties given by propname
+           must have (very basic search/filter).
+========== =============================================================
 
 Searching
 ~~~~~~~~~
@@ -192,130 +190,50 @@ to determine if they get a nosy list copy of the message too.
 Command Line Tool
 -----------------
 
-Usage: ``roundup-admin [-i tracker home] [-u login] [-c] <command> <arguments>``
+The basic usage is::
 
-Options:
+ Help:
+ roundup-admin -h
+  roundup-admin help                       -- this help
+  roundup-admin help <command>             -- command-specific help
+  roundup-admin help all                   -- all available help
 
--i          tracker home specify the issue tracker "home directory" to administer
--u          the ``user[:password]`` to use for commands
--c          when outputting lists of data, comma-separate them
+ Options:
+  -i instance home  -- specify the issue tracker "home directory" to administer
+  -u                -- the user[:password] to use for commands
+  -c                -- when outputting lists of data, just comma-separate them
 
-+-----------------------------------------------------------------------------+
-| Command Help                                                                |
-+=============+===============================================================+
-|commit       |Usage: commit                                                  |
-|             |The changes made during an interactive session are not         |
-|             |automatically written to the database - they must be committed |
-|             |using this command.                                            |
-|             |                                                               |
-|             |One-off commands on the command-line are automatically         |
-|             |committed if they are successful.                              |
-+-------------+---------------------------------------------------------------+
-|create       |Usage: create classname property=value ...                     |
-|             |This creates a new entry of the given class using the property |
-|             |name=value arguments provided on the command line after the    |
-|             |"create" command.                                              |
-+-------------+---------------------------------------------------------------+
-|display      |Usage: display designator                                      |
-|             |This lists the properties and their associated values for the  |
-|             |given item.                                                    |
-+-------------+---------------------------------------------------------------+
-|export       |Usage: export class[,class] destination dir                    |
-|             |This action exports the current data from the database into    |
-|             |tab-separated-value files that are placed in the nominated     |
-|             |destination                                                    |
-|             |directory. The journals are not exported.                      |
-+-------------+---------------------------------------------------------------+
-|find         |Usage: find classname propname=value ...                       |
-|             |Find the items of the given class with a given link property   |
-|             |value. The                                                     |
-|             |value may be either the itemid of the linked item, or its key  |
-|             |value.                                                         |
-+-------------+---------------------------------------------------------------+
-|get          |Usage: get property designator[,designator]*                   |
-|             |Retrieves the property value of the items specified by the     |
-|             |designators.                                                   |
-+-------------+---------------------------------------------------------------+
-|help         |Usage: help topic                                              |
-|             |commands  -- list commands                                     |
-|             |x -- help specific to a command                                |
-|             |initopts  -- init command options                              |
-|             |all       -- all available help                                |
-+-------------+---------------------------------------------------------------+
-|history      |Usage: history designator                                      |
-|             |Lists the journal entries for the item identified by the       |
-|             |designator.                                                    |
-+-------------+---------------------------------------------------------------+
-|import       |Usage: import class file                                       |
-|             |The file must define the same properties as the class          |
-|             |(including having                                              |
-|             |a "header" line with those property names.) The new items are  |
-|             |added to                                                       |
-|             |the existing database - if you want to create a new database   |
-|             |using the                                                      |
-|             |imported data, then create a new database (or, tediously,      |
-|             |retire all                                                     |
-|             |the old data.)                                                 |
-+-------------+---------------------------------------------------------------+
-|initialise   |Usage: initialise [template [backend [admin password]]]        |
-|             |The command will prompt for the tracker home directory (if not |
-|             |supplied                                                       |
-|             |through INSTANCE HOME or the -i option. The template, backend  |
-|             |and admin                                                      |
-|             |password may be specified on the command-line as arguments, in |
-|             |that                                                           |
-|             |order.                                                         |
-|             |                                                               |
-|             |See also initopts help.                                        |
-+-------------+---------------------------------------------------------------+
-|list         |Usage: list classname [property]                               |
-|             |Lists all trackers of the given class. If the property is not |
-|             |specified, the  "label" property is used. The label property is|
-|             |tried                                                          |
-|             |in order: the key, "name", "title" and then the first property,|
-|             |alphabetically.                                                |
-+-------------+---------------------------------------------------------------+
-|retire       |Usage: retire designator[,designator]*                         |
-|             |This action indicates that a particular item is not to be      |
-|             |retrieved by                                                   |
-|             |the list or find commands, and its key value may be re-used.   |
-+-------------+---------------------------------------------------------------+
-|rollback     |Usage: rollback                                                |
-|             |The changes made during an interactive session are not         |
-|             |automatically written to the database - they must be committed |
-|             |manually. This command undoes all those changes, so a commit   |
-|             |immediately after would make no changes to the database.       |
-+-------------+---------------------------------------------------------------+
-|set          |Usage: set designator[,designator]* propname=value ...         |
-|             |Sets the property to the value for all designators given.      |
-+-------------+---------------------------------------------------------------+
-|specification|Usage: specification classname                                 |
-|             |This lists the properties for a given class.                   |
-+-------------+---------------------------------------------------------------+
-|table        |Usage: table classname [property[,property]*]                  |
-|             |Lists all trackers of the given class. If the properties are  |
-|             |not                                                            |
-|             |specified, all properties are displayed. By default, the column|
-|             |widths                                                         |
-|             |are the width of the property names. The width may be          |
-|             |explicitly defined                                             |
-|             |by defining the property as "name:width". For example::        |
-|             |                                                               |
-|             |  roundup> table priority id,name:10                           |
-|             |  Id Name                                                      |
-|             |  1  fatal-bug                                                 |
-|             |  2  bug                                                       |
-|             |  3  usability                                                 |
-|             |  4  feature                                                   |
-+-------------+---------------------------------------------------------------+
+ Commands:
+  commit
+  create classname property=value ...
+  display designator
+  export [class[,class]] export_dir
+  find classname propname=value ...
+  get property designator[,designator]*
+  help topic
+  history designator
+  import import_dir
+  initialise [adminpw]
+  install [template [backend [admin password]]]
+  list classname [property]
+  pack period | date
+  reindex
+  retire designator[,designator]*
+  rollback
+  security [Role name]
+  set designator[,designator]* propname=value ...
+  specification classname
+  table classname [property[,property]*]
 
+Commands may be abbreviated as long as the abbreviation matches only one
+command, e.g. l == li == lis == list.
 
-All commands (except help) require a tracker specifier. This is just the path to
-the roundup tracker you're working with. A roundup tracker is where roundup
-keeps the database and configuration file that defines an issue tracker. It may be
-thought of as the issue tracker's "home directory". It may be specified in the
-environment variable ``ROUNDUP_INSTANCE`` or on the command line as "``-i
-tracker``".
+All commands (except help) require a tracker specifier. This is just the
+path to the roundup tracker you're working with. A roundup tracker is where
+roundup keeps the database and configuration file that defines an issue
+tracker. It may be thought of as the issue tracker's "home directory".
+It may be specified in the environment variable ``TRACKER_HOME`` or on
+the command line as "``-i tracker``".
 
 A designator is a classname and an itemid concatenated, eg. bug1, user10, ...
 Property values are represented as strings in command arguments and in the printed
@@ -344,10 +262,11 @@ results:
   both accepted; an empty string, a single item, or a list of items joined
   by commas is accepted.
   
-When multiple items are specified to the roundup get or roundup set commands, the
-specified properties are retrieved or set on all the listed items.  When multiple
-results are returned by the roundup get or roundup find commands, they are printed
-one per line (default) or joined by commas (with the "``-c``" option).
+When multiple items are specified to the roundup get or roundup set
+commands, the specified properties are retrieved or set on all the listed
+items.  When multiple results are returned by the roundup get or roundup
+find commands, they are printed one per line (default) or joined by commas
+(with the "``-c``" option).
 
 Where the command changes data, a login name/password is required. The login may
 be specified as either "``name``" or "``name:password``".

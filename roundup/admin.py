@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.26 2002-09-10 03:01:18 richard Exp $
+# $Id: admin.py,v 1.27 2002-09-10 07:07:16 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -61,7 +61,7 @@ class AdminTool:
         for k in AdminTool.__dict__.keys():
             if k[:5] == 'help_':
                 self.help[k[5:]] = getattr(self, k)
-        self.instance_home = ''
+        self.tracker_home = ''
         self.db = None
 
     def get_class(self, classname):
@@ -87,17 +87,19 @@ class AdminTool:
     def usage(self, message=''):
         if message:
             message = _('Problem: %(message)s)\n\n')%locals()
-        print _('''%(message)sUsage: roundup-admin [-i instance home] [-u login] [-c] <command> <arguments>
+        print _('''%(message)sUsage: roundup-admin [options] <command> <arguments>
+
+Options:
+ -i instance home  -- specify the issue tracker "home directory" to administer
+ -u                -- the user[:password] to use for commands
+ -c                -- when outputting lists of data, just comma-separate them
 
 Help:
  roundup-admin -h
  roundup-admin help                       -- this help
  roundup-admin help <command>             -- command-specific help
  roundup-admin help all                   -- all available help
-Options:
- -i instance home  -- specify the issue tracker "home directory" to administer
- -u                -- the user[:password] to use for commands
- -c                -- when outputting lists of data, just comma-separate them''')%locals()
+''')%locals()
         self.help_commands()
 
     def help_commands(self):
@@ -136,12 +138,12 @@ Options:
 
     def help_all(self):
         print _('''
-All commands (except help) require an instance specifier. This is just the path
-to the roundup instance you're working with. A roundup instance is where 
+All commands (except help) require a tracker specifier. This is just the path
+to the roundup tracker you're working with. A roundup tracker is where 
 roundup keeps the database and configuration file that defines an issue
 tracker. It may be thought of as the issue tracker's "home directory". It may
 be specified in the environment variable TRACKER_HOME or on the command
-line as "-i instance".
+line as "-i tracker".
 
 A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
 
@@ -249,27 +251,27 @@ Command help:
         backends = roundup.backends.__all__
         print _('Back ends:'), ', '.join(backends)
 
-    def do_install(self, instance_home, args):
+    def do_install(self, tracker_home, args):
         '''Usage: install [template [backend [admin password]]]
-        Install a new Roundup instance.
+        Install a new Roundup tracker.
 
-        The command will prompt for the instance home directory (if not supplied
+        The command will prompt for the tracker home directory (if not supplied
         through TRACKER_HOME or the -i option). The template, backend and admin
         password may be specified on the command-line as arguments, in that
         order.
 
         The initialise command must be called after this command in order
-        to initialise the instance's database. You may edit the instance's
+        to initialise the tracker's database. You may edit the tracker's
         initial database contents before running that command by editing
-        the instance's dbinit.py module init() function.
+        the tracker's dbinit.py module init() function.
 
         See also initopts help.
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
 
-        # make sure the instance home can be created
-        parent = os.path.split(instance_home)[0]
+        # make sure the tracker home can be created
+        parent = os.path.split(tracker_home)[0]
         if not os.path.exists(parent):
             raise UsageError, _('Instance home parent directory "%(parent)s"'
                 ' does not exist')%locals()
@@ -297,10 +299,10 @@ Command help:
                 backend = 'anydbm'
 
         # install!
-        init.install(instance_home, template, backend)
+        init.install(tracker_home, template, backend)
 
         print _('''
- You should now edit the instance configuration file:
+ You should now edit the tracker configuration file:
    %(config_file)s
  ... at a minimum, you must set MAILHOST, MAIL_DOMAIN and ADMIN_EMAIL.
 
@@ -309,19 +311,19 @@ Command help:
    %(database_config_file)s
  ... see the documentation on customizing for more information.
 ''')%{
-    'config_file': os.path.join(instance_home, 'config.py'),
-    'database_config_file': os.path.join(instance_home, 'dbinit.py')
+    'config_file': os.path.join(tracker_home, 'config.py'),
+    'database_config_file': os.path.join(tracker_home, 'dbinit.py')
 }
         return 0
 
 
-    def do_initialise(self, instance_home, args):
+    def do_initialise(self, tracker_home, args):
         '''Usage: initialise [adminpw]
-        Initialise a new Roundup instance.
+        Initialise a new Roundup tracker.
 
         The administrator details will be set at this step.
 
-        Execute the instance's initialisation function dbinit.init()
+        Execute the tracker's initialisation function dbinit.init()
         '''
         # password
         if len(args) > 1:
@@ -333,14 +335,14 @@ Command help:
                 adminpw = getpass.getpass(_('Admin Password: '))
                 confirm = getpass.getpass(_('       Confirm: '))
 
-        # make sure the instance home is installed
-        if not os.path.exists(instance_home):
+        # make sure the tracker home is installed
+        if not os.path.exists(tracker_home):
             raise UsageError, _('Instance home does not exist')%locals()
-        if not os.path.exists(os.path.join(instance_home, 'html')):
+        if not os.path.exists(os.path.join(tracker_home, 'html')):
             raise UsageError, _('Instance has not been installed')%locals()
 
         # is there already a database?
-        if os.path.exists(os.path.join(instance_home, 'db')):
+        if os.path.exists(os.path.join(tracker_home, 'db')):
             print _('WARNING: The database is already initialised!')
             print _('If you re-initialise it, you will lose all the data!')
             ok = raw_input(_('Erase it? Y/[N]: ')).strip()
@@ -348,10 +350,10 @@ Command help:
                 return 0
 
             # nuke it
-            shutil.rmtree(os.path.join(instance_home, 'db'))
+            shutil.rmtree(os.path.join(tracker_home, 'db'))
 
         # GO
-        init.initialise(instance_home, adminpw)
+        init.initialise(tracker_home, adminpw)
 
         return 0
 
@@ -953,9 +955,9 @@ Date format is "YYYY-MM-DD" eg:
 
     def do_reindex(self, args):
         '''Usage: reindex
-        Re-generate an instance's search indexes.
+        Re-generate a tracker's search indexes.
 
-        This will re-generate the search indexes for an instance. This will
+        This will re-generate the search indexes for a tracker. This will
         typically happen automatically.
         '''
         self.db.indexer.force_reindex()
@@ -1030,35 +1032,35 @@ Date format is "YYYY-MM-DD" eg:
             return 1
         command, function = functions[0]
 
-        # make sure we have an instance_home
-        while not self.instance_home:
-            self.instance_home = raw_input(_('Enter instance home: ')).strip()
+        # make sure we have a tracker_home
+        while not self.tracker_home:
+            self.tracker_home = raw_input(_('Enter tracker home: ')).strip()
 
         # before we open the db, we may be doing an install or init
         if command == 'initialise':
             try:
-                return self.do_initialise(self.instance_home, args)
+                return self.do_initialise(self.tracker_home, args)
             except UsageError, message:
                 print _('Error: %(message)s')%locals()
                 return 1
         elif command == 'install':
             try:
-                return self.do_install(self.instance_home, args)
+                return self.do_install(self.tracker_home, args)
             except UsageError, message:
                 print _('Error: %(message)s')%locals()
                 return 1
 
-        # get the instance
+        # get the tracker
         try:
-            instance = roundup.instance.open(self.instance_home)
+            tracker = roundup.instance.open(self.tracker_home)
         except ValueError, message:
-            self.instance_home = ''
-            print _("Error: Couldn't open instance: %(message)s")%locals()
+            self.tracker_home = ''
+            print _("Error: Couldn't open tracker: %(message)s")%locals()
             return 1
 
         # only open the database once!
         if not self.db:
-            self.db = instance.open('admin')
+            self.db = tracker.open('admin')
 
         # do the command
         ret = 0
@@ -1112,7 +1114,7 @@ Date format is "YYYY-MM-DD" eg:
             return 1
 
         # handle command-line args
-        self.instance_home = os.environ.get('TRACKER_HOME', '')
+        self.tracker_home = os.environ.get('TRACKER_HOME', '')
         # TODO: reinstate the user/password stuff (-u arg too)
         name = password = ''
         if os.environ.has_key('ROUNDUP_LOGIN'):
@@ -1126,7 +1128,7 @@ Date format is "YYYY-MM-DD" eg:
                 self.usage()
                 return 0
             if opt == '-i':
-                self.instance_home = arg
+                self.tracker_home = arg
             if opt == '-c':
                 self.comma_sep = 1
 

@@ -1,22 +1,22 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2002-07-29 00:54:28 $
-:version: $Revision: 1.7 $
+:date: $Date: 2002-09-10 07:07:16 $
+:version: $Revision: 1.8 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 */
 
-a.footnote-reference {
-  font-size: smaller ;
-  vertical-align: super }
-
 a.target {
   color: blue }
 
-code {
-  background-color: #eeeeee }
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+dd {
+  margin-bottom: 0.5em }
 
 div.abstract {
   margin: 2em 5em }
@@ -43,14 +43,20 @@ div.note p.admonition-title, div.tip p.admonition-title {
   font-weight: bold ;
   font-family: sans-serif }
 
-div.field-body {
-  margin-bottom: 1em }
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
 
-div.field-list {
-  margin-bottom: -1em }
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
 
 div.figure {
   margin-left: 2em }
+
+div.footer, div.header {
+  font-size: smaller }
 
 div.system-messages {
   margin: 5em }
@@ -78,6 +84,9 @@ h2.subtitle {
 hr {
   width: 75% }
 
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
 ol.arabic {
   list-style: decimal }
 
@@ -100,13 +109,8 @@ p.credits {
   font-style: italic ;
   font-size: smaller }
 
-p.docinfo-name {
-  font-weight: bold ;
-  text-align: right }
-
-p.field-name {
-  font-weight: bold ;
-  margin-bottom: 1em }
+p.first {
+  margin-top: 0 }
 
 p.label {
   white-space: nowrap }
@@ -114,17 +118,15 @@ p.label {
 p.topic-title {
   font-weight: bold }
 
-dd p:first-child {
-  margin-top: 0px;
-}
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
 
-dd ul:first-child {
-  margin-top: 0px;
-}
-
-li p:first-child {
-  margin-top: 0px;
-}
+pre.line-block {
+  font-family: serif ;
+  font-size: 100% }
 
 pre.literal-block, pre.doctest-block {
   margin-left: 2em ;
@@ -148,11 +150,15 @@ span.interpreted {
 span.option-argument {
   font-style: italic }
 
+span.pre {
+  white-space: pre }
+
 span.problematic {
   color: red }
 
 table {
-  margin-top: 1em }
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
 
 table.citation {
   border-left: solid thin gray ;
@@ -165,10 +171,27 @@ table.footnote {
   border-left: solid thin black ;
   padding-left: 0.5ex }
 
-@media print {
- h1 {page-break-before: always; }
- h1, h2, h3, h4, h5, h6 { page-break-after: avoid; page-break-inside: avoid; }
- blockquote, pre { page-break-inside: avoid; }
- ul, ol, dl { page-break-before: avoid; }
-}
+td, th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: baseline }
 
+td > p:first-child, th > p:first-child {
+  margin-top: 0em }
+
+th.docinfo-name {
+  font-weight: bold ;
+  text-align: right }
+
+th.field-name {
+  font-weight: bold ;
+  text-align: right }
+
+h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
+  font-size: 100% }
+
+tt {
+  background-color: #eeeeee }
+
+ul.auto-toc {
+  list-style-type: none }
