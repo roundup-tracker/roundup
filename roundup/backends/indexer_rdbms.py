@@ -1,3 +1,4 @@
+#$Id: indexer_rdbms.py,v 1.7 2005-01-08 11:25:23 jlgijsbers Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.

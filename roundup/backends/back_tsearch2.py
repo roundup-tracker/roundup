@@ -1,5 +1,6 @@
-# Note: this backend is EXPERIMENTAL. Do not use if you value your data.
+#$Id: back_tsearch2.py,v 1.8 2005-01-08 11:25:23 jlgijsbers Exp $
 
+# Note: this backend is EXPERIMENTAL. Do not use if you value your data.
 import re
 
 import psycopg

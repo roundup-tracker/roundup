@@ -1,3 +1,4 @@
+#$Id: indexer_common.py,v 1.3 2005-01-08 11:25:23 jlgijsbers Exp $
 import re
 
 from roundup import hyperdb

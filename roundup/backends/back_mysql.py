@@ -1,3 +1,4 @@
+#$Id: back_mysql.py,v 1.53 2005-01-08 11:25:22 jlgijsbers Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #

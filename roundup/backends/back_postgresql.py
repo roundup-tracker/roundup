@@ -1,3 +1,4 @@
+#$Id: back_postgresql.py,v 1.27 2005-01-08 11:25:23 jlgijsbers Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
