@@ -47,6 +47,8 @@ Fixed:
 - allowed negative ids (ie. new item markers) in HTMLClass.getItem,
   allowing "db/file_with_status/-1/status/menu" to generate a useful
   widget
+- The mail gateway now searches recursively for the text/plain and the
+  attachments of a message (sf bug 841241).
 
 Cleanup:
 - replace curuserid attribute on Database with the extended getuid() method.

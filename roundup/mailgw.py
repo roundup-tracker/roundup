@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.140 2003-12-19 01:50:19 richard Exp $
+$Id: mailgw.py,v 1.141 2004-01-17 13:49:06 jlgijsbers Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -145,7 +145,7 @@ class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
         message...
     '''
-    def getPart(self):
+    def getpart(self):
         ''' Get a single part of a multipart message and return it as a new
             Message instance.
         '''
@@ -164,12 +164,136 @@ class Message(mimetools.Message):
         s.seek(0)
         return Message(s)
 
+    def getparts(self):
+        """Get all parts of this multipart message."""
+        # skip over the intro to the first boundary
+        self.getpart()
+
+        # accumulate the other parts
+        parts = []
+        while 1:
+            part = self.getpart()
+            if part is None:
+                break
+            parts.append(part)
+        return parts
+
     def getheader(self, name, default=None):
         hdr = mimetools.Message.getheader(self, name, default)
         if hdr:
             hdr = hdr.replace('\n','') # Inserted by rfc822.readheaders
         return rfc2822.decode_header(hdr)
- 
+
+    def getname(self):
+        """Find an appropriate name for this message."""
+        if self.gettype() == 'message/rfc822':
+            # handle message/rfc822 specially - the name should be
+            # the subject of the actual e-mail embedded here
+            self.fp.seek(0)
+            name = Message(self.fp).getheader('subject')
+        else:
+            # try name on Content-Type
+            name = self.getparam('name')
+            if not name:
+                disp = self.getheader('content-disposition', None)
+                if disp:
+                    name = getparam(disp, 'filename')
+
+        if name:
+            return name.strip()
+
+    def getbody(self):
+        """Get the decoded message body."""
+        self.rewindbody()
+        encoding = self.getencoding()
+        data = None
+        if encoding == 'base64':
+            # BUG: is base64 really used for text encoding or
+            # are we inserting zip files here. 
+            data = binascii.a2b_base64(self.fp.read())
+        elif encoding == 'quoted-printable':
+            # the quopri module wants to work with files
+            decoded = cStringIO.StringIO()
+            quopri.decode(self.fp, decoded)
+            data = decoded.getvalue()
+        elif encoding == 'uuencoded':
+            data = binascii.a2b_uu(self.fp.read())
+        else:
+            # take it as text
+            data = self.fp.read()
+        
+        # Encode message to unicode
+        charset = rfc2822.unaliasCharset(self.getparam("charset"))
+        if charset:
+            # Do conversion only if charset specified
+            edata = unicode(data, charset).encode('utf-8')
+            # Convert from dos eol to unix
+            edata = edata.replace('\r\n', '\n')
+        else:
+            # Leave message content as is
+            edata = data
+                
+        return edata
+
+    # General multipart handling:
+    #   Take the first text/plain part, anything else is considered an 
+    #   attachment.
+    # multipart/mixed: multiple "unrelated" parts.
+    # multipart/signed (rfc 1847): 
+    #   The control information is carried in the second of the two 
+    #   required body parts.
+    #   ACTION: Default, so if content is text/plain we get it.
+    # multipart/encrypted (rfc 1847): 
+    #   The control information is carried in the first of the two 
+    #   required body parts.
+    #   ACTION: Not handleable as the content is encrypted.
+    # multipart/related (rfc 1872, 2112, 2387):
+    #   The Multipart/Related content-type addresses the MIME
+    #   representation of compound objects.
+    #   ACTION: Default. If we are lucky there is a text/plain.
+    #   TODO: One should use the start part and look for an Alternative
+    #   that is text/plain.
+    # multipart/Alternative (rfc 1872, 1892):
+    #   only in "related" ?
+    # multipart/report (rfc 1892):
+    #   e.g. mail system delivery status reports.
+    #   ACTION: Default. Could be ignored or used for Delivery Notification 
+    #   flagging.
+    # multipart/form-data:
+    #   For web forms only.
+
+    def extract_content(self, parent_type=None):
+        """Extract the body and the attachments recursively."""
+        content_type = self.gettype()
+        content = None
+        attachments = []
+        
+        if content_type == 'text/plain':
+            content = self.getbody()
+        elif content_type[:10] == 'multipart/':
+            for part in self.getparts():
+                new_content, new_attach = part.extract_content(content_type)
+
+                # If we haven't found a text/plain part yet, take this one,
+                # otherwise make it an attachment.
+                if not content:
+                    content = new_content
+                elif new_content:
+                    attachments.append(part.as_attachment())
+                    
+                attachments.extend(new_attach)
+        elif (parent_type == 'multipart/signed' and
+              content_type == 'application/pgp-signature'):
+            # ignore it so it won't be saved as an attachment
+            pass
+        else:
+            attachments.append(self.as_attachment())
+        return content, attachments
+
+    def as_attachment(self):
+        """Return this message as an attachment."""
+        return (self.getname(), self.gettype(), self.getbody())
+
 class MailGW:
 
     # Matches subjects like:
@@ -370,37 +494,6 @@ class MailGW:
             traceback.print_exc(None, s)
             m.append(s.getvalue())
             self.mailer.bounce_message(message, sendto, m)
-
-    def get_part_data_decoded(self,part):
-        encoding = part.getencoding()
-        data = None
-        if encoding == 'base64':
-            # BUG: is base64 really used for text encoding or
-            # are we inserting zip files here. 
-            data = binascii.a2b_base64(part.fp.read())
-        elif encoding == 'quoted-printable':
-            # the quopri module wants to work with files
-            decoded = cStringIO.StringIO()
-            quopri.decode(part.fp, decoded)
-            data = decoded.getvalue()
-        elif encoding == 'uuencoded':
-            data = binascii.a2b_uu(part.fp.read())
-        else:
-            # take it as text
-            data = part.fp.read()
-        
-        # Encode message to unicode
-        charset = rfc2822.unaliasCharset(part.getparam("charset"))
-        if charset:
-            # Do conversion only if charset specified
-            edata = unicode(data, charset).encode('utf-8')
-            # Convert from dos eol to unix
-            edata = edata.replace('\r\n', '\n')
-        else:
-            # Leave message content as is
-            edata = data
-                
-        return edata
 
     def handle_message(self, message):
         ''' message - a Message instance
@@ -684,118 +777,13 @@ Subject was: "%s"
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
                 classname, nodeid, self.instance.config.MAIL_DOMAIN)
 
-        #
         # now handle the body - find the message
-        #
-        content_type =  message.gettype()
-        attachments = []
-        # General multipart handling:
-        #   Take the first text/plain part, anything else is considered an 
-        #   attachment.
-        # multipart/mixed: multiple "unrelated" parts.
-        # multipart/signed (rfc 1847): 
-        #   The control information is carried in the second of the two 
-        #   required body parts.
-        #   ACTION: Default, so if content is text/plain we get it.
-        # multipart/encrypted (rfc 1847): 
-        #   The control information is carried in the first of the two 
-        #   required body parts.
-        #   ACTION: Not handleable as the content is encrypted.
-        # multipart/related (rfc 1872, 2112, 2387):
-        #   The Multipart/Related content-type addresses the MIME
-        #   representation of compound objects.
-        #   ACTION: Default. If we are lucky there is a text/plain.
-        #   TODO: One should use the start part and look for an Alternative
-        #   that is text/plain.
-        # multipart/Alternative (rfc 1872, 1892):
-        #   only in "related" ?
-        # multipart/report (rfc 1892):
-        #   e.g. mail system delivery status reports.
-        #   ACTION: Default. Could be ignored or used for Delivery Notification 
-        #   flagging.
-        # multipart/form-data:
-        #   For web forms only.
-        if content_type == 'multipart/mixed':
-            # skip over the intro to the first boundary
-            part = message.getPart()
-            content = None
-            while 1:
-                # get the next part
-                part = message.getPart()
-                if part is None:
-                    break
-                # parse it
-                subtype = part.gettype()
-                if subtype == 'text/plain' and not content:
-                    # The first text/plain part is the message content.
-                    content = self.get_part_data_decoded(part) 
-                elif subtype == 'message/rfc822':
-                    # handle message/rfc822 specially - the name should be
-                    # the subject of the actual e-mail embedded here
-                    i = part.fp.tell()
-                    mailmess = Message(part.fp)
-                    name = mailmess.getheader('subject')
-                    part.fp.seek(i)
-                    attachments.append((name, 'message/rfc822', part.fp.read()))
-                elif subtype == 'multipart/alternative':
-                    # Search for text/plain in message with attachment and
-                    # alternative text representation
-                    # skip over intro to first boundary
-                    part.getPart()
-                    while 1:
-                        # get the next part
-                        subpart = part.getPart()
-                        if subpart is None:
-                            break
-                        # parse it
-                        if subpart.gettype() == 'text/plain' and not content:
-                            content = self.get_part_data_decoded(subpart) 
-                else:
-                    # try name on Content-Type
-                    name = part.getparam('name')
-                    if name:
-                        name = name.strip()
-                    if not name:
-                        disp = part.getheader('content-disposition', None)
-                        if disp:
-                            name = getparam(disp, 'filename')
-                            if name:
-                                name = name.strip()
-                    # this is just an attachment
-                    data = self.get_part_data_decoded(part) 
-                    attachments.append((name, part.gettype(), data))
-            if content is None:
-                raise MailUsageError, '''
-Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part to use.
-'''
-
-        elif content_type[:10] == 'multipart/':
-            # skip over the intro to the first boundary
-            message.getPart()
-            content = None
-            while 1:
-                # get the next part
-                part = message.getPart()
-                if part is None:
-                    break
-                # parse it
-                if part.gettype() == 'text/plain' and not content:
-                    content = self.get_part_data_decoded(part) 
-            if content is None:
-                raise MailUsageError, '''
-Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part to use.
-'''
-
-        elif content_type != 'text/plain':
+        content, attachments = message.extract_content()
+        if content is None:
             raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
 '''
-
-        else:
-            content = self.get_part_data_decoded(message) 
  
         # figure how much we should muck around with the email body
         keep_citations = getattr(self.instance.config, 'EMAIL_KEEP_QUOTED_TEXT',

@@ -15,15 +15,56 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_multipart.py,v 1.6 2003-10-25 22:53:26 richard Exp $ 
+# $Id: test_multipart.py,v 1.7 2004-01-17 13:49:06 jlgijsbers Exp $ 
 
-import unittest, cStringIO
+import unittest
+from cStringIO import StringIO
 
 from roundup.mailgw import Message
 
+class TestMessage(Message):
+    table = {'multipart/signed': '    boundary="boundary-%(indent)s";\n',
+             'multipart/mixed': '    boundary="boundary-%(indent)s";\n',
+             'multipart/alternative': '    boundary="boundary-%(indent)s";\n',
+             'text/plain': '    name="foo.txt"\nfoo\n',
+             'application/pgp-signature': '    name="foo.gpg"\nfoo\n',
+             'application/pdf': '    name="foo.pdf"\nfoo\n',
+             'message/rfc822': 'Subject: foo\n\nfoo\n'}
+    
+    def __init__(self, spec):
+        """Create a basic MIME message according to 'spec'.
+
+        Each line of a spec has one content-type, which is optionally indented.
+        The indentation signifies how deep in the MIME hierarchy the
+        content-type is.
+
+        """
+        parts = []
+        for line in spec.splitlines():
+            content_type = line.strip()
+            if not content_type:
+                continue
+            
+            indent = self.getIndent(line)
+            if indent:
+                parts.append('--boundary-%s\n' % indent)
+            parts.append('Content-type: %s;\n' % content_type)
+            parts.append(self.table[content_type] % {'indent': indent + 1})
+
+        Message.__init__(self, StringIO(''.join(parts)))
+
+    def getIndent(self, line):
+        """Get the current line's indentation, using four-space indents."""
+        count = 0
+        for char in line:
+            if char != ' ':
+                break
+            count += 1
+        return count / 4
+
 class MultipartTestCase(unittest.TestCase):
     def setUp(self):
-        self.fp = cStringIO.StringIO()
+        self.fp = StringIO()
         w = self.fp.write
         w('Content-Type: multipart/mixed; boundary="foo"\r\n\r\n')
         w('This is a multipart message. Ignore this bit.\r\n')
@@ -62,51 +103,119 @@ class MultipartTestCase(unittest.TestCase):
         self.assert_(m is not None)
 
         # skip the first bit
-        p = m.getPart()
+        p = m.getpart()
         self.assert_(p is not None)
         self.assertEqual(p.fp.read(),
             'This is a multipart message. Ignore this bit.\r\n')
 
         # first text/plain
-        p = m.getPart()
+        p = m.getpart()
         self.assert_(p is not None)
         self.assertEqual(p.gettype(), 'text/plain')
         self.assertEqual(p.fp.read(),
             'Hello, world!\r\n\r\nBlah blah\r\nfoo\r\n-foo\r\n')
 
         # sub-multipart
-        p = m.getPart()
+        p = m.getpart()
         self.assert_(p is not None)
         self.assertEqual(p.gettype(), 'multipart/alternative')
 
         # sub-multipart text/plain
-        q = p.getPart()
+        q = p.getpart()
         self.assert_(q is not None)
-        q = p.getPart()
+        q = p.getpart()
         self.assert_(q is not None)
         self.assertEqual(q.gettype(), 'text/plain')
         self.assertEqual(q.fp.read(), 'Hello, world!\r\n\r\nBlah blah\r\n')
 
         # sub-multipart text/html
-        q = p.getPart()
+        q = p.getpart()
         self.assert_(q is not None)
         self.assertEqual(q.gettype(), 'text/html')
         self.assertEqual(q.fp.read(), '<b>Hello, world!</b>\r\n')
 
         # sub-multipart end
-        q = p.getPart()
+        q = p.getpart()
         self.assert_(q is None)
 
         # final text/plain
-        p = m.getPart()
+        p = m.getpart()
         self.assert_(p is not None)
         self.assertEqual(p.gettype(), 'text/plain')
         self.assertEqual(p.fp.read(),
             'Last bit\n')
 
         # end
-        p = m.getPart()
+        p = m.getpart()
         self.assert_(p is None)
+
+    def TestExtraction(self, spec, expected):
+        self.assertEqual(TestMessage(spec).extract_content(), expected)
+
+    def testTextPlain(self):
+        self.TestExtraction('text/plain', ('foo\n', []))
+
+    def testAttachedTextPlain(self):
+        self.TestExtraction("""
+multipart/mixed
+    text/plain
+    text/plain""",
+                  ('foo\n',
+                   [('foo.txt', 'text/plain', 'foo\n')]))
+
+    def testMultipartMixed(self):
+        self.TestExtraction("""
+multipart/mixed
+    text/plain
+    application/pdf""",
+                  ('foo\n',
+                   [('foo.pdf', 'application/pdf', 'foo\n')]))
+
+    def testMultipartAlternative(self):
+        self.TestExtraction("""
+multipart/alternative
+    text/plain
+    application/pdf
+""", ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')]))
+
+    def testDeepMultipartAlternative(self):
+        self.TestExtraction("""
+multipart/mixed
+    multipart/alternative
+        text/plain
+        application/pdf
+""", ('foo\n', [('foo.pdf', 'application/pdf', 'foo\n')]))
+    
+    def testSignedText(self):
+        self.TestExtraction("""
+multipart/signed
+    text/plain
+    application/pgp-signature""", ('foo\n', []))
+
+    def testSignedAttachments(self):
+        self.TestExtraction("""
+multipart/signed
+    multipart/mixed
+        text/plain
+        application/pdf
+    application/pgp-signature""",
+                  ('foo\n',
+                   [('foo.pdf', 'application/pdf', 'foo\n')]))
+
+    def testAttachedSignature(self):
+        self.TestExtraction("""
+multipart/mixed
+    text/plain
+    application/pgp-signature""",
+                  ('foo\n',
+                   [('foo.gpg', 'application/pgp-signature', 'foo\n')]))
+
+    def testMessageRfc822(self):
+        self.TestExtraction("""
+multipart/mixed
+    message/rfc822""",
+                  (None,
+                   [('foo', 'message/rfc822', 'foo\n')]))
 
 def test_suite():
     suite = unittest.TestSuite()
