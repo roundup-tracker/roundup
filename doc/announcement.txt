@@ -1,4 +1,4 @@
-            Roundup 0.3.0pre1 - an issue tracking system
+            Roundup 0.3.0pre2 - an issue tracking system
 
                         **PREVIEW RELEASE**
 
@@ -9,9 +9,8 @@ we're releasing this preview for the bleeding-edge users.
 **NOTE** existing users _must_ read the MIGRATION.txt that accompanies the
 source.
 
-This release includes several bug fixes and usability improvements. It
-switches the CGI interface authentication over from HTTP Basic to cookie
-based. It introduces encoded password storage. See the CHANGES file accompanying the source for more detail.
+This release fixes a nasty bug in the hyperdatabase that was inserted in
+pre-release 1. Users who downloaded that release MUST download this release.
 
 Source and documentation is available at the website:
       http://roundup.sourceforge.net/
