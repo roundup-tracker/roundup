@@ -11,6 +11,8 @@
 # and must be placed in the tracker directory.
 #
 # History (most recent first):
+# 11-jul-2004 [als] added 'TrackerLanguage' option;
+#                   pass message translator to the tracker client instance
 # 04-jul-2004 [als] tracker lookup moved from module global to request handler;
 #                   use PythonOption TrackerHome (configured in apache)
 #                   to open the tracker
@@ -18,8 +20,8 @@
 #                   instead of mod_python FieldStorage
 # 29-apr-2004 [als] created
 
-__version__ = "$Revision: 1.1 $"[11:-2]
-__date__ = "$Date: 2004-07-06 10:25:42 $"[7:-2]
+__version__ = "$Revision: 1.2 $"[11:-2]
+__date__ = "$Date: 2004-07-12 09:14:12 $"[7:-2]
 
 import cgi
 import os
@@ -27,6 +29,7 @@ import os
 from mod_python import apache
 
 import roundup.instance
+from roundup.cgi import TranslationService
 
 class Headers(dict):
 
@@ -72,6 +75,7 @@ def handler(req):
     """HTTP request handler"""
     _options = req.get_options()
     _home = _options.get("TrackerHome")
+    _lang = _options.get("TrackerLanguage")
     if not (_home and os.path.isdir(_home)):
         apache.log_error(
             "PythonOption TrackerHome missing or invalid for %(uri)s"
@@ -88,7 +92,8 @@ def handler(req):
     #   we just remove the first character ('/')
     _env["PATH_INFO"] = req.path_info[1:]
     _form = cgi.FieldStorage(req, environ=_env)
-    _client = _tracker.Client(_tracker, Request(req), _env, _form)
+    _client = _tracker.Client(_tracker, Request(req), _env, _form,
+        translator=TranslationService.get_translation(_lang))
     _client.main()
     return apache.OK
 
