@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.29 2001-10-21 00:17:56 richard Exp $
+# $Id: htmltemplate.py,v 1.30 2001-10-21 04:44:50 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -116,6 +116,11 @@ class Field(Base):
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
+            if value is None:
+                s = 'selected '
+            else:
+                s = ''
+            l.append('<option %svalue="-1">- no selection -</option>'%s)
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -169,6 +174,10 @@ class Menu(Base):
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
+            s = ''
+            if value is None:
+                s = 'selected '
+            l.append('<option %svalue="-1">- no selection -</option>'%s)
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -335,6 +344,15 @@ class Checklist(Base):
                 checked = ''
             l.append('%s:<input type="checkbox" %s name="%s" value="%s">'%(
                 option, checked, property, option))
+
+        # for Links, allow the "unselected" option too
+        if isinstance(propclass, hyperdb.Link):
+            if value is None or '-1' in value:
+                checked = 'checked'
+            else:
+                checked = ''
+            l.append('[unselected]:<input type="checkbox" %s name="%s" '
+                'value="-1">'%(checked, property))
         return '\n'.join(l)
 
 class Note(Base):
@@ -529,12 +547,88 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
                 l.append(name)
         columns = l
 
+    # display the filter section
+    filter_section(w, cl, filter, columns, group, all_filters, all_columns,
+        show_display_form, show_customization)
+
+    # now display the index section
+    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
+    w('<tr class="list-header">\n')
+    for name in columns:
+        cname = name.capitalize()
+        if show_display_form:
+            anchor = "%s?%s"%(classname, sortby(name, columns, filter,
+                sort, group, filterspec))
+            w('<td><span class="list-header"><a href="%s">%s</a></span></td>\n'%(
+                anchor, cname))
+        else:
+            w('<td><span class="list-header">%s</span></td>\n'%cname)
+    w('</tr>\n')
+
+    # this stuff is used for group headings - optimise the group names
+    old_group = None
+    group_names = []
+    if group:
+        for name in group:
+            if name[0] == '-': group_names.append(name[1:])
+            else: group_names.append(name)
+
+    # now actually loop through all the nodes we get from the filter and
+    # apply the template
+    if nodeids is None:
+        nodeids = cl.filter(filterspec, sort, group)
+    for nodeid in nodeids:
+        # check for a group heading
+        if group_names:
+            this_group = [cl.get(nodeid, name) for name in group_names]
+            if this_group != old_group:
+                l = []
+                for name in group_names:
+                    prop = properties[name]
+                    if isinstance(prop, hyperdb.Link):
+                        group_cl = db.classes[prop.classname]
+                        key = group_cl.getkey()
+                        value = cl.get(nodeid, name)
+                        if value is None:
+                            l.append('[unselected %s]'%prop.classname)
+                        else:
+                            l.append(group_cl.get(cl.get(nodeid, name), key))
+                    elif isinstance(prop, hyperdb.Multilink):
+                        group_cl = db.classes[prop.classname]
+                        key = group_cl.getkey()
+                        for value in cl.get(nodeid, name):
+                            l.append(group_cl.get(value, key))
+                    else:
+                        value = cl.get(nodeid, name)
+                        if value is None:
+                            value = '[empty %s]'%name
+                        else:
+                            value = str(value)
+                        l.append(value)
+                w('<tr class="section-bar">'
+                  '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
+                    len(columns), ', '.join(l)))
+                old_group = this_group
+
+        # display this node's row
+        for value in globals.values():
+            if hasattr(value, 'nodeid'):
+                value.nodeid = nodeid
+        replace = IndexTemplateReplace(globals, locals(), columns)
+        w(replace.go(template))
+
+    w('</table>')
+
+
+def filter_section(w, cl, filter, columns, group, all_filters, all_columns,
+        show_display_form, show_customization):
     # now add in the filter/columns/group/etc config table form
     w('<input type="hidden" name="show_customization" value="%s">' %
         show_customization )
     w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
     names = []
-    for name in cl.getprops().keys():
+    properties = cl.getprops()
+    for name in properties.keys():
         if name in all_filters or name in all_columns:
             names.append(name)
     w('<tr class="location-bar">')
@@ -615,75 +709,6 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
 
         w('</table>\n')
         w('</form>\n')
-
-    # now display the index section
-    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
-    w('<tr class="list-header">\n')
-    for name in columns:
-        cname = name.capitalize()
-        if show_display_form:
-            anchor = "%s?%s"%(classname, sortby(name, columns, filter,
-                sort, group, filterspec))
-            w('<td><span class="list-header"><a href="%s">%s</a></span></td>\n'%(
-                anchor, cname))
-        else:
-            w('<td><span class="list-header">%s</span></td>\n'%cname)
-    w('</tr>\n')
-
-    # this stuff is used for group headings - optimise the group names
-    old_group = None
-    group_names = []
-    if group:
-        for name in group:
-            if name[0] == '-': group_names.append(name[1:])
-            else: group_names.append(name)
-
-    # now actually loop through all the nodes we get from the filter and
-    # apply the template
-    if nodeids is None:
-        nodeids = cl.filter(filterspec, sort, group)
-    for nodeid in nodeids:
-        # check for a group heading
-        if group_names:
-            this_group = [cl.get(nodeid, name) for name in group_names]
-            if this_group != old_group:
-                l = []
-                for name in group_names:
-                    prop = properties[name]
-                    if isinstance(prop, hyperdb.Link):
-                        group_cl = db.classes[prop.classname]
-                        key = group_cl.getkey()
-                        value = cl.get(nodeid, name)
-                        if value is None:
-                            l.append('[unselected %s]'%prop.classname)
-                        else:
-                            l.append(group_cl.get(cl.get(nodeid, name), key))
-                    elif isinstance(prop, hyperdb.Multilink):
-                        group_cl = db.classes[prop.classname]
-                        key = group_cl.getkey()
-                        for value in cl.get(nodeid, name):
-                            l.append(group_cl.get(value, key))
-                    else:
-                        value = cl.get(nodeid, name)
-                        if value is None:
-                            value = '[empty %s]'%name
-                        else:
-                            value = str(value)
-                        l.append(value)
-                w('<tr class="section-bar">'
-                  '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
-                    len(columns), ', '.join(l)))
-                old_group = this_group
-
-        # display this node's row
-        for value in globals.values():
-            if hasattr(value, 'nodeid'):
-                value.nodeid = nodeid
-        replace = IndexTemplateReplace(globals, locals(), columns)
-        w(replace.go(template))
-
-    w('</table>')
-
 
 #
 #   ITEM TEMPLATES
@@ -790,6 +815,10 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2001/10/21 00:17:56  richard
+# CGI interface view customisation section may now be hidden (patch from
+#  Roch'e Compaan.)
+#
 # Revision 1.28  2001/10/21 00:00:16  richard
 # Fixed Checklist function - wasn't always working on a list.
 #

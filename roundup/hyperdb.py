@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.27 2001-10-20 23:44:27 richard Exp $
+# $Id: hyperdb.py,v 1.28 2001-10-21 04:44:50 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -584,11 +584,12 @@ class Class:
                 u = []
                 link_class =  self.db.classes[propclass.classname]
                 for entry in v:
-                    if not num_re.match(entry):
+                    if entry == '-1': entry = None
+                    elif not num_re.match(entry):
                         try:
                             entry = link_class.lookup(entry)
                         except:
-                            raise ValueError, 'new property "%s": %s not a %s'%(
+                            raise ValueError, 'property "%s": %s not a %s'%(
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
 
@@ -846,6 +847,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/10/20 23:44:27  richard
+# Hyperdatabase sorts strings-that-look-like-numbers as numbers now.
+#
 # Revision 1.26  2001/10/16 03:48:01  richard
 # admin tool now complains if a "find" is attempted with a non-link property.
 #

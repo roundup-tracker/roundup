@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.35 2001-10-21 00:17:54 richard Exp $
+# $Id: cgi_client.py,v 1.36 2001-10-21 04:44:50 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -129,7 +129,7 @@ class Client:
             return arg.value.split(',')
         return []
 
-    def index_filterspec(self):
+    def index_filterspec(self, filter):
         ''' pull the index filter spec from the form
 
         Links and multilinks want to be lists - the rest are straight
@@ -141,6 +141,7 @@ class Client:
         for key in self.form.keys():
             if key[0] == ':': continue
             if not props.has_key(key): continue
+            if key not in filter: continue
             prop = props[key]
             value = self.form[key]
             if (isinstance(prop, hyperdb.Link) or
@@ -173,24 +174,32 @@ class Client:
 
     default_index_sort = ['-activity']
     default_index_group = ['priority']
-    default_index_filter = []
+    default_index_filter = ['status']
     default_index_columns = ['id','activity','title','status','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
     def index(self):
         ''' put up an index
         '''
         self.classname = 'issue'
-        if self.form.has_key(':sort'): sort = self.index_arg(':sort')
-        else: sort = self.default_index_sort
-        if self.form.has_key(':group'): group = self.index_arg(':group')
-        else: group = self.default_index_group
-        if self.form.has_key(':filter'): filter = self.index_arg(':filter')
-        else: filter = self.default_index_filter
-        if self.form.has_key(':columns'): columns = self.index_arg(':columns')
-        else: columns = self.default_index_columns
-        filterspec = self.index_filterspec()
-        if not filterspec:
+        # see if the web has supplied us with any customisation info
+        defaults = 1
+        for key in ':sort', ':group', ':filter', ':columns':
+            if self.form.has_key(key):
+                defaults = 0
+                break
+        if defaults:
+            # no info supplied - use the defaults
+            sort = self.default_index_sort
+            group = self.default_index_group
+            filter = self.default_index_filter
+            columns = self.default_index_columns
             filterspec = self.default_index_filterspec
+        else:
+            sort = self.index_arg(':sort')
+            group = self.index_arg(':group')
+            filter = self.index_arg(':filter')
+            columns = self.index_arg(':columns')
+            filterspec = self.index_filterspec(filter)
         return self.list(columns=columns, filter=filter, group=group,
             sort=sort, filterspec=filterspec)
 
@@ -216,7 +225,7 @@ class Client:
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
         if columns is None: columns = self.index_arg(':columns')
-        if filterspec is None: filterspec = self.index_filterspec()
+        if filterspec is None: filterspec = self.index_filterspec(filter)
         if show_customization is None:
             show_customization = self.customization_widget()
 
@@ -676,7 +685,7 @@ class ExtendedClient(Client):
 
     default_index_sort = ['-activity']
     default_index_group = ['priority']
-    default_index_filter = []
+    default_index_filter = ['status']
     default_index_columns = ['activity','status','title','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
 
@@ -699,8 +708,8 @@ class ExtendedClient(Client):
         if self.user not in (None, 'anonymous'):
             userid = self.db.user.lookup(self.user)
             user_info = '''
-<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
-<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
+<a href="issue?assignedto=%s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="support?assignedto=%s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
 <a href="user%s">My Details</a> | <a href="logout">Logout</a>
 '''%(userid, userid, userid)
         else:
@@ -725,11 +734,11 @@ class ExtendedClient(Client):
 <td align=right valign=bottom>%s</td></tr>
 <tr class="location-bar">
 <td align=left>All
-<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
-<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
+<a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
+<a href="support?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
 | Unassigned
-<a href="issue?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
-<a href="support?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
+<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
+<a href="support?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
 %s
 %s</td>
 <td align=right>%s</td>
@@ -758,14 +767,19 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
             value = date.Interval(form[key].value.strip())
         elif isinstance(proptype, hyperdb.Link):
             value = form[key].value.strip()
-            # handle key values
-            link = cl.properties[key].classname
-            if not num_re.match(value):
-                try:
-                    value = db.classes[link].lookup(value)
-                except KeyError:
-                    raise ValueError, 'property "%s": %s not a %s'%(
-                        key, value, link)
+            # see if it's the "no selection" choice
+            if value == '-1':
+                # don't set this property
+                continue
+            else:
+                # handle key values
+                link = cl.properties[key].classname
+                if not num_re.match(value):
+                    try:
+                        value = db.classes[link].lookup(value)
+                    except KeyError:
+                        raise ValueError, 'property "%s": %s not a %s'%(
+                            key, value, link)
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
             if type(value) != type([]):
@@ -794,6 +808,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2001/10/21 00:17:54  richard
+# CGI interface view customisation section may now be hidden (patch from
+#  Roch'e Compaan.)
+#
 # Revision 1.34  2001/10/20 11:58:48  richard
 # Catch errors in login - no username or password supplied.
 # Fixed editing of password (Password property type) thanks Roch'e Compaan.
