@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.17 2002-09-18 05:07:47 richard Exp $
+# $Id: __init__.py,v 1.18 2002-09-23 12:02:53 richard Exp $
 
 __all__ = []
 
@@ -38,6 +38,7 @@ else:
 
 try:
     import gadfly
+    import gadfly.client
 except ImportError, message:
     if str(message) != 'No module named gadfly': raise
 else:
