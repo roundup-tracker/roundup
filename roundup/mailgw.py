@@ -16,7 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-'''
+"""
 An e-mail gateway for Roundup.
 
 Incoming messages are examined for multiple parts:
@@ -73,8 +73,8 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.126 2003-06-25 08:02:51 neaj Exp $
-'''
+$Id: mailgw.py,v 1.127 2003-09-05 20:56:39 jlgijsbers Exp $
+"""
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys
@@ -94,7 +94,7 @@ class MailUsageHelp(Exception):
     pass
 
 class MailLoop(Exception):
-    ''' We've seen this message before... '''
+    """ We've seen this message before... """
     pass
 
 class Unauthorized(Exception):
@@ -215,13 +215,13 @@ class MailGW:
         self.trapExceptions = 1
 
     def do_pipe(self):
-        ''' Read a message from standard input and pass it to the mail handler.
+        """ Read a message from standard input and pass it to the mail handler.
 
             Read into an internal structure that we can seek on (in case
             there's an error).
 
             XXX: we may want to read this into a temporary file instead...
-        '''
+        """
         s = cStringIO.StringIO()
         s.write(sys.stdin.read())
         s.seek(0)
@@ -229,9 +229,9 @@ class MailGW:
         return 0
 
     def do_mailbox(self, filename):
-        ''' Read a series of messages from the specified unix mailbox file and
+        """ Read a series of messages from the specified unix mailbox file and
             pass each to the mail handler.
-        '''
+        """
         # open the spool file and lock it
         import fcntl
         # FCNTL is deprecated in py2.3 and fcntl takes over all the symbols
@@ -314,14 +314,14 @@ class MailGW:
         return self.handle_Message(Message(fp))
 
     def handle_Message(self, message):
-        '''Handle an RFC822 Message
+        """Handle an RFC822 Message
 
         Handle the Message object by calling handle_message() and then cope
         with any errors raised by handle_message.
         This method's job is to make that call and handle any
         errors in a sane manner. It should be replaced if you wish to
         handle errors in a different manner.
-        '''
+        """
         # in some rare cases, a particularly stuffed-up e-mail will make
         # its way into here... try to handle it gracefully
         sendto = message.getaddrlist('from')
@@ -523,19 +523,19 @@ Emails to Roundup trackers must include a Subject: line!
                     m = None
 
         if not m:
-            raise MailUsageError, '''
+            raise MailUsageError, """
 The message you sent to roundup did not contain a properly formed subject
 line. The subject must contain a class name or designator to indicate the
-"topic" of the message. For example:
+'topic' of the message. For example:
     Subject: [issue] This is a new issue
-      - this will create a new issue in the tracker with the title "This is
-        a new issue".
+      - this will create a new issue in the tracker with the title 'This is
+        a new issue'.
     Subject: [issue1234] This is a followup to issue 1234
       - this will append the message's contents to the existing issue 1234
         in the tracker.
 
-Subject was: "%s"
-'''%subject
+Subject was: '%s'
+"""%subject
 
         # get the class
         try:
