@@ -596,21 +596,25 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return l
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
-            height='400', property=''):
-        ''' Pop up a javascript window with class help
+            height='400', property='', form='itemSynopsis'):
+        '''Pop up a javascript window with class help
 
-            This generates a link to a popup window which displays the
-            properties indicated by "properties" of the class named by
-            "classname". The "properties" should be a comma-separated list
-            (eg. 'id,name,description'). Properties defaults to all the
-            properties of a class (excluding id, creator, created and
-            activity).
+        This generates a link to a popup window which displays the
+        properties indicated by "properties" of the class named by
+        "classname". The "properties" should be a comma-separated list
+        (eg. 'id,name,description'). Properties defaults to all the
+        properties of a class (excluding id, creator, created and
+        activity).
 
-            You may optionally override the label displayed, the width and
-            height. The popup window will be resizable and scrollable.
+        You may optionally override the label displayed, the width and
+        height. The popup window will be resizable and scrollable.
 
-            If the "property" arg is given, it's passed through to the
-            javascript help_window function.
+        If the "property" arg is given, it's passed through to the
+        javascript help_window function.
+
+        If the "form" arg is given, it's passed through to the 
+        javascript help_window function. - it's the name of the form
+        the "property" belongs to.
         '''
         if properties is None:
             properties = self._klass.getprops(protected=0).keys()
@@ -618,9 +622,11 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             properties = ','.join(properties)
         if property:
             property = '&amp;property=%s'%property
+        if form:
+            form = '&amp;form=%s'%form
         return '<a class="classhelp" href="javascript:help_window(\'%s?'\
-            '@startwith=0&amp;@template=help&amp;properties=%s%s\', \'%s\', \
-            \'%s\')">%s</a>'%(self.classname, properties, property, width,
+           '@startwith=0&amp;@template=help&amp;properties=%s%s%s\', \'%s\', \
+            \'%s\')">%s</a>'%(self.classname, properties, property, form, width,
             height, self._(label))
 
     def submit(self, label=''"Submit New Entry"):

@@ -28,6 +28,7 @@ Feature:
 - multiple selection Link/Multilink search field (thanks Marlon van den Berg)
 - relaxed hyperlinking in web interface (accept "issue123" or "Issue 123")
 - record journaltag lookup ("fixes" sf bug 998140)
+- allow listing popup to be used in query forms (thanks Marcus Priesch)
 
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)

@@ -1,6 +1,6 @@
 // initial values for either Nosy, Superseder, Topic and Waiting On,
 // depending on which has called
-original_field = window.opener.document.itemSynopsis[field].value;
+original_field = form[field].value;
 
 // Some browsers (ok, IE) don't define the "undefined" variable.
 undefined = document.geez_IE_is_really_friggin_annoying;
@@ -35,7 +35,7 @@ function determineList() {
 function updateList() {
   // write back to opener window
   if (document.frm_help.check==undefined) { return; }
-  window.opener.document.itemSynopsis[field].value = determineList();
+  form[field].value = determineList();
 }
 
 function updatePreview() {
