@@ -1428,7 +1428,7 @@ class DateHTMLProperty(HTMLProperty):
             if format is not self._marker:
                 value = value.pretty(format)
 
-        value = cgi.escape(str(value), True)
+        value = cgi.escape(str(value), 1)
         return self.input(name=self._formname, value=value, size=size)
 
     def reldate(self, pretty=1):

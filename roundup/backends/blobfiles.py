@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.15 2004-11-12 04:07:05 richard Exp $
+#$Id: blobfiles.py,v 1.16 2004-11-25 22:51:06 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -37,7 +37,7 @@ def files_in_dir(dir):
 
 class FileStorage:
     """Store files in some directory structure"""
-    def filename(self, classname, nodeid, property=None, create=False):
+    def filename(self, classname, nodeid, property=None, create=0):
         '''Determine what the filename for the given node and optionally 
         property is.
 
@@ -82,7 +82,7 @@ class FileStorage:
            is being saved.
         '''
         # determine the name of the file to write to
-        name = self.filename(classname, nodeid, property, create=True)
+        name = self.filename(classname, nodeid, property, create=1)
 
         # make sure the file storage dir exists
         if not os.path.exists(os.path.dirname(name)):
