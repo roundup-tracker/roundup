@@ -2,7 +2,7 @@
 # Georges Martin <georges.martin@pi.be>, 2004.
 # This file is distributed under the same license as the Roundup package.
 # 
-# $Id: fr.po,v 1.1 2004-09-24 08:29:43 a1s Exp $
+# $Id: fr.po,v 1.2 2004-10-19 06:37:57 a1s Exp $
 # roundup.pot revision 1.9
 # 
 msgid ""
@@ -166,7 +166,9 @@ msgid ""
 "  \".\" means \"right now\"\n"
 "\n"
 "Command help:\n"
-msgstr "Toutes les commandes (à l'exception de \"help\") nécessitent\n
+msgstr ""
+"\n"
+"Toutes les commandes (à l'exception de \"help\") nécessitent\n"
 "un spécificateur de pisteur. Il s'agit juste du chemin vers le pisteur\n"
 "roundup sur lequel vous désirez travailler. Un pisteur roundup est l'endroit\n"
 "où roundup garde la base de données et les fichiers de configuration qui\n"
@@ -177,7 +179,7 @@ msgstr "Toutes les commandes (à l'exception de \"help\") nécessitent\n
 "Un indicateur est la concaténation d'un nom de classe et d'un\n"
 "identificateur de noeud, par ex: bug1, user10,...\n"
 "\n"
-"Les valeurs de propriété sont représentés comme des chaînes de caractères\n
+"Les valeurs de propriété sont représentés comme des chaînes de caractères\n"
 "dans les arguments de commande et dans les résultats imprimés:\n"
 " . les chaînes de caractères sont représentées telles quelles.\n"
 " . les dates sont imprimées dans le format de date complet avec le fuseau\n"
@@ -221,7 +223,7 @@ msgstr "Toutes les commandes (à l'exception de \"help\") nécessitent\n
 " . comme variable d'environnement ROUNDUP_LOGIN\n"
 " . comme option -u dans la ligne de commande\n"
 "Si le nom ou le mot de passe ne sont pas fournis, ils sont demandés à la\n"
-ligne de commande\n"
+"ligne de commande\n"
 "\n"
 "Quelques exemples de dates:\n"
 "  \"2000-04-17.03:45\" donne <Date 2000-04-17.08:45:00>\n"
@@ -306,7 +308,7 @@ msgstr ""
 "        La commande \"initialise\" doît être appelée après cette commande,\n"
 "        pour initialiser la base de données du pisteur. Vous pouvez éditer\n"
 "        le contenu initial de la base de données avant d'exécuter cette\n"
-"        commande en modifiant la fonction init() du module dbinit.py du\n""
+"        commande en modifiant la fonction init() du module dbinit.py du\n"
 "        pisteur.\n"
 "\n"
 "        Voyez également l'aide sur \"initopts\".\n"
@@ -360,6 +362,7 @@ msgid ""
 "   %(database_config_file)s\n"
 " ... see the documentation on customizing for more information.\n"
 msgstr ""
+"\n"
 " Vous devriez maintenant éditer le fichier de configuration du pisteur:\n"
 "   %(config_file)s\n"
 " ... vous devez au moins régler MAILHOST, TRACKER_WEB, MAIL_DOMAIN et\n"
@@ -1785,7 +1788,7 @@ msgstr ""
 "               un pisteur dans la variable TRACKER_HOMES.  Cette option\n"
 "               est mutuellement exclusive du reste.\n"
 "               La commande \"roundup-server -c help\" donne les spécificités\n"
-"               du service Windows.\n"
+"               du service Windows."
 
 #: ../roundup/scripts/roundup_server.py:356
 msgid ""
