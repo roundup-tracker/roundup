@@ -1,7 +1,7 @@
 # Extract translatable strings from Roundup sources,
 # update and compile all existing translations
 #
-# $Id: GNUmakefile,v 1.6 2004-05-29 04:50:46 a1s Exp $
+# $Id: GNUmakefile,v 1.7 2004-06-13 13:06:54 a1s Exp $
 
 # tool locations
 XPOT ?= xpot
@@ -18,11 +18,25 @@ PO_FILES=$(wildcard *.po)
 MO_FILES=$(PO_FILES:.po=.mo)
 RUN_PYTHON=PYTHONPATH=../build/lib $(PYTHON) -O
 
-.PHONY: $(TEMPLATE)
+all: dist
 
-all: $(TEMPLATE) $(MO_FILES)
+help:
+	@echo "$(MAKE)           - build MO files.  Run this before sdist"
+	@echo "$(MAKE) template  - update message template from sources"
+	@echo "$(MAKE) locale.po - update message file from template"
+	@echo "$(MAKE) locale.mo - compile individual message file"
+	@echo "$(MAKE) help      - this text"\
 
-$(TEMPLATE):
+# This will rebuild all MO files without updating their corresponding PO
+# files first.  Run before creating Roundup distribution (hence the name).
+# PO files should be updated by their translators only, automatic update
+# adds unwanted fuzzy labels.
+dist:
+	for file in $(PO_FILES); do \
+	  ${MSGFMT} -o `basename $$file .po`.mo $$file; \
+	done
+
+template:
 	${XPOT} -n -o $@ $(SOURCES)
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $@ \
 	  ../templates/classic/html/*.html ../templates/minimal/html/*.html
