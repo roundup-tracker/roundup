@@ -1,6 +1,9 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2003-07-?? 0.5.9
+- backported XSS message cleaning fix (sf bug 757128)
+
 
 2003-06-19 0.5.8
 - plugged cross-site-scripting hole (thanks Jeff Epler)

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.4.2.2 2003-03-21 21:43:04 richard Exp $
+# $Id: test_cgi.py,v 1.4.2.3 2003-06-24 03:33:56 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
@@ -23,6 +23,26 @@ def makeForm(args):
         else:
             form.list.append(cgi.MiniFieldStorage(k, v))
     return form
+
+cm = client.clean_message
+class MessageTestCase(unittest.TestCase):
+    def testCleanMessageOK(self):
+        self.assertEqual(cm('<br>x<br />'), '<br>x<br />')
+        self.assertEqual(cm('<i>x</i>'), '<i>x</i>')
+        self.assertEqual(cm('<b>x</b>'), '<b>x</b>')
+        self.assertEqual(cm('<a href="y">x</a>'),
+            '<a href="y">x</a>')
+        self.assertEqual(cm('<BR>x<BR />'), '<BR>x<BR />')
+        self.assertEqual(cm('<I>x</I>'), '<I>x</I>')
+        self.assertEqual(cm('<B>x</B>'), '<B>x</B>')
+        self.assertEqual(cm('<A HREF="y">x</A>'),
+            '<A HREF="y">x</A>')
+
+    def testCleanMessageBAD(self):
+        self.assertEqual(cm('<script>x</script>'),
+            '&lt;script&gt;x&lt;/script&gt;')
+        self.assertEqual(cm('<iframe>x</iframe>'),
+            '&lt;iframe&gt;x&lt;/iframe&gt;')
 
 class FormTestCase(unittest.TestCase):
     def setUp(self):
@@ -277,7 +297,9 @@ class FormTestCase(unittest.TestCase):
 
 
 def suite():
-    l = [unittest.makeSuite(FormTestCase),
+    l = [
+        unittest.makeSuite(FormTestCase),
+        unittest.makeSuite(MessageTestCase),
     ]
     return unittest.TestSuite(l)
 
