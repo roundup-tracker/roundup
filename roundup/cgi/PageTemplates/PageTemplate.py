@@ -1,42 +1,40 @@
 ##############################################################################
 #
 # Copyright (c) 2001 Zope Corporation and Contributors. All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE
-# 
+#
 ##############################################################################
+# Modified for Roundup:
+# 
+# 1. changed imports to import from roundup.cgi
+# 2. removed use of ExtensionClass
+# 3. removed use of ComputedAttribute
 """Page Template module
 
 HTML- and XML-based template objects using TAL, TALES, and METAL.
-
-
-Modified for Roundup 0.5 release:
-
-- changed imports to import from roundup.cgi
-
 """
-__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.4 $'[11:-2]
+__version__='$Revision: 1.5 $'[11:-2]
 
 import sys
 
 from roundup.cgi.TAL.TALParser import TALParser
 from roundup.cgi.TAL.HTMLTALParser import HTMLTALParser
 from roundup.cgi.TAL.TALGenerator import TALGenerator
-from roundup.cgi.TAL.TALInterpreter import TALInterpreter
+# Do not use cStringIO here!  It's not unicode aware. :(
+from roundup.cgi.TAL.TALInterpreter import TALInterpreter, FasterStringIO
 from Expressions import getEngine
-from string import join, strip, rstrip, split, replace, lower, find
-from cStringIO import StringIO
+
 
 class PageTemplate:
     "Page Templates using TAL, TALES, and METAL"
-     
+
     content_type = 'text/html'
     expand = 0
     _v_errors = ()
@@ -47,6 +45,11 @@ class PageTemplate:
     id = '(unknown)'
     _text = ''
     _error_start = '<!-- Page Template Diagnostics'
+
+    def StringIO(self):
+        # Third-party products wishing to provide a full Unicode-aware
+        # StringIO can do so by monkey-patching this method.
+        return FasterStringIO()
 
     def pt_edit(self, text, content_type):
         if content_type:
@@ -71,7 +74,7 @@ class PageTemplate:
                 parent = getattr(self, 'aq_parent', None)
             c['root'] = self
         return c
-    
+
     def pt_render(self, source=0, extra_context={}):
         """Render this Page Template"""
         if not self._v_cooked:
@@ -81,7 +84,7 @@ class PageTemplate:
 
         if self._v_errors:
             raise PTRuntimeError, 'Page Template %s has errors.' % self.id
-        output = StringIO()
+        output = self.StringIO()
         c = self.pt_getContext()
         c.update(extra_context)
 
@@ -107,7 +110,7 @@ class PageTemplate:
             self.pt_render(source=1)
         except:
             return ('Macro expansion failed', '%s: %s' % sys.exc_info()[:2])
-        
+
     def pt_warnings(self):
         if not self._v_cooked:
             self._cook()
@@ -132,7 +135,7 @@ class PageTemplate:
     def write(self, text):
         assert type(text) is type('')
         if text[:len(self._error_start)] == self._error_start:
-            errend = find(text, '-->')
+            errend = text.find('-->')
             if errend >= 0:
                 text = text[errend + 4:]
         if self._text != text:
@@ -140,8 +143,7 @@ class PageTemplate:
         self._cook()
 
     def read(self):
-        if not self._v_cooked:
-            self._cook()
+        self._cook_check()
         if not self._v_errors:
             if not self.expand:
                 return self._text
@@ -151,10 +153,14 @@ class PageTemplate:
                 return ('%s\n Macro expansion failed\n %s\n-->\n%s' %
                         (self._error_start, "%s: %s" % sys.exc_info()[:2],
                          self._text) )
-                                  
+
         return ('%s\n %s\n-->\n%s' % (self._error_start,
-                                      join(self._v_errors, '\n '),
+                                      '\n '.join(self._v_errors),
                                       self._text))
+
+    def _cook_check(self):
+        if not self._v_cooked:
+            self._cook()
 
     def _cook(self):
         """Compile the TAL and METAL statments.
@@ -187,7 +193,7 @@ class PageTemplate:
 class _ModuleImporter:
     def __getitem__(self, module):
         mod = __import__(module)
-        path = split(module, '.')
+        path = module.split('.')
         for name in path[1:]:
             mod = getattr(mod, name)
         return mod

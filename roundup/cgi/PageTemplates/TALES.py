@@ -1,30 +1,33 @@
 ##############################################################################
 #
 # Copyright (c) 2001 Zope Corporation and Contributors. All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE
-# 
+#
 ##############################################################################
+# Modified for Roundup:
+# 
+# 1. changed imports to import from roundup.cgi
+# 2. implemented ustr as atr
 """TALES
 
 An implementation of a generic TALES engine
-
-Modified for Roundup 0.5 release:
-
-- changed imports to import from roundup.cgi
 """
-__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.6 $'[11:-2]
+__version__='$Revision: 1.7 $'[11:-2]
 
 import re, sys
 from roundup.cgi import ZTUtils
+from weakref import ref
 from MultiMapping import MultiMapping
+from GlobalTranslationService import getGlobalTranslationService
+
+ustr = str
 
 StringType = type('')
 
@@ -48,8 +51,6 @@ class Default:
     '''Retain Default'''
 Default = Default()
 
-_marker = []
-
 class SafeMapping(MultiMapping):
     '''Mapping with security declarations and limited method exposure.
 
@@ -64,19 +65,18 @@ class SafeMapping(MultiMapping):
     _push = MultiMapping.push
     _pop = MultiMapping.pop
 
-    def has_get(self, key, _marker=[]):
-        v = self.get(key, _marker)
-        return v is not _marker, v
 
 class Iterator(ZTUtils.Iterator):
     def __init__(self, name, seq, context):
         ZTUtils.Iterator.__init__(self, seq)
         self.name = name
-        self._context = context
+        self._context_ref = ref(context)
 
     def next(self):
         if ZTUtils.Iterator.next(self):
-            self._context.setLocal(self.name, self.item)
+            context = self._context_ref()
+            if context is not None:
+                context.setLocal(self.name, self.item)
             return 1
         return 0
 
@@ -138,7 +138,7 @@ class Engine:
             raise CompilerError, (
                 'Unrecognized expression type "%s".' % type)
         return handler(type, expr, self)
-    
+
     def getContext(self, contexts=None, **kwcontexts):
         if contexts is not None:
             if kwcontexts:
@@ -223,8 +223,7 @@ class Context:
             expression = self._compiler.compile(expression)
         __traceback_supplement__ = (
             TALESTracebackSupplement, self, expression)
-        v = expression(self)
-        return v
+        return expression(self)
 
     evaluateValue = evaluate
     evaluateBoolean = evaluate
@@ -233,7 +232,10 @@ class Context:
         text = self.evaluate(expr)
         if text is Default or text is None:
             return text
-        return str(text)
+        if isinstance(text, unicode):
+            return text
+        else:
+            return ustr(text)
 
     def evaluateStructure(self, expr):
         return self.evaluate(expr)
@@ -256,7 +258,15 @@ class Context:
     def setPosition(self, position):
         self.position = position
 
-
+    def translate(self, domain, msgid, mapping=None,
+                  context=None, target_language=None, default=None):
+        if context is None:
+            context = self.contexts.get('here')
+        return getGlobalTranslationService().translate(
+            domain, msgid, mapping=mapping,
+            context=context,
+            default=default,
+            target_language=target_language)
 
 class TALESTracebackSupplement:
     """Implementation of ITracebackSupplement"""
@@ -272,12 +282,10 @@ class TALESTracebackSupplement:
         data = self.context.contexts.copy()
         s = pprint.pformat(data)
         if not as_html:
-            return '   - Names:\n      %s' % string.replace(s, '\n', '\n      ')
+            return '   - Names:\n      %s' % s.replace('\n', '\n      ')
         else:
             from cgi import escape
             return '<b>Names:</b><pre>%s</pre>' % (escape(s))
-        return None
-
 
 
 class SimpleExpr:
@@ -289,4 +297,3 @@ class SimpleExpr:
         return self._name, self._expr
     def __repr__(self):
         return '<SimpleExpr %s %s>' % (self._name, `self._expr`)
-

@@ -1,29 +1,25 @@
 ##############################################################################
 #
 # Copyright (c) 2001 Zope Corporation and Contributors. All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE
-# 
+#
 ##############################################################################
+# Modified for Roundup:
+# 
+# 1. more informative traceback info
 
 """Generic Python Expression Handler
-
-Modified for Roundup 0.5 release:
-
-- more informative traceback info
-
 """
-__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.5 $'[11:-2]
+__version__='$Revision: 1.6 $'[11:-2]
 
 from TALES import CompilerError
-from string import strip, split, join, replace, lstrip
 from sys import exc_info
 
 class getSecurityManager:
@@ -34,10 +30,10 @@ class getSecurityManager:
 
 class PythonExpr:
     def __init__(self, name, expr, engine):
-        self.expr = expr = replace(strip(expr), '\n', ' ')
+        self.expr = expr = expr.strip().replace('\n', ' ')
         try:
             d = {}
-            exec 'def f():\n return %s\n' % strip(expr) in d
+            exec 'def f():\n return %s\n' % expr.strip() in d
             self._f = d['f']
         except:
             raise CompilerError, ('Python expression error:\n'
@@ -50,25 +46,26 @@ class PythonExpr:
             if vname[0] not in '$_':
                 vnames.append(vname)
 
-    def _bind_used_names(self, econtext):
+    def _bind_used_names(self, econtext, _marker=[]):
         # Bind template variables
-        names = {}
+        names = {'CONTEXTS': econtext.contexts}
         vars = econtext.vars
         getType = econtext.getCompiler().getTypes().get
         for vname in self._f_varnames:
-            has, val = vars.has_get(vname)
-            if not has:
+            val = vars.get(vname, _marker)
+            if val is _marker:
                 has = val = getType(vname)
                 if has:
                     val = ExprTypeProxy(vname, val, econtext)
-            if has:
+                    names[vname] = val
+            else:
                 names[vname] = val
         return names
 
     def __call__(self, econtext):
         __traceback_info__ = 'python expression "%s"'%self.expr
         f = self._f
-        f.func_globals.update(self._bind_used_names(econtext))        
+        f.func_globals.update(self._bind_used_names(econtext))
         return f()
 
     def __str__(self):

@@ -1,37 +1,32 @@
 ##############################################################################
 #
 # Copyright (c) 2001 Zope Corporation and Contributors. All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE
-# 
+#
 ##############################################################################
+# Modified for Roundup:
+# 
+# 1. Removed all Zope-specific code (doesn't even try to import that stuff now)
+# 2. Removed all Acquisition
 
 """Page Template Expression Engine
 
 Page Template-specific implementation of TALES, with handlers
 for Python expressions, string literals, and paths.
-
-
-Modified for Roundup 0.5 release:
-
-- Removed all Zope-specific code (doesn't even try to import that stuff now)
-- Removed all Acquisition
-- Made traceback info more informative
-
 """
-__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.9 $'[11:-2]
+__version__='$Revision: 1.10 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
      Undefined, Default, _parse_expr
-from string import strip, split, join, replace, lstrip
+
 
 _engine = None
 def getEngine():
@@ -53,10 +48,17 @@ def installHandlers(engine):
     reg('defer', DeferExpr)
 
 from PythonExpr import getSecurityManager, PythonExpr
+guarded_getattr = getattr
 try:
     from zExceptions import Unauthorized
 except ImportError:
     Unauthorized = "Unauthorized"
+
+def acquisition_security_filter(orig, inst, name, v, real_validate):
+    if real_validate(orig, inst, name, v):
+        return 1
+    raise Unauthorized, name
+
 def call_with_ns(f, ns, arg=1):
     if arg==2:
         return f(None, ns)
@@ -69,6 +71,8 @@ class _SecureModuleImporter:
     def __getitem__(self, module):
         __import__(module)
         return sys.modules[module]
+
+SecureModuleImporter = _SecureModuleImporter()
 
 Undefs = (Undefined, AttributeError, KeyError,
           TypeError, IndexError, Unauthorized)
@@ -95,9 +99,9 @@ def render(ob, ns):
 
 class SubPathExpr:
     def __init__(self, path):
-        self._path = path = split(strip(path), '/')
+        self._path = path = path.strip().split('/')
         self._base = base = path.pop(0)
-        if not _valid_name(base):
+        if base and not _valid_name(base):
             raise CompilerError, 'Invalid variable name "%s"' % base
         # Parse path
         self._dp = dp = []
@@ -123,7 +127,7 @@ class SubPathExpr:
                     path[i:i+1] = list(val)
         base = self._base
         __traceback_info__ = 'path expression "%s"'%('/'.join(self._path))
-        if base == 'CONTEXTS':
+        if base == 'CONTEXTS' or not base:
             ob = econtext.contexts
         else:
             ob = vars[base]
@@ -138,15 +142,15 @@ class PathExpr:
         self._s = expr
         self._name = name
         self._hybrid = 0
-        paths = split(expr, '|')
+        paths = expr.split('|')
         self._subexprs = []
         add = self._subexprs.append
         for i in range(len(paths)):
-            path = lstrip(paths[i])
+            path = paths[i].lstrip()
             if _parse_expr(path):
                 # This part is the start of another expression type,
                 # so glue it back together and compile it.
-                add(engine.compile(lstrip(join(paths[i:], '|'))))
+                add(engine.compile(('|'.join(paths[i:]).lstrip())))
                 self._hybrid = 1
                 break
             add(SubPathExpr(path)._eval)
@@ -194,18 +198,18 @@ class PathExpr:
     def __repr__(self):
         return '%s:%s' % (self._name, `self._s`)
 
-            
-_interp = re.compile(r'\$(%(n)s)|\${(%(n)s(?:/%(n)s)*)}' % {'n': NAME_RE})
+
+_interp = re.compile(r'\$(%(n)s)|\${(%(n)s(?:/[^}]*)*)}' % {'n': NAME_RE})
 
 class StringExpr:
     def __init__(self, name, expr, engine):
         self._s = expr
         if '%' in expr:
-            expr = replace(expr, '%', '%%')
+            expr = expr.replace('%', '%%')
         self._vars = vars = []
         if '$' in expr:
             parts = []
-            for exp in split(expr, '$$'):
+            for exp in expr.split('$$'):
                 if parts: parts.append('$')
                 m = _interp.search(exp)
                 while m is not None:
@@ -219,15 +223,16 @@ class StringExpr:
                     raise CompilerError, (
                         '$ must be doubled or followed by a simple path')
                 parts.append(exp)
-            expr = join(parts, '')
+            expr = ''.join(parts)
         self._expr = expr
-        
+
     def __call__(self, econtext):
         vvals = []
         for var in self._vars:
             v = var(econtext)
-            if isinstance(v, Exception):
-                raise v
+            # I hope this isn't in use anymore.
+            ## if isinstance(v, Exception):
+            ##     raise v
             vvals.append(v)
         return self._expr % tuple(vvals)
 
@@ -239,11 +244,14 @@ class StringExpr:
 
 class NotExpr:
     def __init__(self, name, expr, compiler):
-        self._s = expr = lstrip(expr)
+        self._s = expr = expr.lstrip()
         self._c = compiler.compile(expr)
-        
+
     def __call__(self, econtext):
-        return not econtext.evaluateBoolean(self._c)
+        # We use the (not x) and 1 or 0 formulation to avoid changing
+        # the representation of the result in Python 2.3, where the
+        # result of "not" becomes an instance of bool.
+        return (not econtext.evaluateBoolean(self._c)) and 1 or 0
 
     def __repr__(self):
         return 'not:%s' % `self._s`
@@ -261,53 +269,45 @@ class DeferWrapper:
 
 class DeferExpr:
     def __init__(self, name, expr, compiler):
-        self._s = expr = lstrip(expr)
+        self._s = expr = expr.lstrip()
         self._c = compiler.compile(expr)
-        
+
     def __call__(self, econtext):
         return DeferWrapper(self._c, econtext)
 
     def __repr__(self):
         return 'defer:%s' % `self._s`
 
-class TraversalError:
-    def __init__(self, path, name):
-        self.path = path
-        self.name = name
 
-def restrictedTraverse(self, path, securityManager,
+def restrictedTraverse(object, path, securityManager,
                        get=getattr, has=hasattr, N=None, M=[],
                        TupleType=type(()) ):
 
     REQUEST = {'path': path}
     REQUEST['TraversalRequestNameStack'] = path = path[:] # Copy!
-    if not path[0]:
-        # If the path starts with an empty string, go to the root first.
-        self = self.getPhysicalRoot()
-        path.pop(0)
-
     path.reverse()
-    object = self
-    #print 'TRAVERSE', (object, path)
-    done = []
+    validate = securityManager.validate
+    __traceback_info__ = REQUEST
     while path:
         name = path.pop()
-        __traceback_info__ = TraversalError(done, name)
 
-#        if isinstance(name, TupleType):
-#            object = apply(object, name)
-#            continue
+        if isinstance(name, TupleType):
+            object = object(*name)
+            continue
 
-#        if name[0] == '_':
-#            # Never allowed in a URL.
-#            raise AttributeError, name
+        if not name:
+            # Skip directly to item access
+            o = object[name]
+            # Check access to the item.
+            if not validate(object, object, name, o):
+                raise Unauthorized, name
+            object = o
+            continue
 
         # Try an attribute.
-        o = get(object, name, M)
-#       print '...', (object, name, M, o)
+        o = guarded_getattr(object, name, M)
         if o is M:
             # Try an item.
-#           print '... try an item'
             try:
                 # XXX maybe in Python 2.2 we can just check whether
                 # the object has the attribute "__getitem__"
@@ -319,18 +319,15 @@ def restrictedTraverse(self, path, securityManager,
                     # Try to re-raise the original attribute error.
                     # XXX I think this only happens with
                     # ExtensionClass instances.
-                    get(object, name)
+                    guarded_getattr(object, name)
                 raise
             except TypeError, exc:
                 if str(exc).find('unsubscriptable') >= 0:
                     # The object does not support the item interface.
                     # Try to re-raise the original attribute error.
                     # XXX This is sooooo ugly.
-                    get(object, name)
+                    guarded_getattr(object, name)
                 raise
-        #print '... object is now', `o`
         object = o
-        done.append((name, o))
 
     return object
-

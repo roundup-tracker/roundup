@@ -1,14 +1,14 @@
 ##############################################################################
 #
 # Copyright (c) 2001 Zope Corporation and Contributors. All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE
-# 
+#
 ##############################################################################
 
 """Path Iterator
@@ -16,13 +16,11 @@
 A TALES Iterator with the ability to use first() and last() on
 subpaths of elements.
 """
-__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.2 $'[11:-2]
+__version__='$Revision: 1.3 $'[11:-2]
 
 import TALES
 from Expressions import restrictedTraverse, Undefs, getSecurityManager
-from string import split
 
 class Iterator(TALES.Iterator):
     def __bobo_traverse__(self, REQUEST, name):
@@ -37,7 +35,7 @@ class Iterator(TALES.Iterator):
         if name is None:
             return ob1 == ob2
         if isinstance(name, type('')):
-            name = split(name, '/')
+            name = name.split('/')
         name = filter(None, name)
         securityManager = getSecurityManager()
         try:
@@ -46,4 +44,3 @@ class Iterator(TALES.Iterator):
         except Undefs:
             return 0
         return ob1 == ob2
-

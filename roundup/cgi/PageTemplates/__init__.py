@@ -1,22 +1,21 @@
 ##############################################################################
 #
 # Copyright (c) 2001 Zope Corporation and Contributors. All Rights Reserved.
-# 
+#
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.0 (ZPL).  A copy of the ZPL should accompany this distribution.
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
 # WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE
-# 
+#
 ##############################################################################
 __doc__='''Package wrapper for Page Templates
 
 This wrapper allows the Page Template modules to be segregated in a
 separate package.
 
-$Id: __init__.py,v 1.2 2004-02-11 23:55:09 richard Exp $'''
-__docformat__ = 'restructuredtext'
+$Id: __init__.py,v 1.3 2004-05-21 05:56:46 richard Exp $'''
 __version__='$$'[11:-2]
 
 
