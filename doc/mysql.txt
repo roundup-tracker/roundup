@@ -2,7 +2,7 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.7 $
+:version: $Revision: 1.8 $
 
 This notes detail the MySQL backend for the Roundup issue tracker.
 
@@ -66,3 +66,17 @@ before running "roundup-admin initialise".  Use the commands in the `Running the
 MySQL tests` to set up a database if you have privilege, or ask your local
 administrator if not.
 
+
+Showing MySQL who's boss
+========================
+
+If things ever get to the point where that test database is totally hosed,
+just::
+
+  $ su -
+  # /etc/init.d/mysql stop
+  # rm -rf /var/lib/mysql/rounduptest
+  # /etc/init.d/mysql start
+
+and all will be better (note that on some systems, ``mysql`` is spelt
+``mysqld``).
