@@ -7,6 +7,11 @@ Feature:
 - added support for HTTP charset selection
 
 
+2004-05-?? 0.7.2
+Fixed:
+- fixed anydbm sorting with None values (sf bug 952853)
+
+
 2004-05-10 0.7.1
 Fixed:
 - several temp files made it into the source distribution (sf bug 949243)
