@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.7 2002-01-23 20:09:41 jhermann Exp $ 
+# $Id: test_htmltemplate.py,v 1.8 2002-02-06 03:47:16 richard Exp $ 
 
 import unittest, cgi, time
 
@@ -236,8 +236,8 @@ class NodeCase(unittest.TestCase):
 
     def testReldate_date(self):
         self.assertEqual(self.tf.do_reldate('date'), '- 2y 1m')
-        self.assertEqual(self.tf.do_reldate('date', pretty=1),
-            ' 1 %s 2000' % time.strftime('%B', time.localtime(0)))
+	date = self.tf.cl.get('1', 'date')
+        self.assertEqual(self.tf.do_reldate('date', pretty=1), date.pretty())
 
 #    def do_download(self, property):
     def testDownload_novalue(self):
@@ -314,6 +314,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2002/01/23 20:09:41  jhermann
+# Proper fix for failing test
+#
 # Revision 1.6  2002/01/23 05:47:57  richard
 # more HTML template cleanup and unit tests
 #
