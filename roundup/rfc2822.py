@@ -18,6 +18,8 @@ ecre = re.compile(r'''
 
 hqre = re.compile(r'^[A-z0-9!"#$%%&\'()*+,-./:;<=>?@\[\]^_`{|}~ ]+$')
 
+CRLF = '\r\n'
+
 def base64_decode(s, convert_eols=None):
     """Decode a raw base64 string.
 

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.46 2004-04-20 21:57:16 richard Exp $
+$Id: roundup_server.py,v 1.47 2004-05-10 00:38:38 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -94,8 +94,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.inner_run_cgi()
         except client.NotFound:
             self.send_error(404, self.path)
-        except client.Unauthorised:
-            self.send_error(403, self.path)
+        except client.Unauthorised, message:
+            self.send_error(403, '%s (%s)'%(self.path, message))
         except:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):

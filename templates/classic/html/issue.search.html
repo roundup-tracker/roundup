@@ -3,7 +3,8 @@
 <span metal:fill-slot="body_title" tal:omit-tag="python:1">Issue searching</span>
 <td class="content" metal:fill-slot="content">
 
-<form method="GET" tal:attributes="action request/classname">
+<form method="GET" name="itemSynopsis"
+      tal:attributes="action request/classname">
 
 <table class="form" tal:define="
    cols python:request.columns or 'id activity title status assignedto'.split();

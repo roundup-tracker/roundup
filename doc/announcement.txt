@@ -63,5 +63,5 @@ disutils-based install script is provided.
 
 It comes with two issue tracker templates (a classic bug/feature tracker and
 a minimal skeleton) and seven database back-ends (anydbm, bsddb, bsddb3,
-sqlite, metakit, mysql and postgresql). 
+sqlite, metakit, mysql and postgresql).
 

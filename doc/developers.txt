@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.6 $
+:Version: $Revision: 1.7 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -43,7 +43,7 @@ CVS stuff:
 
 1. to make a branch (eg. branching for code freeze/release)::
 
-    cvs co -d maint-0-5 -r release-0-5-0-pr1
+    cvs co -d maint-0-5 -r release-0-5-0-pr1 roundup
     cd maint-0-5 
     cvs tag -b maint-0-5
 
