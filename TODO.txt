@@ -12,6 +12,7 @@ Required:
 - review use of hasPermission etc. in classic template (check all uses,
   make sure they're appropriate, make sure anonymous has a reasonable view
   of things by default)
+- REMOVE THE BSDDB* backends
 
 Optionally:
 - clean up roundup.cgi (switch to config file, use proper logging, remove
