@@ -7,6 +7,7 @@ Fixed:
   trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
   appended (so the demo tracker's template name is "classic-demo")
 - handle bad multilink input at item creation time better (sf bug 917834)
+- make sure email signature starts on a newline (sf bug 919759)
 
 
 2004-03-01 0.6.7
