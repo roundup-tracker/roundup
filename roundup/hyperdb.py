@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.35 2001-11-22 15:46:42 jhermann Exp $
+# $Id: hyperdb.py,v 1.36 2001-11-27 03:16:09 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -634,6 +634,9 @@ class Class:
                 continue
             # apply filter
             for t, k, v in filterspec:
+                # this node doesn't have this property, so reject it
+                if not node.has_key(k): break
+
                 if t == 0 and node[k] not in v:
                     # link - if this node'd property doesn't appear in the
                     # filterspec's nodeid list, skip it
@@ -864,6 +867,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.34  2001/11/21 04:04:43  richard
 # *sigh* more missing value handling
 #
