@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.54 2003-05-29 00:42:34 richard Exp $
+# $Id: admin.py,v 1.55 2003-06-23 08:05:30 neaj Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -118,10 +118,10 @@ Options:
  -u                -- the user[:password] to use for commands
  -d                -- print full designators not just class id numbers
  -c                -- when outputting lists of data, comma-separate them.
-		      Same as '-S ","'.
+                      Same as '-S ","'.
  -S <string>       -- when outputting lists of data, string-separate them
  -s                -- when outputting lists of data, space-separate them.
-		      Same as '-S " "'.
+                      Same as '-S " "'.
 
  Only one of -s, -c or -S can be specified.
 
@@ -474,44 +474,44 @@ Command help:
             # get the class
             cl = self.get_class(classname)
             try:
-	        id=[]
+                id=[]
                 if self.separator:
                     if self.print_designator:
-		        # see if property is a link or multilink for
-			# which getting a desginator make sense.
-			# Algorithm: Get the properties of the
-			#     current designator's class. (cl.getprops)
-			# get the property object for the property the
-			#     user requested (properties[propname])
-			# verify its type (isinstance...)
-			# raise error if not link/multilink
-			# get class name for link/multilink property
-			# do the get on the designators
-			# append the new designators
-			# print
-		        properties = cl.getprops()
-			property = properties[propname]
-			if not (isinstance(property, hyperdb.Multilink) or
+                        # see if property is a link or multilink for
+                        # which getting a desginator make sense.
+                        # Algorithm: Get the properties of the
+                        #     current designator's class. (cl.getprops)
+                        # get the property object for the property the
+                        #     user requested (properties[propname])
+                        # verify its type (isinstance...)
+                        # raise error if not link/multilink
+                        # get class name for link/multilink property
+                        # do the get on the designators
+                        # append the new designators
+                        # print
+                        properties = cl.getprops()
+                        property = properties[propname]
+                        if not (isinstance(property, hyperdb.Multilink) or
                           isinstance(property, hyperdb.Link)):
                             raise UsageError, _('property %s is not of type Multilink or Link so -d flag does not apply.')%propname
                         propclassname = self.db.getclass(property.classname).classname
-		        id = cl.get(nodeid, propname)
-			for i in id:
-			    l.append(propclassname + i)
-		    else:
-		        id = cl.get(nodeid, propname)
+                        id = cl.get(nodeid, propname)
                         for i in id:
-			    l.append(i)
+                            l.append(propclassname + i)
+                    else:
+                        id = cl.get(nodeid, propname)
+                        for i in id:
+                            l.append(i)
                 else:
                     if self.print_designator:
-		        properties = cl.getprops()
-			property = properties[propname]
-			if not (isinstance(property, hyperdb.Multilink) or
+                        properties = cl.getprops()
+                        property = properties[propname]
+                        if not (isinstance(property, hyperdb.Multilink) or
                           isinstance(property, hyperdb.Link)):
                             raise UsageError, _('property %s is not of type Multilink or Link so -d flag does not apply.')%propname
                         propclassname = self.db.getclass(property.classname).classname
-		        id = cl.get(nodeid, propname)
-			for i in id:
+                        id = cl.get(nodeid, propname)
+                        for i in id:
                             print propclassname + i
                     else:
                         print cl.get(nodeid, propname)
@@ -660,21 +660,21 @@ Command help:
             designator = []
             if self.separator:
                 if self.print_designator:
-		    id=apply(cl.find, (), props)
-		    for i in id:
-		        designator.append(classname + i)
+                    id=apply(cl.find, (), props)
+                    for i in id:
+                        designator.append(classname + i)
                     print self.separator.join(designator)
                 else:
-		    print self.separator.join(apply(cl.find, (), props))
+                    print self.separator.join(apply(cl.find, (), props))
 
             else:
                 if self.print_designator:
-		    id=apply(cl.find, (), props)
-		    for i in id:
-		        designator.append(classname + i)
+                    id=apply(cl.find, (), props)
+                    for i in id:
+                        designator.append(classname + i)
                     print designator
-		else:
-		    print apply(cl.find, (), props)
+                else:
+                    print apply(cl.find, (), props)
         except KeyError:
             raise UsageError, _('%(classname)s has no property '
                 '"%(propname)s"')%locals()
@@ -713,19 +713,19 @@ Command help:
             raise UsageError, _('Not enough arguments supplied')
 
         # decode the node designator
-	for designator in args[0].split(','):
+        for designator in args[0].split(','):
             try:
                 classname, nodeid = hyperdb.splitDesignator(designator)
-	    except hyperdb.DesignatorError, message:
-		raise UsageError, message
+            except hyperdb.DesignatorError, message:
+                raise UsageError, message
 
-	    # get the class
-	    cl = self.get_class(classname)
+            # get the class
+            cl = self.get_class(classname)
 
-	    # display the values
-	    for key in cl.properties.keys():
-		value = cl.get(nodeid, key)
-		print _('%(key)s: %(value)s')%locals()
+            # display the values
+            for key in cl.properties.keys():
+                value = cl.get(nodeid, key)
+                print _('%(key)s: %(value)s')%locals()
 
     def do_create(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
         '''Usage: create classname property=value ...
@@ -828,12 +828,12 @@ Command help:
         in order: the key, "name", "title" and then the first property,
         alphabetically.
 
-	With -c, -S or -s print a list of item id's if no property specified.
+        With -c, -S or -s print a list of item id's if no property specified.
         If property specified, print list of that property for every class
-	instance.
+        instance.
         '''
-	if len(args) > 2:
-	    raise UsageError, _('Too many arguments supplied')
+        if len(args) > 2:
+            raise UsageError, _('Too many arguments supplied')
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         classname = args[0]
@@ -848,19 +848,19 @@ Command help:
             propname = cl.labelprop()
 
         if self.separator:
-	    if len(args) == 2:
-	       # create a list of propnames since user specified propname
-		proplist=[]
-		for nodeid in cl.list():
-		    try:
-			proplist.append(cl.get(nodeid, propname))
-		    except KeyError:
-			raise UsageError, _('%(classname)s has no property '
-			    '"%(propname)s"')%locals()
-		print self.separator.join(proplist)
-	    else:
-	        # create a list of index id's since user didn't specify
-		# otherwise
+            if len(args) == 2:
+               # create a list of propnames since user specified propname
+                proplist=[]
+                for nodeid in cl.list():
+                    try:
+                        proplist.append(cl.get(nodeid, propname))
+                    except KeyError:
+                        raise UsageError, _('%(classname)s has no property '
+                            '"%(propname)s"')%locals()
+                print self.separator.join(proplist)
+            else:
+                # create a list of index id's since user didn't specify
+                # otherwise
                 print self.separator.join(cl.list())
         else:
             for nodeid in cl.list():
@@ -1391,19 +1391,19 @@ Date format is "YYYY-MM-DD" eg:
             if opt == '-i':
                 self.tracker_home = arg
             if opt == '-c':
-	        if self.separator != None:
-	            self.usage('Only one of -c, -S and -s may be specified')
-		    return 1
+                if self.separator != None:
+                    self.usage('Only one of -c, -S and -s may be specified')
+                    return 1
                 self.separator = ','
             if opt == '-S':
-	        if self.separator != None:
-	            self.usage('Only one of -c, -S and -s may be specified')
-		    return 1
+                if self.separator != None:
+                    self.usage('Only one of -c, -S and -s may be specified')
+                    return 1
                 self.separator = arg
-	    if opt == '-s':
-	        if self.separator != None:
-	            self.usage('Only one of -c, -S and -s may be specified')
-		    return 1
+            if opt == '-s':
+                if self.separator != None:
+                    self.usage('Only one of -c, -S and -s may be specified')
+                    return 1
                 self.separator = ' '
             if opt == '-d':
                 self.print_designator = 1
