@@ -38,6 +38,9 @@ Fixed:
    your database has a 1000 or more issues in it.
  . added missing documentation for a few of the config option values
  . file upload broke if you didn't supply a change note
+ . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
+   (thanks dman)
+
 
 2002-03-25 - 0.4.1
 Feature:

@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.4 2002-01-10 03:38:16 richard Exp $
+# $Id: ZRoundup.py,v 1.5 2002-05-14 23:36:25 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -123,6 +123,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         instance = roundup.instance.open(self.instance_home)
         request = RequestWrapper(self.REQUEST['RESPONSE'])
         env = self.REQUEST.environ
+        env['SCRIPT_NAME'] = '/'.join(self.getPhysicalPath()[:-1])
         env['INSTANCE_NAME'] = self.id
         if env['REQUEST_METHOD'] == 'GET':
             # force roundup to re-parse the request because Zope fiddles
@@ -168,6 +169,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2002/01/10 03:38:16  richard
+# reformatting for 80 cols
+#
 # Revision 1.3  2001/12/12 23:55:00  richard
 # Fixed some problems with user editing
 #
