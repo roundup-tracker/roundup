@@ -16,9 +16,8 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.66 2004-05-14 18:32:58 a1s Exp $
+# $Id: setup.py,v 1.67 2004-05-16 09:23:18 a1s Exp $
 
-from distutils import log
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.command.build_scripts import build_scripts
@@ -143,26 +142,6 @@ def list_po_files():
             "share", "locale", _locale, "LC_MESSAGES", "roundup.mo")))
     return _list
 
-def compile_po_files():
-    """Compile all .po files in locale directory"""
-    # locate the tools directory
-    if sys.platform == "win32":
-        _share = sys.prefix
-    else:
-        _share = os.path.join(sys.prefix, "share",
-            "python%i.%i" % sys.version_info[:2])
-    # import message formatter
-    sys.path.insert(0, os.path.join(_share, "Tools", "i18n"))
-    import msgfmt
-    # compile messages
-    for (_po, _mo) in list_po_files():
-        _mo = os.path.join("build", _mo)
-        _dir = os.path.dirname(_mo)
-        if not os.path.isdir(_dir):
-            os.makedirs(_dir)
-        log.info("Compiling messages in %r => %r", _po, _mo)
-        msgfmt.make(_po, _mo)
-
 def check_manifest():
     """Check that the files listed in the MANIFEST are present when the
     source is unpacked.
@@ -186,9 +165,42 @@ def check_manifest():
 
 
 class build_roundup(build):
+
+    user_options = build.user_options + [
+        ("python-tools=", "p", "Python tools directory"),
+    ]
+
+    def initialize_options (self):
+        build.initialize_options(self)
+        self.python_tools = None
+
+    def finalize_options (self):
+        build.finalize_options(self)
+        if self.python_tools is None:
+            if sys.platform == "win32":
+                _share = sys.prefix
+            else:
+                _share = os.path.join(sys.prefix, "share",
+                    "python%i.%i" % sys.version_info[:2])
+            self.python_tools = os.path.join(_share, "Tools")
+
+    def compile_po_files(self):
+        """Compile all .po files in locale directory"""
+        # import message formatter
+        sys.path.insert(0, os.path.join(self.python_tools, "i18n"))
+        import msgfmt
+        # compile messages
+        for (_po, _mo) in list_po_files():
+            _mo = os.path.join("build", _mo)
+            _dir = os.path.dirname(_mo)
+            if not os.path.isdir(_dir):
+                os.makedirs(_dir)
+            self.announce("Compiling messages in %r => %r" % (_po, _mo))
+            msgfmt.make(_po, _mo)
+
     def run(self):
         check_manifest()
-        compile_po_files()
+        self.compile_po_files()
         build.run(self)
 
 #############################################################################
