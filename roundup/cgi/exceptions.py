@@ -1,4 +1,4 @@
-#$Id: exceptions.py,v 1.4 2004-03-26 00:44:11 richard Exp $
+#$Id: exceptions.py,v 1.5 2004-05-11 13:03:07 a1s Exp $
 '''Exceptions for use in Roundup's web interface.
 '''
 
@@ -49,8 +49,7 @@ class SeriousError(Exception):
     def __str__(self):
         return '''
 <html><head><title>Roundup issue tracker: An error has occurred</title>
- <meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
- <link rel="stylesheet" type="text/css" href="_file/style.css">
+ <link rel="stylesheet" type="text/css" href="@@file/style.css">
 </head>
 <body class="body" marginwidth="0" marginheight="0">
  <p class="error-message">%s</p>
