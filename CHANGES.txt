@@ -69,6 +69,8 @@ Fixed:
 - fixed export/import of retired nodes (sf bug 685273)
 - remember the display template specified during edit (sf bug 701815)
 - added example HTML tempating for vacation flag (sf bug 701722)
+- only look for CSV files when importing (thanks Dan Grassi)
+- can now unset values in CSV editing (sf bug 704788)
 
 
 2003-??-?? 0.5.7

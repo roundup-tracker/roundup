@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.107 2003-03-18 00:24:35 richard Exp $
+# $Id: client.py,v 1.108 2003-03-19 02:50:40 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1213,6 +1213,12 @@ You should then receive another email with the new password.
             nodeid, values = values[0], values[1:]
             found[nodeid] = 1
 
+            # see if the node exists
+            if cl.hasnode(nodeid):
+                exists = 1
+            else:
+                exists = 0
+
             # confirm correct weight
             if len(idlessprops) != len(values):
                 self.error_message.append(
@@ -1222,16 +1228,23 @@ You should then receive another email with the new password.
             # extract the new values
             d = {}
             for name, value in zip(idlessprops, values):
+                prop = cl.properties[name]
                 value = value.strip()
                 # only add the property if it has a value
                 if value:
                     # if it's a multilink, split it
-                    if isinstance(cl.properties[name], hyperdb.Multilink):
+                    if isinstance(prop, hyperdb.Multilink):
                         value = value.split(':')
                     d[name] = value
+                elif exists:
+                    # nuke the existing value
+                    if isinstance(prop, hyperdb.Multilink):
+                        d[name] = []
+                    else:
+                        d[name] = None
 
             # perform the edit
-            if cl.hasnode(nodeid):
+            if exists:
                 # edit existing
                 cl.set(nodeid, **d)
             else:
