@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.58 2002-06-16 01:05:15 dman13 Exp $
+# $Id: roundupdb.py,v 1.59 2002-06-18 03:55:25 dman13 Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -399,7 +399,7 @@ class IssueClass(Class):
             authname = users.get(authid, 'username')
         authaddr = users.get(authid, 'address')
         if authaddr:
-            authaddr = straddr( ('',authaddr) )
+            authaddr = " <%s>" % straddr( ('',authaddr) )
         else:
             authaddr = ''
 
@@ -659,6 +659,11 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.58  2002/06/16 01:05:15  dman13
+# Removed temporary workaround -- it seems it was a bug in the
+# nosyreaction detector in the 0.4.1 extended template and has already
+# been fixed in CVS.  We'll see.
+#
 # Revision 1.57  2002/06/15 15:49:29  dman13
 # Use 'email' instead of 'rfc822', if available.
 # Don't use isinstance() on a string (not allowed in python 2.1).
