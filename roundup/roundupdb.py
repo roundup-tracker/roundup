@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.117 2004-11-12 04:07:03 richard Exp $
+# $Id: roundupdb.py,v 1.118 2005-02-12 00:57:08 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -433,9 +433,9 @@ class IssueClass:
 
         # list the values
         m = []
-        l = props.items()
-        l.sort()
-        for propname, prop in l:
+        prop_items = props.items()
+        prop_items.sort()
+        for propname, prop in prop_items:
             value = cl.get(nodeid, propname, None)
             # skip boring entries
             if not value:
@@ -500,9 +500,9 @@ class IssueClass:
 
         # list the changes
         m = []
-        l = changed.items()
-        l.sort()
-        for propname, oldvalue in l:
+        changed_items = changed.items()
+        changed_items.sort()
+        for propname, oldvalue in changed_items:
             prop = props[propname]
             value = cl.get(nodeid, propname, None)
             if isinstance(prop, hyperdb.Link):

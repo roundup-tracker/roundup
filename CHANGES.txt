@@ -12,6 +12,7 @@ Fixed:
 - more documentation of security mechanisms (incl. sf patches 1117932,
   1117860)
 - better unit tests for security mechanisms
+- code cleanup (sf patch 1115329 and additional)
 
 
 2005-01-13 0.8.0b2
