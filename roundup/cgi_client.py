@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.13 2001-07-30 08:12:17 richard Exp $
+# $Id: cgi_client.py,v 1.14 2001-08-02 00:26:16 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -348,8 +348,23 @@ class Client:
         if (cl.getprops().has_key('messages') and
                 cl.getprops()['messages'].isMultilinkType and
                 cl.getprops()['messages'].classname == 'msg'):
+            # handle the note
+            note = None
+            if self.form.has_key('__note'):
+                note = self.form['__note']
+            if note is not None and note.value:
+                note = note.value
+                if '\n' in note:
+                    summary = re.split(r'\n\r?', note)[0]
+                else:
+                    summary = note
+                m = ['%s\n'%note)
+            else:
+                summary = 'This %s has been created through the web.\n'%cn
+                m = [summary]
+            m.append('\n-------\n')
+
             # generate an edit message - nosyreactor will send it
-            m = []
             for name, prop in cl.getprops().items():
                 value = cl.get(nid, name)
                 if prop.isLinkType:
@@ -370,21 +385,6 @@ class Client:
                             l.append(entry)
                     value = ', '.join(l)
                 m.append('%s: %s'%(name, value))
-
-            # handle the note
-            note = None
-            if self.form.has_key('__note'):
-                note = self.form['__note']
-            if note is not None and note.value:
-                note = note.value
-                if '\n' in note:
-                    summary = re.split(r'\n\r?', note)[0]
-                else:
-                    summary = note
-                m.append('\n%s\n'%note)
-            else:
-                summary = 'This %s has been created through the web.'%cn
-                m.append('\n%s\s'%summary)
 
             # now create the message
             content = '\n'.join(m)
@@ -519,6 +519,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/07/30 08:12:17  richard
+# Added time logging and file uploading to the templates.
+#
 # Revision 1.12  2001/07/30 06:26:31  richard
 # Added some documentation on how the newblah works.
 #
