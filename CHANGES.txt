@@ -51,6 +51,7 @@ Feature:
 - role names made case insensitive
 - added ability to restore retired nodes
 - more lenient date input and addition Interval input support (sf bug 677764)
+- roundup mailgw now handles apop
 
 
 Fixed:
