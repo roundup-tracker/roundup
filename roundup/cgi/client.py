@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.97 2003-02-25 10:19:32 richard Exp $
+# $Id: client.py,v 1.98 2003-02-26 04:08:04 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -452,7 +452,7 @@ class Client:
     # these are the actions that are available
     actions = (
         ('edit',     'editItemAction'),
-        ('editCSV',  'editCSVAction'),
+        ('editcsv',  'editCSVAction'),
         ('new',      'newItemAction'),
         ('register', 'registerAction'),
         ('confrego', 'confRegoAction'),
@@ -469,6 +469,7 @@ class Client:
             identifies the method on this object to call. The four basic
             actions are defined in the "actions" sequence on this class:
              "edit"      -> self.editItemAction
+             "editcsv"   -> self.editCSVAction
              "new"       -> self.newItemAction
              "register"  -> self.registerAction
              "confrego"  -> self.confRegoAction

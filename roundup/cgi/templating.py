@@ -784,12 +784,13 @@ class HTMLProperty:
         self._prop = prop
         self._value = value
         self._anonymous = anonymous
+        self._name = name
         if not anonymous:
-            self._name = '%s%s@%s'%(classname, nodeid, name)
+            self._formname = '%s%s@%s'%(classname, nodeid, name)
         else:
-            self._name = name
+            self._formname = name
     def __repr__(self):
-        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._name,
+        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._formname,
             self._prop, self._value)
     def __str__(self):
         return self.plain()
@@ -857,7 +858,7 @@ class StringHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
 
     def multiline(self, escape=0, rows=5, cols=40):
         ''' Render a multiline form edit field for the property
@@ -868,7 +869,7 @@ class StringHTMLProperty(HTMLProperty):
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
         return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
-            self._name, rows, cols, value)
+            self._formname, rows, cols, value)
 
     def email(self, escape=1):
         ''' Render the value of the property as an obscured email address
@@ -897,7 +898,7 @@ class PasswordHTMLProperty(HTMLProperty):
     def field(self, size = 30):
         ''' Render a form edit field for the property.
         '''
-        return '<input type="password" name="%s" size="%s">'%(self._name, size)
+        return '<input type="password" name="%s" size="%s">'%(self._formname, size)
 
     def confirm(self, size = 30):
         ''' Render a second form edit field for the property, used for 
@@ -905,7 +906,7 @@ class PasswordHTMLProperty(HTMLProperty):
             a field with name ":confirm:name".
         '''
         return '<input type="password" name=":confirm:%s" size="%s">'%(
-            self._name, size)
+            self._formname, size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
@@ -921,7 +922,7 @@ class NumberHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
 
 class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
@@ -935,13 +936,13 @@ class BooleanHTMLProperty(HTMLProperty):
         ''' Render a form edit field for the property
         '''
         checked = self._value and "checked" or ""
-        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(self._name,
+        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(self._formname,
             checked)
         if checked:
             checked = ""
         else:
             checked = "checked"
-        s += '<input type="radio" name="%s" value="no" %s>No'%(self._name,
+        s += '<input type="radio" name="%s" value="no" %s>No'%(self._formname,
             checked)
         return s
 
@@ -960,7 +961,7 @@ class DateHTMLProperty(HTMLProperty):
             DateHTMLProperty.
         '''
         return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._name, date.Date('.'))
+            self._formname, date.Date('.'))
 
     def field(self, size = 30):
         ''' Render a form edit field for the property
@@ -970,7 +971,7 @@ class DateHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value.local(self._db.getUserTimezone())))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
 
     def reldate(self, pretty=1):
         ''' Render the interval between the date and now.
@@ -1004,7 +1005,7 @@ class DateHTMLProperty(HTMLProperty):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
         return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._name, self._value.local(offset))
+            self._formname, self._value.local(offset))
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
@@ -1027,7 +1028,7 @@ class IntervalHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
 
 class LinkHTMLProperty(HTMLProperty):
     ''' Link HTMLProperty
@@ -1080,7 +1081,7 @@ class LinkHTMLProperty(HTMLProperty):
             sort_on = linkcl.labelprop()  
         options = linkcl.filter(None, {}, ('+', sort_on), (None, None))
         # TODO: make this a field display, not a menu one!
-        l = ['<select name="%s">'%self._name]
+        l = ['<select name="%s">'%self._formname]
         k = linkcl.labelprop(1)
         if self._value is None:
             s = 'selected '
@@ -1127,7 +1128,7 @@ class LinkHTMLProperty(HTMLProperty):
         sortfunc = make_sort_function(self._db, self._prop.classname)
 
         linkcl = self._db.getclass(self._prop.classname)
-        l = ['<select name="%s">'%self._name]
+        l = ['<select name="%s">'%self._formname]
         k = linkcl.labelprop(1)
         s = ''
         if value is None:
@@ -1244,7 +1245,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             k = linkcl.labelprop(1)
             value = [linkcl.get(v, k) for v in value]
         value = cgi.escape(','.join(value))
-        return '<input name="%s" size="%s" value="%s">'%(self._name, size, value)
+        return '<input name="%s" size="%s" value="%s">'%(self._formname, size, value)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
@@ -1262,7 +1263,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             sort_on = ('+', linkcl.labelprop())
         options = linkcl.filter(None, conditions, sort_on, (None,None)) 
         height = height or min(len(options), 7)
-        l = ['<select multiple name="%s" size="%s">'%(self._name, height)]
+        l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]
         k = linkcl.labelprop(1)
 
         # make sure we list the current values if they're retired
