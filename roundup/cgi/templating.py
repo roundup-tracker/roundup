@@ -323,8 +323,8 @@ class HTMLClass:
            height. The popup window will be resizable and scrollable.
         '''
         return '<a href="javascript:help_window(\'%s?:template=help&' \
-            'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(self.classname,
-            properties, width, height, label)
+            ':contentonly=1&properties=%s\', \'%s\', \'%s\')"><b>'\
+            '(%s)</b></a>'%(self.classname, properties, width, height, label)
 
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)

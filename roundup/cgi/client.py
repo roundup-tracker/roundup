@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.11 2002-09-04 04:31:51 richard Exp $
+# $Id: client.py,v 1.12 2002-09-05 01:27:42 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -114,8 +114,14 @@ class Client:
             # self.classname and self.template)
             self.handle_action()
             # now render the page
-            self.write(self.renderTemplate('page', '', ok_message=self.ok_message,
-                error_message=self.error_message))
+            if self.form.has_key(':contentonly'):
+                # just the content
+                self.write(self.content())
+            else:
+                # render the content inside the page template
+                self.write(self.renderTemplate('page', '',
+                    ok_message=self.ok_message,
+                    error_message=self.error_message))
         except Redirect, url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
