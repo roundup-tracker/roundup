@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_dates.py,v 1.35 2004-11-29 14:34:10 a1s Exp $
+# $Id: test_dates.py,v 1.36 2005-02-25 17:18:46 a1s Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -62,6 +62,8 @@ class DateTestCase(unittest.TestCase):
 
     def testDateError(self):
         self.assertRaises(ValueError, Date, "12")
+        # Date cannot handle dates before UNIX epoch
+        self.assertRaises(ValueError, Date, (1, 1, 1, 0, 0, 0.0, 0, 1, -1))
 
     def testOffset(self):
         ae = self.assertEqual
@@ -390,4 +392,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
-# vim: set filetype=python ts=4 sw=4 et si :
+# vim: set filetype=python sts=4 sw=4 et si :
