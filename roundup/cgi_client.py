@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.80 2001-12-12 23:27:14 richard Exp $
+# $Id: cgi_client.py,v 1.81 2001-12-12 23:55:00 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -395,15 +395,15 @@ class Client:
                 props, changed = parsePropsFromForm(self.db, user, self.form,
                     self.nodeid)
                 set_cookie = 0
-                if self.nodeid == self.getuid() and 'password' in changed:
+                if self.nodeid == self.getuid() and changed.has_key('password'):
                     password = self.form['password'].value.strip()
                     if password:
                         set_cookie = password
                     else:
+                        # no password was supplied - don't change it
                         del props['password']
-                        del changed[changed.index('password')]
+                        del changed['password']
                 user.set(self.nodeid, **props)
-                self._post_editnode(self.nodeid)
                 # and some feedback for the user
                 message = _('%(changes)s edited ok')%{'changes':
                     ', '.join(changed.keys())}
@@ -1090,6 +1090,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.80  2001/12/12 23:27:14  richard
+# Added a Zope frontend for roundup.
+#
 # Revision 1.79  2001/12/10 22:20:01  richard
 # Enabled transaction support in the bsddb backend. It uses the anydbm code
 # where possible, only replacing methods where the db is opened (it uses the

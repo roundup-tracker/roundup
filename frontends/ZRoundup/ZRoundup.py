@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.2 2001-12-12 23:33:58 richard Exp $
+# $Id: ZRoundup.py,v 1.3 2001-12-12 23:55:00 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -113,7 +113,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
 
     security.declarePrivate('_opendb')
     def _opendb(self):
-        '''Open the roundup instnace database for a transaction
+        '''Open the roundup instance database for a transaction.
         '''
         instance = roundup.instance.open(self.instance_home)
         request = RequestWrapper(self.REQUEST['RESPONSE'])
@@ -163,6 +163,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/12/12 23:33:58  richard
+# added some implementation notes
+#
 # Revision 1.1  2001/12/12 23:27:13  richard
 # Added a Zope frontend for roundup.
 #
