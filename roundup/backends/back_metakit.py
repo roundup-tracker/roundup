@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.56 2004-01-26 17:07:56 wc2so1 Exp $
+# $Id: back_metakit.py,v 1.57 2004-01-27 18:10:48 wc2so1 Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -94,27 +94,16 @@ BACKWARDS_COMPATIBLE = True
 # 12 Enumerated READ and READWRITE for the getview and getindexedview
 #    These will probably be removed because they are not used
 #
+# Changed to 1.56
+#
+# 13 worked-around a current metakit bug, so retiring properties now
+#    works correctly.
+#    metakit 2.9.2 has a bug when using "find" on ordered views,
+#     using multiple arguments for find doesn't work.
+#
 # Known Current Bugs:
-#       It is currently is not possible to retire an id with name X
-#       and add a new unretired property with name X.
-#       Confused?  Here is the regression test:
-#
-#        self.assertRaises(ValueError, self.db.user.create)
-#
-#        newid = self.db.user.create(username="spam")
-#        self.assertEqual(self.db.user.lookup('spam'), newid)
-#        self.db.commit()
-#        self.assertEqual(self.db.user.lookup('spam'), newid)
-#        self.db.user.retire(newid)
-#        self.assertRaises(KeyError, self.db.user.lookup, 'spam')
-#
-#        # use the key again now that the old is retired (metakit FAILS!!)
-#        newid2 = self.db.user.create(username="spam")
-#        self.assertNotEqual(newid, newid2)
-#        # try to restore old node. this shouldn't succeed!
-#        self.assertRaises(KeyError, self.db.user.restore, newid)
-#
-#        self.assertRaises(TypeError, self.db.issue.lookup, 'fubar')
+#    You can't change a class' key properly.
+#    This shouldn't be too hard to fix.
 #
 
 from roundup import hyperdb, date, password, roundupdb, security
@@ -475,7 +464,7 @@ class Class(hyperdb.Class):
         '''
             'cache' exists for backwards compatibility, and is not used.
         '''
-        view = self.getview()        
+        view = self.getview()
         id = int(nodeid)
         if cache == 0:
             oldnode = self.uncommitted.get(id, None)
@@ -784,9 +773,13 @@ class Class(hyperdb.Class):
             self.db.addjournal(self.classname, nodeid, _RETIRE, {})
         if self.key:
             iv = self.getindexview(READWRITE)
-            ndx = iv.find(k=getattr(row, self.key),i=row.id)
-            if ndx > -1:
+            ndx = iv.find(k=getattr(row, self.key))
+            # find is broken with multiple attribute lookups
+            # on ordered views
+            #ndx = iv.find(k=getattr(row, self.key),i=row.id)
+            if ndx > -1 and iv[ndx].i == row.id:
                 iv.delete(ndx)
+
         self.db.dirty = 1
         self.fireReactors('retire', nodeid, None)
 
