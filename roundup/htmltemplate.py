@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.12 2001-07-30 01:24:33 richard Exp $
+# $Id: htmltemplate.py,v 1.13 2001-07-30 02:37:53 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -62,7 +62,12 @@ class Field(Base):
             return '[Field: not called from item]'
         propclass = self.properties[property]
         if self.nodeid:
-            value = self.cl.get(self.nodeid, property)
+            value = self.cl.get(self.nodeid, property, None)
+            # TODO: remove this from the code ... it's only here for
+            # handling schema changes, and they should be handled outside
+            # of this code...
+            if propclass.isMultilinkType and value is None:
+                value = []
         elif self.filterspec is not None:
             if propclass.isMultilinkType:
                 value = self.filterspec.get(property, [])
@@ -712,6 +717,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/07/30 01:24:33  richard
+# Handles new node display now.
+#
 # Revision 1.11  2001/07/29 09:31:35  richard
 # oops
 #
