@@ -1,4 +1,4 @@
-#$Id: exceptions.py,v 1.5 2004-05-11 13:03:07 a1s Exp $
+#$Id: exceptions.py,v 1.6 2004-11-18 14:10:27 a1s Exp $
 '''Exceptions for use in Roundup's web interface.
 '''
 
@@ -7,6 +7,9 @@ __docformat__ = 'restructuredtext'
 import cgi
 
 class HTTPException(Exception):
+    pass
+
+class LoginError(HTTPException):
     pass
 
 class Unauthorised(HTTPException):
@@ -56,4 +59,4 @@ class SeriousError(Exception):
 </body></html>
 '''%cgi.escape(self.args[0])
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
