@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.24 2004-09-28 10:47:20 a1s Exp $
+# $Id: test_cgi.py,v 1.25 2004-10-24 10:00:13 a1s Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -16,6 +16,8 @@ from roundup.cgi import client
 from roundup.cgi.exceptions import FormError
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
+
+import db_test_base
 
 NEEDS_INSTANCE = 1
 
@@ -36,10 +38,6 @@ def makeForm(args):
         else:
             form.list.append(cgi.MiniFieldStorage(k, v))
     return form
-
-class config:
-    TRACKER_NAME = 'testing testing'
-    TRACKER_WEB = 'http://testing.testing/'
 
 cm = client.clean_message
 class MessageTestCase(unittest.TestCase):
@@ -64,17 +62,8 @@ class MessageTestCase(unittest.TestCase):
 class FormTestCase(unittest.TestCase):
     def setUp(self):
         self.dirname = '_test_cgi_form'
-        try:
-            shutil.rmtree(self.dirname)
-        except OSError, error:
-            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
-        # create the instance
-        init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, 'anydbm')
-        self.instance = tracker = instance.open(self.dirname)
-        if tracker.exists():
-            tracker.nuke()
-        tracker.init(password.Password('sekrit'))
+        # set up and open a tracker
+        self.instance = db_test_base.setupTracker(self.dirname)
 
         # open the database
         self.db = self.instance.open('admin')
