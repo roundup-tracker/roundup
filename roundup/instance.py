@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.14 2004-06-08 05:29:18 richard Exp $
+# $Id: instance.py,v 1.15 2004-07-19 01:49:26 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -101,14 +101,14 @@ class OldStyleTrackers:
             except ImportError, msg:
                 raise TrackerError, 'Python logging module unavailable: %s'%msg
             config.logging.fileConfig(config.LOGGING_CONFIG)
-        elif hasattr(config, 'LOGGING_FILENAME'):
-            config.logging = rlog.BasicLogging()
-            config.logging.setFile(config.LOGGING_FILENAME)
-            if hasattr(config, 'LOGGING_LEVEL'):
-                config.logging.setLevel(config.LOGGING_LEVEL)
         else:
             config.logging = rlog.BasicLogging()
-            config.logging.setLevel('ERROR')
+            if hasattr(config, 'LOGGING_FILENAME'):
+                config.logging.setFile(config.LOGGING_FILENAME)
+            if hasattr(config, 'LOGGING_LEVEL'):
+                config.logging.setLevel(config.LOGGING_LEVEL)
+            else:
+                config.logging.setLevel('ERROR')
 
         return tracker
 
