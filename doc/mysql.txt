@@ -12,7 +12,7 @@ To use MySQL as backend for storing roundup data, you should additionally
 install:
 
     1. MySQL RDBMS 3.23.34 or higher - http://www.mysql.com. Your MySQL
-       installation should support Berkeley DB (BDB) tabes for transaction
+       installation should support Berkeley DB (BDB) tables for transaction
        support.
     2. Python interface to mysql - http://sourceforge.net/projects/mysql-python
 
@@ -20,8 +20,8 @@ install:
 How to run mysql tests?
 =======================
 
-Roundup tests expect empty database available for use. There are two ways how to
-provide it:
+Roundup tests expect an empty database available for use. There are two ways how to
+provide this:
 
     1. If you have root permissions on mysql server, you can create necessary
        database using this SQL sequence:
