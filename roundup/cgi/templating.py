@@ -490,7 +490,7 @@ class HTMLItem(HTMLPermissions):
         # XXX do this
         return []
 
-    def history(self, direction='descending'):
+    def history(self, direction='descending', dre=re.compile('\d+')):
         l = ['<table class="history">'
              '<tr><th colspan="4" class="header">',
              _('History'),
@@ -629,6 +629,10 @@ class HTMLItem(HTMLPermissions):
                     handled by the history display!</em></strong>''')
                 arg_s = '<strong><em>' + str(args) + '</em></strong>'
             date_s = date_s.replace(' ', '&nbsp;')
+            # if the user's an itemid, figure the username (older journals
+            # have the username)
+            if dre.match(user):
+                user = self._db.user.get(user, 'username')
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
                 date_s, user, action, arg_s))
         if comments:
