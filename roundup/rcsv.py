@@ -20,7 +20,7 @@ try:
     except AttributeError:
         # fake it all up using the Object-Craft CSV module
         class excel:
-            pass
+            delimiter = ','
         if hasattr(csv, 'parser'):
             error = ''
             def reader(fileobj, dialect=excel):

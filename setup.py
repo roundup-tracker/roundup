@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.8 2004-03-01 00:07:27 richard Exp $
+# $Id: setup.py,v 1.55.2.9 2004-03-25 00:32:30 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -158,7 +158,7 @@ def main():
             'doc/roundup-mailgw.1', 'doc/roundup-server.1']))
 
     # add the templates to the data files lists
-    from roundup.admin import listTemplates
+    from roundup.init import listTemplates
     templates = [t['path'] for t in listTemplates('templates').values()]
     for tdir in templates:
         # scan for data files
