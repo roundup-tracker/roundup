@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.22 2001-11-27 03:00:50 richard Exp $
+# $Id: roundupdb.py,v 1.23 2001-11-27 03:17:13 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -323,7 +323,7 @@ class IssueClass(Class):
             authname = self.db.user.get(authid, 'username')
         authaddr = self.db.user.get(authid, 'address')
         if authaddr:
-            authaddr = '<%s> '%authaddr
+            authaddr = ' <%s>'%authaddr
         else:
             authaddr = ''
         # make the message body
@@ -335,9 +335,9 @@ class IssueClass(Class):
 
         # add author information
         if len(self.db.issue.get(nodeid, 'messages')) == 1:
-            m.append("New submission from %s <%s>:"%(authname, authaddr))
+            m.append("New submission from %s%s:"%(authname, authaddr))
         else:
-            m.append("%s <%s> added the comment:"%(authname, authaddr))
+            m.append("%s%s added the comment:"%(authname, authaddr))
         m.append('')
 
         # add the content
@@ -416,6 +416,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/11/27 03:00:50  richard
+# couple of bugfixes from latest patch integration
+#
 # Revision 1.21  2001/11/26 22:55:56  richard
 # Feature:
 #  . Added INSTANCE_NAME to configuration - used in web and email to identify
