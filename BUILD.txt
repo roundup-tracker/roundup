@@ -19,11 +19,12 @@ running:
 
   1. Edit setup.py to ensure that all information therein (version, contact
      information etc) is correct.
-  2. ./setup.py sdist -o
+  2. python setup.py sdist -o
   3. Check the MANIFEST to make sure that any new files are included. If
      they are not, edit MANIFEST.in to include them. "Documentation" for
      MANIFEST.in may be found in disutils.filelist._parse_template_line.
-  4. ./setup.py sdist
+  4. python setup.py sdist
+     (if you find sdist a little verbose, add "-q" to the end of the command)
   5. FTP the tar.gz from the dist directory to to the "incoming" directory on
      "upload.sourceforge.net".
   6. Make a quick release at:
