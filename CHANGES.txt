@@ -1,8 +1,9 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2003-??-?? 0.6.0
+2003-05-?? 0.6.0
 Fixed:
+- handle non-existant demo dir (thanks Ollie Rutherfurd)
 - strip whitespace from Role names so "User, Admin" will work
 
 

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.1 2003-05-09 05:04:33 richard Exp $
+# $Id: demo.py,v 1.2 2003-05-11 07:33:55 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -11,7 +11,8 @@ from glob import glob
 def install_demo(home):
     # create the instance
     try:
-        shutil.rmtree(home)
+        if os.path.exists(home):
+            shutil.rmtree(home)
     except os.error, error:
         if error.errno != errno.ENOENT:
             raise
