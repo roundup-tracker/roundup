@@ -118,6 +118,11 @@ The configuration variables available are:
  This is the directory that the HTML templates reside in. By default they are
  in the tracker home.
 
+**STATIC_FILES** - e.g. ``os.path.join(TRACKER_HOME, 'files')``
+ This *optional* variable defines the directory that static files are served
+ from (files with the URL ``/@@file/<filename>``). If this is not defined,
+ then static files are served from the TEMPLATES directory.
+
 **TRACKER_NAME** - ``'Roundup issue tracker'``
  A descriptive name for your roundup tracker. This is sent out in e-mails and
  appears in the heading of CGI pages.
@@ -226,6 +231,11 @@ tracker is attempted.::
 
     # This is the directory that the HTML templates reside in
     TEMPLATES = os.path.join(TRACKER_HOME, 'html')
+
+    # Optional: the directory that static files are served from (files with
+    # the URL /@@file/<filename>). If this is not defined, then static files
+    # are served from the TEMPLATES directory.
+    # STATIC_FILES = os.path.join(TRACKER_HOME, 'files')
 
     # A descriptive name for your roundup tracker
     TRACKER_NAME = 'Roundup issue tracker'

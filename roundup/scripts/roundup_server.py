@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.46.2.4 2004-06-21 04:56:34 richard Exp $
+$Id: roundup_server.py,v 1.46.2.5 2004-07-20 02:10:43 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -118,7 +118,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.wfile.write("</pre>\n")
         sys.stdin = save_stdin
 
-    do_GET = do_POST = run_cgi
+    do_GET = do_POST = do_HEAD = run_cgi
 
     def index(self):
         ''' Print up an index of the available trackers

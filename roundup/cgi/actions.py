@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27.2.3 2004-05-28 01:03:53 richard Exp $
+#$Id: actions.py,v 1.27.2.4 2004-07-20 02:10:43 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -859,7 +859,13 @@ class ExportCSVAction(Action):
         h['Content-Type'] = 'text/csv'
         # some browsers will honor the filename here...
         h['Content-Disposition'] = 'inline; filename=query.csv'
+
         self.client.header()
+
+        if self.client.env['REQUEST_METHOD'] == 'HEAD':
+            # all done, return a dummy string
+            return 'dummy'
+
         writer = rcsv.writer(self.client.request.wfile)
         writer.writerow(columns)
 

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176.2.2 2004-06-22 23:36:49 richard Exp $
+# $Id: client.py,v 1.176.2.3 2004-07-20 02:10:43 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -596,7 +596,8 @@ class Client:
     def write(self, content):
         if not self.headers_done:
             self.header()
-        self.request.wfile.write(content)
+        if self.env['REQUEST_METHOD'] != 'HEAD':
+            self.request.wfile.write(content)
 
     def setHeader(self, header, value):
         '''Override a header to be returned to the user's browser.
