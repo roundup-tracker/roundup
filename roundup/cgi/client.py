@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.190 2004-10-20 06:36:06 a1s Exp $
+# $Id: client.py,v 1.191 2004-10-23 14:05:25 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -162,7 +162,8 @@ class Client:
            If omitted, create default TranslationService.
         """
         if translator is None:
-            translator = TranslationService.get_translation()
+            translator = TranslationService.get_translation(
+                tracker_home=self.instance.config["TRACKER_HOME"])
         self.translator = translator
         self._ = self.gettext = translator.gettext
         self.ngettext = translator.ngettext
