@@ -1,0 +1,37 @@
+                                    Roundup
+                                    =======
+
+  This software is released under the GNU GPL. The copyright is held by Bizar
+            Software Pty Ltd (http://www.bizarsoftware.com.au).
+
+   The stylesheet included with this package has been copied from the Zope
+      management interface and presumably belongs to Digital Creations.
+
+
+1. Building Releases
+====================
+
+Roundup is currently a source-only release - it has no binary components. I
+want it to stay that way, too.
+
+This means that we only need to ever build source releases. This is done by
+running:
+
+  1. Edit setup.py to ensure that all information therein (version, contact
+     information etc) is correct.
+  2. ./setup.py sdist -o
+  3. Check the MANIFEST to make sure that any new files are included. If
+     they are not, edit MANIFEST.in to include them. "Documentation" for
+     MANIFEST.in may be found in disutils.filelist._parse_template_line.
+  4. ./setup.py sdist
+  5. FTP the tar.gz from the dist directory to to the "incoming" directory on
+     "upload.sourceforge.net".
+  6. Make a quick release at:
+      http://sourceforge.net/project/admin/qrs.php?package_id=&group_id=31577
+
+
+
+2. Author
+=========
+richard@sourceforge.net
+

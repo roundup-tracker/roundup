@@ -149,7 +149,7 @@ filter:
 
 6. Author
 =========
-richard@bizarsoftware.com.au
+richard@sourceforge.net
 
 
 7. Thanks
