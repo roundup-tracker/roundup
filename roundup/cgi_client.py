@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.90 2002-01-08 03:56:55 richard Exp $
+# $Id: cgi_client.py,v 1.91 2002-01-08 04:03:47 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -359,8 +359,7 @@ class Client:
         if props.has_key('nosy') and assignedto_id not in props['nosy']:
             props['nosy'].append(assignedto_id)
         else:
-            props['nosy'] = cl.get(self.nodeid, 'nosy')
-            props['nosy'].append(assignedto_id)
+            props['nosy'] = [assignedto_id]
 
     def _changenode(self, props):
         ''' change the node based on the contents of the form
@@ -1181,6 +1180,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.90  2002/01/08 03:56:55  richard
+# Oops, missed this before the beta:
+#  . #495392 ] empty nosy -patch
+#
 # Revision 1.89  2002/01/07 20:24:45  richard
 # *mutter* stupid cutnpaste
 #
