@@ -3845,6 +3845,16 @@ Finally we add a new *auditor* to the ``detectors`` directory called
      db.issue.audit('retire', audit_provisionaluser)
      db.issue.audit('restore', audit_provisionaluser)
 
+
+If you wish to also prevent users from *viewing* issues they didn't create,
+the following ``tal:condition`` may be performed in a template (eg.
+``issue.item.html``) to check whether the user is allowed to edit the
+current issue::
+
+ tal:condition="python:request.user.hasPermission('Edit')
+       or (request.user.hasPermission('Edit Own') and context.creator ==
+       request.user.id)"
+
 Some older trackers might also want to change the ``page.html``
 template as follows::
 
