@@ -1205,7 +1205,7 @@ class NumberHTMLProperty(HTMLProperty):
 
         return str(self._value)
 
-    def field(self, size = 30):
+    def field(self, size=30):
         ''' Render a form edit field for the property.
 
             If not editable, just display the value via plain().

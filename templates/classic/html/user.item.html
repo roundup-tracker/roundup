@@ -54,14 +54,10 @@
  </tr>
  <tr>
   <th>Timezone</th>
-  <td tal:define="timezone request/form/timezone/value | python:'';
-      timezone python:timezone
-      or db._db.user.get(context.id, 'timezone')
-      or config.DEFAULT_TIMEZONE">
-  <input tal:condition="context/is_edit_ok" name="timezone"
-      tal:attributes="value timezone">
-  <span tal:condition="context/is_only_view_ok" tal:content="timezone" />
-   (this is a numeric hour offset)
+  <td>
+   <input tal:replace="structure context/timezone/field">
+   (this is a numeric hour offset, the default is
+   <span tal:replace="db/config/DEFAULT_TIMEZONE" />)
   </td>
  </tr>
  <tr>

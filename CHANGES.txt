@@ -6,6 +6,7 @@ Fixed:
 - several temp files made it into the source distribution (sf bug 949243)
 - typo in roundup/instance.py
 - missing CRLF var in rfc822.py (sf patch 949471)
+- fix user creation page
 
 
 2004-05-06 0.7.0
