@@ -37,6 +37,7 @@ You are not allowed to view this page.
       tal:content="structure context/roles/field">roles</td>
   <td tal:condition="not:context/id">
    <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+   (to give the user more than one role, enter a comma,separated,list)
   </td>
  </tr>
  <tr>
