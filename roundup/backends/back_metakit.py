@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.43 2003-03-17 22:03:04 kedder Exp $
+# $Id: back_metakit.py,v 1.44 2003-03-26 06:36:11 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -908,7 +908,9 @@ class Class:
             if prop is None:
                 prop = self.privateprops[propname]
             if isinstance(prop, hyperdb.Multilink):
-                if type(value) is not _LISTTYPE:
+                if value in ('-1', ['-1']):
+                    value = []
+                elif type(value) is not _LISTTYPE:
                     value = [value]
                 # transform keys to ids
                 u = []
@@ -987,6 +989,8 @@ class Class:
             def ff(row, ml=mlcriteria):
                 for propname, values in ml.items():
                     sv = getattr(row, propname)
+                    if not values and sv:
+                        return 0
                     for id in values:
                         if sv.find(fid=id) == -1:
                             return 0
