@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.111 2003-03-26 06:46:17 richard Exp $
+# $Id: client.py,v 1.112 2003-04-10 04:32:46 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -224,11 +224,12 @@ class Client:
             # possibly handle a form submit action (may change self.classname
             # and self.template, and may also append error/ok_messages)
             self.handle_action()
-            # now render the page
 
+            # now render the page
             # we don't want clients caching our dynamic pages
             self.additional_headers['Cache-Control'] = 'no-cache'
-            self.additional_headers['Pragma'] = 'no-cache'
+# Pragma: no-cache makes Mozilla and its ilk double-load all pages!!
+#            self.additional_headers['Pragma'] = 'no-cache'
 
             # expire this page 5 seconds from now
             date = rfc822.formatdate(time.time() + 5)
