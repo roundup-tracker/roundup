@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# $Id: roundup.py,v 1.2 2001-07-19 05:52:22 anthonybaxter Exp $ 
+# $Id: roundup.py,v 1.3 2001-07-19 06:08:24 anthonybaxter Exp $ 
 
 import sys
 if int(sys.version[0]) < 2:
@@ -35,7 +35,7 @@ def usage():
 
  roundup init
  roundup spec classname
- roundup create [-user login] classanme propname=value ...
+ roundup create [-user login] classname propname=value ...
  roundup list [-list] classname
  roundup history [-list] designator
  roundup get [-list] designator[,designator,...] propname
@@ -206,5 +206,8 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/19 05:52:22  anthonybaxter
+# Added CVS keywords $Id: roundup.py,v 1.3 2001-07-19 06:08:24 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
+#
 #
 
