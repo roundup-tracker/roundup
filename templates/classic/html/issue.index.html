@@ -56,18 +56,27 @@ You are not allowed to view this page.
   </tr>
 
  </tal:block>
- <tr class="navigation" tal:define="colspan python:len(request.columns)">
-  <th tal:attributes="colspan python:colspan/2">
-   <a tal:define="prev batch/previous" tal:condition="prev"
-      tal:attributes="href python:request.indexargs_url(request.classname,
-      {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
-   &nbsp;
-  </th>
-  <th tal:attributes="colspan python:colspan/2 + colspan%2">
-   <a tal:define="next batch/next" tal:condition="next"
-      tal:attributes="href python:request.indexargs_url(request.classname,
-      {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
-   &nbsp;
+
+ <tr tal:condition="batch">
+  <th tal:attributes="colspan python:len(request.columns)">
+   <table width="100%">
+    <tr class="navigation">
+     <th>
+      <a tal:define="prev batch/previous" tal:condition="prev"
+         tal:attributes="href python:request.indexargs_href(request.classname,
+         {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
+      &nbsp;
+     </th>
+     <th tal:content="python: '%d...%d out of %d'%(batch.start,
+             batch.start+batch.length-1, batch.sequence_length)">current</th>
+     <th>
+      <a tal:define="next batch/next" tal:condition="next"
+         tal:attributes="href python:request.indexargs_href(request.classname,
+         {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
+      &nbsp;
+     </th>
+    </tr>
+   </table>
   </th>
  </tr>
 </table>

@@ -69,6 +69,7 @@ Feature:
 - added Windows Service mode for roundup-server when daemonification is
   attempted on Windows.
 - sort HTMLClass.properties results by name (sf feature 724738)
+- nicer index navigation (sf feature 676866)
 
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages

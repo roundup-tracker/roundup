@@ -134,10 +134,18 @@ table.list td {
 }
 
 table.list tr.navigation th {
-  text-align: right;
+  width: 33%;
+  border-style: hidden;
+  text-align: center;
+}
+table.list tr.navigation td {
+    border: none
 }
 table.list tr.navigation th:first-child {
   text-align: left;
+}
+table.list tr.navigation th:last-child {
+  text-align: right;
 }
 
 
@@ -345,3 +353,4 @@ table.otherinfo th {
   font-weight: bold;
   text-align: left;
 }
+/* SHA: 1c2bdea9d2295da079168403292e5c9039bb5088 */
