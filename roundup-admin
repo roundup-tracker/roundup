@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.22 2001-10-09 07:25:59 richard Exp $
+# $Id: roundup-admin,v 1.23 2001-10-09 23:36:25 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -426,6 +426,10 @@ def main():
     instance = roundup.instance.open(instance_home)
     db = instance.open('admin')
 
+    if len(args) < 2:
+        print function.__doc__
+        return 1
+
     # do the command
     try:
         return function(db, args[1:])
@@ -440,6 +444,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.21  2001/10/05 02:23:24  richard
 #  . roundup-admin create now prompts for property info if none is supplied
 #    on the command-line.
