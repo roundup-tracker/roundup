@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.149.2.4 2004-10-11 05:20:37 richard Exp $
+$Id: mailgw.py,v 1.149.2.5 2004-11-17 22:10:02 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -973,7 +973,7 @@ def setPropArrayFromString(self, cl, propString, nodeid=None):
             props[propname] = hyperdb.rawToHyperdb(self.db, cl, nodeid,
                 propname, value)
         except hyperdb.HyperdbValueError, message:
-            errors.append(message)
+            errors.append(str(message))
     return errors, props
 
 

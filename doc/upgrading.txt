@@ -128,6 +128,7 @@ Note that ``tal:`` statements are unaffected. So are TAL expression type
 prefixes such as ``python:`` and ``string:``. Please ask on the
 roundup-users mailing list for help if you're unsure.
 
+
 0.7.0 Edit collision detection
 ------------------------------
 
