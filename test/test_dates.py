@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.18 2003-03-06 02:33:57 richard Exp $ 
+# $Id: test_dates.py,v 1.19 2003-03-06 06:12:30 richard Exp $ 
 
 import unittest, time
 
@@ -209,6 +209,20 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval('1y')/2), '+ 6m')
         ae(str(Interval('1:00')/2), '+ 0:30')
         ae(str(Interval('00:01')/2), '+ 0:00:30')
+
+    def testSorting(self):
+        ae = self.assertEqual
+        i1 = Interval('1y')
+        i2 = Interval('1d')
+        l = [i1, i2]; l.sort()
+        ae(l, [i2, i1])
+        l = [i2, i1]; l.sort()
+        ae(l, [i2, i1])
+        i1 = Interval('- 2d')
+        i2 = Interval('1d')
+        l = [i1, i2]; l.sort()
+        ae(l, [i1, i2])
+
 
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')
