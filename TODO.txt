@@ -49,6 +49,8 @@ pending web: have roundup.cgi pick up instance config from the environment
 pending web: UNIX init.d script for roundup-server
 pending web: rewritten documentation (can come after the beta though so stuff
              is settled) ... including relevant file names in customisation doc
+pending admin: have roundup-admin "set" command be applicable to all items
+               in a class
 
 bug: request.url is incorrect in cgi-bin environments
 
