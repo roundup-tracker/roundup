@@ -1,0 +1,47 @@
+Migrating to newer versions of Roundup
+======================================
+
+
+0.2.x -> 0.3.x
+--------------
+
+0.3.0 introduces cookie authentication - you will need to copy the
+interfaces.py file from the roundup source to your instance home to enable
+authentication. If you used the classic schema, the interfaces file is in:
+
+ <roundup source>/roundup/templates/classic/interfaces.py
+
+If you used the extended schema, the file is in:
+
+ <roundup source>/roundup/templates/extended/interfaces.py
+
+
+This release also introduces encryption of passwords in the database. To
+use the encrypted passwords in your existing database, you will need to
+modify your schema.
+
+ 1. Edit the dbinit.py file in your instance home directory
+ 1a. Around line 47 (the first code line of the open() function):
+
+    from roundup.hyperdb import String, Date, Link, Multilink
+
+      alter to include Password, as so:
+
+    from roundup.hyperdb import String, Password, Date, Link, Multilink
+
+ 1b. Around line 66 (after the 'user = Class(db, "user, ' line):
+
+                    username=String(),   password=String(),
+
+      alter so it reads:
+
+                    username=String(),   password=Password(),
+
+ 2. Any existing passwords in the database will remain cleartext until they
+    are edited. It is recommended that at a minimum the admin password be
+    changed immediately:
+
+      roundup-admin -i <instance home> set user1 password=<new password>
+
+
+
