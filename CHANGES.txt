@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2005-01-?? 0.8.0b3
+????-??-?? 0.9.0
+Feature:
+- added "imapServer.py" script (sf patch 934567)
+
+
+2005-01-16 0.8.0
 Fixed:
 - fix roundup-server log and PID file paths to be absolute
 - fix initialisation of roundup-server in daemon mode so initialisation
@@ -24,7 +29,6 @@ Fixed:
 - fixed class "help" listing paging (sf bug 1106329)
 - nicer error looking up values of None (response to sf bug 1108697)
 - fallback for (list) popups if javascript disabled (sf patch 1101626)
-- added "imapServer.py" script (sf patch 934567)
 
 
 2005-01-13 0.8.0b2
