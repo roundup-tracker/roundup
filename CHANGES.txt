@@ -14,6 +14,8 @@ Features:
  . Moved some code around in cgi_client allowing for subclassing to change
    behaviour.
  . Added the fabricated property "id" to all hyperdb classes.
+ . Cleanup of the link label generation (new method on hyperdb.Class to do
+   it).
 
 Fixed:
  . Everything uses errno module now to check errno values.
