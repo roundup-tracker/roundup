@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.14 2001-07-30 06:17:45 richard Exp $
+# $Id: htmltemplate.py,v 1.15 2001-07-30 08:12:17 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -710,7 +710,7 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
         s = open(os.path.join(templates, classname+'.newitem')).read()
     except:
         s = open(os.path.join(templates, classname+'.item')).read()
-    w('<form action="new%s">'%classname)
+    w('<form action="new%s" method="POST" enctype="multipart/form-data">'%classname)
     for key in form.keys():
         if key[0] == ':':
             value = form[key].value
@@ -723,6 +723,15 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/07/30 06:17:45  richard
+# Features:
+#  . Added ability for cgi newblah forms to indicate that the new node
+#    should be linked somewhere.
+# Fixed:
+#  . Fixed the agument handling for the roundup-admin find command.
+#  . Fixed handling of summary when no note supplied for newblah. Again.
+#  . Fixed detection of no form in htmltemplate Field display.
+#
 # Revision 1.13  2001/07/30 02:37:53  richard
 # Temporary measure until we have decent schema migration.
 #

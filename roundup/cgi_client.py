@@ -1,6 +1,6 @@
-# $Id: cgi_client.py,v 1.12 2001-07-30 06:26:31 richard Exp $
+# $Id: cgi_client.py,v 1.13 2001-07-30 08:12:17 richard Exp $
 
-import os, cgi, pprint, StringIO, urlparse, re, traceback
+import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
 import roundupdb, htmltemplate, date
 
@@ -226,71 +226,7 @@ class Client:
                         props[key] = value
                 cl.set(self.nodeid, **props)
 
-                # if this item has messages, generate an edit message
-                # TODO: don't send the edit message to the person who
-                # performed the edit
-                if (cl.getprops().has_key('messages') and
-                        cl.getprops()['messages'].isMultilinkType and
-                        cl.getprops()['messages'].classname == 'msg'):
-                    nid = self.nodeid
-                    m = []
-                    for name, prop in cl.getprops().items():
-                        # TODO: the None default is only here because we
-                        # don't have schema migration :(
-                        if prop.isMultilinkType:
-                            value = cl.get(nid, name, [])
-                        else:
-                            value = cl.get(nid, name, None)
-                        if prop.isLinkType:
-                            link = self.db.classes[prop.classname]
-                            key = link.getkey()
-                            if value is not None and key:
-                                value = link.get(value, key)
-                            else:
-                                value = '-'
-                        elif prop.isMultilinkType:
-                            l = []
-                            link = self.db.classes[prop.classname]
-                            for entry in value:
-                                key = link.getkey()
-                                if key:
-                                    l.append(link.get(entry, link.getkey()))
-                                else:
-                                    l.append(entry)
-                            value = ', '.join(l)
-                        if name in changed:
-                            chg = '*'
-                        else:
-                            chg = ' '
-                        m.append('%s %s: %s'%(chg, name, value))
-
-                    # handle the note
-                    if self.form.has_key('__note'):
-                        note = self.form['__note'].value
-                        if '\n' in note:
-                            summary = re.split(r'\n\r?', note)[0]
-                        else:
-                            summary = note
-                        m.insert(0, '%s\n\n'%note)
-                    else:
-                        if len(changed) > 1:
-                            plural = 's were'
-                        else:
-                            plural = ' was'
-                        summary = 'This %s has been edited through the web '\
-                            'and the %s value%s changed.'%(cn,
-                            ', '.join(changed), plural)
-                        m.insert(0, '%s\n\n'%summary)
-
-                    # now create the message
-                    content = '\n'.join(m)
-                    message_id = self.db.msg.create(author='1', recipients=[],
-                        date=date.Date('.'), summary=summary, content=content)
-                    messages = cl.get(nid, 'messages')
-                    messages.append(message_id)
-                    props = {'messages': messages}
-                    cl.set(nid, **props)
-
+                self._post_editnode(self.nodeid)
                 # and some nice feedback for the user
                 message = '%s edited ok'%', '.join(changed)
             except:
@@ -311,6 +247,153 @@ class Client:
         self.pagefoot()
     showissue = shownode
     showmsg = shownode
+
+    def showuser(self, message=None):
+        ''' display an item
+        '''
+        if self.user in ('admin', self.db.user.get(self.nodeid, 'username')):
+            self.shownode(message)
+        else:
+            raise Unauthorised
+
+    def showfile(self):
+        ''' display a file
+        '''
+        nodeid = self.nodeid
+        cl = self.db.file
+        type = cl.get(nodeid, 'type')
+        if type == 'message/rfc822':
+            type = 'text/plain'
+        self.header(headers={'Content-Type': type})
+        self.write(cl.get(nodeid, 'content'))
+
+    def _createnode(self):
+        ''' create a node based on the contents of the form
+        '''
+        cn = self.classname
+        cl = self.db.classes[cn]
+        props = {}
+        keys = self.form.keys()
+        num_re = re.compile('^\d+$')
+        for key in keys:
+            if not cl.properties.has_key(key):
+                continue
+            proptype = cl.properties[key]
+            if proptype.isStringType:
+                value = self.form[key].value.strip()
+            elif proptype.isDateType:
+                value = date.Date(self.form[key].value.strip())
+            elif proptype.isIntervalType:
+                value = date.Interval(self.form[key].value.strip())
+            elif proptype.isLinkType:
+                value = self.form[key].value.strip()
+                # handle key values
+                link = cl.properties[key].classname
+                if not num_re.match(value):
+                    try:
+                        value = self.db.classes[link].lookup(value)
+                    except:
+                        raise ValueError, 'property "%s": %s not a %s'%(
+                            key, value, link)
+            elif proptype.isMultilinkType:
+                value = self.form[key]
+                if type(value) != type([]):
+                    value = [i.strip() for i in value.value.split(',')]
+                else:
+                    value = [i.value.strip() for i in value]
+                link = cl.properties[key].classname
+                l = []
+                for entry in map(str, value):
+                    if not num_re.match(entry):
+                        try:
+                            entry = self.db.classes[link].lookup(entry)
+                        except:
+                            raise ValueError, \
+                                'property "%s": %s not a %s'%(key,
+                                entry, link)
+                    l.append(entry)
+                l.sort()
+                value = l
+            props[key] = value
+        return cl.create(**props)
+
+    def _post_editnode(self, nid):
+        ''' do the linking and message sending part of the node creation
+        '''
+        cn = self.classname
+        cl = self.db.classes[cn]
+        # link if necessary
+        keys = self.form.keys()
+        for key in keys:
+            if key == ':multilink':
+                value = self.form[key].value
+                if type(value) != type([]): value = [value]
+                for value in value:
+                    designator, property = value.split(':')
+                    link, nodeid = roundupdb.splitDesignator(designator)
+                    link = self.db.classes[link]
+                    value = link.get(nodeid, property)
+                    value.append(nid)
+                    link.set(nodeid, **{property: value})
+            elif key == ':link':
+                value = self.form[key].value
+                if type(value) != type([]): value = [value]
+                for value in value:
+                    designator, property = value.split(':')
+                    link, nodeid = roundupdb.splitDesignator(designator)
+                    link = self.db.classes[link]
+                    link.set(nodeid, **{property: nid})
+
+        # if this item has messages, 
+        if (cl.getprops().has_key('messages') and
+                cl.getprops()['messages'].isMultilinkType and
+                cl.getprops()['messages'].classname == 'msg'):
+            # generate an edit message - nosyreactor will send it
+            m = []
+            for name, prop in cl.getprops().items():
+                value = cl.get(nid, name)
+                if prop.isLinkType:
+                    link = self.db.classes[prop.classname]
+                    key = link.getkey()
+                    if value is not None and key:
+                        value = link.get(value, key)
+                    else:
+                        value = '-'
+                elif prop.isMultilinkType:
+                    l = []
+                    link = self.db.classes[prop.classname]
+                    for entry in value:
+                        key = link.getkey()
+                        if key:
+                            l.append(link.get(entry, link.getkey()))
+                        else:
+                            l.append(entry)
+                    value = ', '.join(l)
+                m.append('%s: %s'%(name, value))
+
+            # handle the note
+            note = None
+            if self.form.has_key('__note'):
+                note = self.form['__note']
+            if note is not None and note.value:
+                note = note.value
+                if '\n' in note:
+                    summary = re.split(r'\n\r?', note)[0]
+                else:
+                    summary = note
+                m.append('\n%s\n'%note)
+            else:
+                summary = 'This %s has been created through the web.'%cn
+                m.append('\n%s\s'%summary)
+
+            # now create the message
+            content = '\n'.join(m)
+            message_id = self.db.msg.create(author='1', recipients=[],
+                date=date.Date('.'), summary=summary, content=content)
+            messages = cl.get(nid, 'messages')
+            messages.append(message_id)
+            props = {'messages': messages}
+            cl.set(nid, **props)
 
     def newnode(self, message=None):
         ''' Add a new node to the database.
@@ -339,130 +422,11 @@ class Client:
 
         # possibly perform a create
         keys = self.form.keys()
-        num_re = re.compile('^\d+$')
         if [i for i in keys if i[0] != ':']:
             props = {}
             try:
-                keys = self.form.keys()
-                for key in keys:
-                    if not cl.properties.has_key(key):
-                        continue
-                    proptype = cl.properties[key]
-                    if proptype.isStringType:
-                        value = self.form[key].value.strip()
-                    elif proptype.isDateType:
-                        value = date.Date(self.form[key].value.strip())
-                    elif proptype.isIntervalType:
-                        value = date.Interval(self.form[key].value.strip())
-                    elif proptype.isLinkType:
-                        value = self.form[key].value.strip()
-                        # handle key values
-                        link = cl.properties[key].classname
-                        if not num_re.match(value):
-                            try:
-                                value = self.db.classes[link].lookup(value)
-                            except:
-                                raise ValueError, 'property "%s": %s not a %s'%(
-                                    key, value, link)
-                    elif proptype.isMultilinkType:
-                        value = self.form[key]
-                        if type(value) != type([]):
-                            value = [i.strip() for i in value.value.split(',')]
-                        else:
-                            value = [i.value.strip() for i in value]
-                        link = cl.properties[key].classname
-                        l = []
-                        for entry in map(str, value):
-                            if not num_re.match(entry):
-                                try:
-                                    entry = self.db.classes[link].lookup(entry)
-                                except:
-                                    raise ValueError, \
-                                        'property "%s": %s not a %s'%(key,
-                                        entry, link)
-                            l.append(entry)
-                        l.sort()
-                        value = l
-                    props[key] = value
-                nid = cl.create(**props)
-
-                # link if necessary
-                for key in keys:
-                    print key,
-                    if key == ':multilink':
-                        value = self.form[key].value
-                        if type(value) != type([]): value = [value]
-                        for value in value:
-                            designator, property = value.split(':')
-                            print 'miltilinking to ', designator, property
-                            link, nodeid = roundupdb.splitDesignator(designator)
-                            link = self.db.classes[link]
-                            value = link.get(nodeid, property)
-                            value.append(nid)
-                            link.set(nodeid, **{property: value})
-                    elif key == ':link':
-                        value = self.form[key].value
-                        if type(value) != type([]): value = [value]
-                        for value in value:
-                            designator, property = value.split(':')
-                            print 'linking to ', designator, property
-                            link, nodeid = roundupdb.splitDesignator(designator)
-                            link = self.db.classes[link]
-                            link.set(nodeid, **{property: nid})
-                    else:
-                        print 'ignoring'
-
-                # if this item has messages, 
-                if (cl.getprops().has_key('messages') and
-                        cl.getprops()['messages'].isMultilinkType and
-                        cl.getprops()['messages'].classname == 'msg'):
-                    # generate an edit message - nosyreactor will send it
-                    m = []
-                    for name, prop in cl.getprops().items():
-                        value = cl.get(nid, name)
-                        if prop.isLinkType:
-                            link = self.db.classes[prop.classname]
-                            key = link.getkey()
-                            if value is not None and key:
-                                value = link.get(value, key)
-                            else:
-                                value = '-'
-                        elif prop.isMultilinkType:
-                            l = []
-                            link = self.db.classes[prop.classname]
-                            for entry in value:
-                                key = link.getkey()
-                                if key:
-                                    l.append(link.get(entry, link.getkey()))
-                                else:
-                                    l.append(entry)
-                            value = ', '.join(l)
-                        m.append('%s: %s'%(name, value))
-
-                    # handle the note
-                    note = None
-                    if self.form.has_key('__note'):
-                        note = self.form['__note']
-                    if note and note.value:
-                        note = note.value
-                        if '\n' in note:
-                            summary = re.split(r'\n\r?', note)[0]
-                        else:
-                            summary = note
-                        m.append('\n%s\n'%note)
-                    else:
-                        summary = 'This %s has been created through the web.'%cn
-                        m.append('\n%s\s'%summary)
-
-                    # now create the message
-                    content = '\n'.join(m)
-                    message_id = self.db.msg.create(author='1', recipients=[],
-                        date=date.Date('.'), summary=summary, content=content)
-                    messages = cl.get(nid, 'messages')
-                    messages.append(message_id)
-                    props = {'messages': messages}
-                    cl.set(nid, **props)
-
+                nid = self._createnode()
+                self._post_editnode(nid)
                 # and some nice feedback for the user
                 message = '%s created ok'%cn
             except:
@@ -476,24 +440,34 @@ class Client:
     newissue = newnode
     newuser = newnode
 
-    def showuser(self, message=None):
-        ''' display an item
+    def newfile(self, message=None):
+        ''' Add a new file to the database.
+        
+        This form works very much the same way as newnode - it just has a
+        file upload.
         '''
-        if self.user in ('admin', self.db.user.get(self.nodeid, 'username')):
-            self.shownode(message)
-        else:
-            raise Unauthorised
+        cn = self.classname
+        cl = self.db.classes[cn]
 
-    def showfile(self):
-        ''' display a file
-        '''
-        nodeid = self.nodeid
-        cl = self.db.file
-        type = cl.get(nodeid, 'type')
-        if type == 'message/rfc822':
-            type = 'text/plain'
-        self.header(headers={'Content-Type': type})
-        self.write(cl.get(nodeid, 'content'))
+        # possibly perform a create
+        keys = self.form.keys()
+        if [i for i in keys if i[0] != ':']:
+            try:
+                file = self.form['content']
+                self._post_editnode(cl.create(content=file.file.read(),
+                    type=mimetypes.guess_type(file.filename)[0],
+                    name=file.filename))
+                # and some nice feedback for the user
+                message = '%s created ok'%cn
+            except:
+                s = StringIO.StringIO()
+                traceback.print_exc(None, s)
+                message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
+
+        self.pagehead('New %s'%self.classname.capitalize(), message)
+        htmltemplate.newitem(self, self.TEMPLATES, self.db, self.classname,
+            self.form)
+        self.pagefoot()
 
     def classes(self, message=None):
         ''' display a list of all the classes in the database
@@ -545,6 +519,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/07/30 06:26:31  richard
+# Added some documentation on how the newblah works.
+#
 # Revision 1.11  2001/07/30 06:17:45  richard
 # Features:
 #  . Added ability for cgi newblah forms to indicate that the new node

@@ -1,6 +1,18 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2001-08-?? - 0.2.4
+Features:
+ . Added ability for cgi newblah forms to indicate that the new node
+   should be linked somewhere.
+ . Added time logging and file uploading to the templates.
+
+Fixed:
+ . Fixed the agument handling for the roundup-admin find command.
+ . Fixed handling of summary when no note supplied for newblah. Again.
+ . Fixed detection of no form in htmltemplate Field display.
+
+
 2001-07-30 - 0.2.3
 Big change:
  . I've split off the support class from the issue class in "extended".

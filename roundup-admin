@@ -1,12 +1,12 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.9 2001-07-30 03:52:55 richard Exp $
+# $Id: roundup-admin,v 1.10 2001-07-30 08:12:17 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
     print 'Roundup requires python 2.0 or later.'
     sys.exit(1)
 
-import string, os, getpass, getopt
+import string, os, getpass, getopt, re
 from roundup import date, roundupdb, init
 
 def usage(message=''):
@@ -173,19 +173,25 @@ def do_find(db, args):
     '''Usage: find classname propname=value ...
     Find the nodes of the given class with a given property value.
 
-    Find the nodes of the given class with a given property value.
+    Find the nodes of the given class with a given property value. The
+    value may be either the nodeid of the linked node, or its key value.
     '''
     classname = args[0]
     cl = db.getclass(classname)
 
     # look up the linked-to class and get the nodeid that has the value
-    propname, value = args[1:].split('=')
-    propcl = cl[propname].classname
-    nodeid = propcl.lookup(value)
+    propname, value = args[1].split('=')
+    num_re = re.compile('^\d+$')
+    if num_re.match(value):
+        nodeid = value
+    else:
+        propcl = cl.properties[propname].classname
+        propcl = db.getclass(propcl)
+        nodeid = propcl.lookup(value)
 
     # now do the find
     # TODO: handle the -c option
-    print cl.find(propname, nodeid)
+    print cl.find(**{propname: nodeid})
     return 0
 
 def do_spec(db, args):
@@ -236,7 +242,6 @@ def do_list(db, args):
     in order: the key, "name", "title" and then the first property,
     alphabetically.
     '''
-    db = instance.open()
     classname = args[0]
     cl = db.getclass(classname)
     if len(args) > 1:
@@ -404,6 +409,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/07/30 03:52:55  richard
+# init help now lists templates and backends
+#
 # Revision 1.8  2001/07/30 02:37:07  richard
 # Freshen is really broken. Commented out.
 #

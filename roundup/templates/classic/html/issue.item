@@ -1,4 +1,4 @@
-<!-- $Id: issue.item,v 1.2 2001-07-29 04:07:37 richard Exp $-->
+<!-- $Id: issue.item,v 1.3 2001-07-30 08:12:17 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -42,19 +42,24 @@
     <td colspan=3 class="form-text"><display call="submit()"></td>
 </tr>
 
-<property name="messages">
 <tr class="strong-header">
     <td colspan=4><b>Messages</b></td>
 </tr>
+<property name="messages">
 <tr>            
     <td colspan=4><display call="list('messages')"></td>
 </tr>
 </property>
 
+<tr class="strong-header">
+  <td colspan=4><b>Files</b></td>
+</tr>
+<tr class="form-help">
+ <td colspan=4>
+   <a href="newfile?:multilink=issue<display call="plain('id')">:files">Attach a file to this issue</a>
+ </td>
+</tr>
 <property name="files">
- <tr class="strong-header">
-     <td colspan=4><b>Files</b></td>
- </tr>
  <tr>            
      <td colspan=4><display call="list('files')"></td>
  </tr>
