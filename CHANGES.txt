@@ -46,6 +46,8 @@ Fixed:
 - fix lookup of REMOTE_USER (sf bug 1002923)
 - new Interval props weren't created properly in rdbms
 - date.Interval() now accepts an Interval as a spec (sf bug 1041266)
+- handle deleted properties in RDBMS history
+- apply timezone in correct direction in user input (sf bug 1013097)
 
 
 2004-07-21 0.7.6
