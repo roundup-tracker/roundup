@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.107 $
+:Version: $Revision: 1.108 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3653,6 +3653,28 @@ template as follows::
 (note that the "-" indicates a removed line, and the "+" indicates an added
 line).
 
+
+Colouring the rows in the issue index according to priority
+-----------------------------------------------------------
+
+A simple ``tal:attributes`` statement will do the bulk of the work here. In
+the ``issue.index.html`` template, add to the ``<tr>`` that displays the
+actual rows of data::
+
+   <tr tal:attributes="class string:priority-${i/priority/plain}">
+
+and then in your stylesheet (``style.css``) specify the colouring for the
+different priorities, like::
+
+   tr.priority-critical td {
+       background-color: red;
+   }
+
+   tr.priority-urgent td {
+       background-color: orange;
+   }
+
+and so on, with far less offensive colours :)
 
 -------------------
 
