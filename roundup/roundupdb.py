@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.114 2004-10-08 05:44:33 richard Exp $
+# $Id: roundupdb.py,v 1.115 2004-10-08 05:51:00 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -224,7 +224,7 @@ class IssueClass:
         # If we have new recipients, update the message's recipients
         # and send the mail.
         if sendto or bcc_sendto:
-            if msgid:
+            if msgid is not None:
                 self.db.msg.set(msgid, recipients=recipients)
             self.send_message(nodeid, msgid, note, sendto, from_address,
                 bcc_sendto)
@@ -315,7 +315,10 @@ class IssueClass:
         content_encoded = content_encoded.getvalue()
 
         # get the files for this message
-        message_files = msgid and messages.get(msgid, 'files') or None
+        if msgid is None:
+            message_files = None
+        else:
+            message_files = messages.get(msgid, 'files')
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()
