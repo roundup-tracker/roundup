@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55 2003-06-22 00:28:56 richard Exp $
+# $Id: setup.py,v 1.55.2.1 2003-08-31 04:31:00 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -185,9 +185,6 @@ def main():
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
-
-This release has a couple of bufixes mostly important to Windows users,
-making it possible for them to install new trackers!
 
 The 0.6 release has lots of new goodies including:
 
