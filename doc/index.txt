@@ -57,8 +57,8 @@ above avenues of contact are suitable.
 Acknowledgements
 ================
 
-Go Ping, you rock! Also, go Bizar Software and ekit.com for letting me
-implement this system on their time.
+Go Ping, you rock! Also, go Common Ground, ekit.com and Bizar Software for
+letting me implement this system on their time.
 
 Thanks also to the many people on the mailing list, in the sourceforge
 project and those who just report bugs:

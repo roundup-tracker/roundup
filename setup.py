@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.9 2004-11-26 00:02:56 richard Exp $
+# $Id: setup.py,v 1.64.2.10 2004-11-27 21:33:13 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,7 +217,7 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-This is a bug fix release (with one feature cleaning up and API
+This is a bug fix release (with one feature cleaning up an API
 inconsistency):
 
 Feature:
