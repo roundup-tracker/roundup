@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.31 2004-11-11 12:02:30 a1s Exp $
+# $Id: instance.py,v 1.32 2004-11-18 16:52:18 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -209,6 +209,8 @@ class OldStyleTrackers:
         if self.trackers.has_key(tracker_home):
             return imp.load_package(self.trackers[tracker_home],
                 tracker_home)
+        # register all available backend modules
+        backends.list_backends()
         self.number = self.number + 1
         modname = '_roundup_tracker_%s'%self.number
         self.trackers[tracker_home] = modname
