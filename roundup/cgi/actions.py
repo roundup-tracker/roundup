@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27.2.7 2004-12-07 23:31:00 richard Exp $
+#$Id: actions.py,v 1.27.2.8 2004-12-15 00:07:58 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -127,6 +127,8 @@ class SearchAction(Action):
 
         # handle saving the query params
         if queryname:
+            if not self.hasPermission('Edit', 'query'):
+                raise Unauthorised, _("You do not have permission to edit queries")
             # parse the environment and figure what the query _is_
             req = templating.HTMLRequest(self.client)
 

@@ -175,7 +175,7 @@
 </td>
 </tr>
 
-<tr>
+<tr tal:condition="python:request.user.hasPermission('Edit', 'query')">
 <th>Query name**:</th>
 <td><input name="@queryname"
            tal:attributes="value request/form/@queryname/value | default"></td>
