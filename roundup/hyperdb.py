@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.68 2002-06-11 06:52:03 richard Exp $
+# $Id: hyperdb.py,v 1.69 2002-06-17 23:15:29 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
 """
 
 # standard python modules
-import re, string, weakref, os, time
+import sys, re, string, weakref, os, time
 
 # roundup modules
 import date, password
@@ -33,12 +33,18 @@ class Sink:
         pass
 DEBUG = os.environ.get('HYPERDBDEBUG', '')
 if DEBUG and __debug__:
-    DEBUG = open(DEBUG, 'a')
+    if DEBUG == 'stdout':
+        DEBUG = sys.stdout
+    else:
+        DEBUG = open(DEBUG, 'a')
 else:
     DEBUG = Sink()
 TRACE = os.environ.get('HYPERDBTRACE', '')
 if TRACE and __debug__:
-    TRACE = open(TRACE, 'w')
+    if TRACE == 'stdout':
+        TRACE = sys.stdout
+    else:
+        TRACE = open(TRACE, 'w')
 else:
     TRACE = Sink()
 def traceMark():
@@ -416,6 +422,8 @@ class Class:
             elif isinstance(prop, Multilink):
                 if type(value) != type([]):
                     raise TypeError, 'new property "%s" not a list of ids'%key
+
+                # clean up and validate the list of links
                 link_class = self.properties[key].classname
                 l = []
                 for entry in value:
@@ -1161,6 +1169,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.68  2002/06/11 06:52:03  richard
+#  . #564271 ] find() and new properties
+#
 # Revision 1.67  2002/06/11 05:02:37  richard
 #  . #565979 ] code error in hyperdb.Class.find
 #
