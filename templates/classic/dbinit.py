@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.2 2003-11-10 03:56:39 richard Exp $
+# $Id: dbinit.py,v 1.3 2004-01-19 23:57:47 richard Exp $
 
 import os
 
@@ -132,11 +132,11 @@ def open(name=None):
     # - Allow anonymous (new) users to register through the email gateway
     p = db.security.getPermission('Email Registration')
     db.security.addPermissionToRole('Anonymous', p)
-    # - Allow anonymous users access to the "issue" class of data
-    #   Note: this also grants access to related information like files,
-    #         messages, statuses etc that are linked to issues
-    p = db.security.getPermission('View', 'issue')
-    db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous users access to view issues (which implies being
+    #   able to view all linked information too
+    for cl in 'issue', 'file', 'msg', 'keyword':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('Anonymous', p)
     # - Allow anonymous users access to edit the "issue" class of data
     #   Note: this also grants access to create related information like
     #         files and messages etc that are linked to issues
@@ -202,3 +202,4 @@ def init(adminpw):
 
 # vim: set filetype=python ts=4 sw=4 et si
 
+#SHA: 92c54c05ba9f59453dc74fa9fdbbae34f7a9c077

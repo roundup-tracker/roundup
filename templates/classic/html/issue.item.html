@@ -4,22 +4,17 @@
 <span tal:replace="config/TRACKER_NAME" />: 
 <span tal:condition="context/id"
        tal:replace="string:Issue ${context/id}: ${context/title}" />
-<tal:x tal:condition="not:context/id">New Issue</tal:x> 
 </title> 
 <span metal:fill-slot="body_title" tal:omit-tag="python:1">
+ <tal:x tal:condition="not:context/id">New</tal:x> 
   Issue<span tal:replace="context/id" />
    <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
  </span>
 
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
-You are not allowed to view this page.
-</span>
-
 <form method="POST" name="itemSynopsis" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok"
-      tal:attributes="action context/designator">
+      enctype="multipart/form-data" tal:attributes="action context/designator">
 
 <table class="form">
 <tr>
@@ -62,7 +57,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
  </td>
 </tr>
 
-<tr>
+<tr tal:condition="context/is_edit_ok">
  <th>Change Note</th>
  <td colspan=3>
   <textarea tal:content="request/form/@note/value | default"
@@ -70,12 +65,12 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
  </td>
 </tr>
 
-<tr>
+<tr tal:condition="context/is_edit_ok">
  <th>File</th>
  <td colspan=3><input type="file" name="@file" size="40"></td>
 </tr>
 
-<tr>
+<tr tal:condition="context/is_edit_ok">
  <td>
   &nbsp;
   <input type="hidden" name="@template" value="item">
@@ -85,7 +80,9 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
   submit button will go here
  </td>
 </tr>
+
 </table>
+
 </form>
 
 <table class="form" tal:condition="not:context/id">
@@ -96,79 +93,48 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 </tr>
 </table>
 
-<table class="form" tal:condition="context/is_only_view_ok">
-<tr>
- <th>Title</th><td colspan=3 tal:content="context/title">title</td>
-</tr>
-
-<tr>
- <th>Priority</th><td tal:content="context/priority">priority</td>
- <th>Status</th><td tal:content="context/status">status</td>
-</tr>
-
-<tr>
- <th>Superseder</th>
- <td>
-  <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
-   <br>View: <a tal:attributes="href string:issue${sup/id}"
-                tal:content="sup/id"></a>
-  </span>
- </td>
- <th>Nosy List</th><td><span tal:replace="context/nosy" /></td>
-</tr>
-
-<tr>
- <th>Assigned To</th><td tal:content="context/assignedto"></td>
- <th>Topics</th><td tal:content="structure context/topic"></td>
-</tr>
-</table>
-
-<tal:block tal:condition="python:context.id and context.is_view_ok()">
-
- <p tal:content="structure string:Created on
+<p tal:condition="context/id" tal:content="structure string:Created on
   <b>${context/creation}</b> by <b>${context/creator}</b>, last
   changed <b>${context/activity}</b>.">activity info
- </p>
+</p>
 
- <table class="messages" tal:condition="context/messages">
-  <tr><th colspan="4" class="header">Messages</th></tr>
-  <tal:block tal:repeat="msg context/messages/reverse">
-   <tr>
-    <th><a tal:attributes="href string:msg${msg/id}"
-           tal:content="string:msg${msg/id}"></a></th>
-    <th tal:content="string:Author: ${msg/author}">author</th>
-    <th tal:content="string:Date: ${msg/date}">date</th>
-    <th>
-     <a tal:condition="context/is_edit_ok"
-        tal:attributes="href string:issue${context/id}?@remove@messages=${msg/id}&@action=edit">remove</a>
-    </th>
-   </tr>
-   <tr>
-    <td colspan="4" class="content">
-     <pre tal:content="structure msg/content/hyperlinked">content</pre>
-    </td>
-   </tr>
-  </tal:block>
- </table>
-
- <table class="files" tal:condition="context/files">
-  <tr><th colspan="2" class="header">Files</th></tr>
-  <tr><th>File name</th><th>Uploaded</th></tr>
-  <tr tal:repeat="file context/files">
-   <td>
-    <a tal:attributes="href string:file${file/id}/${file/name}"
-       tal:content="file/name">dld link</a>
-   </td>
-   <td>
-    <span tal:content="file/creator">creator's name</span>,
-    <span tal:content="file/creation">creation date</span>
+<table class="messages" tal:condition="context/messages">
+ <tr><th colspan="4" class="header">Messages</th></tr>
+ <tal:block tal:repeat="msg context/messages/reverse">
+  <tr>
+   <th><a tal:attributes="href string:msg${msg/id}"
+          tal:content="string:msg${msg/id}"></a></th>
+   <th tal:content="string:Author: ${msg/author}">author</th>
+   <th tal:content="string:Date: ${msg/date}">date</th>
+   <th>
+    <a tal:condition="context/is_edit_ok"
+       tal:attributes="href string:issue${context/id}?@remove@messages=${msg/id}&@action=edit">remove</a>
+   </th>
+  </tr>
+  <tr>
+   <td colspan="4" class="content">
+    <pre tal:content="structure msg/content/hyperlinked">content</pre>
    </td>
   </tr>
- </table>
+ </tal:block>
+</table>
 
- <tal:block tal:replace="structure context/history" />
+<table class="files" tal:condition="context/files">
+ <tr><th colspan="2" class="header">Files</th></tr>
+ <tr><th>File name</th><th>Uploaded</th></tr>
+ <tr tal:repeat="file context/files">
+  <td>
+   <a tal:attributes="href string:file${file/id}/${file/name}"
+      tal:content="file/name">dld link</a>
+  </td>
+  <td>
+   <span tal:content="file/creator">creator's name</span>,
+   <span tal:content="file/creation">creation date</span>
+  </td>
+ </tr>
+</table>
 
-</tal:block>
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
 
 </td>
 
