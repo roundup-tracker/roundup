@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.159 2004-11-17 22:16:29 richard Exp $
+$Id: mailgw.py,v 1.160 2005-01-03 02:52:00 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -845,8 +845,10 @@ Subject was: "%s"
 
 
         # set the issue title to the subject
-        if properties.has_key('title') and not issue_props.has_key('title'):
-            issue_props['title'] = title.strip()
+        title = title.strip()
+        if (title and properties.has_key('title') and not
+                issue_props.has_key('title')):
+            issue_props['title'] = title
 
         #
         # handle message-id and in-reply-to
