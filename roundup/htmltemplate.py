@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.82 2002-02-21 23:11:45 richard Exp $
+# $Id: htmltemplate.py,v 1.83 2002-02-27 04:14:31 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -23,7 +23,7 @@ Template engine.
 
 import os, re, StringIO, urllib, cgi, errno, types
 
-import hyperdb, date, password
+import hyperdb, date
 from i18n import _
 
 # This imports the StructureText functionality for the do_stext function
@@ -34,9 +34,14 @@ except ImportError:
     StructuredText = None
 
 class MissingTemplateError(ValueError):
+    '''Error raised when a template file is missing
+    '''
     pass
 
 class TemplateFunctions:
+    '''Defines the templating functions that are used in the HTML templates
+       of the roundup web interface.
+    '''
     def __init__(self):
         self.form = None
         self.nodeid = None
@@ -45,6 +50,15 @@ class TemplateFunctions:
         for key in TemplateFunctions.__dict__.keys():
             if key[:3] == 'do_':
                 self.globals[key[3:]] = getattr(self, key)
+
+        # These are added by the subclass where appropriate
+        self.client = None
+        self.instance = None
+        self.templates = None
+        self.classname = None
+        self.db = None
+        self.cl = None
+        self.properties = None
 
     def do_plain(self, property, escape=0):
         ''' display a String property directly;
@@ -61,7 +75,7 @@ class TemplateFunctions:
         if self.nodeid:
             # make sure the property is a valid one
             # TODO: this tests, but we should handle the exception
-            prop_test = self.cl.getprops()[property]
+            dummy = self.cl.getprops()[property]
 
             # get the value for this property
             try:
@@ -98,7 +112,7 @@ class TemplateFunctions:
             k = linkcl.labelprop()
             value = ', '.join(value)
         else:
-            s = _('Plain: bad propclass "%(propclass)s"')%locals()
+            value = _('Plain: bad propclass "%(propclass)s"')%locals()
         if escape:
             value = cgi.escape(value)
         return value
@@ -538,7 +552,7 @@ class TemplateFunctions:
                     arg_s += '<a href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
-                    arg_s = str(arg)
+                    arg_s = str(args)
 
             elif action == 'unlink' and type(args) == type(()):
                 if len(args) == 3:
@@ -546,7 +560,7 @@ class TemplateFunctions:
                     arg_s += '<a href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
-                    arg_s = str(arg)
+                    arg_s = str(args)
 
             elif type(args) == type({}):
                 cell = []
@@ -564,7 +578,7 @@ class TemplateFunctions:
                             classname = prop.classname
                             try:
                                 linkcl = self.db.classes[classname]
-                            except KeyError, message:
+                            except KeyError:
                                 labelprop = None
                                 comments[classname] = _('''The linked class
                                     %(classname)s no longer exists''')%locals()
@@ -674,6 +688,8 @@ class TemplateFunctions:
 #   INDEX TEMPLATES
 #
 class IndexTemplateReplace:
+    '''Regular-expression based parser that turns the template into HTML. 
+    '''
     def __init__(self, globals, locals, props):
         self.globals = globals
         self.locals = locals
@@ -690,16 +706,19 @@ class IndexTemplateReplace:
             if m.group('name') in self.props:
                 text = m.group('text')
                 replace = IndexTemplateReplace(self.globals, {}, self.props)
-                return replace.go(m.group('text'))
+                return replace.go(text)
             else:
                 return ''
         if m.group('display'):
             command = m.group('command')
             return eval(command, self.globals, self.locals)
-        print '*** unhandled match', m.groupdict()
+        return '*** unhandled match: %s'%str(m.groupdict())
 
 class IndexTemplate(TemplateFunctions):
+    '''Templating functionality specifically for index pages
+    '''
     def __init__(self, client, templates, classname):
+        TemplateFunctions.__init__(self)
         self.client = client
         self.instance = client.instance
         self.templates = templates
@@ -709,8 +728,6 @@ class IndexTemplate(TemplateFunctions):
         self.db = self.client.db
         self.cl = self.db.classes[self.classname]
         self.properties = self.cl.getprops()
-
-        TemplateFunctions.__init__(self)
 
     col_re=re.compile(r'<property\s+name="([^>]+)">')
     def render(self, filterspec={}, filter=[], columns=[], sort=[], group=[],
@@ -936,7 +953,6 @@ class IndexTemplate(TemplateFunctions):
             # Grouping
             w(_('<tr><th width="1%" align=right class="location-bar">Grouping</th>\n'))
             for name in names:
-                prop = self.properties[name]
                 if name not in all_columns:
                     w('<td>&nbsp;</td>')
                     continue
@@ -997,6 +1013,8 @@ class IndexTemplate(TemplateFunctions):
 #   ITEM TEMPLATES
 #
 class ItemTemplateReplace:
+    '''Regular-expression based parser that turns the template into HTML. 
+    '''
     def __init__(self, globals, locals, cl, nodeid):
         self.globals = globals
         self.locals = locals
@@ -1020,11 +1038,14 @@ class ItemTemplateReplace:
         if m.group('display'):
             command = m.group('command')
             return eval(command, self.globals, self.locals)
-        print '*** unhandled match', m.groupdict()
+        return '*** unhandled match: %s'%str(m.groupdict())
 
 
 class ItemTemplate(TemplateFunctions):
+    '''Templating functionality specifically for item (node) display
+    '''
     def __init__(self, client, templates, classname):
+        TemplateFunctions.__init__(self)
         self.client = client
         self.instance = client.instance
         self.templates = templates
@@ -1034,8 +1055,6 @@ class ItemTemplate(TemplateFunctions):
         self.db = self.client.db
         self.cl = self.db.classes[self.classname]
         self.properties = self.cl.getprops()
-
-        TemplateFunctions.__init__(self)
 
     def render(self, nodeid):
         self.nodeid = nodeid
@@ -1057,7 +1076,10 @@ class ItemTemplate(TemplateFunctions):
 
 
 class NewItemTemplate(TemplateFunctions):
+    '''Templating functionality specifically for NEW item (node) display
+    '''
     def __init__(self, client, templates, classname):
+        TemplateFunctions.__init__(self)
         self.client = client
         self.instance = client.instance
         self.templates = templates
@@ -1067,8 +1089,6 @@ class NewItemTemplate(TemplateFunctions):
         self.db = self.client.db
         self.cl = self.db.classes[self.classname]
         self.properties = self.cl.getprops()
-
-        TemplateFunctions.__init__(self)
 
     def render(self, form):
         self.form = form
@@ -1091,6 +1111,11 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.82  2002/02/21 23:11:45  richard
+#  . fixed some problems in date calculations (calendar.py doesn't handle over-
+#    and under-flow). Also, hour/minute/second intervals may now be more than
+#    99 each.
+#
 # Revision 1.81  2002/02/21 07:21:38  richard
 # docco
 #
