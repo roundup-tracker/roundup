@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.94 2002-01-09 13:54:21 grubert Exp $
+# $Id: cgi_client.py,v 1.95 2002-01-10 03:39:45 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -312,16 +312,15 @@ class Client:
         # don't try to set properties if the user has just logged in
         if keys and not self.form.has_key('__login_name'):
             try:
-                props, changed = parsePropsFromForm(self.db, cl, self.form,
-                    self.nodeid)
+                props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
                 # make changes to the node
                 self._changenode(props)
                 # handle linked nodes 
                 self._post_editnode(self.nodeid)
                 # and some nice feedback for the user
-                if changed:
+                if props:
                     message = _('%(changes)s edited ok')%{'changes':
-                        ', '.join(changed.keys())}
+                        ', '.join(props.keys())}
                 elif self.form.has_key('__note') and self.form['__note'].value:
                     message = _('note added')
                 elif self.form.has_key('__file'):
@@ -393,6 +392,7 @@ class Client:
             props['messages'] = cl.get(self.nodeid, 'messages') + [message]
         if files:
             props['files'] = cl.get(self.nodeid, 'files') + files
+
         # make the changes
         cl.set(self.nodeid, **props)
 
@@ -594,7 +594,8 @@ class Client:
         keys = self.form.keys()
         if [i for i in keys if i[0] != ':']:
             try:
-                props, dummy = parsePropsFromForm(self.db, cl, self.form)
+                props = parsePropsFromForm(self.db, cl, self.form)
+		print props
                 nid = cl.create(**props)
                 # handle linked nodes 
                 self._post_editnode(nid)
@@ -674,21 +675,21 @@ class Client:
         num_re = re.compile('^\d+$')
         if keys:
             try:
-                props, changed = parsePropsFromForm(self.db, user, self.form,
+                props = parsePropsFromForm(self.db, user, self.form,
                     self.nodeid)
                 set_cookie = 0
-                if self.nodeid == self.getuid() and changed.has_key('password'):
+                if props.has_key('password'):
                     password = self.form['password'].value.strip()
-                    if password:
-                        set_cookie = password
-                    else:
+                    if not password:
                         # no password was supplied - don't change it
                         del props['password']
-                        del changed['password']
+                    elif self.nodeid == self.getuid():
+                        # this is the logged-in user's password
+                        set_cookie = password
                 user.set(self.nodeid, **props)
                 # and some feedback for the user
                 message = _('%(changes)s edited ok')%{'changes':
-                    ', '.join(changed.keys())}
+                    ', '.join(props.keys())}
             except:
                 self.db.rollback()
                 s = StringIO.StringIO()
@@ -845,7 +846,7 @@ class Client:
         # TODO: pre-check the required fields and username key property
         cl = self.db.user
         try:
-            props, dummy = parsePropsFromForm(self.db, cl, self.form)
+            props = parsePropsFromForm(self.db, cl, self.form)
             uid = cl.create(**props)
         except ValueError, message:
             action = self.form['__destination_url'].value
@@ -886,7 +887,6 @@ class Client:
             'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
             path)})
         self.login()
-
 
     def main(self):
         '''Wrap the database accesses so we can close the database cleanly
@@ -1110,7 +1110,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
     '''
     props = {}
-    changed = {}
     keys = form.keys()
     num_re = re.compile('^\d+$')
     for key in keys:
@@ -1161,7 +1160,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                 l.append(entry)
             l.sort()
             value = l
-        props[key] = value
 
         # get the old value
         if nodeid:
@@ -1172,14 +1170,18 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                 # value
                 if not cl.properties.has_key(key): raise
 
-        # if changed, set it
-        if nodeid and value != existing:
-            changed[key] = value
+            # if changed, set it
+            if value != existing:
+                props[key] = value
+        else:
             props[key] = value
-    return props, changed
+    return props
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.94  2002/01/09 13:54:21  grubert
+# _add_assignedto_to_nosy did set nosy to assignedto only, no adding.
+#
 # Revision 1.93  2002/01/08 11:57:12  richard
 # crying out for real configuration handling... :(
 #

@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
  . #495392 ] empty nosy -patch
  . #500574 ] messageid must have format <part1@part2>
+ . fixed some problems with web editing and change detection
 
 2002-01-08 - 0.4.0b1
 Feature:
