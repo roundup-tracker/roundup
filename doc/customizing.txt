@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.31 $
+:Version: $Revision: 1.32 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1756,6 +1756,28 @@ to.
 
    which displays only the allowed status to transition to.
 
+
+Displaying entire message contents in the issue display
+-------------------------------------------------------
+
+Alter the issue.item template section for messages to::
+
+ <table class="messages" tal:condition="context/messages">
+  <tr><th colspan=3 class="header">Messages</th></tr>
+  <tal:block tal:repeat="msg context/messages/reverse">
+   <tr>
+    <th><a tal:attributes="href string:msg${msg/id}"
+           tal:content="string:msg${msg/id}"></a></th>
+    <th tal:content="string:Author: ${msg/author}">author</th>
+    <th tal:content="string:Date: ${msg/date}">date</th>
+   </tr>
+   <tr>
+    <td colspan="3" class="content">
+     <pre tal:content="msg/content">content</pre>
+    </td>
+   </tr>
+  </tal:block>
+ </table>
 
 -------------------
 

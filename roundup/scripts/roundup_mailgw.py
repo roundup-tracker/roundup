@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.5 2002-09-11 01:19:16 richard Exp $
+# $Id: roundup_mailgw.py,v 1.6 2002-09-13 00:08:44 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -76,27 +76,32 @@ def main(args):
 
     # get a mail handler
     db = instance.open('admin')
-    handler = instance.MailGW(instance, db)
 
-    # if there's no more arguments, read a single message from stdin
-    if len(args) == 2:
-        return handler.do_pipe()
+    # now wrap in try/finally so we always close the database
+    try:
+        handler = instance.MailGW(instance, db)
 
-    # otherwise, figure what sort of mail source to handle
-    if len(args) < 4:
-        return usage(args, _('Error: not enough source specification information'))
-    source, specification = args[2:]
-    if source == 'mailbox':
-        return handler.do_mailbox(specification)
-    elif source == 'pop':
-        m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
-            specification)
-        if m:
-            return handler.do_pop(m.group('server'), m.group('user'),
-                m.group('pass'))
-        return usage(args, _('Error: pop specification not valid'))
+        # if there's no more arguments, read a single message from stdin
+        if len(args) == 2:
+            return handler.do_pipe()
 
-    return usage(args, _('Error: The source must be either "mailbox" or "pop"'))
+        # otherwise, figure what sort of mail source to handle
+        if len(args) < 4:
+            return usage(args, _('Error: not enough source specification information'))
+        source, specification = args[2:]
+        if source == 'mailbox':
+            return handler.do_mailbox(specification)
+        elif source == 'pop':
+            m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
+                specification)
+            if m:
+                return handler.do_pop(m.group('server'), m.group('user'),
+                    m.group('pass'))
+            return usage(args, _('Error: pop specification not valid'))
+
+        return usage(args, _('Error: The source must be either "mailbox" or "pop"'))
+    finally:
+        db.close()
 
 def run():
     sys.exit(main(sys.argv))

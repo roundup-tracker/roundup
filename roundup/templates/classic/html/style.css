@@ -133,11 +133,11 @@ table.list td {
   vertical-align: top;
 }
 
-table.list td.normal {
+table.list tr.normal td {
   empty-cells: show;
 }
 
-table.list td.alt {
+table.list tr.alt td {
   background-color: #efefef;
   empty-cells: show;
 }
@@ -177,6 +177,11 @@ table.messages th {
 }
 
 table.messages td {
+  text-align: left;
+  empty-cells: show;
+}
+
+table.messages td.content {
   font-family: monospace;
   background-color: #efefef;
   border-top: 1px solid #afafaf;

@@ -706,8 +706,13 @@ class StringHTMLProperty(HTMLProperty):
         '''
         if self._value is None: value = ''
         else: value = str(self._value)
-        value = value.replace('@', ' at ')
-        value = value.replace('.', ' ')
+        if value.find('@') != -1:
+            name, domain = value.split('@')
+            domain = ' '.join(domain.split('.')[:-1])
+            name = name.replace('.', ' ')
+            value = '%s at %s ...'%(name, domain)
+        else:
+            value = value.replace('.', ' ')
         if escape:
             value = cgi.escape(value)
         return value

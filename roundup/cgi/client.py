@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.31 2002-09-12 07:00:41 richard Exp $
+# $Id: client.py,v 1.32 2002-09-13 00:08:44 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -105,6 +105,15 @@ class Client:
         self.response_code = 200
 
     def main(self):
+        ''' Wrap the real main in a try/finally so we always close off the db.
+        '''
+        try:
+            self.inner_main()
+        finally:
+            if hasattr(self, 'db'):
+                self.db.close()
+
+    def inner_main(self):
         ''' Process a request.
 
             The most common requests are handled like so:

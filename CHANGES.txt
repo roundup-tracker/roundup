@@ -1,7 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-??-?? 0.5.0
+2002-09-?? 0.5.0 beta2
+Fixed:
+ . all backends now have a .close() method, and it's used everywhere
+ . fixed bug in detectors __init__
+ . switched the default issue item display to only show issue summary
+   (add instructions to doc to make it display entire content)
+
+2002-09-11 0.5.0 beta1
 Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
@@ -11,9 +18,37 @@ Fixed:
  . fixed the date module so that Date(". - 2d") works
  . web forms may now unset Link values (like assignedto)
  . cleanup: moved roundup.templatebuilder to roundup.templates.builder
+ . instance __init__ no longer silently traps dbinit import errors
 
 Feature:
-TODO: roll stuff in from the TODO to here
+ . new backend for metakit (thanks Gordon McMillan)
+ . new backend for gadfly (it's as done as it's going to get)
+ . further split the dbm backends from the core code, allowing easier
+   non-dict-like backends (eg metakit, RDB)
+ . implemented and used the new access control mechanisms (Permissions, Roles)
+   (see doc/security.txt)
+ . switched templating to use Zope's PageTemplates (yay!)
+ . switched to sessions for web authentication
+ . added Boolean and Number types
+ . fixed the journal bloat
+ . updated design document for new access controls
+ . updated customisation document, including more examples
+ . entire database export and import (incl files)
+ . better mailgw help message (feature request #558562)
+ . re-enabled link backrefs from messages (feature request #568714)
+ . the page layout is now templatable
+ . re-worked cgi interface to abstract out the explicit "issue" interface
+ . have index page handle mid-page errors better so header and footer are
+   still visible
+ . we handle "not found", access and item page render errors better
+ . fixed double-submit by having new-item-submit redirect at end
+ . daemonify roundup-server (fork, logfile, pidfile)
+ . modify cgitb to display PageTemplate errors better
+ . rename to "instance" to "tracker"
+ . have roundup.cgi pick up tracker config from the environment 
+ . revamped look and feel in web interface
+ . cleaned up stylesheet usage
+ . several bug fixes and documentation fixes
  . added is_retired test to hyperdb.Class
  . added capability to save queries:
    - a query Class with name, klass (to search) and url (query string)
@@ -48,10 +83,8 @@ TODO: roll stuff in from the TODO to here
      index
  . added email display function - mangles email addrs so they're not so easily
    scraped from the web
- . added sorting of checklist HTML display
  . switched to using a session-based web login
  . made mailgw handle set and modify operations on multilinks (bug #579094)
- . all storage-specific code (ie. backend) is now implemented by the backends
  . fixed the journal bloat from multilink changes - we just log the add or
    remove operations, not the whole list
 

@@ -1,13 +1,21 @@
 <!-- dollarId: keyword.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
 
-<table class="otherinfo">
+<table class="otherinfo" tal:define="keywords db/keyword/list"
+       tal:condition="keywords">
  <tr><th colspan="4" class="header">Existing Keywords</th></tr>
- <tr tal:define="keywords db/keyword/list"
-     tal:repeat="start python:range(0, len(keywords), 4)">
-  <td tal:define="batch python:utils.Batch(keywords, 4, start)"
-      tal:repeat="keyword batch" tal:content="keyword/name">keyword here</td>
+ <tr tal:repeat="start python:range(0, len(keywords), 4)">
+  <td width="25%" tal:define="batch python:utils.Batch(keywords, 4, start)"
+      tal:repeat="keyword batch">
+    <a tal:attributes="href string:keyword${keyword/id}"
+       tal:content="keyword/name">keyword here</a>
+  </td>
  </tr>
- <tr><td colspan="4" style="border-top: 1px solid gray">&nbsp;</td></tr>
+ <tr>
+  <td colspan="4" style="border-top: 1px solid gray">
+   To edit an existing keyword (for spelling or typing errors),
+   click on its entry above.
+  </td>
+ </tr>
 </table>
 
 <p class="help" tal:condition="not:context/id">

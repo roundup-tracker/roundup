@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.29 2002-09-11 01:19:45 richard Exp $
+# $Id: admin.py,v 1.30 2002-09-13 00:08:43 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -1152,14 +1152,18 @@ Date format is "YYYY-MM-DD" eg:
                 self.comma_sep = 1
 
         # if no command - go interactive
+        # wrap in a try/finally so we always close off the db
         ret = 0
-        if not args:
-            self.interactive()
-        else:
-            ret = self.run_command(args)
-            if self.db: self.db.commit()
-        return ret
-
+        try:
+            if not args:
+                self.interactive()
+            else:
+                ret = self.run_command(args)
+                if self.db: self.db.commit()
+            return ret
+        finally:
+            if self.db:
+                self.db.close()
 
 if __name__ == '__main__':
     tool = AdminTool()

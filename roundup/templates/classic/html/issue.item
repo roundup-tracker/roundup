@@ -70,19 +70,17 @@
 changed <b>${context/activity}</b>.">activity info</span>
 
 <tal:block tal:condition="context/id">
+
  <table class="messages" tal:condition="context/messages">
-  <tr><th colspan=3 class="header">Messages</th></tr>
-  <tal:block tal:repeat="msg context/messages/reverse">
-   <tr>
-    <th><a tal:attributes="href string:msg${msg/id}"
-           tal:content="string:msg${msg/id}"></a></th>
-    <th tal:content="string:Author: ${msg/author}">author</th>
-    <th tal:content="string:Date: ${msg/date}">date</th>
-   </tr>
-   <tr>
-    <td colspan="3"><pre tal:content="msg/content">content</pre></td>
-   </tr>
-  </tal:block>
+  <tr><th colspan=4 class="header">Messages</th></tr>
+  <tr><th>Message</th><th>Author</th><th>Date</th><th>Summary</th></tr>
+  <tr tal:repeat="msg context/messages/reverse">
+   <td><a tal:attributes="href string:msg${msg/id}"
+          tal:content="string:msg${msg/id}"></a></td>
+   <td tal:content="msg/author">author</td>
+   <td tal:content="msg/date">date</td>
+   <td tal:content="msg/summary">summary</td>
+  </tr>
  </table>
 
  <table class="files" tal:condition="context/files">

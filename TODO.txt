@@ -1,6 +1,7 @@
 General Roundup project TODO list. Note that some of these are semi-formed
 ideas. Those ideas that don't make the cutoff for the next major release are
-punted automatically into the subsequent major release TODO.
+punted automatically into the subsequent major release TODO. When stuff is
+done, it's moved to the CHANGES file.
 
 ======= ========= ============================================================
 State   Component Description
@@ -16,77 +17,47 @@ pending hyperdb   range searching of values (dates in particular).
 pending hyperdb   make creator, creation and activity available pre-commit
 pending hyperdb   migrate "id" property to be Number type
 pending instance  split instance.open() into open() and login()
-pending mailgw   allow commands (feature request #556996)
-                 like "help", "dump issue123" (would send all info about
-                 issue123, including a digest of all messages, but probably
-                 not all files...), "list issue", ...
-pending mailgw   Allow multiple email addresses at one gw with different default
-                 classes and property values (possibly through command-line
-                 args to the mailgw as invoked in the mail delivery "aliases"
-                 file) eg::
+pending mailgw    allow commands (feature request #556996)
+                  like "help", "dump issue123" (would send all info about
+                  issue123, including a digest of all messages, but probably
+                  not all files...), "list issue", ...
+pending mailgw    Allow multiple email addresses at one gw with different
+                  default classes and property values (possibly through
+                  command-line args to the mailgw as invoked in the mail
+                  delivery "aliases" file) eg::
 
                    roundup: "|roundup-mailgw /instances/dev"
                    vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
 
-pending project  switch to a Roundup instance for Roundup bug/feature tracking
-pending project  have the demo allow anonymous login
-pending security an LDAP user database implementation
-pending security authenticate over a secure connection
-pending security optionally auth with Basic HTTP auth instead of cookies
-pending security use digital signatures in mailgw
-pending security submission protection (ok, I've forgotten what this is)
-pending web      I18N
-pending web      Better message summary display (feature request #520244)
-pending web      Navigating around the issues (feature request #559149)
-pending web      Quick help links next to the property labels giving a
-                 description of the property. Combine with help for the actual
-                 form element too, eg. how to use the nosy list edit box.
-pending web      clicking on a group header should filter for that type of entry
-pending web      re-enable auth by basic http auth
-pending web      search "refinement" - pre-fill the search page with the
-                 current search parameters
-pending web      UNIX init.d script for roundup-server
-pending web      rewritten documentation (can come after the beta though so
-                 stuff is settled) ... including relevant file names in
-                 customisation doc
-pending web      allow multilink selections to select a "none" element to allow
-                 people with broken browsers to select nothing?
-pending web      password edit fields should always appear in pairs - for
-                 confirmation
-pending dist     include the HTML in docs
+pending project   switch to a Roundup instance for Roundup bug/feature tracking
+pending project   have the demo allow anonymous login
+pending security  an LDAP user database implementation
+pending security  authenticate over a secure connection
+pending security  optionally auth with Basic HTTP auth instead of cookies
+pending security  use digital signatures in mailgw
+pending security  submission protection (ok, I've forgotten what this is)
+pending web       I18N
+pending web       Better message summary display (feature request #520244)
+pending web       Navigating around the issues (feature request #559149)
+pending web       Quick help links next to the property labels giving a
+                  description of the property. Combine with help for the actual
+                  form element too, eg. how to use the nosy list edit box.
+pending web       clicking on a group header should filter for that type of
+                  entry
+pending web       re-enable auth by basic http auth
+pending web       search "refinement" - pre-fill the search page with the
+                  current search parameters
+pending web       UNIX init.d script for roundup-server
+pending web       rewritten documentation (can come after the beta though so
+                  stuff is settled) ... including relevant file names in
+                  customisation doc
+pending web       allow multilink selections to select a "none" element to allow
+                  people with broken browsers to select nothing?
+pending web       password edit fields should always appear in pairs - for
+                  confirmation
+pending web       write a _generic.item
+pending dist      include the HTML in docs
 
-bug     web      request.url is incorrect in cgi-bin environments
-
-done    instance rename to "instance" to "tracker"
-done    hyperdb  write a backend for gadfly (it's as done as it's going to get)
-done    hyperdb  full-text search also search certain String properties
-done    hyperdb  further split the *dbm backends from the core code, allowing
-                 easier non-dict-like backends (eg metakit, RDB)
-done    hyperdb  fix the journal bloat
-done    hyperdb  add Boolean and Number types (GM)
-done    hyperdb  update design document
-done    hyperdb  entire database export and import (incl files)
-done    mailgw   better help message (feature request #558562)
-done    security add info from doc/security.txt to design doc
-done    security switch to sessions for web authentication
-done    security implement and use the new logical control mechanisms
-done    web      Re-enable link backrefs from messages (feature request #568714)
-done    web      have the page layout (header/footer) be templatable
-done    web      fixing the templating so it works
-done    web      re-work cgi interface to abstract out the explicit "issue"
-                 interface
-done    web      have index page handle mid-page errors better so header and
-                 footer are still visible
-done    web      saving of named queries (GM, mangled by RJ :)
-done    web      handle "not found", access and item page render errors better
-done    web      fix double-submit by having new-item-submit redirect at end
-done    web      daemonify roundup-server (fork, logfile, pidfile)
-done    web      modify cgitb to display PageTemplate errors better
-done    web      have roundup.cgi pick up instance config from the environment 
-done    web      indicate that generated pages shouldn't be cached
-done    admin    have "set" command be applicable to all items in a class, and
-                 also be able to unset properties (ie. set to None)
-
-reject  instance the use of non-Python configuration files (ConfigParser)
+bug     web       request.url is incorrect in cgi-bin environments
 ======= ======== =============================================================
 
