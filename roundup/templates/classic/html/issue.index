@@ -11,7 +11,8 @@
    <th tal:condition="exists:request/columns/assignedto">Assigned&nbsp;To</th>
   </tr>
  <tal:block tal:repeat="i batch">
-  <tr tal:condition="python:batch.propchanged(request.group[1])">
+  <tr tal:condition="python:request.group[1] and
+                            batch.propchanged(request.group[1])">
    <th tal:attributes="colspan python:len(request.columns)"
        tal:content="python:i[request.group[1]]" class="group">
    </th>
@@ -38,13 +39,13 @@
  <tr>
   <td style="padding: 0" tal:attributes="colspan python:len(request.columns)">
    <table class="list">
-    <tr><th style="text-align: left">
+    <tr><th style="text-align: left; border: 0">
      <a tal:define="prev batch/previous" tal:condition="prev"
         tal:attributes="href python:request.indexargs_href(request.classname,
         {':startwith':prev.start, ':pagesize':prev.size})">&lt;&lt; previous</a>
      &nbsp;
     </th>
-    <th style="text-align: right">
+    <th style="text-align: right; border: 0">
      <a tal:define="next batch/next" tal:condition="next"
         tal:attributes="href python:request.indexargs_href(request.classname,
          {':startwith':next.start, ':pagesize':next.size})">next &gt;&gt;</a>

@@ -22,12 +22,13 @@
 <tr>
  <td rowspan="2" valign="top" nowrap class="sidebar">
   <p class="classblock"
-       tal:condition="python:request.user.hasPermission('Edit', 'issue')">
+       tal:condition="python:request.user.hasPermission('View', 'issue')">
    <b>Issues</b><br>
+   <a tal:condition="python:request.user.hasPermission('Edit', 'issue')"
+      href="issue?:template=item">New Issue<br></a>
    <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,priority&status=-1,1,2,3,4,5,6,7&assignedto=-1">Unassigned Issues</a><br>
    <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,priority&status=-1,1,2,3,4,5,6,7">All Issues</a><br>
-   <a href="issue?:template=search">Search Issues</a><br>
-   <a href="issue?:template=item">New Issue</a>
+   <a href="issue?:template=search">Search Issues</a>
   </p>
 
   <p class="classblock"
@@ -39,7 +40,7 @@
   </p>
 
   <p class="userblock">
-   <b>Logged in as</b><br><b tal:content="request/user/username">username</b><br>
+   <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
    <form method="POST" action=''
          tal:condition="python:request.user.username=='anonymous'">
     <input size="10" name="__login_name"><br>

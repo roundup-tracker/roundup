@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.15 $
+:Version: $Revision: 1.16 $
 
 .. contents::
 
@@ -926,12 +926,13 @@ The default interfaces define:
 
 - Web Registration
 - Web Access
+- Web Roles
 - Email Registration
 - Email Access
 
 These are hooked into the default Roles:
 
-- Admin (Edit everything, View everything)
+- Admin (Edit everything, View everything, Web Roles)
 - User (Web Access, Email Access)
 - Anonymous (Web Registration, Email Registration)
 
@@ -956,6 +957,19 @@ they register through email.
 
 You may use the ``roundup-admin`` "``security``" command to display the
 current Role and Permission configuration in your instance.
+
+Adding a new Permission
+~~~~~~~~~~~~~~~~~~~~~~~
+
+When adding a new Permission, you will need to:
+
+1. add it to your instance's dbinit so it is created
+2. enable it for the Roles that should have it (verify with
+   "``roundup-admin security``")
+3. add it to the relevant HTML interface templates
+4. add it to the appropriate xxxPermission methods on in your instance
+   interfaces module
+
 
 
 -----------------

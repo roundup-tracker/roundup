@@ -49,7 +49,7 @@ New templating TODO:
 . query saving
 . search "refinement" (pre-fill the search page with the current search
   parameters)
-. security on actions (only allows/enforces generic Edit perm on the class :()
+. web registration of new users by anonymous
 
 ongoing: any bugs
 

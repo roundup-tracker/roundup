@@ -8,32 +8,34 @@ a:link { text-decoration: none; }
 a { text-decoration: none; }
 
 .page-header-left {
-  background-color: #ffffee;
+  background-color: #cccc88;
   padding: 5px;
 }
 
 .page-header-top {
-  background-color: #ffffee;
-  border-bottom: 1px solid #ffffbb;
+  background-color: #cccc88;
+  border-bottom: 1px solid #dddd99;
   padding: 5px;
 }
 
 td.sidebar {
-  background-color: #ffffee;
-  border-right: 1px solid #ffffbb;
-  border-bottom: 1px solid #ffffbb;
-  padding: 5px;
+  background-color: #cccc88;
+  border-right: 1px solid #dddd99;
+  border-bottom: 1px solid #dddd99;
+  padding: 0px;
 }
 
 td.sidebar p.classblock {
-  border-top: 1px solid #ffffbb;
-  border-bottom: 1px solid #ffffbb;
+  padding: 0 5 0 5;
+  border-top: 1px solid #dddd99;
+  border-bottom: 1px solid #dddd99;
 }
 
 td.sidebar p.userblock {
-  background-color: #eeffff;
-  border-top: 1px solid #bbffff;
-  border-bottom: 1px solid #bbffff;
+  padding: 0 5 0 5;
+  background-color: #dddd99;
+  border-top: 1px solid #ffffbb;
+  border-bottom: 1px solid #ffffbb;
 }
 
 td.content {
@@ -58,7 +60,6 @@ p.error-message {
 table.form {
   border-spacing: 0px;
   border-collapse: separate;
-  /* width: 100%; */
 }
 
 .form th {
@@ -99,14 +100,12 @@ table.list th {
   padding: 0 4 0 4;
   color: #404070;
   background-color: #eeeeff;
-/*
   border-right: 1px solid #404070;
-*/
   vertical-align: top;
 }
-table.list th a:hover { color: white }
-table.list th a:link { color: white }
-table.list th a { color: white }
+table.list th a:hover { color: #404070 }
+table.list th a:link { color: #404070 }
+table.list th a { color: #404070 }
 table.list th.group {
   text-align: center;
 }
@@ -131,12 +130,12 @@ table.list td:first-child {
   border-left: 1px solid #404070;
   border-right: 1px solid #404070;
 }
-/*
+
 table.list th:first-child {
   border-left: 1px solid #404070;
   border-right: 1px solid #404070;
 }
-*/
+
 
 /* style for message displays */
 table.messages {

@@ -25,7 +25,11 @@ You are not allowed to view this page.
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th>Roles</th>
-  <td tal:content="structure user/roles/field">roles</td>
+  <td tal:condition="exists:item"
+      tal:content="structure user/roles/field">roles</td>
+  <td tal:condition="not:exists:item">
+   <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+  </td>
  </tr>
  <tr>
   <th>Phone</th>
@@ -51,19 +55,22 @@ You are not allowed to view this page.
 </table>
 </form>
 
-<table class="otherinfo" tal:condition="user/queries">
- <tr><th class="header">Queries</th></tr>
- <tr tal:repeat="query user/queries">
-  <td tal:content="query">query</td>
- </tr>
-</table>
+<tal:block tal:condition="exists:item">
+ <table class="otherinfo" tal:condition="user/queries">
+  <tr><th class="header">Queries</th></tr>
+  <tr tal:repeat="query user/queries">
+   <td tal:content="query">query</td>
+  </tr>
+ </table>
 
-<table class="otherinfo">
- <tr><th class="header">History</th></tr>
- <tr>
-  <td tal:content="structure user/history">history</td>
- </tr>
-</table>
+ <table class="otherinfo">
+  <tr><th class="header">History</th></tr>
+  <tr>
+   <td tal:content="structure user/history">history</td>
+  </tr>
+ </table>
+</tal:block>
+
 </tal:block>
 
 <table class="form" tal:condition="python:viewok and not editok">

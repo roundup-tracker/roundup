@@ -903,15 +903,17 @@ class HTMLRequest:
         if self.form.has_key(':filter'):
             self.filter = handleListCGIValue(self.form[':filter'])
         self.filterspec = {}
-        props = self.client.db.getclass(self.classname).getprops()
-        for name in self.filter:
-            if self.form.has_key(name):
-                prop = props[name]
-                if (isinstance(prop, hyperdb.Link) or
-                        isinstance(prop, hyperdb.Multilink)):
-                    self.filterspec[name] = handleListCGIValue(self.form[name])
-                else:
-                    self.filterspec[name] = self.form[name].value
+        if self.classname is not None:
+            props = self.client.db.getclass(self.classname).getprops()
+            for name in self.filter:
+                if self.form.has_key(name):
+                    prop = props[name]
+                    fv = self.form[name]
+                    if (isinstance(prop, hyperdb.Link) or
+                            isinstance(prop, hyperdb.Multilink)):
+                        self.filterspec[name] = handleListCGIValue(fv)
+                    else:
+                        self.filterspec[name] = fv.value
 
         # full-text search argument
         self.search_text = None
@@ -950,9 +952,17 @@ env: %(env)s
         if columns and self.columns:
             l.append(s%(':columns', ','.join(self.columns.keys())))
         if sort and self.sort is not None:
-            l.append(s%(':sort', self.sort))
+            if self.sort[0] == '-':
+                val = '-'+self.sort[1]
+            else:
+                val = self.sort[1]
+            l.append(s%(':sort', val))
         if group and self.group is not None:
-            l.append(s%(':group', self.group))
+            if self.group[0] == '-':
+                val = '-'+self.group[1]
+            else:
+                val = self.group[1]
+            l.append(s%(':group', val))
         if filter and self.filter:
             l.append(s%(':filter', ','.join(self.filter)))
         if filterspec:
@@ -965,9 +975,17 @@ env: %(env)s
         if self.columns:
             l.append(':columns=%s'%(','.join(self.columns.keys())))
         if self.sort is not None:
-            l.append(':sort=%s'%self.sort)
+            if self.sort[0] == '-':
+                val = '-'+self.sort[1]
+            else:
+                val = self.sort[1]
+            l.append(':sort=%s'%val)
         if self.group is not None:
-            l.append(':group=%s'%self.group)
+            if self.group[0] == '-':
+                val = '-'+self.group[1]
+            else:
+                val = self.group[1]
+            l.append(':group=%s'%val)
         if self.filter:
             l.append(':filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():

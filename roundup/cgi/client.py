@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.2 2002-09-01 04:32:30 richard Exp $
+# $Id: client.py,v 1.3 2002-09-01 12:18:40 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -171,6 +171,9 @@ class Client:
         else:
             self.user = user
 
+        # reopen the database as the correct user
+        self.opendb(self.user)
+
     def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Determine the context of this page:
 
@@ -291,12 +294,12 @@ class Client:
 
     # these are the actions that are available
     actions = {
-        'edit':     'edititem_action',
-        'new':      'newitem_action',
+        'edit':     'editItemAction',
+        'new':      'newItemAction',
         'login':    'login_action',
         'logout':   'logout_action',
         'register': 'register_action',
-        'search':   'search_action',
+        'search':   'searchAction',
     }
     def handle_action(self):
         ''' Determine whether there should be an _action called.
@@ -304,12 +307,12 @@ class Client:
             The action is defined by the form variable :action which
             identifies the method on this object to call. The four basic
             actions are defined in the "actions" dictionary on this class:
-             "edit"      -> self.edititem_action
-             "new"       -> self.newitem_action
+             "edit"      -> self.editItemAction
+             "new"       -> self.newItemAction
              "login"     -> self.login_action
              "logout"    -> self.logout_action
              "register"  -> self.register_action
-             "search"    -> self.search_action
+             "search"    -> self.searchAction
 
         '''
         if not self.form.has_key(':action'):
@@ -454,12 +457,10 @@ class Client:
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
         self.header(headers={'Set-Cookie':
-            'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
-#            'Location': self.db.config.DEFAULT_VIEW}, response=301)
+          'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
 
-        # suboptimal, but will do for now
+        # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
-        #raise Redirect, None
 
     def register_action(self):
         '''Attempt to create a new user based on the contents of the form
@@ -497,7 +498,7 @@ class Client:
         # nice message
         self.ok_message.append(_('You are now registered, welcome!'))
 
-    def edititem_action(self):
+    def editItemAction(self):
         ''' Perform an edit of an item in the database.
 
             Some special form elements:
@@ -516,24 +517,26 @@ class Client:
         '''
         cl = self.db.classes[self.classname]
 
+        # parse the props from the form
+        try:
+            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
         # check permission
-        userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid, self.classname):
+        if not self.editItemPermission(props):
             self.error_message.append(
-                _('You do not have permission to edit %(classname)s' %
+                _('You do not have permission to edit %(classname)s'%
                 self.__dict__))
             return
 
         # perform the edit
         try:
-            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
-
             # make changes to the node
             props = self._changenode(props)
-
             # handle linked nodes 
             self._post_editnode(self.nodeid)
-
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -556,14 +559,46 @@ class Client:
         raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, self.classname,
             self.nodeid,  urllib.quote(message))
 
-    def newitem_action(self):
+    def editItemPermission(self, props):
+        ''' Determine whether the user has permission to edit this item.
+
+            Base behaviour is to check the user can edit this class. If we're
+            editing the "user" class, users are allowed to edit their own
+            details. Unless it's the "roles" property, which requires the
+            special Permission "Web Roles".
+        '''
+        # if this is a user node and the user is editing their own node, then
+        # we're OK
+        has = self.db.security.hasPermission
+        if self.classname == 'user':
+            # reject if someone's trying to edit "roles" and doesn't have the
+            # right permission.
+            if props.has_key('roles') and not has('Web Roles', self.userid,
+                    'user'):
+                return 0
+            # if the item being edited is the current user, we're ok
+            if self.nodeid == self.userid:
+                return 1
+        if not self.db.security.hasPermission('Edit', self.userid,
+                self.classname):
+            return 0
+        return 1
+
+    def newItemAction(self):
         ''' Add a new item to the database.
 
-            This follows the same form as the edititem_action
+            This follows the same form as the editItemAction
         '''
-        # check permission
-        userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid, self.classname):
+        cl = self.db.classes[self.classname]
+
+        # parse the props from the form
+        try:
+            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
+        if not self.newItemPermission(props):
             self.error_message.append(
                 _('You do not have permission to create %s' %self.classname))
 
@@ -578,7 +613,7 @@ class Client:
 
         try:
             # do the create
-            nid = self._createnode()
+            nid = self._createnode(props)
 
             # handle linked nodes 
             self._post_editnode(nid)
@@ -606,20 +641,33 @@ class Client:
         raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, self.classname,
             nid,  urllib.quote(message))
 
-    def genericedit_action(self):
+    def newItemPermission(self, props):
+        ''' Determine whether the user has permission to create (edit) this
+            item.
+
+            Base behaviour is to check the user can edit this class. No
+            additional property checks are made. Additionally, new user items
+            may be created if the user has the "Web Registration" Permission.
+        '''
+        has = self.db.security.hasPermission
+        if self.classname == 'user' and has('Web Registration', self.userid,
+                'user'):
+            return 1
+        if not has('Edit', self.userid, self.classname):
+            return 0
+        return 1
+
+    def genericEditAction(self):
         ''' Performs an edit of all of a class' items in one go.
 
             The "rows" CGI var defines the CSV-formatted entries for the
             class. New nodes are identified by the ID 'X' (or any other
             non-existent ID) and removed lines are retired.
         '''
-        userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid, self.classname):
-            raise Unauthorised, _("You do not have permission to access"\
-                        " %(action)s.")%{'action': self.classname}
-        cl = self.db.classes[self.classname]
-        idlessprops = cl.getprops(protected=0).keys()
-        props = ['id'] + idlessprops
+        # generic edit is per-class only
+        if not self.genericEditPermission():
+            self.error_message.append(
+                _('You do not have permission to edit %s' %self.classname))
 
         # get the CSV module
         try:
@@ -629,6 +677,10 @@ class Client:
                 'Sorry, you need the csv module to use this function.<br>\n'
                 'Get it from: <a href="http://www.object-craft.com.au/projects/csv/">http://www.object-craft.com.au/projects/csv/'))
             return
+
+        cl = self.db.classes[self.classname]
+        idlessprops = cl.getprops(protected=0).keys()
+        props = ['id'] + idlessprops
 
         # do the edit
         rows = self.form['rows'].value.splitlines()
@@ -680,6 +732,77 @@ class Client:
         raise Redirect, '%s/%s?:ok_message=%s'%(self.base, self.classname, 
             urllib.quote(message))
 
+    def genericEditPermission(self):
+        ''' Determine whether the user has permission to edit this class.
+
+            Base behaviour is to check the user can edit this class.
+        ''' 
+        if not self.db.security.hasPermission('Edit', self.userid,
+                self.classname):
+            return 0
+        return 1
+
+    def searchAction(self):
+        ''' Mangle some of the form variables.
+
+            Set the form ":filter" variable based on the values of the
+            filter variables - if they're set to anything other than
+            "dontcare" then add them to :filter.
+        '''
+        # generic edit is per-class only
+        if not self.searchPermission():
+            self.error_message.append(
+                _('You do not have permission to search %s' %self.classname))
+
+        # add a faked :filter form variable for each filtering prop
+        props = self.db.classes[self.classname].getprops()
+        for key in self.form.keys():
+            if not props.has_key(key): continue
+            if not self.form[key].value: continue
+            self.form.value.append(cgi.MiniFieldStorage(':filter', key))
+
+    def searchPermission(self):
+        ''' Determine whether the user has permission to search this class.
+
+            Base behaviour is to check the user can view this class.
+        ''' 
+        if not self.db.security.hasPermission('View', self.userid,
+                self.classname):
+            return 0
+        return 1
+
+    def XXXremove_action(self,  dre=re.compile(r'([^\d]+)(\d+)')):
+        # XXX I believe this could be handled by a regular edit action that
+        # just sets the multilink...
+        # XXX handle this !
+        target = self.index_arg(':target')[0]
+        m = dre.match(target)
+        if m:
+            classname = m.group(1)
+            nodeid = m.group(2)
+            cl = self.db.getclass(classname)
+            cl.retire(nodeid)
+            # now take care of the reference
+            parentref =  self.index_arg(':multilink')[0]
+            parent, prop = parentref.split(':')
+            m = dre.match(parent)
+            if m:
+                self.classname = m.group(1)
+                self.nodeid = m.group(2)
+                cl = self.db.getclass(self.classname)
+                value = cl.get(self.nodeid, prop)
+                value.remove(nodeid)
+                cl.set(self.nodeid, **{prop:value})
+                func = getattr(self, 'show%s'%self.classname)
+                return func()
+            else:
+                raise NotFound, parent
+        else:
+            raise NotFound, target
+
+    #
+    #  Utility methods for editing
+    #
     def _changenode(self, props):
         ''' change the node based on the contents of the form
         '''
@@ -695,11 +818,10 @@ class Client:
         # make the changes
         return cl.set(self.nodeid, **props)
 
-    def _createnode(self):
+    def _createnode(self, props):
         ''' create a node based on the contents of the form
         '''
         cl = self.db.classes[self.classname]
-        props = parsePropsFromForm(self.db, cl, self.form)
 
         # check for messages and files
         message, files = self._handle_message()
@@ -805,47 +927,6 @@ class Client:
                     link, nodeid = hyperdb.splitDesignator(designator)
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
-
-    def search_action(self):
-        ''' Mangle some of the form variables.
-
-            Set the form ":filter" variable based on the values of the
-            filter variables - if they're set to anything other than
-            "dontcare" then add them to :filter.
-        '''
-        # add a faked :filter form variable for each filtering prop
-        props = self.db.classes[self.classname].getprops()
-        for key in self.form.keys():
-            if not props.has_key(key): continue
-            if not self.form[key].value: continue
-            self.form.value.append(cgi.MiniFieldStorage(':filter', key))
-
-    def remove_action(self,  dre=re.compile(r'([^\d]+)(\d+)')):
-        # XXX handle this !
-        target = self.index_arg(':target')[0]
-        m = dre.match(target)
-        if m:
-            classname = m.group(1)
-            nodeid = m.group(2)
-            cl = self.db.getclass(classname)
-            cl.retire(nodeid)
-            # now take care of the reference
-            parentref =  self.index_arg(':multilink')[0]
-            parent, prop = parentref.split(':')
-            m = dre.match(parent)
-            if m:
-                self.classname = m.group(1)
-                self.nodeid = m.group(2)
-                cl = self.db.getclass(self.classname)
-                value = cl.get(self.nodeid, prop)
-                value.remove(nodeid)
-                cl.set(self.nodeid, **{prop:value})
-                func = getattr(self, 'show%s'%self.classname)
-                return func()
-            else:
-                raise NotFound, parent
-        else:
-            raise NotFound, target
 
 
 def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
