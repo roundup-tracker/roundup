@@ -1,3 +1,5 @@
+# Note: this backend is EXPERIMENTAL. Do not use if you value your data.
+
 import re
 
 import psycopg
@@ -210,6 +212,6 @@ class FileClass(Class):
     default_mime_type = 'text/plain'
     def create(self, **propvalues):
         # figure the mime type
-        if not propvalues.get('type'):
+        if 'type' in self.getprops() and not propvalues.get('type'):
             propvalues['type'] = self.default_mime_type
         return Class.create(self, **propvalues)
