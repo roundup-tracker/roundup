@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.67 2001-11-28 21:55:35 richard Exp $
+# $Id: cgi_client.py,v 1.68 2001-11-29 04:57:23 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -499,6 +499,7 @@ class Client:
                 summary = edit_msg
                 m = [summary]
 
+            # figure the changes and add them to the message
             first = 1
             for name, prop in props.items():
                 if changes is not None and name not in changes: continue
@@ -1046,6 +1047,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.67  2001/11/28 21:55:35  richard
+#  . login_action and newuser_action return values were being ignored
+#  . Woohoo! Found that bloody re-login bug that was killing the mail
+#    gateway.
+#  (also a minor cleanup in hyperdb)
+#
 # Revision 1.66  2001/11/27 03:00:50  richard
 # couple of bugfixes from latest patch integration
 #
