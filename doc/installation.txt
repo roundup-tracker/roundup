@@ -164,8 +164,8 @@ than ``/usr/local/bin``, then specify the preferred location with
 
 You can also use the ``--prefix`` option to use a completely different
 base directory, if you do not want to use administrator rights. If you
-choose to do this, take note of the message at the end of installation
-and modify the python path accordingly.
+choose to do this, you may have to change Python's search path (sys.path)
+yourself.
 
 
 Configuring your first tracker
