@@ -36,6 +36,7 @@ Feature:
 - don't try to import all backends in backends.__init__ unless we *want* to
 - unless in debug mode, keep a single persistent connection through a
   single web or mailgw request.
+- HTTP Basic Authentication (sf patch 1067690)
 
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
