@@ -383,7 +383,7 @@
 
 	* cgitb.py, config.py, date.py, hyperdb.py, roundup-mailgw.py,
 	roundup.py, roundup_cgi.py, roundupdb.py, server.py, template.py:
-	Added CVS keywords $Id: ChangeLog,v 1.5 2001-07-27 07:31:22 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
+	Added CVS keywords Id and Log to all python files.
 
 2001-07-19 15:46  anthonybaxter
 
