@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.8 $
+:Version: $Revision: 1.9 $
 
 Current Situation and Issues
 ============================
@@ -89,6 +89,9 @@ Other fun can be had when you start playing with stuff like:
    </tr>
   </table>
 
+Note: even if we don't switch templating as a whole, this document may be
+applied to the ZRoundup frontend.
+
 PageTemplates in a Nutshell
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -138,28 +141,54 @@ I'm envisaging an infrastructure layer where each template has the following
 defined:
 
 *user*
-  the current user node as an HTMLItem instance
+  The current user node as an HTMLItem instance
+
 *class*
-  the current class of node being displayed as an HTMLClass instance
+  The current class of node being displayed as an HTMLClass instance
+
 *item*
-  the current node from the database, if we're viewing a specific node, as an
-  HTMLItem instance
+  The current node from the database, if we're viewing a specific node, as an
+  HTMLItem instance. If it doesn't exist, then we're on a new item page.
+
 (*classname*)
-  the current node is also available under its classname, so a *user* node
-  would also be available under the name *user*. This is also an HTMLItem
-  instance.
+  this is one of two things:
+
+  1. the *item* is also available under its classname, so a *user* node
+     would also be available under the name *user*. This is also an HTMLItem
+     instance.
+  2. if there's no *item* then the current class is available through this
+     name, thus "user/name" and "user/name/menu" will still work - the latter
+     will pull information from the form if it can.
+
 *form*
-  the current CGI form information as a mapping of form argument name to value
+  The current CGI form information as a mapping of form argument name to value
+
+*request*
+  Includes information about the current request, including:
+   - the url
+   - the current index information (``filterspec``, ``filter`` args,
+     ``properties``, etc) parsed out of the form. 
+   - methods for easy filterspec link generation
+
 *instance*
-  the current instance
+  The current instance
+
 *db*
-  the current open database
+  The current open database
+
 *config*
-  the current instance config
-*util*
-  utility methods
+  The current instance config
+
 *modules*
-  Python modules made available (XXX: not sure what's actually in there tho)
+  python modules made available (XXX: not sure what's actually in there tho)
+
+Accesses through the *user*::
+
+    class HTMLUser:
+        def hasPermission(self, ...)
+
+(note that the other permission check implemented by the security module may
+ be implemented easily in a tal:condition, so isn't needed here)
 
 Accesses through a class (either through *class* or *db.<classname>*):
 
@@ -175,8 +204,10 @@ Accesses through an *item*::
         def __getattr__(self, attr):
             ''' return an HTMLItem instance '''
         def history(self, ...)
-        def classhelp(self, ...)
         def remove(self, ...)
+
+Note: the above could cause problems if someone wants to have properties
+called "history" or "remove"...
 
 String, Number, Date, Interval HTMLProperty
  a wrapper object which may be stringified for the current plain() behaviour
@@ -212,6 +243,7 @@ String, Number, Date, Interval HTMLProperty
     class IntervalHTMLProperty(HTMLProperty):
         def plain(self, ...)
         def field(self, ...)
+        def pretty(self, ...)
 
 Link HTMLProperty
  the wrapper object would include the above as well as being able to access
@@ -241,14 +273,12 @@ Multilink HTMLProperty
         def checklist(self, ...)
         def list(self, ...)
  
-*util*
- the util object will handle::
+*request*
+ the request object will handle::
 
-    class Util:
+    class Request:
         def __init__(self, ...)
         def filterspec(self, ...)
-        def note(self, ...)
-        def submit(self, ...)
 
 Action
 ======
