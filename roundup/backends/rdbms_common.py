@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.132 2004-10-07 06:08:42 richard Exp $
+# $Id: rdbms_common.py,v 1.133 2004-10-07 06:30:20 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -211,7 +211,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     # update this number when we need to make changes to the SQL structure
     # of the backen database
-    current_db_version = 3
+    current_db_version = 4
     def upgrade_db(self):
         ''' Update the SQL database to reflect changes in the backend code.
 
@@ -241,8 +241,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.config.logging.getLogger('hyperdb').info('upgrade to version 3')
             self.fix_version_2_tables()
 
+        if version < 4:
+            self.fix_version_3_tables()
+
         self.database_schema['version'] = self.current_db_version
         return 1
+
+    def fix_version_3_tables(self):
+        # drop the shorter VARCHAR OTK column and add a new TEXT one
+        for name in ('otk', 'session'):
+            self.sql('ALTER TABLE %ss DROP %s_value'%(name, name))
+            self.sql('ALTER TABLE %ss ADD %s_value TEXT'%(name, name))
 
     def fix_version_2_tables(self):
         '''Default (used by sqlite): NOOP'''

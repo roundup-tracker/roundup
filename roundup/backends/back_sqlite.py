@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.32 2004-07-27 11:11:03 a1s Exp $
+# $Id: back_sqlite.py,v 1.33 2004-10-07 06:30:20 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -113,6 +113,10 @@ class Database(rdbms_common.Database):
                 self.update_class(spec, dbspec, force=1, adding_v2=1)
                 # we've updated - don't try again
                 tables[classname] = spec.schema()
+
+    def fix_version_3_tables(self):
+        # NOOP - no restriction on column length here
+        pass
 
     def update_class(self, spec, old_spec, force=0, adding_v2=0):
         ''' Determine the differences between the current spec and the
