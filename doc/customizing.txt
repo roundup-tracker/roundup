@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.171 $
+:Version: $Revision: 1.172 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -557,7 +557,7 @@ Detectors - adding behaviour to your tracker
 
 Detectors are initialised every time you open your tracker database, so
 you're free to add and remove them any time, even after the database is
-initialised via the "roundup-admin initialise" command.
+initialised via the ``roundup-admin initialise`` command.
 
 The detectors in your tracker fire *before* (**auditors**) and *after*
 (**reactors**) changes to the contents of your database. They are Python
@@ -923,7 +923,7 @@ The ``addPermission`` method takes a couple of optional parameters:
   A sequence of property names that are the only properties to apply the
   new Permission to (eg. ``... klass='user', properties=('name',
   'email') ...``)
-**code**
+**check**
   A function to be execute which returns boolean determining whether the
   Permission is allowed. The function has the signature ``check(db, userid,
   itemid)`` where ``db`` is a handle on the open database, ``userid`` is
@@ -2590,22 +2590,22 @@ In both cases, the value is a valid charset name (eg. ``utf-8`` or
 
 Inside Roundup, all strings are stored and processed in utf-8.
 Unfortunately, some older browsers do not work properly with
-utf8-encoded pages (e.g. Netscape Navigator 4 displays wrong
-characters in form fields).  This version allows to change
+utf-8-encoded pages (e.g. Netscape Navigator 4 displays wrong
+characters in form fields).  This version allows one to change
 the character set for http transfers.  To do so, you may add
 the following code to your ``page.html`` template::
 
  <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
-  <a tal:attributes="href python:request.indexargs_href(uri,
+  <a tal:attributes="href python:request.indexargs_url(uri,
    {'@charset':'utf-8'})">utf-8</a>
-  <a tal:attributes="href python:request.indexargs_href(uri,
+  <a tal:attributes="href python:request.indexargs_url(uri,
    {'@charset':'koi8-r'})">koi8-r</a>
  </tal:block>
 
 (substitute ``koi8-r`` with appropriate charset for your language).
 Charset preference is kept in the browser cookie ``roundup_charset``.
 
-Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
+``meta http-equiv`` lines added to the tracker templates in version 0.6.0
 should be changed to include actual character set name::
 
  <meta http-equiv="Content-Type"
@@ -2680,8 +2680,8 @@ selection of distinct values) to your tracker.
 Introduction
 ::::::::::::
 
-To make the classic schema of roundup useful as a TODO tracking system
-for a group of systems administrators, it needed an extra data field per
+To make the classic schema of Roundup useful as a TODO tracking system
+for a group of systems administrators, it needs an extra data field per
 issue: a category.
 
 This would let sysadmins quickly list all TODOs in their particular area
@@ -2695,8 +2695,8 @@ Adding a field to the database
 
 This is the easiest part of the change. The category would just be a
 plain string, nothing fancy. To change what is in the database you need
-to add some lines to the ``open()`` function in ``schema.py``. Under the
-comment::
+to add some lines to the ``schema.py`` file of your tracker instance.
+Under the comment::
 
     # add any additional database schema configuration here
 
@@ -2717,7 +2717,7 @@ This also means that there can only be one category with a given name.
 Adding the above lines allows us to create categories, but they're not
 tied to the issues that we are going to be creating. It's just a list of
 categories off on its own, which isn't much use. We need to link it in
-with the issues. To do that, find the lines in the ``open()`` function
+with the issues. To do that, find the lines 
 in ``schema.py`` which set up the "issue" class, and then add a link to
 the category::
 
@@ -2735,11 +2735,11 @@ is fiddling around so you can actually use the new category.
 Populating the new category class
 :::::::::::::::::::::::::::::::::
 
-If you haven't initialised the database with the roundup-admin
+If you haven't initialised the database with the ``roundup-admin``
 "initialise" command, then you can add the following to the tracker
-``schema.py`` in the ``init()`` function under the comment::
+``initial_data.py`` under the comment::
 
-    # add any additional database create steps here - but only if you
+    # add any additional database creation steps here - but only if you
     # haven't initialised the database with the admin "initialise" command
 
 Add::
@@ -2776,7 +2776,7 @@ as required, and obviously everyone needs to be able to view the
 categories of issues for it to be useful.
 
 We therefore need to change the security of the category objects. This
-is also done in the ``open()`` function of ``schema.py``.
+is also done in ``schema.py``.
 
 There are currently two loops which set up permissions and then assign
 them to various roles. Simply add the new "category" to both lists::
@@ -2789,8 +2789,8 @@ them to various roles. Simply add the new "category" to both lists::
         db.security.addPermissionToRole('User', 'Edit', cl)
         db.security.addPermissionToRole('User', 'Create', cl)
 
-These lines assign the View and Edit Permissions to the "User" role, so
-that normal users can view and edit "category" objects.
+These lines assign the "View" and "Edit" Permissions to the "User" role,
+so that normal users can view and edit "category" objects.
 
 This is all the work that needs to be done for the database. It will
 store categories, and let users view and edit them. Now on to the
@@ -2803,13 +2803,13 @@ Changing the web left hand frame
 We need to give the users the ability to create new categories, and the
 place to put the link to this functionality is in the left hand function
 bar, under the "Issues" area. The file that defines how this area looks
-is ``html/page``, which is what we are going to be editing next.
+is ``html/page.html``, which is what we are going to be editing next.
 
 If you look at this file you can see that it contains a lot of
 "classblock" sections which are chunks of HTML that will be included or
 excluded in the output depending on whether the condition in the
-classblock is met. Under the end of the classblock for issue is where we
-are going to add the category code::
+classblock is met. We are going to add the category code at the end of
+the classblock for the *issue* class::
 
   <p class="classblock"
      tal:condition="python:request.user.hasPermission('View', 'category')">
@@ -2834,7 +2834,7 @@ Note that if you have permission to *view* but not to *edit* categories,
 then all you will see is a "Categories" header with nothing underneath
 it. This is obviously not very good interface design, but will do for
 now. I just claim that it is so I can add more links in this section
-later on. However to fix the problem you could change the condition in
+later on. However, to fix the problem you could change the condition in
 the classblock statement, so that only users with "Edit" permission
 would see the "Categories" stuff.
 
@@ -2851,7 +2851,7 @@ translates into Roundup looking for a file called ``category.item.html``
 in the ``html`` tracker directory. This is the file that we are going to
 write now.
 
-First we add an info tag in a comment which doesn't affect the outcome
+First, we add an info tag in a comment which doesn't affect the outcome
 of the code at all, but is useful for debugging. If you load a page in a
 browser and look at the page source, you can see which sections come
 from which files by looking for these comments::
@@ -2891,10 +2891,10 @@ happening::
      <tr><th class="header" colspan="2">Category</th></tr>
 
 Next, we need the field into which the user is going to enter the new
-category. The "context.name.field(size=60)" bit tells Roundup to
+category. The ``context.name.field(size=60)`` bit tells Roundup to
 generate a normal HTML field of size 60, and the contents of that field
-will be the "name" variable of the current context (which is
-"category"). The upshot of this is that when the user types something in
+will be the "name" variable of the current context (namely "category").
+The upshot of this is that when the user types something in
 to the form, a new category will be created with that name::
 
     <tr>
@@ -2968,7 +2968,7 @@ the ``html/category.item.html`` file was used to define how to add a new
 category, the ``html/issue.item.html`` is used to define how a new issue
 is created.
 
-Just like ``category.issue.html`` this file defines a form which has a
+Just like ``category.issue.html``, this file defines a form which has a
 table to lay things out. It doesn't matter where in the table we add new
 stuff, it is entirely up to your sense of aesthetics::
 
@@ -2990,19 +2990,19 @@ which contains the list of currently known categories.
 Searching on categories
 :::::::::::::::::::::::
 
-We can add categories, and create issues with categories. The next
+Now we can add categories, and create issues with categories. The next
 obvious thing that we would like to be able to do, would be to search
 for issues based on their category, so that, for example, anyone working
 on the web server could look at all issues in the category "Web".
 
-If you look for "Search Issues" in the 'html/page.html' file, you will
+If you look for "Search Issues" in the ``html/page.html`` file, you will
 find that it looks something like 
 ``<a href="issue?@template=search">Search Issues</a>``. This shows us
 that when you click on "Search Issues" it will be looking for a
 ``issue.search.html`` file to display. So that is the file that we will
 change.
 
-If you look at this file it should be starting to seem familiar, although it
+If you look at this file it should begin to seem familiar, although it
 does use some new macros. You can add the new category search code anywhere you
 like within that form::
 
@@ -3016,16 +3016,16 @@ like within that form::
     <td metal:use-macro="group_input"></td>
   </tr>
 
-The definitions in the <tr> opening tag are used by the macros:
+The definitions in the ``<tr>`` opening tag are used by the macros:
 
-- search_select expands to a drop-down box with all categories using db_klass
-  and db_content.
-- column_input expands to a checkbox for selecting what columns should be
-  displayed.
-- sort_input expands to a radio button for selecting what property should be
-  sorted on.
-- group_input expands to a radio button for selecting what property should be
-  group on.
+- ``search_select`` expands to a drop-down box with all categories using
+  ``db_klass`` and ``db_content``.
+- ``column_input`` expands to a checkbox for selecting what columns
+  should be displayed.
+- ``sort_input`` expands to a radio button for selecting what property
+  should be sorted on.
+- ``group_input`` expands to a radio button for selecting what property
+  should be grouped on.
 
 The category search code above would expand to the following::
 
@@ -3080,7 +3080,7 @@ user hasn't asked for it to be hidden. The next part is to set the
 content of the cell to be the category part of "i" - the current issue.
 
 Finally we have to edit ``html/page.html`` again. This time, we need to
-tell it that when the user clicks on "Unasigned Issues" or "All Issues",
+tell it that when the user clicks on "Unassigned Issues" or "All Issues",
 the category column should be included in the resulting list. If you
 scroll down the page file, you can see the links with lots of options.
 The option that we are interested in is the ``:columns=`` one which
@@ -3113,12 +3113,12 @@ be able to give a summary of the total time spent on a particular issue.
 
 3. We'll need to let people add in times to the issue, so in the web
    interface we'll have a new entry field. This is a special field
-   because unlike the other fields in the issue.item template, it
+   because unlike the other fields in the ``issue.item`` template, it
    affects a different item (a timelog item) and not the template's
-   item, an issue. We have a special syntax for form fields that affect
+   item (an issue). We have a special syntax for form fields that affect
    items other than the template default item (see the cgi 
    documentation on `special form variables`_). In particular, we add a
-   field to capture a new timelog item's perdiod::
+   field to capture a new timelog item's period::
 
     <tr> 
      <th>Time Log</th> 
@@ -3137,11 +3137,12 @@ be able to give a summary of the total time spent on a particular issue.
    real item id. The "times" property of the issue will have the new id
    added to it.
 
-4. We want to display a total of the time log times that have been
+4. We want to display a total of the timelog times that have been
    accumulated for an issue. To do this, we'll need to actually write
    some Python code, since it's beyond the scope of PageTemplates to
    perform such calculations. We do this by adding a module ``timespent.py``
-   to the ``extensions`` directory in our tracker::
+   to the ``extensions`` directory in our tracker. The contents of this
+   file is as follows::
 
     def totalTimeSpent(times):
         ''' Call me with a list of timelog items (which have an
@@ -3158,7 +3159,7 @@ be able to give a summary of the total time spent on a particular issue.
    We will now be able to access the ``totalTimeSpent`` function via the
    ``utils`` variable in our templates, as shown in the next step.
 
-5. Display the time log for an issue::
+5. Display the timelog for an issue::
 
      <table class="otherinfo" tal:condition="context/times">
       <tr><th colspan="3" class="header">Time Log
@@ -3179,8 +3180,8 @@ be able to give a summary of the total time spent on a particular issue.
    displayed in the template as text like "+ 1y 2:40" (1 year, 2 hours
    and 40 minutes).
 
-8. If you're using a persistent web server - roundup-server or
-   mod_python for example - then you'll need to restart that to pick up
+8. If you're using a persistent web server - ``roundup-server`` or
+   ``mod_python`` for example - then you'll need to restart that to pick up
    the code changes. When that's done, you'll be able to use the new
    time logging interface.
 
@@ -3199,27 +3200,27 @@ a customer support issue class to a tracker.
 
 2. Add the new issue class to your tracker's ``schema.py`` - in this
    example, we're adding a "system support" class. Just after the "issue"
-   class definition in the "open" function, add::
+   class definition, add::
 
     support = IssueClass(db, "support", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     status=Link("status"), deadline=Date(),
                     affects=Multilink("system"))
 
-3. Copy the existing "issue.*" (item, search and index) templates in the
-   tracker's "html" to "support.*". Edit them so they use the properties
-   defined in the "support" class. Be sure to check for hidden form
+3. Copy the existing ``issue.*`` (item, search and index) templates in the
+   tracker's ``html`` to ``support.*``. Edit them so they use the properties
+   defined in the ``support`` class. Be sure to check for hidden form
    variables like "required" to make sure they have the correct set of
    required properties.
 
-4. Edit the modules in the "detectors", adding lines to their "init"
-   functions where appropriate. Look for "audit" and "react" registrations
-   on the "issue" class, and duplicate them for "support".
+4. Edit the modules in the ``detectors``, adding lines to their ``init``
+   functions where appropriate. Look for ``audit`` and ``react`` registrations
+   on the ``issue`` class, and duplicate them for ``support``.
 
 5. Create a new sidebar box for the new support class. Duplicate the
-   existing issues one, changing the "issue" class name to "support".
+   existing issues one, changing the ``issue`` class name to ``support``.
 
-6. Re-start your tracker and start using the new "support" class.
+6. Re-start your tracker and start using the new ``support`` class.
 
 
 Optionally, you might want to restrict the users able to access this new
@@ -3234,7 +3235,7 @@ You would then (as an "admin" user) edit the details of the appropriate
 users, and add "SysAdmin" to their Roles list.
 
 Alternatively, you might want to change the Edit/View permissions granted
-for the "issue" class so that it's only available to users with the "System"
+for the ``issue`` class so that it's only available to users with the "System"
 or "Developer" Role, and then the new class you're adding is available to
 all with the "User" Role.
 
@@ -3258,7 +3259,7 @@ Each user of Roundup must still have their information stored in the Roundup
 database - we just use the passwd file to check their password. To do this, we
 need to override the standard ``verifyPassword`` method defined in
 ``roundup.cgi.actions.LoginAction`` and register the new class. The
-following is added as ``externapassword.py`` in the tracker ``extensions``
+following is added as ``externalpassword.py`` in the tracker ``extensions``
 directory::
 
     from roundup.cgi.actions import LoginAction    
@@ -3307,7 +3308,7 @@ which the users are removed when they no longer have access to a system.
 To make use of the passwd file, we therefore synchronise between the two
 user stores. We also use the passwd file to validate the user logins, as
 described in the previous example, `using an external password
-validation source`_. We keep the users lists in sync using a fairly
+validation source`_. We keep the user lists in sync using a fairly
 simple script that runs once a day, or several times an hour if more
 immediate access is needed. In short, it:
 
@@ -3322,7 +3323,7 @@ immediate access is needed. In short, it:
 
 The retiring and updating are simple operations, requiring only a call
 to ``retire()`` or ``set()``. The creation operation requires more
-information though - the user's email address and their roundup Roles.
+information though - the user's email address and their Roundup Roles.
 We're going to assume that the user's email address is the same as their
 login name, so we just append the domain name to that. The Roles are
 determined using the passwd group identifier - mapping their UN*X group
@@ -3438,11 +3439,11 @@ workflow). See the example `Using a UN*X passwd file as the user database`_
 for more information about doing this.
 
 To authenticate off the LDAP store (rather than using the passwords in the
-roundup user database) you'd use the same python-ldap module inside an
+Roundup user database) you'd use the same python-ldap module inside an
 extension to the cgi interface. You'd do this by overriding the method called
-"verifyPassword" on the LoginAction class in your tracker's interfaces.py
-module (see `using an external password validation source`_). The method is
-implemented by default as::
+``verifyPassword`` on the ``LoginAction`` class in your tracker's
+``extensions`` directory (see `using an external password validation
+source`_). The method is implemented by default as::
 
     def verifyPassword(self, userid, password):
         ''' Verify the password that the user has supplied
@@ -3567,8 +3568,8 @@ vacation". Not very useful, and relatively easy to stop.
 Adding in state transition control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes tracker admins want to control the states that users may move
-issues to. You can do this by following these steps:
+Sometimes tracker admins want to control the states to which users may
+move issues. You can do this by following these steps:
 
 1. make "status" a required variable. This is achieved by adding the
    following to the top of the form in the ``issue.item.html``
@@ -3576,7 +3577,7 @@ issues to. You can do this by following these steps:
 
      <input type="hidden" name="@required" value="status">
 
-   this will force users to select a status.
+   This will force users to select a status.
 
 2. add a Multilink property to the status class::
 
@@ -3586,7 +3587,7 @@ issues to. You can do this by following these steps:
    and then edit the statuses already created, either:
 
    a. through the web using the class list -> status class editor, or
-   b. using the roundup-admin "set" command.
+   b. using the ``roundup-admin`` "set" command.
 
 3. add an auditor module ``checktransition.py`` in your tracker's
    ``detectors`` directory, for example::
@@ -3643,23 +3644,23 @@ We needed the ability to mark certain issues as "blockers" - that is,
 they can't be resolved until another issue (the blocker) they rely on is
 resolved. To achieve this:
 
-1. Create a new property on the issue Class,
-   ``blockers=Multilink("issue")``. Edit your tracker's schema.py file.
-   Where the "issue" class is defined, something like::
+1. Create a new property on the ``issue`` class:
+   ``blockers=Multilink("issue")``. To do this, edit the definition of
+   this class in your tracker's ``schema.py`` file. Change this::
 
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
 
-   add the blockers entry like so::
+   to this, adding the blockers entry::
 
     issue = IssueClass(db, "issue", 
                     blockers=Multilink("issue"),
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
 
-2. Add the new "blockers" property to the issue.item edit page, using
-   something like::
+2. Add the new ``blockers`` property to the ``issue.item.html`` edit
+   page, using something like::
 
     <th>Waiting On</th>
     <td>
@@ -3677,7 +3678,7 @@ resolved. To achieve this:
    Just make sure it appears in the first table, possibly somewhere near
    the "superseders" field.
 
-3. Create a new detector module (attached) which enforces the rules:
+3. Create a new detector module (see below) which enforces the rules:
 
    - issues may not be resolved if they have blockers
    - when a blocker is resolved, it's removed from issues it blocks
@@ -3755,15 +3756,15 @@ resolved. To achieve this:
    example, the existing "Show All" link in the "page" template (in the
    tracker's "html" directory) looks like this::
 
-     <a href="issue?:sort=-activity&:group=priority&:filter=status&
-        :columns=id,activity,title,creator,assignedto,status&
+     <a href="issue?@sort=-activity&@group=priority&@filter=status&
+        @columns=id,activity,title,creator,assignedto,status&
         status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
    modify it to add the "blockers" info to the URL (note, both the
-   ":filter" *and* "blockers" values must be specified)::
+   "@filter" *and* "blockers" values must be specified)@@
 
-     <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers&
-        blockers=-1&:columns=id,activity,title,creator,assignedto,status&
+     <a href="issue?@sort=-activity&@group=priority&@filter=status,blockers&
+        blockers=-1&@columns=id,activity,title,creator,assignedto,status&
         status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
    The above examples are line-wrapped on the trailing & and should
@@ -3778,27 +3779,27 @@ another issue's "blockers" property.
 Add users to the nosy list based on the topic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We need the ability to automatically add users to the nosy list based
-on the occurence of a topic. Every user should be allowed to edit his
-own list of topics for which he wants to be added to the nosy list.
+Let's say we need the ability to automatically add users to the nosy
+list based
+on the occurance of a topic. Every user should be allowed to edit their
+own list of topics for which they want to be added to the nosy list.
 
-Below will be showed that such a change can be performed with only
-minimal understanding of the roundup system, but with clever use
-of Copy and Paste.
+Below, we'll show that this change can be done with minimal
+understanding of the Roundup system, using only copy and paste.
 
 This requires three changes to the tracker: a change in the database to
 allow per-user recording of the lists of topics for which he wants to
-be put on the nosy list, a change in the user view allowing to edit
+be put on the nosy list, a change in the user view allowing them to edit
 this list of topics, and addition of an auditor which updates the nosy
 list when a topic is set.
 
 Adding the nosy topic list
 ::::::::::::::::::::::::::
 
-The change in the database to make is that for any user there should be
+The change to make in the database, is that for any user there should be
 a list of topics for which he wants to be put on the nosy list. Adding
-a ``Multilink`` of ``keyword`` seem to fullfill this (note that within
-the code topics are called ``keywords``.) As such, all what has to be
+a ``Multilink`` of ``keyword`` seems to fullfill this (note that within
+the code, topics are called ``keywords``.) As such, all that has to be
 done is to add a new field to the definition of ``user`` within the
 file ``schema.py``.  We will call this new field ``nosy_keywords``, and
 the updated definition of user will be::
@@ -3818,10 +3819,10 @@ Changing the user view to allow changing the nosy topic list
 We want any user to be able to change the list of topics for which
 he will by default be added to the nosy list. We choose to add this
 to the user view, as is generated by the file ``html/user.item.html``.
-We easily can
-see that the topic field in the issue view has very similar editting
-requirements as our nosy topics, both being a list of topics. As
-such, we search for Topics in ``issue.item.html``, and extract the
+We can easily 
+see that the topic field in the issue view has very similar editing
+requirements as our nosy topics, both being lists of topics. As
+such, we look for Topics in ``issue.item.html``, and extract the
 associated parts from there. We add this to ``user.item.html`` at the 
 bottom of the list of viewed items (i.e. just below the 'Alternate
 E-mail addresses' in the classic template)::
@@ -3838,36 +3839,36 @@ E-mail addresses' in the classic template)::
 Addition of an auditor to update the nosy list
 ::::::::::::::::::::::::::::::::::::::::::::::
 
-The more difficult part is the addition of the logic to actually
-at the users to the nosy list when it is required. 
-The choice is made to perform this action when the topics on an
-item are set, including when an item is created.
+The more difficult part is the logic to add
+the users to the nosy list when required. 
+We choose to perform this action whenever the topics on an
+item are set (this includes the creation of items).
 Here we choose to start out with a copy of the 
 ``detectors/nosyreaction.py`` detector, which we copy to the file
 ``detectors/nosy_keyword_reaction.py``. 
 This looks like a good start as it also adds users
 to the nosy list. A look through the code reveals that the
-``nosyreaction`` function actually is sending the e-mail, which
-we do not need. As such, we can change the init function to::
+``nosyreaction`` function actually sends the e-mail. 
+We don't need this. Therefore, we can change the ``init`` function to::
 
     def init(db):
         db.issue.audit('create', update_kw_nosy)
         db.issue.audit('set', update_kw_nosy)
 
-After that we rename the ``updatenosy`` function to ``update_kw_nosy``.
-The first two blocks of code in that function relate to settings
+After that, we rename the ``updatenosy`` function to ``update_kw_nosy``.
+The first two blocks of code in that function relate to setting
 ``current`` to a combination of the old and new nosy lists. This
 functionality is left in the new auditor. The following block of
-code, which in ``updatenosy`` handled adding the assignedto user(s)
-to the nosy list, should be replaced by a block of code to add the
+code, which handled adding the assignedto user(s) to the nosy list in
+``updatenosy``, should be replaced by a block of code to add the
 interested users to the nosy list. We choose here to loop over all
-new topics, than loop over all users,
-and assign the user to the nosy list when the topic in the user's
-nosy_keywords. The next part in ``updatenosy``, adding the author
-and/or recipients of a message to the nosy list, obviously is not
-relevant here and thus is deleted from the new auditor. The last
-part, copying the new nosy list to newvalues, does not have to be changed.
-This brings the following function::
+new topics, than looping over all users,
+and assign the user to the nosy list when the topic occurs in the user's
+``nosy_keywords``. The next part in ``updatenosy`` -- adding the author
+and/or recipients of a message to the nosy list -- is obviously not
+relevant here and is thus deleted from the new auditor. The last
+part, copying the new nosy list to ``newvalues``, can stay as is.
+This results in the following function::
 
     def update_kw_nosy(db, cl, nodeid, newvalues):
         '''Update the nosy list for changes to the topics
@@ -3913,9 +3914,9 @@ This brings the following function::
         # that's it, save off the new nosy list
         newvalues['nosy'] = current.keys()
 
-and these two function are the only ones needed in the file.
+These two function are the only ones needed in the file.
 
-TODO: update this example to use the find() Class method.
+TODO: update this example to use the ``find()`` Class method.
 
 Caveats
 :::::::
@@ -3924,22 +3925,22 @@ A few problems with the design here can be noted:
 
 Multiple additions
     When a user, after automatic selection, is manually removed
-    from the nosy list, he again is added to the nosy list when the
+    from the nosy list, he is added to the nosy list again when the
     topic list of the issue is updated. A better design might be
     to only check which topics are new compared to the old list
     of topics, and only add users when they have indicated
     interest on a new topic.
 
-    The code could also be changed to only trigger on the create() event,
-    rather than also on the set() event, thus only setting the nosy list
-    when the issue is created.
+    The code could also be changed to only trigger on the ``create()``
+    event, rather than also on the ``set()`` event, thus only setting
+    the nosy list when the issue is created.
 
 Scalability
-    In the auditor there is a loop over all users. For a site with
-    only few users this will pose no serious problem, however, with
+    In the auditor, there is a loop over all users. For a site with
+    only few users this will pose no serious problem; however, with
     many users this will be a serious performance bottleneck.
-    A way out will be to link from the topics to the users which
-    selected these topics a nosy topics. This will eliminate the
+    A way out would be to link from the topics to the users who
+    selected these topics as nosy topics. This will eliminate the
     loop over all users.
 
 Changes to Security and Permissions
@@ -3962,7 +3963,7 @@ Restricting the list of users that are assignable to a task
 
      db.security.addPermissionToRole('Developer', p)
 
-4. In the issue item edit page ("html/issue.item.html" in your tracker
+4. In the issue item edit page (``html/issue.item.html`` in your tracker
    directory), use the new Permission in restricting the "assignedto"
    list::
 
@@ -3979,11 +3980,11 @@ Restricting the list of users that are assignable to a task
     </select>
 
 For extra security, you may wish to setup an auditor to enforce the
-Permission requirement (install this as "assignedtoFixer.py" in your
-tracker "detectors" directory)::
+Permission requirement (install this as ``assignedtoFixer.py`` in your
+tracker ``detectors`` directory)::
 
   def assignedtoMustBeFixer(db, cl, nodeid, newvalues):
-      ''' Ensure the assignedto value in newvalues is a used with the
+      ''' Ensure the assignedto value in newvalues is used with the
           Fixer Permission
       '''
       if not newvalues.has_key('assignedto'):
@@ -4006,7 +4007,8 @@ doesn't have the "Fixer" Permission, the error will be raised.
 Users may only edit their issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Users registering themselves are granted Provisional access - meaning they
+In this case, users registering themselves are granted Provisional
+access, meaning they
 have access to edit the issues they submit, but not others. We create a new
 Role called "Provisional User" which is granted to newly-registered users,
 and has limited access. One of the Permissions they have is the new "Edit
@@ -4028,10 +4030,10 @@ First up, we create the new Role and Permission structure in
         '''Determine whether the userid matches the creator of the issue.'''
         return userid == db.issue.get(itemid, 'creator')
     p = db.security.addPermission(name='Edit', klass='issue',
-        code=own_issue, description='Can only edit own issues')
+        check=own_issue, description='Can only edit own issues')
     db.security.addPermissionToRole('Provisional User', p)
     p = db.security.addPermission(name='View', klass='issue',
-        code=own_issue, description='Can only view own issues')
+        check=own_issue, description='Can only view own issues')
     db.security.addPermissionToRole('Provisional User', p)
 
     # Assign the Permissions for issue-related classes
@@ -4047,7 +4049,7 @@ First up, we create the new Role and Permission structure in
     db.security.addPermissionToRole('Provisional User', 'Email Access')
 
 
-Then in the ``config.ini`` we change the Role assigned to newly-registered
+Then, in ``config.ini``, we change the Role assigned to newly-registered
 users, replacing the existing ``'User'`` values::
 
     [main]
@@ -4082,7 +4084,7 @@ Changes to the Web User Interface
 Adding action links to the index page
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Add a column to the item.index.html template.
+Add a column to the ``item.index.html`` template.
 
 Resolving the issue::
 
@@ -4094,19 +4096,19 @@ Resolving the issue::
   <a tal:attributes="href
      string:issue${i/id}?:assignedto=${request/user/id}&:action=edit">take</a>
 
-... and so on
+... and so on.
 
 Colouring the rows in the issue index according to priority
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A simple ``tal:attributes`` statement will do the bulk of the work here. In
-the ``issue.index.html`` template, add to the ``<tr>`` that displays the
-actual rows of data::
+the ``issue.index.html`` template, add this to the ``<tr>`` that
+displays the rows of data::
 
    <tr tal:attributes="class string:priority-${i/priority/plain}">
 
 and then in your stylesheet (``style.css``) specify the colouring for the
-different priorities, like::
+different priorities, as follows::
 
    tr.priority-critical td {
        background-color: red;
@@ -4150,7 +4152,7 @@ To edit the status of all items in the item index view, edit the
 
    this will result in an edit field for the status property.
 
-3. after the ``tal:block`` which lists the actual index items (marked by
+3. after the ``tal:block`` which lists the index items (marked by
    ``tal:repeat="i batch"``) add a new table row::
 
     <tr>
@@ -4162,7 +4164,7 @@ To edit the status of all items in the item index view, edit the
     </tr>
 
    which gives us a submit button, indicates that we are performing an edit
-   on any changed statuses and the final block will make sure that the
+   on any changed statuses. The final ``tal:block`` will make sure that the
    current index view parameters (filtering, columns, etc) will be used in 
    rendering the next page (the results of the editing).
 
@@ -4170,7 +4172,7 @@ To edit the status of all items in the item index view, edit the
 Displaying only message summaries in the issue display
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Alter the issue.item template section for messages to::
+Alter the ``issue.item`` template section for messages to::
 
  <table class="messages" tal:condition="context/messages">
   <tr><th colspan="5" class="header">Messages</th></tr>
@@ -4194,7 +4196,7 @@ Enabling display of either message summaries or the entire messages
 This is pretty simple - all we need to do is copy the code from the
 example `displaying only message summaries in the issue display`_ into
 our template alongside the summary display, and then introduce a switch
-that shows either one or the other. We'll use a new form variable,
+that shows either the one or the other. We'll use a new form variable,
 ``@whole_messages`` to achieve this::
 
  <table class="messages" tal:condition="context/messages">
@@ -4271,8 +4273,8 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
        .
     </form>
 
-   Note that later in the form, I test the value of "cat" include form
-   elements that are appropriate. For example::
+   Note that later in the form, I use the value of "cat" to decide which
+   form elements should be displayed. For example::
 
     <tal:block tal:condition="python:cat in '6 10 13 14 15 16 17'.split()">
      <tr>

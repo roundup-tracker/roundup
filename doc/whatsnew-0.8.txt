@@ -43,7 +43,7 @@ Logging of internal messages
 Roundup's previously ad-hoc logging of events has been cleaned up and is
 now configured in a single place in the tracker configuration file.
 
-The `customisation documentation`_ has more details on how this is
+The `customization documentation`_ has more details on how this is
 configured.
 
 
@@ -102,22 +102,22 @@ In both cases, the value is a valid charset name (eg. ``utf-8`` or
 
 Inside Roundup, all strings are stored and processed in utf-8.
 Unfortunately, some older browsers do not work properly with
-utf8-encoded pages (e.g. Netscape Navigator 4 displays wrong
+utf-8-encoded pages (e.g. Netscape Navigator 4 displays wrong
 characters in form fields).  This version allows to change
 the character set for http transfers.  To do so, you may add
 the following code to your ``page.html`` template::
 
  <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
-  <a tal:attributes="href python:request.indexargs_href(uri,
+  <a tal:attributes="href python:request.indexargs_url(uri,
    {'@charset':'utf-8'})">utf-8</a>
-  <a tal:attributes="href python:request.indexargs_href(uri,
+  <a tal:attributes="href python:request.indexargs_url(uri,
    {'@charset':'koi8-r'})">koi8-r</a>
  </tal:block>
 
-(substitute ``koi8-r`` with appropriate charset for your language).
+(substitute ``koi8-r`` with the appropriate charset for your language).
 Charset preference is kept in the browser cookie ``roundup_charset``.
 
-Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
+``meta http-equiv`` lines added to the tracker templates in version 0.6.0
 should be changed to include actual character set name::
 
  <meta http-equiv="Content-Type"
@@ -154,4 +154,4 @@ Web server
   The builtin web server may now perform HTTP Basic Authentication by
   itself.
 
-.. _`customisation documentation`: customizing.html
+.. _`customization documentation`: customizing.html

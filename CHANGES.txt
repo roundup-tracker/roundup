@@ -9,7 +9,8 @@ Fixed:
 - have Permissions only test the check function if itemid is suppled
 - modify cgi templating system to check item-level permissions in listings
 - enable batching in message and file listings
-- more documentation of security mechanisms
+- more documentation of security mechanisms (incl. sf patches 1117932,
+  1117860)
 - better unit tests for security mechanisms
 
 
