@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.65.2.10 2003-06-24 03:33:56 richard Exp $
+# $Id: client.py,v 1.65.2.11 2003-06-24 04:23:35 anthonybaxter Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -215,17 +215,10 @@ class Client:
         # determine the uid to use
         self.opendb('admin')
 
+        self.clean_sessions()
+
         # make sure we have the session Class
         sessions = self.db.sessions
-
-        # age sessions, remove when they haven't been used for a week
-        # TODO: this shouldn't be done every access
-        week = 60*60*24*7
-        now = time.time()
-        for sessid in sessions.list():
-            interval = now - sessions.get(sessid, 'last_use')
-            if interval > week:
-                sessions.destroy(sessid)
 
         # look up the user session cookie
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
@@ -261,6 +254,25 @@ class Client:
 
         # reopen the database as the correct user
         self.opendb(self.user)
+
+    def clean_sessions(self):
+        ''' Age sessions, remove when they haven't been used for a week.
+                
+            Do it only once an hour.
+        '''
+        sessions = self.db.sessions   
+        last_clean = sessions.get('last_clean', 'last_use') or 0
+
+        week = 60*60*24*7
+        hour = 60*60
+        now = time.time()
+        if now - last_clean > hour:
+            # remove aged sessions 
+            for sessid in sessions.list():
+                interval = now - sessions.get(sessid, 'last_use')
+                if interval > week:
+                    sessions.destroy(sessid)
+            sessions.set('last_clean', last_use=time.time())
 
     def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Determine the context of this page from the URL:
