@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.33 2003-11-11 21:51:52 richard Exp $
+$Id: roundup_server.py,v 1.34 2003-11-12 23:29:17 richard Exp $
 """
 
 # python version check
@@ -81,7 +81,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         except socket.timeout:
             s = StringIO.StringIO()
             traceback.print_exc(None, s)
-            self.log_message(str(s.getvalue()))
+            self.log_message('%s', s.getvalue())
         except:
             # it'd be nice to be able to detect if these are going to have
             # any effect...
