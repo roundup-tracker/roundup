@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.9 2004-06-21 04:34:57 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.10 2004-06-23 23:21:32 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1945,8 +1945,14 @@ class Class(hyperdb.Class):
             elif values is None:
                 where.append('_%s is NULL'%prop)
             else:
-                allvalues += tuple(values.keys())
-                where.append('_%s in (%s)'%(prop, ','.join([a]*len(values))))
+                values = values.keys()
+                s = ''
+                if None in values:
+                    values.remove(None)
+                    s = '_%s is NULL or '%prop
+                allvalues += tuple(values)
+                s += '_%s in (%s)'%(prop, ','.join([a]*len(values)))
+                where.append(s)
         tables = ['_%s'%self.classname]
         if where:
             o.append('(' + ' and '.join(where) + ')')

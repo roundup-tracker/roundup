@@ -14,6 +14,7 @@ Fixed:
 - include "context" always, as documented (sf bug 965447)
 - fixed REMOTE_USER (external HTTP Basic auth) (sf bug 977309)
 - fixed roundup-admin "find" to use better value parsing
+- fixed RDBMS Class.find() to handle None value in multiple find
 
 
 2004-06-10 0.7.4
