@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2002-02-?? - 0.4.1
 Feature:
+ . add module blobfiles in backends with file access functions.
  . roundup db catch only IOError in getfile.
  . roundup db catches retrieving not existing files.
  . #503204 ] mailgw needs a default class
