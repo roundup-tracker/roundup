@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.2 2004-05-23 23:26:29 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.3 2004-06-08 05:34:21 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -209,8 +209,8 @@ class _Database(hyperdb.Database, roundupdb.Database):
                          nodeid=int(nodeid),
                          date=creation,
                          action=action,
-                         user = creator,
-                         params = marshal.dumps(params))
+                         user=creator,
+                         params=marshal.dumps(params))
 
     def setjournal(self, tablenm, nodeid, journal):
         '''Set the journal to the "journal" list.'''
@@ -223,7 +223,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
                              nodeid=int(nodeid),
                              date=date,
                              action=action,
-                             user=user,
+                             user=int(user),
                              params=marshal.dumps(params))
 
     def getjournal(self, tablenm, nodeid):
@@ -359,6 +359,15 @@ _actionnames = {
     _RESTORE : 'restore',
     _LINK : 'link',
     _UNLINK : 'unlink',
+}
+
+_names_to_actionnames = {
+    'create': _CREATE,
+    'set': _SET,
+    'retire': _RETIRE,
+    'restore': _RESTORE,
+    'link': _LINK,
+    'unlink': _UNLINK,
 }
 
 _marker = []
@@ -1700,7 +1709,8 @@ class Class(hyperdb.Class):
         d = {}
         for l in entries:
             l = map(eval, l)
-            nodeid, date, user, action, params = l
+            nodeid, jdate, user, action, params = l
+            jdate = int(calendar.timegm(date.Date(jdate).get_tuple()))
             r = d.setdefault(nodeid, [])
             if action == 'set':
                 for propname, value in params.items():
@@ -1716,7 +1726,8 @@ class Class(hyperdb.Class):
                         pwd.unpack(value)
                         value = pwd
                     params[propname] = value
-            r.append((nodeid, date.Date(date), user, action, params))
+            action = _names_to_actionnames[action]
+            r.append((nodeid, jdate, user, action, params))
 
         for nodeid, l in d.items():
             self.db.setjournal(self.classname, nodeid, l)

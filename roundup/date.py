@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.68 2004-05-06 02:35:46 richard Exp $
+# $Id: date.py,v 1.68.2.1 2004-06-08 05:39:37 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -349,7 +349,7 @@ class Date:
             format, then the day number will be removed from output.
         '''
         str = time.strftime(format, (self.year, self.month, self.day,
-            self.hour, self.minute, self.second, 0, 0, 0))
+            self.hour, self.minute, int(self.second), 0, 0, 0))
         # handle zero day by removing it
         if format.startswith('%d') and str[0] == '0':
             return ' ' + str[1:]
