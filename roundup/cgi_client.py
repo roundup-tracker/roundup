@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.38 2001-10-22 03:25:01 richard Exp $
+# $Id: cgi_client.py,v 1.39 2001-10-23 01:00:18 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -240,8 +240,8 @@ class Client:
         if show_customization is None:
             show_customization = self.customization_widget()
 
-        htmltemplate.index(self, self.TEMPLATES, self.db, cn, filterspec,
-            filter, columns, sort, group,
+        index = htmltemplate.IndexTemplate(self, self.TEMPLATES, cn)
+        index.render(filterspec, filter, columns, sort, group,
             show_customization=show_customization)
         self.pagefoot()
 
@@ -276,7 +276,9 @@ class Client:
         nodeid = self.nodeid
 
         # use the template to display the item
-        htmltemplate.item(self, self.TEMPLATES, self.db, self.classname, nodeid)
+        item = htmltemplate.ItemTemplate(self, self.TEMPLATES, self.classname)
+        item.render(nodeid)
+
         self.pagefoot()
     showissue = shownode
     showmsg = shownode
@@ -433,8 +435,12 @@ class Client:
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
         self.pagehead('New %s'%self.classname.capitalize(), message)
-        htmltemplate.newitem(self, self.TEMPLATES, self.db, self.classname,
-            self.form)
+
+        # call the template
+        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+            self.classname)
+        newitem.render(self.form)
+
         self.pagefoot()
     newissue = newnode
     newuser = newnode
@@ -466,8 +472,9 @@ class Client:
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
 
         self.pagehead('New %s'%self.classname.capitalize(), message)
-        htmltemplate.newitem(self, self.TEMPLATES, self.db, self.classname,
-            self.form)
+        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+            self.classname)
+        newitem.render(self.form)
         self.pagefoot()
 
     def classes(self, message=None):
@@ -541,6 +548,7 @@ class Client:
             password = self.form['__login_password'].value
         else:
             password = ''
+        print self.user, password
         # make sure the user exists
         try:
             uid = self.db.user.lookup(self.user)
@@ -585,6 +593,10 @@ class Client:
         ''' create a new user based on the contents of the form and then
         set the cookie
         '''
+        # re-open the database as "admin"
+        self.db.close()
+        self.db = self.instance.open('admin')
+
         # TODO: pre-check the required fields and username key property
         cl = self.db.classes['user']
         props, dummy = parsePropsFromForm(self.db, cl, self.form)
@@ -626,10 +638,6 @@ class Client:
             self.user = user
         self.db.close()
 
-        # make sure totally anonymous access is OK
-        if self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
-            return self.login()
-
         # re-open the database for real, using the user
         self.db = self.instance.open(self.user)
 
@@ -647,17 +655,27 @@ class Client:
         # appends the name of the file to the URL so the download file name
         # is correct, but doesn't actually use it.
         action = path[0]
+        if action == 'login_action':
+            self.login_action()
+            return
+
+        # make sure anonymous are allowed to register
+        if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
+            return self.login()
+
+        if action == 'newuser_action':
+            self.newuser_action()
+            return
+
+        # make sure totally anonymous access is OK
+        if self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
+            return self.login()
+
         if action == 'list_classes':
             self.classes()
             return
         if action == 'login':
             self.login()
-            return
-        if action == 'login_action':
-            self.login_action()
-            return
-        if action == 'newuser_action':
-            self.newuser_action()
             return
         if action == 'logout':
             self.logout()
@@ -834,6 +852,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2001/10/22 03:25:01  richard
+# Added configuration for:
+#  . anonymous user access and registration (deny/allow)
+#  . filter "widget" location on index page (top, bottom, both)
+# Updated some documentation.
+#
 # Revision 1.37  2001/10/21 07:26:35  richard
 # feature #473127: Filenames. I modified the file.index and htmltemplate
 #  source so that the filename is used in the link and the creation

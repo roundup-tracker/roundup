@@ -15,32 +15,31 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.32 2001-10-22 03:25:01 richard Exp $
+# $Id: htmltemplate.py,v 1.33 2001-10-23 01:00:18 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
 import hyperdb, date, password
 
-class Base:
-    def __init__(self, db, templates, classname, nodeid=None, form=None,
-            filterspec=None):
-        # TODO: really not happy with the way templates is passed on here
-        self.db, self.templates = db, templates
-        self.classname, self.nodeid = classname, nodeid
-        self.form, self.filterspec = form, filterspec
-        self.cl = self.db.classes[self.classname]
-        self.properties = self.cl.getprops()
+class TemplateFunctions:
+    def __init__(self):
+        self.form = None
+        self.nodeid = None
+        self.filterspec = None
+        self.globals = {}
+        for key in TemplateFunctions.__dict__.keys():
+            if key[:3] == 'do_':
+                self.globals[key[3:]] = getattr(self, key)
 
-class Plain(Base):
-    ''' display a String property directly;
+    def do_plain(self, property, escape=0):
+        ''' display a String property directly;
 
-        display a Date property in a specified time zone with an option to
-        omit the time from the date stamp;
+            display a Date property in a specified time zone with an option to
+            omit the time from the date stamp;
 
-        for a Link or Multilink property, display the key strings of the
-        linked nodes (or the ids if the linked class has no key property)
-    '''
-    def __call__(self, property, escape=0):
+            for a Link or Multilink property, display the key strings of the
+            linked nodes (or the ids if the linked class has no key property)
+        '''
         if not self.nodeid and self.form is None:
             return '[Field: not called from item]'
         propclass = self.properties[property]
@@ -75,11 +74,10 @@ class Plain(Base):
             return cgi.escape(value)
         return value
 
-class Field(Base):
-    ''' display a property like the plain displayer, but in a text field
-        to be edited
-    '''
-    def __call__(self, property, size=None, height=None, showid=0):
+    def do_field(self, property, size=None, height=None, showid=0):
+        ''' display a property like the plain displayer, but in a text field
+            to be edited
+        '''
         if not self.nodeid and self.form is None and self.filterspec is None:
             return '[Field: not called from item]'
         propclass = self.properties[property]
@@ -159,10 +157,9 @@ class Field(Base):
             s = 'Plain: bad propclass "%s"'%propclass
         return s
 
-class Menu(Base):
-    ''' for a Link property, display a menu of the available choices
-    '''
-    def __call__(self, property, size=None, height=None, showid=0):
+    def do_menu(self, property, size=None, height=None, showid=0):
+        ''' for a Link property, display a menu of the available choices
+        '''
         propclass = self.properties[property]
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
@@ -208,18 +205,17 @@ class Menu(Base):
             return '\n'.join(l)
         return '[Menu: not a link]'
 
-#XXX deviates from spec
-class Link(Base):
-    '''For a Link or Multilink property, display the names of the linked
-       nodes, hyperlinked to the item views on those nodes.
-       For other properties, link to this node with the property as the
-       text.
+    #XXX deviates from spec
+    def do_link(self, property=None, is_download=0):
+        '''For a Link or Multilink property, display the names of the linked
+           nodes, hyperlinked to the item views on those nodes.
+           For other properties, link to this node with the property as the
+           text.
 
-       If is_download is true, append the property value to the generated
-       URL so that the link may be used as a download link and the
-       downloaded file name is correct.
-    '''
-    def __call__(self, property=None, is_download=0):
+           If is_download is true, append the property value to the generated
+           URL so that the link may be used as a download link and the
+           downloaded file name is correct.
+        '''
         if not self.nodeid and self.form is None:
             return '[Link: not called from item]'
         propclass = self.properties[property]
@@ -263,11 +259,10 @@ class Link(Base):
         else:
             return '<a href="%s%s">%s</a>'%(self.classname, self.nodeid, value)
 
-class Count(Base):
-    ''' for a Multilink property, display a count of the number of links in
-        the list
-    '''
-    def __call__(self, property, **args):
+    def do_count(self, property, **args):
+        ''' for a Multilink property, display a count of the number of links in
+            the list
+        '''
         if not self.nodeid:
             return '[Count: not called from item]'
         propclass = self.properties[property]
@@ -276,14 +271,13 @@ class Count(Base):
             return str(len(value))
         return '[Count: not a Multilink]'
 
-# XXX pretty is definitely new ;)
-class Reldate(Base):
-    ''' display a Date property in terms of an interval relative to the
-        current date (e.g. "+ 3w", "- 2d").
+    # XXX pretty is definitely new ;)
+    def do_reldate(self, property, pretty=0):
+        ''' display a Date property in terms of an interval relative to the
+            current date (e.g. "+ 3w", "- 2d").
 
-        with the 'pretty' flag, make it pretty
-    '''
-    def __call__(self, property, pretty=0):
+            with the 'pretty' flag, make it pretty
+        '''
         if not self.nodeid and self.form is None:
             return '[Reldate: not called from item]'
         propclass = self.properties[property]
@@ -303,11 +297,10 @@ class Reldate(Base):
             return pretty
         return str(interval)
 
-class Download(Base):
-    ''' show a Link("file") or Multilink("file") property using links that
-        allow you to download files
-    '''
-    def __call__(self, property, **args):
+    def do_download(self, property, **args):
+        ''' show a Link("file") or Multilink("file") property using links that
+            allow you to download files
+        '''
         if not self.nodeid:
             return '[Download: not called from item]'
         propclass = self.properties[property]
@@ -326,11 +319,10 @@ class Download(Base):
         return '[Download: not a link]'
 
 
-class Checklist(Base):
-    ''' for a Link or Multilink property, display checkboxes for the available
-        choices to permit filtering
-    '''
-    def __call__(self, property, **args):
+    def do_checklist(self, property, **args):
+        ''' for a Link or Multilink property, display checkboxes for the
+            available choices to permit filtering
+        '''
         propclass = self.properties[property]
         if (not isinstance(propclass, hyperdb.Link) and not
                 isinstance(propclass, hyperdb.Multilink)):
@@ -373,38 +365,42 @@ class Checklist(Base):
                 'value="-1">'%(checked, property))
         return '\n'.join(l)
 
-class Note(Base):
-    ''' display a "note" field, which is a text area for entering a note to
-        go along with a change. 
-    '''
-    def __call__(self, rows=5, cols=80):
-       # TODO: pull the value from the form
+    def do_note(self, rows=5, cols=80):
+        ''' display a "note" field, which is a text area for entering a note to
+            go along with a change. 
+        '''
+        # TODO: pull the value from the form
         return '<textarea name="__note" rows=%s cols=%s></textarea>'%(rows,
             cols)
 
-# XXX new function
-class List(Base):
-    ''' list the items specified by property using the standard index for
-        the class
-    '''
-    def __call__(self, property, reverse=0):
-        propclass = self.properties[property]
-        if isinstance(not propclass, hyperdb.Multilink):
+    # XXX new function
+    def do_list(self, property, reverse=0):
+        ''' list the items specified by property using the standard index for
+            the class
+        '''
+        propcl = self.properties[property]
+        if not isinstance(propcl, hyperdb.Multilink):
             return '[List: not a Multilink]'
-        fp = StringIO.StringIO()
         value = self.cl.get(self.nodeid, property)
         if reverse:
             value.reverse()
-        # TODO: really not happy with the way templates is passed on here
-        index(fp, self.templates, self.db, propclass.classname, nodeids=value,
-            show_display_form=0)
+
+        # render the sub-index into a string
+        fp = StringIO.StringIO()
+        try:
+            write_save = self.client.write
+            self.client.write = fp.write
+            index = IndexTemplate(self.client, self.templates, propcl.classname)
+            index.render(nodeids=value, show_display_form=0)
+        finally:
+            self.client.write = write_save
+
         return fp.getvalue()
 
-# XXX new function
-class History(Base):
-    ''' list the history of the item
-    '''
-    def __call__(self, **args):
+    # XXX new function
+    def do_history(self, **args):
+        ''' list the history of the item
+        '''
         if self.nodeid is None:
             return "[History: node doesn't exist]"
 
@@ -421,11 +417,10 @@ class History(Base):
         l.append('</table>')
         return '\n'.join(l)
 
-# XXX new function
-class Submit(Base):
-    ''' add a submit button for the item
-    '''
-    def __call__(self):
+    # XXX new function
+    def do_submit(self):
+        ''' add a submit button for the item
+        '''
         if self.nodeid:
             return '<input type="submit" value="Submit Changes">'
         elif self.form is not None:
@@ -443,10 +438,11 @@ class IndexTemplateReplace:
         self.locals = locals
         self.props = props
 
-    def go(self, text, replace=re.compile(
-            r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
-            r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)):
-        return replace.sub(self, text)
+    replace=re.compile(
+        r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
+        r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
+    def go(self, text):
+        return self.replace.sub(self, text)
 
     def __call__(self, m, filter=None, columns=None, sort=None, group=None):
         if m.group('name'):
@@ -461,278 +457,280 @@ class IndexTemplateReplace:
             return eval(command, self.globals, self.locals)
         print '*** unhandled match', m.groupdict()
 
-def sortby(sort_name, columns, filter, sort, group, filterspec):
-    l = []
-    w = l.append
-    for k, v in filterspec.items():
-        k = urllib.quote(k)
-        if type(v) == type([]):
-            w('%s=%s'%(k, ','.join(map(urllib.quote, v))))
-        else:
-            w('%s=%s'%(k, urllib.quote(v)))
-    if columns:
-        w(':columns=%s'%','.join(map(urllib.quote, columns)))
-    if filter:
-        w(':filter=%s'%','.join(map(urllib.quote, filter)))
-    if group:
-        w(':group=%s'%','.join(map(urllib.quote, group)))
-    m = []
-    s_dir = ''
-    for name in sort:
-        dir = name[0]
-        if dir == '-':
-            name = name[1:]
-        else:
-            dir = ''
-        if sort_name == name:
-            if dir == '-':
-                s_dir = ''
-            else:
-                s_dir = '-'
-        else:
-            m.append(dir+urllib.quote(name))
-    m.insert(0, s_dir+urllib.quote(sort_name))
-    # so things don't get completely out of hand, limit the sort to two columns
-    w(':sort=%s'%','.join(m[:2]))
-    return '&'.join(l)
+class IndexTemplate(TemplateFunctions):
+    def __init__(self, client, templates, classname):
+        self.client = client
+        self.templates = templates
+        self.classname = classname
 
-def index(client, templates, db, classname, filterspec={}, filter=[],
-        columns=[], sort=[], group=[], show_display_form=1, nodeids=None,
-        show_customization=1,
-        col_re=re.compile(r'<property\s+name="([^>]+)">')):
-    globals = {
-        'plain': Plain(db, templates, classname, filterspec=filterspec),
-        'field': Field(db, templates, classname, filterspec=filterspec),
-        'menu': Menu(db, templates, classname, filterspec=filterspec),
-        'link': Link(db, templates, classname, filterspec=filterspec),
-        'count': Count(db, templates, classname, filterspec=filterspec),
-        'reldate': Reldate(db, templates, classname, filterspec=filterspec),
-        'download': Download(db, templates, classname, filterspec=filterspec),
-        'checklist': Checklist(db, templates, classname, filterspec=filterspec),
-        'list': List(db, templates, classname, filterspec=filterspec),
-        'history': History(db, templates, classname, filterspec=filterspec),
-        'submit': Submit(db, templates, classname, filterspec=filterspec),
-        'note': Note(db, templates, classname, filterspec=filterspec)
-    }
-    cl = db.classes[classname]
-    properties = cl.getprops()
-    w = client.write
-    w('<form>')
+        # derived
+        self.db = self.client.db
+        self.cl = self.db.classes[self.classname]
+        self.properties = self.cl.getprops()
 
-    try:
-        template = open(os.path.join(templates, classname+'.filter')).read()
-        all_filters = col_re.findall(template)
-    except IOError, error:
-        if error.errno != errno.ENOENT: raise
-        template = None
-        all_filters = []
-    if template and filter:
+        TemplateFunctions.__init__(self)
+
+    col_re=re.compile(r'<property\s+name="([^>]+)">')
+    def render(self, filterspec={}, filter=[], columns=[], sort=[], group=[],
+            show_display_form=1, nodeids=None, show_customization=1):
+        self.filterspec = filterspec
+
+        w = self.client.write
+
+        # get the filter template
+        try:
+            filter_template = open(os.path.join(self.templates,
+                self.classname+'.filter')).read()
+            all_filters = self.col_re.findall(filter_template)
+        except IOError, error:
+            if error.errno != errno.ENOENT: raise
+            filter_template = None
+            all_filters = []
+
         # display the filter section
-        w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
-        w('<tr class="location-bar">')
-        w(' <th align="left" colspan="2">Filter specification...</th>')
-        w('</tr>')
-        replace = IndexTemplateReplace(globals, locals(), filter)
-        w(replace.go(template))
-        w('<tr class="location-bar"><td width="1%%">&nbsp;</td>')
-        w('<td><input type="submit" name="action" value="Redisplay"></td></tr>')
+        if (hasattr(self.client, 'FILTER_POSITION') and
+                self.client.FILTER_POSITION in ('top and bottom', 'top')):
+            w('<form>\n')
+            self.filter_section(filter_template, filter, columns, group,
+                all_filters, all_columns, show_display_form, show_customization)
+            w('</form>\n')
+
+        # make sure that the sorting doesn't get lost either
+        if sort:
+            w('<input type="hidden" name=":sort" value="%s">'%','.join(sort))
+
+        # XXX deviate from spec here ...
+        # load the index section template and figure the default columns from it
+        template = open(os.path.join(self.templates,
+            self.classname+'.index')).read()
+        all_columns = self.col_re.findall(template)
+        if not columns:
+            columns = []
+            for name in all_columns:
+                columns.append(name)
+        else:
+            # re-sort columns to be the same order as all_columns
+            l = []
+            for name in all_columns:
+                if name in columns:
+                    l.append(name)
+            columns = l
+
+        # now display the index section
+        w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
+        w('<tr class="list-header">\n')
+        for name in columns:
+            cname = name.capitalize()
+            if show_display_form:
+                sb = self.sortby(name, filterspec, columns, filter, group, sort)
+                anchor = "%s?%s"%(self.classname, sb)
+                w('<td><span class="list-header"><a href="%s">%s</a></span></td>\n'%(
+                    anchor, cname))
+            else:
+                w('<td><span class="list-header">%s</span></td>\n'%cname)
+        w('</tr>\n')
+
+        # this stuff is used for group headings - optimise the group names
+        old_group = None
+        group_names = []
+        if group:
+            for name in group:
+                if name[0] == '-': group_names.append(name[1:])
+                else: group_names.append(name)
+
+        # now actually loop through all the nodes we get from the filter and
+        # apply the template
+        if nodeids is None:
+            nodeids = self.cl.filter(filterspec, sort, group)
+        for nodeid in nodeids:
+            # check for a group heading
+            if group_names:
+                this_group = [self.cl.get(nodeid, name) for name in group_names]
+                if this_group != old_group:
+                    l = []
+                    for name in group_names:
+                        prop = self.properties[name]
+                        if isinstance(prop, hyperdb.Link):
+                            group_cl = self.db.classes[prop.classname]
+                            key = group_cl.getkey()
+                            value = self.cl.get(nodeid, name)
+                            if value is None:
+                                l.append('[unselected %s]'%prop.classname)
+                            else:
+                                l.append(group_cl.get(self.cl.get(nodeid,
+                                    name), key))
+                        elif isinstance(prop, hyperdb.Multilink):
+                            group_cl = self.db.classes[prop.classname]
+                            key = group_cl.getkey()
+                            for value in self.cl.get(nodeid, name):
+                                l.append(group_cl.get(value, key))
+                        else:
+                            value = self.cl.get(nodeid, name)
+                            if value is None:
+                                value = '[empty %s]'%name
+                            else:
+                                value = str(value)
+                            l.append(value)
+                    w('<tr class="section-bar">'
+                      '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
+                        len(columns), ', '.join(l)))
+                    old_group = this_group
+
+            # display this node's row
+            replace = IndexTemplateReplace(self.globals, locals(), columns)
+            self.nodeid = nodeid
+            w(replace.go(template))
+            self.nodeid = None
+
         w('</table>')
 
-    # If the filters aren't being displayed, then hide their current
-    # value in the form
-    if not filter:
-        for k, v in filterspec.items():
-            if type(v) == type([]): v = ','.join(v)
-            w('<input type="hidden" name="%s" value="%s">'%(k, v))
-
-    # make sure that the sorting doesn't get lost either
-    if sort:
-        w('<input type="hidden" name=":sort" value="%s">'%','.join(sort))
-
-    # XXX deviate from spec here ...
-    # load the index section template and figure the default columns from it
-    template = open(os.path.join(templates, classname+'.index')).read()
-    all_columns = col_re.findall(template)
-    if not columns:
-        columns = []
-        for name in all_columns:
-            columns.append(name)
-    else:
-        # re-sort columns to be the same order as all_columns
-        l = []
-        for name in all_columns:
-            if name in columns:
-                l.append(name)
-        columns = l
-
-    # display the filter section
-    if hasattr(client, 'FILTER_POSITION') and client.FILTER_POSITION in ('top and bottom', 'top'):
-        filter_section(w, cl, filter, columns, group, all_filters, all_columns,
-            show_display_form, show_customization)
-
-    # now display the index section
-    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
-    w('<tr class="list-header">\n')
-    for name in columns:
-        cname = name.capitalize()
-        if show_display_form:
-            anchor = "%s?%s"%(classname, sortby(name, columns, filter,
-                sort, group, filterspec))
-            w('<td><span class="list-header"><a href="%s">%s</a></span></td>\n'%(
-                anchor, cname))
-        else:
-            w('<td><span class="list-header">%s</span></td>\n'%cname)
-    w('</tr>\n')
-
-    # this stuff is used for group headings - optimise the group names
-    old_group = None
-    group_names = []
-    if group:
-        for name in group:
-            if name[0] == '-': group_names.append(name[1:])
-            else: group_names.append(name)
-
-    # now actually loop through all the nodes we get from the filter and
-    # apply the template
-    if nodeids is None:
-        nodeids = cl.filter(filterspec, sort, group)
-    for nodeid in nodeids:
-        # check for a group heading
-        if group_names:
-            this_group = [cl.get(nodeid, name) for name in group_names]
-            if this_group != old_group:
-                l = []
-                for name in group_names:
-                    prop = properties[name]
-                    if isinstance(prop, hyperdb.Link):
-                        group_cl = db.classes[prop.classname]
-                        key = group_cl.getkey()
-                        value = cl.get(nodeid, name)
-                        if value is None:
-                            l.append('[unselected %s]'%prop.classname)
-                        else:
-                            l.append(group_cl.get(cl.get(nodeid, name), key))
-                    elif isinstance(prop, hyperdb.Multilink):
-                        group_cl = db.classes[prop.classname]
-                        key = group_cl.getkey()
-                        for value in cl.get(nodeid, name):
-                            l.append(group_cl.get(value, key))
-                    else:
-                        value = cl.get(nodeid, name)
-                        if value is None:
-                            value = '[empty %s]'%name
-                        else:
-                            value = str(value)
-                        l.append(value)
-                w('<tr class="section-bar">'
-                  '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
-                    len(columns), ', '.join(l)))
-                old_group = this_group
-
-        # display this node's row
-        for value in globals.values():
-            if hasattr(value, 'nodeid'):
-                value.nodeid = nodeid
-        replace = IndexTemplateReplace(globals, locals(), columns)
-        w(replace.go(template))
-
-    w('</table>')
-
-    # display the filter section
-    if hasattr(client, 'FILTER_POSITION') and client.FILTER_POSITION in ('top and bottom', 'bottom'):
-        filter_section(w, cl, filter, columns, group, all_filters, all_columns,
-            show_display_form, show_customization)
+        # display the filter section
+        if (hasattr(self.client, 'FILTER_POSITION') and
+                self.client.FILTER_POSITION in ('top and bottom', 'bottom')):
+            w('<form>\n')
+            self.filter_section(filter_template, filter, columns, group,
+                all_filters, all_columns, show_display_form, show_customization)
+            w('</form>\n')
 
 
-def filter_section(w, cl, filter, columns, group, all_filters, all_columns,
-        show_display_form, show_customization):
-    # now add in the filter/columns/group/etc config table form
-    w('<input type="hidden" name="show_customization" value="%s">' %
-        show_customization )
-    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
-    names = []
-    properties = cl.getprops()
-    for name in properties.keys():
-        if name in all_filters or name in all_columns:
-            names.append(name)
-    w('<tr class="location-bar">')
-    if show_customization:
-        action = '-'
-    else:
-        action = '+'
-        # hide the values for filters, columns and grouping in the form
-        # if the customization widget is not visible
-        for name in names:
-            if all_filters and name in filter:
-                w('<input type="hidden" name=":filter" value="%s">' % name)
-            if all_columns and name in columns:
-                w('<input type="hidden" name=":columns" value="%s">' % name)
-            if all_columns and name in group:
-                w('<input type="hidden" name=":group" value="%s">' % name)
+    def filter_section(self, template, filter, columns, group, all_filters,
+            all_columns, show_display_form, show_customization):
 
-    if show_display_form:
-        # TODO: The widget style can go into the stylesheet
-        w('<th align="left" colspan=%s>'
-          '<input style="height : 1em; width : 1em; font-size: 12pt" type="submit" name="action" value="%s">&nbsp;View '
-          'customisation...</th></tr>\n'%(len(names)+1, action))
+        w = self.client.write
+
+        if template and filter:
+            # display the filter section
+            w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
+            w('<tr class="location-bar">')
+            w(' <th align="left" colspan="2">Filter specification...</th>')
+            w('</tr>')
+            replace = IndexTemplateReplace(self.globals, locals(), filter)
+            w(replace.go(template))
+            w('<tr class="location-bar"><td width="1%%">&nbsp;</td>')
+            w('<td><input type="submit" name="action" value="Redisplay"></td></tr>')
+            w('</table>')
+
+        # now add in the filter/columns/group/etc config table form
+        w('<input type="hidden" name="show_customization" value="%s">' %
+            show_customization )
+        w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
+        names = []
+        for name in self.properties.keys():
+            if name in all_filters or name in all_columns:
+                names.append(name)
+        w('<tr class="location-bar">')
         if show_customization:
-            w('<tr class="location-bar"><th>&nbsp;</th>')
+            action = '-'
+        else:
+            action = '+'
+            # hide the values for filters, columns and grouping in the form
+            # if the customization widget is not visible
             for name in names:
-                w('<th>%s</th>'%name.capitalize())
-            w('</tr>\n')
+                if all_filters and name in filter:
+                    w('<input type="hidden" name=":filter" value="%s">' % name)
+                if all_columns and name in columns:
+                    w('<input type="hidden" name=":columns" value="%s">' % name)
+                if all_columns and name in group:
+                    w('<input type="hidden" name=":group" value="%s">' % name)
 
-            # Filter
-            if all_filters:
-                w('<tr><th width="1%" align=right class="location-bar">'
-                  'Filters</th>\n')
+        if show_display_form:
+            # TODO: The widget style can go into the stylesheet
+            w('<th align="left" colspan=%s>'
+              '<input style="height : 1em; width : 1em; font-size: 12pt" type="submit" name="action" value="%s">&nbsp;View '
+              'customisation...</th></tr>\n'%(len(names)+1, action))
+            if show_customization:
+                w('<tr class="location-bar"><th>&nbsp;</th>')
                 for name in names:
-                    if name not in all_filters:
-                        w('<td>&nbsp;</td>')
-                        continue
-                    if name in filter: checked=' checked'
-                    else: checked=''
-                    w('<td align=middle>\n')
-                    w(' <input type="checkbox" name=":filter" value="%s" '
-                      '%s></td>\n'%(name, checked))
+                    w('<th>%s</th>'%name.capitalize())
                 w('</tr>\n')
 
-            # Columns
-            if all_columns:
-                w('<tr><th width="1%" align=right class="location-bar">'
-                  'Columns</th>\n')
-                for name in names:
-                    if name not in all_columns:
-                        w('<td>&nbsp;</td>')
-                        continue
-                    if name in columns: checked=' checked'
-                    else: checked=''
-                    w('<td align=middle>\n')
-                    w(' <input type="checkbox" name=":columns" value="%s"'
-                      '%s></td>\n'%(name, checked))
+                # Filter
+                if all_filters:
+                    w('<tr><th width="1%" align=right class="location-bar">'
+                      'Filters</th>\n')
+                    for name in names:
+                        if name not in all_filters:
+                            w('<td>&nbsp;</td>')
+                            continue
+                        if name in filter: checked=' checked'
+                        else: checked=''
+                        w('<td align=middle>\n')
+                        w(' <input type="checkbox" name=":filter" value="%s" '
+                          '%s></td>\n'%(name, checked))
+                    w('</tr>\n')
+
+                # Columns
+                if all_columns:
+                    w('<tr><th width="1%" align=right class="location-bar">'
+                      'Columns</th>\n')
+                    for name in names:
+                        if name not in all_columns:
+                            w('<td>&nbsp;</td>')
+                            continue
+                        if name in columns: checked=' checked'
+                        else: checked=''
+                        w('<td align=middle>\n')
+                        w(' <input type="checkbox" name=":columns" value="%s"'
+                          '%s></td>\n'%(name, checked))
+                    w('</tr>\n')
+
+                    # Grouping
+                    w('<tr><th width="1%" align=right class="location-bar">'
+                      'Grouping</th>\n')
+                    for name in names:
+                        prop = self.properties[name]
+                        if name not in all_columns:
+                            w('<td>&nbsp;</td>')
+                            continue
+                        if name in group: checked=' checked'
+                        else: checked=''
+                        w('<td align=middle>\n')
+                        w(' <input type="checkbox" name=":group" value="%s"'
+                          '%s></td>\n'%(name, checked))
+                    w('</tr>\n')
+
+                w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
+                w('<td colspan="%s">'%len(names))
+                w('<input type="submit" name="action" value="Redisplay"></td>')
                 w('</tr>\n')
 
-                # Grouping
-                w('<tr><th width="1%" align=right class="location-bar">'
-                  'Grouping</th>\n')
-                for name in names:
-                    prop = properties[name]
-                    if name not in all_columns:
-                        w('<td>&nbsp;</td>')
-                        continue
-                    if name in group: checked=' checked'
-                    else: checked=''
-                    w('<td align=middle>\n')
-                    w(' <input type="checkbox" name=":group" value="%s"'
-                      '%s></td>\n'%(name, checked))
-                w('</tr>\n')
+            w('</table>\n')
 
-            w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
-            w('<td colspan="%s">'%len(names))
-            w('<input type="submit" name="action" value="Redisplay"></td>')
-            w('</tr>\n')
-
-        w('</table>\n')
-        w('</form>\n')
+    def sortby(self, sort_name, filterspec, columns, filter, group, sort):
+        l = []
+        w = l.append
+        for k, v in filterspec.items():
+            k = urllib.quote(k)
+            if type(v) == type([]):
+                w('%s=%s'%(k, ','.join(map(urllib.quote, v))))
+            else:
+                w('%s=%s'%(k, urllib.quote(v)))
+        if columns:
+            w(':columns=%s'%','.join(map(urllib.quote, columns)))
+        if filter:
+            w(':filter=%s'%','.join(map(urllib.quote, filter)))
+        if group:
+            w(':group=%s'%','.join(map(urllib.quote, group)))
+        m = []
+        s_dir = ''
+        for name in sort:
+            dir = name[0]
+            if dir == '-':
+                name = name[1:]
+            else:
+                dir = ''
+            if sort_name == name:
+                if dir == '-':
+                    s_dir = ''
+                else:
+                    s_dir = '-'
+            else:
+                m.append(dir+urllib.quote(name))
+        m.insert(0, s_dir+urllib.quote(sort_name))
+        # so things don't get completely out of hand, limit the sort to
+        # two columns
+        w(':sort=%s'%','.join(m[:2]))
+        return '&'.join(l)
 
 #
 #   ITEM TEMPLATES
@@ -744,10 +742,11 @@ class ItemTemplateReplace:
         self.cl = cl
         self.nodeid = nodeid
 
-    def go(self, text, replace=re.compile(
-            r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
-            r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)):
-        return replace.sub(self, text)
+    replace=re.compile(
+        r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
+        r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
+    def go(self, text):
+        return self.replace.sub(self, text)
 
     def __call__(self, m, filter=None, columns=None, sort=None, group=None):
         if m.group('name'):
@@ -762,83 +761,78 @@ class ItemTemplateReplace:
             return eval(command, self.globals, self.locals)
         print '*** unhandled match', m.groupdict()
 
-def item(client, templates, db, classname, nodeid, replace=re.compile(
-            r'((?P<prop><property\s+name="(?P<propname>[^>]+)">)|'
-            r'(?P<endprop></property>)|'
-            r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I)):
 
-    globals = {
-        'plain': Plain(db, templates, classname, nodeid),
-        'field': Field(db, templates, classname, nodeid),
-        'menu': Menu(db, templates, classname, nodeid),
-        'link': Link(db, templates, classname, nodeid),
-        'count': Count(db, templates, classname, nodeid),
-        'reldate': Reldate(db, templates, classname, nodeid),
-        'download': Download(db, templates, classname, nodeid),
-        'checklist': Checklist(db, templates, classname, nodeid),
-        'list': List(db, templates, classname, nodeid),
-        'history': History(db, templates, classname, nodeid),
-        'submit': Submit(db, templates, classname, nodeid),
-        'note': Note(db, templates, classname, nodeid)
-    }
+class ItemTemplate(TemplateFunctions):
+    def __init__(self, client, templates, classname):
+        self.client = client
+        self.templates = templates
+        self.classname = classname
 
-    cl = db.classes[classname]
-    properties = cl.getprops()
+        # derived
+        self.db = self.client.db
+        self.cl = self.db.classes[self.classname]
+        self.properties = self.cl.getprops()
 
-    if properties.has_key('type') and properties.has_key('content'):
-        pass
-        # XXX we really want to return this as a downloadable...
-        #  currently I handle this at a higher level by detecting 'file'
-        #  designators...
+        TemplateFunctions.__init__(self)
 
-    w = client.write
-    w('<form action="%s%s">'%(classname, nodeid))
-    s = open(os.path.join(templates, classname+'.item')).read()
-    replace = ItemTemplateReplace(globals, locals(), cl, nodeid)
-    w(replace.go(s))
-    w('</form>')
+    def render(self, nodeid):
+        self.nodeid = nodeid
+
+        if (self.properties.has_key('type') and
+                self.properties.has_key('content')):
+            pass
+            # XXX we really want to return this as a downloadable...
+            #  currently I handle this at a higher level by detecting 'file'
+            #  designators...
+
+        w = self.client.write
+        w('<form action="%s%s">'%(self.classname, nodeid))
+        s = open(os.path.join(self.templates, self.classname+'.item')).read()
+        replace = ItemTemplateReplace(self.globals, locals(), self.cl, nodeid)
+        w(replace.go(s))
+        w('</form>')
 
 
-def newitem(client, templates, db, classname, form, replace=re.compile(
-            r'((?P<prop><property\s+name="(?P<propname>[^>]+)">)|'
-            r'(?P<endprop></property>)|'
-            r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I)):
-    globals = {
-        'plain': Plain(db, templates, classname, form=form),
-        'field': Field(db, templates, classname, form=form),
-        'menu': Menu(db, templates, classname, form=form),
-        'link': Link(db, templates, classname, form=form),
-        'count': Count(db, templates, classname, form=form),
-        'reldate': Reldate(db, templates, classname, form=form),
-        'download': Download(db, templates, classname, form=form),
-        'checklist': Checklist(db, templates, classname, form=form),
-        'list': List(db, templates, classname, form=form),
-        'history': History(db, templates, classname, form=form),
-        'submit': Submit(db, templates, classname, form=form),
-        'note': Note(db, templates, classname, form=form)
-    }
+class NewItemTemplate(TemplateFunctions):
+    def __init__(self, client, templates, classname):
+        self.client = client
+        self.templates = templates
+        self.classname = classname
 
-    cl = db.classes[classname]
-    properties = cl.getprops()
+        # derived
+        self.db = self.client.db
+        self.cl = self.db.classes[self.classname]
+        self.properties = self.cl.getprops()
 
-    w = client.write
-    try:
-        s = open(os.path.join(templates, classname+'.newitem')).read()
-    except:
-        s = open(os.path.join(templates, classname+'.item')).read()
-    w('<form action="new%s" method="POST" enctype="multipart/form-data">'%classname)
-    for key in form.keys():
-        if key[0] == ':':
-            value = form[key].value
-            if type(value) != type([]): value = [value]
-            for value in value:
-                w('<input type="hidden" name="%s" value="%s">'%(key, value))
-    replace = ItemTemplateReplace(globals, locals(), None, None)
-    w(replace.go(s))
-    w('</form>')
+        TemplateFunctions.__init__(self)
+
+    def render(self, form):
+        self.form = form
+        w = self.client.write
+        c = self.classname
+        try:
+            s = open(os.path.join(self.templates, c+'.newitem')).read()
+        except:
+            s = open(os.path.join(self.templates, c+'.item')).read()
+        w('<form action="new%s" method="POST" enctype="multipart/form-data">'%c)
+        for key in form.keys():
+            if key[0] == ':':
+                value = form[key].value
+                if type(value) != type([]): value = [value]
+                for value in value:
+                    w('<input type="hidden" name="%s" value="%s">'%(key, value))
+        replace = ItemTemplateReplace(self.globals, locals(), None, None)
+        w(replace.go(s))
+        w('</form>')
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2001/10/22 03:25:01  richard
+# Added configuration for:
+#  . anonymous user access and registration (deny/allow)
+#  . filter "widget" location on index page (top, bottom, both)
+# Updated some documentation.
+#
 # Revision 1.31  2001/10/21 07:26:35  richard
 # feature #473127: Filenames. I modified the file.index and htmltemplate
 #  source so that the filename is used in the link and the creation

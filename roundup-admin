@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.36 2001-10-21 00:45:15 richard Exp $
+# $Id: roundup-admin,v 1.37 2001-10-23 01:00:18 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -35,13 +35,13 @@ class AdminTool:
 
     def __init__(self):
         self.commands = {}
-        for k, v in AdminTool.__dict__.items():
+        for k in AdminTool.__dict__.keys():
             if k[:3] == 'do_':
-                self.commands[k[3:]] = v
+                self.commands[k[3:]] = getattr(self, k)
         self.help = {}
-        for k, v in AdminTool.__dict__.items():
+        for k in AdminTool.__dict__.keys():
             if k[:5] == 'help_':
-                self.help[k[5:]] = v
+                self.help[k[5:]] = getattr(self, k)
 
     def usage(message=''):
         if message: message = 'Problem: '+message+'\n'
@@ -133,7 +133,7 @@ Command help:
         '''
         help = self.help.get(args[0], None)
         if help:
-            help(self)
+            help()
             return
         help = self.commands.get(args[0], None)
         if help:
@@ -212,7 +212,11 @@ Command help:
         designators = string.split(args[1], ',')
         l = []
         for designator in designators:
-            classname, nodeid = roundupdb.splitDesignator(designator)
+            try:
+                classname, nodeid = roundupdb.splitDesignator(designator)
+            except roundupdb.DesignatorError, message:
+                print 'Error: %s'%message
+                return 1
             if self.comma_sep:
                 l.append(self.db.getclass(classname).get(nodeid, propname))
             else:
@@ -236,7 +240,11 @@ Command help:
             key, value = prop.split('=')
             props[key] = value
         for designator in designators:
-            classname, nodeid = roundupdb.splitDesignator(designator)
+            try:
+                classname, nodeid = roundupdb.splitDesignator(designator)
+            except roundupdb.DesignatorError, message:
+                print 'Error: %s'%message
+                return 1
             cl = self.db.getclass(classname)
             properties = cl.getprops()
             for key, value in props.items():
@@ -427,7 +435,11 @@ Command help:
 
         Lists the journal entries for the node identified by the designator.
         '''
-        classname, nodeid = roundupdb.splitDesignator(args[0])
+        try:
+            classname, nodeid = roundupdb.splitDesignator(args[0])
+        except roundupdb.DesignatorError, message:
+            print 'Error: %s'%message
+            return 1
         # TODO: handle the -c option?
         print self.db.getclass(classname).history(nodeid)
         return 0
@@ -441,7 +453,11 @@ Command help:
         '''
         designators = string.split(args[0], ',')
         for designator in designators:
-            classname, nodeid = roundupdb.splitDesignator(designator)
+            try:
+                classname, nodeid = roundupdb.splitDesignator(designator)
+            except roundupdb.DesignatorError, message:
+                print 'Error: %s'%message
+                return 1
             self.db.getclass(classname).retire(nodeid)
         return 0
 
@@ -610,7 +626,7 @@ Command help:
 
         # do the command
         try:
-            return function(self, args[1:])
+            return function(args[1:])
         finally:
             self.db.close()
 
@@ -671,6 +687,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2001/10/21 00:45:15  richard
+# Added author identification to e-mail messages from roundup.
+#
 # Revision 1.35  2001/10/20 11:58:48  richard
 # Catch errors in login - no username or password supplied.
 # Fixed editing of password (Password property type) thanks Roch'e Compaan.
