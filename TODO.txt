@@ -57,6 +57,7 @@ active hyperdb: full-text searching doesn't appear to match stuff in titles,
                 even though they're supposed to be indexed...
 
 ongoing: any bugs
+bug: request.url is incorrect in cgi-bin environments
 
 rejected instance: the use of non-Python configuration files (ConfigParser)
 done web: Re-enable link backrefs from messages (feature request #568714) (RJ)
