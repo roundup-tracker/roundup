@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.158 2002-08-15 00:40:10 richard Exp $
+# $Id: cgi_client.py,v 1.159 2002-08-16 04:29:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -567,11 +567,12 @@ function help_window(helpurl, width, height) {
             
         self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
             'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
-        
+
         index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
         try:
-            index.render(filterspec, search_text, filter, columns, sort, 
-                group, show_customization=show_customization, 
+            index.render(filterspec=filterspec, search_text=search_text,
+                filter=filter, columns=columns, sort=sort, group=group,
+                show_customization=show_customization, 
                 show_nodes=show_nodes, pagesize=pagesize, startwith=startwith,
                 simple_search=simpleform)
         except htmltemplate.MissingTemplateError:
@@ -1745,6 +1746,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.158  2002/08/15 00:40:10  richard
+# cleanup
+#
 # Revision 1.157  2002/08/13 20:16:09  gmcm
 # Use a real parser for templates.
 # Rewrite htmltemplate to use the parser (hack, hack).
