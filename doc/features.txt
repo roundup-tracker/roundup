@@ -2,27 +2,46 @@
 Roundup Features
 ================
 
-
 Roundup is a simple-to-use and -install issue-tracking system with
 web, e-mail and command-line interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
+*simple to install*
+ - installation (including web interface) takes about 30 minutes
+ - two templates included in the distribution for you to base your tracker on
+ - doesn't need *any* additional support software - python (2.1+) is enough to
+   get you going
+ - easy to set up higher-performance storage backends like sqlite_ and
+   metakit_
 
 *simple to use*
  - accessible through the web, email, command-line or Python programs
  - may be used to track bugs, features, user feedback, sales opportunities,
-   ...
- - keeps a full history of changes to issues
+   milestones, ...
+ - keeps a full history of changes to issues with configurable verbosity
 
-*simple to install*
- - installation takes about 10 minutes for a basic installation
- - two "template" schemas included in the distribution for you to base your
-   tracker on
- - doesn't need any additional support software - python (2.1+) is enough to
-   get you going
+*highly configurable*
+ - web interface HTML is fully editable
+ - database schema is also fully editable (only the "user" class is required)
+   with a full set of data types (including dates and many-to-many relations)
+   across all storages available
+ - customised automatic auditors and reactors may be written that perform
+   actions before and after changes are made to entries in the database
+ - samples are provided for all types of configuration changes
+
+*fast, scalable*
+ - with the sqlite_ and metakit_ backends, roundup is also fast and scalable,
+   easily handling thousands of issues and users with decent response times
+ - indexed text searching giving fast responses to searches across all
+   messages and indexed string properties
+
+*documented*
+ - documentation exists for installation, upgrading, maintenance, users and
+   customisation
 
 *web interface*
- - fully editable interfaces for indexing and display of items
+ - fully editable interfaces for listing and display of items
+ - extendable to include wizards, parent/meta bug displays, ...
  - differentiates between anonymous, known and admin users
  - may be set up to require login, and may also only allow admin users
    to register new users
@@ -59,10 +78,6 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - roundup's API may also be used by other Python programs - a sample is
    provided that runs once a day and emails people their assigned issues
 
-*highly configurable*
- - web interface HTML is fully editable
- - database schema is also fully editable
- - customised automatic auditors and reactors may be written that perform
-   actions before and after changes are made to entries in the database
- - samples are provided for all types of configuration changes
+.. _sqlite: http://www.hwaci.com/sw/sqlite/
+.. _metakit: http://www.equi4.com/metakit/
 

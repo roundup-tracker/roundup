@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.46 $
+:Version: $Revision: 1.47 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -185,9 +185,8 @@ Note: if you modify the schema, you'll most likely need to edit the
       your changes.
 
 A tracker schema defines what data is stored in the tracker's database.
-The
-schemas shipped with Roundup turn it into a typical software bug tracker or
-help desk.
+The schemas shipped with Roundup turn it into a typical software bug tracker
+or help desk.
 
 XXX make sure we ship the help desk
 
@@ -1489,8 +1488,8 @@ When adding a new Permission, you will need to:
 Examples
 ========
 
-Adding a new field to a roundup schema
---------------------------------------
+Adding a new field to the classic schema
+----------------------------------------
 
 This example shows how to add a new constrained property (ie. a selection of
 distinct values) to your tracker.

@@ -1,8 +1,8 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2002-09-12 03:57:09 $
-:version: $Revision: 1.9 $
+:date: $Date: 2002-09-26 06:41:46 $
+:version: $Revision: 1.10 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -85,6 +85,7 @@ hr {
   width: 75% }
 
 ol.simple, ul.simple {
+  margin-top: 0;
   margin-bottom: 1em }
 
 ol.arabic {
@@ -211,6 +212,10 @@ h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
 
 tt {
   background-color: #eeeeee }
+
+tt.literal span.pre {
+  background-color: #eeeeee
+}
 
 ul.auto-toc {
   list-style-type: none }

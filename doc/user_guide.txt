@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.8 $
+:Version: $Revision: 1.9 $
 
 .. contents::
 
@@ -79,11 +79,16 @@ Note that the sidebar menu has changed slightly, so you can now get to your
 
 Note the new information on this page - the history.
 
+
+Display, edit or entry of an item
+---------------------------------
+
 Create a new issue with "create new" under the issue subheading. This will
 take you to:
 
 .. img: images/new_issue.png
 
+The `nosy list`_ is explained below.
 Enter some information and click "submit new entry" and you'll be rewarded
 with:
 
@@ -94,10 +99,11 @@ occurs) you'll get something like:
 
 .. img: images/new_issue_error.png
 
-Searching
----------
 
-TODO: some information about how searching works
+Searching Page
+--------------
+
+XXX: some information about how searching works
 
 
 Under the covers
@@ -123,11 +129,7 @@ propname   selects the values the item properties given by propname
 Access Controls
 ---------------
 
-
-Managing Issues
----------------
-
-TODO: some mention of how the various widgets work
+XXX
 
 
 E-Mail Gateway
@@ -258,7 +260,8 @@ the message may be added to the `nosy list`_ depending on:
 Nosy List
 ~~~~~~~~~
 
-The nosy list watches for additions to the "messages" property of items.
+Roundup watches for additions to the "messages" property of items.
+
 When a new message is added, it is sent to all the users
 on the "nosy" list for the item that are not already on the "recipients" list
 of the message. Those users are then appended to the "recipients" property on

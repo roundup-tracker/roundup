@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.27 $
+:Version: $Revision: 1.28 $
 
 .. contents::
 
@@ -62,14 +62,14 @@ Installation
 ============
 
 Set aside 15-30 minutes. Please make sure you're using a supported version of
-Python -- see `testing your python`_. There's three sections to this
-installation guide:
+Python -- see `testing your python`_. There's four steps to follow in your
+installation:
 
 1. `basic installation steps`_ that all installers must follow
-2. `shared environment steps`_ to take if you're installing on a shared
+2. then optionally `configure a web interface`_
+3. and optionally `configure an email interface`_
+4. `shared environment steps`_ to take if you're installing on a shared
     UNIX machine and want to restrict local access to roundup
-3. `internet setup`_ steps to take if your tracker is to be used by the wider
-    internet community
 
 Most users will only need to follow the first step, since the environment will
 be a trusted one.
@@ -95,7 +95,7 @@ Basic Installation Steps
 
    a. (Optional) If you intend to keep your roundup trackers
       under one top level directory which does not exist yet,
-      you should create that directory now.  Example:
+      you should create that directory now.  Example::
 
          mkdir /opt/roundup/trackers
 
@@ -103,13 +103,12 @@ Basic Installation Steps
       environment variable or specify the full path to
       the command in the next step.
 
-   c.  ``roundup-admin install``
-
+   c. Install a new tracker with the command ``roundup-admin install``.
       You will be asked a series of questions.  Descriptions of the provided
       templates can be found in `choosing your template`_ below.  Descriptions
       of the available backends can be found in `choosing your backend`_
       below.  The questions will be something like (you may have more
-      templates or backends available):
+      templates or backends available)::
 
           Enter tracker home: /opt/roundup/trackers/support
           Templates: classic
@@ -123,19 +122,18 @@ Basic Installation Steps
       after you've initialised the tracker - it's just better to have valid
       values for this stuff now.
 
-   d.  ``roundup-admin initialise``
-
-      This step initialises the tracker database. You will need to supply
-      an admin password at this step. You will be prompted::
+   d. Initialise the tracker database with ``roundup-admin initialise``.
+      You will need to supply an admin password at this step. You will be
+      prompted::
 
           Admin Password:
                  Confirm:
 
       Once this is done, the tracker has been created.
 
-3. XXX Set up the CGI interface
-
-4. XXX Set up the mail gateway
+At this point, your tracker is set up, but doesn't have a nice user interface.
+To set that up, we need to `configure a web interface`_ and optionally
+`configure an email interface`_.
 
 
 Choosing Your Template
@@ -175,12 +173,12 @@ There's several to choose from, each with benefits and limitations:
 **bsddb3**
   Again, this effectively the same as anydbm, but uses the bsddb3 backend.
   This allows it to gain some performance and scaling benefits.
-**sqlite**
-  This uses the SQLite embedded RDBMS to provide a fast, scaleable backend.
+**sqlite_**
+  This uses the SQLite_ embedded RDBMS to provide a fast, scaleable backend.
   There are no limitations, and it's much faster and more scaleable than the
   dbm backends.
-**metakit**
-  This backend is implemented over the metakit storage system, using Mk4Py as
+**metakit_**
+  This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.
 **gadfly**
   This is a proof-of-concept relational database backend, not really intended
@@ -192,6 +190,121 @@ There's several to choose from, each with benefits and limitations:
 Note: you may set your tracker up with the anydbm backend (which is guaranteed
 to be available) and switch to one of the other backends at any time using the
 instructions in the `maintenance documentation`_.
+
+
+Configure a Web Interface
+-------------------------
+
+There are three web interfaces to choose from:
+
+1. `web server cgi-bin`_
+2. `stand-alone web server`_
+3. `Zope product - ZRoundup`_
+
+You may need to give the web server user permission to access the tracker home
+- see the `shared environment steps`_ for information.
+
+
+Web Server cgi-bin
+~~~~~~~~~~~~~~~~~~
+
+A benefit of using the cgi-bin approach is that it's the easiest way to
+restrict access to your tracker to only use HTTPS. Access will be slower
+than through the `stand-alone web server`_ though.
+
+Copy the ``cgi-bin/roundup.cgi`` file to your web server's ``cgi-bin``
+directory. You will need to configure it to tell it where your tracker home
+is. You can do this either:
+
+through an environment variable
+ set the variable TRACKER_HOMES to be a colon (":") separated list of
+ name=home pairs (if you're using apache, the SetEnv directive can do this)
+directly in the ``roundup.cgi`` file itself
+ add your instance to the TRACKER_HOMES variable as ``'name': 'home'``
+
+The "name" part of the configuration will appear in the URL and identifies the
+tracker (so you may have more than one tracker per cgi-bin script). Make sure
+there are no spaces or other illegal characters in it (to be safe, stick to
+letters and numbers). The "name" forms part of the URL that appears in the
+tracker config TRACKER_WEB variable, so make sure they match. The "home"
+part of the configuration is the tracker home directory.
+
+Stand-alone Web Server
+~~~~~~~~~~~~~~~~~~~~~~
+
+This approach will give you the fastest of the three web interfaces. You may
+investigate using ProxyPass or similar configuration in apache to have your
+tracker accessed through the same URL as other systems.
+
+The stand-alone web server is started with the command ``roundup-server``. It
+has several options - display them with ``roundup-server -h``.
+
+The tracker home configuration is similar to the cgi-bin - you may either edit
+the script to change the TRACKER_HOMES variable or you may supply the
+name=home values on the command-line after all the other options.
+
+To make the server run in the background, use the "-d" option, specifying the
+name of a file to write the server process id (pid) to.
+
+
+Zope Product - ZRoundup
+~~~~~~~~~~~~~~~~~~~~~~~
+
+ZRoundup installs as a regular Zope product. Copy the ZRoundup directory to
+your Products directory either in INSTANCE_HOME/Products or the Zope
+code tree lib/python/Products.
+
+When you next (re)start up Zope, you will be able to add a ZRoundup object
+that interfaces to your new tracker.
+
+
+Configure an Email Interface
+----------------------------
+
+If you don't want to use the email component of Roundup, then remove the
+"``nosyreator.py``" module from your tracker "``detectors``" directory.
+
+There are three supported ways to get emailed issues into the
+Roundup tracker.  You should pick ONE of the following, all
+of which will continue my example setup from above:
+
+As a mail alias pipe process 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set up a mail alias called "issue_tracker" as (include the quote marks):
+"``|/usr/bin/python /usr/local/bin/roundup-mailgw <tracker_home>``"
+
+In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh so
+sendmail will accept the pipe command. In that case, symlink
+``/etc/smrsh/roundup-mailgw`` to "``/usr/local/bin/roundup-mailgw``" and change
+the command to::
+
+    |roundup-mailgw /opt/roundup/trackers/support
+ 
+To test the mail gateway on unix systems, try::
+
+    echo test |mail -s '[issue] test' support@YOUR_DOMAIN_HERE
+
+As a regular cron job using a mailbox source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set ``roundup-mailgw`` up to run every 10 minutes or so. For example::
+
+  10 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support mailbox <mail_spool_file>
+
+Where the ``mail_spool_file`` argument is the location of the roundup submission
+user's mail spool. On most systems, the spool for a user "issue_tracker"
+will be "``/var/mail/issue_tracker``".
+
+As a regular cron job using a POP source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To retrieve from a POP mailbox, use a similar cron entry to the mailbox one::
+
+  10 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support pop <pop_spec>
+    
+where pop_spec is "``username:password@server``" that specifies the roundup
+submission user's POP account name, password and server.
 
 
 Shared Environment Steps
@@ -229,37 +342,12 @@ responsibility of running roundup. This user:
 4. optionally has no login password so that nobody but the "root" user
    may actually login and play with the roundup setup.
 
-Internet Setup
---------------
 
-1. There are two supported ways to get emailed issues into the
-   Roundup tracker.  You should pick ONE of the following, both
-   of which will continue my example setup from above:
+Maintenance
+===========
 
-   a. Set up a mail alias called "support" as::
-
-       "|/opt/roundup/bin/roundup-mailgw /opt/roundup/trackers/support"
-
-      If you use Sendmail's ``smrsh`` mechanism, please read the notes
-      under 'Platform-Specific Notes'
-
-   b. OR... Configure roundup-mailgw to run every 10 minutes or
-      so via ``cron``.  My cron job would be (these 2 lines all on one
-      line)::
-
-       10 * * * * /opt/roundup/bin/roundup-mailgw
-                /opt/roundup/trackers/support /var/mail/support
-
-   If you don't want to use the email component of Roundup, then remove the
-   "``nosyreator.py``" module from your tracker "``detectors``" directory.
-
-2. Test the email gateway.  Under most flavors of UNIX, this
-   can be done by::
-
-     echo test | mail -s '[issue] test' support@YOUR_DOMAIN_HERE
-
-XXX mention HTTPS
-XXX mention Basic vs. cookie auth
+Read the separate `maintenance documentation`_ for information about how to
+perform common maintenance tasks with Roundup.
 
 
 Upgrading
@@ -268,22 +356,6 @@ Upgrading
 Read the separate `upgrading document`_, which describes the steps needed to
 upgrade existing tracker trackers for each version of Roundup that is
 released.
-
-
-ZRoundup
-========
-
-Install roundup as usual (see installation_).
-
-ZRoundup installs as a regular Zope product. Copy the ZRoundup directory to
-your Products directory either in an TRACKER_HOME/Products or the Zope
-code tree lib/python/Products.
-
-You will need to create the tracker using the roundup-admin tool (step 2 in
-installation_).
-
-When you next (re)start up Zope, you will be able to add a ZRoundup object
-that interfaces to your new tracker.
 
 
 Further Reading
@@ -331,4 +403,6 @@ Next: `Getting Started`_
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`maintenance documentation`: maintenance.html
+.. _sqlite: http://www.hwaci.com/sw/sqlite/
+.. _metakit: http://www.equi4.com/metakit/
 
