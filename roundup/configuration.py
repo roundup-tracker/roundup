@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.19 2004-10-30 11:26:37 a1s Exp $
+# $Id: configuration.py,v 1.20 2004-11-02 09:46:36 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -394,7 +394,8 @@ SETTINGS = (
     ("main", (
         (FilePathOption, "database", "db", "Database directory path."),
         (FilePathOption, "templates", "html",
-            "Path to the HTML templates directory."),
+            "Path to the HTML templates directory.",
+            ["STATIC_FILES"]),
         (MailAddressOption, "admin_email", "roundup-admin",
             "Email address that roundup will complain to"
             " if it runs into trouble."),
