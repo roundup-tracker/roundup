@@ -1,40 +1,7 @@
-General Roundup project TODO list. Note that some of these are semi-formed
-ideas. Those ideas that don't make the cutoff for the next major release are
-punted automatically into the subsequent major release TODO. When stuff is
-done, it's moved to the CHANGES file.
+This file has been re-purposed to contain specifically the items that need
+doing before the next release:
 
-======= ========= ============================================================
-State   Component Description
-======= ========= ============================================================
-pending example   script for retrieval of "mbox" archive of all messages
-pending hyperdb   migrate "id" property to be Number type
-pending tracker   split instance.open() into open() and login()
-pending mailgw    Use in-reply-to for determining message lineage when subject
-                  line lets us down
-pending mailgw    Have mailgw detect reply email with rego OTKs and complete
-                  the rego.
-pending email     email sig could use a "remove me from this list"
-                  <URL>/<designator>?:remove:nosy=me
-pending project   switch to a Roundup instance for Roundup bug/feature tracking
-pending security  authenticate over a secure connection
-pending security  optionally auth with Basic HTTP auth instead of cookies
-pending security  use digital signatures in mailgw
-pending admin     "roundup-admin list" should list all the classnames
-pending web       Allow responding to specific messages (incl. in-reply-to)
-pending web       Quick help links next to the property labels giving a
-                  description of the property. Combine with help for the actual
-                  form element too, eg. how to use the nosy list edit box.
-pending web       clicking on a group header should filter for that type of
-                  entry
-pending web       column-heading sort stuff isn't implemented
-pending web       allow multilink selections to select a "none" element to allow
-                  people with broken browsers to select nothing?
-pending web       search "refinement" - pre-fill the search page with the
-                  current search parameters
-pending web       multilink item removal action with retirement
-pending web       implement a python dict version of the form values
-pending web       implement the request.url attribute?
-
-bug     hyperdb   need unit tests for firing of auditors and reactors
-======= ========= =============================================================
+- postgresql backend
+- full coverage analysis for unit tests
+- migrate to numeric ID values (fixes bug 817217)
 
