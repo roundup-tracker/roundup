@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.37 2004-02-11 23:55:10 richard Exp $
+$Id: roundup_server.py,v 1.38 2004-02-15 21:44:02 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -69,6 +69,17 @@ ag0GAwxkrlKp5vP5fT7ulMlk6XRar9dLpVIUXi6Xb5Hxa1wul0ajKZVKsVjM7XYXCoVOp3OVPJvN
 AoFAtVo1m825XO7hSODOYrH4kHbxxGAwwODBGI/H6DBs5LNara7yl8slGjIcDsHpdrunU6PRCAP2
 r3fPdUcIYeyEfLSAJ0LeAUZHCAt8Al/8/kLIEWDB5YDj0wm8fAP6fVfo
 '''.strip()))
+
+class RoundupHTTPServer(SafeLogging, BaseHTTPServer.HTTPServer):
+    def log_message(self, format, *args):
+        ''' Try to use the logging package, otherwise *safely* log to
+            stderr.
+        '''
+        try:
+            BaseHTTPServer.HTTPServer.log_message(self, format, *args)
+        except IOError:
+            # stderr is no longer viable, we can't log
+            pass
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = TRACKER_HOMES
@@ -229,8 +240,7 @@ else:
 
     SvcShutdown = "ServiceShutdown"
 
-    class RoundupService(win32serviceutil.ServiceFramework,
-            BaseHTTPServer.HTTPServer):
+    class RoundupService(win32serviceutil.ServiceFramework, RoundupHTTPServer):
         ''' A Roundup standalone server for Win32 by Ewout Prangsma
         '''
         _svc_name_ = "Roundup Bug Tracker"
@@ -242,7 +252,7 @@ else:
                 # appending, unbuffered
                 sys.stdout = sys.stderr = open(LOGFILE, 'a', 0)
             win32serviceutil.ServiceFramework.__init__(self, args)
-            BaseHTTPServer.HTTPServer.__init__(self, self.address, 
+            RoundupHTTPServer.__init__(self, self.address, 
                 RoundupRequestHandler)
 
             # Create the necessary NT Event synchronization objects...
@@ -435,7 +445,7 @@ def run(port=PORT, success_message=None):
         # 1024 if started as root
         address = (hostname, port)
         try:
-            httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
+            httpd = RoundupHTTPServer(address, RoundupRequestHandler)
         except socket.error, e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \

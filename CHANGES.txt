@@ -86,6 +86,7 @@ Fixed:
 - use supplied content-type on file uploads before trying filename)
 - fixed roundup-reminder script to use default schema (thanks Klamer Schutte)
 - fixed edit action / parsePropsFromForm to handle index-page edits better
+- safer logging from HTTP server (sf bug 896917)
 
 
 2003-12-17 0.6.4
