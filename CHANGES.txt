@@ -9,6 +9,7 @@ Feature:
 2005-??-?? 0.8.3
 Fixed:
 - fix reference to The Zope Book in Roundup FAQ
+- disabled file logging in Roundup test suite (sf bug 1155649)
 
 
 2005-03-03 0.8.2
