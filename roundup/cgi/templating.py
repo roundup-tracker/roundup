@@ -1031,8 +1031,8 @@ class DateHTMLProperty(HTMLProperty):
             This is useful for defaulting a new value. Returns a
             DateHTMLProperty.
         '''
-        return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._formname, date.Date('.'))
+        return DateHTMLProperty(self._client, self._classname, self._nodeid,
+            self._prop, self._formname, date.Date('.'))
 
     def field(self, size = 30):
         ''' Render a form edit field for the property
@@ -1075,8 +1075,8 @@ class DateHTMLProperty(HTMLProperty):
     def local(self, offset):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
-        return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._formname, self._value.local(offset))
+        return DateHTMLProperty(self._client, self._classname, self._nodeid,
+            self._prop, self._formname, self._value.local(offset))
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
