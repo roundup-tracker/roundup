@@ -74,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.148 2004-04-13 04:16:36 richard Exp $
+$Id: mailgw.py,v 1.149 2004-04-20 22:01:12 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -368,7 +368,7 @@ class MailGW:
         fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
         return 0
 
-    def do_imap(self, server, user='', password='', mailbox='', ssl=False):
+    def do_imap(self, server, user='', password='', mailbox='', ssl=0):
         ''' Do an IMAP connection
         '''
         import getpass, imaplib, socket
