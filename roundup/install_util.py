@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.4 2001-11-12 23:14:40 jhermann Exp $
+# $Id: install_util.py,v 1.5 2001-11-12 23:17:38 jhermann Exp $
 
 import os, sha, shutil
 
@@ -99,9 +99,9 @@ def copyDigestedFile(src, dst, copystat=1):
     dummy, ext = os.path.splitext(src)
     if ext not in digested_file_types:
         if copystat:
-            return shutil.copy2(srcname, dstname)
+            return shutil.copy2(src, dst)
         else:
-            return shutil.copyfile(srcname, dstname)
+            return shutil.copyfile(src, dst)
 
     fsrc = None
     fdst = None
@@ -145,6 +145,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/12 23:14:40  jhermann
+# Copy function, and proper handling of unknown file types
+#
 # Revision 1.3  2001/11/12 22:38:48  richard
 # bleah typo
 #

@@ -15,14 +15,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.16 2001-10-09 07:25:59 richard Exp $
+# $Id: init.py,v 1.17 2001-11-12 23:17:38 jhermann Exp $
 
-import os, shutil, sys, errno
+import os, sys, errno
 
 import roundup.instance, password
+from roundup import install_util
 
 def copytree(src, dst, symlinks=0):
-    """Recursively copy a directory tree using copy2().
+    """Recursively copy a directory tree using copyDigestedFile().
 
     The destination directory os allowed to exist.
 
@@ -48,7 +49,7 @@ def copytree(src, dst, symlinks=0):
         elif os.path.isdir(srcname):
             copytree(srcname, dstname, symlinks)
         else:
-            shutil.copy2(srcname, dstname)
+            install_util.copyDigestedFile(srcname, dstname)
 
 def init(instance_home, template, backend, adminpw):
     '''Initialise an instance using the named template and backend.
@@ -103,6 +104,10 @@ from roundup.backends.back_%s import Database'''%backend
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.15  2001/08/07 00:24:42  richard
 # stupid typo
 #
