@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.43 2003-03-16 22:24:54 kedder Exp $
+# $Id: admin.py,v 1.44 2003-03-18 23:15:29 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -980,6 +980,10 @@ Command help:
         from roundup import hyperdb
 
         for file in os.listdir(args[0]):
+            # we only care about CSV files
+            if not file.endswith('.csv'):
+                continue
+
             f = open(os.path.join(args[0], file))
 
             # get the classname
