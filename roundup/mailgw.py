@@ -74,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.147 2004-04-13 04:11:06 richard Exp $
+$Id: mailgw.py,v 1.148 2004-04-13 04:16:36 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -407,26 +407,24 @@ class MailGW:
 
         try:
             if not mailbox:
-                #print 'Using INBOX'
                 (typ, data) = server.select()
             else:
-                #print 'Using mailbox' , mailbox
                 (typ, data) = server.select(mailbox=mailbox)
             if typ != 'OK':
-                print 'Failed to get mailbox "%s": %s' % (mailbox, data)
+                print 'Failed to get mailbox "%s": %s'%(mailbox, data)
                 return 1
             try:
                 numMessages = int(data[0])
-                #print 'Found %s messages' % numMessages
-            except ValueError:
-                print 'Invalid return value from mailbox'
+            except ValueError, value:
+                print 'Invalid message count from mailbox %r'%data[0]
                 return 1
             for i in range(1, numMessages+1):
-                #print 'Processing message ', i
                 (typ, data) = server.fetch(str(i), '(RFC822)')
-                #This marks the message as deleted.
+
+                # mark the message as deleted.
                 server.store(str(i), '+FLAGS', r'(\Deleted)')
-                #This is the raw text of the message
+
+                # process the message
                 s = cStringIO.StringIO(data[0][1])
                 s.seek(0)
                 self.handle_Message(Message(s))

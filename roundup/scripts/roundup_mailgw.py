@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.13 2004-04-13 04:11:06 richard Exp $
+# $Id: roundup_mailgw.py,v 1.14 2004-04-13 04:14:03 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -39,10 +39,11 @@ Options:
  -v: print version and exit
  -C / -S: see below
 
-The roundup mail gateway may be called in one of three ways:
+The roundup mail gateway may be called in one of four ways:
  . with an instance home as the only argument,
  . with both an instance home and a mail spool file, or
- . with both an instance home and a pop server account.
+ . with both an instance home and a POP/APOP server account.
+ . with both an instance home and a IMAP/IMAPS server account.
  
 It also supports optional -C and -S arguments that allows you to set a
 fields for a class created by the roundup-mailgw. The default class if
@@ -81,9 +82,11 @@ APOP:
     apop username:password@server
 
 IMAP:
- Connect to an IMAP server. This supports the same notation as that of POP mail.
+ Connect to an IMAP server. This supports the same notation as that of
+ POP mail.
     imap username:password@server
- It also allows you to specify a specific mailbox other than INBOX using this format:
+ It also allows you to specify a specific mailbox other than INBOX using
+ this format:
     imap username:password@server mailbox
  
 IMAPS:
@@ -100,7 +103,8 @@ def main(argv):
     # take the argv array and parse it leaving the non-option
     # arguments in the args array.
     try:
-        optionsList, args = getopt.getopt(argv[1:], 'vC:S:', ['set=', 'class='])
+        optionsList, args = getopt.getopt(argv[1:], 'vC:S:', ['set=',
+            'class='])
     except getopt.GetoptError:
         # print help information and exit:
         usage(argv)
@@ -167,7 +171,8 @@ def main(argv):
                 return handler.do_imap(m.group('server'), m.group('user'),
                     m.group('pass'), mailbox, ssl)
 
-        return usage(argv, _('Error: The source must be either "mailbox", "pop" or "apop"'))
+        return usage(argv, _('Error: The source must be either "mailbox",'
+            ' "pop", "apop", "imap" or "imaps"'))
     finally:
         db.close()
 

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.72 $
+:Version: $Revision: 1.73 $
 
 .. contents::
 
@@ -417,6 +417,25 @@ where pop_spec is "``username:password@server``" that specifies the roundup
 submission user's POP account name, password and server.
 
 On windows, you would set up the command using the windows scheduler.
+
+As a regular job using an IMAP source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To retrieve from an IMAP mailbox, use a *cron* entry similar to the
+POP one::
+
+  0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support imap <imap_spec>
+
+where imap_spec is "``username:password@server``" that specifies the roundup
+submission user's IMAP account name, password and server. You may
+optionally include a mailbox to use other than the default ``INBOX`` with
+"``imap username:password@server mailbox``".
+
+If you have a secure (ie. HTTPS) IMAP server then you may use ``imaps``
+in place of ``imap`` in the command to use a secure connection.
+
+As with the POP job, on windows, you would set up the command using the
+windows scheduler.
 
 
 UNIX Environment Steps
