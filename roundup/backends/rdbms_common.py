@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.12 2002-09-23 07:15:32 richard Exp $
+# $Id: rdbms_common.py,v 1.13 2002-09-23 08:17:05 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1144,18 +1144,22 @@ class Class(hyperdb.Class):
                 value = pwd
             d[propname] = value
 
+        # add the node and journal
+        self.db.addnode(self.classname, newid, d)
+
         # extract the extraneous journalling gumpf and nuke it
         if d.has_key('creator'):
             creator = d['creator']
             del d['creator']
+        else:
+            creator = None
         if d.has_key('creation'):
             creation = d['creation']
             del d['creation']
+        else:
+            creation = None
         if d.has_key('activity'):
             del d['activity']
-
-        # add the node and journal
-        self.db.addnode(self.classname, newid, d)
         self.db.addjournal(self.classname, newid, 'create', d, creator,
             creation)
         return newid
