@@ -4,33 +4,34 @@ __docformat__ = 'restructuredtext'
 
 import weakref
 
-from roundup import hyperdb
+from roundup import hyperdb, support
 
 class Permission:
     ''' Defines a Permission with the attributes
         - name
         - description
         - klass (optional)
-        - property (optional)
+        - properties (optional)
         - check function (optional)
 
         The klass may be unset, indicating that this permission is not
         locked to a particular class. That means there may be multiple
         Permissions for the same name for different classes.
 
-        If property name is set, permission is restricted to that
-        property only.
+        If property names are set, permission is restricted to those
+        properties only.
 
         If check function is set, permission is granted only when
         the function returns value interpreted as boolean true.
         The function is called with arguments db, userid, itemid.
     '''
     def __init__(self, name='', description='', klass=None,
-            property=None, check=None):
+            properties=None, check=None):
         self.name = name
         self.description = description
         self.klass = klass
-        self.property = property
+        self.properties = properties
+        self._properties_dict = support.TruthDict(properties)
         self.check = check
 
     def test(self, db, permission, classname, property, userid, itemid):
@@ -43,8 +44,7 @@ class Permission:
             return 0
 
         # what about property?
-        if (property is not None and self.property is not None
-                and self.property != property):
+        if property is not None and not self._properties_dict[property]:
             return 0
 
         # check code
@@ -143,7 +143,7 @@ class Security:
         roles = self.db.user.get(userid, 'roles')
         if roles is None:
             return 0
-        if itemid is not None and classname is None:
+        if itemid and classname is None:
             raise ValueError, 'classname must accompany itemid'
         for rolename in [x.lower().strip() for x in roles.split(',')]:
             if not rolename or not self.role.has_key(rolename):

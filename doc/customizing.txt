@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.159 $
+:Version: $Revision: 1.160 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -290,13 +290,13 @@ Note: if you modify the schema, you'll most likely need to edit the
       your changes.
 
 A tracker schema defines what data is stored in the tracker's database.
-Schemas are defined using Python code in the ``dbinit.py`` module of your
+Schemas are defined using Python code in the ``schema.py`` module of your
 tracker.
 
-The ``dbinit.py`` module
+The ``schema.py`` module
 ------------------------
 
-The ``dbinit.py`` module contains two functions:
+The ``schema.py`` module contains two functions:
 
 **open**
   This function defines what your tracker looks like on the inside, the
@@ -702,7 +702,7 @@ tracker is initialised. The actual method of doing so is completely
 different in each case though, so be careful to use the right one.
 
 **Changing content before tracker initialisation**
-    Edit the dbinit module in your tracker to alter the items created in
+    Edit the schema module in your tracker to alter the items created in
     using the ``create()`` methods.
 
 **Changing content after tracker initialisation**
@@ -723,11 +723,12 @@ Security / Access Controls
 
 A set of Permissions is built into the security module by default:
 
+- Create (everything)
 - Edit (everything)
 - View (everything)
 
-Every Class you define in your tracker's schema also gets an Edit and View
-Permission of its own.
+Every Class you define in your tracker's schema also gets an Create, Edit
+and View Permission of its own.
 
 The default interfaces define:
 
@@ -739,46 +740,107 @@ The default interfaces define:
 
 These are hooked into the default Roles:
 
-- Admin (Edit everything, View everything, Web Roles)
-- User (Web Access, Email Access)
-- Anonymous (Web Registration, Email Registration)
+- Admin (Create, Edit, View and everything; Web Roles)
+- User (Web Access; Email Access)
+- Anonymous (Web Registration; Email Registration)
 
 And finally, the "admin" user gets the "Admin" Role, and the "anonymous"
-user gets "Anonymous" assigned when the database is initialised on
-installation. The two default schemas then define:
+user gets "Anonymous" assigned when the tracker is installed.
 
-- Edit issue, View issue (both)
-- Edit file, View file (both)
-- Edit msg, View msg (both)
-- Edit support, View support (extended only)
+For the "User" Role, the "classic" tracker defines:
 
-and assign those Permissions to the "User" Role. Put together, these
-settings appear in the ``open()`` function of the tracker ``dbinit.py``
-(the following is taken from the "minimal" template's ``dbinit.py``)::
+- Create, Edit and View issue, file, msg, query, keyword 
+- View priority, status
+- View user
+- Edit their own record
+
+And the "Anonymous" Role is defined as:
+
+- Create user (for registration)
+- View issue, file, msg, query, keyword, priority, status
+
+Put together, these settings appear in the tracker's ``schema.py`` file::
 
     #
-    # SECURITY SETTINGS
+    # TRACKER SECURITY SETTINGS
     #
-    # and give the regular users access to the web and email interface
+    # See the configuration and customisation document for information
+    # about security setup.
+
+    #
+    # REGULAR USERS
+    #
+    # Give the regular users access to the web and email interface
     p = db.security.getPermission('Web Access')
     db.security.addPermissionToRole('User', p)
     p = db.security.getPermission('Email Access')
     db.security.addPermissionToRole('User', p)
+
+    # Assign the access and edit Permissions for issue, file and message
+    # to regular users now
+    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Edit', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Create', cl)
+        db.security.addPermissionToRole('User', p)
+    for cl in 'priority', 'status':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
 
     # May users view other user information? Comment these lines out
     # if you don't want them to
     p = db.security.getPermission('View', 'user')
     db.security.addPermissionToRole('User', p)
 
-    # Assign the appropriate permissions to the anonymous user's
-    # Anonymous role. Choices here are:
-    # - Allow anonymous users to register through the web
-    p = db.security.getPermission('Web Registration')
+    # Users should be able to edit their own details. Note that this
+    # permission is limited to only the situation where the Viewed or
+    # Edited item is their own.
+    def own_record(db, userid, itemid):
+        '''Determine whether the userid matches the item being accessed.'''
+        return userid == itemid
+    p = db.security.addPermission(name='View', klass='user', check=own_record,
+        description="User is allowed to view their own user details")
+    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+        description="User is allowed to edit their own user details")
+    db.security.addPermissionToRole('User', p)
+
+    #
+    # ANONYMOUS USER PERMISSIONS
+    #
+    # Let anonymous users access the web interface. Note that almost all
+    # trackers will need this Permission. The only situation where it's not
+    # required is in a tracker that uses an HTTP Basic Authenticated front-end.
+    p = db.security.getPermission('Web Access')
     db.security.addPermissionToRole('Anonymous', p)
-    # - Allow anonymous (new) users to register through the email
-    #   gateway
-    p = db.security.getPermission('Email Registration')
+
+    # Let anonymous users access the email interface (note that this implies
+    # that they will be registered automatically, hence they will need the
+    # "Create" user Permission below)
+    p = db.security.getPermission('Email Access')
     db.security.addPermissionToRole('Anonymous', p)
+
+    # Assign the appropriate permissions to the anonymous user's Anonymous
+    # Role. Choices here are:
+    # - Allow anonymous users to register
+    p = db.security.getPermission('Create', 'user')
+    db.security.addPermissionToRole('Anonymous', p)
+
+    # Allow anonymous users access to view issues (and the related, linked
+    # information)
+    for cl in 'issue', 'file', 'msg', 'keyword', 'priority', 'status':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('Anonymous', p)
+
+    # [OPTIONAL]
+    # Allow anonymous users access to create or edit "issue" items (and the
+    # related file and message items)
+    #for cl in 'issue', 'file', 'msg':
+    #   p = db.security.getPermission('Create', cl)
+    #   db.security.addPermissionToRole('Anonymous', p)
+    #   p = db.security.getPermission('Edit', cl)
+    #   db.security.addPermissionToRole('Anonymous', p)
 
 
 New User Roles
@@ -806,7 +868,7 @@ Adding a new Permission
 
 When adding a new Permission, you will need to:
 
-1. add it to your tracker's dbinit so it is created, using
+1. add it to your tracker's ``schema.py`` so it is created, using
    ``security.addPermission``, for example::
 
     self.security.addPermission(name="View", klass='frozzle',
@@ -819,6 +881,18 @@ When adding a new Permission, you will need to:
 4. add it to the appropriate xxxPermission methods on in your tracker
    interfaces module
 
+The ``addPermission`` method takes a couple of optional parameters:
+
+**properties**
+  A sequence of property names that are the only properties to apply the
+  new Permission to (eg. ``... klass='user', properties=('name',
+  'email') ...``)
+**code**
+  A function to be execute which returns boolean determining whether the
+  Permission is allowed. The function has the signature ``check(db, userid,
+  itemid)`` where ``db`` is a handle on the open database, ``userid`` is
+  the user attempting access and ``itemid`` is the specific item being
+  accessed.
 
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
@@ -1061,6 +1135,8 @@ Each action class also has a ``*permission*`` method which determines whether
 the action is permissible given the current user. The base permission checks
 are:
 
+XXX REVIEW for Permissions changes
+
 **login**
  Determine whether the user has permission to log in. Base behaviour is
  to check the user has "Web Access".
@@ -1070,14 +1146,12 @@ are:
  Determine whether the user has permission to register. Base behaviour
  is to check the user has the "Web Registration" Permission.
 **edit**
- Determine whether the user has permission to edit this item. Base
- behaviour is to check whether the user can edit this class. If we're
+ Determine whether the user has permission to edit this item. If we're
  editing the "user" class, users are allowed to edit their own details -
  unless they try to edit the "roles" property, which requires the
  special Permission "Web Roles".
 **new**
- Determine whether the user has permission to create (or edit) this
- item. Base behaviour is to check the user can edit this class. No
+ Determine whether the user has permission to create this item. No
  additional property checks are made. Additionally, new user items may
  be created if the user has the "Web Registration" Permission.
 **editCSV**
@@ -1164,11 +1238,11 @@ None of the above (ie. just a simple form value)
 
     For a Link('klass') property, the form value is a
     single key for 'klass', where the key field is
-    specified in dbinit.py.  
+    specified in schema.py.  
 
     For a Multilink('klass') property, the form value is a
     comma-separated list of keys for 'klass', where the
-    key field is specified in dbinit.py.  
+    key field is specified in schema.py.  
 
     Note that for simple-form-variables specifiying Link
     and Multilink properties, the linked-to class must
@@ -2510,7 +2584,7 @@ Adding a field to the database
 
 This is the easiest part of the change. The category would just be a
 plain string, nothing fancy. To change what is in the database you need
-to add some lines to the ``open()`` function in ``dbinit.py``. Under the
+to add some lines to the ``open()`` function in ``schema.py``. Under the
 comment::
 
     # add any additional database schema configuration here
@@ -2533,7 +2607,7 @@ Adding the above lines allows us to create categories, but they're not
 tied to the issues that we are going to be creating. It's just a list of
 categories off on its own, which isn't much use. We need to link it in
 with the issues. To do that, find the lines in the ``open()`` function
-in ``dbinit.py`` which set up the "issue" class, and then add a link to
+in ``schema.py`` which set up the "issue" class, and then add a link to
 the category::
 
     issue = IssueClass(db, "issue", ... ,
@@ -2552,7 +2626,7 @@ Populating the new category class
 
 If you haven't initialised the database with the roundup-admin
 "initialise" command, then you can add the following to the tracker
-``dbinit.py`` in the ``init()`` function under the comment::
+``schema.py`` in the ``init()`` function under the comment::
 
     # add any additional database create steps here - but only if you
     # haven't initialised the database with the admin "initialise" command
@@ -2591,7 +2665,7 @@ as required, and obviously everyone needs to be able to view the
 categories of issues for it to be useful.
 
 We therefore need to change the security of the category objects. This
-is also done in the ``open()`` function of ``dbinit.py``.
+is also done in the ``open()`` function of ``schema.py``.
 
 There are currently two loops which set up permissions and then assign
 them to various roles. Simply add the new "category" to both lists::
@@ -2908,7 +2982,7 @@ Adding a time log to your issues
 We want to log the dates and amount of time spent working on issues, and
 be able to give a summary of the total time spent on a particular issue.
 
-1. Add a new class to your tracker ``dbinit.py``::
+1. Add a new class to your tracker ``schema.py``::
 
     # storage for time logging
     timelog = Class(db, "timelog", period=Interval())
@@ -2917,7 +2991,7 @@ be able to give a summary of the total time spent on a particular issue.
    creation through the standard property "creation".
 
 2. Link to the new class from your issue class (again, in
-   ``dbinit.py``)::
+   ``schema.py``)::
 
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
@@ -3012,7 +3086,7 @@ a customer support issue class to a tracker.
    this is obvious, but sometimes it's better to actually sit down for a
    while and think about the schema you're going to implement.
 
-2. Add the new issue class to your tracker's ``dbinit.py`` - in this
+2. Add the new issue class to your tracker's ``schema.py`` - in this
    example, we're adding a "system support" class. Just after the "issue"
    class definition in the "open" function, add::
 
@@ -3460,7 +3534,7 @@ they can't be resolved until another issue (the blocker) they rely on is
 resolved. To achieve this:
 
 1. Create a new property on the issue Class,
-   ``blockers=Multilink("issue")``. Edit your tracker's dbinit.py file.
+   ``blockers=Multilink("issue")``. Edit your tracker's schema.py file.
    Where the "issue" class is defined, something like::
 
     issue = IssueClass(db, "issue", 
@@ -3616,7 +3690,7 @@ a list of topics for which he wants to be put on the nosy list. Adding
 a ``Multilink`` of ``keyword`` seem to fullfill this (note that within
 the code topics are called ``keywords``.) As such, all what has to be
 done is to add a new field to the definition of ``user`` within the
-file ``dbinit.py``.  We will call this new field ``nosy_keywords``, and
+file ``schema.py``.  We will call this new field ``nosy_keywords``, and
 the updated definition of user will be::
 
     user = Class(db, "user", 
@@ -3764,7 +3838,7 @@ Changes to Security and Permissions
 Restricting the list of users that are assignable to a task
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. In your tracker's "dbinit.py", create a new Role, say "Developer"::
+1. In your tracker's ``schema.py``, create a new Role, say "Developer"::
 
      db.security.addRole(name='Developer', description='A developer')
 
@@ -3829,7 +3903,7 @@ Own" on issues (regular users have "Edit".) We back up the permissions with
 an auditor.
 
 First up, we create the new Role and Permission structure in
-``dbinit.py``::
+``schema.py``::
 
     # New users not approved by the admin
     db.security.addRole(name='Provisional User',

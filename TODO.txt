@@ -1,7 +1,6 @@
 This file contains items that need doing before the next release:
 
 Required:
-- implementing logging for roundup-server, including command-line switches
 - Security review:
   - write up security model used in classic tracker
   - ensure classic template actually implements the model detailed

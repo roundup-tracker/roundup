@@ -21,7 +21,7 @@ from __future__ import nested_scopes
 
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
 
-from roundup import hyperdb, date, rcsv
+from roundup import hyperdb, date, rcsv, support
 from roundup import i18n
 from roundup.i18n import _
 
@@ -435,6 +435,7 @@ class HTMLPermissions:
             raise Unauthorised("edit", self._classname,
                 translator=self._client.translator)
 
+
 class HTMLClass(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
@@ -645,12 +646,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def submit(self, label=''"Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
         '''
-        self.view_check()
-        if self.is_edit_ok():
-            return self.input(type="hidden", name="@action", value="new") + \
-                '\n' + \
-                self.input(type="submit", name="submit", value=self._(label))
-        return ''
+        self.edit_check()
+        return self.input(type="hidden", name="@action", value="new") + \
+            '\n' + \
+            self.input(type="submit", name="submit", value=self._(label))
 
     def history(self):
         self.view_check()
@@ -1171,7 +1170,7 @@ class StringHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if self._value is None:
             value = ''
@@ -1189,7 +1188,7 @@ class StringHTMLProperty(HTMLProperty):
 
             If not editable, just display the plain() value in a <pre> tag.
         '''
-        self.view_check()
+        self.edit_check()
 
         if self._value is None:
             value = ''
@@ -1238,7 +1237,7 @@ class PasswordHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if self.is_edit_ok():
             return self.input(type="password", name=self._formname, size=size)
@@ -1252,7 +1251,7 @@ class PasswordHTMLProperty(HTMLProperty):
 
             If not editable, display nothing.
         '''
-        self.view_check()
+        self.edit_check()
 
         if self.is_edit_ok():
             return self.input(type="password",
@@ -1276,7 +1275,7 @@ class NumberHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if self._value is None:
             value = ''
@@ -1315,7 +1314,7 @@ class BooleanHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if not self.is_edit_ok():
             return self.plain()
@@ -1391,7 +1390,7 @@ class DateHTMLProperty(HTMLProperty):
 
         The format string is a standard python strftime format string.
         '''
-        self.view_check()
+        self.edit_check()
         if not self.is_edit_ok():
             if format is self._marker:
                 return self.plain()
@@ -1501,7 +1500,7 @@ class IntervalHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if self._value is None:
             value = ''
@@ -1558,7 +1557,7 @@ class LinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if not self.is_edit_ok():
             return self.plain()
@@ -1584,7 +1583,7 @@ class LinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if not self.is_edit_ok():
             return self.plain()
@@ -1715,7 +1714,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if not self.is_edit_ok():
             return self.plain()
@@ -1737,7 +1736,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.view_check()
+        self.edit_check()
 
         if not self.is_edit_ok():
             return self.plain()
@@ -1829,20 +1828,6 @@ def handleListCGIValue(value):
             return []
         return value.split(',')
 
-class ShowDict:
-    ''' A convenience access to the :columns index parameters
-    '''
-    def __init__(self, columns):
-        if columns:
-            self.columns = {}
-            for col in columns:
-                self.columns[col] = 1
-        else:
-            self.__getitem__ = lambda name: 1
-
-    def __getitem__(self, name):
-        return self.columns.has_key(name)
-
 class HTMLRequest(HTMLInputMixin):
     '''The *request*, holding the CGI form and environment.
 
@@ -1895,7 +1880,7 @@ class HTMLRequest(HTMLInputMixin):
                 self.special_char = name[0]
                 self.columns = handleListCGIValue(self.form[name])
                 break
-        self.show = ShowDict(self.columns)
+        self.show = support.TruthDict(self.columns)
 
         # sorting
         self.sort = (None, None)
@@ -1984,7 +1969,7 @@ class HTMLRequest(HTMLInputMixin):
         '''
         self.__dict__.update(kwargs)
         if kwargs.has_key('columns'):
-            self.show = ShowDict(self.columns)
+            self.show = support.TruthDict(self.columns)
 
     def description(self):
         ''' Return a description of the request - handle for the page title.

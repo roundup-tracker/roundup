@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.14 $
+:Version: $Revision: 1.15 $
 
 .. contents::
 
@@ -141,7 +141,7 @@ Roundup identifies users in a number of ways:
 
 In both cases, Roundup's behaviour when dealing with unknown users is
 controlled by Permissions defined in the "SECURITY SETTINGS" section of the
-tracker's ``dbinit.py`` module:
+tracker's ``schema.py`` module:
 
 Web Registration
   If granted to the Anonymous Role, then anonymous users will be able to

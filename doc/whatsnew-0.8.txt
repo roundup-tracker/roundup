@@ -12,13 +12,31 @@ __ features.html
 Logging of internal messages
 ============================
 
-XXX 
+Roundup's previously ad-hoc logging of events has been cleaned up and is
+now configured in a single place in the tracker configuration file.
+
+The `customisation documentation`_ has more details on how this is
+configured.
+
 
 Security Changes
 ================
 
+Password Storage
+----------------
+
 Added MD5 scheme for password hiding. This extends the existing SHA and
 crypt methods and is useful if you have an existing MD5 password database.
+
+
+Permission Definitions
+----------------------
+
+Permissions may now be defined on a per-property basis, allowing access to
+only specific properties on items. 
+
+Permissions may also have code attached which is executed to check whether
+the Permission is valid for the current user and item.
 
 
 Extending Roundup

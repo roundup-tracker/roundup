@@ -1401,11 +1401,20 @@ The security module defines::
             - name
             - description
             - klass (optional)
+            - properties (optional)
+            - check function (optional)
 
             The klass may be unset, indicating that this permission is
             not locked to a particular hyperdb class. There may be
             multiple Permissions for the same name for different
             classes.
+
+            If property names are set, permission is restricted to those
+            properties only.
+
+            If check function is set, permission is granted only when
+            the function returns value interpreted as boolean true.
+            The function is called with arguments db, userid, itemid.
         '''
 
     class Role:
