@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.71 2001-11-30 20:28:10 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.72 2001-11-30 20:47:58 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -111,7 +111,7 @@ class Client:
         if self.user not in (None, 'anonymous'):
             userid = self.db.user.lookup(self.user)
             user_info = _('''
-<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=-activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
 <a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
 ''')%locals()
         else:
@@ -135,9 +135,9 @@ class Client:
 <td align=right valign=bottom>%(user_name)s</td></tr>
 <tr class="location-bar">
 <td align=left>All
-<a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
+<a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
 | Unassigned
-<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
+<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
 %(add_links)s
 %(admin_links)s</td>
 <td align=right>%(user_info)s</td>
@@ -634,7 +634,7 @@ class Client:
         if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
             self.write('</table>')
             self.pagefoot()
-            return
+            return 1
         values = {'realname': '', 'organisation': '', 'address': '',
             'phone': '', 'username': '', 'password': '', 'confirm': ''}
         if newuser_form is not None:
@@ -680,13 +680,16 @@ class Client:
         except KeyError:
             name = self.user
             self.make_user_anonymous()
-            return self.login(message=_('No such user "%(name)s"')%locals())
+            action = self.form['__destination_url'].value
+            return self.login(message=_('No such user "%(name)s"')%locals(),
+                              action=action)
 
         # and that the password is correct
         pw = self.db.user.get(uid, 'password')
         if password != self.db.user.get(uid, 'password'):
             self.make_user_anonymous()
-            return self.login(message=_('Incorrect password'))
+            action = self.form['__destination_url'].value
+            return self.login(message=_('Incorrect password'), action=action)
 
         self.set_cookie(self.user, password)
         return None     # make it explicit
@@ -914,8 +917,8 @@ class ExtendedClient(Client):
         if self.user not in (None, 'anonymous'):
             userid = self.db.user.lookup(self.user)
             user_info = _('''
-<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
-<a href="support?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
+<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=-activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="support?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=-activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
 <a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
 ''')%locals()
         else:
@@ -943,8 +946,8 @@ class ExtendedClient(Client):
 <a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
 <a href="support?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
 | Unassigned
-<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
-<a href="support?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
+<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
+<a href="support?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
 %(add_links)s
 %(admin_links)s</td>
 <td align=right>%(user_info)s</td>
@@ -1024,6 +1027,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.71  2001/11/30 20:28:10  rochecompaan
+# Property changes are now completely traceable, whether changes are
+# made through the web or by email
+#
 # Revision 1.70  2001/11/30 00:06:29  richard
 # Converted roundup/cgi_client.py to use _()
 # Added the status file, I18N_PROGRESS.txt
