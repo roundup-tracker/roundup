@@ -15,7 +15,8 @@ are given with the most recent entry first.
 - handle :add: better in cgi form parsing (sf bug 663235)
 - handle all-whitespace multilink values in forms (sf bug 663855)
 - fixed searching on date / interval fields (sf bug 658157)
-
+- fixed form elements names in search form to allow grouping and sorting 
+  on "creation" field
 
 2002-12-11 0.5.3
 - added mention of how to give users multiple Roles

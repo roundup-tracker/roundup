@@ -64,11 +64,11 @@
 </tr>
 
 <tr>
- <th>Created:</th>
- <td><input name="activity"></td>
- <td><input type="checkbox" name=":columns" value="created"></td>
- <td><input type="radio" name=":sort" value="created"></td>
- <td><input type="radio" name=":group" value="created"></td>
+ <th>Creation date:</th>
+ <td><input name="creation"></td>
+ <td><input type="checkbox" name=":columns" value="creation"></td>
+ <td><input type="radio" name=":sort" value="creation"></td>
+ <td><input type="radio" name=":group" value="creation"></td>
 </tr>
 
 <tr>
