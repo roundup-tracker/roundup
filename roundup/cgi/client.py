@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.209 2004-11-23 22:44:43 richard Exp $
+# $Id: client.py,v 1.210 2004-11-24 05:16:15 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -404,7 +404,8 @@ class Client:
                     pass
                 username, password = decoded.split(':')
                 try:
-                    self.get_action_class('login')(self).verifyLogin(username, password)
+                    self.get_action_class('login')(self).verifyLogin(
+                        username, password)
                 except LoginError, err:
                     self.make_user_anonymous()
                     self.response_code = 403
