@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.67 2004-05-05 00:38:59 richard Exp $
+# $Id: date.py,v 1.68 2004-05-06 02:35:46 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -108,7 +108,7 @@ class Date:
         >>> d1-i1
         <Date 2003-07-01.00:00:0.000000>
     '''
-    
+
     def __init__(self, spec='.', offset=0, add_granularity=0):
         """Construct a date given a specification and a time zone offset.
 

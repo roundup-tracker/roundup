@@ -671,9 +671,10 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         Also sneak in the lastactivity and action hidden elements.
         """
-        return self.input(type="hidden", name="@lastactivity", value=date.Date('.')) + '\n' + \
-               self.input(type="hidden", name="@action", value="edit") + '\n' + \
-               self.input(type="submit", name="submit", value=label)
+        return self.input(type="hidden", name="@lastactivity",
+            value=self.activity) + '\n' + \
+            self.input(type="hidden", name="@action", value="edit") + '\n' + \
+            self.input(type="submit", name="submit", value=label)
 
     def journal(self, direction='descending'):
         ''' Return a list of HTMLJournalEntry instances.
