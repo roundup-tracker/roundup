@@ -31,6 +31,12 @@ allowing replacement of 'assignedto' with the user's userid. Users must change
 the None value of 'assignedto' to 'CURRENT USER' (the string, in quotes) for
 the replacement behaviour to occur now.
 
+The new configuration variables are:
+
+- EMAIL_KEEP_QUOTED_TEXT 
+- EMAIL_LEAVE_BODY_UNCHANGED
+- ADD_RECIPIENTS_TO_NOSY
+
 
 Migrating from 0.4.0 to 0.4.1
 =============================

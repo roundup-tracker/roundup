@@ -59,6 +59,12 @@ th {
   color: #ffffff;
 }
 
+.list-header {
+  background-color: #aaccff;
+  color: #000000;
+  border: none;
+}
+
 .row-normal {
   background-color: #ffffff;
   border: none;

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.71 2002-05-08 02:40:55 richard Exp $
+$Id: mailgw.py,v 1.72 2002-05-22 01:24:51 richard Exp $
 '''
 
 
@@ -604,8 +604,13 @@ not find a text/plain part to use.
         else:
             content = self.get_part_data_decoded(message) 
  
-        keep_citations = self.instance.EMAIL_KEEP_QUOTED_TEXT == 'yes'
-        keep_body = self.instance.EMAIL_LEAVE_BODY_UNCHANGED == 'yes'
+        # figure how much we should muck around with the email body
+        keep_citations = getattr(self.instance, 'EMAIL_KEEP_QUOTED_TEXT',
+            'no') == 'yes'
+        keep_body = getattr(self.instance, 'EMAIL_LEAVE_BODY_UNCHANGED',
+            'no') == 'yes'
+
+        # parse the body of the message, stripping out bits as appropriate
         summary, content = parseContent(content, keep_citations, 
             keep_body)
 
@@ -823,7 +828,6 @@ def parseContent(content, keep_citations, keep_body,
             # ditch the stupid Outlook quoting of the entire original message
             break
 
-
         # and add the section to the output
         l.append(section)
     # we only set content for those who want to delete cruft from the
@@ -834,6 +838,9 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.71  2002/05/08 02:40:55  richard
+# grr
+#
 # Revision 1.70  2002/05/06 23:40:07  richard
 # hrm
 #
