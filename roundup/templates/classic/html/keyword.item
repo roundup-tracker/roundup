@@ -32,6 +32,7 @@
       enctype="multipart/form-data">
 
  <input type="hidden" name=":required" value="name">
+ <input type="hidden" name=":template" value="item">
 
  <table class="form">
   <tr>

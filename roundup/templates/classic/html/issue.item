@@ -19,7 +19,7 @@
 You are not allowed to view this page.
 </span>
 
-<form method="POST" onSubmit="return submit_once()"
+<form method="POST" name="itemSynopsis" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok">
 
 <input type="hidden" name=":template" value="item">
@@ -42,7 +42,7 @@ You are not allowed to view this page.
  <th nowrap>Superseder</th>
  <td>
   <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
-  <span tal:replace="structure python:db.issue.classhelp('id,title')" />
+  <span tal:replace="structure python:db.issue.classhelp('id,title', property='superseder')" />
   <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
    <br>View: <a tal:attributes="href string:issue${sup/id}"
                 tal:content="sup/id"></a>
@@ -52,7 +52,7 @@ You are not allowed to view this page.
  <td>
   <span tal:replace="structure context/nosy/field" />
   <span tal:replace="structure
-python:db.user.classhelp('username,realname,address,phone')" /><br>
+python:db.user.classhelp('username,realname,address', property='nosy', width='600')" /><br>
  </td>
 </tr>
 
@@ -62,7 +62,7 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
  <th nowrap>Topics</th>
  <td>
   <span tal:replace="structure context/topic/field" />
-  <span tal:replace="structure db/keyword/classhelp" />
+  <span tal:replace="structure python:db.keyword.classhelp(property='topic')" />
  </td>
 </tr>
 

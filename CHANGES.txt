@@ -56,6 +56,8 @@ Feature:
 - Class.find() may now find unset Links (sf bug 700620)
 - more flexibility in classhelp link labelling (sf feature 608204)
 - added command-line functionality for roundup-adming (sf feature 687664)
+- added nicer popup windows for topic, nosy, etc (has add/remove buttons)
+  thanks Gus Gollings
 
 
 Fixed:
