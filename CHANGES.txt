@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2004-??-?? 0.7.4
+2004-06-10 0.7.4
 Fixed:
 - re-acquire the OTK manager when we re-open the database
 - mailgw handler can close the database on us
@@ -12,6 +12,7 @@ Fixed:
   959177 and 964231)
 - fixed RDBMS journal packing (sf bug 959177)
 - fixed filtering by floats in anydbm (sf bug 963584)
+- fixed mysql upgrading of journals (sf bug 950410)
 
 
 2004-05-28 0.7.3
