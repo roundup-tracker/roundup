@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.32 2002-09-13 00:08:44 richard Exp $
+# $Id: client.py,v 1.33 2002-09-15 22:41:15 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -596,6 +596,7 @@ class Client:
             self.db.commit()
         except ValueError, message:
             self.error_message.append(message)
+            return
 
         # log the new user in
         self.user = cl.get(self.userid, 'username')
@@ -1134,6 +1135,14 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             if not value:
                 # ignore empty password values
                 continue
+            if not form.has_key('%s:confirm'%key):
+                raise ValueError, 'Password and confirmation text do not match'
+            confirm = form['%s:confirm'%key]
+            if isinstance(confirm, type([])):
+                raise ValueError, 'You have submitted more than one value'\
+                    ' for the %s property'%key
+            if value != confirm.value:
+                raise ValueError, 'Password and confirmation text do not match'
             value = password.Password(value)
         elif isinstance(proptype, hyperdb.Date):
             if value:

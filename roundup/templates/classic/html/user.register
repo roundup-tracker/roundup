@@ -8,6 +8,10 @@ You are not allowed to view this page.
 
 <tal:block tal:condition="editok">
 <form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
+<input type="hidden" name=":template" value="register">
+<input type="hidden" name=":required" value="username">
+<input type="hidden" name=":required" value="password">
+<input type="hidden" name=":required" value="address">
 
 <table class="form">
  <tr>
@@ -21,6 +25,10 @@ You are not allowed to view this page.
  <tr>
   <th>Login Password</th>
   <td tal:content="structure context/password/field">password</td>
+ </tr>
+ <tr>
+  <th>Confirm Password</th>
+  <td tal:content="structure context/password/confirm">password</td>
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th>Roles</th>

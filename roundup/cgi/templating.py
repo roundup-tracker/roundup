@@ -767,9 +767,17 @@ class PasswordHTMLProperty(HTMLProperty):
         return _('*encrypted*')
 
     def field(self, size = 30):
-        ''' Render a form edit field for the property
+        ''' Render a form edit field for the property.
         '''
         return '<input type="password" name="%s" size="%s">'%(self._name, size)
+
+    def confirm(self, size = 30):
+        ''' Render a second form edit field for the property, used for 
+            confirmation that the user typed the password correctly. Generates
+            a field with name "name:confirm".
+        '''
+        return '<input type="password" name="%s:confirm" size="%s">'%(
+            self._name, size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):

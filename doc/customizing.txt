@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.34 $
+:Version: $Revision: 1.35 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -951,9 +951,9 @@ _value          the value of the property if any
 
 There are several methods available on these wrapper objects:
 
-=========== =============================================================
+=========== =================================================================
 Method      Description
-=========== =============================================================
+=========== =================================================================
 plain       render a "plain" representation of the property
 field       render a form edit field for the property
 stext       only on String properties - render the value of the
@@ -963,6 +963,9 @@ multiline   only on String properties - render a multiline form edit
             field for the property
 email       only on String properties - render the value of the 
             property as an obscured email address
+confirm     only on Password properties - render a second form edit field for
+            the property, used for confirmation that the user typed the
+            password correctly. Generates a field with name "name:confirm".
 reldate     only on Date properties - render the interval between the
             date and now
 pretty      only on Interval properties - render the interval in a
@@ -971,7 +974,7 @@ menu        only on Link and Multilink properties - render a form select
             list for this property
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
-=========== =============================================================
+=========== =================================================================
 
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
@@ -982,9 +985,9 @@ The request variable is packed with information about the current request.
 
 .. taken from roundup.cgi.templating.HTMLRequest docstring
 
-=========== ================================================================
+=========== =================================================================
 Variable    Holds
-=========== ================================================================
+=========== =================================================================
 form        the CGI form as a cgi.FieldStorage
 env         the CGI environment variables
 url         the current URL path for this request
@@ -993,13 +996,13 @@ user        a HTMLUser instance for this user
 classname   the current classname (possibly None)
 template    the current template (suffix, also possibly None)
 form        the current CGI form variables in a FieldStorage
-=========== ================================================================
+=========== =================================================================
 
 **Index page specific variables (indexing arguments)**
 
-=========== ================================================================
+=========== =================================================================
 Variable    Holds
-=========== ================================================================
+=========== =================================================================
 columns     dictionary of the columns to display in an index page
 show        a convenience access to columns - request/show/colname will
             be true if the columns should be displayed, false otherwise
@@ -1008,13 +1011,13 @@ group       index grouping property (direction, column name)
 filter      properties to filter the index on
 filterspec  values to filter the index on
 search_text text to perform a full-text search on for an index
-=========== ================================================================
+=========== =================================================================
 
 There are several methods available on the request variable:
 
-=============== ============================================================
+=============== =============================================================
 Method          Description
-=============== ============================================================
+=============== =============================================================
 description     render a description of the request - handle for the page
                 title
 indexargs_form  render the current index args as form elements
@@ -1024,7 +1027,7 @@ base_javascript render some javascript that is used by other components of
 batch           run the current index args through a filter and return a
                 list of items (see `hyperdb item wrapper`_, and
                 `batching`_)
-=============== ============================================================
+=============== =============================================================
 
 The form variable
 :::::::::::::::::
@@ -1067,11 +1070,11 @@ The util variable
 
 Note: this is implemented by the roundup.cgi.templating.TemplatingUtils class.
 
-=============== ============================================================
+=============== =============================================================
 Method          Description
-=============== ============================================================
+=============== =============================================================
 Batch           return a batch object using the supplied list
-=============== ============================================================
+=============== =============================================================
 
 Batching
 ::::::::

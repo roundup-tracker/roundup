@@ -21,6 +21,10 @@ You are not allowed to view this page.
   <th>Login Password</th>
   <td tal:content="structure context/password/field">password</td>
  </tr>
+ <tr>
+  <th>Confirm Password</th>
+  <td tal:content="structure context/password/confirm">password</td>
+ </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th>Roles</th>
   <td tal:condition="context/id"
