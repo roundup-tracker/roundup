@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.61 2004-09-21 08:16:50 a1s Exp $
+$Id: roundup_server.py,v 1.62 2004-09-21 09:29:18 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -509,8 +509,8 @@ def run(port=undefined, success_message=None):
         if config:
             cfg = ConfigParser.ConfigParser()
             cfg.read(filename)
-            if port is undefined:
-                port = cfg.get('server', 'port', DEFAULT_PORT)
+            if port is undefined and cfg.has_option('server', 'port'):
+                port = cfg.get('server', 'port')
             if user is undefined and cfg.has_option('server', 'user'):
                 user = cfg.get('server', 'user')
             if group is undefined and cfg.has_option('server', 'group'):
@@ -531,6 +531,8 @@ def run(port=undefined, success_message=None):
         # defaults
         if hostname is undefined:
             hostname = ''
+        if port is undefined:
+            port = DEFAULT_PORT
         if group is undefined:
             group = None
         if user is undefined:
