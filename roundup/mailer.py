@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.9 2004-03-25 22:53:26 richard Exp $
+# $Id: mailer.py,v 1.10 2004-07-25 15:25:44 a1s Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -21,7 +21,8 @@ class Mailer:
 
         # set to indicate to roundup not to actually _send_ email
         # this var must contain a file to write the mail to
-        self.debug = os.environ.get('SENDMAILDEBUG', '')
+        self.debug = os.environ.get('SENDMAILDEBUG', '') \
+            or config["MAIL_DEBUG"]
 
     def get_standard_message(self, to, subject, author=None):
         '''Form a standard email message from Roundup.
@@ -64,8 +65,8 @@ class Mailer:
         # finally, an aid to debugging problems
         writer.addheader('X-Roundup-Version', __version__)
 
-        writer.addheader('MIME-Version', '1.0')       
-        
+        writer.addheader('MIME-Version', '1.0')
+
         return message, writer
 
     def standard_message(self, to, subject, content, author=None):
@@ -136,7 +137,7 @@ class Mailer:
         writer.lastpart()
 
         self.smtp_send(to, message)
-        
+
     def smtp_send(self, to, message):
         """Send a message over SMTP, using roundup's config.
 
@@ -168,29 +169,18 @@ class SMTPConnection(smtplib.SMTP):
     ''' Open an SMTP connection to the mailhost specified in the config
     '''
     def __init__(self, config):
-        
+
         smtplib.SMTP.__init__(self, config.MAILHOST)
 
-        # use TLS?
-        use_tls = getattr(config, 'MAILHOST_TLS', 'no')
-        if use_tls == 'yes':
-            # do we have key files too?
-            keyfile = getattr(config, 'MAILHOST_TLS_KEYFILE', '')
-            if keyfile:
-                certfile = getattr(config, 'MAILHOST_TLS_CERTFILE', '')
-                if certfile:
-                    args = (keyfile, certfile)
-                else:
-                    args = (keyfile, )
-            else:
-                args = ()
-            # start the TLS
-            self.starttls(*args)
+        # start the TLS if requested
+        if config["MAIL_TLS"]:
+            self.starttls(config["MAIL_TLS_KEYFILE"],
+                config["MAIL_TLS_CERFILE"])
 
         # ok, now do we also need to log in?
-        mailuser = getattr(config, 'MAILUSER', None)
+        mailuser = config["MAIL_USERNAME"]
         if mailuser:
-            self.login(*config.MAILUSER)
+            self.login(mailuser, config["MAIL_PASSWORD"])
 
 # use the 'email' module, either imported, or our copied version
 try :
@@ -207,3 +197,5 @@ except ImportError :
             name = escapesre.sub(r'\\\g<0>', name)
             return '%s%s%s <%s>' % (quotes, name, quotes, address)
         return address
+
+# vim: set et sts=4 sw=4 :
