@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 .. contents::
 
@@ -40,6 +40,34 @@ There's two "installations" that we talk about when using Roundup:
    config.py.
 
 
+Configuring Roundup's Logging of Messages For Sysadmins
+=======================================================
+
+You may configure where Roundup logs messages in your tracker's config.py
+file. Roundup will use the standard Python logging implementation when
+available. If not, then a very basic logging implementation will be used
+(see BasicLogging in the roundup.rlog module for details).
+
+Configuration for "logging" module:
+ - tracker configuration file specifies the location of a logging
+   configration file as ``LOGGING_CONFIG``
+ - ``roundup-server`` specifies the location of a logging configuration
+   file on the command line
+Configuration for "BasicLogging" implementation:
+ - tracker configuration file specifies the location of a log file
+   ``LOGGING_FILENAME``
+ - tracker configuration file specifies the level to log to as
+   ``LOGGING_LEVEL``
+ - ``roundup-server`` specifies the location of a log file on the command
+   line
+ - ``roundup-server`` specifies the level to log to on the command line
+
+(``roundup-mailgw`` always logs to the tracker's log file)
+
+In both cases, if no logfile is specified then logging will simply be sent
+to sys.stderr with only logging of ERROR messages.
+
+
 Users and Security
 ==================
 
@@ -75,6 +103,7 @@ Email Registration
 
 More information about how to customise your tracker's security settings
 may be found in the `customisation documentation`_.
+
 
 Tasks
 =====

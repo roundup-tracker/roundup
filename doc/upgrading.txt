@@ -44,6 +44,9 @@ Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
 are misleading and should be removed.  Actual charset is sent in the
 true http header.
 
+0.8.0 Logging Configuration
+---------------------------
+
 
 Migrating from 0.7.2 to 0.7.3
 =============================

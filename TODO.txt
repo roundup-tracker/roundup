@@ -3,6 +3,8 @@ This file contains items that need doing before the next release:
 Required:
 - documentation of i18n: TAL tags for translation
 - translation databases in trackers
+- implementing of logging for roundup-server, including command-line
+  switches
 
 
 Optionally:

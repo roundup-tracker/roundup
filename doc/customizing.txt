@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.141 $
+:Version: $Revision: 1.142 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -159,18 +159,18 @@ The configuration variables available are:
 **LOGGGING_CONFIG** - ``os.path.join(TRACKER_HOME, 'logging.ini')``
   This variable activates logging of Roundup's internal messages using the
   standard python ``logging`` module. The module is configured using the
-  indicated configuration file.
+  indicated configuration file. See the `admin guide`_ for more detail.
 
 **LOGGING_FILENAME** - ``'/path/to/log file'``
   This variable activates logging of Roundup's internal messages using a
   built-in minimal logging service which appends messages to the indicated
-  file.
+  file. See the `admin guide`_ for more detail.
 
 **LOGGING_LEVEL** - ``'DEBUG'``, ``'INFO'``, ``'WARNING'`` or ``'ERROR'``
   This variable determines the level of messages logged by the built-in
   logging service - messages of the level named and higher will be sent to
   the ``LOGGING_FILENAME`` file. Not used when the ``LOGGGING_CONFIG``
-  variable is set.
+  variable is set. See the `admin guide`_ for more detail.
 
 **MESSAGES_TO_AUTHOR** - ``'new'``, ``'yes'`` or``'no'``
  Send nosy messages to the author of the message?
@@ -267,7 +267,7 @@ tracker is attempted.::
     # configuration of the logging module. The latter is activated when you
     # provide the LOGGING_FILENAME and optionally LOGGING_LEVEL variables. If
     # none of these variables are defined then only errors will be logged, and
-    # they will go to stderr.
+    # they will go to stderr. See the Admin Guide for more detail.
     # LOGGGING_CONFIG = os.path.join(TRACKER_HOME, 'logging.ini')
     # or,
     # LOGGING_FILENAME = '/path/to/log file'
@@ -4057,4 +4057,5 @@ Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
 .. _`design documentation`: design.html
+.. _`admin guide`: admin_guide.html
 
