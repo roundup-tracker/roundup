@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.6 2004-07-20 23:27:00 richard Exp $
+# $Id: setup.py,v 1.64.2.7 2004-07-21 01:25:55 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -136,8 +136,8 @@ def check_manifest():
     try:
         f = open('MANIFEST')
     except:
-        print '\n*** SOURCE ERROR: The MANIFEST file is missing!'
-        sys.exit(1)
+        print '\n*** WARNING: The MANIFEST file is missing!'
+        return
     try:
         manifest = [l.strip() for l in f.readlines()]
     finally:
@@ -232,6 +232,12 @@ This is a bug fix release, including:
 - document the STATIC_FILES config var
 - implement the HTTP HEAD command (sf bug 992544)
 - fix journal export of files to remove content from CSV files
+- API clarification. Previously, the anydbm/bsddb/metakit filter() methods
+  had required exact matches to Multilink argument lists. The RDBMS
+  backends treated Multilink matches like all other data types - matching
+  any of the Multilink argument list is good enough. The latter behaviour
+  is implemented across the board now.
+- fix metakit handling of filter on Link==None
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",

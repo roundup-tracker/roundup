@@ -17,6 +17,12 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 - document the STATIC_FILES config var
 - implement the HTTP HEAD command (sf bug 992544)
 - fix journal export of files to remove content from CSV files
+- API clarification. Previously, the anydbm/bsddb/metakit filter() methods
+  had required exact matches to Multilink argument lists. The RDBMS
+  backends treated Multilink matches like all other data types - matching
+  any of the Multilink argument list is good enough. The latter behaviour
+  is implemented across the board now.
+- fix metakit handling of filter on Link==None
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
