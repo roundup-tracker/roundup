@@ -8,25 +8,39 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.48 2003-09-06 10:37:10 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.49 2003-09-07 13:08:08 jlgijsbers Exp $
 
-import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
-import rfc822
+import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
-# Note: Should parse emails according to RFC2822 instead of performing a
-# literal string comparision.  Parsing the messages allows the tests to work for
-# any legal serialization of an email.
-#try :
-#    import email
-#except ImportError :
-#    import rfc822 as email
+from cStringIO import StringIO
 
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress
 from roundup import init, instance, rfc2822
 
-# TODO: make this output only enough equal lines for context, not all of
-# them
+class Message(rfc822.Message):
+    """String-based Message class with equivalence test."""
+    def __init__(self, s):
+        rfc822.Message.__init__(self, StringIO(s.strip()))
+        
+    def __eq__(self, other):
+        del self['date'], other['date']
+
+        self.headers.sort()
+        other.headers.sort()
+
+        self.rewindbody()
+        other.rewindbody()
+
+        return (self.headers == other.headers and
+                self.fp.read() == other.fp.read()) 
+
+# TODO: Do a semantic diff instead of a straight text diff when a test fails.
 class DiffHelper:
+    def compareMessages(self, s2, s1):
+        """Compare messages for semantic equivalence."""
+        if not Message(s2) == Message(s1):    
+            self.compareStrings(s2, s1)
+    
     def compareStrings(self, s2, s1):
         '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
            the first to be the "original" but in the calls in this file,
@@ -96,7 +110,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
     def testEmptyMessage(self):
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -114,7 +128,7 @@ Subject: [issue] Testing...
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
 
     def doNewIssue(self):
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -140,7 +154,7 @@ This is a test submission of a new issue.
 
     def testNewIssueNosy(self):
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -161,7 +175,7 @@ This is a test submission of a new issue.
         self.assertEqual(l, ['3', '4'])
 
     def testAlternateAddress(self):
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: John Doe <john.doe@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -181,7 +195,7 @@ This is a test submission of a new issue.
             "user created when it shouldn't have been")
 
     def testNewIssueNoClass(self):
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -199,7 +213,7 @@ This is a test submission of a new issue.
             self.assertEqual('no error', error)
 
     def testNewIssueAuthMsg(self):
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -214,7 +228,7 @@ This is a test submission of a new issue.
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -256,7 +270,7 @@ _______________________________________________________________________
 
     def testSimpleFollowup(self):
         self.doNewIssue()
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -269,7 +283,7 @@ This is a second followup
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -300,7 +314,7 @@ _______________________________________________________________________
     def testFollowup(self):
         self.doNewIssue()
 
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -317,7 +331,7 @@ This is a followup
         l.sort()
         self.assertEqual(l, ['3', '4', '5', '6'])
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain; charset=utf-8
@@ -349,7 +363,7 @@ _______________________________________________________________________
 
     def testFollowupTitleMatch(self):
         self.doNewIssue()
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -363,7 +377,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain; charset=utf-8
@@ -396,7 +410,7 @@ _______________________________________________________________________
     def testFollowupNosyAuthor(self):
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -410,7 +424,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -443,7 +457,7 @@ _______________________________________________________________________
     def testFollowupNosyRecipients(self):
         self.doNewIssue()
         self.db.config.ADD_RECIPIENTS_TO_NOSY = 'yes'
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -458,7 +472,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain; charset=utf-8
@@ -492,7 +506,7 @@ _______________________________________________________________________
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -506,7 +520,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -539,7 +553,7 @@ _______________________________________________________________________
     def testFollowupNoNosyAuthor(self):
         self.doNewIssue()
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -553,7 +567,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -585,7 +599,7 @@ _______________________________________________________________________
     def testFollowupNoNosyRecipients(self):
         self.doNewIssue()
         self.instance.config.ADD_RECIPIENTS_TO_NOSY = 'no'
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -600,7 +614,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain; charset=utf-8
@@ -632,7 +646,7 @@ _______________________________________________________________________
     def testFollowupEmptyMessage(self):
         self.doNewIssue()
 
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -654,7 +668,7 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
     def testNosyRemove(self):
         self.doNewIssue()
 
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -692,7 +706,7 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 '''
-        message = cStringIO.StringIO(s)
+        message = StringIO(s)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         self.assertRaises(Unauthorized, handler.main, message)
@@ -705,7 +719,7 @@ This is a test submission of a new issue.
         self.db.security.role['anonymous'].permissions=[p]
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
-        message = cStringIO.StringIO(s)
+        message = StringIO(s)
         handler.main(message)
         m = self.db.user.list()
         m.sort()
@@ -713,7 +727,7 @@ This is a test submission of a new issue.
 
     def testEnc01(self):
         self.doNewIssue()
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -730,7 +744,7 @@ A message with encoding (encoded oe =F6)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -761,7 +775,7 @@ _______________________________________________________________________
 
     def testMultipartEnc01(self):
         self.doNewIssue()
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -785,7 +799,7 @@ A message with first part encoded (encoded oe =F6)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -815,7 +829,7 @@ _______________________________________________________________________
 
     def testContentDisposition(self):
         self.doNewIssue()
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -851,7 +865,7 @@ xxxxxx
     def testFollowupStupidQuoting(self):
         self.doNewIssue()
 
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -865,7 +879,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain; charset=utf-8
@@ -913,7 +927,7 @@ This is a followup
 
         messages = self.db.issue.get(nodeid, 'messages')
 
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -938,7 +952,7 @@ This is a followup
             newmessages.remove(msg)
         messageid = newmessages[0]
 
-        self.compareStrings(self.db.msg.get(messageid, 'content'), expect)
+        self.compareMessages(self.db.msg.get(messageid, 'content'), expect)
 
     def testUserLookup(self):
         i = self.db.user.create(username='user1', address='user1@foo.com')
@@ -962,7 +976,7 @@ This is a followup
     def testRegistrationConfirmation(self):
         otk = "Aj4euk4LZSAdwePohj90SME5SpopLETL"
         self.db.otks.set(otk, username='johannes', __time='')
-        message = cStringIO.StringIO('''Content-Type: text/plain;
+        message = StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
