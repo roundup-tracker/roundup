@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.25.2.7 2004-03-01 00:07:27 richard Exp $
+# $Id: __init__.py,v 1.25.2.8 2004-04-01 00:07:35 richard Exp $
 
 ''' Roundup - issue tracking for knowledge workers.
 
@@ -67,6 +67,6 @@ written by Ka-Ping Yee in the "doc" directory. If nothing else, it has a
 much prettier cake :)
 '''
 
-__version__ = '0.6.7'
+__version__ = '0.6.8'
 
 # vim: set filetype=python ts=4 sw=4 et si
