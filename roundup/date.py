@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.64 2004-04-06 21:56:10 richard Exp $
+# $Id: date.py,v 1.65 2004-04-06 22:43:59 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -266,6 +266,7 @@ class Date:
 
     def differenceDate(self, other):
         "Return the difference between this date and another date"
+        return self - other
 
     def applyInterval(self, interval):
         ''' Apply the interval to this date
