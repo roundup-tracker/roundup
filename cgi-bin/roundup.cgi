@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.35 2002-11-06 11:38:42 richard Exp $
+# $Id: roundup.cgi,v 1.36 2003-09-04 23:28:50 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -47,7 +47,7 @@ import sys
 
 # This indicates where the Roundup tracker lives
 TRACKER_HOMES = {
-    'demo': '/var/roundup/trackers/demo',
+#    'example': '/path/to/example',
 }
 
 # Where to log debugging information to. Use an instance of DevNull if you

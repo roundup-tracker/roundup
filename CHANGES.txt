@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2003-09-?? 0.6.2
 Fixed:
 - cleaned up, clarified internal caching API in *dbm backends
+- commented out example tracker homes (patch 800720)
 
 
 2003-08-31 0.6.1
