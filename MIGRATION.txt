@@ -70,3 +70,10 @@ If you have modified your dbinit.py file, you may use encoded passwords:
 
       roundup-admin -i <instance home> set user1 password=<new password>
 
+
+Configuration
+-------------
+FILTER_POSITION, ANONYMOUS_ACCESS, ANONYMOUS_REGISTER have been added to
+the instance_config.py. Simplest solution is to copy the default values from
+template in the core source.
+

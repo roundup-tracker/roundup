@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.7 2001-10-23 00:57:32 richard Exp $
+# $Id: test_mailsplit.py,v 1.8 2001-10-28 23:22:28 richard Exp $
 
 import unittest, cStringIO
 
@@ -95,12 +95,25 @@ userfoo@foo.com
         self.assertEqual(summary, '')
         self.assertEqual(content, '')
 
+    def testIndentationSummary(self):
+        s = '    Four space indent.\n\n    Four space indent.\nNo indent.'
+        summary, content = parseContent(s)
+        self.assertEqual(summary, '    Four space indent.')
+
+    def testIndentationContent(self):
+        s = '    Four space indent.\n\n    Four space indent.\nNo indent.'
+        summary, content = parseContent(s)
+        self.assertEqual(content, s)
+
 def suite():
    return unittest.makeSuite(MailsplitTestCase, 'test')
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/10/23 00:57:32  richard
+# Removed debug print from mailsplit test.
+#
 # Revision 1.6  2001/10/21 03:35:13  richard
 # bug #473125: Paragraph in e-mails
 #

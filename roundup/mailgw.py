@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.24 2001-10-23 22:57:52 richard Exp $
+$Id: mailgw.py,v 1.25 2001-10-28 23:22:28 richard Exp $
 '''
 
 
@@ -408,12 +408,21 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
     character are considered "quoting sections". The first line of the first
     non-quoting section becomes the summary of the message. 
     '''
-    sections = blank_line.split(content)
+    # strip off leading carriage-returns / newlines
+    i = 0
+    for i in range(len(content)):
+        if content[i] not in '\r\n':
+            break
+    if i > 0:
+        sections = blank_line.split(content[i:])
+    else:
+        sections = blank_line.split(content)
+
     # extract out the summary from the message
     summary = ''
     l = []
     for section in sections:
-        section = section.strip()
+        #section = section.strip()
         if not section:
             continue
         lines = eol.split(section)
@@ -432,6 +441,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/10/23 22:57:52  richard
+# Fix unread->chatting auto transition, thanks Roch'e
+#
 # Revision 1.23  2001/10/21 04:00:20  richard
 # MailGW now moves 'unread' to 'chatting' on receiving e-mail for an issue.
 #

@@ -9,6 +9,7 @@ Fixed:
  . roundup-server now works on Windows, thanks Juergen Hermann.
  . Fixed install documentation, also thanks Juergen Hermann.
  . Fixed some URL issues in roundup.cgi, again thanks Juergen Hermann.
+ . bug #474749 ] indentations lost
 
 2001-10-23 - 0.3.0 pre 3
 Feature:
@@ -43,6 +44,7 @@ Fixed:
  . bug #473125: Paragraph in e-mails
  . bug #473126: Sender unknown
  . bug #473130: Nosy list not set correctly
+
 
 2001-10-11 - 0.3.0 pre 2
 Fixed:
