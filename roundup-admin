@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.47 2001-11-26 22:55:56 richard Exp $
+# $Id: roundup-admin,v 1.48 2001-11-27 22:32:03 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -369,7 +369,7 @@ Command help:
 
             # make sure it's a link
             if (not isinstance(property, hyperdb.Link) and not
-                    isinstance(proptype, hyperdb.Multilink)):
+                    isinstance(property, hyperdb.Multilink)):
                 raise UsageError, 'You may only "find" link properties'
 
             # get the linked-to class and look up the key property
@@ -893,6 +893,18 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.47  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.46  2001/11/21 03:40:54  richard
 # more new property handling
 #
