@@ -67,7 +67,7 @@ class BasicLogging:
         (one of the LVL_ values) or a string level name.
         '''
         if isinstance(level, type('')):
-            for num, name in self.NAMES:
+            for num, name in self.NAMES.items():
                 if name == level:
                     level = num
         self.level = level
@@ -93,7 +93,7 @@ class BasicLogger:
         (one of the LVL_ values) or a string level name.
         '''
         if isinstance(level, type('')):
-            for num, name in BasicLogging.NAMES:
+            for num, name in BasicLogging.NAMES.items():
                 if name == level:
                     level = num
         self.level = level
