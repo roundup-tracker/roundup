@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.176 2004-11-12 04:07:04 richard Exp $
+#$Id: back_anydbm.py,v 1.177 2004-11-12 10:43:31 a1s Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -34,11 +34,14 @@ except AssertionError:
     print "WARNING: you should upgrade to python 2.1.3"
 
 import whichdb, os, marshal, re, weakref, string, copy, time, shutil
+
 from roundup import hyperdb, date, password, roundupdb, security
+from roundup.backends import locking
+from roundup.i18n import _
+
 from blobfiles import FileStorage
 from sessions_dbm import Sessions, OneTimeKeys
 from indexer_dbm import Indexer
-from roundup.backends import locking
 
 def db_exists(config):
     # check for the user db
@@ -2046,7 +2049,7 @@ class Class(hyperdb.Class):
                         pass
                     elif isinstance(prop, hyperdb.Date):
                         if type(value) == type(()):
-                            print 'warning: invalid date tuple %r'%(value,)
+                            print _('WARNING: invalid date tuple %r')%(value,)
                             value = date.Date( "2000-1-1" )
                         value = date.Date(value)
                     elif isinstance(prop, hyperdb.Interval):
