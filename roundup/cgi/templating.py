@@ -1711,7 +1711,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         ''' no extended attribute accesses make sense here '''
         raise AttributeError, attr
 
-    def multilinkGenerator(self, values):
+    def viewableGenerator(self, values):
         '''Used to iterate over only the View'able items in a class.'''
         check = self._db.security.hasPermission
         userid = self._client.userid
@@ -1723,14 +1723,14 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __iter__(self):
         ''' iterate and return a new HTMLItem
         '''
-        return self.multilinkGenerator(self._value)
+        return self.viewableGenerator(self._value)
 
     def reverse(self):
         ''' return the list in reverse order
         '''
         l = self._value[:]
         l.reverse()
-        return self.multilinkGenerator(l)
+        return self.viewableGenerator(l)
 
     def sorted(self, property):
         ''' Return this multilink sorted by the given property '''
