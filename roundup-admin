@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.40 2001-11-08 04:42:00 richard Exp $
+# $Id: roundup-admin,v 1.41 2001-11-09 01:25:40 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -318,9 +318,9 @@ Command help:
 
         # now do the find
         if self.comma_sep:
-            print ','.join(cl.find(**{propname: value}))
+            print ','.join(apply(cl.find, (), {propname: value}))
         else:
-            print cl.find(**{propname: value})
+            print apply(cl.find, (), {propname: value})
         return 0
 
     def do_specification(self, args):
@@ -725,6 +725,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.40  2001/11/08 04:42:00  richard
+# Expanded the already-abbreviated "initialise" and "specification" commands,
+# and added a comment to the command help about the abbreviation.
+#
 # Revision 1.39  2001/11/08 04:29:59  richard
 # roundup-admin now accepts abbreviated commands (eg. l = li = lis = list)
 # [thanks Engelbert Gruber for the inspiration]
