@@ -2,12 +2,15 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-??-?? - 0.2.9
+Fixed:
+ . Pretty time interval wasn't handling > 1 month properly.
  . Generation of links to Link/Multilink in indexes. (thanks Hubert Hoegl)
  . AssignedTo wasn't in the "classic" schema's item page.
 
 
 2001-08-30 - 0.2.8
 Fixed:
+ . Wasn't handling unguessable mime types for file uploads.
  . Missing import in mailgw.
 
 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.17 2001-08-28 05:58:33 anthonybaxter Exp $
+# $Id: roundup-admin,v 1.18 2001-09-18 22:58:37 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -38,24 +38,26 @@ def usage(message=''):
 
 Commands:
  %s
-
 Help:
  roundup-admin -h
- roundup-admin help    
-   -- this help
- roundup-admin help <command>
-   -- command-specific help
- roundup-admin morehelp
-   -- even more detailed help
- 
-'''%(message, '\n '.join(commands))
+ roundup-admin help                       -- this help
+ roundup-admin help <command>             -- command-specific help
+ roundup-admin morehelp                   -- even more detailed help
+Options:
+ -i instance home  -- specify the issue tracker "home directory" to administer
+ -u                -- the user[:password] to use for commands
+ -c                -- when outputting lists of data, just comma-separate them'''%(
+message, '\n '.join(commands))
 
 def moreusage(message=''):
     usage(message)
     print '''
 All commands (except help) require an instance specifier. This is just the path
-to the roundup instance you're working with. It may be specified in the
-environment variable ROUNDUP_INSTANCE or on the command line as "-i instance".
+to the roundup instance you're working with. A roundup instance is where 
+roundup keeps the database and configuration file that defines an issue
+tracker. It may be thought of as the issue tracker's "home directory". It may
+be specified in the environment variable ROUNDUP_INSTANCE or on the command
+line as "-i instance".
 
 A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
 
@@ -426,6 +428,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/08/28 05:58:33  anthonybaxter
+# added missing 'import' statements.
+#
 # Revision 1.16  2001/08/12 06:32:36  richard
 # using isinstance(blah, Foo) now instead of isFooType
 #
