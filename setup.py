@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.70 2004-06-13 00:27:05 richard Exp $
+# $Id: setup.py,v 1.71 2004-09-25 16:14:32 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -269,7 +269,7 @@ def main():
     templates = [t['path'] for t in listTemplates('templates').values()]
     for tdir in templates:
         # scan for data files
-        for idir in '. detectors html'.split():
+        for idir in '. detectors extensions html'.split():
             idir = os.path.join(tdir, idir)
             tfiles = []
             for f in os.listdir(idir):
@@ -354,4 +354,4 @@ Some highlights:
 if __name__ == '__main__':
     main()
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
