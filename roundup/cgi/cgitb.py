@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.7 2002-09-25 02:10:25 richard Exp $
+# $Id: cgitb.py,v 1.8 2003-01-21 23:54:28 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -25,9 +25,12 @@ def niceDict(indent, dict):
     return '\n'.join(l)
 
 def pt_html(context=5):
-    l = ['<h1>Templating Error</h1>'
-         '<p class="help">Debugging information follows</p>'
-         '<ol>']
+    esc = cgi.escape
+    l = ['<h1>Templating Error</h1>',
+         '<p><b>%s</b>: %s</p>'%(esc(str(sys.exc_type)),
+            esc(str(sys.exc_value))),
+         '<p class="help">Debugging information follows</p>',
+         '<ol>',]
     from roundup.cgi.PageTemplates.Expressions import TraversalError
     t = inspect.trace(context)
     t.reverse()
@@ -38,12 +41,12 @@ def pt_html(context=5):
             if isinstance(ti, TraversalError):
                 s = []
                 for name, info in ti.path:
-                    s.append('<li>"%s" (%s)</li>'%(name,cgi.escape(repr(info))))
+                    s.append('<li>"%s" (%s)</li>'%(name, esc(repr(info))))
                 s = '\n'.join(s)
                 l.append('<li>Looking for "%s", current path:<ol>%s</ol></li>'%(
                     ti.name, s))
             else:
-                l.append('<li>In %s</li>'%cgi.escape(str(ti)))
+                l.append('<li>In %s</li>'%esc(str(ti)))
         if locals.has_key('__traceback_supplement__'):
             ts = locals['__traceback_supplement__']
             if len(ts) == 2:
@@ -51,7 +54,7 @@ def pt_html(context=5):
                 s = 'A problem occurred in your template "%s".'%str(context.id)
                 if context._v_errors:
                     s = s + '<br>' + '<br>'.join(
-                        [cgi.escape(x) for x in context._v_errors])
+                        [esc(x) for x in context._v_errors])
                 l.append('<li>%s</li>'%s)
             elif len(ts) == 3:
                 supp, context, info = ts
