@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.18 2001-11-22 15:46:42 jhermann Exp $
+# $Id: init.py,v 1.19 2002-05-23 01:14:20 richard Exp $
 
 __doc__ = """
 Init (create) a roundup instance.
@@ -55,13 +55,12 @@ def copytree(src, dst, symlinks=0):
         else:
             install_util.copyDigestedFile(srcname, dstname)
 
-def init(instance_home, template, backend, adminpw):
-    '''Initialise an instance using the named template and backend.
+def install(instance_home, template, backend):
+    '''Install an instance using the named template and backend.
 
     instance_home - the directory to place the instance data in
     template - the template to use in creating the instance data
     backend - the database to use to store the instance data
-    adminpw - the password for the "admin" user
 
     The instance_home directory will be created using the files found in
     the named template (roundup.templates.<name>). A standard instance_home
@@ -102,12 +101,21 @@ def init(instance_home, template, backend, adminpw):
 from roundup.backends.back_%s import Database'''%backend
     open(os.path.join(instance_home, 'select_db.py'), 'w').write(db)
 
+
+def initialise(instance_home, adminpw):
+    '''Initialise an instance's database
+
+    adminpw    - the password for the "admin" user
+    '''
     # now import the instance and call its init
     instance = roundup.instance.open(instance_home)
     instance.init(password.Password(adminpw))
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.17  2001/11/12 23:17:38  jhermann
 # Code using copyDigestedFile() that passes unit tests
 #

@@ -16,9 +16,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.10 2002-04-27 10:07:23 richard Exp $
+# $Id: admin.py,v 1.11 2002-05-23 01:14:20 richard Exp $
 
-import sys, os, getpass, getopt, re, UserDict, shlex
+import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
     import csv
 except ImportError:
@@ -249,14 +249,19 @@ Command help:
         print _('Back ends:'), ', '.join(backends)
 
 
-    def do_initialise(self, instance_home, args):
-        '''Usage: initialise [template [backend [admin password]]]
-        Initialise a new Roundup instance.
+    def do_install(self, instance_home, args):
+        '''Usage: install [template [backend [admin password]]]
+        Install a new Roundup instance.
 
         The command will prompt for the instance home directory (if not supplied
         through INSTANCE_HOME or the -i option). The template, backend and admin
         password may be specified on the command-line as arguments, in that
         order.
+
+        The initialise command must be called after this command in order
+        to initialise the instance's database. You may edit the instance's
+        initial database contents before running that command by editing
+        the instance's dbinit.py module init() function.
 
         See also initopts help.
         '''
@@ -291,18 +296,70 @@ Command help:
             if not backend:
                 backend = 'anydbm'
 
-        # admin password
-        if len(args) > 3:
-            adminpw = confirm = args[3]
+        # install!
+        init.install(instance_home, template, backend)
+
+        print _('''
+ You should now edit the instance configuration file:
+   %(instance_config_file)s
+ ... at a minimum, you must set MAILHOST, MAIL_DOMAIN and ADMIN_EMAIL.
+
+ If you wish to modify the default schema, you should also edit the database
+ initialisation file:
+   %(database_config_file)s
+ ... see the documentation on customizing for more information.
+''')%{
+    'instance_config_file': os.path.join(instance_home, 'instance_config.py'),
+    'database_config_file': os.path.join(instance_home, 'dbinit.py')
+}
+        return 0
+
+
+    def do_initialise(self, instance_home, args):
+        '''Usage: initialise [adminpw [adminemail]]
+        Initialise a new Roundup instance.
+
+        The administrator details will be set at this step.
+
+        Execute the instance's initialisation function dbinit.init()
+        '''
+        # password
+        if len(args) > 0:
+            adminpw = args[0]
         else:
             adminpw = ''
             confirm = 'x'
-        while adminpw != confirm:
-            adminpw = getpass.getpass(_('Admin Password: '))
-            confirm = getpass.getpass(_('       Confirm: '))
+            while adminpw != confirm:
+                adminpw = getpass.getpass(_('Admin Password: '))
+                confirm = getpass.getpass(_('       Confirm: '))
 
-        # create!
-        init.init(instance_home, template, backend, adminpw)
+        # email
+        if len(args) > 1:
+            adminemail = args[1]
+        else:
+            adminemail = ''
+            while not adminemail:
+                adminemail = raw_input(_('   Admin Email: ')).strip()
+
+        # make sure the instance home is installed
+        if not os.path.exists(instance_home):
+            raise UsageError, _('Instance home does not exist')%locals()
+        if not os.path.exists(os.path.join(instance_home, 'html')):
+            raise UsageError, _('Instance has not been installed')%locals()
+
+        # is there already a database?
+        if os.path.exists(os.path.join(instance_home, 'db')):
+            print _('WARNING: The database is already initialised!')
+            print _('If you re-initialise it, you will lose all the data!')
+            ok = raw_input(_('Erase it? Y/[N]: ')).strip()
+            if ok.lower() != 'y':
+                return 0
+
+            # nuke it
+            shutil.rmtree(os.path.join(instance_home, 'db'))
+
+        # GO
+        init.initialise(instance_home, adminpw)
 
         return 0
 
@@ -955,10 +1012,16 @@ Date format is "YYYY-MM-DD" eg:
         while not self.instance_home:
             self.instance_home = raw_input(_('Enter instance home: ')).strip()
 
-        # before we open the db, we may be doing an init
+        # before we open the db, we may be doing an install or init
         if command == 'initialise':
             try:
                 return self.do_initialise(self.instance_home, args)
+            except UsageError, message:
+                print _('Error: %(message)s')%locals()
+                return 1
+        elif command == 'install':
+            try:
+                return self.do_install(self.instance_home, args)
             except UsageError, message:
                 print _('Error: %(message)s')%locals()
                 return 1
@@ -1061,6 +1124,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/04/27 10:07:23  richard
+# minor fix to error message
+#
 # Revision 1.9  2002/03/12 22:51:47  richard
 #  . #527416 ] roundup-admin uses undefined value
 #  . #527503 ] unfriendly init blowup when parent dir

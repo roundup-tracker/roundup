@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.6 $
+:Version: $Revision: 1.7 $
 
 .. contents::
 
@@ -106,7 +106,7 @@ Set aside 15-30 minutes.
       environment variable or specify the full path to
       the command in the next step.
 
-  c.  ``roundup-admin init``
+   c.  ``roundup-admin install``
 
       You will be asked a series of questions.  A description of
       the Roundup-provided templates can be found under the Overview_::
@@ -116,8 +116,20 @@ Set aside 15-30 minutes.
           Select template [classic]: classic
           Back ends: anydbm, bsddb
           Select backend [anydbm]: anydbm
+
+      You will now be directed to edit the instance configuration and
+      initial schema. See `Customizing Roundup`_ for details on configuration
+      and schema changes.
+
+   d.  ``roundup-admin initialise``
+
+      This step initialises the instance database. You will need to supply
+      an admin password at this step. You will be prompted:
+
           Admin Password:
                  Confirm:
+
+      Once this is done, the instance has been created.
 
 3. Each instance ideally should have its own UNIX group, so create
    a UNIX group (edit ``/etc/group`` or your appropriate NIS map if

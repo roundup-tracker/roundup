@@ -30,6 +30,8 @@ Feature:
  . reverting to dates for intervals > 2 months sucks
  . changed the default message list in issues to display the message body
  . applied patch #558876 ] cgi client customization
+ . split instance initialisation into two steps, allowing config changes
+   before the database is initialised.
 
 Fixed:
  . stop sending blank (whitespace-only) notes
