@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.83 2003-04-07 06:27:30 richard Exp $
+# $Id: roundupdb.py,v 1.84 2003-04-14 06:24:01 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -361,7 +361,7 @@ class IssueClass:
         email = straddr((self.db.config.TRACKER_NAME,
             self.db.config.TRACKER_EMAIL))
 
-        line = '_' * max(len(web), len(email))
+        line = '_' * max(len(web)+2, len(email))
         return '%s\n%s\n<%s>\n%s'%(line, email, web, line)
 
 
