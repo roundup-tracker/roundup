@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.32 2004-04-18 05:31:03 richard Exp $
+# $Id: test_dates.py,v 1.32.2.1 2004-09-29 07:31:32 richard Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -371,6 +371,14 @@ class DateTestCase(unittest.TestCase):
         ae('-1d', 'yesterday')
         ae('-1y', '1 year ago')
         ae('-2y', '2 years ago')
+
+    def testPyDatetime(self):
+        try:
+            import datetime
+        except:
+            return
+        d = datetime.datetime.now()
+        Date(d)
 
 def test_suite():
     suite = unittest.TestSuite()
