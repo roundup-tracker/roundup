@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.34 2001-11-21 04:04:43 richard Exp $
+# $Id: hyperdb.py,v 1.35 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+Hyperdatabase implementation, especially field types.
+"""
 
 # standard python modules
 import cPickle, re, string
@@ -860,6 +864,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2001/11/21 04:04:43  richard
+# *sigh* more missing value handling
+#
 # Revision 1.33  2001/11/21 03:40:54  richard
 # more new property handling
 #

@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.60 2001-11-21 22:57:28 jhermann Exp $
+# $Id: cgi_client.py,v 1.61 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+WWW request handler (also used in the stand-alone server).
+"""
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -978,6 +982,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2001/11/21 22:57:28  jhermann
+# Added dummy hooks for I18N and some preliminary (test) markup of
+# translatable messages
+#
 # Revision 1.59  2001/11/21 03:21:13  richard
 # oops
 #

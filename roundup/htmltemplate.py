@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.44 2001-11-21 23:35:45 jhermann Exp $
+# $Id: htmltemplate.py,v 1.45 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+Template engine.
+"""
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -861,6 +865,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2001/11/21 23:35:45  jhermann
+# Added globbing for win32, and sample marking in a 2nd file to test it
+#
 # Revision 1.43  2001/11/21 04:04:43  richard
 # *sigh* more missing value handling
 #

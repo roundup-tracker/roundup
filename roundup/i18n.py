@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: i18n.py,v 1.1 2001-11-21 22:57:29 jhermann Exp $
+# $Id: i18n.py,v 1.2 2001-11-22 15:46:42 jhermann Exp $
 
-"""
+__doc__ = """
 RoundUp Internationalization (I18N)
 
 To use this module, the following code should be used:

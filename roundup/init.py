@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.17 2001-11-12 23:17:38 jhermann Exp $
+# $Id: init.py,v 1.18 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+Init (create) a roundup instance.
+"""
 
 import os, sys, errno
 
@@ -104,6 +108,9 @@ from roundup.backends.back_%s import Database'''%backend
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/11/12 23:17:38  jhermann
+# Code using copyDigestedFile() that passes unit tests
+#
 # Revision 1.16  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.

@@ -14,8 +14,9 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-'''
+#
+
+__doc__ = '''
 An e-mail gateway for Roundup.
 
 Incoming messages are examined for multiple parts:
@@ -72,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.34 2001-11-15 10:24:27 richard Exp $
+$Id: mailgw.py,v 1.35 2001-11-22 15:46:42 jhermann Exp $
 '''
 
 
@@ -521,6 +522,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2001/11/15 10:24:27  richard
+# handle the case where there is no file attached
+#
 # Revision 1.33  2001/11/13 21:44:44  richard
 #  . re-open the database as the author in mail handling
 #

@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.3 2001-10-20 11:58:48 richard Exp $
+# $Id: password.py,v 1.4 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+Password handling (encoding, decoding).
+"""
 
 import sha, re
 
@@ -113,6 +117,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/10/20 11:58:48  richard
+# Catch errors in login - no username or password supplied.
+# Fixed editing of password (Password property type) thanks Roch'e Compaan.
+#
 # Revision 1.2  2001/10/09 23:58:10  richard
 # Moved the data stringification up into the hyperdb.Class class' get, set
 # and create methods. This means that the data is also stringified for the

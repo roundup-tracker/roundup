@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.18 2001-11-15 10:36:17 richard Exp $
+# $Id: roundupdb.py,v 1.19 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+Extending hyperdb with types specific to issue-tracking.
+"""
 
 import re, os, smtplib, socket
 import mimetools, MimeWriter, cStringIO
@@ -389,6 +393,10 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/11/15 10:36:17  richard
+#  . incorporated patch from Roch'e Compaan implementing attachments in nosy
+#     e-mail
+#
 # Revision 1.17  2001/11/12 22:01:06  richard
 # Fixed issues with nosy reaction and author copies.
 #

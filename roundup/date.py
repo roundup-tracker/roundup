@@ -15,7 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.13 2001-09-18 22:58:37 richard Exp $
+# $Id: date.py,v 1.14 2001-11-22 15:46:42 jhermann Exp $
+
+__doc__ = """
+Date, time and time interval handling.
+"""
 
 import time, re, calendar
 
@@ -379,6 +383,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/09/18 22:58:37  richard
+#
+# Added some more help to roundu-admin
+#
 # Revision 1.12  2001/08/17 03:08:11  richard
 # fixed prettification of intervals of 1 week
 #

@@ -15,9 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.4 2001-11-12 22:01:06 richard Exp $
+# $Id: instance.py,v 1.5 2001-11-22 15:46:42 jhermann Exp $
 
-''' Currently this module provides one function: open. This function opens
+__doc__ = '''
+Instance handling (open instance).
+
+Currently this module provides one function: open. This function opens
 an instance.
 '''
 
@@ -52,6 +55,9 @@ del opener
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/12 22:01:06  richard
+# Fixed issues with nosy reaction and author copies.
+#
 # Revision 1.3  2001/08/07 00:24:42  richard
 # stupid typo
 #
