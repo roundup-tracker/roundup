@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.16 2002-02-16 08:06:14 richard Exp $
+# $Id: dbinit.py,v 1.17 2002-05-24 04:03:23 richard Exp $
 
 import os
 
@@ -47,7 +47,15 @@ def open(name=None):
     # open the database
     db = Database(instance_config, name)
 
-    # Now initialise the schema. Must do this each time.
+    #
+    # Now initialise the schema. Must do this each time the database is
+    # opened.
+    #
+
+    # Class automatically gets these properties:
+    #   creation = Date()
+    #   activity = Date()
+    #   creator = Link('user')
     pri = Class(db, "priority", 
                     name=String(), order=String())
     pri.setkey("name")
@@ -67,6 +75,9 @@ def open(name=None):
                     alternate_addresses=String())
     user.setkey("username")
 
+    # FileClass automatically gets these properties:
+    #   content = String()    [saved to disk in <instance home>/db/files/]
+    #   (it also gets the Class properties creation, activity and creator)
     msg = FileClass(db, "msg", 
                     author=Link("user"), recipients=Multilink("user"), 
                     date=Date(),         summary=String(), 
@@ -76,6 +87,13 @@ def open(name=None):
     file = FileClass(db, "file", 
                     name=String(),       type=String())
 
+    # IssueClass automatically gets these properties:
+    #   title = String()
+    #   messages = Multilink("msg")
+    #   files = Multilink("file")
+    #   nosy = Multilink("user")
+    #   superseder = Multilink("issue")
+    #   (it also gets the Class properties creation, activity and creator)
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
@@ -88,8 +106,9 @@ def open(name=None):
 def init(adminpw): 
     ''' as from the roundupdb method initDB 
  
-    Open the new database, and set up a bunch of attributes.
-
+    Open the new database, and add new nodes - used for initialisation. You
+    can edit this before running the "roundup-admin initialise" command to
+    change the initial database entries.
     ''' 
     dbdir = os.path.join(instance_config.DATABASE, 'files')
     if not os.path.isdir(dbdir):
@@ -122,6 +141,9 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/02/16 08:06:14  richard
+# Removed the key property restriction on title of the classic issue class.
+#
 # Revision 1.15  2002/02/15 07:08:44  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.
