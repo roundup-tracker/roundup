@@ -14,7 +14,6 @@ Fixed:
   1117860)
 - better unit tests for security mechanisms
 - code cleanup (sf patch 1115329 and additional)
-- fix search_checkboxes macro (sf patch 1113828)
 
 
 2005-01-13 0.8.0b2
@@ -83,6 +82,7 @@ Fixed:
 - handle capitalisation of class names in text hyperlinking (sf bug
   1101043)
 - quote full-text search text in URL generation
+- fix search_checkboxes macro (sf patch 1113828)
 
 
 2005-01-06 0.7.11
