@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.23 2002-07-18 23:07:08 richard Exp $
+# $Id: date.py,v 1.24 2002-08-21 07:07:27 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -75,6 +75,10 @@ class Date:
         <Date 2000-08-14.03:13:00>
         >>> Date("14:25", -5)
         <Date 2000-06-25.19:25:00>
+
+    The date format 'yyyymmddHHMMSS' (year, month, day, hour,
+    minute, second) is the serialisation format returned by the serialise()
+    method, and is accepted as an argument on instatiation.
     '''
     def __init__(self, spec='.', offset=0):
         """Construct a date given a specification and a time zone offset.
@@ -210,17 +214,23 @@ class Date:
         return str
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
-              (((?P<y>\d\d\d\d)-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
-              (?P<n>\.)?                                       # .
-              (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?    # hh:mm:ss
-              (?P<o>.+)?                                       # offset
-              ''', re.VERBOSE)):
+            (((?P<y>\d\d\d\d)-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
+            (?P<n>\.)?                                         # .
+            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?      # hh:mm:ss
+            (?P<o>.+)?                                         # offset
+            ''', re.VERBOSE), serialised_re=re.compile('''
+            (?P<y>\d{4})(?P<m>\d{2})(?P<d>\d{2}) # yyyymmdd
+            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2}) # HHMMSS
+            ''', re.VERBOSE)):
         ''' set the date to the value in spec
         '''
-        m = date_re.match(spec)
+        m = serialised_re.match(spec)
         if not m:
-            raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].[[h]h:mm[:ss]]'
-                '[offset]')
+            m = date_re.match(spec)
+            if not m:
+                raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
+                    '[[h]h:mm[:ss]][offset]')
+
         info = m.groupdict()
 
         # get the current date/time using the offset
@@ -245,7 +255,7 @@ class Date:
         self.year, self.month, self.day, self.hour, self.minute, \
             self.second, x, x, x = time.gmtime(ts)
 
-        if info['o']:
+        if info.get('o', None):
             self.applyInterval(Interval(info['o']))
 
     def __repr__(self):
@@ -261,6 +271,10 @@ class Date:
     def get_tuple(self):
         return (self.year, self.month, self.day, self.hour, self.minute,
             self.second, 0, 0, 0)
+
+    def serialise(self):
+        return '%4d%02d%02d%02d%02d%02d'%(self.year, self.month,
+            self.day, self.hour, self.minute, self.second)
 
 class Interval:
     '''
@@ -290,6 +304,10 @@ class Interval:
     days (or over/underflow from hours/mins/secs) will do that, and
     days-per-month and leap years are accounted for. Leap seconds are not.
 
+    The interval format 'syyyymmddHHMMSS' (sign, year, month, day, hour,
+    minute, second) is the serialisation format returned by the serialise()
+    method, and is accepted as an argument on instatiation.
+
     TODO: more examples, showing the order of addition operation
     '''
     def __init__(self, spec, sign=1):
@@ -311,7 +329,7 @@ class Interval:
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r: return r
         return 0
-        
+
     def __str__(self):
         """Return this interval as a string."""
         sign = {1:'+', -1:'-'}[self.sign]
@@ -325,35 +343,32 @@ class Interval:
             l.append('%d:%02d'%(self.hour, self.minute))
         return ' '.join(l)
 
-    def set(self, spec, interval_re = re.compile('''
-            \s*
-            (?P<s>[-+])?         # + or -
-            \s*
-            ((?P<y>\d+\s*)y)?    # year
-            \s*
-            ((?P<m>\d+\s*)m)?    # month
-            \s*
-            ((?P<w>\d+\s*)w)?    # week
-            \s*
-            ((?P<d>\d+\s*)d)?    # day
-            \s*
-            (((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
-            \s*
-            ''', re.VERBOSE)):
+    def set(self, spec, interval_re=re.compile('''
+            \s*(?P<s>[-+])?         # + or -
+            \s*((?P<y>\d+\s*)y)?    # year
+            \s*((?P<m>\d+\s*)m)?    # month
+            \s*((?P<w>\d+\s*)w)?    # week
+            \s*((?P<d>\d+\s*)d)?    # day
+            \s*(((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
+            \s*''', re.VERBOSE), serialised_re=re.compile('''
+            (?P<s>[+-])(?P<y>\d{4})(?P<m>\d{2})(?P<d>\d{2})
+            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE)):
         ''' set the date to the value in spec
         '''
         self.year = self.month = self.week = self.day = self.hour = \
             self.minute = self.second = 0
         self.sign = 1
-        m = interval_re.match(spec)
+        m = serialised_re.match(spec)
         if not m:
-            raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
-                '[#d] [[[H]H:MM]:SS]')
+            m = interval_re.match(spec)
+            if not m:
+                raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
+                    '[#d] [[[H]H:MM]:SS]')
 
         info = m.groupdict()
         for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
                 'H':'hour', 'M':'minute', 'S':'second'}.items():
-            if info[group] is not None:
+            if info.getr(group, None) is not None:
                 setattr(self, attr, int(info[group]))
 
         if self.week:
@@ -416,8 +431,12 @@ class Interval:
         return s
 
     def get_tuple(self):
-        return (self.year, self.month, self.day, self.hour, self.minute,
-            self.second)
+        return (self.sign, self.year, self.month, self.day, self.hour,
+            self.minute, self.second)
+
+    def serialise(self):
+        return '%s%4d%02d%02d%02d%02d%02d'%(self.sign, self.year, self.month,
+            self.day, self.hour, self.minute, self.second)
 
 
 def test():
@@ -442,6 +461,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/07/18 23:07:08  richard
+# Unit tests and a few fixes.
+#
 # Revision 1.22  2002/07/14 06:05:50  richard
 #  . fixed the date module so that Date(". - 2d") works
 #

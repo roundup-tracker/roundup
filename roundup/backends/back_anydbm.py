@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.61 2002-08-19 02:53:27 richard Exp $
+#$Id: back_anydbm.py,v 1.62 2002-08-21 07:07:27 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -342,9 +342,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if isinstance(prop, Password):
                 d[k] = str(v)
             elif isinstance(prop, Date) and v is not None:
-                d[k] = v.get_tuple()
+                d[k] = v.serialise()
             elif isinstance(prop, Interval) and v is not None:
-                d[k] = v.get_tuple()
+                d[k] = v.serialise()
             else:
                 d[k] = v
         return d
@@ -605,25 +605,30 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def doSaveJournal(self, classname, nodeid, action, params):
         # handle supply of the special journalling parameters (usually
         # supplied on importing an existing database)
-        if params.has_key('creator'):
-            journaltag = self.user.get(params['creator'], 'username')
-            del params['creator']
+        if isinstance(params, type({})):
+            if params.has_key('creator'):
+                journaltag = self.user.get(params['creator'], 'username')
+                del params['creator']
+            else:
+                journaltag = self.journaltag
+            if params.has_key('created'):
+                journaldate = params['created'].serialise()
+                del params['created']
+            else:
+                journaldate = date.Date().serialise()
+            if params.has_key('activity'):
+                del params['activity']
+
+            # serialise the parameters now
+            if action in ('set', 'create'):
+                params = self.serialise(classname, params)
         else:
             journaltag = self.journaltag
-        if params.has_key('created'):
-            journaldate = params['created'].get_tuple()
-            del params['created']
-        else:
-            journaldate = date.Date().get_tuple()
-        if params.has_key('activity'):
-            del params['activity']
-
-        # serialise the parameters now
-        if action in ('set', 'create'):
-            params = self.serialise(classname, params)
+            journaldate = date.Date().serialise()
 
         # create the journal entry
         entry = (nodeid, journaldate, journaltag, action, params)
+        print 'doSaveJournal', entry
 
         if __debug__:
             print >>hyperdb.DEBUG, 'doSaveJournal', entry
@@ -1907,6 +1912,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.61  2002/08/19 02:53:27  richard
+#full database export and import is done
+#
 #Revision 1.60  2002/08/19 00:23:19  richard
 #handle "unset" initial Link values (!)
 #
