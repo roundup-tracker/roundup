@@ -34,7 +34,7 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py sdist --quiet
  python setup.py bdist_rpm
  python setup.py bdist_wininst
- python2.3 setup.py register
+ python setup.py register
 
 
 Distributing Releases
