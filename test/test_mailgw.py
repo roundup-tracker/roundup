@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.15 2002-03-19 06:37:00 richard Exp $
+# $Id: test_mailgw.py,v 1.16 2002-03-19 21:58:11 grubert Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -25,6 +25,11 @@ class DiffHelper:
         '''
         if s1 == s2:
             return
+        # under python2.1 we allow a difference of one trailing empty line.
+        if sys.version_info[0:2] == (2,1):
+            if s1+'\n' == s2:
+                return
+        
         l1=s1.split('\n')
         l2=s2.split('\n')
         s = difflib.SequenceMatcher(None, l1, l2)
@@ -426,6 +431,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/03/19 06:37:00  richard
+# Made the email checking spit out a diff - much easier to spot the problem!
+#
 # Revision 1.14  2002/03/18 18:32:00  rochecompaan
 # All messages sent to the nosy list are now encoded as quoted-printable.
 #
