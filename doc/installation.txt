@@ -97,8 +97,9 @@ For The Really Impatient
 
 .. note::
    The ``demo.py`` script is packaged in Roundup's source distribution - 
-   users of the Windows installer, other binary distributions or
-   pre-installed Roundup will need to download the source to use it.
+   users of the Windows installer may use the ``roundup-demo`` program.
+   Users of other binary distributions or pre-installed Roundup will need
+   to download the source to use it.
 
 If you just want to give Roundup a whirl Right Now, then simply run
 ``python demo.py``. This will set up a simple demo tracker on your
