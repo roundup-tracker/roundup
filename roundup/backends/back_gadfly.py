@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.25 2002-09-23 06:48:34 richard Exp $
+# $Id: back_gadfly.py,v 1.26 2002-09-24 01:59:28 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -93,6 +93,16 @@ class Database(Database):
         except gadfly.database.error, message:
             if message == 'no more results':
                 return None
+            raise
+
+    def sql_fetchall(self):
+        ''' Fetch a single row. If there's nothing to fetch, return [].
+        '''
+        try:
+            return self.cursor.fetchall()
+        except gadfly.database.error, message:
+            if message == 'no more results':
+                return []
             raise
 
     def save_dbschema(self, schema):

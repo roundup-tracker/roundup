@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.84 2002-09-23 00:50:32 richard Exp $
+#$Id: back_anydbm.py,v 1.85 2002-09-24 01:59:28 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -980,7 +980,6 @@ class Class(hyperdb.Class):
             creation = None
         if d.has_key('activity'):
             del d['activity']
-
         self.db.addjournal(self.classname, newid, 'create', d, creator,
             creation)
         return newid

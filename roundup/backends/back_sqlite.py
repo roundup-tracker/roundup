@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.4 2002-09-23 06:48:35 richard Exp $
+# $Id: back_sqlite.py,v 1.5 2002-09-24 01:59:28 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -32,6 +32,11 @@ class Database(Database):
         ''' Fetch a single row. If there's nothing to fetch, return None.
         '''
         return self.cursor.fetchone()
+
+    def sql_fetchall(self):
+        ''' Fetch a single row. If there's nothing to fetch, return [].
+        '''
+        return self.cursor.fetchall()
 
     def sql_commit(self):
         ''' Actually commit to the database.

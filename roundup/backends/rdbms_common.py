@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.14 2002-09-23 08:24:51 richard Exp $
+# $Id: rdbms_common.py,v 1.15 2002-09-24 01:59:28 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1612,12 +1612,33 @@ class Class(hyperdb.Class):
                 self.classname, prop, ','.join([a for x in values.keys()])))
         sql = '\nintersect\n'.join(tables)
         self.db.sql(sql, allvalues)
-        try:
-            l = [x[0] for x in self.db.cursor.fetchall()]
-        except gadfly.database.error, message:
-            if message == 'no more results':
-                l = []
-            raise
+        l = [x[0] for x in self.db.sql_fetchall()]
+        if __debug__:
+            print >>hyperdb.DEBUG, 'find ... ', l
+        return l
+
+    def stringFind(self, **requirements):
+        '''Locate a particular node by matching a set of its String
+        properties in a caseless search.
+
+        If the property is not a String property, a TypeError is raised.
+        
+        The return is a list of the id of all nodes that match.
+        '''
+        where = []
+        args = []
+        for propname in requirements.keys():
+            prop = self.properties[propname]
+            if isinstance(not prop, String):
+                raise TypeError, "'%s' not a String property"%propname
+            where.append(propname)
+            args.append(requirements[propname].lower())
+
+        # generate the where clause
+        s = ' and '.join(['_%s=%s'%(col, self.db.arg) for col in where])
+        sql = 'select id from _%s where %s'%(self.classname, s)
+        self.db.sql(sql, tuple(args))
+        l = [x[0] for x in self.db.sql_fetchall()]
         if __debug__:
             print >>hyperdb.DEBUG, 'find ... ', l
         return l
