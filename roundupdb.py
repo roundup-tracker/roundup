@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.4 2001-07-19 06:27:07 anthonybaxter Exp $
+# $Id: roundupdb.py,v 1.5 2001-07-20 00:22:50 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -331,9 +331,9 @@ def initDB(storagelocator, password):
     pri = db.getclass('priority')
     pri.create(name="fatal-bug", order="1")
     pri.create(name="bug", order="2")
-    pri.create(name="todo", order="3")
-    pri.create(name="usability", order="4")
-    pri.create(name="feature", order="5")
+    pri.create(name="usability", order="3")
+    pri.create(name="feature", order="4")
+    pri.create(name="support", order="5")
 
     stat = db.getclass('status')
     stat.create(name="unread", order="1")
@@ -374,6 +374,13 @@ def initDB(storagelocator, password):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/19 06:27:07  anthonybaxter
+# fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
+# my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
+# strings in a commit message. I'm a twonk.
+#
+# Also broke the help string in two.
+#
 # Revision 1.3  2001/07/19 05:52:22  anthonybaxter
 # Added CVS keywords Id and Log to all python files.
 #
