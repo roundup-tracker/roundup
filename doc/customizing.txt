@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.62 $
+:Version: $Revision: 1.63 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -437,9 +437,12 @@ case though, so be careful to use the right one.
     the create() methods.
 
 **Changing content after tracker initialisation**
-    Use the roundup-admin interface's create, set and retire methods to add,
-    alter or remove items from the classes in question.
+    As the "admin" user, click on the "class list" link in the web interface
+    to bring up a list of all database classes. Click on the name of the class
+    you wish to change the content of.
 
+    You may also use the roundup-admin interface's create, set and retire
+    methods to add, alter or remove items from the classes in question.
 
 See "`adding a new field to the classic schema`_" for an example that requires
 database content changes.
@@ -584,6 +587,16 @@ Example Scenarios
  Create a new Role called "Email User" which has all the Permissions of the
  normal "User" Role minus the "Web Access" Permission. This will allow users
  to send in emails to the tracker, but not access the web interface.
+
+**let some users edit the details of all users**
+ Create a new Role called "User Admin" which has the Permission for editing
+ users::
+
+    db.security.addRole(name='User Admin', description='Managing users')
+    p = db.security.getPermission('Edit', 'user')
+    db.security.addPermissionToRole('User Admin', p)
+
+ and assign the Role to the users who need the permission.
 
 
 Web Interface
@@ -1030,7 +1043,6 @@ The following variables are available to templates.
   `hyperdb class wrapper`_ or a `hyperdb item wrapper`_
 **request**
   Includes information about the current request, including:
-   - the url
    - the current index information (``filterspec``, ``filter`` args,
      ``properties``, etc) parsed out of the form. 
    - methods for easy filterspec link generation
@@ -1193,7 +1205,8 @@ The property wrapper has some useful attributes:
 Attribute       Description
 =============== =============================================================
 _name           the name of the property
-_value          the value of the property if any
+_value          the value of the property if any - this is the actual value
+                retrieved from the hyperdb for this property
 =============== =============================================================
 
 There are several methods available on these wrapper objects:
@@ -1237,7 +1250,6 @@ Variable    Holds
 =========== =================================================================
 form        the CGI form as a cgi.FieldStorage
 env         the CGI environment variables
-url         the current URL path for this request
 base        the base URL for this tracker
 user        a HTMLUser instance for this user
 classname   the current classname (possibly None)

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.36 $
+:Version: $Revision: 1.37 $
 
 .. contents::
 
@@ -84,7 +84,8 @@ Basic Installation Steps
 ------------------------
 
 1. To install the Roundup support code into your Python tree and
-   Roundup scripts into /usr/local/bin. You need to have write permissions
+   Roundup scripts into /usr/local/bin (substitute that path for whatever is
+   appropriate on your system). You need to have write permissions
    for these locations, eg. being root on unix::
 
        python setup.py install
@@ -319,8 +320,8 @@ To test the mail gateway on unix systems, try::
 
     echo test |mail -s '[issue] test' support@YOUR_DOMAIN_HERE
 
-As a regular cron job using a mailbox source
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+As a regular job using a mailbox source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Set ``roundup-mailgw`` up to run every 10 minutes or so. For example::
 
@@ -330,15 +331,17 @@ Where the ``mail_spool_file`` argument is the location of the roundup submission
 user's mail spool. On most systems, the spool for a user "issue_tracker"
 will be "``/var/mail/issue_tracker``".
 
-As a regular cron job using a POP source
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+As a regular job using a POP source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To retrieve from a POP mailbox, use a similar cron entry to the mailbox one::
+To retrieve from a POP mailbox, use a *cron* entry to the mailbox one::
 
   10 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support pop <pop_spec>
-    
+
 where pop_spec is "``username:password@server``" that specifies the roundup
 submission user's POP account name, password and server.
+
+On windows, you would set up the command using the windows scheduler.
 
 
 Shared Environment Steps

@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 .. contents::
 
@@ -129,7 +129,21 @@ propname   selects the values the item properties given by propname
 Access Controls
 ---------------
 
-XXX
+User access is controlled through Permissions. These are are grouped into
+Roles, and users have a comma-separated list of Roles assigned to them.
+
+Permissions divide access controls up into answering questions like:
+
+- may the user edit issues ("Edit", "issue")
+- is the user allowed to use the web interface ("Web Access")
+- may the user edit other user's Roles through the web ("Web Roles")
+
+Any number of new Permissions and Roles may be created as described in the
+customisation documentation. Examples of new access controls are:
+
+- only managers may sign off issues as complete
+- don't give users who register through email web access
+- let some users edit the details of all users
 
 
 E-Mail Gateway
@@ -385,4 +399,4 @@ command-line.
 Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
-
+.. _`customisation documentation`: customizing.html
