@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.39 2001-11-03 01:43:47 richard Exp $
+# $Id: htmltemplate.py,v 1.40 2001-11-03 01:56:51 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -521,11 +521,11 @@ class IndexTemplate(TemplateFunctions):
             columns = l
 
         # display the filter section
-        if (hasattr(self.client, 'FILTER_POSITION') and
+        if (show_display_form and hasattr(self.client, 'FILTER_POSITION') and
                 self.client.FILTER_POSITION in ('top and bottom', 'top')):
             w('<form action="index">\n')
             self.filter_section(filter_template, filter, columns, group,
-                all_filters, all_columns, show_display_form, show_customization)
+                all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
             if sort:
                 w('<input type="hidden" name=":sort" value="%s">'%
@@ -602,11 +602,11 @@ class IndexTemplate(TemplateFunctions):
         w('</table>')
 
         # display the filter section
-        if (hasattr(self.client, 'FILTER_POSITION') and
+        if (show_display_form and hasattr(self.client, 'FILTER_POSITION') and
                 self.client.FILTER_POSITION in ('top and bottom', 'bottom')):
             w('<form action="index">\n')
             self.filter_section(filter_template, filter, columns, group,
-                all_filters, all_columns, show_display_form, show_customization)
+                all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
             if sort:
                 w('<input type="hidden" name=":sort" value="%s">'%
@@ -615,7 +615,7 @@ class IndexTemplate(TemplateFunctions):
 
 
     def filter_section(self, template, filter, columns, group, all_filters,
-            all_columns, show_display_form, show_customization):
+            all_columns, show_customization):
 
         w = self.client.write
 
@@ -639,7 +639,6 @@ class IndexTemplate(TemplateFunctions):
         for name in self.properties.keys():
             if name in all_filters or name in all_columns:
                 names.append(name)
-        w('<tr class="location-bar">')
         if show_customization:
             action = '-'
         else:
@@ -654,68 +653,70 @@ class IndexTemplate(TemplateFunctions):
                 if all_columns and name in group:
                     w('<input type="hidden" name=":group" value="%s">' % name)
 
-        if show_display_form:
-            # TODO: The widget style can go into the stylesheet
-            w('<th align="left" colspan=%s>'
-              '<input style="height : 1em; width : 1em; font-size: 12pt" type="submit" name="action" value="%s">&nbsp;View '
-              'customisation...</th></tr>\n'%(len(names)+1, action))
-            if show_customization:
-                w('<tr class="location-bar"><th>&nbsp;</th>')
-                for name in names:
-                    w('<th>%s</th>'%name.capitalize())
-                w('</tr>\n')
+        # TODO: The widget style can go into the stylesheet
+        w('<th align="left" colspan=%s>'
+          '<input style="height : 1em; width : 1em; font-size: 12pt" type="submit" name="action" value="%s">&nbsp;View '
+          'customisation...</th></tr>\n'%(len(names)+1, action))
 
-                # Filter
-                if all_filters:
-                    w('<tr><th width="1%" align=right class="location-bar">'
-                      'Filters</th>\n')
-                    for name in names:
-                        if name not in all_filters:
-                            w('<td>&nbsp;</td>')
-                            continue
-                        if name in filter: checked=' checked'
-                        else: checked=''
-                        w('<td align=middle>\n')
-                        w(' <input type="checkbox" name=":filter" value="%s" '
-                          '%s></td>\n'%(name, checked))
-                    w('</tr>\n')
-
-                # Columns
-                if all_columns:
-                    w('<tr><th width="1%" align=right class="location-bar">'
-                      'Columns</th>\n')
-                    for name in names:
-                        if name not in all_columns:
-                            w('<td>&nbsp;</td>')
-                            continue
-                        if name in columns: checked=' checked'
-                        else: checked=''
-                        w('<td align=middle>\n')
-                        w(' <input type="checkbox" name=":columns" value="%s"'
-                          '%s></td>\n'%(name, checked))
-                    w('</tr>\n')
-
-                    # Grouping
-                    w('<tr><th width="1%" align=right class="location-bar">'
-                      'Grouping</th>\n')
-                    for name in names:
-                        prop = self.properties[name]
-                        if name not in all_columns:
-                            w('<td>&nbsp;</td>')
-                            continue
-                        if name in group: checked=' checked'
-                        else: checked=''
-                        w('<td align=middle>\n')
-                        w(' <input type="checkbox" name=":group" value="%s"'
-                          '%s></td>\n'%(name, checked))
-                    w('</tr>\n')
-
-                w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
-                w('<td colspan="%s">'%len(names))
-                w('<input type="submit" name="action" value="Redisplay"></td>')
-                w('</tr>\n')
-
+        if not show_customization:
             w('</table>\n')
+
+        w('<tr class="location-bar"><th>&nbsp;</th>')
+        for name in names:
+            w('<th>%s</th>'%name.capitalize())
+        w('</tr>\n')
+
+        # Filter
+        if all_filters:
+            w('<tr><th width="1%" align=right class="location-bar">'
+              'Filters</th>\n')
+            for name in names:
+                if name not in all_filters:
+                    w('<td>&nbsp;</td>')
+                    continue
+                if name in filter: checked=' checked'
+                else: checked=''
+                w('<td align=middle>\n')
+                w(' <input type="checkbox" name=":filter" value="%s" '
+                  '%s></td>\n'%(name, checked))
+            w('</tr>\n')
+
+        # Columns
+        if all_columns:
+            w('<tr><th width="1%" align=right class="location-bar">'
+              'Columns</th>\n')
+            for name in names:
+                if name not in all_columns:
+                    w('<td>&nbsp;</td>')
+                    continue
+                if name in columns: checked=' checked'
+                else: checked=''
+                w('<td align=middle>\n')
+                w(' <input type="checkbox" name=":columns" value="%s"'
+                  '%s></td>\n'%(name, checked))
+            w('</tr>\n')
+
+            # Grouping
+            w('<tr><th width="1%" align=right class="location-bar">'
+              'Grouping</th>\n')
+            for name in names:
+                prop = self.properties[name]
+                if name not in all_columns:
+                    w('<td>&nbsp;</td>')
+                    continue
+                if name in group: checked=' checked'
+                else: checked=''
+                w('<td align=middle>\n')
+                w(' <input type="checkbox" name=":group" value="%s"'
+                  '%s></td>\n'%(name, checked))
+            w('</tr>\n')
+
+        w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
+        w('<td colspan="%s">'%len(names))
+        w('<input type="submit" name="action" value="Redisplay"></td>')
+        w('</tr>\n')
+        w('</table>\n')
+
 
     def sortby(self, sort_name, filterspec, columns, filter, group, sort):
         l = []
@@ -848,6 +849,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2001/11/03 01:43:47  richard
+# Ahah! Fixed the lynx problem - there was a hidden input field misplaced.
+#
 # Revision 1.38  2001/10/31 06:58:51  richard
 # Added the wrap="hard" attribute to the textarea of the note field so the
 # messages wrap sanely.
