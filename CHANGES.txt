@@ -20,6 +20,8 @@ Fixed:
  . fixed setting nosy as argument in subject line
  . fixed back_bsddb so it passed the journal tests
  . fixed status changes in mail gateway (eg. unread -> chatting)
+ . we'll actually distribute the frontends directory now, as advertised...
+
 
 2002-01-16 - 0.4.0b2
 Fixed:

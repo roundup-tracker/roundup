@@ -1,4 +1,5 @@
 recursive-include roundup *.py *.txt *.item *.index *.css *.filter *.newitem
+recursive-include frontends *.py *.txt *.dtml *.gif *.css *.html
 recursive-include cgi-bin *.cgi
 recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt
