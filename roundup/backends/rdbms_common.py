@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.22 2002-10-08 04:11:16 richard Exp $
+# $Id: rdbms_common.py,v 1.23 2002-10-31 04:02:23 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1767,9 +1767,12 @@ class Class(hyperdb.Class):
                         xtra = ' or _%s is NULL'%k
                     else:
                         xtra = ''
-                    s = ','.join([a for x in v])
-                    where.append('(_%s in (%s)%s)'%(k, s, xtra))
-                    args = args + v
+                    if v:
+                        s = ','.join([a for x in v])
+                        where.append('(_%s in (%s)%s)'%(k, s, xtra))
+                        args = args + v
+                    else:
+                        where.append('_%s is NULL'%k)
                 else:
                     if v == '-1':
                         v = None
