@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.6 2002-09-02 07:46:55 richard Exp $
+# $Id: client.py,v 1.7 2002-09-03 02:58:11 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -10,8 +10,9 @@ import binascii, Cookie, time, random
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
 
-from roundup.cgi.templating import RoundupPageTemplate
+from roundup.cgi.templating import getTemplate, HTMLRequest
 from roundup.cgi import cgitb
+
 from PageTemplates import PageTemplate
 
 class Unauthorised(ValueError):
@@ -280,13 +281,11 @@ class Client:
     def template(self, name, **kwargs):
         ''' Return a PageTemplate for the named page
         '''
-        pt = RoundupPageTemplate(self)
-        # make errors nicer
-        pt.id = name
-        pt.write(open(os.path.join(self.instance.TEMPLATES, name)).read())
-        # XXX handle PT rendering errors here nicely
+        pt = getTemplate(self.instance.TEMPLATES, name)
+        # XXX handle PT rendering errors here more nicely
         try:
-            return pt.render(**kwargs)
+            # let the template render figure stuff out
+            return pt.render(self, None, None, **kwargs)
         except PageTemplate.PTRuntimeError, message:
             return '<strong>%s</strong><ol>%s</ol>'%(message,
                 '<li>'.join(pt._v_errors))
@@ -777,6 +776,9 @@ class Client:
             Set the form ":filter" variable based on the values of the
             filter variables - if they're set to anything other than
             "dontcare" then add them to :filter.
+
+            Also handle the ":queryname" variable and save off the query to
+            the user's query list.
         '''
         # generic edit is per-class only
         if not self.searchPermission():
@@ -789,6 +791,32 @@ class Client:
             if not props.has_key(key): continue
             if not self.form[key].value: continue
             self.form.value.append(cgi.MiniFieldStorage(':filter', key))
+
+        # handle saving the query params
+        if self.form.has_key(':queryname'):
+            queryname = self.form[':queryname'].value.strip()
+            if queryname:
+                # parse the environment and figure what the query _is_
+                req = HTMLRequest(self)
+                url = req.indexargs_href('', {})
+
+                # handle editing an existing query
+                try:
+                    qid = self.db.query.lookup(queryname)
+                    self.db.query.set(qid, klass=self.classname, url=url)
+                except KeyError:
+                    # create a query
+                    qid = self.db.query.create(name=queryname,
+                        klass=self.classname, url=url)
+
+                    # and add it to the user's query multilink
+                    queries = self.db.user.get(self.userid, 'queries')
+                    queries.append(qid)
+                    self.db.user.set(self.userid, queries=queries)
+
+                # commit the query change to the database
+                self.db.commit()
+
 
     def searchPermission(self):
         ''' Determine whether the user has permission to search this class.
@@ -1004,13 +1032,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if hasattr(value, 'value'):
-                # Quite likely to be a FormItem instance
-                value = value.value
             if not isinstance(value, type([])):
                 value = [i.strip() for i in value.split(',')]
             else:
-                value = [i.strip() for i in value]
+                value = [i.value.strip() for i in value]
             link = cl.properties[key].classname
             l = []
             for entry in map(str, value):

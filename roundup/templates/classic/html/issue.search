@@ -57,7 +57,7 @@
  <th>Activity:</th>
  <td><input name="activity"></td>
  <td><input type="checkbox" name=":columns" value="activity" checked></td>
- <td><input type="radio" name=":sort" value="activity" checked></td>
+ <td><input type="radio" name=":sort" value="activity"></td>
  <td>&nbsp;</td>
 </tr>
 
@@ -74,7 +74,7 @@
  </td>
  <td><input type="checkbox" name=":columns" value="priority"></td>
  <td><input type="radio" name=":sort" value="priority"></td>
- <td><input type="radio" name=":group" value="priority" checked></td>
+ <td><input type="radio" name=":group" value="priority"></td>
 </tr>
 
 <tr>
@@ -132,13 +132,22 @@
 </td>
 </tr>
 
+<tr>
+<th>Query name**:</th>
+<td><input name=":queryname">
+</td>
+</tr>
+
 <tr><td>&nbsp;</td>
 <td><input type="submit" value="Search"></td>
 </tr>
 
 <tr><td>&nbsp;</td>
- <td colspan="4" class="help">*: The "all text" field will look in message
-   bodies and issue titles</td>
+ <td colspan="4" class="help">
+   *: The "all text" field will look in message bodies and issue titles<br>
+   **: If you supply a name, the query will be saved off and available as a
+       link in the sidebar
+ </td>
 </tr>
 </table>
 

@@ -42,16 +42,15 @@ pending web: Quick help links next to the property labels giving a
              form element too, eg. how to use the nosy list edit box.
 pending web: clicking on a group header should filter for that type of entry
 pending web: re-enable auth by basic http auth
+pending web: search "refinement"
+             - pre-fill the search page with the current search parameters)
+             - add a drop-down with all queries which fills form with selected
+               query values
 
 New templating TODO:
 . generic class editing
 . classhelp
-. query saving
-  - add ":queryname" to search form submission, and handle it in search action
-  - ?add a drop-down on search page with all queries that fills form with
-     each query's values?
-. search "refinement" (pre-fill the search page with the current search
-  parameters)
+. rewritten documentation (can come after the beta though so stuff is settled)
 
 ongoing: any bugs
 

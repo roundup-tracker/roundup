@@ -21,6 +21,13 @@
 
 <tr>
  <td rowspan="2" valign="top" nowrap class="sidebar">
+  <p class="classblock" tal:condition="request/user/queries">
+   <b>Your Queries</b><br>
+   <a tal:repeat="qs request/user/queries"
+      tal:attributes="href python:'%s%s'%(qs['klass'], qs['url'])"
+      tal:content="qs/name">link</a>
+  </p>
+
   <p class="classblock"
        tal:condition="python:request.user.hasPermission('View', 'issue')">
    <b>Issues</b><br>

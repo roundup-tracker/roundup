@@ -2,13 +2,13 @@
 <tal:block tal:define="batch request/batch">
  <table class="list">
   <tr>
-   <th tal:condition="exists:request/columns/priority">Priority</th>
-   <th tal:condition="exists:request/columns/id">ID</th>
-   <th tal:condition="exists:request/columns/activity">Activity</th>
-   <th tal:condition="exists:request/columns/title">Title</th>
-   <th tal:condition="exists:request/columns/status">Status</th>
-   <th tal:condition="exists:request/columns/creator">Created&nbsp;By</th>
-   <th tal:condition="exists:request/columns/assignedto">Assigned&nbsp;To</th>
+   <th tal:condition="request/show/priority">Priority</th>
+   <th tal:condition="request/show/id">ID</th>
+   <th tal:condition="request/show/activity">Activity</th>
+   <th tal:condition="request/show/title">Title</th>
+   <th tal:condition="request/show/status">Status</th>
+   <th tal:condition="request/show/creator">Created&nbsp;By</th>
+   <th tal:condition="request/show/assignedto">Assigned&nbsp;To</th>
   </tr>
  <tal:block tal:repeat="i batch">
   <tr tal:condition="python:request.group[1] and
@@ -18,22 +18,17 @@
    </th>
   </tr>
   <tr tal:attributes="class python:['normal', 'alt'][repeat['i'].even()]">
-   <td tal:condition="exists:request/columns/priority"
-      tal:content="i/priority"></td>
-   <td tal:condition="exists:request/columns/id"
-      tal:content="i/id"></td>
-   <td tal:condition="exists:request/columns/activity"
-      tal:content="i/activity/reldate"></td>
-   <td tal:condition="exists:request/columns/title">
+   <td tal:condition="request/show/priority" tal:content="i/priority"></td>
+   <td tal:condition="request/show/id" tal:content="i/id"></td>
+   <td tal:condition="request/show/activity"
+       tal:content="i/activity/reldate"></td>
+   <td tal:condition="request/show/title">
     <a tal:attributes="href string:issue${i/id}"
        tal:content="python:i.title.value or '[no title]'">title</a>
    </td>
-   <td tal:condition="exists:request/columns/status"
-       tal:content="i/status"></td>
-   <td tal:condition="exists:request/columns/creator"
-       tal:content="i/creator"></td>
-   <td tal:condition="exists:request/columns/assignedto"
-       tal:content="i/assignedto"></td>
+   <td tal:condition="request/show/status" tal:content="i/status"></td>
+   <td tal:condition="request/show/creator" tal:content="i/creator"></td>
+   <td tal:condition="request/show/assignedto" tal:content="i/assignedto"></td>
   </tr>
  </tal:block>
  <tr>
@@ -64,10 +59,10 @@
    <td>
     <select name=":sort">
      <option value="">- nothing -</option>
-     <option tal:repeat="col python:request.columns.keys()"
+     <option tal:repeat="col request/columns"
              tal:attributes="value col; selected python:col == request.sort[1]"
              tal:content="col">column</option>
-     </select>
+    </select>
    </td>
    <th>Descending:</th>
    <td><input type="checkbox" name=":sortdir"
@@ -77,12 +72,12 @@
   <tr>
    <th>Group on:</th>
    <td>
-     <select name=":group">
-      <option value="">- nothing -</option>
-      <option tal:repeat="col python:request.columns.keys()"
+    <select name=":group">
+     <option value="">- nothing -</option>
+     <option tal:repeat="col request/columns"
              tal:attributes="value col; selected python:col == request.group[1]"
              tal:content="col">column</option>
-     </select>
+    </select>
    </td>
    <th>Descending:</th>
    <td><input type="checkbox" name=":groupdir"

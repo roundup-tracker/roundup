@@ -1,9 +1,16 @@
-import sys, cgi, urllib, os, re, os.path
+import sys, cgi, urllib, os, re, os.path, time
 
 from roundup import hyperdb, date
 from roundup.i18n import _
 
-
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 try:
     import StructuredText
 except ImportError:
@@ -29,9 +36,68 @@ if not sys.modules.has_key('Acquisition'):
     import Acquisition
     sys.modules['Acquisition'] = Acquisition
 
-# now it's safe to import PageTemplates and ZTUtils
+# now it's safe to import PageTemplates, TAL and ZTUtils
 from PageTemplates import PageTemplate
+from PageTemplates.Expressions import getEngine
+from TAL.TALInterpreter import TALInterpreter
 import ZTUtils
+
+# XXX WAH pagetemplates aren't pickleable :(
+#def getTemplate(dir, name, classname=None, request=None):
+#    ''' Interface to get a template, possibly loading a compiled template.
+#    '''
+#    # source
+#    src = os.path.join(dir, name)
+#
+#    # see if we can get a compile from the template"c" directory (most
+#    # likely is "htmlc"
+#    split = list(os.path.split(dir))
+#    split[-1] = split[-1] + 'c'
+#    cdir = os.path.join(*split)
+#    split.append(name)
+#    cpl = os.path.join(*split)
+#
+#    # ok, now see if the source is newer than the compiled (or if the
+#    # compiled even exists)
+#    MTIME = os.path.stat.ST_MTIME
+#    if (not os.path.exists(cpl) or os.stat(cpl)[MTIME] < os.stat(src)[MTIME]):
+#        # nope, we need to compile
+#        pt = RoundupPageTemplate()
+#        pt.write(open(src).read())
+#        pt.id = name
+#
+#        # save off the compiled template
+#        if not os.path.exists(cdir):
+#            os.makedirs(cdir)
+#        f = open(cpl, 'wb')
+#        pickle.dump(pt, f)
+#        f.close()
+#    else:
+#        # yay, use the compiled template
+#        f = open(cpl, 'rb')
+#        pt = pickle.load(f)
+#    return pt
+
+templates = {}
+
+def getTemplate(dir, name, classname=None, request=None):
+    ''' Interface to get a template, possibly loading a compiled template.
+    '''
+    # find the source, figure the time it was last modified
+    src = os.path.join(dir, name)
+    stime = os.stat(src)[os.path.stat.ST_MTIME]
+
+    key = (dir, name)
+    if templates.has_key(key) and stime < templates[key].mtime:
+        # compiled template is up to date
+        return templates[key]
+
+    # compile the template
+    templates[key] = pt = RoundupPageTemplate()
+    pt.write(open(src).read())
+    pt.id = name
+    pt.mtime = time.time()
+    return pt
 
 class RoundupPageTemplate(PageTemplate.PageTemplate):
     ''' A Roundup-specific PageTemplate.
@@ -77,36 +143,46 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
           python modules made available (XXX: not sure what's actually in
           there tho)
     '''
-    def __init__(self, client, classname=None, request=None):
-        ''' Extract the vars from the client and install in the context.
-        '''
-        self.client = client
-        self.classname = classname or self.client.classname
-        self.request = request or HTMLRequest(self.client)
-
-    def pt_getContext(self):
+    def getContext(self, client, classname, request):
         c = {
-             'klass': HTMLClass(self.client, self.classname),
+             'klass': HTMLClass(client, classname),
              'options': {},
              'nothing': None,
-             'request': self.request,
-             'content': self.client.content,
-             'db': HTMLDatabase(self.client),
-             'instance': self.client.instance
+             'request': request,
+             'content': client.content,
+             'db': HTMLDatabase(client),
+             'instance': client.instance
         }
         # add in the item if there is one
-        if self.client.nodeid:
-            c['item'] = HTMLItem(self.client.db, self.classname,
-                self.client.nodeid)
-            c[self.classname] = c['item']
+        if client.nodeid:
+            c['item'] = HTMLItem(client.db, classname, client.nodeid)
+            c[classname] = c['item']
         else:
-            c[self.classname] = c['klass']
+            c[classname] = c['klass']
         return c
-   
-    def render(self, *args, **kwargs):
-        if not kwargs.has_key('args'):
-            kwargs['args'] = args
-        return self.pt_render(extra_context={'options': kwargs})
+
+    def render(self, client, classname, request, **options):
+        """Render this Page Template"""
+
+        if not self._v_cooked:
+            self._cook()
+
+        __traceback_supplement__ = (PageTemplate.PageTemplateTracebackSupplement, self)
+
+        if self._v_errors:
+            raise PTRuntimeError, 'Page Template %s has errors.' % self.id
+
+        # figure the context
+        classname = classname or client.classname
+        request = request or HTMLRequest(client)
+        c = self.getContext(client, classname, request)
+        c.update({'options': options})
+
+        # and go
+        output = StringIO.StringIO()
+        TALInterpreter(self._v_program, self._v_macros,
+            getEngine().getContext(c), output, tal=1, strictinsert=0)()
+        return output.getvalue()
 
 class HTMLDatabase:
     ''' Return HTMLClasses for valid class fetches
@@ -225,19 +301,16 @@ class HTMLClass:
         # create a new request and override the specified args
         req = HTMLRequest(self.client)
         req.classname = self.classname
-        req.__dict__.update(kwargs)
+        req.update(kwargs)
 
         # new template, using the specified classname and request
-        pt = RoundupPageTemplate(self.client, self.classname, req)
-
-        # use the specified template
         name = self.classname + '.' + name
-        pt.write(open(os.path.join(self.db.config.TEMPLATES, name)).read())
-        pt.id = name
+        pt = getTemplate(self.db.config.TEMPLATES, name)
 
         # XXX handle PT rendering errors here nicely
         try:
-            return pt.render()
+            # use our fabricated request
+            return pt.render(self.client, self.classname, req)
         except PageTemplate.PTRuntimeError, message:
             return '<strong>%s</strong><ol>%s</ol>'%(message,
                 cgi.escape('<li>'.join(pt._v_errors)))
@@ -851,6 +924,16 @@ def handleListCGIValue(value):
     else:
         return value.value.split(',')
 
+class ShowDict:
+    ''' A convenience access to the :columns index parameters
+    '''
+    def __init__(self, columns):
+        self.columns = {}
+        for col in columns:
+            self.columns[col] = 1
+    def __getitem__(self, name):
+        return self.columns.has_key(name)
+
 class HTMLRequest:
     ''' The *request*, holding the CGI form and environment.
 
@@ -864,6 +947,8 @@ class HTMLRequest:
 
         Index args:
         "columns" dictionary of the columns to display in an index page
+        "show" a convenience access to columns - request/show/colname will
+               be true if the columns should be displayed, false otherwise
         "sort" index sort column (direction, column name)
         "group" index grouping property (direction, column name)
         "filter" properties to filter the index on
@@ -886,10 +971,10 @@ class HTMLRequest:
         self.template_type = client.template_type
 
         # extract the index display information from the form
-        self.columns = {}
+        self.columns = []
         if self.form.has_key(':columns'):
-            for entry in handleListCGIValue(self.form[':columns']):
-                self.columns[entry] = 1
+            self.columns = handleListCGIValue(self.form[':columns'])
+        self.show = ShowDict(self.columns)
 
         # sorting
         self.sort = (None, None)
@@ -935,6 +1020,22 @@ class HTMLRequest:
         if self.form.has_key(':search_text'):
             self.search_text = self.form[':search_text'].value
 
+        # pagination - size and start index
+        # figure batch args
+        if self.form.has_key(':pagesize'):
+            self.pagesize = int(self.form[':pagesize'].value)
+        else:
+            self.pagesize = 50
+        if self.form.has_key(':startwith'):
+            self.startwith = int(self.form[':startwith'].value)
+        else:
+            self.startwith = 0
+
+    def update(self, kwargs):
+        self.__dict__.update(kwargs)
+        if kwargs.has_key('columns'):
+            self.show = ShowDict(self.columns)
+
     def __str__(self):
         d = {}
         d.update(self.__dict__)
@@ -956,7 +1057,9 @@ columns: %(columns)r
 sort: %(sort)r
 group: %(group)r
 filter: %(filter)r
-filterspec: %(filterspec)r
+search_text: %(search_text)r
+pagesize: %(pagesize)r
+startwith: %(startwith)r
 env: %(env)s
 '''%d
 
@@ -966,14 +1069,14 @@ env: %(env)s
         l = []
         s = '<input type="hidden" name="%s" value="%s">'
         if columns and self.columns:
-            l.append(s%(':columns', ','.join(self.columns.keys())))
-        if sort and self.sort is not None:
+            l.append(s%(':columns', ','.join(self.columns)))
+        if sort and self.sort[1] is not None:
             if self.sort[0] == '-':
                 val = '-'+self.sort[1]
             else:
                 val = self.sort[1]
             l.append(s%(':sort', val))
-        if group and self.group is not None:
+        if group and self.group[1] is not None:
             if self.group[0] == '-':
                 val = '-'+self.group[1]
             else:
@@ -984,20 +1087,24 @@ env: %(env)s
         if filterspec:
             for k,v in self.filterspec.items():
                 l.append(s%(k, ','.join(v)))
+        if self.search_text:
+            l.append(s%(':search_text', self.search_text))
+        l.append(s%(':pagesize', self.pagesize))
+        l.append(s%(':startwith', self.startwith))
         return '\n'.join(l)
 
     def indexargs_href(self, url, args):
         ''' embed the current index args in a URL '''
         l = ['%s=%s'%(k,v) for k,v in args.items()]
         if self.columns:
-            l.append(':columns=%s'%(','.join(self.columns.keys())))
-        if self.sort is not None:
+            l.append(':columns=%s'%(','.join(self.columns)))
+        if self.sort[1] is not None:
             if self.sort[0] == '-':
                 val = '-'+self.sort[1]
             else:
                 val = self.sort[1]
             l.append(':sort=%s'%val)
-        if self.group is not None:
+        if self.group[1] is not None:
             if self.group[0] == '-':
                 val = '-'+self.group[1]
             else:
@@ -1007,6 +1114,10 @@ env: %(env)s
             l.append(':filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():
             l.append('%s=%s'%(k, ','.join(v)))
+        if self.search_text:
+            l.append(':search_text=%s'%self.search_text)
+        l.append(':pagesize=%s'%self.pagesize)
+        l.append(':startwith=%s'%self.startwith)
         return '%s?%s'%(url, '&'.join(l))
 
     def base_javascript(self):
@@ -1044,18 +1155,9 @@ function help_window(helpurl, width, height) {
             matches = None
         l = klass.filter(matches, filterspec, sort, group)
 
-        # figure batch args
-        if self.form.has_key(':pagesize'):
-            size = int(self.form[':pagesize'].value)
-        else:
-            size = 50
-        if self.form.has_key(':startwith'):
-            start = int(self.form[':startwith'].value)
-        else:
-            start = 0
-
         # return the batch object
-        return Batch(self.client, self.classname, l, size, start)
+        return Batch(self.client, self.classname, l, self.pagesize,
+            self.startwith)
 
 
 # extend the standard ZTUtils Batch object to remove dependency on
