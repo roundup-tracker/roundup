@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.5 2004-07-25 14:36:50 a1s Exp $
+# $Id: configuration.py,v 1.6 2004-07-25 15:09:07 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -330,6 +330,46 @@ class IntegerNumberOption(Option):
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
 
+class NullableOption(Option):
+
+    """Option that is set to None if it's string value is one of NULL strings
+
+    Default nullable strings list contains empty string only.
+    There is constructor parameter allowing to specify different nullables.
+
+    Conversion to external representation returns the first of the NULL
+    strings list when the value is None.
+
+    """
+
+    NULL_STRINGS = ("",)
+
+    def __init__(self, config, section, setting,
+        default=NODEFAULT, description=None, aliases=None,
+        null_strings=NULL_STRINGS
+    ):
+        self.null_strings = list(null_strings)
+        Option.__init__(self, config, section, setting, default,
+            description, aliases)
+
+    def str2value(self, value):
+        if value in self.null_strings:
+            return None
+        else:
+            return value
+
+    def _value2str(self, value):
+        if value is None:
+            return self.null_strings[0]
+        else:
+            return value
+
+class NullableFilePathOption(NullableOption, FilePathOption):
+
+    # .get() is from FilePathOption,
+    get = FilePathOption.get
+    # everything else - from NullableOption (inheritance order)
+
 ### Main configuration layout.
 # Config is described as a sequence of sections,
 # where each section name is followed by a sequence
@@ -431,10 +471,10 @@ SETTINGS = (
         (BooleanOption, "tls", "no",
             "If your SMTP mail host provides or requires TLS\n"
             "(Transport Layer Security) then set this option to 'yes'"),
-        (FilePathOption, "tls_keyfile", "",
+        (NullableFilePathOption, "tls_keyfile", "",
             "If TLS is used, you may set this option to the name\n"
             "of a PEM formatted file that contains your private key"),
-        (FilePathOption, "tls_certfile", "",
+        (NullableFilePathOption, "tls_certfile", "",
             "If TLS is used, you may set this option to the name\n"
             "of a PEM formatted certificate chain file"),
         (BooleanOption, "keep_quoted_text", "yes",
