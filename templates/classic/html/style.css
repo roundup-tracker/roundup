@@ -1,18 +1,35 @@
 /* main page styles */
 body.body {
   font-family: sans-serif, Arial, Helvetica;
-  color: #333333;
-  margin: 0px 0px 0px 0px;
+  background-color: white;
+  color: #333;
+  margin: 0;
 }
-a[href]:hover { color:blue; text-decoration: underline; }
-a[href]:link { color:blue; text-decoration: none; }
-a[href] { color:blue; text-decoration: none; }
+a[href]:hover {
+  background-color: white;
+  color:blue;
+  text-decoration: underline;
+}
+a[href], a[href]:link {
+  background-color: white;
+  color:blue;
+  text-decoration: none;
+}
 
 table.body {
   border: 0;
   padding: 0;
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
+}
+
+td.page-header-left {
+  padding: 5px;
+  border-bottom: 1px solid #444;
+}
+td.sidebar {
+  padding: 1px 0 0 1px;
+  white-space: nowrap;
 }
 
 /* don't display the sidebar when printing */
@@ -25,23 +42,13 @@ table.body {
     }
 }
 
-td.page-header-left {
-  padding: 5px;
-  border-bottom: 1px solid #444444;
-}
-
 td.page-header-top {
   padding: 5px;
-  border-bottom: 1px solid #444444;
-}
-
-td.sidebar {
-  padding: 1 0 0 1;
-  white-space: nowrap;
+  border-bottom: 1px solid #444;
 }
 
 form {
-     margin: 0 0 0 0;
+  margin: 0;
 }
 
 textarea {
@@ -49,21 +56,21 @@ textarea {
 }
 
 td.sidebar p.classblock {
-  padding: 2 5 2 5;
-  margin: 1 1 1 1;
-  border: 1px solid #444444;
-  background-color: #eeeeee;
+  padding: 2px 5px 2px 5px;
+  margin: 1px;
+  border: 1px solid #444;
+  background-color: #eee;
 }
 
 td.sidebar p.userblock {
-  padding: 2 5 2 5;
-  margin: 1 1 1 1;
-  border: 1px solid #444444;
-  background-color: #eeeeff;
+  padding: 2px 5px 2px 5px;
+  margin: 1px 1px 1px 1px;
+  border: 1px solid #444;
+  background-color: #eef;
 }
 
 td.content {
-  padding: 1 5 1 5;
+  padding: 1px 5px 1px 5px;
   vertical-align: top;
   width: 100%;
 }
@@ -74,13 +81,13 @@ td.date, th.date {
 
 p.ok-message {
   background-color: #22bb22;
-  padding: 5 5 5 5;
+  padding: 5px;
   color: white;
   font-weight: bold;
 }
 p.error-message {
   background-color: #bb2222;
-  padding: 5 5 5 5;
+  padding: 5px;
   color: white;
   font-weight: bold;
 }
@@ -88,13 +95,13 @@ p.error-message {
 
 /* style for forms */
 table.form {
-  padding: 2;
-  border-spacing: 0px;
+  padding: 2px;
+  border-spacing: 0;
   border-collapse: separate;
 }
 
 table.form th {
-  color: #333388;
+  color: #338;
   text-align: right;
   vertical-align: top;
   font-weight: normal;
@@ -103,7 +110,7 @@ table.form th {
 
 table.form th.header {
   font-weight: bold;
-  background-color: #eeeeff;
+  background-color: #eef;
   text-align: left;
 }
 
@@ -112,7 +119,7 @@ table.form th.required {
 }
 
 table.form td {
-  color: #333333;
+  color: #333;
   empty-cells: show;
   vertical-align: top;
 }
@@ -123,20 +130,20 @@ table.form td.optional {
 }
 
 table.form td.html {
-  color: #777777;
+  color: #777;
 }
 
 /* style for lists */
 table.list {
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
   width: 100%;
 }
 
 table.list th {
-  padding: 0 4 0 4;
+  padding: 0 4px 0 4px;
   color: #404070;
-  background-color: #eeeeff;
+  background-color: #eef;
   border: 1px solid white;
   vertical-align: top;
   empty-cells: show;
@@ -150,7 +157,7 @@ table.list th.group {
 }
 
 table.list td {
-  padding: 0 4 0 4;
+  padding: 0 4px 0 4px;
   border: 1px solid white;
   color: #404070;
   background-color: #efefef;
@@ -176,7 +183,7 @@ table.list tr.navigation th:last-child {
 
 /* style for message displays */
 table.messages {
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
   width: 100%;
 }
@@ -204,7 +211,7 @@ table.messages td {
   empty-cells: show;
   border-right: 1px solid #afafaf;
   vertical-align: top;
-  padding: 2 5 2 5;
+  padding: 2px 5px 2px 5px;
 }
 
 table.messages td:first-child {
@@ -214,7 +221,7 @@ table.messages td:first-child {
 
 /* style for file displays */
 table.files {
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
   width: 100%;
 }
@@ -240,7 +247,7 @@ table.files td {
 
 /* style for history displays */
 table.history {
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
   width: 100%;
 }
@@ -270,7 +277,7 @@ table.history td {
 
 /* style for class list */
 table.classlist {
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
   width: 100%;
 }
@@ -300,7 +307,7 @@ table.classhelp {      /* the table-layout: fixed;        */
 table.classhelp th {
   font-weight: normal;
   text-align: left;
-  color: #444444;
+  color: #444;
   background-color: #efefef;
   border-bottom: 1px solid #afafaf;
   border-top: 1px solid #afafaf;
@@ -315,19 +322,12 @@ table.classhelp td {
   border-bottom: 1px solid #efefef;
   text-align: left;
   empty-cells: show;
-}
-
-table.classhelp td {
   white-space: nowrap;
   vertical-align: middle;
-  padding-right: .2em;
-  border-bottom: 1px solid #efefef;
-  text-align: left;
-  empty-cells: show;
 }
 
 table.classhelp tr:hover {
-  background-color: #eeeeee;
+  background-color: #eee;
 }
 
 label.classhelp-label {
@@ -342,8 +342,8 @@ label.classhelp-label {
   bottom: 0;
   left: 0;
   padding: .5em;
-  border-top: 2px solid #444444;
-  background-color: #eeeeee;
+  border-top: 2px solid #444;
+  background-color: #eee;
 }
 
 #classhelp-controls input.apply {
@@ -360,7 +360,7 @@ label.classhelp-label {
 
 /* style for "other" displays */
 table.otherinfo {
-  border-spacing: 0px;
+  border-spacing: 0;
   border-collapse: separate;
   width: 100%;
 }
