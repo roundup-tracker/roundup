@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.125 2003-06-24 12:39:20 neaj Exp $
+$Id: mailgw.py,v 1.126 2003-06-25 08:02:51 neaj Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -186,7 +186,8 @@ class Message(mimetools.Message):
 
     def getheader(self, name, default=None):
         hdr = mimetools.Message.getheader(self, name, default)
-        hdr = hdr.replace('\n','') # Inserted by rfc822.readheaders
+        if hdr:
+            hdr = hdr.replace('\n','') # Inserted by rfc822.readheaders
         return rfc2822.decode_header(hdr)
  
 class MailGW:
