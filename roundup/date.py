@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.43 2003-02-23 19:05:14 kedder Exp $
+# $Id: date.py,v 1.44 2003-03-06 02:33:56 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
 """
 
-import time, re, calendar
+import time, re, calendar, types
 from i18n import _
 
 class Date:
@@ -306,14 +306,28 @@ class Interval:
 
     Example usage:
         >>> Interval("  3w  1  d  2:00")
-        <Interval 22d 2:00>
+        <Interval + 22d 2:00>
         >>> Date(". + 2d") + Interval("- 3w")
         <Date 2000-06-07.00:34:02>
+        >>> Interval('1:59:59') + Interval('00:00:01')
+        <Interval + 2:00>
+        >>> Interval('2:00') + Interval('- 00:00:01')
+        <Interval + 1:59:59>
+        >>> Interval('1y')/2
+        <Interval + 6m>
+        >>> Interval('1:00')/2
+        <Interval + 0:30>
 
-    Intervals are added/subtracted in order of:
+    Interval arithmetic is handled in a couple of special ways, trying
+    to cater for the most common cases. Fundamentally, Intervals which
+    have both date and time parts will result in strange results in
+    arithmetic - because of the impossibility of handling day->month->year
+    over- and under-flows. Intervals may also be divided by some number.
+
+    Intervals are added to Dates in order of:
        seconds, minutes, hours, years, months, days
 
-    Calculations involving monts (eg '+2m') have no effect on days - only
+    Calculations involving months (eg '+2m') have no effect on days - only
     days (or over/underflow from hours/mins/secs) will do that, and
     days-per-month and leap years are accounted for. Leap seconds are not.
 
@@ -350,8 +364,7 @@ class Interval:
 
     def __str__(self):
         """Return this interval as a string."""
-        sign = {1:'+', -1:'-'}[self.sign]
-        l = [sign]
+        l = []
         if self.year: l.append('%sy'%self.year)
         if self.month: l.append('%sm'%self.month)
         if self.day: l.append('%sd'%self.day)
@@ -359,6 +372,8 @@ class Interval:
             l.append('%d:%02d:%02d'%(self.hour, self.minute, self.second))
         elif self.hour or self.minute:
             l.append('%d:%02d'%(self.hour, self.minute))
+        if l:
+            l.insert(0, {1:'+', -1:'-'}[self.sign])
         return ' '.join(l)
 
     def __add__(self, other):
@@ -368,14 +383,77 @@ class Interval:
         elif isinstance(other, Interval):
             # add the other Interval to this one
             a = self.get_tuple()
+            as = a[0]
             b = other.get_tuple()
-            if b[0] < 0:
-                i = Interval([x-y for x,y in zip(a[1:],b[1:])])
-            else:
-                i = Interval([x+y for x,y in zip(a[1:],b[1:])])
-            return i
+            bs = b[0]
+            i = [as*x + bs*y for x,y in zip(a[1:],b[1:])]
+            i.insert(0, 1)
+            i = fixTimeOverflow(i)
+            return Interval(i)
         # nope, no idea what to do with this other...
         raise TypeError, "Can't add %r"%other
+
+    def __sub__(self, other):
+        if isinstance(other, Date):
+            # the other is a Date - produce a Date
+            interval = Interval(self.get_tuple())
+            interval.sign *= -1
+            return Date(other.addInterval(interval))
+        elif isinstance(other, Interval):
+            # add the other Interval to this one
+            a = self.get_tuple()
+            as = a[0]
+            b = other.get_tuple()
+            bs = b[0]
+            i = [as*x - bs*y for x,y in zip(a[1:],b[1:])]
+            i.insert(0, 1)
+            i = fixTimeOverflow(i)
+            return Interval(i)
+        # nope, no idea what to do with this other...
+        raise TypeError, "Can't add %r"%other
+
+    def __div__(self, other):
+        ''' Divide this interval by an int value.
+
+            Can't divide years and months sensibly in the _same_
+            calculation as days/time, so raise an error in that situation.
+        '''
+        try:
+            other = float(other)
+        except TypeError:
+            raise ValueError, "Can only divide Intervals by numbers"
+
+        y, m, d, H, M, S = (self.year, self.month, self.day,
+            self.hour, self.minute, self.second)
+        if y or m:
+            if d or H or M or S:
+                raise ValueError, "Can't divide Interval with date and time"
+            months = self.year*12 + self.month
+            months *= self.sign
+
+            months = int(months/other)
+
+            sign = months<0 and -1 or 1
+            m = months%12
+            y = months / 12
+            return Interval((sign, y, m, 0, 0, 0, 0))
+
+        else:
+            # handle a day/time division
+            seconds = S + M*60 + H*60*60 + d*60*60*24
+            seconds *= self.sign
+
+            seconds = int(seconds/other)
+
+            sign = seconds<0 and -1 or 1
+            seconds *= sign
+            S = seconds%60
+            seconds /= 60
+            M = seconds%60
+            seconds /= 60
+            H = seconds%24
+            d = seconds / 24
+            return Interval((sign, 0, 0, d, H, M, S))
 
     def set(self, spec, interval_re=re.compile('''
             \s*(?P<s>[-+])?         # + or -
@@ -476,6 +554,38 @@ class Interval:
         sign = self.sign > 0 and '+' or '-'
         return '%s%04d%02d%02d%02d%02d%02d'%(sign, self.year, self.month,
             self.day, self.hour, self.minute, self.second)
+
+def fixTimeOverflow(time):
+    ''' Handle the overflow in the time portion (H, M, S) of "time":
+            (sign, y,m,d,H,M,S)
+
+        Overflow and underflow will at most affect the _days_ portion of
+        the date. We do not overflow days to months as we don't know _how_
+        to, generally.
+    '''
+    # XXX we could conceivably use this function for handling regular dates
+    # XXX too - we just need to interrogate the month/year for the day
+    # XXX overflow...
+
+    sign, y, m, d, H, M, S = time
+    seconds = sign * (S + M*60 + H*60*60 + d*60*60*24)
+    if seconds:
+        sign = seconds<0 and -1 or 1
+        seconds *= sign
+        S = seconds%60
+        seconds /= 60
+        M = seconds%60
+        seconds /= 60
+        H = seconds%24
+        d = seconds / 24
+    else:
+        months = y*12 + m
+        sign = months<0 and -1 or 1
+        months *= sign
+        m = months%12
+        y = months/12
+
+    return (sign, y, m, d, H, M, S)
 
 
 def test():

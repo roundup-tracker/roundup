@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.17 2003-02-24 15:38:51 kedder Exp $ 
+# $Id: test_dates.py,v 1.18 2003-03-06 02:33:57 richard Exp $ 
 
 import unittest, time
 
-from roundup.date import Date, Interval
+from roundup.date import Date, Interval, fixTimeOverflow
 
 class DateTestCase(unittest.TestCase):
     def testDateInterval(self):
@@ -71,7 +71,9 @@ class DateTestCase(unittest.TestCase):
         date = Date("8:47:11", -5)
         ae(str(date), '%s-%02d-%02d.13:47:11'%(y, m, d))
 
-        # now check calculations
+    def testOffsetRandom(self):
+        ae = self.assertEqual
+        # XXX unsure of the usefulness of these, they're pretty random
         date = Date('2000-01-01') + Interval('- 2y 2m')
         ae(str(date), '1997-11-01.00:00:00')
         date = Date('2000-01-01 - 2y 2m')
@@ -86,7 +88,8 @@ class DateTestCase(unittest.TestCase):
         date = Date('2001-01-01') + Interval('60d')
         ae(str(date), '2001-03-02.00:00:00')
 
-        # time additions
+    def testOffsetAdd(self):
+        ae = self.assertEqual
         date = Date('2000-02-28.23:59:59') + Interval('00:00:01')
         ae(str(date), '2000-02-29.00:00:00')
         date = Date('2001-02-28.23:59:59') + Interval('00:00:01')
@@ -107,7 +110,8 @@ class DateTestCase(unittest.TestCase):
         date = Date('2001-02-28.22:58:59') + Interval('00:00:3661')
         ae(str(date), '2001-03-01.00:00:00')
 
-        # now subtractions
+    def testOffsetSub(self):
+        ae = self.assertEqual
         date = Date('2000-01-01') - Interval('- 2y 2m')
         ae(str(date), '2002-03-01.00:00:00')
         date = Date('2000-01-01') - Interval('2m')
@@ -138,12 +142,14 @@ class DateTestCase(unittest.TestCase):
         date = Date('2001-03-01.00:00:00') - Interval('00:00:3661')
         ae(str(date), '2001-02-28.22:58:59')
 
-        # local()
+    def testDateLocal(self):
+        ae = self.assertEqual
         date = Date("02:42:20")
         date = date.local(10)
+        y, m, d, x, x, x, x, x, x = time.gmtime(time.time())
         ae(str(date), '%s-%02d-%02d.12:42:20'%(y, m, d))
 
-    def testInterval(self):
+    def testIntervalInit(self):
         ae = self.assertEqual
         ae(str(Interval('3y')), '+ 3y')
         ae(str(Interval('2 y 1 m')), '+ 2y 1m')
@@ -153,16 +159,56 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval(' 14:00 ')), '+ 14:00')
         ae(str(Interval(' 0:04:33 ')), '+ 0:04:33')
 
-        # __add__
-        # XXX these are fairly arbitrary and need fixing once the __add__
-        # code handles the odd cases more correctly
+    def testIntervalAdd(self):
+        ae = self.assertEqual
         ae(str(Interval('1y') + Interval('1y')), '+ 2y')
         ae(str(Interval('1y') + Interval('1m')), '+ 1y 1m')
         ae(str(Interval('1y') + Interval('2:40')), '+ 1y 2:40')
-        ae(str(Interval('1y') + Interval('- 1y')), '+')
-        ae(str(Interval('1y') + Interval('- 1m')), '+ 1y -1m')
+        ae(str(Interval('1y') + Interval('- 1y')), '')
+        ae(str(Interval('- 1y') + Interval('1y')), '')
+        ae(str(Interval('- 1y') + Interval('- 1y')), '- 2y')
+        ae(str(Interval('1y') + Interval('- 1m')), '+ 11m')
+        ae(str(Interval('1:00') + Interval('1:00')), '+ 2:00')
+        ae(str(Interval('0:50') + Interval('0:50')), '+ 1:40')
+        ae(str(Interval('1:50') + Interval('- 1:50')), '')
+        ae(str(Interval('- 1:50') + Interval('1:50')), '')
+        ae(str(Interval('- 1:50') + Interval('- 1:50')), '- 3:40')
+        ae(str(Interval('1:59:59') + Interval('00:00:01')), '+ 2:00')
+        ae(str(Interval('2:00') + Interval('- 00:00:01')), '+ 1:59:59')
 
-# TODO test add, subtraction, ?division?
+    def testIntervalSub(self):
+        ae = self.assertEqual
+        ae(str(Interval('1y') - Interval('- 1y')), '+ 2y')
+        ae(str(Interval('1y') - Interval('- 1m')), '+ 1y 1m')
+        ae(str(Interval('1y') - Interval('- 2:40')), '+ 1y 2:40')
+        ae(str(Interval('1y') - Interval('1y')), '')
+        ae(str(Interval('1y') - Interval('1m')), '+ 11m')
+        ae(str(Interval('1:00') - Interval('- 1:00')), '+ 2:00')
+        ae(str(Interval('0:50') - Interval('- 0:50')), '+ 1:40')
+        ae(str(Interval('1:50') - Interval('1:50')), '')
+        ae(str(Interval('1:59:59') - Interval('- 00:00:01')), '+ 2:00')
+        ae(str(Interval('2:00') - Interval('00:00:01')), '+ 1:59:59')
+
+    def testOverflow(self):
+        ae = self.assertEqual
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, 60)), (1,0,0,0, 0, 1, 0))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, 100)), (1,0,0,0, 0, 1, 40))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, 60*60)), (1,0,0,0, 1, 0, 0))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, 24*60*60)), (1,0,0,1, 0, 0, 0))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, -1)), (-1,0,0,0, 0, 0, 1))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, -100)), (-1,0,0,0, 0, 1, 40))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, -60*60)), (-1,0,0,0, 1, 0, 0))
+        ae(fixTimeOverflow((1,0,0,0, 0, 0, -24*60*60)), (-1,0,0,1, 0, 0, 0))
+        ae(fixTimeOverflow((-1,0,0,0, 0, 0, 1)), (-1,0,0,0, 0, 0, 1))
+        ae(fixTimeOverflow((-1,0,0,0, 0, 0, 100)), (-1,0,0,0, 0, 1, 40))
+        ae(fixTimeOverflow((-1,0,0,0, 0, 0, 60*60)), (-1,0,0,0, 1, 0, 0))
+        ae(fixTimeOverflow((-1,0,0,0, 0, 0, 24*60*60)), (-1,0,0,1, 0, 0, 0))
+
+    def testDivision(self):
+        ae = self.assertEqual
+        ae(str(Interval('1y')/2), '+ 6m')
+        ae(str(Interval('1:00')/2), '+ 0:30')
+        ae(str(Interval('00:01')/2), '+ 0:00:30')
 
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')

@@ -31,6 +31,7 @@ Fixed:
 - re-worked detectors initialisation - woohoo, no more cross-importing!
 - fixed export/import of retired nodes (sf bug 685273)
 - fixed mutation of properties bug in RDBMS backends
+- fixed Interval maths (sf bug 665357)
 
 Feature:
 - support setting of properties on message and file through web and
