@@ -75,11 +75,9 @@ The ``dbinit.py`` file has been split into two new files,
   Remove the last few lines starting with ``import detectors`` down to
   ``return db`` inclusive.
 
-Note that there's a new way to write extension code for Roundup - the old
-``interfaces.py`` file will be ignored in future versions of Roundup. See
-the `what's new in 0.8`__ documentation for more information.
-
-__ whatsnew-0.8.html
+There's a new way to write extension code for Roundup - the old
+``interfaces.py`` file will be ignored. See the `customisation
+documentation`_ for information about how extensions are now written.
 
 
 0.8.0 Permissions Changes

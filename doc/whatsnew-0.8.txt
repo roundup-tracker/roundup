@@ -12,6 +12,7 @@ __ features.html
 Logging of internal messages
 ============================
 
+XXX 
 
 Security Changes
 ================
@@ -30,8 +31,6 @@ information about how this is done.
 
 8-bit character set support in Web interface
 ============================================
-
-XXX This doesn't appear in the main documentation
 
 This is used to override the UTF-8 default. It may be overridden in both
 forms and a browser cookie.
@@ -72,5 +71,6 @@ Actual charset is also sent in the http header.
 Web Interface Miscellanea
 =========================
 
+XXX
 
 .. _`customisation documentation`: customizing.html

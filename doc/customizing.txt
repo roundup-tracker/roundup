@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.156 $
+:Version: $Revision: 1.157 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -885,10 +885,10 @@ is used by ``roundup.cgi``, ``roundup-server`` and ``ZRoundup``
 (``ZRoundup``  is broken, until further notice). In all cases, we
 determine which tracker is being accessed (the first part of the URL
 path inside the scope of the CGI handler) and pass control on to the
-tracker ``interfaces.Client`` class - which uses the ``Client`` class
-from ``roundup.cgi.client`` - which handles the rest of the access
-through its ``main()`` method. This means that you can do pretty much
-anything you want as a web interface to your tracker.
+``roundup.cgi.client.Client`` class - which handles the rest of the
+access through its ``main()`` method. This means that you can do pretty
+much anything you want as a web interface to your tracker.
+
 
 
 Repercussions of changing the tracker schema
@@ -1051,9 +1051,8 @@ of:
 
 Each of the actions is implemented by a corresponding ``*XxxAction*`` (where
 "Xxx" is the name of the action) class in the ``roundup.cgi.actions`` module.
-These classes are registered with ``roundup.cgi.client.Client`` which also
-happens to be available in your tracker instance as ``interfaces.Client``. So
-if you need to define new actions, you may add them there (see `defining new
+These classes are registered with ``roundup.cgi.client.Client``. If you need
+to define new actions, you may add them there (see `defining new
 web actions`_).
 
 Each action class also has a ``*permission*`` method which determines whether
@@ -1995,7 +1994,9 @@ html_quote      quote some text as safe in HTML (ie. <, >, ...)
 =============== ========================================================
 
 You may add additional utility methods by writing them in your tracker
-``extensions`` directory and registering them with the templating system.
+``extensions`` directory and registering them with the templating system
+using ``instance.registerUtil`` (see `adding a time log to your issues`_ for
+an example of this).
 
 
 Batching
@@ -2336,8 +2337,10 @@ Defining new web actions
 ------------------------
 
 You may define new actions to be triggered by the ``@action`` form variable.
-These are added to the tracker ``interfaces.py`` as ``Action`` classes that get
-called by the the ``Client`` class.
+These are added to the tracker ``extensions`` directory and registered
+using ``instance.registerAction``.
+
+All the existing Actions are defined in ``roundup.cgi.actions``.
 
 Adding action classes takes three steps; first you `define the new
 action class`_, then you `register the action class`_ with the cgi
@@ -2351,16 +2354,16 @@ issues`_" for an example.
 Define the new action class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The action classes have the following interface::
+Create a new action class in your tracker's ``extensions`` directory, for
+example ``myaction.py``::
 
  class MyAction(Action):
      def handle(self):
          ''' Perform some action. No return value is required.
          '''
 
-The *self.client* attribute is an instance of your tracker ``instance.Client``
-class - thus it's mostly implemented by ``roundup.cgi.client.Client``. See the
-docstring of that class for details of what it can do.
+The *self.client* attribute is an instance of ``roundup.cgi.client.Client``.
+See the docstring of that class for details of what it can do.
 
 The method will typically check the ``self.form`` variable's contents.
 It may then:
@@ -2375,17 +2378,14 @@ It may then:
 Register the action class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-XXX update for new extensions setup (then search for interfaces.py and make
-sure there's no examples that use the old style)
+The class is now written, but isn't available to the user until you register
+it with the following code appended to your ``myaction.py`` file::
 
-The class is now written, but isn't available to the user until you add it to
-the ``instance.Client`` class ``actions`` variable, like so::
-
-    actions = client.Client.actions + (
-        ('myaction', myActionClass),
-    )
+    def init(instance):
+        instance.registerAction('myaction', myActionClass)
 
 This maps the action name "myaction" to the action class we defined.
+
 
 Use the new action
 ~~~~~~~~~~~~~~~~~~
@@ -2938,27 +2938,23 @@ be able to give a summary of the total time spent on a particular issue.
 4. We want to display a total of the time log times that have been
    accumulated for an issue. To do this, we'll need to actually write
    some Python code, since it's beyond the scope of PageTemplates to
-   perform such calculations. We do this by adding a method to the
-   TemplatingUtils class in our tracker ``interfaces.py`` module::
+   perform such calculations. We do this by adding a module ``timespent.py``
+   to the ``extensions`` directory in our tracker::
 
-    class TemplatingUtils:
-        ''' Methods implemented on this class will be available to HTML
-            templates through the 'utils' variable.
+    def totalTimeSpent(times):
+        ''' Call me with a list of timelog items (which have an
+            Interval "period" property)
         '''
-        def totalTimeSpent(self, times):
-            ''' Call me with a list of timelog items (which have an
-                Interval "period" property)
-            '''
-            total = Interval('0d')
-            for time in times:
-                total += time.period._value
-            return total
+        total = Interval('0d')
+        for time in times:
+            total += time.period._value
+        return total
 
-   XXX update this example for TemplatingUtils -> extensions
+    def init(instance):
+        instance.registerUtil('totalTimeSpent', totalTimeSpent)
 
-   Replace the ``pass`` line if one appears in your TemplatingUtils
-   class. As indicated in the docstrings, we will be able to access the
-   ``totalTimeSpent`` method via the ``utils`` variable in our templates.
+   We will now be able to access the ``totalTimeSpent`` function via the
+   ``utils`` variable in our templates, as shown in the next step.
 
 5. Display the time log for an issue::
 
@@ -3060,13 +3056,17 @@ would be::
 Each user of Roundup must still have their information stored in the Roundup
 database - we just use the passwd file to check their password. To do this, we
 need to override the standard ``verifyPassword`` method defined in
-``roundup.cgi.actions.LoginAction`` and register the new class with our
-``Client`` class in the tracker home ``interfaces.py`` module::
+``roundup.cgi.actions.LoginAction`` and register the new class. The
+following is added as ``externapassword.py`` in the tracker ``extensions``
+directory::
 
     from roundup.cgi.actions import LoginAction    
 
     class ExternalPasswordLoginAction(LoginAction):
         def verifyPassword(self, userid, password):
+            '''Look through the file, line by line, looking for a
+            name that matches.
+            '''
             # get the user's username
             username = self.db.user.get(userid, 'username')
 
@@ -3083,15 +3083,10 @@ need to override the standard ``verifyPassword`` method defined in
             # user doesn't exist in the file
             return 0
 
-    class Client(client.Client):
-        actions = (
-            ('login', ExternalPasswordLoginAction),
-        ) + client.Client.actions
+    def init(instance):
+        instance.registerAction('login', ExternalPasswordLoginAction)
 
-What this does is look through the file, line by line, looking for a
-name that matches.
-
-We also remove the redundant password fields from the ``user.item``
+You should also remove the redundant password fields from the ``user.item``
 template.
 
 
@@ -4089,9 +4084,9 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
 3. Determine what actions need to be taken between the pages - these are
    usually to validate user choices and determine what page is next. Now encode
-   those actions in a new ``Action`` class and insert hooks to those actions in
-   the "actions" attribute on on the ``interfaces.Client`` class, like so (see 
-   `defining new web actions`_)::
+   those actions in a new ``Action`` class (see `defining new web actions`_)::
+
+    from roundup.cgi.actions import Action
 
     class Page1SubmitAction(Action):
         def handle(self):
@@ -4105,9 +4100,8 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
             # everything's ok, move on to the next page
             self.template = 'add_page2'
 
-    actions = client.Client.actions + (
-        ('page1_submit', Page1SubmitAction),
-    )
+    def init(instance):
+        instance.registerAction('page1_submit', Page1SubmitAction)
 
 4. Use the usual "new" action as the ``@action`` on the final page, and
    you're done (the standard context/submit method can do this for you).
