@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.5 2004-02-23 05:29:05 richard Exp $
+# $Id: config.py,v 1.6 2004-03-25 19:27:15 eparker Exp $
 
 import os
 
@@ -63,6 +63,9 @@ TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 
+# The 'dispatcher' is a role that can get notified of new items to the database.
+DISPATCHER_EMAIL = ADMIN_EMAIL
+
 # Additional text to include in the "name" part of the From: address used
 # in nosy messages. If the sending user is "Foo Bar", the From: line is
 # usually:
@@ -70,6 +73,13 @@ ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 # the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
 #    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 EMAIL_FROM_TAG = ""
+
+
+# Send error messages to the dispatcher, user, or both?
+# If 'dispatcher', error message notifications will only be sent to the dispatcher.
+# If 'user',       error message notifications will only be sent to the user.
+# If 'both',       error message notifications will be sent to both individuals.
+ERROR_MESSAGES_TO = 'user'
 
 # Send nosy messages to the author of the message?
 # If 'new' is used, then the author will only be sent the message when the
