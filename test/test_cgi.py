@@ -8,13 +8,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.22 2004-02-11 21:34:31 jlgijsbers Exp $
+# $Id: test_cgi.py,v 1.23 2004-02-17 03:48:08 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client
-from roundup.cgi.errors import FormError
-from roundup.cgi.FormParser import FormParser
+from roundup.cgi.exceptions import FormError
+from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 
 NEEDS_INSTANCE = 1
@@ -99,7 +99,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = classname
         cl.nodeid = nodeid
         cl.db = self.db
-        return cl.parsePropsFromForm()
+        return cl.parsePropsFromForm(create=1)
 
     def tearDown(self):
         self.db.close()
@@ -273,7 +273,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = 'issue'
         cl.nodeid = None
         cl.db = self.db
-        self.assertEqual(cl.parsePropsFromForm(), 
+        self.assertEqual(cl.parsePropsFromForm(create=1), 
             ({('issue', None): {'nosy': ['1','2', '3']}}, []))
 
     def testEmptyMultilinkSet(self):
