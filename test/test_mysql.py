@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_mysql.py,v 1.11 2004-09-25 15:49:31 a1s Exp $
+# $Id: test_mysql.py,v 1.12 2004-09-26 11:30:56 a1s Exp $
 
 import unittest, os, shutil, time, imp
 
@@ -84,7 +84,7 @@ def test_suite():
         import MySQLdb
         db = mysql.Database(config, 'admin')
         db.close()
-    except (MySQLdb.ProgrammingError, DatabaseError), msg:
+    except (MySQLdb.MySQLError, DatabaseError), msg:
         print "Skipping mysql tests (%s)"%msg
     else:
         print 'Including mysql tests'
