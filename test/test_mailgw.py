@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.66 2004-03-22 07:45:40 richard Exp $
+# $Id: test_mailgw.py,v 1.67 2004-04-09 01:32:58 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -99,7 +99,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
         init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, 'anydbm')
+        init.write_select_db(self.dirname, 'sqlite')
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
@@ -129,7 +129,10 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
     def _handle_mail(self, message):
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
-        return handler.main(StringIO(message))
+        ret = handler.main(StringIO(message))
+        # handler can close the db on us and open a new one
+        self.db = handler.db
+        return ret
         
     def _get_mail(self):
         f = open(SENDMAILDEBUG)
