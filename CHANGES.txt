@@ -22,6 +22,7 @@ are given with the most recent entry first.
 - don't set explicit None Link properties in web create
 - fixed nasty sorting bug that was lowercasing properties
 - allow multiple :remove and :add elements per property being edited
+- added date header to emails (sf bug 651358)
 
 
 2002-11-07 0.5.2

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.101 2002-12-10 00:23:35 richard Exp $
+$Id: mailgw.py,v 1.102 2002-12-11 01:52:20 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -333,6 +333,8 @@ class MailGW:
         writer.addheader('From', '%s <%s>'% (self.instance.config.TRACKER_NAME,
             self.instance.config.TRACKER_EMAIL))
         writer.addheader('To', ','.join(sendto))
+        writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
+            time.gmtime()))
         writer.addheader('MIME-Version', '1.0')
         part = writer.startmultipartbody('mixed')
         part = writer.nextpart()

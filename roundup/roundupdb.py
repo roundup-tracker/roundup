@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.74 2002-12-10 00:23:36 richard Exp $
+# $Id: roundupdb.py,v 1.75 2002-12-11 01:52:20 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -230,6 +230,8 @@ class IssueClass:
         writer.addheader('Reply-To', straddr( 
                                         (self.db.config.TRACKER_NAME,
                                          self.db.config.TRACKER_EMAIL) ) )
+        writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
+            time.gmtime()))
         writer.addheader('MIME-Version', '1.0')
         if messageid:
             writer.addheader('Message-Id', messageid)
