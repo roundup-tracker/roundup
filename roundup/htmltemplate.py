@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.92 2002-06-11 04:57:04 richard Exp $
+# $Id: htmltemplate.py,v 1.93 2002-06-27 12:05:25 gmcm Exp $
 
 __doc__ = """
 Template engine.
@@ -106,14 +106,14 @@ class TemplateFunctions:
             if value:
                 if lookup:
                     linkcl = self.db.classes[propclass.classname]
-                    k = linkcl.labelprop()
+                    k = linkcl.labelprop(1)
                     value = linkcl.get(value, k)
             else:
                 value = _('[unselected]')
         elif isinstance(propclass, hyperdb.Multilink):
             if lookup:
                 linkcl = self.db.classes[propclass.classname]
-                k = linkcl.labelprop()
+                k = linkcl.labelprop(1)
                 labels = []
                 for v in value:
                     labels.append(linkcl.get(v, k))
@@ -205,7 +205,7 @@ class TemplateFunctions:
             options.sort(sortfunc)
             # TODO: make this a field display, not a menu one!
             l = ['<select name="%s">'%property]
-            k = linkcl.labelprop()
+            k = linkcl.labelprop(1)
             if value is None:
                 s = 'selected '
             else:
@@ -233,7 +233,7 @@ class TemplateFunctions:
                 value.sort(sortfunc)
             # map the id to the label property
             if not showid:
-                k = linkcl.labelprop()
+                k = linkcl.labelprop(1)
                 value = [linkcl.get(v, k) for v in value]
             value = cgi.escape(','.join(value))
             s = '<input name="%s" size="%s" value="%s">'%(property, size, value)
@@ -293,7 +293,7 @@ class TemplateFunctions:
             options.sort(sortfunc)
             height = height or min(len(options), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
-            k = linkcl.labelprop()
+            k = linkcl.labelprop(1)
             for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -321,7 +321,7 @@ class TemplateFunctions:
                 value = value[0]
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
-            k = linkcl.labelprop()
+            k = linkcl.labelprop(1)
             s = ''
             if value is None:
                 s = 'selected '
@@ -373,7 +373,7 @@ class TemplateFunctions:
         if isinstance(propclass, hyperdb.Link):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
-            k = linkcl.labelprop()
+            k = linkcl.labelprop(1)
             linkvalue = cgi.escape(str(linkcl.get(value, k)))
             if showid:
                 label = value
@@ -390,7 +390,7 @@ class TemplateFunctions:
         if isinstance(propclass, hyperdb.Multilink):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
-            k = linkcl.labelprop()
+            k = linkcl.labelprop(1)
             l = []
             for value in value:
                 linkvalue = cgi.escape(str(linkcl.get(value, k)))
@@ -493,7 +493,7 @@ class TemplateFunctions:
         # so we can map to the linked node's "lable" property
         linkcl = self.db.classes[propclass.classname]
         l = []
-        k = linkcl.labelprop()
+        k = linkcl.labelprop(1)
         for optionid in linkcl.list():
             option = cgi.escape(str(linkcl.get(optionid, k)))
             if optionid in value or option in value:
@@ -616,7 +616,9 @@ class TemplateFunctions:
                                 labelprop = None
                                 comments[classname] = _('''The linked class
                                     %(classname)s no longer exists''')%locals()
-                            labelprop = linkcl.labelprop()
+                            labelprop = linkcl.labelprop(1)
+                            hrefable = os.path.exists(
+                                os.path.join(self.templates, classname+'.item'))
 
                         if isinstance(prop, hyperdb.Multilink) and \
                                 len(args[k]) > 0:
@@ -635,8 +637,11 @@ class TemplateFunctions:
                                         exists</strike>''')
                                     ml.append('<strike>%s</strike>'%label)
                                 else:
-                                    ml.append('<a href="%s%s">%s</a>'%(
-                                        classname, linkid, label))
+                                    if hrefable:
+                                        ml.append('<a href="%s%s">%s</a>'%(
+                                            classname, linkid, label))
+                                    else:
+                                        ml.append(label)
                             cell.append('%s:\n  %s'%(k, ',\n  '.join(ml)))
                         elif isinstance(prop, hyperdb.Link) and args[k]:
                             label = classname + args[k]
@@ -654,8 +659,11 @@ class TemplateFunctions:
                                     # "flag" this is done .... euwww
                                     label = None
                             if label is not None:
-                                cell.append('%s: <a href="%s%s">%s</a>\n'%(k,
-                                    classname, args[k], label))
+                                if hrefable:
+                                    cell.append('%s: <a href="%s%s">%s</a>\n'%(k,
+                                        classname, args[k], label))
+                                else:
+                                    cell.append('%s: %s' % (k,label))
 
                         elif isinstance(prop, hyperdb.Date) and args[k]:
                             d = date.Date(args[k])
@@ -664,6 +672,9 @@ class TemplateFunctions:
                         elif isinstance(prop, hyperdb.Interval) and args[k]:
                             d = date.Interval(args[k])
                             cell.append('%s: %s'%(k, str(d)))
+
+                        elif isinstance(prop, hyperdb.String) and args[k]:
+                            cell.append('%s: %s'%(k, cgi.escape(args[k])))
 
                         elif not args[k]:
                             cell.append('%s: (no value)\n'%k)
@@ -733,14 +744,16 @@ class IndexTemplateReplace:
         r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
         r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
     def go(self, text):
-        return self.replace.sub(self, text)
+        newtext = self.replace.sub(self, text)
+        self.locals = self.globals = None
+        return newtext
 
     def __call__(self, m, search_text=None, filter=None, columns=None,
             sort=None, group=None):
         if m.group('name'):
             if m.group('name') in self.props:
                 text = m.group('text')
-                replace = IndexTemplateReplace(self.globals, {}, self.props)
+                replace = self.__class__(self.globals, {}, self.props)
                 return replace.go(text)
             else:
                 return ''
@@ -768,6 +781,7 @@ class IndexTemplate(TemplateFunctions):
     def render(self, filterspec={}, search_text='', filter=[], columns=[], 
             sort=[], group=[], show_display_form=1, nodeids=None,
             show_customization=1, show_nodes=1):
+        
         self.filterspec = filterspec
 
         w = self.client.write
@@ -907,6 +921,8 @@ class IndexTemplate(TemplateFunctions):
                     ','.join(sort))
             w('</form>\n')
 
+        self.db = self.cl = self.properties = None
+
     def node_matches(self, match, colspan):
         ''' display the files and messages for a node that matched a
             full text search
@@ -917,7 +933,7 @@ class IndexTemplate(TemplateFunctions):
         file_links = []
         if match.has_key('messages'):
             for msgid in match['messages']:
-                k = self.db.msg.labelprop()
+                k = self.db.msg.labelprop(1)
                 lab = self.db.msg.get(msgid, k)
                 msgpath = 'msg%s'%msgid
                 message_links.append('<a href="%(msgpath)s">%(lab)s</a>'
@@ -1105,7 +1121,9 @@ class ItemTemplateReplace:
         r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
         r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
     def go(self, text):
-        return self.replace.sub(self, text)
+        newtext = self.replace.sub(self, text)
+        self.globals = self.locals = self.cl = None
+        return newtext
 
     def __call__(self, m, filter=None, columns=None, sort=None, group=None):
         if m.group('name'):
@@ -1153,6 +1171,7 @@ class ItemTemplate(TemplateFunctions):
         replace = ItemTemplateReplace(self.globals, locals(), self.cl, nodeid)
         w(replace.go(s))
         w('</form>')
+        self.cl = self.db = self.properties = None
 
 
 class NewItemTemplate(TemplateFunctions):
@@ -1188,9 +1207,13 @@ class NewItemTemplate(TemplateFunctions):
         replace = ItemTemplateReplace(self.globals, locals(), None, None)
         w(replace.go(s))
         w('</form>')
+        self.cl = self.db = None
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.92  2002/06/11 04:57:04  richard
+# Added optional additional property to display in a Multilink form menu.
+#
 # Revision 1.91  2002/05/31 00:08:02  richard
 # can now just display a link/multilink id - useful for stylesheet stuff
 #
