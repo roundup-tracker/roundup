@@ -27,6 +27,14 @@ from roundup.cgi import ZTUtils
 class NoTemplate(Exception):
     pass
 
+class Unauthorised(Exception):
+    def __init__(self, action, klass):
+        self.action = action
+        self.klass = klass
+    def __str__(self):
+        return 'You are not allowed to %s items of class %s'%(self.action,
+            self.klass)
+
 def find_template(dir, name, extension):
     ''' Find a template in the nominated dir
     '''
@@ -218,6 +226,9 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
             getEngine().getContext(c), output, tal=1, strictinsert=0)()
         return output.getvalue()
 
+    def __repr__(self):
+        return '<Roundup PageTemplate %r>'%self.id
+
 class HTMLDatabase:
     ''' Return HTMLClasses for valid class fetches
     '''
@@ -271,15 +282,31 @@ class HTMLPermissions:
         '''
         return self._db.security.hasPermission('Edit', self._client.userid,
             self._classname)
+
     def is_view_ok(self):
         ''' Is the user allowed to View the current class?
         '''
         return self._db.security.hasPermission('View', self._client.userid,
             self._classname)
+
     def is_only_view_ok(self):
         ''' Is the user only allowed to View (ie. not Edit) the current class?
         '''
         return self.is_view_ok() and not self.is_edit_ok()
+
+    def view_check(self):
+        ''' Raise the Unauthorised exception if the user's not permitted to
+            view this class.
+        '''
+        if not self.is_view_ok():
+            raise Unauthorised("view", self._classname)
+
+    def edit_check(self):
+        ''' Raise the Unauthorised exception if the user's not permitted to
+            edit this class.
+        '''
+        if not self.is_edit_ok():
+            raise Unauthorised("edit", self._classname)
 
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
@@ -401,7 +428,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             l.sort(lambda a,b:cmp(a._name, b._name))
         return l
 
-    def list(self):
+    def list(self, sort_on=None):
         ''' List all items in this class.
         '''
         if self.classname == 'user':
@@ -411,7 +438,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         # get the list and sort it nicely
         l = self._klass.list()
-        sortfunc = make_sort_function(self._db, self.classname)
+        sortfunc = make_sort_function(self._db, self.classname, sort_on)
         l.sort(sortfunc)
 
         l = [klass(self._client, self.classname, x) for x in l]
@@ -447,19 +474,17 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         idlessprops.sort()
         return ['id'] + idlessprops
 
-    def filter(self, request=None):
+    def filter(self, request=None, filterspec={}, sort=(None,None),
+            group=(None,None)):
         ''' Return a list of items from this class, filtered and sorted
             by the current requested filterspec/filter/sort/group args
+
+            "request" takes precedence over the other three arguments.
         '''
-        # XXX allow direct specification of the filterspec etc.
         if request is not None:
             filterspec = request.filterspec
             sort = request.sort
             group = request.group
-        else:
-            filterspec = {}
-            sort = (None,None)
-            group = (None,None)
         if self.classname == 'user':
             klass = HTMLUser
         else:
@@ -499,10 +524,14 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
         '''
-        return self.input(type="hidden",name="@action",value="new") + '\n' + \
-               self.input(type="submit",name="submit",value=label)
+        self.view_check()
+        if self.is_edit_ok():
+            return self.input(type="hidden",name="@action",value="new") + \
+                   '\n' + self.input(type="submit",name="submit",value=label)
+        return ''
 
     def history(self):
+        self.view_check()
         return 'New node - no history'
 
     def renderWith(self, name, **kwargs):
@@ -517,7 +546,11 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         pt = Templates(self._db.config.TEMPLATES).get(self.classname, name)
 
         # use our fabricated request
-        return pt.render(self._client, self.classname, req)
+        args = {
+            'ok_message': self._client.ok_message,
+            'error_message': self._client.error_message
+        }
+        return pt.render(self._client, self.classname, req, **args)
 
 class HTMLItem(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through an *item*
@@ -589,6 +622,8 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         return []
 
     def history(self, direction='descending', dre=re.compile('\d+')):
+        self.view_check()
+
         l = ['<table class="history">'
              '<tr><th colspan="4" class="header">',
              _('History'),
@@ -843,7 +878,7 @@ class HTMLUser(HTMLItem):
             self._classname) or (self._nodeid == self._client.userid and
             self._db.user.get(self._client.userid, 'username') != 'anonymous')
 
-class HTMLProperty(HTMLInputMixin):
+class HTMLProperty(HTMLInputMixin, HTMLPermissions):
     ''' String, Number, Date, Interval HTMLProperty
 
         Has useful attributes:
@@ -869,7 +904,7 @@ class HTMLProperty(HTMLInputMixin):
             self._formname = name
 
         HTMLInputMixin.__init__(self)
-        
+
     def __repr__(self):
         return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._formname,
             self._prop, self._value)
@@ -913,6 +948,8 @@ class StringHTMLProperty(HTMLProperty):
             "hyperlink" turns on/off in-text hyperlinking of URLs, email
                 addresses and designators
         '''
+        self.view_check()
+
         if self._value is None:
             return ''
         if escape:
@@ -931,37 +968,59 @@ class StringHTMLProperty(HTMLProperty):
 
             This requires the StructureText module to be installed separately.
         '''
+        self.view_check()
+
         s = self.plain(escape=escape)
         if not StructuredText:
             return s
         return StructuredText(s,level=1,header=0)
 
     def field(self, size = 30):
-        ''' Render a form edit field for the property
+        ''' Render the property as a field in HTML.
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
+
+        if self.is_edit_ok():
             value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+            return self.input(name=self._formname,value=value,size=size)
+
+        return self.plain()
 
     def multiline(self, escape=0, rows=5, cols=40):
-        ''' Render a multiline form edit field for the property
+        ''' Render a multiline form edit field for the property.
+
+            If not editable, just display the plain() value in a <pre> tag.
         '''
+        self.view_check()
+
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
+
+        if self.is_edit_ok():
             value = '&quot;'.join(value.split('"'))
-        return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
-            self._formname, rows, cols, value)
+            return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
+                self._formname, rows, cols, value)
+
+        return '<pre>%s</pre>'%self.plain()
 
     def email(self, escape=1):
         ''' Render the value of the property as an obscured email address
         '''
-        if self._value is None: value = ''
-        else: value = str(self._value)
+        self.view_check()
+
+        if self._value is None:
+            value = ''
+        else:
+            value = str(self._value)
         if value.find('@') != -1:
             name, domain = value.split('@')
             domain = ' '.join(domain.split('.')[:-1])
@@ -977,38 +1036,64 @@ class PasswordHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         if self._value is None:
             return ''
         return _('*encrypted*')
 
     def field(self, size = 30):
         ''' Render a form edit field for the property.
+
+            If not editable, just display the value via plain().
         '''
-        return self.input(type="password", name=self._formname, size=size)
+        self.view_check()
+
+        if self.is_edit_ok():
+            return self.input(type="password", name=self._formname, size=size)
+
+        return self.plain()
 
     def confirm(self, size = 30):
         ''' Render a second form edit field for the property, used for 
             confirmation that the user typed the password correctly. Generates
             a field with name "@confirm@name".
+
+            If not editable, display nothing.
         '''
-        return self.input(type="password", name="@confirm@%s"%self._formname,
-            size=size)
+        self.view_check()
+
+        if self.is_edit_ok():
+            return self.input(type="password",
+                name="@confirm@%s"%self._formname, size=size)
+
+        return ''
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         return str(self._value)
 
     def field(self, size = 30):
-        ''' Render a form edit field for the property
+        ''' Render a form edit field for the property.
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
+
+        if self.is_edit_ok():
             value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+            return self.input(name=self._formname,value=value,size=size)
+
+        return self.plain()
 
     def __int__(self):
         ''' Return an int of me
@@ -1025,23 +1110,34 @@ class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         if self._value is None:
             return ''
         return self._value and "Yes" or "No"
 
     def field(self):
         ''' Render a form edit field for the property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
+        if not is_edit_ok():
+            return self.plain()
+
         checked = self._value and "checked" or ""
         if self._value:
-            s = self.input(type="radio",name=self._formname,value="yes",checked="checked")
+            s = self.input(type="radio", name=self._formname, value="yes",
+                checked="checked")
             s += 'Yes'
-            s +=self.input(type="radio",name=self._formname,value="no")
+            s +=self.input(type="radio", name=self._formname, value="no")
             s += 'No'
         else:
-            s = self.input(type="radio",name=self._formname,value="yes")
+            s = self.input(type="radio", name=self._formname, value="yes")
             s += 'Yes'
-            s +=self.input(type="radio",name=self._formname,value="no",checked="checked")
+            s +=self.input(type="radio", name=self._formname, value="no",
+                checked="checked")
             s += 'No'
         return s
 
@@ -1049,6 +1145,8 @@ class DateHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         if self._value is None:
             return ''
         return str(self._value.local(self._db.getUserTimezone()))
@@ -1059,24 +1157,37 @@ class DateHTMLProperty(HTMLProperty):
             This is useful for defaulting a new value. Returns a
             DateHTMLProperty.
         '''
+        self.view_check()
+
         return DateHTMLProperty(self._client, self._nodeid, self._prop,
             self._formname, date.Date('.'))
 
     def field(self, size = 30):
         ''' Render a form edit field for the property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
         if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self._value.local(self._db.getUserTimezone())))
+            tz = self._db.getUserTimezone()
+            value = cgi.escape(str(self._value.local(tz)))
+
+        if is_edit_ok():
             value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+            return self.input(name=self._formname,value=value,size=size)
+        
+        return self.plain()
 
     def reldate(self, pretty=1):
         ''' Render the interval between the date and now.
 
             If the "pretty" flag is true, then make the display pretty.
         '''
+        self.view_check()
+
         if not self._value:
             return ''
 
@@ -1095,6 +1206,8 @@ class DateHTMLProperty(HTMLProperty):
             string, then it'll be stripped from the output. This is handy
             for the situatin when a date only specifies a month and a year.
         '''
+        self.view_check()
+
         if format is not self._marker:
             return self._value.pretty(format)
         else:
@@ -1103,6 +1216,8 @@ class DateHTMLProperty(HTMLProperty):
     def local(self, offset):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
+        self.view_check()
+
         return DateHTMLProperty(self._client, self._nodeid, self._prop,
             self._formname, self._value.local(offset))
 
@@ -1110,6 +1225,8 @@ class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         if self._value is None:
             return ''
         return str(self._value)
@@ -1117,17 +1234,27 @@ class IntervalHTMLProperty(HTMLProperty):
     def pretty(self):
         ''' Render the interval in a pretty format (eg. "yesterday")
         '''
+        self.view_check()
+
         return self._value.pretty()
 
     def field(self, size = 30):
         ''' Render a form edit field for the property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
+
+        if is_edit_ok():
             value = '&quot;'.join(value.split('"'))
-        return self.input(name=self._formname,value=value,size=size)
+            return self.input(name=self._formname,value=value,size=size)
+
+        return self.plain()
 
 class LinkHTMLProperty(HTMLProperty):
     ''' Link HTMLProperty
@@ -1161,6 +1288,8 @@ class LinkHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         if self._value is None:
             return ''
         linkcl = self._db.classes[self._prop.classname]
@@ -1172,55 +1301,40 @@ class LinkHTMLProperty(HTMLProperty):
 
     def field(self, showid=0, size=None):
         ''' Render a form edit field for the property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
+        if not self.is_edit_ok():
+            return self.plain()
+
+        # edit field
         linkcl = self._db.getclass(self._prop.classname)
-        if linkcl.getprops().has_key('order'):  
-            sort_on = 'order'  
-        else:  
-            sort_on = linkcl.labelprop()  
-        options = linkcl.filter(None, {}, ('+', sort_on), (None, None))
-        # TODO: make this a field display, not a menu one!
-        l = ['<select name="%s">'%self._formname]
-        k = linkcl.labelprop(1)
         if self._value is None:
-            s = 'selected="selected" '
+            value = ''
         else:
-            s = ''
-        l.append(_('<option %svalue="-1">- no selection -</option>')%s)
-
-        # make sure we list the current value if it's retired
-        if self._value and self._value not in options:
-            options.insert(0, self._value)
-
-        for optionid in options:
-            # get the option value, and if it's None use an empty string
-            option = linkcl.get(optionid, k) or ''
-
-            # figure if this option is selected
-            s = ''
-            if optionid == self._value:
-                s = 'selected="selected" '
-
-            # figure the label
-            if showid:
-                lab = '%s%s: %s'%(self._prop.classname, optionid, option)
+            k = linkcl.getkey()
+            if k:
+                label = linkcl.get(self._value, k)
             else:
-                lab = option
-
-            # truncate if it's too long
-            if size is not None and len(lab) > size:
-                lab = lab[:size-3] + '...'
-
-            # and generate
-            lab = cgi.escape(lab)
-            l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
-        l.append('</select>')
-        return '\n'.join(l)
+                label = self._value
+            value = cgi.escape(str(self._value))
+            value = '&quot;'.join(value.split('"'))
+        return '<input name="%s" value="%s" size="%s">'%(self._formname,
+            label, size)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
-            **conditions):
+            sort_on=None, **conditions):
         ''' Render a form select list for this property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
+        if not self.is_edit_ok():
+            return self.plain()
+
         value = self._value
 
         linkcl = self._db.getclass(self._prop.classname)
@@ -1233,7 +1347,10 @@ class LinkHTMLProperty(HTMLProperty):
         if linkcl.getprops().has_key('order'):  
             sort_on = ('+', 'order')
         else:  
-            sort_on = ('+', linkcl.labelprop())
+            if sort_on is None:
+                sort_on = ('+', linkcl.labelprop())
+            else:
+                sort_on = ('+', sort_on)
         options = linkcl.filter(None, conditions, sort_on, (None, None))
 
         # make sure we list the current value if it's retired
@@ -1280,7 +1397,8 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __init__(self, *args, **kwargs):
         HTMLProperty.__init__(self, *args, **kwargs)
         if self._value:
-            self._value.sort(make_sort_function(self._db, self._prop.classname))
+            sortfun = make_sort_function(self._db, self._prop.classname)
+            self._value.sort(sortfun)
     
     def __len__(self):
         ''' length of the multilink '''
@@ -1321,6 +1439,8 @@ class MultilinkHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         ''' Render a "plain" representation of the property
         '''
+        self.view_check()
+
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
         labels = []
@@ -1333,7 +1453,14 @@ class MultilinkHTMLProperty(HTMLProperty):
 
     def field(self, size=30, showid=0):
         ''' Render a form edit field for the property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
+        if not self.is_edit_ok():
+            return self.plain()
+
         linkcl = self._db.getclass(self._prop.classname)
         value = self._value[:]
         # map the id to the label property
@@ -1346,13 +1473,23 @@ class MultilinkHTMLProperty(HTMLProperty):
         return self.input(name=self._formname,size=size,value=value)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
-            **conditions):
+            sort_on=None, **conditions):
         ''' Render a form select list for this property
+
+            If not editable, just display the value via plain().
         '''
+        self.view_check()
+
+        if not self.is_edit_ok():
+            return self.plain()
+
         value = self._value
 
         linkcl = self._db.getclass(self._prop.classname)
-        sort_on = ('+', find_sort_key(linkcl))
+        if sort_on is None:
+            sort_on = ('+', find_sort_key(linkcl))
+        else:
+            sort_on = ('+', sort_on)
         options = linkcl.filter(None, conditions, sort_on)
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]
@@ -1405,11 +1542,12 @@ propclasses = (
     (hyperdb.Multilink, MultilinkHTMLProperty),
 )
 
-def make_sort_function(db, classname):
+def make_sort_function(db, classname, sort_on=None):
     '''Make a sort function for a given class
     '''
     linkcl = db.getclass(classname)
-    sort_on = find_sort_key(linkcl)
+    if sort_on is None:
+        sort_on = find_sort_key(linkcl)
     def sortfunc(a, b):
         return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
     return sortfunc
@@ -1716,6 +1854,7 @@ submitted = false;
 function submit_once() {
     if (submitted) {
         alert("Your request is being processed.\\nPlease be patient.");
+        event.returnValue = 0;    // work-around for IE
         return 0;
     }
     submitted = true;
