@@ -1,4 +1,4 @@
-# $Id: instance_config.py,v 1.2 2001-07-29 07:01:39 richard Exp $
+# $Id: instance_config.py,v 1.3 2001-08-02 06:38:17 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -36,6 +36,9 @@ TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
 # The email address that mail to roundup should go to
 ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
+# The web address that the instance is viewable at
+ISSUE_TRACKER_WEB = 'http://www.bizarsoftware.com.au/cgi-bin/roundup.cgi/issues'
+
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 
@@ -44,6 +47,9 @@ LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.1  2001/07/23 23:28:43  richard
 # Adding the classic template
 #

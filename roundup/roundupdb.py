@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.7 2001-07-30 02:38:31 richard Exp $
+# $Id: roundupdb.py,v 1.8 2001-08-02 06:38:17 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -243,6 +243,7 @@ class IssueClass(Class):
             m.append('Reply-To: %s'%self.ISSUE_TRACKER_EMAIL)
             m.append('')
             m.append(self.db.msg.get(msgid, 'content'))
+            m.append(self.email_footer(nodeid, msgid))
             # TODO attachments
             try:
                 smtp = smtplib.SMTP(self.MAILHOST)
@@ -252,8 +253,21 @@ class IssueClass(Class):
             except smtplib.SMTPException, value:
                 return "Couldn't send confirmation email: %s"%value
 
+    def email_footer(self, nodeid, msgid):
+        ''' Add a footer to the e-mail with some useful information
+        '''
+        web = self.ISSUE_TRACKER_WEB
+        return '''%s
+Roundup issue tracker
+%s
+%s
+'''%('_'*len(web), self.ISSUE_TRACKER_EMAIL, web)
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/30 02:38:31  richard
+# get() now has a default arg - for migration only.
+#
 # Revision 1.6  2001/07/30 00:05:54  richard
 # Fixed IssueClass so that superseders links to its classname rather than
 # hard-coded to "issue".

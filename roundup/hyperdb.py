@@ -395,7 +395,7 @@ class Class:
         """Return the name of the key property for this class or None."""
         return self.key
 
-    def labelprop(self):
+    def labelprop(self, default_to_id=0):
         ''' Return the property name for a label for the given node.
 
         This method attempts to generate a consistent label for the node.
@@ -413,6 +413,8 @@ class Class:
             return 'name'
         elif props.has_key('title'):
             return 'title'
+        if default_to_id:
+            return 'id'
         props = props.keys()
         props.sort()
         return props[0]
@@ -798,6 +800,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/01 04:24:21  richard
+# mailgw was assuming certain properties existed on the issues being created.
+#
 # Revision 1.10  2001/07/30 02:38:31  richard
 # get() now has a default arg - for migration only.
 #

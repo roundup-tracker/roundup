@@ -1,4 +1,4 @@
-# $Id: dbinit.py,v 1.4 2001-07-29 07:01:39 richard Exp $
+# $Id: dbinit.py,v 1.5 2001-08-02 06:38:17 richard Exp $
 
 import os
 
@@ -18,6 +18,7 @@ class Database(roundupdb.Database, select_db.Database):
 class IssueClass(roundupdb.IssueClass):
     ''' issues need the email information
     '''
+    ISSUE_TRACKER_WEB = instance_config.ISSUE_TRACKER_WEB
     ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
@@ -107,6 +108,9 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.3  2001/07/24 10:46:22  anthonybaxter
 # Added templatebuilder module. two functions - one to pack up the html base,
 # one to unpack it. Packed up the two standard templates into htmlbases.

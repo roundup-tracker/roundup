@@ -1,4 +1,4 @@
-# $Id: dbinit.py,v 1.8 2001-07-30 01:26:59 richard Exp $
+# $Id: dbinit.py,v 1.9 2001-08-02 06:38:17 richard Exp $
 
 import os
 
@@ -17,6 +17,7 @@ class Database(roundupdb.Database, select_db.Database):
 class IssueClass(roundupdb.IssueClass):
     ''' issues need the email information
     '''
+    ISSUE_TRACKER_WEB = instance_config.ISSUE_TRACKER_WEB
     ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
@@ -155,6 +156,12 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/07/30 01:26:59  richard
+# Big changes:
+#  . split off the support priority into its own class
+#  . added "new support, new user" to the page head
+#  . fixed the display options for the heading links
+#
 # Revision 1.7  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #

@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.16 2001-08-02 05:55:25 richard Exp $
+# $Id: cgi_client.py,v 1.17 2001-08-02 06:38:17 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -229,7 +229,7 @@ class Client:
                         props[key] = value
                 cl.set(self.nodeid, **props)
 
-                self._post_editnode(self.nodeid)
+                self._post_editnode(self.nodeid, changed)
                 # and some nice feedback for the user
                 message = '%s edited ok'%', '.join(changed)
             except:
@@ -320,7 +320,7 @@ class Client:
             props[key] = value
         return cl.create(**props)
 
-    def _post_editnode(self, nid):
+    def _post_editnode(self, nid, changes=None):
         ''' do the linking and message sending part of the node creation
         '''
         cn = self.classname
@@ -374,16 +374,20 @@ class Client:
                     summary = note
                 m = ['%s\n'%note]
             else:
-                summary = 'This %s has been created through the web.\n'%cn
+                summary = 'This %s has been edited through the web.\n'%cn
                 m = [summary]
-            m.append('\n-------\n')
 
             # generate an edit message - nosyreactor will send it
+            first = 1
             for name, prop in props.items():
+                if changes is not None and name not in changes: continue
+                if first:
+                    m.append('\n-------')
+                    first = 0
                 value = cl.get(nid, name, None)
                 if prop.isLinkType:
                     link = self.db.classes[prop.classname]
-                    key = link.getkey()
+                    key = link.labelprop(default_to_id=1)
                     if value is not None and key:
                         value = link.get(value, key)
                     else:
@@ -392,8 +396,8 @@ class Client:
                     if value is None: value = []
                     l = []
                     link = self.db.classes[prop.classname]
+                    key = link.labelprop(default_to_id=1)
                     for entry in value:
-                        key = link.getkey()
                         if key:
                             l.append(link.get(entry, link.getkey()))
                         else:
@@ -403,9 +407,8 @@ class Client:
 
             # now create the message
             content = '\n'.join(m)
-            nosy.remove(self.getuid())
             message_id = self.db.msg.create(author=self.getuid(),
-                recipients=nosy, date=date.Date('.'), summary=summary,
+                recipients=[], date=date.Date('.'), summary=summary,
                 content=content)
             messages = cl.get(nid, 'messages')
             messages.append(message_id)
@@ -536,6 +539,10 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/08/02 05:55:25  richard
+# Web edit messages aren't sent to the person who did the edit any more. No
+# message is generated if they are the only person on the nosy list.
+#
 # Revision 1.15  2001/08/02 00:34:10  richard
 # bleah syntax error
 #
