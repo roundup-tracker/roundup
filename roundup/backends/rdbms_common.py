@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.92 2004-04-20 05:47:33 richard Exp $
+# $Id: rdbms_common.py,v 1.93 2004-04-22 22:17:34 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2127,7 +2127,7 @@ class Class(hyperdb.Class):
             r.append((id, m))
         i = 0
         for sortby in mlsort:
-            def sortfun(a, b, dir=sortby[i]):
+            def sortfun(a, b, dir=sortby[i], i=i):
                 if dir == '-':
                     return cmp(b[1][i], a[1][i])
                 else:

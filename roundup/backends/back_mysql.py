@@ -698,7 +698,7 @@ class MysqlClass:
             r.append((id, m))
         i = 0
         for sortby in mlsort:
-            def sortfun(a, b, dir=sortby[i]):
+            def sortfun(a, b, dir=sortby[i], i=i):
                 if dir == '-':
                     return cmp(b[1][i], a[1][i])
                 else:
