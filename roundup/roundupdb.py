@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.112 2004-07-14 01:10:51 richard Exp $
+# $Id: roundupdb.py,v 1.113 2004-10-08 01:58:43 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -34,6 +34,12 @@ from roundup import password, date, hyperdb
 from roundup.mailer import Mailer, straddr, MessageSendError
 
 class Database:
+
+    # remember the journal uid for the current journaltag so that:
+    # a. we don't have to look it up every time we need it, and
+    # b. if the journaltag disappears during a transaction, we don't barf
+    #    (eg. the current user edits their username)
+    journal_uid = None
     def getuid(self):
         """Return the id of the "user" node associated with the user
         that owns this connection to the hyperdatabase."""
@@ -43,7 +49,11 @@ class Database:
             # admin user may not exist, but always has ID 1
             return '1'
         else:
-            return self.user.lookup(self.journaltag)
+            if (self.journal_uid is None or self.journal_uid[0] !=
+                    self.journaltag):
+                uid = self.user.lookup(self.journaltag)
+                self.journal_uid = (self.journaltag, uid)
+            return self.journal_uid[1]
 
     def getUserTimezone(self):
         """Return user timezone defined in 'timezone' property of user class.

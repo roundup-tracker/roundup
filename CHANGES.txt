@@ -27,6 +27,7 @@ Feature:
 - roundup-admin reindex command may now work on single items or classes
 - multiple selection Link/Multilink search field (thanks Marlon van den Berg)
 - relaxed hyperlinking in web interface (accept "issue123" or "Issue 123")
+- record journaltag lookup ("fixes" sf bug 998140)
 
 
 2004-??-?? 0.7.7
