@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.12 $
+:Version: $Revision: 1.13 $
 
 .. note::
    The intended audience of this document is the developers of the core
@@ -200,11 +200,11 @@ to always use *named* format specifiers::
   _('Index of %(classname)s') % locals()
 
 This helps translators to better understand the context of the
-message and, in Python, remove format specifier altogether (which
-is sometimes useful, especially in singular cases of `Plural Forms`_).
+message and, with Python formatting, remove format specifier altogether
+(which is sometimes useful, especially in singular cases of `Plural Forms`_).
 
 When there is more than one format specifier in the translatable
-format string, named format specifiers *must* be used almost always,
+format string, named format specifiers **must** be used almost always,
 because translation may require different order of items.
 
 It is better to *not* mark for translation strings that are not
@@ -214,11 +214,6 @@ of translation completeness.  For example, string ``</ol></body></html>``
 script) has no human readable parts at all, and needs no translations.
 Such strings are left untranslated in PO files, and are reported
 as such by PO status checkers (e.g. ``msgfmt --statistics``).
-
-Need some note about i18n in TAL here... this link has good info:
-
-  http://plone.org/documentation/howto/I18nForDevelopers
-
 
 Command Line Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,21 +240,6 @@ Translations for messages whose grammatical depends on a number
 must be done by ``ngettext()`` function::
 
   print ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked)
-
-User Interfaces
-~~~~~~~~~~~~~~~
-
-*(not yet)*
-
-This includes Mail Gateway and Web User Interfaces, where translation
-depends on the language of current Roundup User.  These translations
-will be done by the tracker configuration object.  Translatable strings
-will be automatically marked by calls to the ``_()`` and ``ngettext()``
-methods of that object::
-
-  self.config._("This message is translated")
-  self.config.ngettext("Nuked %i file", "Nuked %i files",
-      number_of_files_nuked)
 
 Deferred Translations
 ~~~~~~~~~~~~~~~~~~~~~
@@ -288,6 +268,73 @@ types of string quotes::
    extensively used in the ``admin`` module using method docstrings
    as help messages.
 
+Web User Interface
+~~~~~~~~~~~~~~~~~~
+
+For Web User Interface, translation services are provided by Client
+object.  Action classes have methods ``_()`` and ``gettext()``,
+delegating translation to the Client instance.  In HTML templates,
+translator object is available as context variable ``i18n``.
+
+HTML templates have special markup for translatable strings.
+The syntax for this markup is defined on `ZPTInternationalizationSupport`_
+page.  Roundup translation service currently ignores values for
+``i18n:domain``, ``i18n:source`` and ``i18n:target``.
+
+Template markup examples:
+
+* simplest case::
+
+    <div i18n:translate="">
+     Say
+     no
+     more!
+    </div>
+
+  this will result in msgid ``"Say no more!"``, with all leading and
+  trailing whitespace stripped, and inner blanks replaced with single
+  space character.
+
+* using variable slots::
+
+    <div i18n:translate="">
+     And now...<br/>
+     No.<span tal:replace="number" i18n:name="slideNo" /><br/>
+     THE LARCH
+    </div>
+
+  Msgid will be: ``"And now...<br /> No.${slideNo}<br /> THE LARCH"``.
+  Template rendering will use context variable ``number`` (you may use
+  any expression) to put instead of ``${slideNo}`` in translation.
+
+* attribute translation::
+
+    <button name="btn_wink" value=" Wink " i18n:attributes="value" />
+
+  will translate the caption (and return value) for the "wink" button.
+
+* explicit msgids.  Sometimes it may be useful to specify msgid
+  for the element translation explicitely, like this::
+
+    <span i18n:translate="know what i mean?">this text is ignored</span>
+
+  When rendered, element contents will be replaced by translation
+  of the string specified in ``i18n:translate`` attribute.
+
+* ``i18n`` in `TALES`_.  You may translate strings in `TALES`_ python
+  expressions::
+
+    <span tal:replace="python: i18n.gettext('Oh, wicked.')" />
+
+* plural forms.  There is no markup for plural forms in `TAL`_ i18n.
+  You must use python expression for that::
+
+    <span tal:replace="python: i18n.ngettext(
+      'Oh but it\'s only %i shilling.',
+      'Oh but it\'s only %i shillings.',
+      fine) % fine"
+    />
+
 Extracting Translatable Messages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -306,6 +353,18 @@ with `Roundup Source`_.  If you wish to rebuild the template yourself,
 make sure that you have both ``xpot`` and ``xgettext`` installed and
 just run ``gmake`` (or ``make``, if you are on a `GNU`_ system like
 `linux`_ or `cygwin`_) in the ``locale`` directory.
+
+For on-site i18n, Roundup provides command-line utility::
+
+  roundup-gettext <tracker_home>
+
+extracting translatable messages from tracker's html templates.
+This utility creates message template file ``messages.pot`` in
+``locale`` subdirectory of the tracker home directory.  Translated
+messages may be put in *locale*.po files (where *locale* is selected
+locale name) in the same directory, e.g.: ``locale/ru.po``.
+These message catalogs are searched prior to system-wide translations
+kept in the ``share`` directory.
 
 Translating Messages
 ^^^^^^^^^^^^^^^^^^^^
@@ -371,6 +430,9 @@ extracting strings from source.  (Note: String extraction requires
 additional utility that is not part of `GNU gettext`_.  See `Extracting
 Translatable Messages`_.)
 
+At run time, Roundup automatically compiles message catalogs whenever
+`PO`_ file is changed.
+
 -----------------
 
 Back to `Table of Contents`_
@@ -405,4 +467,11 @@ Back to `Table of Contents`_
 .. _Roundup source distribution:
 .. _Roundup binary distribution:
     http://sourceforge.net/project/showfiles.php?group_id=31577
+.. _TAL:
+.. _Template Attribute Language:
+   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
+.. _TALES:
+.. _Template Attribute Language Expression Syntax:
+   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TALES%20Specification%201.3
 .. _vim: http://www.vim.org/
+.. _ZPTInternationalizationSupport: http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport
