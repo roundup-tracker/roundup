@@ -1,13 +1,12 @@
-# $Id: client.py,v 1.201 2004-11-18 14:05:35 a1s Exp $
+# $Id: client.py,v 1.202 2004-11-18 16:21:07 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
 __docformat__ = 'restructuredtext'
 
-import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
-import binascii, Cookie, time, random, stat, rfc822
-import codecs
-
+import base64, binascii, cgi, codecs, mimetypes, os
+import random, re, rfc822, stat, time, urllib, urlparse
+import Cookie
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.cgi import templating, cgitb, TranslationService
@@ -150,6 +149,9 @@ class Client:
 
         # parse cookies (used in charset and session lookups)
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
+
+        self.user = None
+        self.userid = None
 
     def setTranslator(self, translator=None):
         """Replace the translation engine
@@ -294,7 +296,7 @@ class Client:
         last_clean = sessions.get('last_clean', 'last_use', 0)
 
         # time to clean?
-        week = 60*60*24*7
+        #week = 60*60*24*7
         hour = 60*60
         now = time.time()
         if now - last_clean < hour:
@@ -375,6 +377,25 @@ class Client:
             user = self.env['REMOTE_USER']
         else:
             user = 'anonymous'
+
+        # try handling Basic Auth ourselves
+        if (user == 'anonymous') and self.env['HTTP_AUTHORIZATION']:
+            scheme, challenge = self.env['HTTP_AUTHORIZATION'].split(' ', 1)
+            if scheme.lower() == 'basic':
+                try:
+                    decoded = base64.decodestring(challenge)
+                except TypeError:
+                    # invalid challenge
+                    pass
+                username, password = decoded.split(':')
+                try:
+                    LoginAction(self).verifyLogin(username, password)
+                except LoginError, err:
+                    self.make_user_anonymous()
+                    self.response_code = 403
+                    raise Unauthorised, err
+
+                user = username
 
         # look up the user session cookie (may override the REMOTE_USER)
         cookie = self.cookie
