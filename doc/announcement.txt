@@ -1,6 +1,7 @@
-            Roundup 0.4.0b1 - an issue tracking system
+            Roundup 0.4.0b2 - an issue tracking system
 
-If you are upgrading please read MIGRATION.txt.
+If you are upgrading please read MIGRATION.txt. There was some information
+missing in this in the b1 release - sorry.
 
 Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
 requires python 2.1.2 or 2.2.
