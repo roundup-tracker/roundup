@@ -6,7 +6,9 @@ NOTE: This is just a grabbag, most of this should go into
 Changing HTML layout
 
   Note changes to the files in html take place immediatly without
-  restart, even when running toundup-server.
+  restart, even when running roundup-server.
+
+
 
 Q: Displaying messages not only the summary
 
@@ -20,9 +22,11 @@ A: in instance/html/msg.index
   displays the whole message not only the first line and <pre>
   prevents the browser from reformatting. 
 
+
+
 Q: Getting the nosy list picker instead of textfield.
 
-  In classic template there is plenty of spcae below the text field.
+  In classic template there is plenty of space below the text field.
 
 A: in instance/html/issue.item
 
@@ -35,6 +39,7 @@ A: in instance/html/issue.item
 
   remove the last cell in the next four rows, either by deleting a cell
   or by reducing colspan.
+
 
 
 Q: I wanted to see the issue id (the number) on the issue item display:
