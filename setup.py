@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.46 2003-04-10 04:33:02 richard Exp $
+# $Id: setup.py,v 1.47 2003-04-17 01:14:10 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -240,7 +240,8 @@ def install_demo():
 
     # figure basic params for server
     hostname = socket.gethostname()
-    port = 8080
+    # pick a fairly odd, random port
+    port = 8917
     while 1:
         print 'Trying to set up web server on port %d ...'%port,
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
