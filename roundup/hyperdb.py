@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.61 2002-04-03 06:11:51 richard Exp $
+# $Id: hyperdb.py,v 1.62 2002-04-03 07:05:50 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -179,6 +179,13 @@ transaction.
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
+            # if the property doesn't exist, or is the "retired" flag then
+            # it won't be in the properties dict
+            if not properties.has_key(k):
+                d[k] = v
+                continue
+
+            # get the property spec
             prop = properties[k]
 
             if isinstance(prop, Password):
@@ -203,10 +210,15 @@ transaction.
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
-            # avoid properties that don't exist any more
+            # if the property doesn't exist, or is the "retired" flag then
+            # it won't be in the properties dict
             if not properties.has_key(k):
+                d[k] = v
                 continue
+
+            # get the property spec
             prop = properties[k]
+
             if isinstance(prop, Date) and v is not None:
                 d[k] = date.Date(v)
             elif isinstance(prop, Interval) and v is not None:
@@ -1115,6 +1127,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.61  2002/04/03 06:11:51  richard
+# Fix for old databases that contain properties that don't exist any more.
+#
 # Revision 1.60  2002/04/03 05:54:31  richard
 # Fixed serialisation problem by moving the serialisation step out of the
 # hyperdb.Class (get, set) into the hyperdb.Database.
