@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_sqlite.py,v 1.1 2003-10-25 22:53:26 richard Exp $ 
+# $Id: test_sqlite.py,v 1.2 2003-11-02 08:44:17 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -23,7 +23,9 @@ from db_test_base import DBTest, ROTest, SchemaTest, \
     ClassicInitTest
 
 class sqliteOpener:
-    from roundup.backends import sqlite as module
+    from roundup import backends
+    if hasattr(backends, 'sqlite'):
+        from roundup.backends import sqlite as module
 
 class sqliteDBTest(sqliteOpener, DBTest):
     pass

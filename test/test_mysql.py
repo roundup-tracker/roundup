@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.2 2003-10-26 14:13:04 jlgijsbers Exp $ 
+# $Id: test_mysql.py,v 1.3 2003-11-02 08:44:17 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -86,7 +86,8 @@ MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
         l = db.issue.list()
         ae(l, [])
 
-    from roundup.backends import mysql as module
+    if hasattr(backends, 'mysql'):
+        from roundup.backends import mysql as module
     def tearDown(self):
         ClassicInitTest.tearDown(self)
         self.module.db_nuke(config)

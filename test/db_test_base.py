@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.1 2003-10-25 22:53:26 richard Exp $ 
+# $Id: db_test_base.py,v 1.2 2003-11-02 08:44:17 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time
 
@@ -817,6 +817,10 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.b.get(bid, 'name'), 'bear')
         self.assertEqual(self.db.b.lookup('bear'), bid)
 
+        # confirm journal's ok
+        self.db.getjournal('a', aid)
+        self.db.getjournal('b', bid)
+
     def init_amod(self):
         self.db = self.module.Database(config, 'admin')
         a = self.module.Class(self.db, "a", name=String(), fooz=String())
@@ -849,6 +853,10 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.a.get(aid2, 'name'), 'aardvark')
         self.assertEqual(self.db.a.get(aid2, 'fooz'), 'booz')
 
+        # confirm journal's ok
+        self.db.getjournal('a', aid)
+        self.db.getjournal('a', aid2)
+
     def init_amodkey(self):
         self.db = self.module.Database(config, 'admin')
         a = self.module.Class(self.db, "a", name=String(), fooz=String())
@@ -874,6 +882,9 @@ class SchemaTest(MyTestCase):
         # check
         self.init_amodkey()
         self.assertEqual(self.db.a.lookup('booz'), aid2)
+
+        # confirm journal's ok
+        self.db.getjournal('a', aid)
 
     def init_ml(self):
         self.db = self.module.Database(config, 'admin')
@@ -903,6 +914,10 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.assertEqual(self.db.b.lookup('bear'), bid)
 
+        # confirm journal's ok
+        self.db.getjournal('a', aid)
+        self.db.getjournal('b', bid)
+
     def test_removeMultilink(self):
         # add a multilink prop
         self.init_ml()
@@ -917,6 +932,10 @@ class SchemaTest(MyTestCase):
         self.init_ab()
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.assertEqual(self.db.b.lookup('bear'), bid)
+
+        # confirm journal's ok
+        self.db.getjournal('a', aid)
+        self.db.getjournal('b', bid)
 
     def test_removeClass(self):
         self.init_ml()
@@ -934,6 +953,10 @@ class SchemaTest(MyTestCase):
         self.init_a()
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
         self.assertEqual(self.db.a.lookup('apple'), aid)
+
+        # confirm journal's ok
+        self.db.getjournal('a', aid)
+        self.db.getjournal('b', bid)
 
 
 class ClassicInitTest(unittest.TestCase):
