@@ -308,7 +308,8 @@ Here is the interface provided by the hyperdatabase::
             The 'journaltag' is a token that will be attached to the journal
             entries for any edits done on the database.  If 'journaltag' is
             None, the database is opened in read-only mode: the Class.create(),
-            Class.set(), and Class.retire() methods are disabled.
+            Class.set(), Class.retire(), and Class.restore() methods are 
+            disabled.
             """
 
         def __getattr__(self, classname):
@@ -378,6 +379,12 @@ Here is the interface provided by the hyperdatabase::
             by the find(), list(), or lookup() methods, and other items may
             reuse the values of their key properties.
             """
+
+        def restore(self, nodeid):
+        '''Restpre a retired node.
+
+        Make node available for all operations like it was before retirement.
+        '''
 
         def history(self, itemid):
             """Retrieve the journal of edits on a particular item.
@@ -793,7 +800,7 @@ There are two kinds of detectors:
 2. a reactor is triggered just after an item has been modified
 
 When the Roundup database is about to perform a
-``create()``, ``set()``, or ``retire()``
+``create()``, ``set()``, ``retire()``, or ``restore``
 operation, it first calls any *auditors* that
 have been registered for that operation on that class.
 Any auditor may raise a *Reject* exception
@@ -814,14 +821,14 @@ register detectors on a given class of items::
         def audit(self, event, detector):
             """Register an auditor on this class.
 
-            'event' should be one of "create", "set", or "retire".
+            'event' should be one of "create", "set", "retire", or "restore".
             'detector' should be a function accepting four arguments.
             """
 
         def react(self, event, detector):
             """Register a reactor on this class.
 
-            'event' should be one of "create", "set", or "retire".
+            'event' should be one of "create", "set", "retire", or "restore".
             'detector' should be a function accepting four arguments.
             """
 
@@ -842,7 +849,7 @@ For a ``set()`` operation, newdata
 contains only the names and values of properties that are about
 to be changed.
 
-For a ``retire()`` operation, newdata is None.
+For a ``retire()`` or ``restore()`` operation, newdata is None.
 
 Reactors are called with the arguments::
 
@@ -859,8 +866,8 @@ newly-created item and ``olddata`` is None.
 For a ``set()`` operation, ``olddata``
 contains the names and previous values of properties that were changed.
 
-For a ``retire()`` operation, ``itemid`` is the
-id of the retired item and ``olddata`` is None.
+For a ``retire()`` or ``restore()`` operation, ``itemid`` is the id of
+the retired or restored item and ``olddata`` is None.
 
 Detector Example
 ~~~~~~~~~~~~~~~~

@@ -44,6 +44,7 @@ Feature:
 - added support for searching on ranges of dates (see doc/user_guide.txt in
   chapter "Searching Page" for details)
 - role names made case insensitive
+- added ability to restore retired nodes
 
 
 Fixed:

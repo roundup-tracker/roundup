@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.111 2003-03-10 00:22:20 richard Exp $
+#$Id: back_anydbm.py,v 1.112 2003-03-16 22:24:54 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -57,8 +57,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         The 'journaltag' is a token that will be attached to the journal
         entries for any edits done on the database.  If 'journaltag' is
         None, the database is opened in read-only mode: the Class.create(),
-        Class.set(), and Class.retire() methods are disabled.
-        '''
+        Class.set(), Class.retire(), and Class.restore() methods are
+        disabled.  
+        '''        
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}
@@ -710,8 +711,8 @@ class Class(hyperdb.Class):
         # do the db-related init stuff
         db.addclass(self)
 
-        self.auditors = {'create': [], 'set': [], 'retire': []}
-        self.reactors = {'create': [], 'set': [], 'retire': []}
+        self.auditors = {'create': [], 'set': [], 'retire': [], 'restore': []}
+        self.reactors = {'create': [], 'set': [], 'retire': [], 'restore': []}
 
     def enableJournalling(self):
         '''Turn journalling on for this class
@@ -1318,6 +1319,24 @@ class Class(hyperdb.Class):
             self.db.addjournal(self.classname, nodeid, 'retired', None)
 
         self.fireReactors('retire', nodeid, None)
+
+    def restore(self, nodeid):
+        '''Restpre a retired node.
+
+        Make node available for all operations like it was before retirement.
+        '''
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
+        self.fireAuditors('restore', nodeid, None)
+
+        node = self.db.getnode(self.classname, nodeid)
+        del node[self.db.RETIRED_FLAG]
+        self.db.setnode(self.classname, nodeid, node)
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, 'restored', None)
+
+        self.fireReactors('restore', nodeid, None)
 
     def is_retired(self, nodeid, cldb=None):
         '''Return true if the node is retired.

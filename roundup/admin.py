@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.42 2003-03-06 07:33:29 richard Exp $
+# $Id: admin.py,v 1.43 2003-03-16 22:24:54 kedder Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -880,6 +880,28 @@ Command help:
                 raise UsageError, message
             try:
                 self.db.getclass(classname).retire(nodeid)
+            except KeyError:
+                raise UsageError, _('no such class "%(classname)s"')%locals()
+            except IndexError:
+                raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
+        return 0
+
+    def do_restore(self, args):
+        '''Usage: restore designator[,designator]*
+        Restore the retired node specified by designator.
+
+        The given nodes will become available for users again.
+        '''
+        if len(args) < 1:
+            raise UsageError, _('Not enough arguments supplied')
+        designators = args[0].split(',')
+        for designator in designators:
+            try:
+                classname, nodeid = hyperdb.splitDesignator(designator)
+            except hyperdb.DesignatorError, message:
+                raise UsageError, message
+            try:
+                self.db.getclass(classname).restore(nodeid)
             except KeyError:
                 raise UsageError, _('no such class "%(classname)s"')%locals()
             except IndexError:

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.41 2003-03-10 20:24:30 kedder Exp $
+# $Id: back_metakit.py,v 1.42 2003-03-16 22:24:54 kedder Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -279,12 +279,13 @@ class _Database(hyperdb.Database, roundupdb.Database):
         
 _STRINGTYPE = type('')
 _LISTTYPE = type([])
-_CREATE, _SET, _RETIRE, _LINK, _UNLINK = range(5)
+_CREATE, _SET, _RETIRE, _LINK, _UNLINK, _RESTORE = range(6)
 
 _actionnames = {
     _CREATE : 'create',
     _SET : 'set',
     _RETIRE : 'retire',
+    _RESTORE : 'restore',
     _LINK : 'link',
     _UNLINK : 'unlink',
 }
@@ -307,8 +308,8 @@ class Class:
                               'creator'  : hyperdb.Link('user') }
 
         # event -> list of callables
-        self.auditors = {'create': [], 'set': [], 'retire': []}
-        self.reactors = {'create': [], 'set': [], 'retire': []}
+        self.auditors = {'create': [], 'set': [], 'retire': [], 'restore': []}
+        self.reactors = {'create': [], 'set': [], 'retire': [], 'restore': []}
 
         view = self.__getview()
         self.maxid = 1
@@ -675,6 +676,34 @@ class Class:
                 iv.delete(ndx)
         self.db.dirty = 1
         self.fireReactors('retire', nodeid, None)
+
+    def restore(self, nodeid):
+        '''Restpre a retired node.
+
+        Make node available for all operations like it was before retirement.
+        '''
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError, 'Database open read-only'
+        self.fireAuditors('restore', nodeid, None)
+        view = self.getview(1)
+        ndx = view.find(id=int(nodeid))
+        if ndx < 0:
+            raise KeyError, "nodeid %s not found" % nodeid
+
+        row = view[ndx]
+        oldvalues = self.uncommitted.setdefault(row.id, {})
+        oldval = oldvalues['_isdel'] = row._isdel
+        row._isdel = 0
+
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, _RESTORE, {})
+        if self.keyname:
+            iv = self.getindexview(1)
+            ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
+            if ndx > -1:
+                iv.delete(ndx)
+        self.db.dirty = 1
+        self.fireReactors('restore', nodeid, None)
 
     def is_retired(self, nodeid):
         view = self.getview(1)

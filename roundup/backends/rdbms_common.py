@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.43 2003-03-14 02:51:25 richard Exp $
+# $Id: rdbms_common.py,v 1.44 2003-03-16 22:24:55 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -894,8 +894,8 @@ class Class(hyperdb.Class):
         # do the db-related init stuff
         db.addclass(self)
 
-        self.auditors = {'create': [], 'set': [], 'retire': []}
-        self.reactors = {'create': [], 'set': [], 'retire': []}
+        self.auditors = {'create': [], 'set': [], 'retire': [], 'restore': []}
+        self.reactors = {'create': [], 'set': [], 'retire': [], 'restore': []}
 
     def schema(self):
         ''' A dumpable version of the schema that we can store in the
@@ -1473,9 +1473,33 @@ class Class(hyperdb.Class):
         if __debug__:
             print >>hyperdb.DEBUG, 'retire', (self, sql, nodeid)
         self.db.cursor.execute(sql, (1, nodeid))
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, 'retired', None)
 
         self.fireReactors('retire', nodeid, None)
 
+    def restore(self, nodeid):
+        '''Restpre a retired node.
+
+        Make node available for all operations like it was before retirement.
+        '''
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
+        self.fireAuditors('restore', nodeid, None)
+
+        # use the arg for __retired__ to cope with any odd database type
+        # conversion (hello, sqlite)
+        sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
+            self.db.arg, self.db.arg)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'restore', (self, sql, nodeid)
+        self.db.cursor.execute(sql, (0, nodeid))
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, 'restored', None)
+
+        self.fireReactors('restore', nodeid, None)
+        
     def is_retired(self, nodeid):
         '''Return true if the node is rerired
         '''
