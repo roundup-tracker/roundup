@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.7 2004-06-09 07:03:15 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.8 2004-06-09 09:48:49 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -201,7 +201,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # nothing to do
             return 0
 
-        if version == 1:
+        if version < 2:
             # change the schema structure
             self.database_schema = {'tables': self.database_schema}
 
@@ -213,7 +213,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # database
             self.create_version_2_tables()
 
-        if version == 2:
+        if version < 3:
             self.fix_version_2_tables()
 
         self.database_schema['version'] = self.current_db_version
