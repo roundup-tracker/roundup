@@ -10,16 +10,30 @@ accordingly.
 Migrating from 0.5 to 0.6
 =========================
 
-- Introduced EMAIL_FROM_TAG config variable.
+0.6.0 Configuration
+-------------------
+
+- Introduced EMAIL_FROM_TAG config variable. This value is inserted into
+  the From: line of nosy email. If the sending user is "Foo Bar", the
+  From: line is usually::
+
+     "Foo Bar" <issue_tracker@tracker.example>
+
+  the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
+
+     "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
+
+0.6.0 Multilingual character set support
+----------------------------------------
 
 - Added internationalization support. This is done via encoding all data
   stored in roundup database to utf-8 (unicode encoding). To support utf-8 in
   web interface you should add the folowing line to your tracker's html/page
-  and html/_generic.help files inside <head> tag:
+  and html/_generic.help files inside <head> tag::
   
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-  Sinse latin characters in utf-8 has the same codes as in ASCII table, this
+  Since latin characters in utf-8 has the same codes as in ASCII table, this
   modification is optional for users who use only plain latin characters. 
 
   After this modification, you will be able to see and enter any world
