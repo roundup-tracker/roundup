@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.29 $
+:Version: $Revision: 1.30 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -948,16 +948,22 @@ Method      Description
 =========== =============================================================
 plain       render a "plain" representation of the property
 field       render a form edit field for the property
-stext       specific to String properties - render the value of the
+stext       only on String properties - render the value of the
             property as StructuredText (requires the StructureText module
             to be installed separately)
-multiline   specific to String properties - render a multiline form edit
+multiline   only on String properties - render a multiline form edit
             field for the property
-email       specific to String properties - render the value of the 
+email       only on String properties - render the value of the 
             property as an obscured email address
+reldate     only on Date properties - render the interval between the
+            date and now
+pretty      only on Interval properties - render the interval in a
+            pretty format (eg. "yesterday")
+menu        only on Link and Multilink properties - render a form select
+            list for this property
+reverse     only on Multilink properties - produce a list of the linked
+            items in reverse order
 =========== =============================================================
-
-XXX do the other properties
 
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
@@ -996,6 +1002,22 @@ filterspec  values to filter the index on
 search_text text to perform a full-text search on for an index
 =========== ================================================================
 
+There are several methods available on the request variable:
+
+=============== ============================================================
+Method          Description
+=============== ============================================================
+description     render a description of the request - handle for the page
+                title
+indexargs_form  render the current index args as form elements
+indexargs_url   render the current index args as a URL
+base_javascript render some javascript that is used by other components of
+                the templating
+batch           run the current index args through a filter and return a
+                list of items (see `hyperdb item wrapper`_, and
+                `batching`_)
+=============== ============================================================
+
 The db variable
 ~~~~~~~~~~~~~~~
 
@@ -1009,6 +1031,83 @@ want access to the "user" class, for example, you would use::
 
 The access results in a `hyperdb class wrapper`_.
 
+
+The util variable
+~~~~~~~~~~~~~~~~~
+
+Note: this is implemented by the roundup.cgi.templating.TemplatingUtils class.
+
+=============== ============================================================
+Method          Description
+=============== ============================================================
+Batch           return a batch object using the supplied list
+=============== ============================================================
+
+Batching
+::::::::
+
+Use Batch to turn a list of items, or item ids of a given class, into a series
+of batches. Its usage is::
+
+    python:util.Batch(sequence, size, start, end=0, orphan=0, overlap=0)
+
+or, to get the current index batch::
+
+    request/batch
+
+The parameters are:
+
+========= ==================================================================
+Parameter  Usage
+========= ==================================================================
+sequence  a list of HTMLItems
+size      how big to make the sequence.
+start     where to start (0-indexed) in the sequence.
+end       where to end (0-indexed) in the sequence.
+orphan    if the next batch would contain less items than this
+          value, then it is combined with this batch
+overlap   the number of items shared between adjacent batches
+========= ==================================================================
+
+All of the parameters are assigned as attributes on the batch object. In
+addition, it has several more attributes:
+
+=============== ============================================================
+Attribute       Description
+=============== ============================================================
+start           indicates the start index of the batch. *Note: unlike the
+                argument, is a 1-based index (I know, lame)*
+first           indicates the start index of the batch *as a 0-based
+                index*
+length          the actual number of elements in the batch
+sequence_length the length of the original, unbatched, sequence.
+=============== ============================================================
+
+And several methods:
+
+=============== ============================================================
+Method          Description
+=============== ============================================================
+previous        returns a new Batch with the previous batch settings
+next            returns a new Batch with the next batch settings
+propchanged     detect if the named property changed on the current item
+                when compared to the last item
+=============== ============================================================
+
+An example of batching::
+
+ <table class="otherinfo">
+  <tr><th colspan="4" class="header">Existing Keywords</th></tr>
+  <tr tal:define="keywords db/keyword/list"
+      tal:repeat="start python:range(0, len(keywords), 4)">
+   <td tal:define="batch python:utils.Batch(keywords, 4, start)"
+       tal:repeat="keyword batch" tal:content="keyword/name">keyword here</td>
+  </tr>
+  <tr><td colspan="4" style="border-top: 1px solid gray">&nbsp;</td></tr>
+ </table>
+
+... which will produce a table with four columns containing the items of the
+"keyword" class (well, their "name" anyway).
 
 Displaying Properties
 ---------------------

@@ -782,6 +782,10 @@ class DateHTMLProperty(HTMLProperty):
         return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
     def reldate(self, pretty=1):
+        ''' Render the interval between the date and now.
+
+            If the "pretty" flag is true, then make the display pretty.
+        '''
         if not self._value:
             return ''
 
@@ -800,6 +804,8 @@ class IntervalHTMLProperty(HTMLProperty):
         return str(self._value)
 
     def pretty(self):
+        ''' Render the interval in a pretty format (eg. "yesterday")
+        '''
         return self._value.pretty()
 
     def field(self, size = 30):
@@ -881,6 +887,8 @@ class LinkHTMLProperty(HTMLProperty):
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
+        ''' Render a form select list for this property
+        '''
         value = self._value
 
         # sort function
@@ -994,6 +1002,8 @@ class MultilinkHTMLProperty(HTMLProperty):
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
+        ''' Render a form select list for this property
+        '''
         value = self._value
 
         # sort function
@@ -1276,7 +1286,7 @@ env: %(env)s
         l.append(s%(':startwith', self.startwith))
         return '\n'.join(l)
 
-    def indexargs_href(self, url, args):
+    def indexargs_url(self, url, args):
         ''' embed the current index args in a URL '''
         l = ['%s=%s'%(k,v) for k,v in args.items()]
         if self.columns and not args.has_key(':columns'):
@@ -1305,6 +1315,7 @@ env: %(env)s
         if not args.has_key(':startwith'):
             l.append(':startwith=%s'%self.startwith)
         return '%s?%s'%(url, '&'.join(l))
+    indexargs_href = indexargs_url
 
     def base_javascript(self):
         return '''
@@ -1381,6 +1392,7 @@ class Batch(ZTUtils.Batch):
         self.client = client
         self.last_index = self.last_item = None
         self.current_item = None
+        self.sequence_length = len(sequence)
         ZTUtils.Batch.__init__(self, sequence, size, start, end, orphan,
             overlap)
 
@@ -1426,10 +1438,6 @@ class Batch(ZTUtils.Batch):
             return None
         return Batch(self.client, self._sequence, self._size,
             self.end - self.overlap, 0, self.orphan, self.overlap)
-
-    def length(self):
-        self.sequence_length = l = len(self._sequence)
-        return l
 
 class TemplatingUtils:
     ''' Utilities for templating
