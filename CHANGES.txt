@@ -32,6 +32,7 @@ are given with the most recent entry first.
 - handle multiple unrelated indexed classes
 - #614188 ] Exception in mailgw.py
 - #613310 ] traceback on onexistant items
+- #613291 ] typos in nosy list
 
 
 2002-09-13 0.5.0 beta2

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.43 2002-09-25 05:15:36 richard Exp $
+# $Id: client.py,v 1.44 2002-09-25 05:27:07 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -569,7 +569,7 @@ class Client:
             props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
             self.userid = cl.create(**props)
             self.db.commit()
-        except ValueError, message:
+        except (ValueError, KeyError), message:
             self.error_message.append(message)
             return
 
