@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.35 2002-10-11 01:25:40 richard Exp $
+# $Id: date.py,v 1.36 2002-10-12 23:10:36 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -206,12 +206,17 @@ class Date:
         return '%4d-%02d-%02d.%02d:%02d:%02d'%(self.year, self.month, self.day,
             self.hour, self.minute, self.second)
 
-    def pretty(self):
+    def pretty(self, format='%d %B %Y'):
         ''' print up the date date using a pretty format...
+
+            Note that if the day is zero, and the day appears first in the
+            format, then the day number will be removed from output.
         '''
-        str = time.strftime('%d %B %Y', (self.year, self.month,
-            self.day, self.hour, self.minute, self.second, 0, 0, 0))
-        if str[0] == '0': return ' ' + str[1:]
+        str = time.strftime(format, (self.year, self.month, self.day,
+            self.hour, self.minute, self.second, 0, 0, 0))
+        # handle zero day by removing it
+        if format.startswith('%d') and str[0] == '0':
+            return ' ' + str[1:]
         return str
 
     def set(self, spec, offset=0, date_re=re.compile(r'''

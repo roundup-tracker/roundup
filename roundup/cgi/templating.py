@@ -879,6 +879,16 @@ class DateHTMLProperty(HTMLProperty):
             return interval.pretty()
         return str(interval)
 
+    def pretty(self, format='%d %B %Y'):
+        ''' Render the date in a pretty format (eg. month names, spaces).
+
+            The format string is a standard python strftime format string.
+            Note that if the day is zero, and appears at the start of the
+            string, then it'll be stripped from the output. This is handy
+            for the situatin when a date only specifies a month and a year.
+        '''
+        return self._value.pretty()
+
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property

@@ -24,6 +24,7 @@ are given with the most recent entry first.
 - issues in 'done-cbb' are now also moved to 'chatting' on new messages
 - implemented the missing Interval.__add__
 - added ability to implement new templating utility methods
+- expose the Date.pretty method to templating
 
 
 2002-10-02 0.5.0
