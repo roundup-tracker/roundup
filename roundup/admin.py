@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.67 2004-04-05 23:43:03 richard Exp $
+# $Id: admin.py,v 1.68 2004-04-17 01:47:37 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1020,9 +1020,11 @@ Command help:
         '''Usage: export [class[,class]] export_dir
         Export the database to colon-separated-value files.
 
+        Optionally limit the export to just the names classes.
+
         This action exports the current data from the database into
         colon-separated-value files that are placed in the nominated
-        destination directory. The journals are not exported.
+        destination directory.
         '''
         # grab the directory to export to
         if len(args) < 1:
@@ -1068,11 +1070,16 @@ Command help:
 
     def do_import(self, args):
         '''Usage: import import_dir
-        Import a database from the directory containing CSV files, one per
+        Import a database from the directory containing CSV files, two per
         class to import.
 
-        The files must define the same properties as the class (including
-        having a "header" line with those property names.)
+        The files used in the import are:
+
+        <class>.csv
+          This must define the same properties as the class (including
+          having a "header" line with those property names.)
+        <class>-journals.csv
+          This defines the journals for the items being imported.
 
         The imported nodes will have the same nodeid as defined in the
         import file, thus replacing any existing content.
