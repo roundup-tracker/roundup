@@ -3,7 +3,7 @@
 
 Stolen from CGIHTTPServer
 
-$Id: server.py,v 1.4 2001-07-19 10:43:01 anthonybaxter Exp $
+$Id: server.py,v 1.5 2001-07-20 12:33:06 richard Exp $
 
 """
 import sys
@@ -13,7 +13,7 @@ if int(sys.version[0]) < 2:
 
 __version__ = "0.1"
 
-__all__ = ["CGIHTTPRequestHandler"]
+__all__ = ["RoundupRequestHandler"]
 
 import os, urllib, StringIO, traceback, cgi, binascii
 import BaseHTTPServer
@@ -156,6 +156,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/19 10:43:01  anthonybaxter
+# HTTP_HOST and HTTP_PORT config options.
+#
 # Revision 1.3  2001/07/19 06:27:07  anthonybaxter
 # fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
 # my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
