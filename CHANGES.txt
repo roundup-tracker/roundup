@@ -25,6 +25,8 @@ Fixed:
      done in the default templates.
    - the regeneration of the indexes (if necessary) is done once the schema is
      set up in the dbinit.
+   - new "reindex" command in roundup-admin used to force regeneration of the 
+     index
  . made the unit tests run again - they were quite b0rken
 
 
