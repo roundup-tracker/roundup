@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.193 2004-10-26 07:58:08 richard Exp $
+# $Id: client.py,v 1.194 2004-11-02 10:04:00 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -600,8 +600,7 @@ class Client:
         '''
         name = self.classname
         extension = self.template
-        pt = templating.Templates(self.instance.config.TEMPLATES).get(name,
-            extension)
+        pt = self.instance.templates.get(name, extension)
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {
