@@ -8,6 +8,9 @@ Fixed:
 - fixed grouping by a NULL Link value
 - fixed anydbm import/export (sf bugs 965216, 964457, 964450)
 - fix python 2.3.3 strftime deprecation warning (sf patch 968398)
+- fix some column datatypes in postgresql and mysql (sf bugs 962611,
+  959177 and 964231)
+- fixed RDBMS journal packing (sf bug 959177)
 
 
 2004-05-28 0.7.3
