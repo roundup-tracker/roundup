@@ -1,0 +1,31 @@
+Debugging Flags
+---------------
+
+Roundup uses a number of debugging environment variables to help you
+figure out what the heck it's doing. 
+
+HYPERDBDEBUG 
+============
+
+This environment variable should be set to a filename - the hyperdb will
+write debugging information for various events (including, for instance,
+the SQL used).
+
+This is only obeyed when python is _not_ running in -O mode. 
+
+HYPERDBTRACE
+============
+
+This environment variable should be set to a filename - the hyperdb will
+write a timestamp entry for various events. This appears to be suffering
+rather extreme bit-rot and may go away soon.
+
+This is only obeyed when python is _not_ running in -O mode. 
+
+SENDMAILDEBUG
+=============
+
+Set to a filename and roundup will write a copy of each email message
+that it sends to that file. This environment variable is independent of
+the python -O flag.
+

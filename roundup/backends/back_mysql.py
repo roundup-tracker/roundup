@@ -63,6 +63,7 @@ class Database(Database):
             self.database_schema = {}
             self.sql("CREATE TABLE schema (schema TEXT) TYPE=BDB")
             self.sql("CREATE TABLE ids (name varchar(255), num INT) TYPE=BDB")
+            self.sql("CREATE INDEX ids_name_idx on ids(name)")
     
     def close(self):
         try:

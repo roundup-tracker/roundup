@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.9 2003-03-06 06:03:51 richard Exp $
+# $Id: back_sqlite.py,v 1.10 2003-10-07 07:17:54 anthonybaxter Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -32,6 +32,7 @@ class Database(Database):
             self.database_schema = {}
             self.cursor.execute('create table schema (schema varchar)')
             self.cursor.execute('create table ids (name varchar, num integer)')
+            self.cursor.execute('create index ids_name_idx on ids(name)')
 
     def close(self):
         ''' Close off the connection.
