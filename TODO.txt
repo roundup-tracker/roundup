@@ -59,5 +59,6 @@ pending web       write a _generic.item
 pending dist      include the HTML in docs
 
 bug     web       request.url is incorrect in cgi-bin environments
-======= ======== =============================================================
+bug     web       do something about file.newitem
+======= ========= =============================================================
 
