@@ -16,6 +16,12 @@ steps.
 Migrating from 0.7.1 to 0.8.0
 =============================
 
+0.8.0 Backend changes
+---------------------
+
+Backends 'bsddb' and 'bsddb3' are removed.  If you are using one of these,
+please migrate to another backend before upgrade.
+
 0.8.0 API changes
 -----------------
 
@@ -54,8 +60,13 @@ the following code to your ``page.html`` template::
 Charset preference is kept in the browser cookie ``roundup_charset``.
 
 Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
-are misleading and should be removed.  Actual charset is sent in the
-true http header.
+are misleading and should be changed to include actual character set name::
+
+ <meta http-equiv="Content-Type"
+  tal:attributes="content string:text/html;; charset=${request/client/charset}"
+ />
+
+Actual charset is also sent in the http header.
 
 0.8.0 Logging Configuration
 ---------------------------
