@@ -10,6 +10,7 @@ Fixed:
 - fix roundup-admin find command handling of Multilinks
 - fix some security assertions (sf bug 1085481) (see doc/upgrading.txt for
   notes)
+- don't set the title to nothing from incoming mail (thanks Bruce Guenter)
 
 
 2004-10-26 0.7.9
