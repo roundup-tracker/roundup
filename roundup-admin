@@ -1,5 +1,5 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.7 2001-07-30 01:28:46 richard Exp $
+# $Id: roundup-admin,v 1.8 2001-07-30 02:37:07 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -273,23 +273,28 @@ def do_retire(db, args):
         db.getclass(classname).retire(nodeid)
     return 0
 
-def db_freshen(db, args):
+def do_freshen(db, args):
     '''Usage: freshen
-    Freshen an existing instance. **do not use
+    Freshen an existing instance.  **DO NOT USE**
+
+    This currently kills databases!!!!
 
     This action should generally not be used. It reads in an instance
     database and writes it again. In the future, is may also update
     instance code to account for changes in templates. It's probably wise
     not to use it anyway. Until we're sure it won't break things...
     '''
-    for classname, cl in db.classes.items():
-        properties = cl.properties.keys()
-        for nodeid in cl.list():
-            node = {}
-            for name in properties:
-                node[name] = cl.get(nodeid, name)
-                db.setnode(classname, nodeid, node)
-    return 0
+#    for classname, cl in db.classes.items():
+#        properties = cl.properties.items()
+#        for nodeid in cl.list():
+#            node = {}
+#            for name, type in properties:
+#                if type.isMultilinkType:
+#                    node[name] = cl.get(nodeid, name, [])
+#                else:
+#                    node[name] = cl.get(nodeid, name, None)
+#                db.setnode(classname, nodeid, node)
+    return 1
 
 def figureCommands():
     d = {}
@@ -354,7 +359,7 @@ def main():
         return do_init(instance_home, args)
 
     # open the database
-    if command in ('create', 'set', 'retire'):
+    if command in ('create', 'set', 'retire', 'freshen'):
         while not name:
             name = raw_input('Login name: ')
         while not password:
@@ -368,16 +373,16 @@ def main():
     finally:
         del sys.path[0]
 
-    command = figureCommands().get(command, None)
+    function = figureCommands().get(command, None)
 
     # not a valid command
-    if command is None:
-        usage()
+    if function is None:
+        usage('Unknown command "%s"'%command)
         return 1
 
     db = instance.open(name or 'admin')
     try:
-        return command(db, args[1:])
+        return function(db, args[1:])
     finally:
         db.close()
 
@@ -389,6 +394,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/30 01:28:46  richard
+# Bugfixes
+#
 # Revision 1.6  2001/07/30 00:57:51  richard
 # Now uses getopt, much improved command-line parsing. Much fuller help. Much
 # better internal structure. It's just BETTER. :)
