@@ -252,7 +252,7 @@ class Database(Database):
             olddata = []
             propnames = propnames + ['id', '__retired__']
             cols = []
-            first = True
+            first = 1
             for entry in self.cursor.fetchall():
                 l = []
                 olddata.append(l)
@@ -292,7 +292,7 @@ class Database(Database):
                             l.append(v.as_seconds())
                         else:
                             l.append(e)
-                first = False
+                first = 0
 
             self.drop_class_table_indexes(cn, old_spec[0])
 
