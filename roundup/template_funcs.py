@@ -1,10 +1,13 @@
+# 
+# $Id: template_funcs.py,v 1.2 2002-08-15 00:40:10 richard Exp $
+#
 import hyperdb, date, password
 from i18n import _
 import htmltemplate
 import cgi, os, StringIO, urllib, types
 
-
-def do_plain(client, classname, cl, props, nodeid, filterspec, property, escape=0, lookup=1):
+def do_plain(client, classname, cl, props, nodeid, filterspec, property,
+        escape=0, lookup=1):
     ''' display a String property directly;
 
         display a Date property in a specified time zone with an option to
@@ -52,11 +55,13 @@ def do_plain(client, classname, cl, props, nodeid, filterspec, property, escape=
         value = cgi.escape(value)
     return value
 
-def do_stext(client, classname, cl, props, nodeid, filterspec, property, escape=0):
+def do_stext(client, classname, cl, props, nodeid, filterspec, property,
+        escape=0):
     '''Render as structured text using the StructuredText module
        (see above for details)
     '''
-    s = do_plain(client, classname, cl, props, nodeid, filterspec, property, escape=escape)
+    s = do_plain(client, classname, cl, props, nodeid, filterspec, property,
+        escape=escape)
     if not StructuredText:
         return s
     return StructuredText(s,level=1,header=0)
@@ -95,7 +100,8 @@ def make_sort_function(client, filterspec, classname):
         return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
     return sortfunc
 
-def do_field(client, classname, cl, props, nodeid, filterspec, property, size=None, showid=0):
+def do_field(client, classname, cl, props, nodeid, filterspec, property,
+        size=None, showid=0):
     ''' display a property like the plain displayer, but in a text field
         to be edited
 
@@ -123,12 +129,14 @@ def do_field(client, classname, cl, props, nodeid, filterspec, property, size=No
         s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
     elif isinstance(propclass, hyperdb.Boolean):
         checked = value and "checked" or ""
-        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(property, checked)
+        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(property,
+            checked)
         if checked:
             checked = ""
         else:
             checked = "checked"
-        s += '<input type="radio" name="%s" value="no" %s>No'%(property, checked)
+        s += '<input type="radio" name="%s" value="no" %s>No'%(property,
+            checked)
     elif isinstance(propclass, hyperdb.Number):
         s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
     elif isinstance(propclass, hyperdb.Password):
@@ -178,7 +186,8 @@ def do_field(client, classname, cl, props, nodeid, filterspec, property, size=No
         s = _('Plain: bad propclass "%(propclass)s"')%locals()
     return s
 
-def do_multiline(client, classname, cl, props, nodeid, filterspec, property, rows=5, cols=40):
+def do_multiline(client, classname, cl, props, nodeid, filterspec, property,
+        rows=5, cols=40):
     ''' display a string property in a multiline text edit field
     '''
     if not nodeid and client.form is None and filterspec is None:
@@ -199,8 +208,8 @@ def do_multiline(client, classname, cl, props, nodeid, filterspec, property, row
     return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
         property, rows, cols, value)
 
-def do_menu(client, classname, cl, props, nodeid, filterspec, property, size=None, height=None, showid=0,
-        additional=[], **conditions):
+def do_menu(client, classname, cl, props, nodeid, filterspec, property,
+        size=None, height=None, showid=0, additional=[], **conditions):
     ''' For a Link/Multilink property, display a menu of the available
         choices
 
@@ -294,7 +303,8 @@ def do_menu(client, classname, cl, props, nodeid, filterspec, property, size=Non
     return _('[Menu: not a link]')
 
 #XXX deviates from spec
-def do_link(client, classname, cl, props, nodeid, filterspec, property=None, is_download=0, showid=0):
+def do_link(client, classname, cl, props, nodeid, filterspec, property=None,
+        is_download=0, showid=0):
     '''For a Link or Multilink property, display the names of the linked
        nodes, hyperlinked to the item views on those nodes.
        For other properties, link to this node with the property as the
@@ -364,7 +374,8 @@ def do_link(client, classname, cl, props, nodeid, filterspec, property=None, is_
             value =  _('[no %(propname)s]')%{'propname':property.capitalize()}
         return '<a href="%s%s">%s</a>'%(classname, nodeid, value)
 
-def do_count(client, classname, cl, props, nodeid, filterspec, property, **args):
+def do_count(client, classname, cl, props, nodeid, filterspec, property,
+        **args):
     ''' for a Multilink property, display a count of the number of links in
         the list
     '''
@@ -380,7 +391,8 @@ def do_count(client, classname, cl, props, nodeid, filterspec, property, **args)
     return str(len(value))
 
 # XXX pretty is definitely new ;)
-def do_reldate(client, classname, cl, props, nodeid, filterspec, property, pretty=0):
+def do_reldate(client, classname, cl, props, nodeid, filterspec, property,
+        pretty=0):
     ''' display a Date property in terms of an interval relative to the
         current date (e.g. "+ 3w", "- 2d").
 
@@ -408,16 +420,18 @@ def do_reldate(client, classname, cl, props, nodeid, filterspec, property, prett
         return interval.pretty()
     return str(interval)
 
-def do_download(client, classname, cl, props, nodeid, filterspec, property, **args):
+def do_download(client, classname, cl, props, nodeid, filterspec, property,
+        **args):
     ''' show a Link("file") or Multilink("file") property using links that
         allow you to download files
     '''
     if not nodeid:
         return _('[Download: not called from item]')
-    return do_link(client, classname, cl, props, nodeid, filterspec, property, is_download=1)
+    return do_link(client, classname, cl, props, nodeid, filterspec, property,
+        is_download=1)
 
-
-def do_checklist(client, classname, cl, props, nodeid, filterspec, property, sortby=None):
+def do_checklist(client, classname, cl, props, nodeid, filterspec, property,
+        sortby=None):
     ''' for a Link or Multilink property, display checkboxes for the
         available choices to permit filtering
 
@@ -498,7 +512,8 @@ def do_note(client, classname, cl, props, nodeid, filterspec, rows=5, cols=80):
         '</textarea>'%(rows, cols)
 
 # XXX new function
-def do_list(client, classname, cl, props, nodeid, filterspec, property, reverse=0, xtracols=None):
+def do_list(client, classname, cl, props, nodeid, filterspec, property,
+        reverse=0, xtracols=None):
     ''' list the items specified by property using the standard index for
         the class
     '''
@@ -523,7 +538,8 @@ def do_list(client, classname, cl, props, nodeid, filterspec, property, reverse=
         write_save = client.write
         client.write = fp.write
         client.listcontext = ('%s%s' % (classname, nodeid), property)
-        index = htmltemplate.IndexTemplate(client, client.instance.TEMPLATES, propcl.classname)
+        index = htmltemplate.IndexTemplate(client, client.instance.TEMPLATES,
+            propcl.classname)
         index.render(nodeids=value, show_display_form=0, xtracols=xtracols)
     finally:
         client.listcontext = None
@@ -532,7 +548,8 @@ def do_list(client, classname, cl, props, nodeid, filterspec, property, reverse=
     return fp.getvalue()
 
 # XXX new function
-def do_history(client, classname, cl, props, nodeid, filterspec, direction='descending'):
+def do_history(client, classname, cl, props, nodeid, filterspec,
+        direction='descending'):
     ''' list the history of the item
 
         If "direction" is 'descending' then the most recent event will
@@ -694,8 +711,8 @@ def do_submit(client, classname, cl, props, nodeid, filterspec, value=None):
     else:
         return _('[Submit: not called from item]')
 
-def do_classhelp(client, classname, cl, props, nodeid, filterspec, clname, properties, label='?', width='400',
-        height='400'):
+def do_classhelp(client, classname, cl, props, nodeid, filterspec, clname,
+        properties, label='?', width='400', height='400'):
     '''pop up a javascript window with class help
 
        This generates a link to a popup window which displays the 
@@ -710,7 +727,8 @@ def do_classhelp(client, classname, cl, props, nodeid, filterspec, clname, prope
         'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(clname,
         properties, width, height, label)
 
-def do_email(client, classname, cl, props, nodeid, filterspec, property, escape=0):
+def do_email(client, classname, cl, props, nodeid, filterspec, property,
+        escape=0):
     '''display the property as one or more "fudged" email addrs
     '''
     
@@ -738,7 +756,9 @@ def do_email(client, classname, cl, props, nodeid, filterspec, property, escape=
         value = cgi.escape(value)
     return value
 
-def do_filterspec(client, classname, cl, props, nodeid, filterspec, classprop, urlprop):
+def do_filterspec(client, classname, cl, props, nodeid, filterspec, classprop,
+        urlprop):
+
     qs = cl.get(nodeid, urlprop)
     classname = cl.get(nodeid, classprop)
     filterspec = {}
@@ -751,7 +771,8 @@ def do_filterspec(client, classname, cl, props, nodeid, filterspec, classprop, u
     for k,v in query.items():
         if k[0] != ':':
             filterspec[k] = v
-    ixtmplt = htmltemplate.IndexTemplate(client, client.instance.TEMPLATES, classname)
+    ixtmplt = htmltemplate.IndexTemplate(client, client.instance.TEMPLATES,
+        classname)
     qform = '<form onSubmit="return submit_once()" action="%s%s">\n'%(
         classname,nodeid)
     qform += ixtmplt.filter_form(search_text,
@@ -764,9 +785,16 @@ def do_filterspec(client, classname, cl, props, nodeid, filterspec, classprop, u
                                  pagesize)
     return qform + '</table>\n'
 
-def do_href(client, classname, cl, props, nodeid, filterspec, property, prefix='', suffix='', label=''):
+def do_href(client, classname, cl, props, nodeid, filterspec, property,
+        prefix='', suffix='', label=''):
+    ''' Generate a link to the value of the property, with the form:
+
+            <a href="[prefix][value][suffix]">[label]</a>
+
+        where the [value] is the specified property value.
+    '''
     value = determine_value(cl, props, nodeid, filterspec, property)
-    return '<a href="%s%s%s">%s</a>' % (prefix, value, suffix, label)
+    return '<a href="%s%s%s">%s</a>'%(prefix, value, suffix, label)
 
 def do_remove(client, classname, cl, props, nodeid, filterspec):
     ''' put a remove href for an item in a list '''
@@ -776,7 +804,11 @@ def do_remove(client, classname, cl, props, nodeid, filterspec):
         parentdesignator, mlprop = client.listcontext
     except (AttributeError, TypeError):
         return _('[Remove not called form listing of multilink]')
-    return '<a href="remove?:target=%s%s&:multilink=%s:%s">[Remove]</a>' % (classname, nodeid, parentdesignator, mlprop)
+    return '<a href="remove?:target=%s%s&:multilink=%s:%s">[Remove]</a>'%(
+        classname, nodeid, parentdesignator, mlprop)
 
-    
-    
+#
+# $Log: not supported by cvs2svn $
+#
+#
+# vim: set filetype=python ts=4 sw=4 et si

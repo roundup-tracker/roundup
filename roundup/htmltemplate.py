@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.110 2002-08-13 20:16:09 gmcm Exp $
+# $Id: htmltemplate.py,v 1.111 2002-08-15 00:40:10 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -81,7 +81,7 @@ def _test(attributes, client, classname, nodeid):
     if nodeid is None:
         return 0
     if not tests:
-	return 0
+        return 0
     for propname, value in tests.items():
         if value == '$userid':
             tests[propname] = userid
@@ -108,7 +108,7 @@ def _exists(attributes, cl, props, nodeid):
     if nodeid:
         return cl.get(nodeid, nm)
     return props.get(nm, 0)
-    
+
 class Template:
     ''' base class of all templates.
 
@@ -120,7 +120,7 @@ class Template:
         else:
             self.client = weakref.proxy(client)
         self.templatedir = templates
-        self.compiledtemplatedir = self.templatedir+'c'
+        self.compiledtemplatedir = self.templatedir + 'c'
         self.classname = classname
         self.cl = self.client.db.getclass(self.classname)
         self.properties = self.cl.getprops()
@@ -128,16 +128,33 @@ class Template:
         self.filterspec = None
         self.columns = None
         self.nodeid = None
+
     def _load(self):
+        ''' Load a template from disk and parse it.
+
+            Once parsed, the template is stored as a pickle in the
+            "htmlc" directory of the instance. If the file in there is
+            newer than the source template file, it's used in preference so
+            we don't have to re-parse.
+        '''
+        # figure where the template source is
         src = os.path.join(self.templatedir, self.classname + self.extension)
+
         if not os.path.exists(src):
+            # hrm, nothing exactly matching what we're after, see if we can
+            # fall back on another template
             if hasattr(self, 'fallbackextension'):
                 self.extension = self.fallbackextension
                 return self._load()
             raise MissingTemplateError, self.classname + self.extension
-        cpl = os.path.join(self.compiledtemplatedir, self.classname + self.extension)
-        if ( not os.path.exists(cpl)
-             or os.stat(cpl)[MTIME] < os.stat(src)[MTIME] ):
+
+        # figure where the compiled template should be
+        cpl = os.path.join(self.compiledtemplatedir,
+            self.classname + self.extension)
+
+        if (not os.path.exists(cpl)
+             or os.stat(cpl)[MTIME] < os.stat(src)[MTIME]):
+            # there's either no compiled template, or it's out of date
             parser = RoundupTemplate()
             parser.feed(open(src, 'r').read())
             tmplt = parser.structure
@@ -151,26 +168,46 @@ class Template:
                 print "ouch in pickling: got a %s %r" % (e, e.args)
                 pass
         else:
+            # load the compiled template
             f = open(cpl, 'rb')
             tmplt = pickle.load(f)
         return tmplt
+
     def _render(self, tmplt=None, test=_test, display=_display, exists=_exists):
+        ''' Render the template
+        '''
         if tmplt is None:
             tmplt = self.template
+
+        # go through the list of template "commands"
         for entry in tmplt:
             if isinstance(entry, type('')):
+                # string - just write it out
                 self.client.write(entry)
+
             elif isinstance(entry, Require):
-                if test(entry.attributes, self.client, self.classname, self.nodeid):
+                # a <require> tag
+                if test(entry.attributes, self.client, self.classname,
+                        self.nodeid):
+                    # require test passed, render the ok clause
                     self._render(entry.ok)
                 elif entry.fail:
+                    # if there's a fail clause, render it
                     self._render(entry.fail)
+
             elif isinstance(entry, Display):
-                display(entry.attributes, self.client, self.classname, self.cl, self.properties, self.nodeid, self.filterspec)
+                # execute the <display> function
+                display(entry.attributes, self.client, self.classname,
+                    self.cl, self.properties, self.nodeid, self.filterspec)
+
             elif isinstance(entry, Property):
-                if self.columns is None:        # doing an Item
-                    if exists(entry.attributes, self.cl, self.properties, self.nodeid):
+                # do a <property> test
+                if self.columns is None:
+                    # doing an Item - see if the property is present
+                    if exists(entry.attributes, self.cl, self.properties,
+                            self.nodeid):
                         self._render(entry.ok)
+                # XXX erm, should this be commented out?
                 #elif entry.attributes[0][1] in self.columns:
                 else:
                     self._render(entry.ok)
@@ -183,163 +220,177 @@ class IndexTemplate(Template):
         has group by lines
         has full text search match lines '''
     extension = '.index'
+
     def __init__(self, client, templates, classname):
         Template.__init__(self, client, templates, classname)
-    def render(self, filterspec={}, search_text='', filter=[], columns=[], 
+
+    def render(self, **kw):
+        ''' Render the template - well, wrap the rendering in a try/finally
+            so we're guaranteed to clean up after ourselves
+        '''
+        try:
+            self.renderInner(**kw)
+        finally:
+            self.cl = self.properties = self.client = None
+        
+    def renderInner(self, filterspec={}, search_text='', filter=[], columns=[], 
             sort=[], group=[], show_display_form=1, nodeids=None,
             show_customization=1, show_nodes=1, pagesize=50, startwith=0,
             simple_search=1, xtracols=None):
+        ''' Take all the index arguments and render some HTML
+        '''
 
-        try:
-            self.filterspec = filterspec        
-            w = self.client.write
-            cl = self.cl
-            properties = self.properties
-            if xtracols is None:
-                xtracols = []
-            
-            # XXX deviate from spec here ...
-            # load the index section template and figure the default columns from it
-            displayable_props = []
-            all_columns = []
-            for node in self.template:
-                if isinstance(node, Property):
-                    colnm = node.attributes[0][1]
-                    if properties.has_key(colnm):
-                        displayable_props.append(colnm)
-                        all_columns.append(colnm)
-                    elif colnm in xtracols:
-                        all_columns.append(colnm)
-            if not columns:
-                columns = all_columns
+        self.filterspec = filterspec        
+        w = self.client.write
+        cl = self.cl
+        properties = self.properties
+        if xtracols is None:
+            xtracols = []
+
+        # XXX deviate from spec here ...
+        # load the index section template and figure the default columns from it
+        displayable_props = []
+        all_columns = []
+        for node in self.template:
+            if isinstance(node, Property):
+                colnm = node.attributes[0][1]
+                if properties.has_key(colnm):
+                    displayable_props.append(colnm)
+                    all_columns.append(colnm)
+                elif colnm in xtracols:
+                    all_columns.append(colnm)
+        if not columns:
+            columns = all_columns
+        else:
+            # re-sort columns to be the same order as displayable_props
+            l = []
+            for name in all_columns:
+                if name in columns:
+                    l.append(name)
+            columns = l
+        self.columns = columns
+
+        # optimize the template
+        self.template = self._optimize(self.template)
+        
+        # display the filter section
+        if (show_display_form and
+                self.client.instance.FILTER_POSITION.startswith('top')):
+            w('<form onSubmit="return submit_once()" action="%s">\n'%
+                self.client.classname)
+            self.filter_section(search_text, filter, columns, group,
+                displayable_props, sort, filterspec, pagesize, startwith,
+                simple_search)
+
+        # now display the index section
+        w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
+        w('<tr class="list-header">\n')
+        for name in columns:
+            cname = name.capitalize()
+            if show_display_form and not cname in xtracols:
+                sb = self.sortby(name, search_text, filterspec, columns, filter, 
+                        group, sort, pagesize)
+                anchor = "%s?%s"%(self.client.classname, sb)
+                w('<td><span class="list-header"><a href="%s">%s</a>'
+                    '</span></td>\n'%(anchor, cname))
             else:
-                # re-sort columns to be the same order as displayable_props
-                l = []
-                for name in all_columns:
-                    if name in columns:
-                        l.append(name)
-                columns = l
-            self.columns = columns
+                w('<td><span class="list-header">%s</span></td>\n'%cname)
+        w('</tr>\n')
 
-            # optimize the template
-            self.template = self._optimize(self.template)
-            
-            # display the filter section
-            if (show_display_form and 
-                    self.client.instance.FILTER_POSITION in ('top and bottom', 'top')):
-                w('<form onSubmit="return submit_once()" action="%s">\n'%self.client.classname)
-                self.filter_section(search_text, filter, columns, group,
-                    displayable_props, sort, filterspec, pagesize, startwith, simple_search)
+        # this stuff is used for group headings - optimise the group names
+        old_group = None
+        group_names = []
+        if group:
+            for name in group:
+                if name[0] == '-': group_names.append(name[1:])
+                else: group_names.append(name)
 
-            # now display the index section
-            w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
-            w('<tr class="list-header">\n')
-            for name in columns:
-                cname = name.capitalize()
-                if show_display_form and not cname in xtracols:
-                    sb = self.sortby(name, search_text, filterspec, columns, filter, 
-                            group, sort, pagesize)
-                    anchor = "%s?%s"%(self.client.classname, sb)
-                    w('<td><span class="list-header"><a href="%s">%s</a>'
-                        '</span></td>\n'%(anchor, cname))
-                else:
-                    w('<td><span class="list-header">%s</span></td>\n'%cname)
-            w('</tr>\n')
-
-            # this stuff is used for group headings - optimise the group names
-            old_group = None
-            group_names = []
-            if group:
-                for name in group:
-                    if name[0] == '-': group_names.append(name[1:])
-                    else: group_names.append(name)
-
-            # now actually loop through all the nodes we get from the filter and
-            # apply the template
-            if show_nodes:
-                matches = None
-                if nodeids is None:
-                    if search_text != '':
-                        matches = self.client.db.indexer.search(
-                            re.findall(r'\b\w{2,25}\b', search_text), cl)
-                    nodeids = cl.filter(matches, filterspec, sort, group)
-                linecount = 0
-                for nodeid in nodeids[startwith:startwith+pagesize]:
-                    # check for a group heading
-                    if group_names:
-                        this_group = [cl.get(nodeid, name, _('[no value]'))
-                            for name in group_names]
-                        if this_group != old_group:
-                            l = []
-                            for name in group_names:
-                                prop = properties[name]
-                                if isinstance(prop, hyperdb.Link):
-                                    group_cl = self.client.db.getclass(prop.classname)
-                                    key = group_cl.getkey()
-                                    if key is None:
-                                        key = group_cl.labelprop()
-                                    value = cl.get(nodeid, name)
-                                    if value is None:
-                                        l.append(_('[unselected %(classname)s]')%{
-                                            'classname': prop.classname})
-                                    else:
-                                        l.append(group_cl.get(value, key))
-                                elif isinstance(prop, hyperdb.Multilink):
-                                    group_cl = self.client.db.getclass(prop.classname)
-                                    key = group_cl.getkey()
-                                    for value in cl.get(nodeid, name):
-                                        l.append(group_cl.get(value, key))
+        # now actually loop through all the nodes we get from the filter and
+        # apply the template
+        if show_nodes:
+            matches = None
+            if nodeids is None:
+                if search_text != '':
+                    matches = self.client.db.indexer.search(
+                        re.findall(r'\b\w{2,25}\b', search_text), cl)
+                nodeids = cl.filter(matches, filterspec, sort, group)
+            linecount = 0
+            for nodeid in nodeids[startwith:startwith+pagesize]:
+                # check for a group heading
+                if group_names:
+                    this_group = [cl.get(nodeid, name, _('[no value]'))
+                        for name in group_names]
+                    if this_group != old_group:
+                        l = []
+                        for name in group_names:
+                            prop = properties[name]
+                            if isinstance(prop, hyperdb.Link):
+                                group_cl = self.client.db.getclass(prop.classname)
+                                key = group_cl.getkey()
+                                if key is None:
+                                    key = group_cl.labelprop()
+                                value = cl.get(nodeid, name)
+                                if value is None:
+                                    l.append(_('[unselected %(classname)s]')%{
+                                        'classname': prop.classname})
                                 else:
-                                    value = cl.get(nodeid, name, 
-                                        _('[no value]'))
-                                    if value is None:
-                                        value = _('[empty %(name)s]')%locals()
-                                    else:
-                                        value = str(value)
-                                    l.append(value)
-                            w('<tr class="section-bar">'
-                            '<td align=middle colspan=%s>'
-                            '<strong>%s</strong></td></tr>\n'%(
-                                len(columns), ', '.join(l)))
-                            old_group = this_group
+                                    l.append(group_cl.get(value, key))
+                            elif isinstance(prop, hyperdb.Multilink):
+                                group_cl = self.client.db.getclass(prop.classname)
+                                key = group_cl.getkey()
+                                for value in cl.get(nodeid, name):
+                                    l.append(group_cl.get(value, key))
+                            else:
+                                value = cl.get(nodeid, name, 
+                                    _('[no value]'))
+                                if value is None:
+                                    value = _('[empty %(name)s]')%locals()
+                                else:
+                                    value = str(value)
+                                l.append(value)
+                        w('<tr class="section-bar">'
+                        '<td align=middle colspan=%s>'
+                        '<strong>%s</strong></td></tr>\n'%(
+                            len(columns), ', '.join(l)))
+                        old_group = this_group
 
-                    # display this node's row
-                    self.nodeid = nodeid 
-                    self._render()
-                    if matches:
-                        self.node_matches(matches[nodeid], len(columns))
-                    self.nodeid = None
+                # display this node's row
+                self.nodeid = nodeid 
+                self._render()
+                if matches:
+                    self.node_matches(matches[nodeid], len(columns))
+                self.nodeid = None
 
-            w('</table>\n')
-            # the previous and next links
-            if nodeids:
-                baseurl = self.buildurl(filterspec, search_text, filter,
-                    columns, sort, group, pagesize)
-                if startwith > 0:
-                    prevurl = '<a href="%s&:startwith=%s">&lt;&lt; '\
-                        'Previous page</a>'%(baseurl, max(0, startwith-pagesize)) 
-                else:
-                    prevurl = "" 
-                if startwith + pagesize < len(nodeids):
-                    nexturl = '<a href="%s&:startwith=%s">Next page '\
-                        '&gt;&gt;</a>'%(baseurl, startwith+pagesize)
-                else:
-                    nexturl = ""
-                if prevurl or nexturl:
-                    w('''<table width="100%%"><tr>
-                          <td width="50%%" align="center">%s</td>
-                          <td width="50%%" align="center">%s</td>
-                         </tr></table>\n'''%(prevurl, nexturl))
+        w('</table>\n')
+        # the previous and next links
+        if nodeids:
+            baseurl = self.buildurl(filterspec, search_text, filter,
+                columns, sort, group, pagesize)
+            if startwith > 0:
+                prevurl = '<a href="%s&:startwith=%s">&lt;&lt; '\
+                    'Previous page</a>'%(baseurl, max(0, startwith-pagesize)) 
+            else:
+                prevurl = "" 
+            if startwith + pagesize < len(nodeids):
+                nexturl = '<a href="%s&:startwith=%s">Next page '\
+                    '&gt;&gt;</a>'%(baseurl, startwith+pagesize)
+            else:
+                nexturl = ""
+            if prevurl or nexturl:
+                w('''<table width="100%%"><tr>
+                      <td width="50%%" align="center">%s</td>
+                      <td width="50%%" align="center">%s</td>
+                     </tr></table>\n'''%(prevurl, nexturl))
 
-            # display the filter section
-            if (show_display_form and hasattr(self.client.instance, 'FILTER_POSITION') and
-                    self.client.instance.FILTER_POSITION in ('top and bottom', 'bottom')):
-                w('<form onSubmit="return submit_once()" action="%s">\n'%
-                    self.client.classname)
-                self.filter_section(search_text, filter, columns, group,
-                    displayable_props, sort, filterspec, pagesize, startwith, simple_search)
-        finally:
-            self.cl = self.properties = self.client = None
+        # display the filter section
+        if (show_display_form and hasattr(self.client.instance,
+                'FILTER_POSITION') and
+                self.client.instance.FILTER_POSITION.endswith('bottom')):
+            w('<form onSubmit="return submit_once()" action="%s">\n'%
+                self.client.classname)
+            self.filter_section(search_text, filter, columns, group,
+                displayable_props, sort, filterspec, pagesize, startwith,
+                simple_search)
 
     def _optimize(self, tmplt):
         columns = self.columns
@@ -352,8 +403,10 @@ class IndexTemplate(Template):
                 t.append(entry)
         return t
     
-    def buildurl(self, filterspec, search_text, filter, columns, sort, group, pagesize):
-        d = {'pagesize':pagesize, 'pagesize':pagesize, 'classname':self.classname}
+    def buildurl(self, filterspec, search_text, filter, columns, sort, group,
+            pagesize):
+        d = {'pagesize':pagesize, 'pagesize':pagesize,
+             'classname':self.classname}
         if search_text:
             d['searchtext'] = 'search_text=%s&' % search_text
         else:
@@ -367,8 +420,10 @@ class IndexTemplate(Template):
             vals = ','.join(map(urllib.quote,vals))
             tmp.append('%s=%s' % (col, vals))
         d['filters'] = '&'.join(tmp)
-        return ('%(classname)s?%(searchtext)s%(filters)s&:sort=%(sort)s&:filter=%(filter)s'
-                '&:group=%(group)s&:columns=%(columns)s&:pagesize=%(pagesize)s' % d )
+        return ('%(classname)s?%(searchtext)s%(filters)s&:sort=%(sort)s&'
+                ':filter=%(filter)s&:group=%(group)s&:columns=%(columns)s&'
+                ':pagesize=%(pagesize)s'%d)
+
     def node_matches(self, match, colspan):
         ''' display the files and messages for a node that matched a
             full text search
@@ -421,12 +476,12 @@ class IndexTemplate(Template):
         w(  '</tr>')
         # see if we have any indexed properties
         if self.client.classname in self.client.db.config.HEADER_SEARCH_LINKS:
-        #if self.properties.has_key('messages') or self.properties.has_key('files'):
-            w(  '<tr class="location-bar">')
-            w(  ' <td align="right" class="form-label"><b>Search Terms</b></td>')
-            w(  ' <td colspan=6 class="form-text">&nbsp;&nbsp;&nbsp;<input type="text"'
-                'name="search_text" value="%s" size="50"></td>' % search_text)
-            w(  '</tr>')
+            w('<tr class="location-bar">')
+            w(' <td align="right" class="form-label"><b>Search Terms</b></td>')
+            w(' <td colspan=6 class="form-text">&nbsp;&nbsp;&nbsp;'
+              '<input type="text"name="search_text" value="%s" size="50">'
+              '</td>'%search_text)
+            w('</tr>')
         w(  '<tr class="location-bar">')
         w(  ' <th align="center" width="20%">&nbsp;</th>')
         w(_(' <th align="center" width="10%">Show</th>'))
@@ -600,11 +655,11 @@ class IndexTemplate(Template):
             sort, filterspec, pagesize, startwith, simpleform=1):
         w = self.client.write
         if simpleform:
-            w(self.simple_filter_form(search_text, filter, columns, group, all_columns,
-                           sort, filterspec, pagesize))
+            w(self.simple_filter_form(search_text, filter, columns, group,
+                all_columns, sort, filterspec, pagesize))
         else:
             w(self.filter_form(search_text, filter, columns, group, all_columns,
-                           sort, filterspec, pagesize))
+                sort, filterspec, pagesize))
         w(' <tr class="location-bar">\n')
         w('  <td colspan=7><hr></td>\n')
         w(' </tr>\n')
@@ -631,8 +686,8 @@ class IndexTemplate(Template):
             w(' </tr>\n')
         w('</table>\n')
 
-    def sortby(self, sort_name, search_text, filterspec, columns, filter, group, sort,
-            pagesize):
+    def sortby(self, sort_name, search_text, filterspec, columns, filter,
+            group, sort, pagesize):
         ''' Figure the link for a column heading so we can sort by that
             column
         '''
@@ -690,8 +745,9 @@ class ItemTemplate(Template):
                 #  designators...
 
             w = self.client.write
-            w('<form onSubmit="return submit_once()" action="%s%s" method="POST" enctype="multipart/form-data">'%(
-                self.classname, nodeid))
+            w('<form onSubmit="return submit_once()" action="%s%s" '
+                'method="POST" enctype="multipart/form-data">'%(self.classname,
+                nodeid))
             try:
                 self._render()
             except:
@@ -704,7 +760,6 @@ class ItemTemplate(Template):
             w('</form>')
         finally:
             self.cl = self.properties = self.client = None
-        
 
 class NewItemTemplate(Template):
     ''' display a form for creating a new node '''
@@ -717,13 +772,15 @@ class NewItemTemplate(Template):
             self.form = form
             w = self.client.write
             c = self.client.classname
-            w('<form onSubmit="return submit_once()" action="new%s" method="POST" enctype="multipart/form-data">'%c)
+            w('<form onSubmit="return submit_once()" action="new%s" '
+                'method="POST" enctype="multipart/form-data">'%c)
             for key in form.keys():
                 if key[0] == ':':
                     value = form[key].value
                     if type(value) != type([]): value = [value]
                     for value in value:
-                        w('<input type="hidden" name="%s" value="%s">'%(key, value))
+                        w('<input type="hidden" name="%s" value="%s">'%(key,
+                            value))
             self._render()
             w('</form>')
         finally:
@@ -740,6 +797,15 @@ for nm in template_funcs.__dict__.keys():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.110  2002/08/13 20:16:09  gmcm
+# Use a real parser for templates.
+# Rewrite htmltemplate to use the parser (hack, hack).
+# Move the "do_XXX" methods to template_funcs.py.
+# Redo the funcion tests (but not Template tests - they're hopeless).
+# Simplified query form in cgi_client.
+# Ability to delete msgs, files, queries.
+# Ability to edit the metadata on files.
+#
 # Revision 1.109  2002/08/01 15:06:08  gmcm
 # Use same regex to split search terms as used to index text.
 # Fix to back_metakit for not changing journaltag on reopen.
