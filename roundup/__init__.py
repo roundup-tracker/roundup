@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.10 2002-09-10 00:18:20 richard Exp $
+# $Id: __init__.py,v 1.11 2002-09-11 21:39:17 richard Exp $
 
 __doc__ = '''
 This is a simple-to-use and -install issue-tracking system with
@@ -65,6 +65,6 @@ written by Ka-Ping Yee in the "doc" directory. If nothing else, it has a
 much prettier cake :)
 '''
 
-__version__ = '0.4.2'
+__version__ = '0.5.0b1'
 
 # vim: set filetype=python ts=4 sw=4 et si
