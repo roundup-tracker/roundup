@@ -8,6 +8,7 @@ Fixed:
 - fix anydbm journal import (sf bug 983166)
 - handle postgresql bug in SQL generation (sf bug 984591)
 - fix dates-from-Dates (sf bug 984604)
+- fix messageid generated when msgid is None for send_message (sf bug 987933)
 
 
 2004-06-24 0.7.5
