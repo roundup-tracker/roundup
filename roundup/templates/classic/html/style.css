@@ -194,8 +194,34 @@ table.files td {
   font-family: monospace;
 }
 
+/* style for history displays */
+table.history {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
 
-/* style for file displays */
+table.history th.header{
+  padding-top: 10px;
+  border-bottom: 1px solid gray;
+  font-weight: bold;
+  background-color: white;
+  color: #707040;
+  font-size: 100%;
+}
+
+table.history th {
+  border-bottom: 1px solid #afafaf;
+  font-weight: bold;
+  text-align: left;
+  font-size: 90%;
+}
+
+table.history td {
+  font-size: 90%;
+}
+
+/* style for "other" displays */
 table.otherinfo {
   border-spacing: 0px;
   border-collapse: separate;
