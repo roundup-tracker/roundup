@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.4 2004-06-24 07:14:47 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.5 2004-06-24 09:56:49 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1887,6 +1887,18 @@ class FileClass(Class, hyperdb.FileClass):
 
         # figure a filename
         nm = self.gen_filename(newid)
+
+        # make sure we don't register the rename action more than once
+        if not os.path.exists(nm + '.tmp'):
+            # register commit and rollback actions
+            def commit(fnm=nm):
+                os.rename(fnm + '.tmp', fnm)
+            self.commitaction(commit)
+            def undo(fnm=nm):
+                os.remove(fnm + '.tmp')
+            self.rollbackaction(undo)
+
+        # save the tempfile
         f = open(nm + '.tmp', 'wb')
         f.write(content)
         f.close()
@@ -1894,14 +1906,6 @@ class FileClass(Class, hyperdb.FileClass):
         mimetype = propvalues.get('type', self.default_mime_type)
         self.db.indexer.add_text((self.classname, newid, 'content'), content,
             mimetype)
-
-        # register commit and rollback actions
-        def commit(fnm=nm):
-            os.rename(fnm + '.tmp', fnm)
-        self.commitaction(commit)
-        def undo(fnm=nm):
-            os.remove(fnm + '.tmp')
-        self.rollbackaction(undo)
         return newid
 
     def set(self, itemid, **propvalues):
@@ -1918,22 +1922,26 @@ class FileClass(Class, hyperdb.FileClass):
         # figure a filename
         if content is not None:
             nm = self.gen_filename(itemid)
+
+            # make sure we don't register the rename action more than once
+            if not os.path.exists(nm + '.tmp'):
+                # register commit and rollback actions
+                def commit(fnm=nm):
+                    if os.path.exists(fnm):
+                        os.remove(fnm)
+                    os.rename(fnm + '.tmp', fnm)
+                self.commitaction(commit)
+                def undo(fnm=nm):
+                    os.remove(fnm + '.tmp')
+                self.rollbackaction(undo)
+
             f = open(nm + '.tmp', 'wb')
             f.write(content)
             f.close()
+
             mimetype = propvalues.get('type', self.default_mime_type)
             self.db.indexer.add_text((self.classname, itemid, 'content'),
                 content, mimetype)
-
-            # register commit and rollback actions
-            def commit(fnm=nm):
-                if os.path.exists(fnm):
-                    os.remove(fnm)
-                os.rename(fnm + '.tmp', fnm)
-            self.commitaction(commit)
-            def undo(fnm=nm):
-                os.remove(fnm + '.tmp')
-            self.rollbackaction(undo)
 
         self.fireReactors('set', oldnode, propvalues)
 
