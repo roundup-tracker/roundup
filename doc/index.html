@@ -625,79 +625,141 @@ in the instance html directory. These are divided into index, item and
 newitem views. The newitem view is optional - the item view will be used if
 the newitem view doesn't exist.
 
-<p>
-<em>Next bit cut straight from the implementation guide</em>
+<h3>Displaying Properties</h3>
 
 <p>
-<h3>8.2. Displaying Properties</h3>
-
-<p>Properties appear in the user interface in three contexts:
+Properties appear in the user interface in three contexts:
 in indices, in editors, and as filters.  For each type of
 property, there are several display possibilities.  For example,
 in an index view, a string property may just be printed as
 a plain string, but in an editor view, that property should
 be displayed in an editable field.
 
-<p>The display of a property is handled by functions in
-a <tt>displayers</tt> module.  Each function accepts at
-least three standard arguments -- the database, class name,
-and node id -- and returns a chunk of HTML.
+<p>
+The display of a property is handled by functions in
+the htmltemplate module.
 
-<p>Displayer functions are triggered by <tt>&lt;display&gt;</tt>
+<p>
+Displayer functions are triggered by <tt>&lt;display&gt;</tt>
 tags in templates.  The <tt>call</tt> attribute of the tag
 provides a Python expression for calling the displayer
 function.  The three standard arguments are inserted in
 front of the arguments given.  For example, the occurrence of
 
 <blockquote><pre><small
->    &lt;display call="plain('status', max=30)"&gt;
+>    &lt;display call="plain('status')"&gt;
 </small></pre></blockquote>
 
-in a template triggers a call to
-    
-<blockquote><pre><small
->    plain(db, "issue", 13, "status", max=30)
-</small></pre></blockquote>
-
-when displaying item 13 in the "issue" class.  The displayer
+in a template triggers a call the "plain" function. The displayer
 functions can accept extra arguments to further specify
 details about the widgets that should be generated.  By defining new
 displayer functions, the user interface can be highly customized.
 
-<p>Some of the standard displayer functions include:
+<p>
+<table border=1 cellspacing=0>
+<tr><th colspan=2>The displayer functions are</th></tr>
 
-<ul>
-<li><strong>plain</strong>: display a String property directly;
-display a Date property in a specified time zone with an option
-to omit the time from the date stamp; for a Link or Multilink
+<tr><td valign="top"><strong>plain</strong></td>
+<td>Display a String property directly.
+<p>
+Display a Date property in a specified time zone with an option
+to omit the time from the date stamp.
+<p>
+For a Link or Multilink
 property, display the key strings of the linked nodes (or the
-ids if the linked class has no key property)
+ids if the linked class has no key property).
+<p>
+<em>Options:</em><br>
+escape (boolean) - HTML-escape the resulting text.
+</td></tr>
 
-<li><strong>field</strong>: display a property like the
-<strong>plain</strong> displayer above, but in a text field
-to be edited
+<tr><td valign="top"><strong>field</strong></td>
+<td>Display a property like the
+<strong>plain</strong> displayer above, but in a form field
+to be edited. Strings, Dates and Intervals use TEXT fields, Links use
+SELECT fields and Multilinks use SELECT MULTIPLE fields.
+<p>
+<em>Options:</em><br>
+size (number) - width of TEXT fields.<br>
+height (number) - number of nows in SELECT MULTIPLE tags.<br>
+showid (boolean) - true includes the id of linked items in the SELECT
+MULTIPLE fields.
+</td></tr>
 
-<li><strong>menu</strong>: for a Link property, display
-a menu of the available choices
+<tr><td valign="top"><strong>menu</strong></td>
+<td>For a Links and Multilinks, display the same field as would be
+generated using <strong>field</strong>.
+</td></tr>
 
-<li><strong>link</strong>: for a Link or Multilink property,
-display the names of the linked nodes, hyperlinked to the
-item views on those nodes
+<tr><td valign="top"><strong>link</strong></td>
+<td>For a Link or Multilink property, display the names of the linked
+nodes, hyperlinked to the item views on those nodes. For other properties,
+link to this node with the property as the text.
+<p>
+<em>Options:</em><br>
+property (property name) - the property to use in the second case.
+</td></tr>
 
-<li><strong>count</strong>: for a Multilink property, display
-a count of the number of links in the list
+<tr><td valign="top"><strong>count</strong></td>
+<td>For a Multilink property, display
+a count of the number of links in the list.
+<p>
+<em>Arguments:</em><br>
+property (property name) - the property to use.
 
-<li><strong>reldate</strong>: display a Date property in terms
+</td></tr>
+
+<tr><td valign="top"><strong>reldate</strong></td>
+<td>Display a Date property in terms
 of an interval relative to the current date (e.g. "+ 3w", "- 2d").
+<p>
+<em>Arguments:</em><br>
+property (property name) - the property to use.
+<p>
+<em>Options:</em><br>
+pretty (boolean) - display the relative date in an English form.
+</td></tr>
 
-<li><strong>download</strong>: show a Link("file") or Multilink("file")
-property using links that allow you to download files
+<tr><td valign="top"><strong>download</strong></td>
+<td>Show a Link("file") or Multilink("file")
+property using links that allow you to download files.
+<p>
+<em>Arguments:</em><br>
+property (property name) - the property to use.
+</td></tr>
 
-<li><strong>checklist</strong>: for a Link or Multilink property,
-display checkboxes for the available choices to permit filtering
-</ul>
+<tr><td valign="top"><strong>checklist</strong></td>
+<td>For a Link or Multilink property,
+display checkboxes for the available choices to permit filtering.
+<p>
+<em>Arguments:</em><br>
+property (property name) - the property to use.
+</td></tr>
 
-<h3>8.3. Index Views</h3>
+<tr><td valign="top"><strong>note</strong></td>
+<td>Display the special notes field, which is a text area for entering a
+note to go along with a change.
+</td></tr>
+
+<tr><td valign="top"><strong>list</strong></td>
+<td>List the items specified by property using the standard index for
+the class.
+<p>
+<em>Arguments:</em><br>
+property (property name) - the property to use.
+</td></tr>
+
+<tr><td valign="top"><strong>history</strong></td>
+<td>List the history of the item.
+</td></tr>
+
+<tr><td valign="top"><strong>submit</strong></td>
+<td>Add a submit button for the item.
+</td></tr>
+
+</table>
+
+<h3>Index Views</h3>
 
 <p>An index view contains two sections: a filter section
 and an index section.
@@ -705,9 +767,9 @@ The filter section provides some widgets for selecting
 which items appear in the index.  The index section is
 a table of items.
 
-<h4>8.3.1. Index View Specifiers</h4>
+<h4>Index View Specifiers</h4>
 
-<p>An index view specifier looks like this (whitespace
+<p>An index view specifier (URL fragment) looks like this (whitespace
 has been added for clarity):
 
 <blockquote><pre><small
@@ -757,7 +819,7 @@ example is the default layout to be provided with
 the default bug-tracker schema described above in
 section 4.4.
 
-<h4>8.3.2. Filter Section</h4>
+<h4>Filter Section</h4>
 
 <p>The template for a filter section provides the
 filtering widgets at the top of the index view.
@@ -780,7 +842,12 @@ view specifier requests a filter for a particular property.
     &lt;display call="menu('fixer')"&gt;
 &lt;/property&gt;</small></pre></blockquote>
 
-<h4>8.3.3. Index Section</h4>
+<p>
+The standard index generation code appends a section to the index pages
+which allows selection of the filters - from those which are defined in the
+filter template.
+
+<h4>Index Section</h4>
 
 <p>The template for an index section describes one row of
 the index table.
@@ -805,7 +872,7 @@ to display the values of the item's properties.
     &lt;/property&gt;
 &lt;/tr&gt;</small></pre></blockquote>
 
-<h4>8.3.4. Sorting</h4>
+<h4>Sorting</h4>
 
 <p>String and Date values are sorted in the natural way.
 Link properties are sorted according to the value of the
@@ -814,21 +881,15 @@ otherwise on the key string of the linked nodes; or
 finally on the node ids.  Multilink properties are
 sorted according to how many links are present.
 
-<h3>8.4. Item Views</h3>
+<h3>Item Views</h3>
 
 <p>An item view contains an editor section and a spool section.
 At the top of an item view, links to superseding and superseded
 items are always displayed.
 
-<h4>8.4.1. Item View Specifiers</h4>
 
-<p>An item view specifier is simply the item's designator:
 
-<blockquote><pre><small
->/patch23
-</small></pre></blockquote>
-
-<h4>8.4.2. Editor Section</h4>
+<h4>Editor Section</h4>
 
 <p>The editor section is generated from a template
 containing <tt>&lt;display&gt;</tt> tags to insert
@@ -873,29 +934,50 @@ text area for entering a note to go along with a change.
 
 <p>When a change is submitted, the system automatically
 generates a message describing the changed properties.
-The message displays all of the property values on the
-item and indicates which ones have changed.
-An example of such a message might be this:
-
-<blockquote><pre><small
->title: Polly Parrot is dead
-priority: critical
-status: unread -&gt; in-progress
-fixer: (none)
-keywords: parrot,plumage,perch,nailed,dead
-</small></pre></blockquote>
 
 <p>If a note is given in the "note" field, the note is
 appended to the description.  The message is then added
 to the item's message spool (thus triggering the standard
 detector to react by sending out this message to the nosy list).
 
-<h4>8.4.3. Spool Section</h4>
+<p>
+The message also displays all of the property values on the
+item and indicates which ones have changed.
+An example of such a message might be this:
+
+<blockquote><pre>
+Polly's taken a turn for the worse - this is now really important!
+-----
+title: Polly Parrot is dead
+priority: critical
+status: unread -&gt; in-progress
+fixer: terry
+keywords: parrot,plumage,perch,nailed,dead
+</pre></blockquote>
+
+<h4>Spool Section</h4>
 
 <p>The spool section lists messages in the item's "messages"
 property.  The index of messages displays the "date", "author",
 and "summary" properties on the message nodes, and selecting a
 message takes you to its content.
+
+<p>The &lt;property&gt; tag used in the index may also be used here -
+it checks to see if the nominated Multilink property has any entries.
+This can be used to eliminate sections of the spool section if the
+property has no entries.
+
+<blockquote><pre>
+&lt;property name="files"&gt;
+ &lt;tr class="strong-header"&gt;
+  &lt;td&gt;&lt;b&gt;Files&lt;/b&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+
+ &lt;tr&gt;            
+  &lt;td&gt;&lt;display call="list('files')"&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+&lt;/property&gt;
+</pre></blockquote>
 
 <p><hr>
 <h1><a name="ack">Acknowledgements</a></h1>
@@ -905,7 +987,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.5 2001-09-30 01:19:22 richard Exp $
+$Id: index.html,v 1.6 2001-10-01 04:58:33 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
