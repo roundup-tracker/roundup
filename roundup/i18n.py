@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.8 2004-05-22 14:55:07 a1s Exp $
+# $Id: i18n.py,v 1.9 2004-07-11 14:16:26 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -53,7 +53,7 @@ except ImportError:
 if not gettext_module:
     # no gettext engine available.
     # implement emulation for Translations class
-    # and translation() function
+    # and find_translation() function
     class RoundupNullTranslations:
         """Dummy Translations class
 
@@ -74,7 +74,7 @@ if not gettext_module:
 
     RoundupTranslations = RoundupNullTranslations
 
-    def translation(domain, localedir=None, languages=None, class_=None):
+    def find_translation(domain, localedir=None, languages=None, class_=None):
         """Always raise IOError (no message catalogs available)"""
         raise IOError(errno.ENOENT,
             "No translation file found for domain", domain)
@@ -103,16 +103,24 @@ elif not hasattr(gettext_module.GNUTranslations, "ngettext"):
     ):
         pass
     # lookup function is available
-    translation = gettext_module.translation
+    find_translation = gettext_module.translation
 else:
     # gettext_module has everything needed
     RoundupNullTranslations = gettext_module.NullTranslations
     RoundupTranslations = gettext_module.GNUTranslations
-    translation = gettext_module.translation
+    find_translation = gettext_module.translation
 
 
-def get_translation(language=None, domain=DOMAIN):
-    """Return Translation object for given language and domain"""
+def get_translation(language=None, domain=DOMAIN,
+    translation_class=RoundupTranslations,
+    null_translation_class=RoundupNullTranslations
+):
+    """Return Translation object for given language and domain
+
+    Arguments 'translation_class' and 'null_translation_class'
+    specify the classes that are instantiated for existing
+    and non-existing translations, respectively.
+    """
     if language:
         _languages = [language]
     else:
@@ -123,15 +131,15 @@ def get_translation(language=None, domain=DOMAIN):
         _fallback = None
     else:
         try:
-            _fallback = translation(domain=domain, languages=["en"],
-                class_=RoundupTranslations)
+            _fallback = find_translation(domain=domain, languages=["en"],
+                class_=translation_class)
         except IOError:
             # no .mo files found
             _fallback = None
     # get the translation
     try:
-        _translation = translation(domain=domain, languages=_languages,
-            class_=RoundupTranslations)
+        _translation = find_translation(domain=domain, languages=_languages,
+            class_=translation_class)
     except IOError:
         _translation = None
     # see what's found
@@ -140,7 +148,7 @@ def get_translation(language=None, domain=DOMAIN):
     elif _fallback:
         _translation = _fallback
     elif not _translation:
-        _translation = RoundupNullTranslations()
+        _translation = null_translation_class()
     return _translation
 
 # static translations object
@@ -151,4 +159,4 @@ ugettext = translation.ugettext
 ngettext = translation.ngettext
 ungettext = translation.ungettext
 
-# vim: set filetype=python sts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
