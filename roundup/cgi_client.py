@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.159 2002-08-16 04:29:41 richard Exp $
+# $Id: cgi_client.py,v 1.160 2002-08-19 00:20:34 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -41,8 +41,9 @@ def initialiseSecurity(security):
     '''
     security.addPermission(name="Web Registration",
         description="User may register through the web")
-    security.addPermission(name="Web Access",
+    p = security.addPermission(name="Web Access",
         description="User may access the web interface")
+    security.addPermissionToRole('Admin', p)
 
     # doing Role stuff through the web - make sure Admin can
     p = security.addPermission(name="Web Roles",
@@ -508,6 +509,7 @@ function help_window(helpurl, width, height) {
                      Default is all.
 
         '''
+        print 'list'
         cn = self.classname
         cl = self.db.classes[cn]
         if sort is None: sort = self.index_sort()
@@ -848,6 +850,7 @@ function help_window(helpurl, width, height) {
         if files:
             props['files'] = files
         # create the node and return it's id
+        print `props`
         return cl.create(**props)
 
     def _handle_message(self):
@@ -1746,6 +1749,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.159  2002/08/16 04:29:41  richard
+# bugfix
+#
 # Revision 1.158  2002/08/15 00:40:10  richard
 # cleanup
 #
