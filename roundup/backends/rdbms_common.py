@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.99 2004-05-10 01:30:02 richard Exp $
+# $Id: rdbms_common.py,v 1.100 2004-05-16 09:35:49 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2123,7 +2123,7 @@ class Class(hyperdb.Class):
                     args.append(v)
 
         # don't match retired nodes
-        where.append('__retired__ <> 1')
+        where.append('_%s.__retired__ <> 1'%cn)
 
         # add results of full text search
         if search_matches is not None:
@@ -2146,6 +2146,16 @@ class Class(hyperdb.Class):
                     # use the int column for sorting
                     o = '__'+prop+'_int__'
                     ordercols.append(o)
+                elif isinstance(props[prop], Link):
+                    # determine whether the linked Class has an order property
+                    lcn = props[prop].classname
+                    link = self.db.classes[lcn]
+                    if link.getprops().has_key('order'):
+                        tn = '_' + lcn
+                        frum.append(tn)
+                        where.append('_%s._%s = %s.id'%(cn, prop, tn))
+                        ordercols.append(tn + '._order')
+                        o = tn + '._order'
                 elif prop == 'id':
                     o = 'id'
                 else:
@@ -2164,9 +2174,9 @@ class Class(hyperdb.Class):
         if mlfilt:
             # we're joining tables on the id, so we will get dupes if we
             # don't distinct()
-            cols = ['distinct(id)']
+            cols = ['distinct(_%s.id)'%cn]
         else:
-            cols = ['id']
+            cols = ['_%s.id'%cn]
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))
