@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.48 2004-10-08 00:18:28 richard Exp $
+# $Id: db_test_base.py,v 1.49 2004-10-14 10:39:14 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1061,14 +1061,6 @@ class DBTest(MyTestCase):
         maxid = max([int(id) for id in self.db.user.list()])
         newid = self.db.user.create(username='testing')
         assert newid > maxid
-
-    def testSafeGet(self):
-        # existent nodeid, existent property
-        self.assertEqual(self.db.user.safeget('1', 'username'), 'admin')
-        # nonexistent nodeid, existent property
-        self.assertEqual(self.db.user.safeget('999', 'username'), None)
-        # different default
-        self.assertEqual(self.db.issue.safeget('999', 'nosy', []), [])
 
     def testAddProperty(self):
         self.db.issue.create(title="spam", status='1')
