@@ -15,12 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.22 2004-02-11 23:55:08 richard Exp $
+#$Id: back_bsddb3.py,v 1.23 2004-05-05 01:17:42 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in BSDDB3.
 '''
 __docformat__ = 'restructuredtext'
 
-import bsddb3, os, marshal
+import bsddb3, os, marshal, errno
 from roundup import hyperdb, date
 
 # these classes are so similar, we just use the anydbm methods
@@ -36,10 +36,12 @@ class Database(Database):
     #
     def clear(self):
         for cn in self.classes.keys():
-            db = os.path.join(self.dir, 'nodes.%s'%cn)
-            bsddb3.btopen(db, 'n')
-            db = os.path.join(self.dir, 'journals.%s'%cn)
-            bsddb3.btopen(db, 'n')
+            for name in 'nodes.%s'%cn, 'journals.%s'%cn:
+                try:
+                    os.remove(os.path.join(self.dir, name))
+                except os.error, error:
+                    if error.errno != errno.ENOENT:
+                        raise
 
     def getclassdb(self, classname, mode='r'):
         ''' grab a connection to the class db that will be used for
