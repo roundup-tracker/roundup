@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2004-07-02 11:55+0300\n"
+"POT-Creation-Date: 2004-07-03 18:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -911,26 +911,26 @@ msgstr ""
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:986
+#: ../roundup/cgi/templating.py:988
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:998
+#: ../roundup/cgi/templating.py:1000
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1279
+#: ../roundup/cgi/templating.py:1281
 msgid "*encrypted*"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1444
+#: ../roundup/cgi/templating.py:1446
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1631
+#: ../roundup/cgi/templating.py:1633
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
@@ -1590,37 +1590,61 @@ msgid ""
 "\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:116
+#: ../templates/classic/html/issue.item.html:114
+msgid ""
+"Created on <b>${creation}</b> by <b>${creator}</b>, last changed <b>"
+"${activity}</b> by <b>${actor}</b>."
+msgstr ""
+
+#: ../templates/classic/html/issue.item.html:118
 #: ../templates/classic/html/msg.item.html:51
 msgid "Files"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:118
+#: ../templates/classic/html/issue.item.html:120
 #: ../templates/classic/html/msg.item.html:53
 msgid "File name"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:119
+#: ../templates/classic/html/issue.item.html:121
 #: ../templates/classic/html/msg.item.html:54
 msgid "Uploaded"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:120
+#: ../templates/classic/html/issue.item.html:122
 msgid "Type"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:121
+#: ../templates/classic/html/issue.item.html:123
 #: ../templates/classic/html/query.edit.html:30
 msgid "Edit"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:122
+#: ../templates/classic/html/issue.item.html:124
 msgid "Remove"
 msgstr ""
 
-#: ../templates/classic/html/issue.item.html:149
+#: ../templates/classic/html/issue.item.html:144
+#: ../templates/classic/html/issue.item.html:165
+#: ../templates/classic/html/query.edit.html:50
+msgid "remove"
+msgstr ""
+
+#: ../templates/classic/html/issue.item.html:151
 #: ../templates/classic/html/msg.index.html:9
 msgid "Messages"
+msgstr ""
+
+#: ../templates/classic/html/issue.item.html:155
+msgid "msg${id} (view)"
+msgstr ""
+
+#: ../templates/classic/html/issue.item.html:156
+msgid "Author: ${author}"
+msgstr ""
+
+#: ../templates/classic/html/issue.item.html:158
+msgid "Date: ${date}"
 msgstr ""
 
 #: ../templates/classic/html/issue.search.html:2
@@ -1960,10 +1984,6 @@ msgstr ""
 
 #: ../templates/classic/html/query.edit.html:49
 msgid "leave in"
-msgstr ""
-
-#: ../templates/classic/html/query.edit.html:50
-msgid "remove"
 msgstr ""
 
 #: ../templates/classic/html/query.edit.html:54
