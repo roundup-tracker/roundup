@@ -10,8 +10,12 @@ Feature:
 - create a new RDBMS cursor after committing
 - added basic logging, and configuration of it and python's logging module
 
+2004-06-10 0.7.5
+Fixed:
+- force lookup of journal props in anydbm filtering
 
-2004-??-?? 0.7.4
+
+2004-06-10 0.7.4
 Fixed:
 - re-acquire the OTK manager when we re-open the database
 - mailgw handler can close the database on us
