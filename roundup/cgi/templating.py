@@ -420,7 +420,7 @@ class HTMLClass(HTMLPermissions):
              for x in self._klass.filter(None, filterspec, sort, group)]
         return l
 
-    def classhelp(self, properties=None, label='list', width='500',
+    def classhelp(self, properties=None, label='(list)', width='500',
             height='400', property=''):
         ''' Pop up a javascript window with class help
 
@@ -443,8 +443,8 @@ class HTMLClass(HTMLPermissions):
             properties = ','.join(properties)
         if property:
             property = '&property=%s'%property
-        return '<a href="javascript:help_window(\'%s?:template=help&' \
-            'properties=%s%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(
+        return '<a class="classhelp" href="javascript:help_window(\'%s?:'\
+            'template=help&properties=%s%s\', \'%s\', \'%s\')">%s</a>'%(
             self.classname, properties, property, width, height, label)
 
     def submit(self, label="Submit New Entry"):
