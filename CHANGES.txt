@@ -12,6 +12,7 @@ Fixed:
  . htmltemplate do_menu with additional properties had problems when they
    weren't set
  . #562686 ] email attachments from outlook express
+ . #535868 ] Anonymous User Login
 
 
 2002-06-24 0.4.2

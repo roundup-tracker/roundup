@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.129.2.1 2002-07-10 06:50:49 richard Exp $
+# $Id: cgi_client.py,v 1.129.2.2 2002-07-22 22:06:45 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1134,7 +1134,9 @@ function help_window(helpurl, width, height) {
             try:
                 uid = self.db.user.lookup(user)
                 # now validate the password
-                if password != self.db.user.get(uid, 'password'):
+                if password == 'None':
+                    user = 'anonymous'
+                elif password != self.db.user.get(uid, 'password'):
                     user = 'anonymous'
             except KeyError:
                 user = 'anonymous'
@@ -1378,6 +1380,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.129.2.1  2002/07/10 06:50:49  richard
+# . #576241 ] MultiLink problems in parsePropsFromForm
+#
 # Revision 1.129  2002/06/20 23:52:11  richard
 # Better handling of unauth attempt to edit stuff
 #
