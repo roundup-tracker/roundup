@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.3 2001-07-27 05:17:14 richard Exp $
+# $Id: hyperdb.py,v 1.4 2001-07-27 06:25:35 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -116,17 +116,20 @@ class Class:
             prop = self.properties[key]
 
             if prop.isLinkType:
-                value = str(value)
+                if type(value) != type(''):
+                    raise ValueError, 'link value must be String'
+#                value = str(value)
                 link_class = self.properties[key].classname
+                # if it isn't a number, it's a key
                 if not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except:
-                        raise ValueError, 'new property "%s": %s not a %s'%(
+                        raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, self.properties[key].classname)
                 propvalues[key] = value
                 if not self.db.hasnode(link_class, value):
-                    raise ValueError, '%s has no node %s'%(link_class, value)
+                    raise IndexError, '%s has no node %s'%(link_class, value)
 
                 # register the link with the newly linked node
                 self.db.addjournal(link_class, value, 'link',
@@ -137,12 +140,15 @@ class Class:
                     raise TypeError, 'new property "%s" not a list of ids'%key
                 link_class = self.properties[key].classname
                 l = []
-                for entry in map(str, value):
+                for entry in value:
+                    if type(entry) != type(''):
+                        raise ValueError, 'link value must be String'
+                    # if it isn't a number, it's a key
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except:
-                            raise ValueError, 'new property "%s": %s not a %s'%(
+                            raise IndexError, 'new property "%s": %s not a %s'%(
                                 key, entry, self.properties[key].classname)
                     l.append(entry)
                 value = l
@@ -151,7 +157,7 @@ class Class:
                 # handle additions
                 for id in value:
                     if not self.db.hasnode(link_class, id):
-                        raise ValueError, '%s has no node %s'%(link_class, id)
+                        raise IndexError, '%s has no node %s'%(link_class, id)
                     # register the link with the newly linked node
                     self.db.addjournal(link_class, id, 'link',
                         (self.classname, newid, key))
@@ -168,8 +174,8 @@ class Class:
                 if not hasattr(value, 'isInterval'):
                     raise TypeError, 'new property "%s" not an Interval'% key
 
-        for key,prop in self.properties.items():
-            if propvalues.has_key(str(key)):
+        for key, prop in self.properties.items():
+            if propvalues.has_key(key):
                 continue
             if prop.isMultilinkType:
                 propvalues[key] = []
@@ -188,7 +194,8 @@ class Class:
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
         """
-        d = self.db.getnode(self.classname, str(nodeid))
+#        nodeid = str(nodeid)
+        d = self.db.getnode(self.classname, nodeid)
         return d[propname]
 
     # XXX not in spec
@@ -219,7 +226,7 @@ class Class:
             return
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
-        nodeid = str(nodeid)
+#        nodeid = str(nodeid)
         node = self.db.getnode(self.classname, nodeid)
         if node.has_key(self.db.RETIRED_FLAG):
             raise IndexError
@@ -239,17 +246,20 @@ class Class:
             prop = self.properties[key]
 
             if prop.isLinkType:
-                value = str(value)
+#                value = str(value)
                 link_class = self.properties[key].classname
+                # if it isn't a number, it's a key
+                if type(value) != type(''):
+                    raise ValueError, 'link value must be String'
                 if not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except:
-                        raise ValueError, 'new property "%s": %s not a %s'%(
+                        raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, self.properties[key].classname)
 
                 if not self.db.hasnode(link_class, value):
-                    raise ValueError, '%s has no node %s'%(link_class, value)
+                    raise IndexError, '%s has no node %s'%(link_class, value)
 
                 # register the unlink with the old linked node
                 if node[key] is not None:
@@ -266,12 +276,15 @@ class Class:
                     raise TypeError, 'new property "%s" not a list of ids'%key
                 link_class = self.properties[key].classname
                 l = []
-                for entry in map(str, value):
+                for entry in value:
+                    # if it isn't a number, it's a key
+                    if type(entry) != type(''):
+                        raise ValueError, 'link value must be String'
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except:
-                            raise ValueError, 'new property "%s": %s not a %s'%(
+                            raise IndexError, 'new property "%s": %s not a %s'%(
                                 key, entry, self.properties[key].classname)
                     l.append(entry)
                 value = l
@@ -290,7 +303,7 @@ class Class:
                 # handle additions
                 for id in value:
                     if not self.db.hasnode(link_class, id):
-                        raise ValueError, '%s has no node %s'%(link_class, id)
+                        raise IndexError, '%s has no node %s'%(link_class, id)
                     if id in l:
                         continue
                     # register the link with the newly linked node
@@ -324,7 +337,7 @@ class Class:
         Retired nodes are not returned by the find(), list(), or lookup()
         methods, and other nodes may reuse the values of their key properties.
         """
-        nodeid = str(nodeid)
+#        nodeid = str(nodeid)
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
         node = self.db.getnode(self.classname, nodeid)
@@ -395,7 +408,7 @@ class Class:
         """
         propspec = propspec.items()
         for propname, nodeid in propspec:
-            nodeid = str(nodeid)
+#            nodeid = str(nodeid)
             # check the prop is OK
             prop = self.properties[propname]
             if not prop.isLinkType and not prop.isMultilinkType:
@@ -411,7 +424,7 @@ class Class:
             if node.has_key(self.db.RETIRED_FLAG):
                 continue
             for propname, nodeid in propspec:
-                nodeid = str(nodeid)
+#                nodeid = str(nodeid)
                 property = node[propname]
                 if prop.isLinkType and nodeid == property:
                     l.append(id)
@@ -740,6 +753,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/27 05:17:14  richard
+# just some comments
+#
 # Revision 1.2  2001/07/22 12:09:32  richard
 # Final commit of Grande Splite
 #
