@@ -60,6 +60,9 @@ from roundup.cgi import ZTUtils
 
 templates = {}
 
+class NoTemplate(Exception):
+    pass
+
 def getTemplate(dir, name, extension, classname=None, request=None):
     ''' Interface to get a template, possibly loading a compiled template.
 
@@ -83,12 +86,24 @@ def getTemplate(dir, name, extension, classname=None, request=None):
     try:
         stime = os.stat(src)[os.path.stat.ST_MTIME]
     except os.error, error:
-        if error.errno != errno.ENOENT or not extension:
+        if error.errno != errno.ENOENT:
             raise
+        if not extension:
+            raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
+
         # try for a generic template
-        filename = '_generic.%s'%extension
-        src = os.path.join(dir, filename)
-        stime = os.stat(src)[os.path.stat.ST_MTIME]
+        generic = '_generic.%s'%extension
+        src = os.path.join(dir, generic)
+        try:
+            stime = os.stat(src)[os.path.stat.ST_MTIME]
+        except os.error, error:
+            if error.errno != errno.ENOENT:
+                raise
+            # nicer error
+            raise NoTemplate, 'No template file exists for templating '\
+                '"%s" with template "%s" (neither "%s" nor "%s")'%(name,
+                extension, filename, generic)
+        filename = generic
 
     key = (dir, filename)
     if templates.has_key(key) and stime < templates[key].mtime:

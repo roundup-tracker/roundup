@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.19 2002-09-06 07:21:31 richard Exp $
+# $Id: client.py,v 1.20 2002-09-06 22:54:51 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -10,7 +10,7 @@ import binascii, Cookie, time, random
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
 
-from roundup.cgi.templating import getTemplate, HTMLRequest
+from roundup.cgi.templating import getTemplate, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
 
 from PageTemplates import PageTemplate
@@ -324,6 +324,8 @@ class Client:
         except PageTemplate.PTRuntimeError, message:
             return '<strong>%s</strong><ol>%s</ol>'%(message,
                 '<li>'.join(pt._v_errors))
+        except NoTemplate, message:
+            return '<strong>%s</strong>'%message
         except:
             # everything else
             return cgitb.pt_html()
