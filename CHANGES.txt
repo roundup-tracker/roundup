@@ -6,6 +6,7 @@ Fixed:
 - note about how to run roundup demo in Windows (sf bug 1082090)
 - fix API for templating utils extensions - remove "utils" arg (sf bug 1081981)
 - back_sqlite.py is missing "import time" (sf bug 1081959)
+- fix (list) popup (sf bug 1083570)
 
 
 2004-12-08 0.8.0b1
