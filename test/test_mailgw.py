@@ -8,9 +8,17 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.20 2002-05-29 01:16:17 richard Exp $
+# $Id: test_mailgw.py,v 1.21 2002-06-18 03:59:59 dman13 Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
+
+# Note: Should parse emails according to RFC2822 instead of performing a
+# literal string comparision.  Parsing the messages allows the tests to work for
+# any legal serialization of an email.
+#try :
+#    import email
+#except ImportError :
+#    import rfc822 as email
 
 from roundup.mailgw import MailGW
 from roundup import init, instance
@@ -89,7 +97,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
     def doNewIssue(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
-From: Chef <chef@bork.bork.bork
+From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
@@ -113,7 +121,7 @@ This is a test submission of a new issue.
         self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
-From: Chef <chef@bork.bork.bork
+From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
@@ -152,7 +160,7 @@ This is a test submission of a new issue.
     def testNewIssueNoClass(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
-From: Chef <chef@bork.bork.bork
+From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
@@ -169,7 +177,7 @@ This is a test submission of a new issue.
     def testNewIssueAuthMsg(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
-From: Chef <chef@bork.bork.bork
+From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing... [nosy=mary; assignedto=richard]
@@ -187,8 +195,8 @@ TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, mary@test, richard@test
-From: Chef <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
@@ -241,8 +249,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: mary <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -288,8 +296,8 @@ TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
-From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "richard" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -333,8 +341,8 @@ TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
-From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "richard" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -379,8 +387,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: john <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "john" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -426,8 +434,8 @@ TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "richard" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -473,8 +481,8 @@ TO: chef@bork.bork.bork, john@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, richard@test
-From: john <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "john" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -519,8 +527,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: john <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "john" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -565,8 +573,8 @@ TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "richard" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -633,8 +641,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: mary <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -686,8 +694,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: mary <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+From: "mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -719,6 +727,18 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/05/29 01:16:17  richard
+# Sorry about this huge checkin! It's fixing a lot of related stuff in one go
+# though.
+#
+# . #541941 ] changing multilink properties by mail
+# . #526730 ] search for messages capability
+# . #505180 ] split MailGW.handle_Message
+#   - also changed cgi client since it was duplicating the functionality
+# . build htmlbase if tests are run using CVS checkout (removed note from
+#   installation.txt)
+# . don't create an empty message on email issue creation if the email is empty
+#
 # Revision 1.19  2002/05/23 04:26:05  richard
 # 'I must run unit tests before committing\n' * 100
 #
