@@ -11,8 +11,8 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - two templates included in the distribution for you to base your tracker on
  - doesn't need *any* additional support software - python (2.1+) is enough to
    get you going
- - easy to set up higher-performance storage backends like sqlite_ and
-   metakit_
+ - easy to set up higher-performance storage backends like sqlite_,
+   metakit_, mysql and postgresql
  - the really impatient can try the instant-gratification Demo Mode (``python
    demo.py``)
 
@@ -29,13 +29,16 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    with a full set of data types (including dates and many-to-many relations)
    across all storages available
  - customised automatic auditors and reactors may be written that perform
-   actions before and after changes are made to entries in the database
+   actions before and after changes are made to entries in the database,
+   or may veto the creation or modification of items int he database
  - samples are provided for all types of configuration changes
 
 *fast, scalable*
- - with the sqlite_, metakit_ and mysql backends, roundup is also fast and
-   scalable, easily handling thousands of issues and users with decent
-   response times
+ - with the sqlite, metakit, mysql and postgresql backends, roundup is
+   also fast and scalable, easily handling thousands of issues and users
+   with decent response times
+ - database indexes are automatically added for those backends that
+   support them (sqlite, metakit, mysql and postgresql)
  - indexed text searching giving fast responses to searches across all
    messages and indexed string properties
 

@@ -1,0 +1,345 @@
+=========================
+What's New in Roundup 0.7
+=========================
+
+.. contents::
+
+Web Interface
+=============
+
+Saving and sharing of user queries
+----------------------------------
+
+Due to popular demand, the user query saving mechanisms have been
+overhauled.
+
+As before, you may save queries in the tracker by giving the query a
+name. Each user may only have one query with a given name - if a
+subsequent search is performed with the same query name supplied, then
+it will edit the existing query of the same name.
+
+Queries may be marked as "private". These queries are only visible to the
+user that created them. If they're not marked "private" then all other
+users may include the query in their list of "Your Queries". Marking it as
+private at a later date does not affect users already using the query, nor
+does deleting the query.
+
+If a user subsequently creates or edits a public query, a new personal
+version of that query is made, with the same editing rules as described
+above.
+
+You *are not required* to make these changes in your tracker. You only
+need to make them if you wish to use the new query editing features. It's
+highly recommended, as the effort is minimal.
+
+1. You will need to edit your tracker's ``dbinit.py`` to change the way
+   queries are stored. Change the lines::
+
+      query = Class(db, "query",
+                      klass=String(),     name=String(),
+                      url=String())
+      query.setkey("name")
+
+   to::
+
+      query = Class(db, "query",
+                      klass=String(),     name=String(),
+                      url=String(),       private_for=Link('user'))
+
+   That is, add the "private_for" property, and remove the line that says
+   ``query.setkey("name")``. The latter is the most important edit here.
+
+2. You will also need to copy the ``query.edit.html`` template page from the
+   ``templates/classic/html/`` directory of the source to your tracker's
+   ``html`` directory.
+
+3. Once you've done that, edit the tracker's ``page.html`` template to
+   change::
+
+    <td rowspan="2" valign="top" class="sidebar">
+     <p class="classblock" tal:condition="request/user/queries">
+      <b>Your Queries</b><br>
+      <tal:block tal:repeat="qs request/user/queries">
+
+   to::
+
+    <td rowspan="2" valign="top" class="sidebar">
+     <p class="classblock">
+      <b>Your Queries</b> (<a href="query?@template=edit">edit</a>)<br>
+      <tal:block tal:repeat="qs request/user/queries">
+
+   That is, you're removing the ``tal:condition`` and adding a link to the
+   new edit page.
+
+4. You might also wish to remove the redundant query editing section from the
+   ``user.item.html`` page.
+
+
+Simple support for collision detection
+--------------------------------------
+
+Item edit pages that use the ``context/submit`` function to generate their
+submit buttons now automatically include a datestamp in the form. This
+datestamp is compared to the "activity" property of the item when the form
+is submitted. If the "actvity" property is younger than the datestamp in
+the form submission, then someone else has edited the item, and a page
+indicating this is displayed to the user.
+
+
+Extending the cgi interface
+---------------------------
+
+Before 0.7.0 adding or extending web actions was done by overriding or adding
+methods on the Client class. Though this approach still works to provide
+backwards compatibility, it is recommended you upgrade to the new approach, as
+described in the `Defining new web actions`__ section of the customization
+documentation. You might also want to take a look at the `Using an external
+password validation source`__ example.
+
+__ customizing.html#defining-new-web-actions
+__ customizing.html#using-an-external-password-validation-source
+
+Actions may also return the content that should return to the user, which
+causes the web interface to skip the normal template formatting step.
+This could be used to return an image to the user instead of HTML. Be sure
+to set the correct content-type header though! The default is still
+text/html. This is done with::
+
+   self.client.setHeader('Content-Type', 'image/png')
+
+if you were returning a PNG image.
+
+
+Added CSV export action
+-----------------------
+
+A new action has been added which exports the current index page or search
+result as a comma-separated-value (CSV) file.
+
+To use it, add this to your "index" templates:
+
+<a tal:attributes="href python:request.indexargs_url('issue',
+            {'@action':'csv_export'})">Download as CSV</a>
+
+Making sure that the ``'issue'`` part matches the class name of the page
+you're editing.
+
+Roundup server 
+
+The roundup-server web interface now supports setgid and running on port
+< 1024.
+
+
+HTML templating made easier
+---------------------------
+
+All HTML templating functions perform checks for permissions required to
+display or edit the data they are manipulating. The simplest case is
+editing an issue title. Including the expression::
+
+   context/title/field
+
+Will present the user with an edit field, if they have edit permission. If
+not, then they will be presented with a static display if they have view
+permission. If they don't even have view permission, then an error message
+is raised, preventing the display of the page, indicating that they don't
+have permission to view the information.
+
+This removes the need for the template to perform those checks, which was
+just plain messy.
+
+
+Standards changes
+-----------------
+
+We now set the HTTP Content-Length header when we serve up files, either
+static ones from the "html" folder or file content from the database.
+
+We also handle If-Modified-Since and supply Last-Modified for both types
+of file too.
+
+The HTML generated in the classic tracker is now HTML4 (or optionally
+XHTML) compliant. The ``config.py`` variable "HTML_VERSION" is used to
+control this behaviour.
+
+We've got a printer setting in the stylesheet now too, so printed pages
+don't include the sidebar.
+
+
+Email Interface
+===============
+
+Better handling of some email headers
+-------------------------------------
+
+We ignore messages with the header "Precedence: bulk".
+
+If a Resent-From: header is present, it is used in preference to the From:
+header when determining the author of the message. Useful for redirecting
+error messages from automated systems.
+
+
+Email character set
+-------------------
+
+The default character set for sending email is UTF-8 (ie. Unicode). If you
+have users whose email clients can't handle UTF-8 (eg. Eudora) then you
+will need to edit the new config.py variable ``EMAIL_CHARSET``.
+
+
+Dispatcher configuration
+------------------------
+
+A new config option has been added that specifies the email address of
+a "dispatcher" role.  This email address acts as a central sentinel for
+issues coming into the system. You can configure it so that all e-mail
+error messages get bounced to them, them and the user in question, or
+just the user (default).
+
+To toggle these switches, add the "DISPATCHER_EMAIL" and
+"ERROR_MESSAGES_TO" configuration values to your tracker's ``config.py``.
+See the `customisation documentation`_ for how to use them.
+
+
+More flexible message generation
+--------------------------------
+
+The code for generating email messages in Roundup has been refactored. A
+new module, ``roundup.mailer`` contains most of the nuts-n-bolts required
+to generate email messages from Roundup.
+
+In addition, the ``IssueClass`` methods ``nosymessage()`` and
+``send_message()`` have both been altered so that they don't require the
+message id parameter. This means that change notes with no associated
+change message may now be generated much more easily.
+
+
+Registration confirmation by email
+----------------------------------
+
+Users may now reply to their registration confirmation email, and the
+roundup mail gateway will complete their registration.
+
+
+Database configuration
+======================
+
+Postgresql added as a backend option
+------------------------------------
+
+Trackers may now use the postgresql RDBMS as a database store.
+
+Postgresql is a good choice if you expect your tracker to grow very large,
+and are expecting many users.
+
+
+Other improvements
+------------------
+
+All RDBMS backends now have indexes automatically created on critical
+table columns.
+
+Additionally, the RDBMS backends also implement their own session,
+one-time-key and full-text indexing stores. These were previously external
+dbm stores. This change allows control of locking the database to be
+completely handed over to the RDBMS.
+
+Date values capture fractions of seconds now. Note that the MySQL backend
+is not capable of storing this precision though, so it will be lost for
+users of that backend.
+
+
+Typed columns in RDBMS backends
+-------------------------------
+
+The MySQL (and Postgresql for that matter) backend now creates tables with
+appropriate column datatypes (not just varchar). Sqlite got the typing
+too, but it ignores the datatypes :)
+
+Your database will be automatically migrated to use the new schemas, but
+it will take time. It's probably a good idea to make sure you do this as
+part of the upgrade when users are not expected to be using the system.
+
+
+Permission setup
+----------------
+
+0.7 automatically sets up the Edit and View Permissions for all classes,
+thus you don't need to do so. Feel free to remove the code::
+
+    # Add new Permissions for this schema
+    for cl in 'issue', 'file', 'msg', 'user', 'query', 'keyword':
+        db.security.addPermission(name="Edit", klass=cl,
+            description="User is allowed to edit "+cl)
+        db.security.addPermission(name="View", klass=cl,
+            description="User is allowed to access "+cl)
+
+from your ``dbinit.py``.
+
+
+New "actor" property
+--------------------
+
+Roundup's database has a new per-item property "actor" which reflects the
+user performing the last "actvitiy". See the classic template for ways to
+integrate this new property into your interface.
+
+The property will be automatically added to your existing database.
+
+
+New Reject exception for Auditors
+---------------------------------
+
+An auditor may raise this exception when the current create or set
+operation should be stopped.
+
+It is up to the specific interface invoking the create or set to
+handle this exception sanely. For example:
+
+- mailgw will trap and ignore Reject for file attachments and messages
+- cgi will trap and present the exception in a nice format
+
+
+New auditor fixes Outlook bug
+-----------------------------
+
+This auditor fires whenever a new file entity is created.
+
+If the file is of type message/rfc822, we tack onthe extension .eml.
+
+The reason for this is that Microsoft Internet Explorer will not open
+things with a .eml attachment, as they deem it 'unsafe'. Worse yet,
+they'll just give you an incomprehensible error message. For more 
+information, please see: 
+
+http://support.microsoft.com/default.aspx?scid=kb;EN-US;825803
+
+Their suggested work around is (excerpt):
+
+ WORKAROUND
+
+ To work around this behavior, rename the .EML file that the URL
+ links to so that it has a .MHT file name extension, and then update
+ the URL to reflect the change to the file name. To do this:
+
+ 1. In Windows Explorer, locate and then select the .EML file that
+    the URL links.
+ 2. Right-click the .EML file, and then click Rename.
+ 3. Change the file name so that the .EML file uses a .MHT file name
+    extension, and then press ENTER.
+ 4. Updated the URL that links to the file to reflect the new file
+    name extension.
+
+
+New script for copying users
+----------------------------
+
+A new script, ``scripts/copy-user.py``, will copy users from one tracker
+to another.  Example usage::
+
+    copy-user.py /roundup/tracker1 /roundup/tracker2 `seq 3 10` 14 16
+
+which copies users 3, 4, 5, 6, 7, 8, 9, 10, 14 and 16.
+
+
+.. _`customisation documentation`: customizing.html

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.124 $
+:Version: $Revision: 1.125 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -599,6 +599,7 @@ Generally speaking, the following rules should be observed:
   making changes to the database where possible, as this could create
   detector loops.
 
+
 Vetoing creation of or changes to items
 ---------------------------------------
 
@@ -615,6 +616,18 @@ To use, simply add at the top of your auditor::
 And then when your rejection criteria have been detected, simply::
 
    raise Reject
+
+
+Generating email from Roundup
+-----------------------------
+
+The module ``roundup.mailer`` contains most of the nuts-n-bolts required
+to generate email messages from Roundup.
+
+In addition, the ``IssueClass`` methods ``nosymessage()`` and
+``send_message()`` are used to generate nosy messages, and may generate
+messages which only consist of a change note (ie. the message id parameter
+is not required).
 
 
 Database Content
@@ -1669,6 +1682,18 @@ menu        only on Link and Multilink properties - render a form select
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
 =========== ================================================================
+
+All of the above functions perform checks for permissions required to
+display or edit the data they are manipulating. The simplest case is
+editing an issue title. Including the expression::
+
+   context/title/field
+
+Will present the user with an edit field, if they have edit permission. If
+not, then they will be presented with a static display if they have view
+permission. If they don't even have view permission, then an error message
+is raised, preventing the display of the page, indicating that they don't
+have permission to view the information.
 
 
 The request variable

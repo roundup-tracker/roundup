@@ -18,17 +18,17 @@ Contents
 - Acknowledgements_
 - License_
 
-.. __: features.html
-.. __: installation.html
-.. __: upgrading.html
-.. __: FAQ.html
-.. __: user_guide.html
-.. __: customizing.html
-.. __: admin_guide.html
-.. __: design.html
-.. __: spec.html
-.. __: developers.html
-.. __: tracker_templates.html
+__ features.html
+__ installation.html
+__ upgrading.html
+__ FAQ.html
+__ user_guide.html
+__ customizing.html
+__ admin_guide.html
+__ design.html
+__ spec.html
+__ developers.html
+__ tracker_templates.html
 
 Contact
 =======
