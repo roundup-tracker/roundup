@@ -6,7 +6,31 @@
 # disclaimer are retained in their original form.
 #
 
-'''This module defines a backend implementation for MySQL.'''
+'''This module defines a backend implementation for MySQL.
+
+
+How to implement AUTO_INCREMENT:
+
+mysql> create table foo (num integer auto_increment primary key, name
+varchar(255)) AUTO_INCREMENT=1 type=InnoDB;
+
+ql> insert into foo (name) values ('foo5');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT num FROM foo WHERE num IS NULL;
++-----+
+| num |
++-----+
+|   4 |
++-----+
+1 row in set (0.00 sec)
+
+mysql> SELECT num FROM foo WHERE num IS NULL;
+Empty set (0.00 sec)
+
+NOTE: we don't need an index on the id column if it's PRIMARY KEY
+
+'''
 __docformat__ = 'restructuredtext'
 
 from roundup.backends.rdbms_common import *
@@ -87,6 +111,17 @@ class Database(Database):
     mysql_backend = 'InnoDB'
     #mysql_backend = 'BDB'
 
+    hyperdb_to_sql_value = {
+        hyperdb.String : str,
+        # no fractional seconds for MySQL
+        hyperdb.Date   : lambda x: x.formal(sep=' '),
+        hyperdb.Link   : int,
+        hyperdb.Interval  : lambda x: x.serialise(),
+        hyperdb.Password  : str,
+        hyperdb.Boolean   : int,
+        hyperdb.Number    : lambda x: x,
+    }
+
     def sql_open_connection(self):
         db = getattr(self.config, 'MYSQL_DATABASE')
         try:
@@ -116,43 +151,113 @@ class Database(Database):
             self.init_dbschema()
             self.sql("CREATE TABLE schema (schema TEXT) TYPE=%s"%
                 self.mysql_backend)
-            # TODO: use AUTO_INCREMENT for generating ids:
-            #       http://www.mysql.com/doc/en/CREATE_TABLE.html
-            self.sql("CREATE TABLE ids (name varchar(255), num INT) TYPE=%s"%
-                self.mysql_backend)
-            self.sql("CREATE INDEX ids_name_idx ON ids(name)")
+            self.cursor.execute('''CREATE TABLE ids (name VARCHAR(255),
+                num INTEGER) TYPE=%s'''%self.mysql_backend)
+            self.cursor.execute('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
         # OTK store
-        self.cursor.execute('CREATE TABLE otks (otk_key VARCHAR(255), '
-            'otk_value VARCHAR(255), otk_time FLOAT(20)) '
-            'TYPE=%s'%self.mysql_backend)
+        self.cursor.execute('''CREATE TABLE otks (otk_key VARCHAR(255),
+            otk_value VARCHAR(255), otk_time FLOAT(20))
+            TYPE=%s'''%self.mysql_backend)
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
-        self.cursor.execute('CREATE TABLE sessions (session_key VARCHAR(255), '
-            'session_time FLOAT(20), session_value VARCHAR(255)) '
-            'TYPE=%s'%self.mysql_backend)
-        self.cursor.execute('CREATE INDEX sessions_key_idx ON '
-            'sessions(session_key)')
+        self.cursor.execute('''CREATE TABLE sessions (
+            session_key VARCHAR(255), session_time FLOAT(20),
+            session_value VARCHAR(255)) TYPE=%s'''%self.mysql_backend)
+        self.cursor.execute('''CREATE INDEX sessions_key_idx ON
+            sessions(session_key)''')
 
         # full-text indexing store
-        self.cursor.execute('CREATE TABLE _textids (_class VARCHAR(255), '
-            '_itemid VARCHAR(255), _prop VARCHAR(255), _textid INT) '
-            'TYPE=%s'%self.mysql_backend)
-        self.cursor.execute('CREATE TABLE _words (_word VARCHAR(30), '
-            '_textid INT) TYPE=%s'%self.mysql_backend)
-        self.cursor.execute('CREATE INDEX words_word_ids ON _words(_word)')
+        self.cursor.execute('''CREATE TABLE __textids (_class VARCHAR(255),
+            _itemid VARCHAR(255), _prop VARCHAR(255), _textid INT)
+            TYPE=%s'''%self.mysql_backend)
+        self.cursor.execute('''CREATE TABLE __words (_word VARCHAR(30),
+            _textid INT) TYPE=%s'''%self.mysql_backend)
+        self.cursor.execute('CREATE INDEX words_word_ids ON __words(_word)')
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
-        self.cursor.execute(sql, ('_textids', 1))
+        self.cursor.execute(sql, ('__textids', 1))
 
     def add_actor_column(self):
-        # update existing tables to have the new actor column
-        tables = self.database_schema['tables']
-        for name in tables.keys():
-            self.cursor.execute('ALTER TABLE _%s add __actor '
-                'VARCHAR(255)'%name)
+        ''' While we're adding the actor column, we need to update the
+        tables to have the correct datatypes.'''
+        assert 0, 'FINISH ME!'
+
+        for spec in self.classes.values():
+            new_has = spec.properties.has_key
+            new_spec = spec.schema()
+            new_spec[1].sort()
+            old_spec[1].sort()
+            if not force and new_spec == old_spec:
+                # no changes
+                return 0
+
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class FIRING'
+
+            # detect multilinks that have been removed, and drop their table
+            old_has = {}
+            for name,prop in old_spec[1]:
+                old_has[name] = 1
+                if new_has(name) or not isinstance(prop, hyperdb.Multilink):
+                    continue
+                # it's a multilink, and it's been removed - drop the old
+                # table. First drop indexes.
+                self.drop_multilink_table_indexes(spec.classname, ml)
+                sql = 'drop table %s_%s'%(spec.classname, prop)
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                self.cursor.execute(sql)
+            old_has = old_has.has_key
+
+            # now figure how we populate the new table
+            if adding_actor:
+                fetch = ['_activity', '_creation', '_creator']
+            else:
+                fetch = ['_actor', '_activity', '_creation', '_creator']
+            properties = spec.getprops()
+            for propname,x in new_spec[1]:
+                prop = properties[propname]
+                if isinstance(prop, hyperdb.Multilink):
+                    if force or not old_has(propname):
+                        # we need to create the new table
+                        self.create_multilink_table(spec, propname)
+                elif old_has(propname):
+                    # we copy this col over from the old table
+                    fetch.append('_'+propname)
+
+            # select the data out of the old table
+            fetch.append('id')
+            fetch.append('__retired__')
+            fetchcols = ','.join(fetch)
+            cn = spec.classname
+            sql = 'select %s from _%s'%(fetchcols, cn)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class', (self, sql)
+            self.cursor.execute(sql)
+            olddata = self.cursor.fetchall()
+
+            # TODO: update all the other index dropping code
+            self.drop_class_table_indexes(cn, old_spec[0])
+
+            # drop the old table
+            self.cursor.execute('drop table _%s'%cn)
+
+            # create the new table
+            self.create_class_table(spec)
+
+            # do the insert of the old data - the new columns will have
+            # NULL values
+            args = ','.join([self.arg for x in fetch])
+            sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
+            for entry in olddata:
+                self.cursor.execute(sql, tuple(entry))
+
+        return 1
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
@@ -174,40 +279,21 @@ class Database(Database):
         s = repr(self.database_schema)
         self.sql('INSERT INTO schema VALUES (%s)', (s,))
     
-    def save_journal(self, classname, cols, nodeid, journaldate,
-                journaltag, action, params):
-        params = repr(params)
-        entry = (nodeid, journaldate, journaltag, action, params)
-
-        a = self.arg
-        sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(classname,
-                cols, a, a, a, a, a)
-        if __debug__:
-          print >>hyperdb.DEBUG, 'addjournal', (self, sql, entry)
-        self.cursor.execute(sql, entry)
-
-    def load_journal(self, classname, cols, nodeid):
-        sql = 'select %s from %s__journal where nodeid=%s'%(cols, classname,
-                self.arg)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'getjournal', (self, sql, nodeid)
-        self.cursor.execute(sql, (nodeid,))
-        res = []
-        for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
-          params = eval(params)
-          res.append((nodeid, date.Date(date_stamp), user, action, params))
-        return res
-
     def create_class_table(self, spec):
         cols, mls = self.determine_columns(spec.properties.items())
-        cols.append('id')
-        cols.append('__retired__')
-        scols = ',' . join(['`%s` VARCHAR(255)'%x for x in cols])
-        sql = 'CREATE TABLE `_%s` (%s) TYPE=%s'%(spec.classname, scols,
+
+        # add on our special columns
+        cols.append(('id', 'INTEGER PRIMARY KEY'))
+        cols.append(('__retired__', 'INTEGER DEFAULT 0'))
+
+        # create the base table
+        scols = ','.join(['%s %s'%x for x in cols])
+        sql = 'create table _%s (%s) type=%s'%(spec.classname, scols,
             self.mysql_backend)
         if __debug__:
-          print >>hyperdb.DEBUG, 'create_class', (self, sql)
+            print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+
         self.create_class_table_indexes(spec)
         return cols, mls
 
@@ -227,12 +313,15 @@ class Database(Database):
             self.cursor.execute(index_sql)
 
     def create_journal_table(self, spec):
-        cols = ',' . join(['`%s` VARCHAR(255)'%x
-          for x in 'nodeid date tag action params' . split()])
-        sql  = 'CREATE TABLE `%s__journal` (%s) TYPE=%s'%(spec.classname,
-            cols, self.mysql_backend)
+        # journal table
+        cols = ','.join(['%s varchar'%x
+            for x in 'nodeid date tag action params'.split()])
+        sql = '''create table %s__journal (
+            nodeid integer, date timestamp, tag varchar(255),
+            action varchar(255), params varchar(255)) type=%s'''%(
+            spec.classname, self.mysql_backend)
         if __debug__:
-            print >>hyperdb.DEBUG, 'create_class', (self, sql)
+            print >>hyperdb.DEBUG, 'create_journal_table', (self, sql)
         self.cursor.execute(sql)
         self.create_journal_table_indexes(spec)
 
@@ -277,6 +366,46 @@ class Database(Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'drop_index', (self, sql)
         self.cursor.execute(sql)
+
+    # old-skool id generation
+    def newid(self, classname):
+        ''' Generate a new id for the given class
+        '''
+        # get the next ID
+        sql = 'select num from ids where name=%s'%self.arg
+        if __debug__:
+            print >>hyperdb.DEBUG, 'newid', (self, sql, classname)
+        self.cursor.execute(sql, (classname, ))
+        newid = int(self.cursor.fetchone()[0])
+
+        # update the counter
+        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        vals = (int(newid)+1, classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'newid', (self, sql, vals)
+        self.cursor.execute(sql, vals)
+
+        # return as string
+        return str(newid)
+
+    def setid(self, classname, setid):
+        ''' Set the id counter: used during import of database
+
+        We add one to make it behave like the seqeunces in postgres.
+        '''
+        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        vals = (int(setid)+1, classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'setid', (self, sql, vals)
+        self.cursor.execute(sql, vals)
+
+    def create_class(self, spec):
+        rdbms_common.Database.create_class(self, spec)
+        sql = 'insert into ids (name, num) values (%s, %s)'
+        vals = (spec.classname, 1)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'create_class', (self, sql, vals)
+        self.cursor.execute(sql, vals)
 
 class MysqlClass:
     # we're overriding this method for ONE missing bit of functionality.
@@ -486,7 +615,8 @@ class MysqlClass:
         l = self.db.cursor.fetchall()
 
         # return the IDs (the first column)
-        return [row[0] for row in l]
+        # XXX numeric ids
+        return [str(row[0]) for row in l]
 
 class Class(MysqlClass, rdbms_common.Class):
     pass

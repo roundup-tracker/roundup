@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.60 2004-02-11 23:55:08 richard Exp $
+# $Id: date.py,v 1.61 2004-03-22 07:45:39 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -103,11 +103,19 @@ class Date:
         """
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
-        else:
+            return
+        elif hasattr(spec, 'tuple'):
+            spec = spec.tuple()
+        try:
             y,m,d,H,M,S,x,x,x = spec
+            frac = S - int(S)
             ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
             self.year, self.month, self.day, self.hour, self.minute, \
                 self.second, x, x, x = time.gmtime(ts)
+            # we lost the fractional part
+            self.second = self.second + frac
+        except:
+            raise ValueError, 'Unknown spec %r'%spec
 
     usagespec='[yyyy]-[mm]-[dd].[H]H:MM[:SS][offset]'
     def set(self, spec, offset=0, date_re=re.compile(r'''
@@ -125,8 +133,9 @@ class Date:
         m = serialised_re.match(spec)
         if m is not None:
             # we're serialised - easy!
-            self.year, self.month, self.day, self.hour, self.minute, \
-                self.second = map(int, m.groups()[:6])
+            g = m.groups()
+            (self.year, self.month, self.day, self.hour, self.minute,
+                self.second) = map(int, g[:6])
             return
 
         # not serialised data, try usual format
@@ -140,7 +149,11 @@ class Date:
             _add_granularity(info, 'SMHdmyab')
 
         # get the current date as our default
-        y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
+        ts = time.time()
+        frac = ts - int(ts)
+        y,m,d,H,M,S,x,x,x = time.gmtime(ts)
+        # gmtime loses the fractional seconds 
+        S = S + frac
 
         if info['y'] is not None or info['a'] is not None:
             if info['y'] is not None:
@@ -167,9 +180,12 @@ class Date:
             S = S - 1
         
         # now handle the adjustment of hour
+        frac = S - int(S)
         ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
         self.year, self.month, self.day, self.hour, self.minute, \
             self.second, x, x, x = time.gmtime(ts)
+        # we lost the fractional part along the way
+        self.second = self.second + frac
 
         if info.get('o', None):
             try:
@@ -292,8 +308,12 @@ class Date:
 
     def __str__(self):
         """Return this date as a string in the yyyy-mm-dd.hh:mm:ss format."""
-        return '%4d-%02d-%02d.%02d:%02d:%02d'%(self.year, self.month, self.day,
-            self.hour, self.minute, self.second)
+        return self.formal()
+
+    def formal(self, sep='.', sec='%02d'):
+        f = '%%4d-%%02d-%%02d%s%%02d:%%02d:%s'%(sep, sec)
+        return f%(self.year, self.month, self.day, self.hour, self.minute,
+            self.second)
 
     def pretty(self, format='%d %B %Y'):
         ''' print up the date date using a pretty format...
@@ -327,8 +347,11 @@ class Date:
 
     def timestamp(self):
         ''' return a UNIX timestamp for this date '''
-        return calendar.timegm((self.year, self.month, self.day, self.hour,
+        frac = self.second - int(self.second)
+        ts = calendar.timegm((self.year, self.month, self.day, self.hour,
             self.minute, self.second, 0, 0, 0))
+        # we lose the fractional part
+        return ts + frac
 
 class Interval:
     '''

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.66 2004-03-21 23:39:08 richard Exp $
+# $Id: back_metakit.py,v 1.67 2004-03-22 07:45:39 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -39,7 +39,7 @@ This backend has some behaviour specific to metakit:
 __docformat__ = 'restructuredtext'
 # Enable this flag to break backwards compatibility (i.e. can't read old
 # databases) but comply with more roundup features, like adding NULL support.
-BACKWARDS_COMPATIBLE = True
+BACKWARDS_COMPATIBLE = 1
 
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit

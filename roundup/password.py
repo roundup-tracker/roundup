@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.11 2004-02-11 23:55:08 richard Exp $
+# $Id: password.py,v 1.12 2004-03-22 07:45:39 richard Exp $
 
 """Password handling (encoding, decoding).
 """
@@ -82,13 +82,15 @@ class Password:
     default_scheme = 'SHA'        # new encryptions use this scheme
     pwre = re.compile(r'{(\w+)}(.+)')
 
-    def __init__(self, plaintext=None, scheme=None):
+    def __init__(self, plaintext=None, scheme=None, encrypted=None):
         '''Call setPassword if plaintext is not None.'''
         if scheme is None:
             scheme = self.default_scheme
         if plaintext is not None:
             self.password = encodePassword(plaintext, self.default_scheme)
             self.scheme = self.default_scheme
+        elif encrypted is not None:
+            self.unpack(encrypted)
         else:
             self.password = None
             self.scheme = self.default_scheme

@@ -34,19 +34,21 @@ class Indexer(Indexer):
 
         # first, find the id of the (classname, itemid, property)
         a = self.db.arg
-        sql = 'select _textid from _textids where _class=%s and '\
+        sql = 'select _textid from __textids where _class=%s and '\
             '_itemid=%s and _prop=%s'%(a, a, a)
         self.db.cursor.execute(sql, identifier)
         r = self.db.cursor.fetchone()
         if not r:
-            id = self.db.newid('_textids')
-            sql = 'insert into _textids (_textid, _class, _itemid, _prop)'\
+            id = self.db.newid('__textids')
+            sql = 'insert into __textids (_textid, _class, _itemid, _prop)'\
                 ' values (%s, %s, %s, %s)'%(a, a, a, a)
             self.db.cursor.execute(sql, (id, ) + identifier)
+            self.db.cursor.execute('select max(_textid) from __textids')
+            id = self.db.cursor.fetchone()[0]
         else:
             id = int(r[0])
             # clear out any existing indexed values
-            sql = 'delete from _words where _textid=%s'%a
+            sql = 'delete from __words where _textid=%s'%a
             self.db.cursor.execute(sql, (id, ))
 
         # ok, find all the words in the text
@@ -60,11 +62,11 @@ class Indexer(Indexer):
         # for each word, add an entry in the db
         for word in words:
             # don't dupe
-            sql = 'select * from _words where _word=%s and _textid=%s'%(a, a)
+            sql = 'select * from __words where _word=%s and _textid=%s'%(a, a)
             self.db.cursor.execute(sql, (word, id))
             if self.db.cursor.fetchall():
                 continue
-            sql = 'insert into _words (_word, _textid) values (%s, %s)'%(a, a)
+            sql = 'insert into __words (_word, _textid) values (%s, %s)'%(a, a)
             self.db.cursor.execute(sql, (word, id))
 
     def find(self, wordlist):
@@ -75,13 +77,13 @@ class Indexer(Indexer):
         l = [word.upper() for word in wordlist if 26 > len(word) > 2]
 
         a = ','.join([self.db.arg] * len(l))
-        sql = 'select distinct(_textid) from _words where _word in (%s)'%a
+        sql = 'select distinct(_textid) from __words where _word in (%s)'%a
         self.db.cursor.execute(sql, tuple(l))
         r = self.db.cursor.fetchall()
         if not r:
             return {}
         a = ','.join([self.db.arg] * len(r))
-        sql = 'select _class, _itemid, _prop from _textids '\
+        sql = 'select _class, _itemid, _prop from __textids '\
             'where _textid in (%s)'%a
         self.db.cursor.execute(sql, tuple([int(id) for (id,) in r]))
         # self.search_index has the results as {some id: identifier} ...

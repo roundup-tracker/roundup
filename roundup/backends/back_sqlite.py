@@ -1,19 +1,43 @@
-# $Id: back_sqlite.py,v 1.19 2004-03-21 23:45:44 richard Exp $
+# $Id: back_sqlite.py,v 1.20 2004-03-22 07:45:39 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
+
+
+NOTE: we use the rdbms_common table creation methods which define datatypes
+for the columns, but sqlite IGNORES these specifications.
 '''
 __docformat__ = 'restructuredtext'
 
 import os, base64, marshal
 
-from roundup import hyperdb
+from roundup import hyperdb, date, password
 from roundup.backends import rdbms_common
 import sqlite
 
 class Database(rdbms_common.Database):
     # char to use for positional arguments
     arg = '%s'
+
+    hyperdb_to_sql_value = {
+        hyperdb.String : str,
+        hyperdb.Date   : lambda x: x.serialise(),
+        hyperdb.Link   : int,
+        hyperdb.Interval  : lambda x: x.serialise(),
+        hyperdb.Password  : str,
+        hyperdb.Boolean   : int,
+        hyperdb.Number    : lambda x: x,
+    }
+    sql_to_hyperdb_value = {
+        hyperdb.String : str,
+        hyperdb.Date   : lambda x: date.Date(str(x)),
+#        hyperdb.Link   : int,      # XXX numeric ids
+        hyperdb.Link   : str,
+        hyperdb.Interval  : date.Interval,
+        hyperdb.Password  : lambda x: password.Password(encrypted=x),
+        hyperdb.Boolean   : int,
+        hyperdb.Number    : rdbms_common._num_cvt,
+    }
 
     def sql_open_connection(self):
         db = os.path.join(self.config.DATABASE, 'db')
@@ -48,13 +72,13 @@ class Database(rdbms_common.Database):
                 'sessions(session_key)')
 
         # full-text indexing store
-        self.cursor.execute('CREATE TABLE _textids (_class varchar, '
-            '_itemid varchar, _prop varchar, _textid integer) ')
-        self.cursor.execute('CREATE TABLE _words (_word varchar, '
+        self.cursor.execute('CREATE TABLE __textids (_class varchar, '
+            '_itemid varchar, _prop varchar, _textid integer primary key) ')
+        self.cursor.execute('CREATE TABLE __words (_word varchar, '
             '_textid integer)')
-        self.cursor.execute('CREATE INDEX words_word_ids ON _words(_word)')
+        self.cursor.execute('CREATE INDEX words_word_ids ON __words(_word)')
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
-        self.cursor.execute(sql, ('_textids', 1))
+        self.cursor.execute(sql, ('__textids', 1))
 
     def add_actor_column(self):
         # update existing tables to have the new actor column
@@ -187,6 +211,46 @@ class Database(rdbms_common.Database):
             if entry[1] == index_name:
                 return 1
         return 0
+
+    # old-skool id generation
+    def newid(self, classname):
+        ''' Generate a new id for the given class
+        '''
+        # get the next ID
+        sql = 'select num from ids where name=%s'%self.arg
+        if __debug__:
+            print >>hyperdb.DEBUG, 'newid', (self, sql, classname)
+        self.cursor.execute(sql, (classname, ))
+        newid = int(self.cursor.fetchone()[0])
+
+        # update the counter
+        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        vals = (int(newid)+1, classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'newid', (self, sql, vals)
+        self.cursor.execute(sql, vals)
+
+        # return as string
+        return str(newid)
+
+    def setid(self, classname, setid):
+        ''' Set the id counter: used during import of database
+
+        We add one to make it behave like the seqeunces in postgres.
+        '''
+        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        vals = (int(setid)+1, classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'setid', (self, sql, vals)
+        self.cursor.execute(sql, vals)
+
+    def create_class(self, spec):
+        rdbms_common.Database.create_class(self, spec)
+        sql = 'insert into ids (name, num) values (%s, %s)'
+        vals = (spec.classname, 1)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'create_class', (self, sql, vals)
+        self.cursor.execute(sql, vals)
 
 class sqliteClass:
     def filter(self, search_matches, filterspec, sort=(None,None),

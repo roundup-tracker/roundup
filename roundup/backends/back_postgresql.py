@@ -108,30 +108,31 @@ class Database(rdbms_common.Database):
             self.rollback()
             self.init_dbschema()
             self.sql("CREATE TABLE schema (schema TEXT)")
-            self.sql("CREATE TABLE ids (name VARCHAR(255), num INT4)")
-            self.sql("CREATE INDEX ids_name_idx ON ids(name)")
+            self.sql("CREATE TABLE dual (dummy integer)")
+            self.sql("insert into dual values (1)")
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
         # OTK store
-        self.cursor.execute('CREATE TABLE otks (otk_key VARCHAR(255), '
-            'otk_value VARCHAR(255), otk_time FLOAT(20))')
+        self.cursor.execute('''CREATE TABLE otks (otk_key VARCHAR(255),
+            otk_value VARCHAR(255), otk_time FLOAT(20))''')
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
-        self.cursor.execute('CREATE TABLE sessions (session_key VARCHAR(255), '
-            'session_time FLOAT(20), session_value VARCHAR(255))')
-        self.cursor.execute('CREATE INDEX sessions_key_idx ON '
-            'sessions(session_key)')
+        self.cursor.execute('''CREATE TABLE sessions (
+            session_key VARCHAR(255), session_time FLOAT(20),
+            session_value VARCHAR(255))''')
+        self.cursor.execute('''CREATE INDEX sessions_key_idx ON
+            sessions(session_key)''')
 
         # full-text indexing store
-        self.cursor.execute('CREATE TABLE _textids (_class VARCHAR(255), '
-            '_itemid VARCHAR(255), _prop VARCHAR(255), _textid INT4) ')
-        self.cursor.execute('CREATE TABLE _words (_word VARCHAR(30), '
-            '_textid INT4)')
-        self.cursor.execute('CREATE INDEX words_word_ids ON _words(_word)')
-        sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
-        self.cursor.execute(sql, ('_textids', 1))
+        self.cursor.execute('CREATE SEQUENCE ___textids_ids')
+        self.cursor.execute('''CREATE TABLE __textids (
+            _textid integer primary key, _class VARCHAR(255),
+            _itemid VARCHAR(255), _prop VARCHAR(255))''')
+        self.cursor.execute('''CREATE TABLE __words (_word VARCHAR(30), 
+            _textid integer)''')
+        self.cursor.execute('CREATE INDEX words_word_idx ON __words(_word)')
 
     def add_actor_column(self):
         # update existing tables to have the new actor column
@@ -155,16 +156,23 @@ class Database(rdbms_common.Database):
         return self.cursor.fetchone()[0]
 
     def create_class_table(self, spec):
-        cols, mls = self.determine_columns(spec.properties.items())
-        cols.append('id')
-        cols.append('__retired__')
-        scols = ',' . join(['"%s" VARCHAR(255)'%x for x in cols])
-        sql = 'CREATE TABLE "_%s" (%s)' % (spec.classname, scols)
+        sql = 'CREATE SEQUENCE _%s_ids'%spec.classname
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class_table', (self, sql)
         self.cursor.execute(sql)
-        self.create_class_table_indexes(spec)
-        return cols, mls
+
+        return rdbms_common.Database.create_class_table(self, spec)
+
+    def drop_class_table(self, cn):
+        sql = 'drop table _%s'%cn
+        if __debug__:
+            print >>hyperdb.DEBUG, 'drop_class', (self, sql)
+        self.cursor.execute(sql)
+
+        sql = 'drop sequence _%s_ids'%cn
+        if __debug__:
+            print >>hyperdb.DEBUG, 'drop_class', (self, sql)
+        self.cursor.execute(sql)
 
     def create_journal_table(self, spec):
         cols = ',' . join(['"%s" VARCHAR(255)'%x
@@ -184,6 +192,20 @@ class Database(rdbms_common.Database):
 
         self.cursor.execute(sql)
         self.create_multilink_table_indexes(spec, ml)
+
+    def newid(self, classname):
+        sql = "select nextval('_%s_ids') from dual"%classname
+        if __debug__:
+            print >>hyperdb.DEBUG, 'setid', (self, sql)
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()[0]
+
+    def setid(self, classname, setid):
+        sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
+        if __debug__:
+            print >>hyperdb.DEBUG, 'setid', (self, sql)
+        self.cursor.execute(sql)
+
 
 class Class(rdbms_common.Class):
     pass

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.18 2004-03-19 04:47:59 richard Exp $ 
+# $Id: db_test_base.py,v 1.19 2004-03-22 07:45:40 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -110,14 +110,20 @@ class DBTest(MyTestCase):
         i.set(id1, title='asfasd')
         self.assertNotEqual(i.get(id1, 'creator'), i.get(id1, 'actor'))
 
-    #
-    # basic operations
-    #
+    # ID number controls
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db.issue.create(title="eggs", status='2')
         self.assertNotEqual(id1, id2)
+    def testIDSetting(self):
+        # XXX numeric ids
+        self.db.setid('issue', 10)
+        id2 = self.db.issue.create(title="eggs", status='2')
+        self.assertEqual('11', id2)
 
+    #
+    # basic operations
+    #
     def testEmptySet(self):
         id1 = self.db.issue.create(title="spam", status='1')
         self.db.issue.set(id1)
@@ -587,24 +593,18 @@ class DBTest(MyTestCase):
 
         # test disabling journalling
         # ... get the last entry
-        time.sleep(1)
-        entry = self.db.getjournal('issue', '1')[-1]
-        (x, date_stamp, x, x, x) = entry
+        jlen = len(self.db.getjournal('user', '1'))
         self.db.issue.disableJournalling()
         self.db.issue.set('1', title='hello world')
         self.db.commit()
-        entry = self.db.getjournal('issue', '1')[-1]
-        (x, date_stamp2, x, x, x) = entry
         # see if the change was journalled when it shouldn't have been
-        self.assertEqual(date_stamp, date_stamp2)
-        time.sleep(1)
+        self.assertEqual(jlen,  len(self.db.getjournal('user', '1')))
+        jlen = len(self.db.getjournal('issue', '1'))
         self.db.issue.enableJournalling()
         self.db.issue.set('1', title='hello world 2')
         self.db.commit()
-        entry = self.db.getjournal('issue', '1')[-1]
-        (x, date_stamp2, x, x, x) = entry
         # see if the change was journalled
-        self.assertNotEqual(date_stamp, date_stamp2)
+        self.assertNotEqual(jlen,  len(self.db.getjournal('issue', '1')))
 
     def testJournalPreCommit(self):
         id = self.db.user.create(username="mary")
