@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.86 2002-09-26 03:04:24 richard Exp $
+#$Id: back_anydbm.py,v 1.87 2002-10-04 06:30:30 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1169,7 +1169,7 @@ class Class(hyperdb.Class):
 
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
-                    if node[propname] is not None:
+                    if node.has_key(propname) and node[propname] is not None:
                         self.db.addjournal(link_class, node[propname], 'unlink',
                             (self.classname, nodeid, propname))
 

@@ -37,6 +37,8 @@ pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
 pending security  use digital signatures in mailgw
 pending admin     "roundup-admin list" should list all the classnames
+pending admin     the find command in roundup-admin could do more than equality
+                  checks != for instance. Also the ability to check =None.
 pending web       I18N
 pending web       Better message summary display (feature request #520244)
 pending web       Navigating around the issues (feature request #559149)
