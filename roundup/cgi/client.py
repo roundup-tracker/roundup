@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.153 2004-01-20 03:58:38 richard Exp $
+# $Id: client.py,v 1.154 2004-01-20 05:55:24 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1778,7 +1778,7 @@ You should then receive another email with the new password.
                                 props['name'] = fn
                             # use this info as the type/filename properties
                             if propdef.has_key('type'):
-                                if hasattr(value, 'type'):
+                                if hasattr(value, 'type') and value.type:
                                     props['type'] = value.type
                                 elif mimetypes.guess_type(fn)[0]:
                                     props['type'] = mimetypes.guess_type(fn)[0]
