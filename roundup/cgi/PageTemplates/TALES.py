@@ -13,13 +13,13 @@
 # Modified for Roundup:
 # 
 # 1. changed imports to import from roundup.cgi
-# 2. implemented ustr as atr
+# 2. implemented ustr as str
 """TALES
 
 An implementation of a generic TALES engine
 """
 
-__version__='$Revision: 1.7 $'[11:-2]
+__version__='$Revision: 1.8 $'[11:-2]
 
 import re, sys
 from roundup.cgi import ZTUtils
