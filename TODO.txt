@@ -1,6 +1,7 @@
 This file has been re-purposed to contain specifically the items that need
 doing before the next release:
 
+- add tests for group-by-multilink so I finally implement it for the RDBMSes
 - full coverage analysis for unit tests
 - migrate to numeric ID values (fixes bug 817217)
 

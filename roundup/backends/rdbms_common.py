@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.72 2003-12-05 09:47:46 richard Exp $
+# $Id: rdbms_common.py,v 1.73 2004-01-20 03:58:38 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1788,9 +1788,9 @@ class Class(hyperdb.Class):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
 
         # first, links
-        where = ['__retired__ = %s']
-        allvalues = (0,)
         a = self.db.arg
+        where = ['__retired__ <> %s'%a]
+        allvalues = (1,)
         for prop, values in propspec:
             if not isinstance(props[prop], hyperdb.Link):
                 continue
@@ -1821,7 +1821,8 @@ class Class(hyperdb.Class):
                 s = ','.join([a]*len(values))
             tables.append('select nodeid from %s_%s where linkid in (%s)'%(
                 self.classname, prop, s))
-        sql = '\nunion\n'.join(tables)
+
+        sql = '\nintersect\n'.join(tables)
         self.db.sql(sql, allvalues)
         l = [x[0] for x in self.db.sql_fetchall()]
         if __debug__:

@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.16 2003-01-14 03:56:44 richard Exp $
+#$Id: indexer.py,v 1.17 2004-01-20 03:58:38 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -146,7 +146,6 @@ class Indexer:
         if not hits:
             return {}
 
-        #designator_propname = {'msg': 'messages', 'file': 'files'}
         designator_propname = {}
         for nm, propclass in klass.getprops().items():
             if isinstance(propclass, Link) or isinstance(propclass, Multilink):
@@ -154,7 +153,7 @@ class Indexer:
 
         # build a dictionary of nodes and their associated messages
         # and files
-        nodeids = {}    # this is the answer
+        nodeids = {}      # this is the answer
         propspec = {}     # used to do the klass.find
         for propname in designator_propname.values():
             propspec[propname] = {}   # used as a set (value doesn't matter)

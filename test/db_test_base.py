@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.12 2003-12-10 01:40:51 richard Exp $ 
+# $Id: db_test_base.py,v 1.13 2004-01-20 03:58:38 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -580,20 +580,20 @@ class DBTest(MyTestCase):
         # we should have the create and last set entries now
         self.assertEqual(jlen-1, len(self.db.getjournal('issue', id)))
 
-    def testSearching(self):
-        self.db.file.create(content='hello', type="text/plain")
-        self.db.file.create(content='world', type="text/frozz",
+    def testIndexerSearching(self):
+        f1 = self.db.file.create(content='hello', type="text/plain")
+        f2 = self.db.file.create(content='world', type="text/frozz",
             comment='blah blah')
-        self.db.issue.create(files=['1', '2'], title="flebble plop")
-        self.db.issue.create(title="flebble frooz")
+        i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
+        i2 = self.db.issue.create(title="flebble frooz")
         self.db.commit()
         self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
-            {'1': {'files': ['1']}})
+            {i1: {'files': [f1]}})
         self.assertEquals(self.db.indexer.search(['world'], self.db.issue), {})
         self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
-            {'2': {}})
+            {i2: {}})
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
-            {'2': {}, '1': {}})
+            {i1: {}, i2: {}})
 
     def testReindexing(self):
         self.db.issue.create(title="frooz")

@@ -50,6 +50,7 @@ Fixed:
 - the mail gateway now searches recursively for the text/plain and the
   attachments of a message (sf bug 841241).
 - fixed display of feedback messages in some situations (sf bug 739545)
+- use supplied content-type on file uploads before trying filename)
 
 Cleanup:
 - replace curuserid attribute on Database with the extended getuid() method.
