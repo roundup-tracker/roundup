@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.39 2001-11-08 04:29:59 richard Exp $
+# $Id: roundup-admin,v 1.40 2001-11-08 04:42:00 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -38,8 +38,8 @@ class CommandDict(UserDict.UserDict):
     '''
     _marker = []
     def get(self, key, default=_marker):
-        d = self.data.get(key, default)
-        if d is not default: return [(key, d)]
+        if self.data.has_key(key):
+            return [(key, self.data[key])]
         keylist = self.data.keys()
         keylist.sort()
         l = []
@@ -82,9 +82,13 @@ Options:
         commands = ['']
         for command in self.commands.values():
             h = command.__doc__.split('\n')[0]
-            commands.append(h[7:])
+            commands.append(' '+h[7:])
         commands.sort()
-        print '\n '.join(commands)
+        commands.append(
+'Commands may be abbreviated as long as the abbreviation matches only one')
+        commands.append('command, e.g. l == li == lis == list.')
+        print '\n'.join(commands)
+        print 
 
     def help_all(self):
         print '''
@@ -185,8 +189,8 @@ Command help:
         print 'Back ends:', ', '.join(backends)
 
 
-    def do_init(self, instance_home, args):
-        '''Usage: init [template [backend [admin password]]]
+    def do_initialise(self, instance_home, args):
+        '''Usage: initialise [template [backend [admin password]]]
         Initialise a new Roundup instance.
 
         The command will prompt for the instance home directory (if not supplied
@@ -319,8 +323,8 @@ Command help:
             print cl.find(**{propname: value})
         return 0
 
-    def do_spec(self, args):
-        '''Usage: spec classname
+    def do_specification(self, args):
+        '''Usage: specification classname
         Show the properties for a classname.
 
         This lists the properties for a given class.
@@ -721,6 +725,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2001/11/08 04:29:59  richard
+# roundup-admin now accepts abbreviated commands (eg. l = li = lis = list)
+# [thanks Engelbert Gruber for the inspiration]
+#
 # Revision 1.38  2001/11/05 23:45:40  richard
 # Fixed newuser_action so it sets the cookie with the unencrypted password.
 # Also made it present nicer error messages (not tracebacks).
