@@ -4,6 +4,8 @@ places in Roundup code.
 
 __docformat__ = 'restructuredtext'
 
+import os
+
 class TruthDict:
     '''Returns True for valid keys, False for others.
     '''
@@ -17,5 +19,9 @@ class TruthDict:
 
     def __getitem__(self, name):
         return self.keys.has_key(name)
+
+def ensureParentsExist(dest):
+    if not os.path.exists(os.path.dirname(dest)):
+        os.makedirs(os.path.dirname(dest))
 
 # vim: set et sts=4 sw=4 :

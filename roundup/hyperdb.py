@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.107 2004-11-25 22:51:06 richard Exp $
+# $Id: hyperdb.py,v 1.108 2004-12-18 11:12:03 jlgijsbers Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -26,6 +26,7 @@ import sys, os, time, re, shutil
 
 # roundup modules
 import date, password
+from support import ensureParentsExist
 
 #
 # Types
@@ -746,27 +747,26 @@ class FileClass:
         propnames.sort()
         return propnames
 
+    def exportFilename(self, dirname, nodeid):
+        subdir_filename = self.db.subdirFilename(self.classname, nodeid)
+        return os.path.join(dirname, self.classname+'-files', subdir_filename)
+
     def export_files(self, dirname, nodeid):
         ''' Export the "content" property as a file, not csv column
         '''
         source = self.db.filename(self.classname, nodeid)
-        x, filename = os.path.split(source)
-        x, subdir = os.path.split(x)
-        dest = os.path.join(dirname, self.classname+'-files', subdir, filename)
-        if not os.path.exists(os.path.dirname(dest)):
-            os.makedirs(os.path.dirname(dest))
-        shutil.copyfile(source, dest)
+
+        dest = self.exportFilename(dirname, nodeid)
+        ensureParentsExist(dest)
+        shutil.copyfile(source, dest)    
 
     def import_files(self, dirname, nodeid):
         ''' Import the "content" property as a file
         '''
+        source = self.exportFilename(dirname, nodeid)
+
         dest = self.db.filename(self.classname, nodeid, create=1)
-        x, filename = os.path.split(dest)
-        x, subdir = os.path.split(x)
-        source = os.path.join(dirname, self.classname+'-files', subdir,
-            filename)
-        if not os.path.exists(os.path.dirname(dest)):
-            os.makedirs(os.path.dirname(dest))
+        ensureParentsExist(dest)
         shutil.copyfile(source, dest)
 
 class Node:

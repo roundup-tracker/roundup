@@ -5,6 +5,7 @@ import re
 import psycopg
 
 from roundup import hyperdb
+from roundup.support import ensureParentsExist
 from roundup.backends import back_postgresql, tsearch2_setup, indexer_rdbms
 from roundup.backends.back_postgresql import db_create, db_nuke, db_command
 from roundup.backends.back_postgresql import pg_command, db_exists, Class, IssueClass, FileClass
@@ -198,11 +199,13 @@ class Indexer:
             
         return [(classname, nodeid) for nodeid in nodeids]
 
-# XXX: we can't reuse hyperdb.FileClass for importing/exporting, so file
-# contents will end up in CSV exports for now. Not sure whether this is
-# truly a problem. If it is, we should write an importer/exporter that
-# converts from the database to the filesystem and vice versa
-class FileClass(Class):
+class FileClass(hyperdb.FileClass, Class):
+    '''This class defines a large chunk of data. To support this, it has a
+       mandatory String property "content" which is typically saved off
+       externally to the hyperdb.
+
+       However, this implementation just stores it in the hyperdb.
+    '''
     def __init__(self, db, classname, **properties):
         '''The newly-created class automatically includes the "content" property.,
         '''
@@ -215,3 +218,22 @@ class FileClass(Class):
         if 'type' in self.getprops() and not propvalues.get('type'):
             propvalues['type'] = self.default_mime_type
         return Class.create(self, **propvalues)
+
+    def export_files(self, dirname, nodeid):
+        dest = self.exportFilename(dirname, nodeid)
+        ensureParentsExist(dest)
+        fp = open(dest, "w")
+        fp.write(self.get(nodeid, "content", default=''))
+        fp.close()
+
+    # XXX: this unfortunately sets the activity on the node to "now", causing
+    # testImportExport to fail. We either need to create a way to disable
+    # setting activity/actor or we need to override import_list so it already
+    # includes the "content" property. However, that would mean changing its
+    # call signature, as we need to know `dirname`.
+    def import_files(self, dirname, nodeid):
+        source = self.exportFilename(dirname, nodeid)
+
+        fp = open(source, "r")
+        self.set(nodeid, content=fp.read())
+        fp.close()

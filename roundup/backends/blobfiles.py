@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.17 2004-11-25 23:53:31 richard Exp $
+#$Id: blobfiles.py,v 1.18 2004-12-18 11:12:04 jlgijsbers Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -36,7 +36,20 @@ def files_in_dir(dir):
     return num_files
 
 class FileStorage:
-    """Store files in some directory structure"""
+    """Store files in some directory structure"""    
+    def subdirFilename(self, classname, nodeid, property=None):
+        """Determine what the filename and subdir for nodeid + classname is."""
+        if property:
+            name = '%s%s.%s'%(classname, nodeid, property)
+        else:
+            # roundupdb.FileClass never specified the property name, so don't 
+            # include it
+            name = '%s%s'%(classname, nodeid)
+        
+        # have a separate subdir for every thousand messages
+        subdir = str(int(nodeid) / 1000)
+        return os.path.join(subdir, name)
+    
     def filename(self, classname, nodeid, property=None, create=0):
         '''Determine what the filename for the given node and optionally 
         property is.
@@ -45,16 +58,8 @@ class FileStorage:
         usual place, or it could be in a temp file pre-commit *or* it
         could be in an old-style, backwards-compatible flat directory.
         '''
-        if property:
-            name = '%s%s.%s'%(classname, nodeid, property)
-        else:
-            # roundupdb.FileClass never specified the property name, so don't 
-            # include it
-            name = '%s%s'%(classname, nodeid)
-
-        # have a separate subdir for every thousand messages
-        subdir = str(int(nodeid) / 1000)
-        filename  = os.path.join(self.dir, 'files', classname, subdir, name)
+        filename  = os.path.join(self.dir, 'files', classname,
+                                 self.subdirFilename(classname, nodeid, property))
         if create or os.path.exists(filename):
             return filename
 
