@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.4 2002-07-09 03:02:52 richard Exp $
+#$Id: indexer.py,v 1.5 2002-07-09 04:19:09 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -25,29 +25,35 @@ import os, shutil, re, mimetypes, marshal, zlib, errno
 class Indexer:
     ''' Indexes information from roundup's hyperdb to allow efficient
         searching.
+
+        Three structures are created by the indexer:
+          files   {identifier: (fileid, wordcount)}
+          words   {word: {fileid: count}}
+          fileids {fileid: identifier}
     '''
     def __init__(self, db_path):
-        indexdb_path = os.path.join(db_path, 'indexes')
-        self.indexdb = os.path.join(indexdb_path, 'index.db')
+        self.indexdb_path = os.path.join(db_path, 'indexes')
+        self.indexdb = os.path.join(self.indexdb_path, 'index.db')
         self.reindex = 0
         self.casesensitive = 0
         self.quiet = 9
 
         # see if we need to reindex because of a change in code
-        if (not os.path.exists(indexdb_path) or
-                not os.path.exists(os.path.join(indexdb_path, 'version'))):
+        if (not os.path.exists(self.indexdb_path) or
+                not os.path.exists(os.path.join(self.indexdb_path, 'version'))):
             # TODO: if the version file exists (in the future) we'll want to
             # check the value in it - for now the file itself is a flag
-            if os.path.exists(indexdb_path):
-                shutil.rmtree(indexdb_path)
-            os.makedirs(indexdb_path)
-            os.chmod(indexdb_path, 0775)
-            open(os.path.join(indexdb_path, 'version'), 'w').write('1\n')
+            self.force_reindex()
 
-            # we need to reindex
-            self.reindex = 1
-        else:
-            self.reindex = 0
+    def force_reindex(self):
+        '''Force a reindex condition
+        '''
+        if os.path.exists(self.indexdb_path):
+            shutil.rmtree(self.indexdb_path)
+        os.makedirs(self.indexdb_path)
+        os.chmod(self.indexdb_path, 0775)
+        open(os.path.join(self.indexdb_path, 'version'), 'w').write('1\n')
+        self.reindex = 1
 
     def should_reindex(self):
         '''Should we reindex?
@@ -61,16 +67,9 @@ class Indexer:
         # make sure the index is loaded
         self.load_index()
 
-        # Is file eligible for (re)indexing?
+        # remove old entries for this identifier
         if self.files.has_key(identifier):
-            # Reindexing enabled, cleanup dicts
-            if self.reindex:
-                self.purge_entry(identifier, self.files, self.words)
-            else:
-                # DO NOT reindex this file
-                if self.quiet < 5:
-                    print "Not reindexing", identifier
-                return 0
+            self.purge_entry(identifier)
 
         # split into words
         words = self.splitter(text, mime_type)
@@ -281,19 +280,20 @@ class Indexer:
             pickle_fh.write(zlib.compress(pickle_str))
             os.chmod(filename, 0664)
 
-    def purge_entry(self, fname, file_dct, word_dct):
+    def purge_entry(self, identifier):
         ''' Remove a file from file index and word index
         '''
-        try:        # The easy part, cleanup the file index
-            file_index = file_dct[fname]
-            del file_dct[fname]
-        except KeyError:
-            pass    # We'll assume we only encounter KeyError's
+        if not self.files.has_key(identifier):
+            return
+
+        file_index = self.files[identifier][0]
+        del self.files[identifier]
+        del self.fileids[file_index]
+
         # The much harder part, cleanup the word index
-        for word, occurs in word_dct.items():
+        for key, occurs in self.words.items():
             if occurs.has_key(file_index):
                 del occurs[file_index]
-                word_dct[word] = occurs
 
     def index_loaded(self):
         return (hasattr(self,'fileids') and hasattr(self,'files') and
@@ -301,6 +301,22 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.4  2002/07/09 03:02:52  richard
+#More indexer work:
+#- all String properties may now be indexed too. Currently there's a bit of
+#  "issue" specific code in the actual searching which needs to be
+#  addressed. In a nutshell:
+#  + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+#        file = FileClass(db, "file", name=String(), type=String(),
+#            comment=String(indexme="yes"))
+#  + the comment will then be indexed and be searchable, with the results
+#    related back to the issue that the file is linked to
+#- as a result of this work, the FileClass has a default MIME type that may
+#  be overridden in a subclass, or by the use of a "type" property as is
+#  done in the default templates.
+#- the regeneration of the indexes (if necessary) is done once the schema is
+#  set up in the dbinit.
+#
 #Revision 1.3  2002/07/08 06:58:15  richard
 #cleaned up the indexer code:
 # - it splits more words out (much simpler, faster splitter)

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.95 2002-07-08 15:32:06 gmcm Exp $
+# $Id: htmltemplate.py,v 1.96 2002-07-09 04:19:09 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -874,7 +874,7 @@ class IndexTemplate(TemplateFunctions):
             matches = None
             if nodeids is None:
                 if search_text != '':
-                    matches = self.client.indexer.search(
+                    matches = self.db.indexer.search(
                         search_text.split(' '), self.cl)
                 nodeids = self.cl.filter(matches, filterspec, sort, group)
             for nodeid in nodeids[startwith:startwith+pagesize]:
@@ -1237,6 +1237,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.95  2002/07/08 15:32:06  gmcm
+# Pagination of index pages.
+# New search form.
+#
 # Revision 1.94  2002/06/27 15:38:53  gmcm
 # Fix the cycles (a clear method, called after render, that removes
 # the bound methods from the globals dict).

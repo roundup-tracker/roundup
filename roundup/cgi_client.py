@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.133 2002-07-08 15:32:05 gmcm Exp $
+# $Id: cgi_client.py,v 1.134 2002-07-09 04:19:09 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -26,7 +26,6 @@ import binascii, Cookie, time, random
 
 import roundupdb, htmltemplate, date, hyperdb, password
 from roundup.i18n import _
-from roundup.indexer import Indexer
 
 class Unauthorised(ValueError):
     pass
@@ -72,10 +71,6 @@ class Client:
         except ValueError:
             # someone gave us a non-int debug level, turn it off
             self.debug = 0
-
-        # used for searching the indexes
-        self.indexer = Indexer('%s/db'%instance.INSTANCE_HOME)
-
 
     def getuid(self):
         try:
@@ -1459,6 +1454,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.133  2002/07/08 15:32:05  gmcm
+# Pagination of index pages.
+# New search form.
+#
 # Revision 1.132  2002/07/08 07:26:14  richard
 # ehem
 #

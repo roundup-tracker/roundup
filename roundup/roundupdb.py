@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.60 2002-07-09 03:02:52 richard Exp $
+# $Id: roundupdb.py,v 1.61 2002-07-09 04:19:09 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -313,7 +313,7 @@ class IssueClass(Class):
         dictionary attempts to specify any of these properties or a
         "creation" or "activity" property, a ValueError is raised."""
         if not properties.has_key('title'):
-            properties['title'] = hyperdb.String()
+            properties['title'] = hyperdb.String(indexme='yes')
         if not properties.has_key('messages'):
             properties['messages'] = hyperdb.Multilink("msg")
         if not properties.has_key('files'):
@@ -691,6 +691,22 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2002/07/09 03:02:52  richard
+# More indexer work:
+# - all String properties may now be indexed too. Currently there's a bit of
+#   "issue" specific code in the actual searching which needs to be
+#   addressed. In a nutshell:
+#   + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+#         file = FileClass(db, "file", name=String(), type=String(),
+#             comment=String(indexme="yes"))
+#   + the comment will then be indexed and be searchable, with the results
+#     related back to the issue that the file is linked to
+# - as a result of this work, the FileClass has a default MIME type that may
+#   be overridden in a subclass, or by the use of a "type" property as is
+#   done in the default templates.
+# - the regeneration of the indexes (if necessary) is done once the schema is
+#   set up in the dbinit.
+#
 # Revision 1.59  2002/06/18 03:55:25  dman13
 # Fixed name/address display problem introduced by an earlier change.
 # (instead of "name<addr>" display "name <addr>")

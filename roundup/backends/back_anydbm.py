@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.39 2002-07-09 03:02:52 richard Exp $
+#$Id: back_anydbm.py,v 1.40 2002-07-09 04:19:09 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -69,8 +69,10 @@ class Database(FileStorage, hyperdb.Database):
     def post_init(self):
         """Called once the schema initialisation has finished."""
         # reindex the db if necessary
-        if not self.indexer.should_reindex():
-            return
+        if self.indexer.should_reindex():
+            self.reindex()
+
+    def reindex(self):
         for klass in self.classes.values():
             for nodeid in klass.list():
                 klass.index(nodeid)
@@ -507,6 +509,22 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.39  2002/07/09 03:02:52  richard
+#More indexer work:
+#- all String properties may now be indexed too. Currently there's a bit of
+#  "issue" specific code in the actual searching which needs to be
+#  addressed. In a nutshell:
+#  + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+#        file = FileClass(db, "file", name=String(), type=String(),
+#            comment=String(indexme="yes"))
+#  + the comment will then be indexed and be searchable, with the results
+#    related back to the issue that the file is linked to
+#- as a result of this work, the FileClass has a default MIME type that may
+#  be overridden in a subclass, or by the use of a "type" property as is
+#  done in the default templates.
+#- the regeneration of the indexes (if necessary) is done once the schema is
+#  set up in the dbinit.
+#
 #Revision 1.38  2002/07/08 06:58:15  richard
 #cleaned up the indexer code:
 # - it splits more words out (much simpler, faster splitter)

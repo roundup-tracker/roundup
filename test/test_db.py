@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.24 2002-07-09 03:02:53 richard Exp $ 
+# $Id: test_db.py,v 1.25 2002-07-09 04:19:09 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -314,8 +314,29 @@ class anydbmDBTestCase(MyTestCase):
             {'2': {}})
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'2': {}, '1': {}})
-        self.assertEquals(self.db.indexer.search(['blah'], self.db.issue),
-            {'1': {'files': ['2']}})
+
+    def testReindexing(self):
+        self.db.issue.create(title="frooz")
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
+            {'1': {}})
+        self.db.issue.set('1', title="dooble")
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['dooble'], self.db.issue),
+            {'1': {}})
+        self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue), {})
+
+    def testForcedReindexing(self):
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
+            {'1': {}})
+        self.db.indexer.quiet = 1
+        self.db.indexer.force_reindex()
+        self.db.post_init()
+        self.db.indexer.quiet = 9
+        self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
+            {'1': {}})
 
 class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
@@ -419,6 +440,22 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/07/09 03:02:53  richard
+# More indexer work:
+# - all String properties may now be indexed too. Currently there's a bit of
+#   "issue" specific code in the actual searching which needs to be
+#   addressed. In a nutshell:
+#   + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+#         file = FileClass(db, "file", name=String(), type=String(),
+#             comment=String(indexme="yes"))
+#   + the comment will then be indexed and be searchable, with the results
+#     related back to the issue that the file is linked to
+# - as a result of this work, the FileClass has a default MIME type that may
+#   be overridden in a subclass, or by the use of a "type" property as is
+#   done in the default templates.
+# - the regeneration of the indexes (if necessary) is done once the schema is
+#   set up in the dbinit.
+#
 # Revision 1.23  2002/06/20 23:51:48  richard
 # Cleaned up the hyperdb tests
 #

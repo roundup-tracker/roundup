@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.15 2002-06-17 23:14:44 richard Exp $
+# $Id: admin.py,v 1.16 2002-07-09 04:19:09 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -964,6 +964,17 @@ Date format is "YYYY-MM-DD" eg:
         self.db.pack(pack_before)
         return 0
 
+    def do_reindex(self, args):
+        '''Usage: reindex
+        Re-generate an instance's search indexes.
+
+        This will re-generate the search indexes for an instance. This will
+        typically happen automatically.
+        '''
+        self.db.indexer.force_reindex()
+        self.db.reindex()
+        return 0
+
     def run_command(self, args):
         '''Run a single command
         '''
@@ -1114,6 +1125,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/06/17 23:14:44  richard
+# . #569415 ] {version}
+#
 # Revision 1.14  2002/06/11 06:41:50  richard
 # Removed prompt for admin email in initialisation.
 #
