@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.38 2004-02-15 21:44:02 richard Exp $
+$Id: roundup_server.py,v 1.39 2004-02-15 21:55:10 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -69,17 +69,6 @@ ag0GAwxkrlKp5vP5fT7ulMlk6XRar9dLpVIUXi6Xb5Hxa1wul0ajKZVKsVjM7XYXCoVOp3OVPJvN
 AoFAtVo1m825XO7hSODOYrH4kHbxxGAwwODBGI/H6DBs5LNara7yl8slGjIcDsHpdrunU6PRCAP2
 r3fPdUcIYeyEfLSAJ0LeAUZHCAt8Al/8/kLIEWDB5YDj0wm8fAP6fVfo
 '''.strip()))
-
-class RoundupHTTPServer(SafeLogging, BaseHTTPServer.HTTPServer):
-    def log_message(self, format, *args):
-        ''' Try to use the logging package, otherwise *safely* log to
-            stderr.
-        '''
-        try:
-            BaseHTTPServer.HTTPServer.log_message(self, format, *args)
-        except IOError:
-            # stderr is no longer viable, we can't log
-            pass
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = TRACKER_HOMES
@@ -223,6 +212,16 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             host, port = self.client_address
             return socket.getfqdn(host)
 
+    def log_message(self, format, *args):
+        ''' Try to *safely* log to stderr.
+        '''
+        try:
+            BaseHTTPServer.BaseHTTPRequestHandler.log_message(self,
+                format, *args)
+        except IOError:
+            # stderr is no longer viable
+            pass
+
 def error():
     exc_type, exc_value = sys.exc_info()[:2]
     return _('Error: %s: %s' % (exc_type, exc_value))
@@ -240,7 +239,8 @@ else:
 
     SvcShutdown = "ServiceShutdown"
 
-    class RoundupService(win32serviceutil.ServiceFramework, RoundupHTTPServer):
+    class RoundupService(win32serviceutil.ServiceFramework,
+            BaseHTTPServer.HTTPServer):
         ''' A Roundup standalone server for Win32 by Ewout Prangsma
         '''
         _svc_name_ = "Roundup Bug Tracker"
@@ -252,7 +252,7 @@ else:
                 # appending, unbuffered
                 sys.stdout = sys.stderr = open(LOGFILE, 'a', 0)
             win32serviceutil.ServiceFramework.__init__(self, args)
-            RoundupHTTPServer.__init__(self, self.address, 
+            BaseHTTPServer.HTTPServer.__init__(self, self.address, 
                 RoundupRequestHandler)
 
             # Create the necessary NT Event synchronization objects...
@@ -341,7 +341,7 @@ options:
  -p: sets the port to listen on (default: %(port)s)
  -u: sets the uid to this user after listening on the port
  -g: sets the gid to this group after listening on the port
- -l: sets a filename to log to (instead of stdout)
+ -l: sets a filename to log to (instead of stderr / stdout)
  -d: run the server in the background and on UN*X write the server's PID
      to the nominated file. The -l option *must* be specified if this
      option is.
@@ -445,7 +445,7 @@ def run(port=PORT, success_message=None):
         # 1024 if started as root
         address = (hostname, port)
         try:
-            httpd = RoundupHTTPServer(address, RoundupRequestHandler)
+            httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
         except socket.error, e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \
