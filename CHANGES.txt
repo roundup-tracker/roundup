@@ -11,6 +11,8 @@ are given with the most recent entry first.
 - fixed log / pid file path handling in roundup-server (sf bug 617981)
 - fixed old gadfly compatibiltiy problem, for sure this time (sf bug 612873)
 - https URLs from config now recognised as valid (sf bug 619829)
+- nicer display of tracker list in roundup-server (sf bug 619769)
+- fixed some missed renaming instance -> tracker (sf bug 619769)
 
 
 2002-10-02 0.5.0

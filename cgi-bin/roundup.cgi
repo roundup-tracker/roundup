@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.33 2002-09-23 00:50:32 richard Exp $
+# $Id: roundup.cgi,v 1.34 2002-10-08 03:31:09 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -32,7 +32,7 @@ import sys
 # documented below are set, they _override_ any configuation defaults
 # given in this file. 
 
-# TRACKER_HOMES is a list of instances, in the form
+# TRACKER_HOMES is a list of trackers, in the form
 # "NAME=DIR<sep>NAME2=DIR2<sep>...", where <sep> is the directory path
 # separator (";" on Windows, ":" on Unix). 
 
@@ -45,9 +45,9 @@ import sys
 # ROUNDUP_DEBUG is a debug level, currently only 0 (OFF) and 1 (ON) are
 # used in the code. Higher numbers means more debugging output. 
 
-# This indicates where the Roundup instance lives
+# This indicates where the Roundup tracker lives
 TRACKER_HOMES = {
-    'demo': '/var/roundup/instances/demo',
+    'demo': '/var/roundup/trackers/demo',
 }
 
 # Where to log debugging information to. Use an instance of DevNull if you
@@ -136,10 +136,10 @@ def main(out, err):
     path = string.split(os.environ.get('PATH_INFO', '/'), '/')
     request = RequestWrapper(out)
     request.path = os.environ.get('PATH_INFO', '/')
-    instance = path[1]
-    os.environ['TRACKER_NAME'] = instance
+    tracker = path[1]
+    os.environ['TRACKER_NAME'] = tracker
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
-    if TRACKER_HOMES.has_key(instance):
+    if TRACKER_HOMES.has_key(tracker):
         # redirect if we need a trailing '/'
         if len(path) == 2:
             request.send_response(301)
@@ -154,10 +154,10 @@ def main(out, err):
             request.end_headers()
             out.write('Moved Permanently')
         else:
-            instance_home = TRACKER_HOMES[instance]
-            instance = roundup.instance.open(instance_home)
+            tracker_home = TRACKER_HOMES[tracker]
+            tracker = roundup.instance.open(tracker_home)
             from roundup.cgi.client import Unauthorised, NotFound
-            client = instance.Client(instance, request, os.environ)
+            client = tracker.Client(tracker, request, os.environ)
             try:
                 client.main()
             except Unauthorised:
@@ -177,14 +177,15 @@ def main(out, err):
         request.send_header('Content-Type', 'text/html')
         request.end_headers()
         w = request.write
-        w(_('<html><head><title>Roundup instances index</title></head>\n'))
-        w(_('<body><h1>Roundup instances index</h1><ol>\n'))
+        w(_('<html><head><title>Roundup trackers index</title></head>\n'))
+        w(_('<body><h1>Roundup trackers index</h1><ol>\n'))
         homes = TRACKER_HOMES.keys()
         homes.sort()
-        for instance in homes:
-            w(_('<li><a href="%(instance_url)s/index">%(instance_name)s</a>\n')%{
-                'instance_url': os.environ['SCRIPT_NAME']+'/'+urllib.quote(instance),
-                'instance_name': cgi.escape(instance)})
+        for tracker in homes:
+            w(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
+                'tracker_url': os.environ['SCRIPT_NAME']+'/'+
+                               urllib.quote(tracker),
+                'tracker_name': cgi.escape(tracker)})
         w(_('</ol></body></html>'))
 
 #
