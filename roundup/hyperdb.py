@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.87.2.1 2003-09-04 23:09:48 richard Exp $
+# $Id: hyperdb.py,v 1.87.2.2 2003-10-24 22:54:06 richard Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -260,11 +260,6 @@ concrete backend Class.
         '''
         raise NotImplementedError
 
-    def getnodeids(self, classname, db=None):
-        '''Retrieve all the ids of the nodes for a particular Class.
-        '''
-        raise NotImplementedError
-
     def storefile(self, classname, nodeid, property, content):
         '''Store the content of the file in the database.
         
@@ -380,6 +375,11 @@ class Class:
         'cache' exists for backwards compatibility, and is not used.
         '''
         return Node(self, nodeid)
+
+    def getnodeids(self, db=None):
+        '''Retrieve all the ids of the nodes for a particular Class.
+        '''
+        raise NotImplementedError
 
     def set(self, nodeid, **propvalues):
         """Modify a property on an existing node of this class.
