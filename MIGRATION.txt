@@ -65,6 +65,13 @@ copy it from the roundup cgi-bin source directory again. Make sure you update
 the ROUNDUP_INSTANCE_HOMES after the copy.
 
 
+Nosy reactor
+------------
+The nosy reactor has also changed - copy the nosyreactor.py file from the core
+source roundup/templates/[schema]/detectors/nosyreactor.py to your instance
+home "detectors" directory.
+
+
 
 Migrating from 0.2.x to 0.3.x
 =============================
