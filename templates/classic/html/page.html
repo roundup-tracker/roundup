@@ -18,7 +18,19 @@
 <tr>
  <td class="page-header-left">&nbsp;</td>
  <td class="page-header-top">
-  <h2><span metal:define-slot="body_title">body title</span></h2>
+   <div id="body-title">
+     <h2><span metal:define-slot="body_title">body title</span></h2>
+   </div>
+   <div id="searchbox">
+     <form method="GET" action="issue">
+       <input type="hidden" name="@columns"
+              value="id,activity,title,creator,assignedto,status"/>
+       <input type="hidden" name="@sort" value="activity"/>
+       <input type="hidden" name="@group" value="priority"/>
+       <input id="search-text" name="@search_text" size="10"/>
+       <input type="submit" id="submit" name="submit" value="Search"/>
+     </form>
+  </div>
  </td>
 </tr>
 

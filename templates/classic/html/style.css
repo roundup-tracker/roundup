@@ -41,11 +41,28 @@ td.sidebar {
     .index-controls {
         display: none;
     }
+    #searchbox {
+        display: none;
+    }
 }
 
 td.page-header-top {
   padding: 5px;
   border-bottom: 1px solid #444;
+}
+
+div#body-title {
+  float: left;
+}
+
+
+div#searchbox {
+  float: right;
+  padding-top: 1em;
+}
+
+div#searchbox input#search-text {
+  width: 10em;
 }
 
 form {
