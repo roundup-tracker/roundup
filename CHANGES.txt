@@ -18,6 +18,7 @@ Fixed:
   if the request does not contain explicit @columns list
 - NumberHTMLProperty should return '' not "None" if not set (thanks
   William)
+- ensure multilink ordering in RDBMS backends (thanks Marcus Priesch)
 
 
 2004-10-15 0.7.8
