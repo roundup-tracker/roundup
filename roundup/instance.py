@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.32 2004-11-18 16:52:18 a1s Exp $
+# $Id: instance.py,v 1.33 2004-11-29 02:55:46 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -24,7 +24,7 @@ Backwards compatibility for the old-style "imported" trackers.
 __docformat__ = 'restructuredtext'
 
 import os
-from roundup import configuration, mailgw, rlog
+from roundup import configuration, mailgw
 from roundup import hyperdb, backends
 from roundup.cgi import client, templating
 

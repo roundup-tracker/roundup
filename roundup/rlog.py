@@ -45,7 +45,7 @@ class BasicLogging:
         LVL_WARNING: 'WARNING',
         LVL_ERROR: 'ERROR',
     }
-    level = LVL_INFO
+    level = LVL_ERROR
     loggers = {}
     file = None
     def getLogger(self, name):
