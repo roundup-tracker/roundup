@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.34 2004-10-08 05:37:44 richard Exp $
+# $Id: back_sqlite.py,v 1.35 2004-10-16 12:52:53 a1s Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -60,6 +60,11 @@ class Database(rdbms_common.Database):
 
         pysqlite will automatically BEGIN TRANSACTION for us.
         '''
+        # make sure the database directory exists
+        # database itself will be created by sqlite if needed
+        if not os.path.isdir(self.config.DATABASE):
+            os.makedirs(self.config.DATABASE)
+
         db = os.path.join(self.config.DATABASE, 'db')
         self.config.logging.getLogger('hyperdb').info('open database %r'%db)
         conn = sqlite.connect(db=db)
