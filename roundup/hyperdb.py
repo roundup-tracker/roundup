@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.30 2001-11-09 10:11:08 richard Exp $
+# $Id: hyperdb.py,v 1.31 2001-11-12 22:01:06 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -545,7 +545,7 @@ class Class:
             if node.has_key(self.db.RETIRED_FLAG):
                 continue
             for key, value in requirements.items():
-                if node[key].lower() != value:
+                if node[key] and node[key].lower() != value:
                     break
             else:
                 l.append(nodeid)
@@ -849,6 +849,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2001/11/09 10:11:08  richard
+#  . roundup-admin now handles all hyperdb exceptions
+#
 # Revision 1.29  2001/10/27 00:17:41  richard
 # Made Class.stringFind() do caseless matching.
 #

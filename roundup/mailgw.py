@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.30 2001-11-09 22:33:28 richard Exp $
+$Id: mailgw.py,v 1.31 2001-11-12 22:01:06 richard Exp $
 '''
 
 
@@ -138,7 +138,8 @@ class MailGW:
         if sendto:
             try:
                 self.handle_message(message)
-                return
+                sendto = [sendto[0][1]]
+                m = ['Subject: Well, it seemed to work', '', 'hi, mum!']
             except MailUsageError, value:
                 # bounce the message back to the sender with the usage message
                 fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
@@ -150,8 +151,7 @@ class MailGW:
             except:
                 # bounce the message back to the sender with the error message
                 sendto = [sendto[0][1]]
-                m = ['Subject: failed issue tracker submission']
-                m.append('')
+                m = ['Subject: failed issue tracker submission', '']
                 # TODO as attachments?
                 m.append('----  traceback of failure  ----')
                 s = cStringIO.StringIO()
@@ -516,6 +516,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2001/11/09 22:33:28  richard
+# More error handling fixes.
+#
 # Revision 1.29  2001/11/07 05:29:26  richard
 # Modified roundup-mailgw so it can read e-mails from a local mail spool
 # file. Truncates the spool file after parsing.

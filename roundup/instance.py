@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.3 2001-08-07 00:24:42 richard Exp $
+# $Id: instance.py,v 1.4 2001-11-12 22:01:06 richard Exp $
 
 ''' Currently this module provides one function: open. This function opens
 an instance.
 '''
 
-import imp
+import imp, os
 
 class Opener:
     def __init__(self):
@@ -29,6 +29,12 @@ class Opener:
         self.instances = {}
 
     def open(self, instance_home):
+        '''Open the instance.
+
+        Raise ValueError if the instance home doesn't exist.
+        '''
+        if not os.path.exists(instance_home):
+            raise ValueError, 'no such directory: "%s"'%instance_home
         if self.instances.has_key(instance_home):
             return imp.load_package(self.instances[instance_home],
                 instance_home)
@@ -46,6 +52,9 @@ del opener
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.2  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

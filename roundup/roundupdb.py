@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.16 2001-10-30 00:54:45 richard Exp $
+# $Id: roundupdb.py,v 1.17 2001-11-12 22:01:06 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -30,6 +30,7 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     if m is None:
         raise DesignatorError, '"%s" not a node designator'%designator
     return m.group(1), m.group(2)
+
 
 class Database:
     def getuid(self):
@@ -214,6 +215,12 @@ class FileClass(Class):
             d['content'] = hyperdb.String()
         return d
 
+class MessageSendError(RuntimeError):
+    pass
+
+class DetectorError(RuntimeError):
+    pass
+
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class):
     # configuration
@@ -266,17 +273,18 @@ class IssueClass(Class):
         r = {}
         for recipid in recipients:
             r[recipid] = 1
+        rlen = len(recipients)
 
         # figure the author's id, and indicate they've received the message
         authid = self.db.msg.get(msgid, 'author')
-        r[authid] = 1
 
-        sendto = []
         # ... but duplicate the message to the author as long as it's not
         # the anonymous user
         if (self.MESSAGES_TO_AUTHOR == 'yes' and
                 self.db.user.get(authid, 'username') != 'anonymous'):
-            sendto.append(authid)
+            if not r.has_key(authid):
+                recipients.append(authid)
+        r[authid] = 1
 
         # now figure the nosy people who weren't recipients
         nosy = self.get(nodeid, 'nosy')
@@ -286,46 +294,50 @@ class IssueClass(Class):
             # do...)
             if self.db.user.get(nosyid, 'username') == 'anonymous': continue
             if not r.has_key(nosyid):
-                sendto.append(nosyid)
                 recipients.append(nosyid)
 
-        if sendto:
-            # update the message's recipients list
-            self.db.msg.set(msgid, recipients=recipients)
+        # no new recipients
+        if rlen == len(recipients):
+            return
 
-            # send an email to the people who missed out
-            sendto = [self.db.user.get(i, 'address') for i in recipients]
-            cn = self.classname
-            title = self.get(nodeid, 'title') or '%s message copy'%cn
-            # figure author information
-            authname = self.db.user.get(authid, 'realname')
-            if not authname:
-                authname = self.db.user.get(authid, 'username')
-            authaddr = self.db.user.get(authid, 'address')
-            if authaddr:
-                authaddr = '<%s> '%authaddr
-            else:
-                authaddr = ''
-            # TODO attachments
-            m = ['Subject: [%s%s] %s'%(cn, nodeid, title)]
-            m.append('To: %s'%', '.join(sendto))
-            m.append('From: %s'%self.ISSUE_TRACKER_EMAIL)
-            m.append('Reply-To: %s'%self.ISSUE_TRACKER_EMAIL)
-            m.append('')
-            # add author information
-            m.append("%s %sadded the comment:"%(authname, authaddr))
-            m.append('')
-            # add the content
-            m.append(self.db.msg.get(msgid, 'content'))
-            # "list information" footer
-            m.append(self.email_footer(nodeid, msgid))
-            try:
-                smtp = smtplib.SMTP(self.MAILHOST)
-                smtp.sendmail(self.ISSUE_TRACKER_EMAIL, sendto, '\n'.join(m))
-            except socket.error, value:
-                return "Couldn't send confirmation email: mailhost %s"%value
-            except smtplib.SMTPException, value:
-                return "Couldn't send confirmation email: %s"%value
+        # update the message's recipients list
+        self.db.msg.set(msgid, recipients=recipients)
+
+        # send an email to the people who missed out
+        sendto = [self.db.user.get(i, 'address') for i in recipients]
+        cn = self.classname
+        title = self.get(nodeid, 'title') or '%s message copy'%cn
+        # figure author information
+        authname = self.db.user.get(authid, 'realname')
+        if not authname:
+            authname = self.db.user.get(authid, 'username')
+        authaddr = self.db.user.get(authid, 'address')
+        if authaddr:
+            authaddr = '<%s> '%authaddr
+        else:
+            authaddr = ''
+        # TODO attachments
+        m = ['Subject: [%s%s] %s'%(cn, nodeid, title)]
+        m.append('To: %s'%', '.join(sendto))
+        m.append('From: %s'%self.ISSUE_TRACKER_EMAIL)
+        m.append('Reply-To: %s'%self.ISSUE_TRACKER_EMAIL)
+        m.append('')
+        # add author information
+        m.append("%s %sadded the comment:"%(authname, authaddr))
+        m.append('')
+        # add the content
+        m.append(self.db.msg.get(msgid, 'content'))
+        # "list information" footer
+        m.append(self.email_footer(nodeid, msgid))
+        try:
+            smtp = smtplib.SMTP(self.MAILHOST)
+            smtp.sendmail(self.ISSUE_TRACKER_EMAIL, sendto, '\n'.join(m))
+        except socket.error, value:
+            raise MessageSendError, \
+                "Couldn't send confirmation email: mailhost %s"%value
+        except smtplib.SMTPException, value:
+            raise MessageSendError, \
+                 "Couldn't send confirmation email: %s"%value
 
     def email_footer(self, nodeid, msgid):
         ''' Add a footer to the e-mail with some useful information
@@ -339,6 +351,12 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/10/30 00:54:45  richard
+# Features:
+#  . #467129 ] Lossage when username=e-mail-address
+#  . #473123 ] Change message generation for author
+#  . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
+#
 # Revision 1.15  2001/10/23 01:00:18  richard
 # Re-enabled login and registration access after lopping them off via
 # disabling access for anonymous users.
