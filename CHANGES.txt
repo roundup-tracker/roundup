@@ -12,6 +12,7 @@ Fixed:
 - fixed -g arg to roundup-server (sf bug 973946)
 - better roundup-server usage string (sf bug 973352)
 - include "context" always, as documented (sf bug 965447)
+- fixed REMOTE_USER (external HTTP Basic auth) (sf bug 977309)
 
 
 2004-06-10 0.7.4

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176.2.1 2004-05-27 21:52:44 richard Exp $
+# $Id: client.py,v 1.176.2.2 2004-06-22 23:36:49 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -284,6 +284,8 @@ class Client:
         self.clean_sessions()
         sessions = self.db.getSessionManager()
 
+        user = 'anonymous'
+
         # first up, try the REMOTE_USER var (from HTTP Basic Auth handled
         # by a front-end HTTP server)
         try:
@@ -293,7 +295,6 @@ class Client:
 
         # look up the user session cookie (may override the REMOTE_USER)
         cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
-        user = 'anonymous'
         if (cookie.has_key(self.cookie_name) and
                 cookie[self.cookie_name].value != 'deleted'):
 
