@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.2
 #
 # Copyright (c) 2001 Richard Jones
 # This module is free software, and you may redistribute it and/or modify
@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: run_tests,v 1.4 2002-02-14 23:38:12 richard Exp $
+# $Id: run_tests,v 1.5 2002-05-25 07:16:23 rochecompaan Exp $
 
 from test import go
 import sys
@@ -20,6 +20,13 @@ else:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2002/02/14 23:38:12  richard
+# Fixed the unit tests for the mailgw re: the x-roundup-name header.
+# Also made the test runner more user-friendly:
+#   ./run_tests            - detect all tests in test/test_<name>.py and run them
+#   ./run_tests <name>     - run only test/test_<name>.py
+# eg ./run_tests mailgw    - run the mailgw test from test/test_mailgw.py
+#
 # Revision 1.3  2002/01/23 20:09:41  jhermann
 # Proper fix for failing test
 #

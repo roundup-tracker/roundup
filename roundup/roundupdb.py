@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.52 2002-05-15 03:27:16 richard Exp $
+# $Id: roundupdb.py,v 1.53 2002-05-25 07:16:24 rochecompaan Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -80,7 +80,7 @@ class Database:
         # try the user alternate addresses if possible
         props = self.user.getprops()
         if props.has_key('alternate_addresses'):
-            users = self.user.filter({'alternate_addresses': address},
+            users = self.user.filter(None, {'alternate_addresses': address},
                 [], [])
             user = extractUserFromList(self.user, users)
             if user is not None: return user
@@ -625,6 +625,15 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2002/05/15 03:27:16  richard
+#  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
+#    (thanks dman)
+#  . fixed some sorting issues that were breaking some unit tests under py2.2
+#  . mailgw test output dir was confusing the init test (but only on 2.2 *shrug*)
+#
+# fixed bug in the init unit test that meant only the bsddb test ran if it
+# could (it clobbered the anydbm test)
+#
 # Revision 1.51  2002/04/08 03:46:42  richard
 # make it work
 #
@@ -636,6 +645,17 @@ class IssueClass(Class):
 #
 # The initial detector is one that we'll be using here at ekit - it bounces new
 # issue messages to a team address.
+#
+# Revision 1.49.2.1  2002/04/19 19:54:42  rochecompaan
+# cgi_client.py
+#     removed search link for the time being
+#     moved rendering of matches to htmltemplate
+# hyperdb.py
+#     filtering of nodes on full text search incorporated in filter method
+# roundupdb.py
+#     added paramater to call of filter method
+# roundup_indexer.py
+#     added search method to RoundupIndexer class
 #
 # Revision 1.49  2002/03/19 06:41:49  richard
 # Faster, easier, less mess ;)

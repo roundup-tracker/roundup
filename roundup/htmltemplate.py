@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.89 2002-05-15 06:34:47 richard Exp $
+# $Id: htmltemplate.py,v 1.90 2002-05-25 07:16:24 rochecompaan Exp $
 
 __doc__ = """
 Template engine.
@@ -714,7 +714,8 @@ class IndexTemplateReplace:
     def go(self, text):
         return self.replace.sub(self, text)
 
-    def __call__(self, m, filter=None, columns=None, sort=None, group=None):
+    def __call__(self, m, search_text=None, filter=None, columns=None,
+            sort=None, group=None):
         if m.group('name'):
             if m.group('name') in self.props:
                 text = m.group('text')
@@ -743,8 +744,9 @@ class IndexTemplate(TemplateFunctions):
         self.properties = self.cl.getprops()
 
     col_re=re.compile(r'<property\s+name="([^>]+)">')
-    def render(self, filterspec={}, filter=[], columns=[], sort=[], group=[],
-            show_display_form=1, nodeids=None, show_customization=1):
+    def render(self, filterspec={}, search_text='', filter=[], columns=[], 
+            sort=[], group=[], show_display_form=1, nodeids=None,
+            show_customization=1, show_nodes=1):
         self.filterspec = filterspec
 
         w = self.client.write
@@ -784,8 +786,8 @@ class IndexTemplate(TemplateFunctions):
         if (show_display_form and 
                 self.instance.FILTER_POSITION in ('top and bottom', 'top')):
             w('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
-            self.filter_section(filter_template, filter, columns, group,
-                all_filters, all_columns, show_customization)
+            self.filter_section(filter_template, search_text, filter, 
+                columns, group, all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
             if sort:
                 w('<input type="hidden" name=":sort" value="%s">'%
@@ -817,49 +819,58 @@ class IndexTemplate(TemplateFunctions):
 
         # now actually loop through all the nodes we get from the filter and
         # apply the template
-        if nodeids is None:
-            nodeids = self.cl.filter(filterspec, sort, group)
-        for nodeid in nodeids:
-            # check for a group heading
-            if group_names:
-                this_group = [self.cl.get(nodeid, name, _('[no value]'))
-                    for name in group_names]
-                if this_group != old_group:
-                    l = []
-                    for name in group_names:
-                        prop = self.properties[name]
-                        if isinstance(prop, hyperdb.Link):
-                            group_cl = self.db.classes[prop.classname]
-                            key = group_cl.getkey()
-                            value = self.cl.get(nodeid, name)
-                            if value is None:
-                                l.append(_('[unselected %(classname)s]')%{
-                                    'classname': prop.classname})
+        if show_nodes:
+            matches = None
+            if nodeids is None:
+                if search_text != '':
+                    matches = self.client.indexer.search(
+                        search_text.split(' '), self.cl)
+                nodeids = self.cl.filter(matches, filterspec, sort, group)
+            for nodeid in nodeids:
+                # check for a group heading
+                if group_names:
+                    this_group = [self.cl.get(nodeid, name, _('[no value]'))
+                        for name in group_names]
+                    if this_group != old_group:
+                        l = []
+                        for name in group_names:
+                            prop = self.properties[name]
+                            if isinstance(prop, hyperdb.Link):
+                                group_cl = self.db.classes[prop.classname]
+                                key = group_cl.getkey()
+                                value = self.cl.get(nodeid, name)
+                                if value is None:
+                                    l.append(_('[unselected %(classname)s]')%{
+                                        'classname': prop.classname})
+                                else:
+                                    l.append(group_cl.get(self.cl.get(nodeid,
+                                        name), key))
+                            elif isinstance(prop, hyperdb.Multilink):
+                                group_cl = self.db.classes[prop.classname]
+                                key = group_cl.getkey()
+                                for value in self.cl.get(nodeid, name):
+                                    l.append(group_cl.get(value, key))
                             else:
-                                l.append(group_cl.get(self.cl.get(nodeid,
-                                    name), key))
-                        elif isinstance(prop, hyperdb.Multilink):
-                            group_cl = self.db.classes[prop.classname]
-                            key = group_cl.getkey()
-                            for value in self.cl.get(nodeid, name):
-                                l.append(group_cl.get(value, key))
-                        else:
-                            value = self.cl.get(nodeid, name, _('[no value]'))
-                            if value is None:
-                                value = _('[empty %(name)s]')%locals()
-                            else:
-                                value = str(value)
-                            l.append(value)
-                    w('<tr class="section-bar">'
-                      '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
-                        len(columns), ', '.join(l)))
-                    old_group = this_group
+                                value = self.cl.get(nodeid, name, 
+                                    _('[no value]'))
+                                if value is None:
+                                    value = _('[empty %(name)s]')%locals()
+                                else:
+                                    value = str(value)
+                                l.append(value)
+                        w('<tr class="section-bar">'
+                        '<td align=middle colspan=%s>'
+                        '<strong>%s</strong></td></tr>'%(
+                            len(columns), ', '.join(l)))
+                        old_group = this_group
 
-            # display this node's row
-            replace = IndexTemplateReplace(self.globals, locals(), columns)
-            self.nodeid = nodeid
-            w(replace.go(template))
-            self.nodeid = None
+                # display this node's row
+                replace = IndexTemplateReplace(self.globals, locals(), columns)
+                self.nodeid = nodeid
+                w(replace.go(template))
+                if matches:
+                    self.node_matches(matches[nodeid], len(columns))
+                self.nodeid = None
 
         w('</table>')
 
@@ -867,17 +878,46 @@ class IndexTemplate(TemplateFunctions):
         if (show_display_form and hasattr(self.instance, 'FILTER_POSITION') and
                 self.instance.FILTER_POSITION in ('top and bottom', 'bottom')):
             w('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
-            self.filter_section(filter_template, filter, columns, group,
-                all_filters, all_columns, show_customization)
+            self.filter_section(filter_template, search_text, filter, 
+                columns, group, all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
             if sort:
                 w('<input type="hidden" name=":sort" value="%s">'%
                     ','.join(sort))
             w('</form>\n')
 
+    def node_matches(self, match, colspan):
+        ''' display the files and messages for a node that matched a
+            full text search
+        '''
+        w = self.client.write
 
-    def filter_section(self, template, filter, columns, group, all_filters,
-            all_columns, show_customization):
+        message_links = []
+        file_links = []
+        if match.has_key('messages'):
+            for msgid in match['messages']:
+                k = self.db.msg.labelprop()
+                lab = self.db.msg.get(msgid, k)
+                msgpath = 'msg%s'%msgid
+                message_links.append('<a href="%(msgpath)s">%(lab)s</a>'
+                    %locals())
+            w(_('<tr class="row-hilite"><td colspan="%s">'
+                '&nbsp;&nbsp;Matched messages: %s</td></tr>')%(
+                    colspan, ', '.join(message_links)))
+
+        if match.has_key('files'):
+            for fileid in match['files']:
+                filename = self.db.file.get(fileid, 'name')
+                filepath = 'file%s/%s'%(fileid, filename)
+                file_links.append('<a href="%(filepath)s">%(filename)s</a>'
+                    %locals())
+            w(_('<tr class="row-hilite"><td colspan="%s">'
+                '&nbsp;&nbsp;Matched files: %s</td></tr>')%(
+                    colspan, ', '.join(file_links)))
+
+
+    def filter_section(self, template, search_text, filter, columns, group, 
+            all_filters, all_columns, show_customization):
 
         w = self.client.write
 
@@ -890,6 +930,11 @@ class IndexTemplate(TemplateFunctions):
             w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
             w('<tr class="location-bar">')
             w(_(' <th align="left" colspan="2">Filter specification...</th>'))
+            w('</tr>')
+            w('<tr>')
+            w('<th class="location-bar">Search terms</th>')
+            w('<td><input name="search_text" value="%s" size="50"></td>'%(
+                search_text))
             w('</tr>')
             replace = IndexTemplateReplace(self.globals, locals(), filter)
             w(replace.go(template))
@@ -1022,6 +1067,7 @@ class IndexTemplate(TemplateFunctions):
         w(':sort=%s'%','.join(m[:2]))
         return '&'.join(l)
 
+
 #
 #   ITEM TEMPLATES
 #
@@ -1124,6 +1170,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.89  2002/05/15 06:34:47  richard
+# forgot to fix the templating for last change
+#
 # Revision 1.88  2002/04/24 08:34:35  rochecompaan
 # Sorting was applied to all nodes of the MultiLink class instead of
 # the nodes that are actually linked to in the "field" template
@@ -1146,6 +1195,22 @@ class NewItemTemplate(TemplateFunctions):
 #    multilinks. When true, it only displays the linked node id as the anchor
 #    text. The link value is displayed as a tooltip using the title anchor
 #    attribute.
+#
+# Revision 1.84.2.2  2002/04/20 13:23:32  rochecompaan
+# We now have a separate search page for nodes.  Search links for
+# different classes can be customized in instance_config similar to
+# index links.
+#
+# Revision 1.84.2.1  2002/04/19 19:54:42  rochecompaan
+# cgi_client.py
+#     removed search link for the time being
+#     moved rendering of matches to htmltemplate
+# hyperdb.py
+#     filtering of nodes on full text search incorporated in filter method
+# roundupdb.py
+#     added paramater to call of filter method
+# roundup_indexer.py
+#     added search method to RoundupIndexer class
 #
 # Revision 1.84  2002/03/29 19:41:48  rochecompaan
 #  . Fixed display of mutlilink properties when using the template

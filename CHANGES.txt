@@ -32,6 +32,7 @@ Feature:
  . applied patch #558876 ] cgi client customization
  . split instance initialisation into two steps, allowing config changes
    before the database is initialised.
+ . #526730 ] search for messages capability
 
 Fixed:
  . stop sending blank (whitespace-only) notes

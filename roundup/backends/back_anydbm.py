@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.34 2002-05-15 06:21:21 richard Exp $
+#$Id: back_anydbm.py,v 1.35 2002-05-25 07:16:24 rochecompaan Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -26,6 +26,7 @@ serious bugs, and is not available)
 import whichdb, anydbm, os, marshal
 from roundup import hyperdb, date
 from blobfiles import FileStorage
+from roundup.roundup_indexer import RoundupIndexer
 from locking import acquire_lock, release_lock
 
 #
@@ -61,6 +62,7 @@ class Database(FileStorage, hyperdb.Database):
         self.dirtynodes = {}    # keep track of the dirty nodes by class
         self.newnodes = {}      # keep track of the new nodes by class
         self.transactions = []
+        self.indexer = RoundupIndexer(self.dir)
         # ensure files are group readable and writable
         os.umask(0002)
 
@@ -467,6 +469,9 @@ class Database(FileStorage, hyperdb.Database):
     def _doStoreFile(self, name, **databases):
         # the file is currently ".tmp" - move it to its real name to commit
         os.rename(name+".tmp", name)
+        pattern = name.split('/')[-1]
+        self.indexer.add_files(dir=os.path.dirname(name), pattern=pattern)
+        self.indexer.save_index()
 
     def rollback(self):
         ''' Reverse all actions from the current transaction.
@@ -485,6 +490,14 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.34  2002/05/15 06:21:21  richard
+# . node caching now works, and gives a small boost in performance
+#
+#As a part of this, I cleaned up the DEBUG output and implemented TRACE
+#output (HYPERDBTRACE='file to trace to') with checkpoints at the start of
+#CGI requests. Run roundup with python -O to skip all the DEBUG/TRACE stuff
+#(using if __debug__ which is compiled out with -O)
+#
 #Revision 1.33  2002/04/24 10:38:26  rochecompaan
 #All database files are now created group readable and writable.
 #
@@ -501,6 +514,9 @@ class Database(FileStorage, hyperdb.Database):
 #Also fixed htmltemplate after the showid changes I made yesterday.
 #
 #Unit tests for all of the above written.
+#
+#Revision 1.30.2.1  2002/04/03 11:55:57  rochecompaan
+# . Added feature #526730 - search for messages capability
 #
 #Revision 1.30  2002/02/27 03:40:59  richard
 #Ran it through pychecker, made fixes

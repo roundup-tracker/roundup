@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.65 2002-05-22 04:12:05 richard Exp $
+# $Id: hyperdb.py,v 1.66 2002-05-25 07:16:24 rochecompaan Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -845,7 +845,8 @@ class Class:
         return l
 
     # XXX not in spec
-    def filter(self, filterspec, sort, group, num_re = re.compile('^\d+$')):
+    def filter(self, search_matches, filterspec, sort, group, 
+            num_re = re.compile('^\d+$')):
         ''' Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
             sort spec
@@ -934,6 +935,16 @@ class Class:
             else:
                 l.append((nodeid, node))
         l.sort()
+
+        # filter based on full text search
+        if search_matches is not None:
+            k = []
+            l_debug = []
+            for v in l:
+                l_debug.append(v[0])
+                if search_matches.has_key(v[0]):
+                    k.append(v)
+            l = k
 
         # optimise sort
         m = []
@@ -1146,6 +1157,12 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.65  2002/05/22 04:12:05  richard
+#  . applied patch #558876 ] cgi client customization
+#    ... with significant additions and modifications ;)
+#    - extended handling of ML assignedto to all places it's handled
+#    - added more NotFound info
+#
 # Revision 1.64  2002/05/15 06:21:21  richard
 #  . node caching now works, and gives a small boost in performance
 #
@@ -1174,6 +1191,22 @@ def Choice(name, db, *options):
 # Also fixed htmltemplate after the showid changes I made yesterday.
 #
 # Unit tests for all of the above written.
+#
+# Revision 1.59.2.2  2002/04/20 13:23:33  rochecompaan
+# We now have a separate search page for nodes.  Search links for
+# different classes can be customized in instance_config similar to
+# index links.
+#
+# Revision 1.59.2.1  2002/04/19 19:54:42  rochecompaan
+# cgi_client.py
+#     removed search link for the time being
+#     moved rendering of matches to htmltemplate
+# hyperdb.py
+#     filtering of nodes on full text search incorporated in filter method
+# roundupdb.py
+#     added paramater to call of filter method
+# roundup_indexer.py
+#     added search method to RoundupIndexer class
 #
 # Revision 1.59  2002/03/12 22:52:26  richard
 # more pychecker warnings removed

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.124 2002-05-24 02:09:24 richard Exp $
+# $Id: cgi_client.py,v 1.125 2002-05-25 07:16:24 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -26,6 +26,7 @@ import binascii, Cookie, time, random
 
 import roundupdb, htmltemplate, date, hyperdb, password
 from roundup.i18n import _
+from roundup_indexer import RoundupIndexer
 
 class Unauthorised(ValueError):
     pass
@@ -71,6 +72,7 @@ class Client:
         except ValueError:
             # someone gave us a non-int debug level, turn it off
             self.debug = 0
+        self.indexer = RoundupIndexer('%s/db'%instance.INSTANCE_HOME)
 
     def getuid(self):
         return self.db.user.lookup(self.user)
@@ -212,6 +214,17 @@ function help_window(helpurl, width, height) {
             links.append(_('<a href="user">User List</a>'))
             links.append(_('<a href="newuser">Add User</a>'))
 
+        # add the search links
+        if hasattr(self.instance, 'HEADER_SEARCH_LINKS'):
+            classes = self.instance.HEADER_SEARCH_LINKS
+        else:
+            classes = ['issue']
+        l = []
+        for class_name in classes:
+            cap_class = class_name.capitalize()
+            links.append(_('Search <a href="search%(class_name)s">'
+                '%(cap_class)s</a>')%locals())
+
         # now we have all the links, join 'em
         links = '\n | '.join(links)
 
@@ -331,9 +344,7 @@ function help_window(helpurl, width, height) {
     default_index_columns = ['id','activity','title','status','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
 
-    def index(self):
-        ''' put up an index - no class specified
-        '''
+    def _get_customisation_info(self):
         # see if the web has supplied us with any customisation info
         defaults = 1
         for key in ':sort', ':group', ':filter', ':columns':
@@ -363,13 +374,39 @@ function help_window(helpurl, width, height) {
             # make list() extract the info from the CGI environ
             self.classname = 'issue'
             sort = group = filter = columns = filterspec = None
+        return columns, filter, group, sort, filterspec
+
+    def index(self):
+        ''' put up an index - no class specified
+        '''
+        columns, filter, group, sort, filterspec = \
+            self._get_customisation_info()
         return self.list(columns=columns, filter=filter, group=group,
             sort=sort, filterspec=filterspec)
+
+    def searchnode(self):
+        columns, filter, group, sort, filterspec = \
+            self._get_customisation_info()
+        show_nodes = 1
+        if len(self.form.keys()) == 0:
+            # get the default search filters from instance_config
+            if hasattr(self.instance, 'SEARCH_FILTERS'):
+                for f in self.instance.SEARCH_FILTERS:
+                    spec = getattr(self.instance, f)
+                    if spec['CLASS'] == self.classname:
+                        filter = spec['FILTER']
+                
+            show_nodes = 0
+            show_customization = 1
+        return self.list(columns=columns, filter=filter, group=group,
+            sort=sort, filterspec=filterspec,
+            show_customization=show_customization, show_nodes=show_nodes)
+        
 
     # XXX deviates from spec - loses the '+' (that's a reserved character
     # in URLS
     def list(self, sort=None, group=None, filter=None, columns=None,
-            filterspec=None, show_customization=None):
+            filterspec=None, show_customization=None, show_nodes=1):
         ''' call the template index with the args
 
             :sort    - sort by prop name, optionally preceeded with '-'
@@ -393,11 +430,16 @@ function help_window(helpurl, width, height) {
         if filterspec is None: filterspec = self.index_filterspec(filter)
         if show_customization is None:
             show_customization = self.customization_widget()
+        if self.form.has_key('search_text'):
+            search_text = self.form['search_text'].value
+        else:
+            search_text = ''
 
         index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
         try:
-            index.render(filterspec, filter, columns, sort, group,
-                show_customization=show_customization)
+            index.render(filterspec, search_text, filter, columns, sort, 
+                group, show_customization=show_customization, 
+                show_nodes=show_nodes)
         except htmltemplate.MissingTemplateError:
             self.basicClassEditPage()
         self.pagefoot()
@@ -560,6 +602,7 @@ function help_window(helpurl, width, height) {
         self.pagefoot()
     showissue = shownode
     showmsg = shownode
+    searchissue = searchnode
 
     def _add_author_to_nosy(self, props):
         ''' add the author value from the props to the nosy list
@@ -1243,7 +1286,7 @@ function help_window(helpurl, width, height) {
         self.db.commit()
 
     def do_action(self, action, dre=re.compile(r'([^\d]+)(\d+)'),
-            nre=re.compile(r'new(\w+)')):
+            nre=re.compile(r'new(\w+)'), sre=re.compile(r'search(\w+)')):
         '''Figure the user's action and do it.
         '''
         # here be the "normal" functionality
@@ -1294,6 +1337,17 @@ function help_window(helpurl, width, height) {
             func()
             return
 
+        # see if we're to put up the new node page
+        m = sre.match(action)
+        if m:
+            self.classname = m.group(1)
+            try:
+                func = getattr(self, 'search%s'%self.classname)
+            except AttributeError:
+                raise NotFound
+            func()
+            return
+
         # otherwise, display the named class
         self.classname = action
         try:
@@ -1311,6 +1365,7 @@ class ExtendedClient(Client):
     showtimelog = Client.shownode
     newsupport = Client.newnode
     newtimelog = Client.newnode
+    searchsupport = Client.searchnode
 
     default_index_sort = ['-activity']
     default_index_group = ['priority']
@@ -1399,6 +1454,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.124  2002/05/24 02:09:24  richard
+# Nothing like a live demo to show up the bugs ;)
+#
 # Revision 1.123  2002/05/22 05:04:13  richard
 # Oops
 #
@@ -1433,6 +1491,29 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 #
 # Revision 1.115  2002/04/02 01:56:10  richard
 #  . stop sending blank (whitespace-only) notes
+#
+# Revision 1.114.2.4  2002/05/02 11:49:18  rochecompaan
+# Allow customization of the search filters that should be displayed
+# on the search page.
+#
+# Revision 1.114.2.3  2002/04/20 13:23:31  rochecompaan
+# We now have a separate search page for nodes.  Search links for
+# different classes can be customized in instance_config similar to
+# index links.
+#
+# Revision 1.114.2.2  2002/04/19 19:54:42  rochecompaan
+# cgi_client.py
+#     removed search link for the time being
+#     moved rendering of matches to htmltemplate
+# hyperdb.py
+#     filtering of nodes on full text search incorporated in filter method
+# roundupdb.py
+#     added paramater to call of filter method
+# roundup_indexer.py
+#     added search method to RoundupIndexer class
+#
+# Revision 1.114.2.1  2002/04/03 11:55:57  rochecompaan
+#  . Added feature #526730 - search for messages capability
 #
 # Revision 1.114  2002/03/17 23:06:05  richard
 # oops

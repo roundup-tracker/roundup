@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.17 2002-05-22 00:32:33 richard Exp $
+# $Id: instance_config.py,v 1.18 2002-05-25 07:16:25 rochecompaan Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -117,6 +117,12 @@ HEADER_INDEX_LINKS = ['DEFAULT', 'UNASSIGNED', 'USER']
 # list the classes that users are able to add nodes to
 HEADER_ADD_LINKS = ['issue']
 
+# list the classes that users can search
+HEADER_SEARCH_LINKS = ['issue']
+
+# list search filters per class
+SEARCH_FILTERS = ['ISSUE_FILTER', 'SUPPORT_FILTER']
+
 # Now the DEFAULT display specification. TODO: describe format
 DEFAULT_INDEX = {
   'LABEL': 'All Issues',
@@ -159,9 +165,28 @@ USER_INDEX = {
   },
 }
 
+ISSUE_FILTER = {
+  'CLASS': 'issue',
+  'FILTER': ['status', 'priority', 'assignedto', 'creator']
+}
+
+SUPPORT_FILTER = {
+  'CLASS': 'issue',
+  'FILTER': ['status', 'priority', 'assignedto', 'creator']
+}
+
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/05/22 00:32:33  richard
+#  . changed the default message list in issues to display the message body
+#  . made backends.__init__ be more specific about which ImportErrors it really
+#    wants to ignore
+#  . fixed the example addresses in the templates to use correct example domains
+#  . cleaned out the template stylesheets, removing a bunch of junk that really
+#    wasn't necessary (font specs, styles never used) and added a style for
+#    message content
+#
 # Revision 1.16  2002/05/21 06:05:54  richard
 #  . #551483 ] assignedto in Client.make_index_link
 #
@@ -177,6 +202,15 @@ USER_INDEX = {
 #  . stripping of the email message body can now be controlled through
 #    the config variables EMAIL_KEEP_QUOTED_TEST and
 #    EMAIL_LEAVE_BODY_UNCHANGED.
+#
+# Revision 1.13.2.2  2002/05/02 11:49:19  rochecompaan
+# Allow customization of the search filters that should be displayed
+# on the search page.
+#
+# Revision 1.13.2.1  2002/04/20 13:23:33  rochecompaan
+# We now have a separate search page for nodes.  Search links for
+# different classes can be customized in instance_config similar to
+# index links.
 #
 # Revision 1.13  2002/03/14 23:59:24  richard
 #  . #517734 ] web header customisation is obscure
