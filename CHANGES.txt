@@ -29,6 +29,10 @@ Feature:
 - relaxed hyperlinking in web interface (accept "issue123" or "Issue 123")
 - record journaltag lookup ("fixes" sf bug 998140)
 - allow listing popup to be used in query forms (thanks Marcus Priesch)
+- roundup windows service may be installed with command line options
+  recognized by roundup-server (but not tracker specification arguments).
+  Use this to specify server configuration file for the service.
+- added experimental multi-thread server
 
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
