@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.7 2002-06-14 01:25:46 dman13 Exp $
+# $Id: ZRoundup.py,v 1.8 2002-06-16 01:01:42 dman13 Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -146,7 +146,13 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             # with it and we lose all the :filter, :columns, etc goodness
             form = None
         else:
-            form = FormWrapper(self.REQUEST.form)
+            # For some reason, CRs are embeded in multiline notes.
+            # It doesn't occur with apache/roundup.cgi, though.
+            form = self.REQUEST.form 
+            if form.has_key( '__note' ) :
+                form['__note'] = form['__note'].replace( '\r' , '' )
+            form = FormWrapper(form)
+
         return instance.Client(instance, request, env, form)
 
 
@@ -201,6 +207,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2002/06/14 01:25:46  dman13
+# Fixed bug #558867 by redirecting /instance requests to /instance/
+#
 # Revision 1.6  2002/06/12 00:59:44  dman13
 # Fixed the logic for determing the cookie path.  (Closes #562130.)
 #
