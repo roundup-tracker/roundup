@@ -9,25 +9,33 @@ __ features.html
 
 .. contents::
 
-In Summary
-==========
+Email improvements
+==================
 
-(this information copied directly from the ``CHANGES.txt`` file)
+Added option to turn off registration confirmation via email
+("instant_registration" in config).
 
-XXX this section needs more detail
 
-- create a new RDBMS cursor after committing
-- roundup-admin reindex command may now work on single items or classes
+Database improvements
+=====================
 
-- roundup-server options -g and -u accept both ids and names (sf bug 983769)
-- roundup-server now has a configuration file (-C option)
-- roundup windows service may be installed with command line options
-  recognized by roundup-server (but not tracker specification arguments).
-  Use this to specify server configuration file for the service.
+We create a new RDBMS cursor after committing, allowing further changes and
+commits.
 
-- added option to turn off registration confirmation via email
-  ("instant_registration" in config) (sf rfe 922209)
+The roundup-admin reindex command may now work on single items or classes.
 
+
+Server improvements
+===================
+
+The roundup-server options -g and -u accept both ids and names.
+
+roundup-server now has a configuration file (see the -C option) and may
+generate a new config file for you (see the -S option).
+
+The Roundup windows service may be installed with command line options
+recognized by roundup-server (but not tracker specification arguments).
+Use this to specify server configuration file for the service.
 
 
 Performance improvements
@@ -151,8 +159,6 @@ Web Interface Miscellanea
 =========================
 
 The web interface has seen some changes:
-
-Editing
 
 Templating
   We implement __nonzero__ for HTMLProperty - properties may now be used in

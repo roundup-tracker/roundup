@@ -1,31 +1,51 @@
-I'm proud to release this 8th major feature release of Roundup. This is
-currently a DEVELOPMENT release, meaning it probably has bugs. If you want
-a STABLE release, use 0.7.x
+I'm proud to release this 8th major feature release of Roundup. 
 
 First up, big thanks go to alexander smishlajev who has done some really
 good work getting the i18n and new configuration components of this release
 going.
 
-Please note that Roundup now requires python 2.3 or later.
+Please note that Roundup now requires Python 2.3 or later. Please continue
+to use 0.7 if you require Python 2.1 compatibility.
 
 Version 0.8 introduces far too many features to list here so I've put
 together a What's New page:
 
   http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
 
-0.8b3 is a bugfix release, fixing:
+This 0.8.0 release fixes some bugs in the previous beta releases:
 
-- note about how to run roundup demo in Windows (sf bug 1082090)
-- fix API for templating utils extensions - remove "utils" arg (sf bug 1081981)
-- back_sqlite.py is missing "import time" (sf bug 1081959)
-- fix (list) popup (sf bug 1083570)
-- fix some security assertions (sf bug 1085481)
-- 'roundup-server -S' always writes [trackers] section heading (sf bug 1088878)
-- fix port number as int in mysql connection info (sf bug 1082530)
-- fix setup.py to work with <Python2.3 (sf bug 1082801)
-- fix permissions checks in cgi templating (sf bug 1082755)
-- fix "Users may only edit their issues" example in docs
-- handle ~/.my.cnf files for MySQL defaults (sf bug 1096031)
+- handle capitalisation of class names in text hyperlinking (sf bug
+  1101043)
+- quote full-text search text in URL generation
+- fixed problem migrating mysql databases
+- fix search_checkboxes macro (sf patch 1113828)
+- fix bug in date editing in Metakit
+- allow suppression of search_text in indexargs_form (sf bug 1101548)
+- hack to fix some anydbm export problems (sf bug 1081454)
+- ignore AutoReply messages (sf patch 1085051)
+- fix ZRoundup syntax error (sf bug 1122335)
+- fix roundup-server log and PID file paths to be absolute
+- fix initialisation of roundup-server in daemon mode so initialisation
+  errors are visible
+- fix: 'Logout' link was enabled on issue index page only
+- have Permissions only test the check function if itemid is suppled
+- modify cgi templating system to check item-level permissions in listings
+- enable batching in message and file listings
+- more documentation of security mechanisms (incl. sf patches 1117932,
+  1117860)
+- better unit tests for security mechanisms
+- code cleanup (sf patch 1115329 and additional)
+- issue search page allows setting of no sorting / grouping (sf bug
+  1119475)
+- better edit conflict handling (sf bug 1118790)
+- consistent text searching behaviour (AND everywhere) (sf bug 1101036)
+- fix handling of invalid date input (sf bug 1102165)
+- retain Boolean selections in edit error handling (sf bug 1101492)
+- fix initialisation of logging module from config file (sf bug 1108577)
+- removed rlog module (py 2.3 is minimum version now)
+- fixed class "help" listing paging (sf bug 1106329)
+- nicer error looking up values of None (response to sf bug 1108697)
+- fallback for (list) popups if javascript disabled (sf patch 1101626)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
