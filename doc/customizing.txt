@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.38 $
+:Version: $Revision: 1.39 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1821,21 +1821,21 @@ Alter the issue.item template section for messages to::
 Restricting the list of users that are assignable to a task
 -----------------------------------------------------------
 
-1. create a new Role, say "Developer"::
+1. In your tracker's "dbinit.py", create a new Role, say "Developer"::
 
      db.security.addRole(name='Developer', description='A developer')
 
-2. create a new Permission, say "Fixer", specific to "issue"::
+2. Just after that, create a new Permission, say "Fixer", specific to "issue"::
 
      p = db.security.addPermission(name='Fixer', klass='issue',
          description='User is allowed to be assigned to fix issues')
 
-3. assign the new Permission to your "Developer" Role::
+3. Then assign the new Permission to your "Developer" Role::
 
      db.security.addPermissionToRole('Developer', p)
 
-4. use the new Permission in restricting the "assignedto" list in the issue
-   item edit page::
+4. In the issue item edit page ("html/issue.item" in your tracker dir), use
+   the new Permission in restricting the "assignedto" list::
 
     <select name="assignedto">
      <option value="-1">- no selection -</option>
@@ -1848,7 +1848,8 @@ Restricting the list of users that are assignable to a task
     </select>
 
 For extra security, you may wish to set up an auditor to enforce the
-Permission requirement::
+Permission requirement (install this as "assignedtoFixer.py" in your tracker
+"detectors" directory)::
 
   def assignedtoMustBeFixer(db, cl, nodeid, newvalues):
       ''' Ensure the assignedto value in newvalues is a used with the Fixer
