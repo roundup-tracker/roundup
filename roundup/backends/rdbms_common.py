@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.6 2004-06-09 06:16:56 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.7 2004-06-09 07:03:15 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -260,7 +260,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             c.execute('drop table _%s'%klass.classname)
 
             # re-create and re-populate
-            self.create_class_table(klass, create_sequence=False)
+            self.create_class_table(klass, create_sequence=0)
             a = ','.join([self.arg for i in range(len(cols)+1)])
             sql = 'insert into _%s (id,%s) values (%s)'%(klass.classname,
                 scols, a)

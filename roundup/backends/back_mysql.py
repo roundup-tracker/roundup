@@ -360,7 +360,7 @@ class Database(Database):
                 return 1
         return 0
 
-    def create_class_table(self, spec, create_sequence=True):
+    def create_class_table(self, spec, create_sequence=1):
         cols, mls = self.determine_columns(spec.properties.items())
 
         # add on our special columns
