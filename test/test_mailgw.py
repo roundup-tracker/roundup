@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.59 2003-11-03 19:08:41 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.60 2003-11-03 22:23:02 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -28,32 +28,40 @@ class Message(rfc822.Message):
         rfc822.Message.__init__(self, StringIO(s.strip()))
         
     def __eq__(self, other):
-        del self['date'], other['date']
-
         return (self.dict == other.dict and
                 self.fp.read() == other.fp.read()) 
 
-# TODO: Do a semantic diff instead of a straight text diff when a test fails.
 class DiffHelper:
-    def compareMessages(self, s2, s1):
+    def compareMessages(self, new, old):
         """Compare messages for semantic equivalence."""
-        if not Message(s2) == Message(s1):    
-            self.compareStrings(s2, s1)
+        new, old = Message(new), Message(old)
+        del new['date'], old['date']
+
+        if not new == old:
+            res = ['Generated message not correct (diff follows):']
+
+            for key in new.keys():
+                if new[key] != old[key]:
+                    res.append('  %s: %s != %s' % (key, old[key], new[key]))
+            
+            body_diff = self.compareStrings(new.fp.read(), old.fp.read())
+            if body_diff:
+                res.append('')
+                res.extend(body_diff)
+
+            raise AssertionError, '\n'.join(res)
     
     def compareStrings(self, s2, s1):
         '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
            the first to be the "original" but in the calls in this file,
            the second arg is the original. Ho hum.
         '''
-        # we have to special-case the Date: header here 'cos we can't test
-        # for it properly
-        l1=s1.strip().split('\n')
-        l2=[x for x in s2.strip().split('\n') if not x.startswith('Date: ')]
+        l1 = s1.strip().split('\n')
+        l2 = s2.strip().split('\n')
         if l1 == l2:
             return
-
         s = difflib.SequenceMatcher(None, l1, l2)
-        res = ['Generated message not correct (diff follows):']
+        res = []
         for value, s1s, s1e, s2s, s2e in s.get_opcodes():
             if value == 'equal':
                 for i in range(s1s, s1e):
@@ -69,7 +77,7 @@ class DiffHelper:
                     res.append('- %s'%l1[i])
                     res.append('+ %s'%l2[j])
 
-        raise AssertionError, '\n'.join(res)
+        return res
 
 class MailgwTestCase(unittest.TestCase, DiffHelper):
     count = 0
