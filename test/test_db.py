@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.83 2003-03-26 10:44:05 richard Exp $ 
+# $Id: test_db.py,v 1.84 2003-03-26 11:19:28 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -88,7 +88,7 @@ class anydbmDBTestCase(MyTestCase):
     #
     # schema mutation
     #
-    def xtestAddProperty(self):
+    def testAddProperty(self):
         self.db.issue.create(title="spam", status='1')
         self.db.commit()
 
@@ -103,7 +103,7 @@ class anydbmDBTestCase(MyTestCase):
             'nosy', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
-    def xtestRemoveProperty(self):
+    def testRemoveProperty(self):
         self.db.issue.create(title="spam", status='1')
         self.db.commit()
 
@@ -117,7 +117,7 @@ class anydbmDBTestCase(MyTestCase):
             'nosy', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
-    def xtestAddRemoveProperty(self):
+    def testAddRemoveProperty(self):
         self.db.issue.create(title="spam", status='1')
         self.db.commit()
 
@@ -135,12 +135,12 @@ class anydbmDBTestCase(MyTestCase):
     #
     # basic operations
     #
-    def xtestIDGeneration(self):
+    def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db.issue.create(title="eggs", status='2')
         self.assertNotEqual(id1, id2)
 
-    def xtestStringChange(self):
+    def testStringChange(self):
         for commit in (0,1):
             # test set & retrieve
             nid = self.db.issue.create(title="spam", status='1')
@@ -151,7 +151,7 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, 'title'), 'eggs')
 
-    def xtestStringUnset(self):
+    def testStringUnset(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             if commit: self.db.commit()
@@ -161,7 +161,7 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "title"), None)
 
-    def xtestLinkChange(self):
+    def testLinkChange(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             if commit: self.db.commit()
@@ -170,7 +170,7 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "status"), '2')
 
-    def xtestLinkUnset(self):
+    def testLinkUnset(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             if commit: self.db.commit()
@@ -178,7 +178,7 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "status"), None)
 
-    def xtestMultilinkChange(self):
+    def testMultilinkChange(self):
         for commit in (0,1):
             u1 = self.db.user.create(username='foo%s'%commit)
             u2 = self.db.user.create(username='bar%s'%commit)
@@ -192,7 +192,7 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "nosy"), [u1,u2])
 
-    def xtestDateChange(self):
+    def testDateChange(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             a = self.db.issue.get(nid, "deadline")
@@ -203,7 +203,7 @@ class anydbmDBTestCase(MyTestCase):
             self.assertNotEqual(a, b)
             self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
 
-    def xtestDateUnset(self):
+    def testDateUnset(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             self.db.issue.set(nid, deadline=date.Date())
@@ -213,7 +213,7 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "deadline"), None)
 
-    def xtestIntervalChange(self):
+    def testIntervalChange(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             if commit: self.db.commit()
@@ -229,7 +229,7 @@ class anydbmDBTestCase(MyTestCase):
             self.assertNotEqual(self.db.issue.get(nid, "foo"), i)
             self.assertEqual(j, self.db.issue.get(nid, "foo"))
 
-    def xtestIntervalUnset(self):
+    def testIntervalUnset(self):
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
             self.db.issue.set(nid, foo=date.Interval('-1d'))
@@ -239,18 +239,18 @@ class anydbmDBTestCase(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "foo"), None)
 
-    def xtestBooleanChange(self):
+    def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
         self.assertEqual(1, self.db.user.get(userid, 'assignable'))
         self.db.user.set(userid, assignable=0)
         self.assertEqual(self.db.user.get(userid, 'assignable'), 0)
 
-    def xtestBooleanUnset(self):
+    def testBooleanUnset(self):
         nid = self.db.user.create(username='foo', assignable=1)
         self.db.user.set(nid, assignable=None)
         self.assertEqual(self.db.user.get(nid, "assignable"), None)
 
-    def xtestNumberChange(self):
+    def testNumberChange(self):
         nid = self.db.user.create(username='foo', age=1)
         self.assertEqual(1, self.db.user.get(nid, 'age'))
         self.db.user.set(nid, age=3)
@@ -263,12 +263,12 @@ class anydbmDBTestCase(MyTestCase):
         nid = self.db.user.create(username='bar', age=0)
         self.assertEqual(self.db.user.get(nid, 'age'), 0)
 
-    def xtestNumberUnset(self):
+    def testNumberUnset(self):
         nid = self.db.user.create(username='foo', age=1)
         self.db.user.set(nid, age=None)
         self.assertEqual(self.db.user.get(nid, "age"), None)
 
-    def xtestKeyValue(self):
+    def testKeyValue(self):
         newid = self.db.user.create(username="spam")
         self.assertEqual(self.db.user.lookup('spam'), newid)
         self.db.commit()
@@ -282,7 +282,7 @@ class anydbmDBTestCase(MyTestCase):
         # try to restore old node. this shouldn't succeed!
         self.assertRaises(KeyError, self.db.user.restore, newid)
 
-    def xtestRetire(self):
+    def testRetire(self):
         self.db.issue.create(title="spam", status='1')
         b = self.db.status.get('1', 'name')
         a = self.db.status.list()
@@ -298,7 +298,7 @@ class anydbmDBTestCase(MyTestCase):
         self.db.status.restore('1')
         self.assertEqual(a, self.db.status.list())
 
-    def xtestSerialisation(self):
+    def testSerialisation(self):
         nid = self.db.issue.create(title="spam", status='1',
             deadline=date.Date(), foo=date.Interval('-1d'))
         self.db.commit()
@@ -309,7 +309,7 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
         assert isinstance(self.db.user.get(uid, 'password'), password.Password)
 
-    def xtestTransactions(self):
+    def testTransactions(self):
         # remember the number of items we started
         num_issues = len(self.db.issue.list())
         num_files = self.db.numfiles()
@@ -346,10 +346,10 @@ class anydbmDBTestCase(MyTestCase):
         name2 = self.db.user.get('1', 'username')
         self.assertEqual(name1, name2)
 
-    def xtestDestroyNoJournalling(self):
+    def testDestroyNoJournalling(self):
         self.innerTestDestroy(klass=self.db.session)
 
-    def xtestDestroyJournalling(self):
+    def testDestroyJournalling(self):
         self.innerTestDestroy(klass=self.db.issue)
 
     def innerTestDestroy(self, klass):
@@ -389,7 +389,7 @@ class anydbmDBTestCase(MyTestCase):
         if klass.do_journal:
             self.assertNotEqual(klass.history(newid), [])
 
-    def xtestExceptions(self):
+    def testExceptions(self):
         # this tests the exceptions that should be raised
         ar = self.assertRaises
 
@@ -472,7 +472,7 @@ class anydbmDBTestCase(MyTestCase):
         # invalid boolean value
         ar(TypeError, self.db.user.set, nid, assignable='true')
 
-    def xtestJournals(self):
+    def testJournals(self):
         self.db.user.create(username="mary")
         self.db.user.create(username="pete")
         self.db.issue.create(title="spam", status='1')
@@ -534,7 +534,12 @@ class anydbmDBTestCase(MyTestCase):
         # see if the change was journalled
         self.assertNotEqual(date_stamp, date_stamp2)
 
-    def xtestPack(self):
+    def testJournalPreCommit(self):
+        id = self.db.user.create(username="mary")
+        self.assertEqual(len(self.db.getjournal('user', id)), 1)
+        self.db.commit()
+
+    def testPack(self):
         id = self.db.issue.create(title="spam", status='1')
         self.db.commit()
         self.db.issue.set(id, status='2')
@@ -556,7 +561,7 @@ class anydbmDBTestCase(MyTestCase):
         # we should have the create and last set entries now
         self.assertEqual(jlen-1, len(self.db.getjournal('issue', id)))
 
-    def xtestSearching(self):
+    def testSearching(self):
         self.db.file.create(content='hello', type="text/plain")
         self.db.file.create(content='world', type="text/frozz",
             comment='blah blah')
@@ -571,7 +576,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'2': {}, '1': {}})
 
-    def xtestReindexing(self):
+    def testReindexing(self):
         self.db.issue.create(title="frooz")
         self.db.commit()
         self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
@@ -582,7 +587,7 @@ class anydbmDBTestCase(MyTestCase):
             {'1': {}})
         self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue), {})
 
-    def xtestForcedReindexing(self):
+    def testForcedReindexing(self):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
@@ -629,7 +634,7 @@ class anydbmDBTestCase(MyTestCase):
         # none
         self.assertEqual(self.db.issue.find(status='4', nosy='3'), [])
 
-    def xtestStringFind(self):
+    def testStringFind(self):
         ids = []
         ids.append(self.db.issue.create(title="spam"))
         self.db.issue.create(title="not spam")
@@ -660,31 +665,31 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
 
-    def xtestFilteringID(self):
+    def testFilteringID(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
 
-    def xtestFilteringString(self):
+    def testFilteringString(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'title': 'issue one'}, ('+','id'), (None,None)), ['1'])
         ae(filt(None, {'title': 'issue'}, ('+','id'), (None,None)),
             ['1','2','3'])
 
-    def xtestFilteringLink(self):
+    def testFilteringLink(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
 
-    def xtestFilteringMultilink(self):
+    def testFilteringMultilink(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'nosy': '2'}, ('+','id'), (None,None)), ['3'])
         ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
 
-    def xtestFilteringMany(self):
+    def testFilteringMany(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
 
-    def xtestFilteringRange(self):
+    def testFilteringRange(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['2'])
         ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['2'])
@@ -694,7 +699,7 @@ class anydbmDBTestCase(MyTestCase):
         ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3'])
         ae(filt(None, {'deadline': '2003-02-16'}), ['2', '3'])
 
-    def xtestFilteringIntervalSort(self):
+    def testFilteringIntervalSort(self):
         ae, filt = self.filteringSetup()
         # ascending should sort None, 1:10, 1d
         ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '1', '2'])
@@ -717,7 +722,7 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
         self.db = anydbm.Database(config)
         setupSchema(self.db, 0, anydbm)
 
-    def xtestExceptions(self):
+    def testExceptions(self):
         # this tests the exceptions that should be raised
         ar = self.assertRaises
 
@@ -842,7 +847,7 @@ class metakitDBTestCase(anydbmDBTestCase):
         self.db = metakit.Database(config, 'admin')
         setupSchema(self.db, 1, metakit)
 
-    def xtestTransactions(self):
+    def testTransactions(self):
         # remember the number of items we started
         num_issues = len(self.db.issue.list())
         self.db.issue.create(title="don't commit me!", status='1')
@@ -873,13 +878,13 @@ class metakitDBTestCase(anydbmDBTestCase):
         self.assertEqual(num_files2, len(self.db.file.list()))
         self.assertEqual(num_rfiles2, num_rfiles-1)
 
-    def xtestBooleanUnset(self):
+    def testBooleanUnset(self):
         # XXX: metakit can't unset Booleans :(
         nid = self.db.user.create(username='foo', assignable=1)
         self.db.user.set(nid, assignable=None)
         self.assertEqual(self.db.user.get(nid, "assignable"), 0)
 
-    def xtestNumberUnset(self):
+    def testNumberUnset(self):
         # XXX: metakit can't unset Numbers :(
         nid = self.db.user.create(username='foo', age=1)
         self.db.user.set(nid, age=None)

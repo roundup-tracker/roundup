@@ -77,6 +77,7 @@ Fixed:
 - added example HTML tempating for vacation flag (sf bug 701722)
 - finally, tables autosize columns (sf bug 609070)
 - added creation to index columns (sf bug 708247)
+- fixed missing (pre-commit) journal entries in *dbm backends (sf bug 679217)
 
 
 2003-??-?? 0.5.7
