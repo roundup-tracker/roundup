@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.140 2004-11-10 22:22:58 richard Exp $
+# $Id: rdbms_common.py,v 1.141 2004-11-25 23:53:31 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2606,10 +2606,10 @@ class FileClass(hyperdb.FileClass, Class):
         if content:
             # store and index
             self.db.storefile(self.classname, itemid, None, content)
+            mime_type = None
             if self.getprops().has_key('type'):
-                mime_type = propvalues.get('type', self.get(itemid, 'type',
-                    self.default_mime_type))
-            else:
+                mime_type = propvalues.get('type', self.get(itemid, 'type'))
+            if not mime_type:
                 mime_type = self.default_mime_type
             self.db.indexer.add_text((self.classname, itemid, 'content'),
                 content, mime_type)
@@ -2626,9 +2626,10 @@ class FileClass(hyperdb.FileClass, Class):
         Pass on the content-type property for the content property.
         '''
         Class.index(self, nodeid)
-        try:
-            mime_type = self.get(nodeid, 'type', self.default_mime_type)
-        except KeyError:
+        mime_type = None
+        if self.getprops().has_key('type'):
+            mime_type = self.get(nodeid, 'type')
+        if not mime_type:
             mime_type = self.default_mime_type
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
             str(self.get(nodeid, 'content')), mime_type)

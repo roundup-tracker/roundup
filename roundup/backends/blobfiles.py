@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.16 2004-11-25 22:51:06 richard Exp $
+#$Id: blobfiles.py,v 1.17 2004-11-25 23:53:31 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -146,7 +146,8 @@ class FileStorage:
         '''
         # determine the name of the file to delete
         name = self.filename(classname, nodeid, property)
-        if os.path.exists(name+".tmp"):
-            os.remove(name+".tmp")
+        if not name.endswith('.tmp'):
+            name += '.tmp'
+        os.remove(name)
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.178 2004-11-25 22:59:17 richard Exp $
+#$Id: back_anydbm.py,v 1.179 2004-11-25 23:53:31 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2147,10 +2147,10 @@ class FileClass(hyperdb.FileClass, Class):
         if content:
             # store and index
             self.db.storefile(self.classname, itemid, None, content)
+            mime_type = None
             if self.getprops().has_key('type'):
-                mime_type = propvalues.get('type', self.get(itemid, 'type',
-                    self.default_mime_type))
-            else:
+                mime_type = propvalues.get('type', self.get(itemid, 'type'))
+            if not mime_type:
                 mime_type = self.default_mime_type
             self.db.indexer.add_text((self.classname, itemid, 'content'),
                 content, mime_type)
@@ -2179,9 +2179,10 @@ class FileClass(hyperdb.FileClass, Class):
         Pass on the content-type property for the content property.
         '''
         Class.index(self, nodeid)
-        try:
+        mime_type = None
+        if self.getprops().has_key('type'):
             mime_type = self.get(nodeid, 'type', self.default_mime_type)
-        except KeyError:
+        if not mime_type:
             mime_type = self.default_mime_type
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
             str(self.get(nodeid, 'content')), mime_type)
