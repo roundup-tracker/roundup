@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.138 2003-09-08 21:08:18 jlgijsbers Exp $
+# $Id: client.py,v 1.139 2003-09-10 13:04:05 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -6,7 +6,7 @@ WWW request handler (also used in the stand-alone server).
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, MimeWriter, smtplib, socket, quopri
-import stat, rfc822, string
+import stat, rfc822
 
 from roundup import roundupdb, date, hyperdb, password, token, rcsv
 from roundup.i18n import _
@@ -29,11 +29,7 @@ class  NotModified(HTTPException):
        pass
 
 # used by a couple of routines
-if hasattr(string, 'ascii_letters'):
-    chars = string.ascii_letters+string.digits
-else:
-    # python2.1 doesn't have ascii_letters
-    chars = string.letters+string.digits
+chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 # XXX actually _use_ FormError
 class FormError(ValueError):
