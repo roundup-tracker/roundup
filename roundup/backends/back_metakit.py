@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.76 2004-06-24 09:57:49 richard Exp $
+# $Id: back_metakit.py,v 1.77 2004-06-28 23:13:05 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1946,6 +1946,10 @@ class FileClass(Class, hyperdb.FileClass):
         self.fireReactors('set', oldnode, propvalues)
 
     def index(self, nodeid):
+        '''Add (or refresh) the node to search indexes.
+
+        Pass on the content-type property for the content property.
+        '''
         Class.index(self, nodeid)
         mimetype = self.get(nodeid, 'type')
         if not mimetype:

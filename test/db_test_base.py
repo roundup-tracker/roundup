@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.34 2004-06-24 06:39:07 richard Exp $ 
+# $Id: db_test_base.py,v 1.35 2004-06-28 23:13:06 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -702,7 +702,6 @@ class DBTest(MyTestCase):
         self.assertEquals(d, {i1: {'files': [f1, f2]}})
         self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f2]}})
-
 
     def testForcedReindexing(self):
         self.db.issue.create(title="flebble frooz")

@@ -17,6 +17,11 @@ Feature:
 
 2004-??-?? 0.7.5
 Fixed:
+- rdbms backend full text search failure after import (sf bug 980314)
+
+
+2004-06-24 0.7.5
+Fixed:
 - force lookup of journal props in anydbm filtering
 - fixed lookup of "missing" Link values for new props in anydbm backend
 - allow list of values for id, Number and Boolean filtering in anydbm
