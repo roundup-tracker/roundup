@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.27 2004-05-06 01:03:01 richard Exp $ 
+# $Id: db_test_base.py,v 1.27.2.1 2004-05-16 09:33:14 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -27,6 +27,8 @@ from roundup import init
 def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
     status.setkey("name")
+    priority = module.Class(db, "priority", name=String(), order=String())
+    priority.setkey("name")
     user = module.Class(db, "user", username=String(), password=Password(),
         assignable=Boolean(), age=Number(), roles=String())
     user.setkey("username")
@@ -34,7 +36,8 @@ def setupSchema(db, create, module):
         comment=String(indexme="yes"), fooz=Password())
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
-        foo=Interval(), files=Multilink("file"), assignedto=Link('user'))
+        foo=Interval(), files=Multilink("file"), assignedto=Link('user'),
+        priority=Link('priority'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
     session.disableJournalling()
@@ -48,6 +51,9 @@ def setupSchema(db, create, module):
         status.create(name="in-progress")
         status.create(name="testing")
         status.create(name="resolved")
+        priority.create(name="feature", order="2")
+        priority.create(name="wish", order="3")
+        priority.create(name="bug", order="1")
     db.commit()
 
 class MyTestCase(unittest.TestCase):
@@ -814,15 +820,15 @@ class DBTest(MyTestCase):
         iss = self.db.issue
         for issue in (
                 {'title': 'issue one', 'status': '2', 'assignedto': '1',
-                    'foo': date.Interval('1:10'),
+                    'foo': date.Interval('1:10'), 'priority': '1',
                     'deadline': date.Date('2003-01-01.00:00')},
-                    {'title': 'issue two', 'status': '1', 'assignedto': '2',
-                    'foo': date.Interval('1d'),
+                {'title': 'issue two', 'status': '1', 'assignedto': '2',
+                    'foo': date.Interval('1d'), 'priority': '3',
                     'deadline': date.Date('2003-02-16.22:50')},
-                {'title': 'issue three', 'status': '1',
+                    {'title': 'issue three', 'status': '1', 'priority': '2',
                     'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
                 {'title': 'non four', 'status': '3',
-                    'foo': date.Interval('0:10'),
+                    'foo': date.Interval('0:10'), 'priority': '1',
                     'nosy': ['1'], 'deadline': date.Date('2004-03-08')}):
             self.db.issue.create(**issue)
         self.db.commit()
@@ -887,6 +893,10 @@ class DBTest(MyTestCase):
         ae(filt(None, {'foo': 'to 0:05'}), [])
 
     def testFilteringIntervalSort(self):
+        # 1: '1:10'
+        # 2: '1d'
+        # 3: None
+        # 4: '0:10'
         ae, filt = self.filteringSetup()
         # ascending should sort None, 1:10, 1d
         ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
@@ -894,9 +904,41 @@ class DBTest(MyTestCase):
         ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '4', '3'])
 
     def testFilteringMultilinkSort(self):
+        # 1: []
+        # 2: []
+        # 3: ['1','2']
+        # 4: ['1']
         ae, filt = self.filteringSetup()
         ae(filt(None, {}, ('+','nosy'), (None,None)), ['1', '2', '4', '3'])
         ae(filt(None, {}, ('-','nosy'), (None,None)), ['3', '4', '1', '2'])
+
+    def testFilteringDateSort(self):
+        # '1': '2003-01-01.00:00'
+        # '2': '2003-02-16.22:50'
+        # '3': '2003-02-18'
+        # '4': '2004-03-08'
+        ae, filt = self.filteringSetup()
+        # ascending
+        ae(filt(None, {}, ('+','deadline'), (None,None)), ['1', '2', '3', '4'])
+        # descending
+        ae(filt(None, {}, ('-','deadline'), (None,None)), ['4', '3', '2', '1'])
+
+    def testFilteringDateSortPriorityGroup(self):
+        # '1': '2003-01-01.00:00'  1 => 2
+        # '2': '2003-02-16.22:50'  3 => 1
+        # '3': '2003-02-18'        2 => 3
+        # '4': '2004-03-08'        1 => 2
+        ae, filt = self.filteringSetup()
+        # ascending
+        ae(filt(None, {}, ('+','deadline'), ('+','priority')),
+            ['2', '1', '4', '3'])
+        ae(filt(None, {}, ('-','deadline'), ('+','priority')),
+            ['2', '4', '1', '3'])
+        # descending
+        ae(filt(None, {}, ('+','deadline'), ('-','priority')),
+            ['3', '1', '4', '2'])
+        ae(filt(None, {}, ('-','deadline'), ('-','priority')),
+            ['3', '4', '1', '2'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
@@ -993,7 +1035,7 @@ class DBTest(MyTestCase):
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'status', 'superseder', 'title'])
+            'nosy', 'priority', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRemoveProperty(self):
@@ -1007,7 +1049,7 @@ class DBTest(MyTestCase):
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'foo', 'id', 'messages',
-            'nosy', 'status', 'superseder'])
+            'nosy', 'priority', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
     def testAddRemoveProperty(self):
@@ -1022,7 +1064,7 @@ class DBTest(MyTestCase):
         keys.sort()
         self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'status', 'superseder'])
+            'nosy', 'priority', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
 
 class ROTest(MyTestCase):

@@ -10,6 +10,8 @@ Fixed:
 - mention DEFAULT_TIMEZONE requirement in upgrading doc (sf bug 952932)
 - fix DateHTMLProperty so local() can override user timezone (sf bug
   953678)
+- fix anydbm sort/group direction handling, and make RDBMS sort/group use
+  Link'ed "order" properties (sf bug 953148)
 
 
 2004-05-07 0.7.1
