@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.15 2001-08-12 06:32:36 richard Exp $
+# $Id: hyperdb.py,v 1.16 2001-08-15 23:43:18 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -190,11 +190,11 @@ class Class:
                     raise TypeError, 'new property "%s" not a string'%key
 
             elif isinstance(prop, Date):
-                if not hasattr(value, 'isDate'):
+                if not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'% key
 
             elif isinstance(prop, Interval):
-                if not hasattr(value, 'isInterval'):
+                if not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'% key
 
         for key, prop in self.properties.items():
@@ -345,11 +345,11 @@ class Class:
                     raise TypeError, 'new property "%s" not a string'%key
 
             elif isinstance(prop, Date):
-                if not hasattr(value, 'isDate'):
+                if not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'% key
 
             elif isinstance(prop, Interval):
-                if not hasattr(value, 'isInterval'):
+                if not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'% key
 
             node[key] = value
@@ -675,7 +675,8 @@ class Class:
                             av = an[prop] = av.lower()
                         if bv and bv[0] in string.uppercase:
                             bv = bn[prop] = bv.lower()
-                    if isinstance(propclass.isStringType or propclass, Date):
+                    if (isinstance(propclass, String) or
+                            isinstance(propclass, Date)):
                         if dir == '+':
                             r = cmp(av, bv)
                             if r != 0: return r
@@ -806,6 +807,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/08/12 06:32:36  richard
+# using isinstance(blah, Foo) now instead of isFooType
+#
 # Revision 1.14  2001/08/07 00:24:42  richard
 # stupid typo
 #

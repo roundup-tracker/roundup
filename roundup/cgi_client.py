@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.20 2001-08-12 06:32:36 richard Exp $
+# $Id: cgi_client.py,v 1.21 2001-08-15 23:43:18 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
-import roundupdb, htmltemplate, date
+import roundupdb, htmltemplate, date, hyperdb
 
 class Unauthorised(ValueError):
     pass
@@ -124,7 +124,8 @@ class Client:
             if key[0] == ':': continue
             prop = props[key]
             value = self.form[key]
-            if isinstance(prop.isLinkType or prop, hyperdb.Multilink):
+            if (isinstance(prop, hyperdb.Link) or
+                    isinstance(prop, hyperdb.Multilink)):
                 if type(value) == type([]):
                     value = [arg.value for arg in value]
                 else:
@@ -197,55 +198,9 @@ class Client:
         keys = self.form.keys()
         num_re = re.compile('^\d+$')
         if keys:
-            changed = []
-            props = {}
             try:
-                keys = self.form.keys()
-                for key in keys:
-                    if not cl.properties.has_key(key):
-                        continue
-                    proptype = cl.properties[key]
-                    if isinstance(proptype, hyperdb.String):
-                        value = str(self.form[key].value).strip()
-                    elif isinstance(proptype, hyperdb.Date):
-                        value = date.Date(str(self.form[key].value))
-                    elif isinstance(proptype, hyperdb.Interval):
-                        value = date.Interval(str(self.form[key].value))
-                    elif isinstance(proptype, hyperdb.Link):
-                        value = str(self.form[key].value).strip()
-                        # handle key values
-                        link = cl.properties[key].classname
-                        if not num_re.match(value):
-                            try:
-                                value = self.db.classes[link].lookup(value)
-                            except:
-                                raise ValueError, 'property "%s": %s not a %s'%(
-                                    key, value, link)
-                    elif isinstance(proptype, hyperdb.Multilink):
-                        value = self.form[key]
-                        if type(value) != type([]):
-                            value = [i.strip() for i in str(value.value).split(',')]
-                        else:
-                            value = [str(i.value).strip() for i in value]
-                        link = cl.properties[key].classname
-                        l = []
-                        for entry in map(str, value):
-                            if not num_re.match(entry):
-                                try:
-                                    entry = self.db.classes[link].lookup(entry)
-                                except:
-                                    raise ValueError, \
-                                        'property "%s": %s not a %s'%(key,
-                                        entry, link)
-                            l.append(entry)
-                        l.sort()
-                        value = l
-                    # if changed, set it
-                    if value != cl.get(self.nodeid, key):
-                        changed.append(key)
-                        props[key] = value
+                props, changed = parsePropsFromForm(cl, self.form)
                 cl.set(self.nodeid, **props)
-
                 self._post_editnode(self.nodeid, changed)
                 # and some nice feedback for the user
                 message = '%s edited ok'%', '.join(changed)
@@ -290,51 +245,8 @@ class Client:
     def _createnode(self):
         ''' create a node based on the contents of the form
         '''
-        cn = self.classname
-        cl = self.db.classes[cn]
-        props = {}
-        keys = self.form.keys()
-        num_re = re.compile('^\d+$')
-        for key in keys:
-            if not cl.properties.has_key(key):
-                continue
-            proptype = cl.properties[key]
-            if isinstance(proptype, hyperdb.String):
-                value = self.form[key].value.strip()
-            elif isinstance(proptype, hyperdb.Date):
-                value = date.Date(self.form[key].value.strip())
-            elif isinstance(proptype, hyperdb.Interval):
-                value = date.Interval(self.form[key].value.strip())
-            elif isinstance(proptype, hyperdb.Link):
-                value = self.form[key].value.strip()
-                # handle key values
-                link = cl.properties[key].classname
-                if not num_re.match(value):
-                    try:
-                        value = self.db.classes[link].lookup(value)
-                    except:
-                        raise ValueError, 'property "%s": %s not a %s'%(
-                            key, value, link)
-            elif isinstance(proptype, hyperdb.Multilink):
-                value = self.form[key]
-                if type(value) != type([]):
-                    value = [i.strip() for i in value.value.split(',')]
-                else:
-                    value = [i.value.strip() for i in value]
-                link = cl.properties[key].classname
-                l = []
-                for entry in map(str, value):
-                    if not num_re.match(entry):
-                        try:
-                            entry = self.db.classes[link].lookup(entry)
-                        except:
-                            raise ValueError, \
-                                'property "%s": %s not a %s'%(key,
-                                entry, link)
-                    l.append(entry)
-                l.sort()
-                value = l
-            props[key] = value
+        cl = self.db.classes[self.classname]
+        props, dummy = parsePropsFromForm(cl, self.form)
         return cl.create(**props)
 
     def _post_editnode(self, nid, changes=None):
@@ -376,7 +288,7 @@ class Client:
             if len(nosy) == 1 and uid in nosy:
                 nosy = 0
         if (nosy and props.has_key('messages') and
-                props['messages'].isMultilinkType and
+                isinstance(props['messages'], hyperdb.Multilink) and
                 props['messages'].classname == 'msg'):
 
             # handle the note
@@ -554,8 +466,64 @@ class Client:
     def __del__(self):
         self.db.close()
 
+def parsePropsFromForm(cl, form, note_changed=0):
+    '''Pull properties for the given class out of the form.
+    '''
+    props = {}
+    changed = []
+    keys = form.keys()
+    num_re = re.compile('^\d+$')
+    for key in keys:
+        if not cl.properties.has_key(key):
+            continue
+        proptype = cl.properties[key]
+        if isinstance(proptype, hyperdb.String):
+            value = form[key].value.strip()
+        elif isinstance(proptype, hyperdb.Date):
+            value = date.Date(form[key].value.strip())
+        elif isinstance(proptype, hyperdb.Interval):
+            value = date.Interval(form[key].value.strip())
+        elif isinstance(proptype, hyperdb.Link):
+            value = form[key].value.strip()
+            # handle key values
+            link = cl.properties[key].classname
+            if not num_re.match(value):
+                try:
+                    value = self.db.classes[link].lookup(value)
+                except:
+                    raise ValueError, 'property "%s": %s not a %s'%(
+                        key, value, link)
+        elif isinstance(proptype, hyperdb.Multilink):
+            value = form[key]
+            if type(value) != type([]):
+                value = [i.strip() for i in value.value.split(',')]
+            else:
+                value = [i.value.strip() for i in value]
+            link = cl.properties[key].classname
+            l = []
+            for entry in map(str, value):
+                if not num_re.match(entry):
+                    try:
+                        entry = self.db.classes[link].lookup(entry)
+                    except:
+                        raise ValueError, \
+                            'property "%s": %s not a %s'%(key,
+                            entry, link)
+                l.append(entry)
+            l.sort()
+            value = l
+        props[key] = value
+        # if changed, set it
+        if note_changed and value != cl.get(self.nodeid, key):
+            changed.append(key)
+            props[key] = value
+    return props, changed
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/08/12 06:32:36  richard
+# using isinstance(blah, Foo) now instead of isFooType
+#
 # Revision 1.19  2001/08/07 00:24:42  richard
 # stupid typo
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.19 2001-08-12 06:32:36 richard Exp $
+# $Id: htmltemplate.py,v 1.20 2001-08-15 23:43:18 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -94,8 +94,9 @@ class Field(Base):
             # TODO: pull the value from the form
             if isinstance(propclass, hyperdb.Multilink): value = []
             else: value = ''
-        if isinstance((propclass.isStringType or propclass, hyperdb.Date) or
-                propclass.isIntervalType):
+        if (isinstance(propclass, hyperdb.String) or
+                isinstance(propclass, hyperdb.Date) or
+                isinstance(propclass, hyperdb.Interval)):
             size = size or 30
             if value is None:
                 value = ''
@@ -297,7 +298,8 @@ class Checklist(Base):
             value = self.filterspec.get(property, [])
         else:
             value = []
-        if isinstance(propclass.isLinkType or propclass, hyperdb.Multilink):
+        if (isinstance(propclass, hyperdb.Link) or
+                isinstance(propclass, hyperdb.Multilink)):
             linkcl = self.db.classes[propclass.classname]
             l = []
             k = linkcl.labelprop()
@@ -740,6 +742,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/08/12 06:32:36  richard
+# using isinstance(blah, Foo) now instead of isFooType
+#
 # Revision 1.18  2001/08/07 00:24:42  richard
 # stupid typo
 #

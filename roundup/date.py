@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.10 2001-08-07 00:24:42 richard Exp $
+# $Id: date.py,v 1.11 2001-08-15 23:43:18 richard Exp $
 
 import time, re, calendar
 
@@ -71,8 +71,6 @@ class Date:
         >>> Date("14:25", -5)
         <Date 2000-06-25.19:25:00>
     '''
-    isDate = 1
-
     def __init__(self, spec='.', offset=0):
         """Construct a date given a specification and a time zone offset.
 
@@ -116,7 +114,7 @@ class Date:
              1. an interval from this date to produce another date.
              2. a date from this date to produce an interval.
         """
-        if other.isDate:
+        if isinstance(other, Date):
             # TODO this code will fall over laughing if the dates cross
             # leap years, phases of the moon, ....
             a = calendar.timegm((self.year, self.month, self.day, self.hour,
@@ -239,8 +237,6 @@ class Interval:
         >>> Date(". + 2d") - Interval("3w")
         <Date 2000-06-07.00:34:02>
     '''
-    isInterval = 1
-
     def __init__(self, spec, sign=1):
         """Construct an interval given a specification."""
         if type(spec) == type(''):
@@ -380,6 +376,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.9  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
