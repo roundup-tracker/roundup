@@ -1,14 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-01-?? - 0.4.0b2
+2002-01-11 - 0.4.0b2
 Fixed:
  . #495392 ] empty nosy -patch
  . #500574 ] messageid must have format <part1@part2>
  . fixed some problems with web editing and change detection
  . mail splitting wasn't detecting responses in the same "section" as quoted
    text
-
+ . missed a "from i18n import _" in date.py
 
 2002-01-08 - 0.4.0b1
 Feature:
