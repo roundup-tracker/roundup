@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.45 2002-02-20 15:48:45 grubert Exp $
+# $Id: roundupdb.py,v 1.46 2002-02-25 14:22:59 grubert Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -232,10 +232,10 @@ class FileClass(Class):
         if propname == 'content':
             try:
                 return self.db.getfile(self.classname, nodeid, None)
-            except:
+            except IOError, (strerror):
                 # BUG: by catching this we donot see an error in the log.
-                return 'ERROR reading file: %s%s\n%s'%(
-                        self.classname, nodeid, poss_msg)
+                return 'ERROR reading file: %s%s\n%s\n%s'%(
+                        self.classname, nodeid, poss_msg, strerror)
         if default is not _marker:
             return Class.get(self, nodeid, propname, default, cache=cache)
         else:
