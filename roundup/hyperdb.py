@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.100 2004-07-02 05:22:08 richard Exp $
+# $Id: hyperdb.py,v 1.101 2004-07-14 01:12:25 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -562,7 +562,7 @@ class Class:
         try:
             return self.get(nodeid, propname)
         except IndexError:
-            return default            
+            return default
 
     def export_propnames(self):
         '''List the property names for export from this Class.'''

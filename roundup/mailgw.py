@@ -74,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.150 2004-05-25 00:43:01 richard Exp $
+$Id: mailgw.py,v 1.151 2004-07-14 01:12:25 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -318,6 +318,7 @@ class MailGW:
         self.db = db
         self.arguments = arguments
         self.mailer = Mailer(instance.config)
+        self.logger = instance.config.logging.getLogger('mailgw')
 
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)
@@ -386,25 +387,19 @@ class MailGW:
         # open a connection to the server and retrieve all messages
         try:
             if ssl:
-                print 'Trying server "%s" with ssl' % server
+                self.logger.debug('Trying server %r with ssl'%server)
                 server = imaplib.IMAP4_SSL(server)
             else:
-                print 'Trying server %s without ssl' % server
+                self.logger.debug('Trying server %r without ssl'%server)
                 server = imaplib.IMAP4(server)
-        except imaplib.IMAP4.error, e:
-            print 'IMAP server error:', e
-            return 1
-        except socket.error, e:
-            print 'SOCKET error:', e
-            return 1
-        except socket.sslerror, e:
-            print 'SOCKET ssl error:', e
+        except (imaplib.IMAP4.error, socket.error, socket.sslerror):
+            self.logger.exception('IMAP server error')
             return 1
 
         try:
             server.login(user, password)
         except imaplib.IMAP4.error, e:
-            print 'Login failure:', e
+            self.logger.exception('IMAP login failure')
             return 1
 
         try:
@@ -413,12 +408,14 @@ class MailGW:
             else:
                 (typ, data) = server.select(mailbox=mailbox)
             if typ != 'OK':
-                print 'Failed to get mailbox "%s": %s'%(mailbox, data)
+                self.logger.error('Failed to get mailbox %r: %s'%(mailbox,
+                    data))
                 return 1
             try:
                 numMessages = int(data[0])
             except ValueError, value:
-                print 'Invalid message count from mailbox %r'%data[0]
+                self.logger.error('Invalid message count from mailbox %r'%
+                    data[0])
                 return 1
             for i in range(1, numMessages+1):
                 (typ, data) = server.fetch(str(i), '(RFC822)')
@@ -463,8 +460,8 @@ class MailGW:
         # open a connection to the server and retrieve all messages
         try:
             server = poplib.POP3(server)
-        except socket.error, message:
-            print "POP server error:", message
+        except socket.error:
+            self.logger.exception('POP server error')
             return 1
         if apop:
             server.apop(user, password)
@@ -510,23 +507,22 @@ class MailGW:
             sendto = message.getaddrlist('from')
         if not sendto:
             # very bad-looking message - we don't even know who sent it
-            # XXX we should use a log file here...
-            
-            sendto = [self.instance.config.ADMIN_EMAIL]
-
-            m = ['Subject: badly formed message from mail gateway']
-            m.append('')
-            m.append('The mail gateway retrieved a message which has no From:')
-            m.append('line, indicating that it is corrupt. Please check your')
-            m.append('mail gateway source. Failed message is attached.')
-            m.append('')
-            self.mailer.bounce_message(message, sendto, m,
-                subject='Badly formed message from mail gateway')
+            msg = ['Badly formed message from mail gateway. Headers:']
+            msg.extend(message.headers)
+            msg = '\n'.join(map(str, msg))
+            self.logger.error(msg)
             return
+
+        msg = 'Handling message'
+        if message.getheader('message-id'):
+            msg += ' (Message-id=%r)'%message.getheader('message-id')
+        self.logger.info(msg)
 
         # try normal message-handling
         if not self.trapExceptions:
             return self.handle_message(message)
+
+        # no, we want to trap exceptions
         try:
             return self.handle_message(message)
         except MailUsageHelp:
@@ -551,24 +547,26 @@ class MailGW:
             m.append(str(value))
             self.mailer.bounce_message(message, [sendto[0][1]], m)
         except IgnoreMessage:
-            # XXX we should use a log file here...
             # do not take any action
             # this exception is thrown when email should be ignored
+            msg = 'IgnoreMessage raised'
+            if message.getheader('message-id'):
+                msg += ' (Message-id=%r)'%message.getheader('message-id')
+            self.logger.info(msg)
             return
         except:
+            msg = 'Exception handling message'
+            if message.getheader('message-id'):
+                msg += ' (Message-id=%r)'%message.getheader('message-id')
+            self.logger.exception(msg)
+
             # bounce the message back to the sender with the error message
-            # XXX we should use a log file here...
             # let the admin know that something very bad is happening
             sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
             m = ['']
             m.append('An unexpected error occurred during the processing')
             m.append('of your message. The tracker administrator is being')
             m.append('notified.\n')
-            m.append('----  traceback of failure  ----')
-            s = cStringIO.StringIO()
-            import traceback
-            traceback.print_exc(None, s)
-            m.append(s.getvalue())
             self.mailer.bounce_message(message, sendto, m)
 
     def handle_message(self, message):
@@ -868,7 +866,7 @@ not find a text/plain part to use.
             'no') == 'yes'
 
         # parse the body of the message, stripping out bits as appropriate
-        summary, content = parseContent(content, keep_citations, 
+        summary, content = parseContent(content, keep_citations,
             keep_body)
         content = content.strip()
 
@@ -1124,4 +1122,4 @@ def parseContent(content, keep_citations, keep_body,
 
     return summary, content
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si
