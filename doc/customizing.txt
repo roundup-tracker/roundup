@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.88 $
+:Version: $Revision: 1.89 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -52,19 +52,20 @@ html/               Web interface templates, images and style sheets
 Tracker Configuration
 =====================
 
-The config.py located in your tracker home contains the basic configuration
-for the web and e-mail components of roundup's interfaces. As the name
-suggests, this file is a Python module. This means that any valid python
-expression may be used in the file. Mostly though, you'll be setting the
-configuration variables to string values. Python string values must be quoted
-with either single or double quotes::
+The ``config.py`` located in your tracker home contains the basic
+configuration for the web and e-mail components of roundup's interfaces.
+As the name suggests, this file is a Python module. This means that any
+valid python expression may be used in the file. Mostly though, you'll
+be setting the configuration variables to string values. Python string
+values must be quoted with either single or double quotes::
 
    'this is a string'
-   "this is also a string - use it when you have a 'single quote' in the value"
+   "this is also a string - use it when the value has 'single quotes'"
    this is not a string - it's not quoted
 
 Python strings may use formatting that's almost identical to C string
-formatting. The ``%`` operator is used to perform the formatting, like so::
+formatting. The ``%`` operator is used to perform the formatting, like
+so::
 
     'roundup-admin@%s'%MAIL_DOMAIN
 
@@ -75,9 +76,10 @@ You'll also note some values are set to::
 
    os.path.join(TRACKER_HOME, 'db')
 
-or similar. This creates a new string which holds the path to the "db"
-directory in the TRACKER_HOME directory. This is just a convenience so if the
-TRACKER_HOME changes you don't have to edit multiple valoues.
+or similar. This creates a new string which holds the path to the
+``'db'`` directory in the TRACKER_HOME directory. This is just a
+convenience so if the TRACKER_HOME changes you don't have to edit
+multiple valoues.
 
 The configuration variables available are:
 
@@ -140,7 +142,7 @@ The configuration variables available are:
 
     "Foo Bar" <issue_tracker@tracker.example>
 
- the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
+ The EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
 
     "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
@@ -203,18 +205,20 @@ tracker is attempted.::
     # The email address that mail to roundup should go to
     TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
-    # The web address that the tracker is viewable at. This will be included in
-    # information sent to users of the tracker. The URL MUST include the cgi-bin
-    # part or anything else that is required to get to the home page of the
-    # tracker. You MUST include a trailing '/' in the URL.
+    # The web address that the tracker is viewable at. This will be
+    # included in information sent to users of the tracker. The URL MUST
+    # include the cgi-bin part or anything else that is required to get
+    # to the home page of the tracker. You MUST include a trailing '/'
+    # in the URL.
     TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 
-    # The email address that roundup will complain to if it runs into trouble
+    # The email address that roundup will complain to if it runs into
+    # trouble
     ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 
-    # Additional text to include in the "name" part of the From: address used
-    # in nosy messages. If the sending user is "Foo Bar", the From: line is
-    # usually: "Foo Bar" <issue_tracker@tracker.example>
+    # Additional text to include in the "name" part of the From: address
+    # used in nosy messages. If the sending user is "Foo Bar", the From:
+    # line is usually: "Foo Bar" <issue_tracker@tracker.example>
     # the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
     #    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
     EMAIL_FROM_TAG = ""
@@ -222,16 +226,18 @@ tracker is attempted.::
     # Send nosy messages to the author of the message
     MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
 
-    # Does the author of a message get placed on the nosy list automatically?
-    # If 'new' is used, then the author will only be added when a message
-    # creates a new issue. If 'yes', then the author will be added on followups
-    # too. If 'no', they're never added to the nosy.
+    # Does the author of a message get placed on the nosy list
+    # automatically? If 'new' is used, then the author will only be
+    # added when a message creates a new issue. If 'yes', then the
+    # author will be added on followups too. If 'no', they're never
+    # added to the nosy.
     ADD_AUTHOR_TO_NOSY = 'new'          # one of 'yes', 'no', 'new'
 
-    # Do the recipients (To:, Cc:) of a message get placed on the nosy list?
-    # If 'new' is used, then the recipients will only be added when a message
-    # creates a new issue. If 'yes', then the recipients will be added on followups
-    # too. If 'no', they're never added to the nosy.
+    # Do the recipients (To:, Cc:) of a message get placed on the nosy
+    # list? If 'new' is used, then the recipients will only be added
+    # when a message creates a new issue. If 'yes', then the recipients
+    # will be added on followups too. If 'no', they're never added to
+    # the nosy.
     ADD_RECIPIENTS_TO_NOSY = 'new'      # either 'yes', 'no', 'new'
 
     # Where to place the email signature
@@ -244,16 +250,17 @@ tracker is attempted.::
     EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 
     # Default class to use in the mailgw if one isn't supplied in email
-    # subjects. To disable, comment out the variable below or leave it blank.
-    # Examples:
+    # subjects. To disable, comment out the variable below or leave it
+    # blank. Examples:
     MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
     # 
     # SECURITY DEFINITIONS
     #
-    # define the Roles that a user gets when they register with the tracker
-    # these are a comma-separated string of role names (e.g. 'Admin,User')
+    # define the Roles that a user gets when they register with the
+    # tracker these are a comma-separated string of role names (e.g.
+    # 'Admin,User')
     NEW_WEB_USER_ROLES = 'User'
     NEW_EMAIL_USER_ROLES = 'User'
 
@@ -266,7 +273,8 @@ Note: if you modify the schema, you'll most likely need to edit the
 
 A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``dbinit.py`` module of your
-tracker. The "classic" schema looks like this::
+tracker. The "classic" schema looks like this (see below for the meaning
+of ``'setkey'``)::
 
     pri = Class(db, "priority", name=String(), order=String())
     pri.setkey("name")
@@ -278,11 +286,13 @@ tracker. The "classic" schema looks like this::
     keyword.setkey("name")
 
     user = Class(db, "user", username=String(), organisation=String(),
-        password=String(), address=String(), realname=String(), phone=String())
+        password=String(), address=String(), realname=String(),
+        phone=String())
     user.setkey("username")
 
     msg = FileClass(db, "msg", author=Link("user"), summary=String(),
-        date=Date(), recipients=Multilink("user"), files=Multilink("file"))
+        date=Date(), recipients=Multilink("user"),
+        files=Multilink("file"))
 
     file = FileClass(db, "file", name=String(), type=String())
 
@@ -306,34 +316,38 @@ In the tracker above, we've defined 7 classes of information:
       Initially empty, will hold keywords useful for searching issues.
 
   user
-      Initially holding the "admin" user, will eventually have an entry for all
-      users using roundup.
+      Initially holding the "admin" user, will eventually have an entry
+      for all users using roundup.
 
   msg
-      Initially empty, will all e-mail messages sent to or generated by
-      roundup.
+      Initially empty, will hold all e-mail messages sent to or
+      generated by roundup.
 
   file
-      Initially empty, will all files attached to issues.
+      Initially empty, will hold all files attached to issues.
 
   issue
       Initially empty, this is where the issue information is stored.
 
-We define the "priority" and "status" classes to allow two things: reduction in
-the amount of information stored on the issue and more powerful, accurate
-searching of issues by priority and status. By only requiring a link on the
-issue (which is stored as a single number) we reduce the chance that someone
-mis-types a priority or status - or simply makes a new one up.
+We define the "priority" and "status" classes to allow two things:
+reduction in the amount of information stored on the issue and more
+powerful, accurate searching of issues by priority and status. By only
+requiring a link on the issue (which is stored as a single number) we
+reduce the chance that someone mis-types a priority or status - or
+simply makes a new one up.
+
 
 Class and Items
 ~~~~~~~~~~~~~~~
 
-A Class defines a particular class (or type) of data that will be stored in the
-database. A class comprises one or more properties, which given the information
-about the class items.
-The actual data entered into the database, using class.create() are called
-items. They have a special immutable property called id. We sometimes refer to
-this as the itemid.
+A Class defines a particular class (or type) of data that will be stored
+in the database. A class comprises one or more properties, which gives
+the information about the class items.
+
+The actual data entered into the database, using ``class.create()``, are
+called items. They have a special immutable property called ``'id'``. We
+sometimes refer to this as the *itemid*.
+
 
 Properties
 ~~~~~~~~~~
@@ -341,55 +355,63 @@ Properties
 A Class is comprised of one or more properties of the following types:
 
 * String properties are for storing arbitrary-length strings.
-* Password properties are for storing encoded arbitrary-length strings. The
-  default encoding is defined on the roundup.password.Password class.
+* Password properties are for storing encoded arbitrary-length strings.
+  The default encoding is defined on the ``roundup.password.Password``
+  class.
 * Date properties store date-and-time stamps. Their values are Timestamp
   objects.
 * Number properties store numeric values.
 * Boolean properties store on/off, yes/no, true/false values.
-* A Link property refers to a single other item selected from a specified
-  class. The class is part of the property; the value is an integer, the id
-  of the chosen item.
-* A Multilink property refers to possibly many items in a specified class.
-  The value is a list of integers.
+* A Link property refers to a single other item selected from a
+  specified class. The class is part of the property; the value is an
+  integer, the id of the chosen item.
+* A Multilink property refers to possibly many items in a specified
+  class. The value is a list of integers.
+
 
 FileClass
 ~~~~~~~~~
 
-FileClasses save their "content" attribute off in a separate file from the rest
-of the database. This reduces the number of large entries in the database,
-which generally makes databases more efficient, and also allows us to use
-command-line tools to operate on the files. They are stored in the files sub-
-directory of the db directory in your tracker.
+FileClasses save their "content" attribute off in a separate file from
+the rest of the database. This reduces the number of large entries in
+the database, which generally makes databases more efficient, and also
+allows us to use command-line tools to operate on the files. They are
+stored in the files sub-directory of the ``'db'`` directory in your
+tracker.
+
 
 IssueClass
 ~~~~~~~~~~
 
 IssueClasses automatically include the "messages", "files", "nosy", and
 "superseder" properties.
-The messages and files properties list the links to the messages and files
-related to the issue. The nosy property is a list of links to users who wish to
-be informed of changes to the issue - they get "CC'ed" e-mails when messages
-are sent to or generated by the issue. The nosy reactor (in the detectors
-directory) handles this action. The superseder link indicates an issue which
-has superseded this one.
-They also have the dynamically generated "creation", "activity" and "creator"
-properties.
-The value of the "creation" property is the date when an item was created, and
-the value of the "activity" property is the date when any property on the item
-was last edited (equivalently, these are the dates on the first and last
-records in the item's journal). The "creator" property holds a link to the user
-that created the issue.
+
+The messages and files properties list the links to the messages and
+files related to the issue. The nosy property is a list of links to
+users who wish to be informed of changes to the issue - they get "CC'ed"
+e-mails when messages are sent to or generated by the issue. The nosy
+reactor (in the ``'detectors'`` directory) handles this action. The
+superseder link indicates an issue which has superseded this one.
+
+They also have the dynamically generated "creation", "activity" and
+"creator" properties.
+
+The value of the "creation" property is the date when an item was
+created, and the value of the "activity" property is the date when any
+property on the item was last edited (equivalently, these are the dates
+on the first and last records in the item's journal). The "creator"
+property holds a link to the user that created the issue.
+
 
 setkey(property)
 ~~~~~~~~~~~~~~~~
 
-Select a String property of the class to be the key property. The key property
-muse be unique, and allows references to the items in the class by the content
-of the key property. That is, we can refer to users by their username, e.g.
-let's say that there's an issue in roundup, issue 23. There's also a user,
-richard who happens to be user 2. To assign an issue to him, we could do either
-of::
+Select a String property of the class to be the key property. The key
+property must be unique, and allows references to the items in the class
+by the content of the key property. That is, we can refer to users by
+their username: for example, let's say that there's an issue in roundup,
+issue 23. There's also a user, richard, who happens to be user 2. To
+assign an issue to him, we could do either of::
 
      roundup-admin set issue23 assignedto=2
 
@@ -397,13 +419,20 @@ or::
 
      roundup-admin set issue23 assignedto=richard
 
-Note, the same thing can be done in the web and e-mail interfaces.
+Note, the same thing can be done in the web and e-mail interfaces. 
+
+If a class does not have an "order" property, the key is also used to
+sort instances of the class when it is rendered in the user interface.
+(If a class has no "order" property, sorting is by the labelproperty of
+the class. This is computed, in order of precedence, as the key, the
+"name", the "title", or the first property alphabetically.)
+
 
 create(information)
 ~~~~~~~~~~~~~~~~~~~
 
-Create an item in the database. This is generally used to create items in the
-"definitional" classes like "priority" and "status".
+Create an item in the database. This is generally used to create items
+in the "definitional" classes like "priority" and "status".
 
 
 Examples of adding to your schema
@@ -416,39 +445,44 @@ Detectors - adding behaviour to your tracker
 ============================================
 .. _detectors:
 
-Detectors are initialised every time you open your tracker database, so you're
-free to add and remove them any time, even after the database is initliased
-via the "roundup-admin initalise" command.
+Detectors are initialised every time you open your tracker database, so
+you're free to add and remove them any time, even after the database is
+initialised via the "roundup-admin initialise" command.
 
-The detectors in your tracker fire before (*auditors*) and after (*reactors*)
-changes to the contents of your database. They are Python modules that sit in
-your tracker's ``detectors`` directory. You will have some installed by
-default - have a look. You can write new detectors or modify the existing
-ones. The existing detectors installed for you are:
+The detectors in your tracker fire *before* (**auditors**) and *after*
+(**reactors**) changes to the contents of your database. They are Python
+modules that sit in your tracker's ``detectors`` directory. You will
+have some installed by default - have a look. You can write new
+detectors or modify the existing ones. The existing detectors installed
+for you are:
 
 **nosyreaction.py**
-  This provides the automatic nosy list maintenance and email sending. The nosy
-  reactor (``nosyreaction``) fires when new messages are added to issues.
-  The nosy auditor (``updatenosy``) fires when issues are changed and figures
-  what changes need to be made to the nosy list (like adding new authors etc)
+  This provides the automatic nosy list maintenance and email sending.
+  The nosy reactor (``nosyreaction``) fires when new messages are added
+  to issues. The nosy auditor (``updatenosy``) fires when issues are
+  changed, and figures out what changes need to be made to the nosy list
+  (such as adding new authors, etc.)
 **statusauditor.py**
-  This provides the ``chatty`` auditor which changes the issue status from
-  ``unread`` or ``closed`` to ``chatting`` if new messages appear. It also
-  provides the ``presetunread`` auditor which pre-sets the status to
-  ``unread`` on new items if the status isn't explicitly defined.
+  This provides the ``chatty`` auditor which changes the issue status
+  from ``unread`` or ``closed`` to ``chatting`` if new messages appear.
+  It also provides the ``presetunread`` auditor which pre-sets the
+  status to ``unread`` on new items if the status isn't explicitly
+  defined.
 
 See the detectors section in the `design document`__ for details of the
 interface for detectors.
 
 __ design.html
 
-Sample additional detectors that have been found useful will appear in the
-``detectors`` directory of the Roundup distribution:
+Sample additional detectors that have been found useful will appear in
+the ``'detectors'`` directory of the Roundup distribution. If you want
+to use one, copy it to the ``'detectors'`` of your tracker instance:
 
 **newissuecopy.py**
   This detector sends an email to a team address whenever a new issue is
-  created. The address is hard-coded into the detector, so edit it before you
-  use it (look for the text 'team@team.host') or you'll get email errors!
+  created. The address is hard-coded into the detector, so edit it
+  before you use it (look for the text 'team@team.host') or you'll get
+  email errors!
 
   The detector code::
 
@@ -464,7 +498,8 @@ Sample additional detectors that have been found useful will appear in the
         for msgid in cl.get(nodeid, 'messages'):
             try:
                 # note: last arg must be a list
-                cl.send_message(nodeid, msgid, change_note, ['team@team.host'])
+                cl.send_message(nodeid, msgid, change_note,
+                    ['team@team.host'])
             except roundupdb.MessageSendError, message:
                 raise roundupdb.DetectorError, message
 
@@ -475,34 +510,36 @@ Sample additional detectors that have been found useful will appear in the
 Database Content
 ================
 
-Note: if you modify the content of definitional classes, you'll most likely
-       need to edit the tracker `detectors`_ to reflect your changes.
+Note: if you modify the content of definitional classes, you'll most
+       likely need to edit the tracker `detectors`_ to reflect your
+       changes.
 
-Customisation of the special "definitional" classes (eg. status, priority,
-resolution, ...) may be done either before or after the tracker is
-initialised. The actual method of doing so is completely different in each
-case though, so be careful to use the right one.
+Customisation of the special "definitional" classes (eg. status,
+priority, resolution, ...) may be done either before or after the
+tracker is initialised. The actual method of doing so is completely
+different in each case though, so be careful to use the right one.
 
 **Changing content before tracker initialisation**
-    Edit the dbinit module in your tracker to alter the items created in using
-    the create() methods.
+    Edit the dbinit module in your tracker to alter the items created in
+    using the ``create()`` methods.
 
 **Changing content after tracker initialisation**
-    As the "admin" user, click on the "class list" link in the web interface
-    to bring up a list of all database classes. Click on the name of the class
-    you wish to change the content of.
+    As the "admin" user, click on the "class list" link in the web
+    interface to bring up a list of all database classes. Click on the
+    name of the class you wish to change the content of.
 
-    You may also use the roundup-admin interface's create, set and retire
-    methods to add, alter or remove items from the classes in question.
+    You may also use the ``roundup-admin`` interface's create, set and
+    retire methods to add, alter or remove items from the classes in
+    question.
 
-See "`adding a new field to the classic schema`_" for an example that requires
-database content changes.
+See "`adding a new field to the classic schema`_" for an example that
+requires database content changes.
 
 
 Access Controls
 ===============
 
-A set of Permissions are built in to the security module by default:
+A set of Permissions is built into the security module by default:
 
 - Edit (everything)
 - View (everything)
@@ -521,18 +558,18 @@ These are hooked into the default Roles:
 - User (Web Access, Email Access)
 - Anonymous (Web Registration, Email Registration)
 
-And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
-gets the "Anonymous" assigned when the database is initialised on installation.
-The two default schemas then define:
+And finally, the "admin" user gets the "Admin" Role, and the "anonymous"
+user gets "Anonymous" assigned when the database is initialised on
+installation. The two default schemas then define:
 
 - Edit issue, View issue (both)
 - Edit file, View file (both)
 - Edit msg, View msg (both)
 - Edit support, View support (extended only)
 
-and assign those Permissions to the "User" Role. Put together, these settings
-appear in the ``open()`` function of the tracker ``dbinit.py`` (the following
-is taken from the "minimal" template ``dbinit.py``)::
+and assign those Permissions to the "User" Role. Put together, these
+settings appear in the ``open()`` function of the tracker ``dbinit.py``
+(the following is taken from the "minimal" template's ``dbinit.py``)::
 
     #
     # SECURITY SETTINGS
@@ -555,12 +592,13 @@ is taken from the "minimal" template ``dbinit.py``)::
     p = db.security.getPermission('View', 'user')
     db.security.addPermissionToRole('User', p)
 
-    # Assign the appropriate permissions to the anonymous user's Anonymous
-    # Role. Choices here are:
+    # Assign the appropriate permissions to the anonymous user's
+    # Anonymous role. Choices here are:
     # - Allow anonymous users to register through the web
     p = db.security.getPermission('Web Registration')
     db.security.addPermissionToRole('Anonymous', p)
-    # - Allow anonymous (new) users to register through the email gateway
+    # - Allow anonymous (new) users to register through the email
+    #   gateway
     p = db.security.getPermission('Email Registration')
     db.security.addPermissionToRole('Anonymous', p)
 
@@ -577,12 +615,13 @@ New users are assigned the Roles defined in the config file as:
 Changing Access Controls
 ------------------------
 
-You may alter the configuration variables to change the Role that new web or
-email users get, for example to not give them access to the web interface if
-they register through email. 
+You may alter the configuration variables to change the Role that new
+web or email users get, for example to not give them access to the web
+interface if they register through email. 
 
 You may use the ``roundup-admin`` "``security``" command to display the
 current Role and Permission configuration in your tracker.
+
 
 Adding a new Permission
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -596,52 +635,55 @@ When adding a new Permission, you will need to:
 4. add it to the appropriate xxxPermission methods on in your tracker
    interfaces module
 
+
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
 
 **automatic registration of users in the e-mail gateway**
  By giving the "anonymous" user the "Email Registration" Role, any
- unidentified user will automatically be registered with the tracker (with
- no password, so they won't be able to log in through the web until an admin
- sets them a password). Note: this is the default behaviour in the tracker
- templates that ship with Roundup.
+ unidentified user will automatically be registered with the tracker
+ (with no password, so they won't be able to log in through the web
+ until an admin sets their password). Note: this is the default
+ behaviour in the tracker templates that ship with Roundup.
 
 **anonymous access through the e-mail gateway**
- Give the "anonymous" user the "Email Access" and ("Edit", "issue") Roles
- but not giving them the "Email Registration" Role. This means that when an
- unknown user sends email into the tracker, they're automatically logged in
- as "anonymous". Since they don't have the "Email Registration" Role, they
- won't be automatically registered, but since "anonymous" has permission
- to use the gateway, they'll still be able to submit issues. Note that the
- Sender information - their email address - will not be available - they're
- *anonymous*.
+ Give the "anonymous" user the "Email Access" and ("Edit", "issue")
+ Roles but do not not give them the "Email Registration" Role. This
+ means that when an unknown user sends email into the tracker, they're
+ automatically logged in as "anonymous". Since they don't have the
+ "Email Registration" Role, they won't be automatically registered, but
+ since "anonymous" has permission to use the gateway, they'll still be
+ able to submit issues. Note that the Sender information - their email
+ address - will not be available - they're *anonymous*.
 
 **only developers may be assigned issues**
- Create a new Permission called "Fixer" for the "issue" class. Create a new
- Role "Developer" which has that Permission, and assign that to the
+ Create a new Permission called "Fixer" for the "issue" class. Create a
+ new Role "Developer" which has that Permission, and assign that to the
  appropriate users. Filter the list of users available in the assignedto
- list to include only those users. Enforce the Permission with an auditor. See
- the example `restricting the list of users that are assignable to a task`_.
+ list to include only those users. Enforce the Permission with an
+ auditor. See the example 
+ `restricting the list of users that are assignable to a task`_.
 
 **only managers may sign off issues as complete**
- Create a new Permission called "Closer" for the "issue" class. Create a new
- Role "Manager" which has that Permission, and assign that to the appropriate
- users. In your web interface, only display the "resolved" issue state option
- when the user has the "Closer" Permissions. Enforce the Permission with
- an auditor. This is very similar to the previous example, except that the
- web interface check would look like::
+ Create a new Permission called "Closer" for the "issue" class. Create a
+ new Role "Manager" which has that Permission, and assign that to the
+ appropriate users. In your web interface, only display the "resolved"
+ issue state option when the user has the "Closer" Permissions. Enforce
+ the Permission with an auditor. This is very similar to the previous
+ example, except that the web interface check would look like::
 
    <option tal:condition="python:request.user.hasPermission('Closer')"
            value="resolved">Resolved</option>
  
-**don't give users who register through email web access**
- Create a new Role called "Email User" which has all the Permissions of the
- normal "User" Role minus the "Web Access" Permission. This will allow users
- to send in emails to the tracker, but not access the web interface.
+**don't give web access to users who register through email**
+ Create a new Role called "Email User" which has all the Permissions of
+ the normal "User" Role minus the "Web Access" Permission. This will
+ allow users to send in emails to the tracker, but not access the web
+ interface.
 
 **let some users edit the details of all users**
- Create a new Role called "User Admin" which has the Permission for editing
- users::
+ Create a new Role called "User Admin" which has the Permission for
+ editing users::
 
     db.security.addRole(name='User Admin', description='Managing users')
     p = db.security.getPermission('Edit', 'user')
@@ -657,25 +699,26 @@ Web Interface
    :local:
    :depth: 1
 
-The web is provided by the roundup.cgi.client module and is used by
-roundup.cgi, roundup-server and ZRoundup.
-In all cases, we determine which tracker is being accessed
-(the first part of the URL path inside the scope of the CGI handler) and pass
-control on to the tracker interfaces.Client class - which uses the Client class
-from roundup.cgi.client - which handles the rest of
-the access through its main() method. This means that you can do pretty much
+The web interface is provided by the ``roundup.cgi.client`` module and
+is used by ``roundup.cgi``, ``roundup-server`` and ``ZRoundup``
+(``ZRoundup``  is broken, until further notice). In all cases, we
+determine which tracker is being accessed (the first part of the URL
+path inside the scope of the CGI handler) and pass control on to the
+tracker ``interfaces.Client`` class - which uses the ``Client`` class
+from ``roundup.cgi.client`` - which handles the rest of the access
+through its ``main()`` method. This means that you can do pretty much
 anything you want as a web interface to your tracker.
 
-Repurcussions of changing the tracker schema
+Repercussions of changing the tracker schema
 ---------------------------------------------
 
-If you choose to change the `tracker schema`_ you will need to ensure the web
-interface knows about it:
+If you choose to change the `tracker schema`_ you will need to ensure
+the web interface knows about it:
 
-1. Index, item and search pages for the relevant classes may need to have
-   properties added or removed,
-2. The "page" template may require links to be changed, as might the "home"
-   page's content arguments.
+1. Index, item and search pages for the relevant classes may need to
+   have properties added or removed,
+2. The "page" template may require links to be changed, as might the
+   "home" page's content arguments.
 
 How requests are processed
 --------------------------
@@ -685,28 +728,30 @@ The basic processing of a web request proceeds as follows:
 1. figure out who we are, defaulting to the "anonymous" user
 2. figure out what the request is for - we call this the "context"
 3. handle any requested action (item edit, search, ...)
-4. render the template requested by the context, resulting in HTML output
+4. render the template requested by the context, resulting in HTML
+   output
 
 In some situations, exceptions occur:
 
 - HTTP Redirect  (generally raised by an action)
-- SendFile       (generally raised by determine_context)
-  here we serve up a FileClass "content" property
-- SendStaticFile (generally raised by determine_context)
-  here we serve up a file from the tracker "html" directory
+- SendFile       (generally raised by ``determine_context``)
+    here we serve up a FileClass "content" property
+- SendStaticFile (generally raised by ``determine_context``)
+    here we serve up a file from the tracker "html" directory
 - Unauthorised   (generally raised by an action)
-  here the action is cancelled, the request is rendered and an error
-  message is displayed indicating that permission was not
-  granted for the action to take place
+    here the action is cancelled, the request is rendered and an error
+    message is displayed indicating that permission was not granted for
+    the action to take place
 - NotFound       (raised wherever it needs to be)
-  this exception percolates up to the CGI interface that called the client
+    this exception percolates up to the CGI interface that called the
+    client
 
 Determining web context
 -----------------------
 
-To determine the "context" of a request, we look at the URL and the special
-request variable ``:template``. The URL path after the tracker identifier
-is examined. Typical URL paths look like:
+To determine the "context" of a request, we look at the URL and the
+special request variable ``:template``. The URL path after the tracker
+identifier is examined. Typical URL paths look like:
 
 1.  ``/tracker/issue``
 2.  ``/tracker/issue1``
@@ -723,29 +768,26 @@ a. if there is no path, then we are in the "home" context.
 b. if the path starts with "_file" (as in example 3,
    "/tracker/_file/style.css"), then the additional path entry,
    "style.css" specifies the filename of a static file we're to serve up
-   from the tracker "html" directory. Raises a SendStaticFile
-   exception.
-c. if there is something in the path (as in example 1, "issue"), it identifies
-   the tracker class we're to display.
-d. if the path is an item designator (as in examples 2 and 4, "issue1" and
-   "file1"), then we're to display a specific item.
-e. if the path starts with an item designator and is longer than
-   one entry (as in example 5, "file1/kitten.png"), then we're assumed
-   to be handling an item of a
-   FileClass, and the extra path information gives the filename
-   that the client is going to label the download with (ie
-   "file1/kitten.png" is nicer to download than "file1"). This
-   raises a SendFile exception.
+   from the tracker "html" directory. Raises a SendStaticFile exception.
+c. if there is something in the path (as in example 1, "issue"), it
+   identifies the tracker class we're to display.
+d. if the path is an item designator (as in examples 2 and 4, "issue1"
+   and "file1"), then we're to display a specific item.
+e. if the path starts with an item designator and is longer than one
+   entry (as in example 5, "file1/kitten.png"), then we're assumed to be
+   handling an item of a ``FileClass``, and the extra path information
+   gives the filename that the client is going to label the download
+   with (i.e. "file1/kitten.png" is nicer to download than "file1").
+   This raises a ``SendFile`` exception.
 
-Both b. and e. stop before we bother to
-determine the template we're going to use. That's because they
-don't actually use templates.
+Both b. and e. stop before we bother to determine the template we're
+going to use. That's because they don't actually use templates.
 
-The template used is specified by the ``:template`` CGI variable,
-which defaults to:
+The template used is specified by the ``:template`` CGI variable, which
+defaults to:
 
-- only classname suplied:          "index"
-- full item designator supplied:   "item"
+- only classname suplied:        "index"
+- full item designator supplied: "item"
 
 
 Performing actions in web requests
@@ -754,7 +796,8 @@ Performing actions in web requests
 When a user requests a web page, they may optionally also request for an
 action to take place. As described in `how requests are processed`_, the
 action is performed before the requested page is generated. Actions are
-triggered by using a ``:action`` CGI variable, where the value is one of:
+triggered by using a ``:action`` CGI variable, where the value is one
+of:
 
 **login**
  Attempt to log a user in.
@@ -763,128 +806,137 @@ triggered by using a ``:action`` CGI variable, where the value is one of:
  Log the user out - make them "anonymous".
 
 **register**
- Attempt to create a new user based on the contents of the form and then log
- them in.
+ Attempt to create a new user based on the contents of the form and then
+ log them in.
 
 **edit**
  Perform an edit of an item in the database. There are some special form
  elements you may use:
 
  :link=designator:property and :multilink=designator:property
-  The value specifies an item designator and the property on that
-  item to add *this* item to as a link or multilink.
+  The value specifies an item designator and the property on that item
+  to which *this* item should be added, as a link or multilink.
  :note
-  Create a message and attach it to the current item's
-  "messages" property.
+  Create a message and attach it to the current item's "messages"
+  property.
  :file
-  Create a file and attach it to the current item's
-  "files" property. Attach the file to the message created from
-  the :note if it's supplied.
+  Create a file and attach it to the current item's "files" property.
+  Attach the file to the message created from the ``:note`` if it's
+  supplied.
  :required=property,property,...
   The named properties are required to be filled in the form.
  :remove:<propname>=id(s)
-  The ids will be removed from the multilink property. You may have multiple
-  :remove:<propname> form elements for a single <propname>.
+  The ids will be removed from the multilink property. You may have
+  multiple ``:remove:<propname>`` form elements for a single <propname>.
  :add:<propname>=id(s)
   The ids will be added to the multilink property. You may have multiple
-  :add:<propname> form elements for a single <propname>.
+  ``:add:<propname>`` form elements for a single <propname>.
 
 **new**
- Add a new item to the database. You may use the same special form elements
- as in the "edit" action.
+ Add a new item to the database. You may use the same special form
+ elements as in the "edit" action.
 
 **retire**
  Retire the item in the database.
 
 **editCSV**
  Performs an edit of all of a class' items in one go. See also the
- *class*.csv templating method which generates the CSV data to be edited, and
- the "_generic.index" template which uses both of these features.
+ *class*.csv templating method which generates the CSV data to be
+ edited, and the ``'_generic.index'`` template which uses both of these
+ features.
 
 **search**
- Mangle some of the form variables.
+ Mangle some of the form variables:
 
- Set the form ":filter" variable based on the values of the
- filter variables - if they're set to anything other than
- "dontcare" then add them to :filter.
+ - Set the form ":filter" variable based on the values of the filter
+   variables - if they're set to anything other than "dontcare" then add
+   them to :filter.
 
- Also handle the ":queryname" variable and save off the query to
- the user's query list.
+ - Also handle the ":queryname" variable and save off the query to the
+   user's query list.
 
-Each of the actions is implemented by a corresponding *actionAction* (where
-"action" is the name of the action) method on
-the roundup.cgi.Client class, which also happens to be in your tracker as
-interfaces.Client. So if you need to define new actions, you may add them
-there (see `defining new web actions`_).
+Each of the actions is implemented by a corresponding ``*actionAction*``
+(where "action" is the name of the action) method on the
+``roundup.cgi.Client`` class, which also happens to be available in your
+tracker instance as ``interfaces.Client``. So if you need to define new
+actions, you may add them there (see `defining new web actions`_).
 
-Each action also has a corresponding *actionPermission* (where
-"action" is the name of the action) method which determines
-whether the action is permissible given the current user. The base permission
-checks are:
+Each action also has a corresponding ``*actionPermission*`` (where
+"action" is the name of the action) method which determines whether the
+action is permissible given the current user. The base permission checks
+are:
 
 **login**
- Determine whether the user has permission to log in.
- Base behaviour is to check the user has "Web Access".
+ Determine whether the user has permission to log in. Base behaviour is
+ to check the user has "Web Access".
 **logout**
  No permission checks are made.
 **register**
- Determine whether the user has permission to register
- Base behaviour is to check the user has "Web Registration".
+ Determine whether the user has permission to register. Base behaviour
+ is to check the user has the "Web Registration" Permission.
 **edit**
- Determine whether the user has permission to edit this item.
- Base behaviour is to check the user can edit this class. If we're
- editing the "user" class, users are allowed to edit their own
- details. Unless it's the "roles" property, which requires the
+ Determine whether the user has permission to edit this item. Base
+ behaviour is to check whether the user can edit this class. If we're
+ editing the "user" class, users are allowed to edit their own details -
+ unless they try to edit the "roles" property, which requires the
  special Permission "Web Roles".
 **new**
- Determine whether the user has permission to create (edit) this item.
- Base behaviour is to check the user can edit this class. No
- additional property checks are made. Additionally, new user items
- may be created if the user has the "Web Registration" Permission.
+ Determine whether the user has permission to create (or edit) this
+ item. Base behaviour is to check the user can edit this class. No
+ additional property checks are made. Additionally, new user items may
+ be created if the user has the "Web Registration" Permission.
 **editCSV**
- Determine whether the user has permission to edit this class.
- Base behaviour is to check the user can edit this class.
+ Determine whether the user has permission to edit this class. Base
+ behaviour is to check whether the user may edit this class.
 **search**
- Determine whether the user has permission to search this class.
- Base behaviour is to check the user can view this class.
+ Determine whether the user has permission to search this class. Base
+ behaviour is to check whether the user may view this class.
 
 
 Default templates
 -----------------
 
-Most customisation of the web view can be done by modifying the templates in
-the tracker **html** directory. There are several types of files in there:
+Most customisation of the web view can be done by modifying the
+templates in the tracker ``'html'`` directory. There are several types
+of files in there. The *minimal* template includes:
 
-**page**
-  This template usually defines the overall look of your tracker. When you
-  view an issue, it appears inside this template. When you view an index, it
-  also appears inside this template. This template defines a macro called
-  "icing" which is used by almost all other templates as a coating for their
-  content, using its "content" slot. It will also define the "head_title"
-  and "body_title" slots to allow setting of the page title.
-**home**
+**page.html**
+  This template usually defines the overall look of your tracker. When
+  you view an issue, it appears inside this template. When you view an
+  index, it also appears inside this template. This template defines a
+  macro called "icing" which is used by almost all other templates as a
+  coating for their content, using its "content" slot. It also defines
+  the "head_title" and "body_title" slots to allow setting of the page
+  title.
+**home.html**
   the default page displayed when no other page is indicated by the user
-**home.classlist**
-  a special version of the default page that lists the classes in the tracker
-**classname.item**
+**home.classlist.html**
+  a special version of the default page that lists the classes in the
+  tracker
+**classname.item.html**
   displays an item of the *classname* class
-**classname.index**
+**classname.index.html**
   displays a list of *classname* items
-**classname.search**
+**classname.search.html**
   displays a search page for *classname* items
-**_generic.index**
-  used to display a list of items where there is no *classname*.index available
-**_generic.help**
-  used to display a "class help" page where there is no *classname*.help
-**user.register**
-  a special page just for the user class that renders the registration page
-**style.css**
+**_generic.index.html**
+  used to display a list of items where there is no
+  ``*classname*.index`` available
+**_generic.help.html**
+  used to display a "class help" page where there is no
+  ``*classname*.help``
+**user.register.html**
+  a special page just for the user class, that renders the registration
+  page
+**style.css.html**
   a static file that is served up as-is
 
-Note: Remember that you can create any template extension you want to, so 
-if you just want to play around with the templating for new issues, you can
-copy the current "issue.item" template to "issue.test", and then access the
-test template using the ":template" URL argument::
+The *classic* template has a number of additional templates.
+
+Note: Remember that you can create any template extension you want to,
+so if you just want to play around with the templating for new issues,
+you can copy the current "issue.item" template to "issue.test", and then
+access the test template using the ":template" URL argument::
 
    http://your.tracker.example/tracker/issue?:template=test
 
@@ -894,12 +946,13 @@ and it won't affect your users using the "issue.item" template.
 How the templates work
 ----------------------
 
+
 Basic Templating Actions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Roundup's templates consist of special attributes on your template tags.
-These attributes form the Template Attribute Language, or TAL. The basic tag
-commands are:
+Roundup's templates consist of special attributes on the HTML tags.
+These attributes form the Template Attribute Language, or TAL. The basic
+TAL commands are:
 
 **tal:define="variable expression; variable expression; ..."**
    Define a new variable that is local to this tag and its contents. For
@@ -909,27 +962,29 @@ commands are:
        <head><title tal:content="title"></title></head>
       </html>
 
-   In the example, the variable "title" is defined as being the result of the
-   expression "request/description". The tal:content command inside the <html>
-   tag may then use the "title" variable.
+   In this example, the variable "title" is defined as the result of the
+   expression "request/description". The "tal:content" command inside the
+   <html> tag may then use the "title" variable.
 
 **tal:condition="expression"**
-   Only keep this tag and its contents if the expression is true. For example::
+   Only keep this tag and its contents if the expression is true. For
+   example::
 
      <p tal:condition="python:request.user.hasPermission('View', 'issue')">
       Display some issue information.
      </p>
 
-   In the example, the <p> tag and its contents are only displayed if the
-   user has the View permission for issues. We consider the number zero, a
-   blank string, an empty list, and the built-in variable nothing to be false
-   values. Nearly every other value is true, including non-zero numbers, and
-   strings with anything in them (even spaces!).
+   In the example, the <p> tag and its contents are only displayed if
+   the user has the "View" permission for issues. We consider the number
+   zero, a blank string, an empty list, and the built-in variable
+   nothing to be false values. Nearly every other value is true,
+   including non-zero numbers, and strings with anything in them (even
+   spaces!).
 
 **tal:repeat="variable expression"**
-   Repeat this tag and its contents for each element of the sequence that the
-   expression returns, defining a new local variable and a special "repeat"
-   variable for each element. For example::
+   Repeat this tag and its contents for each element of the sequence
+   that the expression returns, defining a new local variable and a
+   special "repeat" variable for each element. For example::
 
      <tr tal:repeat="u user/list">
       <td tal:content="u/id"></td>
@@ -943,30 +998,32 @@ commands are:
 **tal:replace="expression"**
    Replace this tag with the result of the expression. For example::
 
-    <span tal:replace="request/user/realname"></span>
+    <span tal:replace="request/user/realname" />
 
-   The example would replace the <span> tag and its contents with the user's
-   realname. If the user's realname was "Bruce" then the resultant output
-   would be "Bruce".
+   The example would replace the <span> tag and its contents with the
+   user's realname. If the user's realname was "Bruce", then the
+   resultant output would be "Bruce".
 
 **tal:content="expression"**
-   Replace the contents of this tag with the result of the expression. For
-   example::
+   Replace the contents of this tag with the result of the expression.
+   For example::
 
-    <span tal:content="request/user/realname">user's name appears here</span>
+    <span tal:content="request/user/realname">user's name appears here
+    </span>
 
-   The example would replace the contents of the <span> tag with the user's
-   realname. If the user's realname was "Bruce" then the resultant output
-   would be "<span>Bruce</span>".
+   The example would replace the contents of the <span> tag with the
+   user's realname. If the user's realname was "Bruce" then the
+   resultant output would be "<span>Bruce</span>".
 
 **tal:attributes="attribute expression; attribute expression; ..."**
-   Set attributes on this tag to the results of expressions. For example::
+   Set attributes on this tag to the results of expressions. For
+   example::
 
      <a tal:attributes="href string:user${request/user/id}">My Details</a>
 
-   In the example, the "href" attribute of the <a> tag is set to the value of
-   the "string:user${request/user/id}" expression, which will be something
-   like "user123".
+   In the example, the "href" attribute of the <a> tag is set to the
+   value of the "string:user${request/user/id}" expression, which will
+   be something like "user123".
 
 **tal:omit-tag="expression"**
    Remove this tag (but not its contents) if the expression is true. For
@@ -978,141 +1035,151 @@ commands are:
 
       Hello, world!
 
-Note that the commands on a given tag are evaulated in the order above, so
-*define* comes before *condition*, and so on.
+Note that the commands on a given tag are evaulated in the order above,
+so *define* comes before *condition*, and so on.
 
-Additionally, a tag is defined, tal:block, which is removed from output. Its
-content is not, but the tag itself is (so don't go using any tal:attributes
-commands on it). This is useful for making arbitrary blocks of HTML
-conditional or repeatable (very handy for repeating multiple table rows,
-which would othewise require an illegal tag placement to effect the repeat).
+Additionally, you may include tags such as <tal:block>, which are
+removed from output. Its content is kept, but the tag itself is not (so
+don't go using any "tal:attributes" commands on it). This is useful for
+making arbitrary blocks of HTML conditional or repeatable (very handy
+for repeating multiple table rows, which would othewise require an
+illegal tag placement to effect the repeat).
 
 
 Templating Expressions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The expressions you may use in the attibute values may be one of the following
-forms:
+The expressions you may use in the attribute values may be one of the
+following forms:
 
 **Path Expressions** - eg. ``item/status/checklist``
-   These are object attribute / item accesses. Roughly speaking, the path
-   ``item/status/checklist`` is broken into parts ``item``, ``status``
-   and ``checklist``. The ``item`` part is the root of the expression.
-   We then look for a ``status`` attribute on ``item``, or failing that, a
-   ``status`` item (as in ``item['status']``). If that
-   fails, the path expression fails. When we get to the end, the object we're
-   left with is evaluated to get a string - methods are called, objects are
-   stringified. Path expressions may have an optional ``path:`` prefix, though
-   they are the default expression type, so it's not necessary.
+   These are object attribute / item accesses. Roughly speaking, the
+   path ``item/status/checklist`` is broken into parts ``item``,
+   ``status`` and ``checklist``. The ``item`` part is the root of the
+   expression. We then look for a ``status`` attribute on ``item``, or
+   failing that, a ``status`` item (as in ``item['status']``). If that
+   fails, the path expression fails. When we get to the end, the object
+   we're left with is evaluated to get a string - if it is a method, it
+   is called; if it is an object, it is stringified. Path expressions
+   may have an optional ``path:`` prefix, but they are the default
+   expression type, so it's not necessary.
 
-   If an expression evaluates to ``default`` then the expression is
-   "cancelled" - whatever HTML already exists in the template will remain
-   (tag content in the case of tal:content, attributes in the case of
-   tal:attributes).
+   If an expression evaluates to ``default``, then the expression is
+   "cancelled" - whatever HTML already exists in the template will
+   remain (tag content in the case of ``tal:content``, attributes in the
+   case of ``tal:attributes``).
 
-   If an expression evaluates to ``nothing`` then the target of the expression
-   is removed (tag content in the case of tal:content, attributes in the case
-   of tal:attributes and the tag itself in the case of tal:replace).
+   If an expression evaluates to ``nothing`` then the target of the
+   expression is removed (tag content in the case of ``tal:content``,
+   attributes in the case of ``tal:attributes`` and the tag itself in
+   the case of ``tal:replace``).
 
    If an element in the path may not exist, then you can use the ``|``
-   operator in the expression to provide an alternative. So, the expression
-   ``request/form/foo/value | default`` would simply leave the current HTML
-   in place if the "foo" form variable doesn't exist.
+   operator in the expression to provide an alternative. So, the
+   expression ``request/form/foo/value | default`` would simply leave
+   the current HTML in place if the "foo" form variable doesn't exist.
 
-   You may use the python function ``path``, as in ``path("item/status")``, to
-   embed path expressions in Python expressions.
+   You may use the python function ``path``, as in
+   ``path("item/status")``, to embed path expressions in Python
+   expressions.
 
-**String Expressions** - eg. ``string:hello ${user/name}``
-   These expressions are simple string interpolations - though they can be just
-   plain strings with no interpolation if you want. The expression in the
-   ``${ ... }`` is just a path expression as above.
+**String Expressions** - eg. ``string:hello ${user/name}`` 
+   These expressions are simple string interpolations - though they can
+   be just plain strings with no interpolation if you want. The
+   expression in the ``${ ... }`` is just a path expression as above.
 
-**Python Expressions** - eg. ``python: 1+1``
+**Python Expressions** - eg. ``python: 1+1`` 
    These expressions give the full power of Python. All the "root level"
-   variables are available, so ``python:item.status.checklist()`` would be
-   equivalent to ``item/status/checklist``, assuming that ``checklist`` is
-   a method.
+   variables are available, so ``python:item.status.checklist()`` would
+   be equivalent to ``item/status/checklist``, assuming that
+   ``checklist`` is a method.
 
 Modifiers:
 
 **structure** - eg. ``structure python:msg.content.plain(hyperlink=1)``
    The result of expressions are normally *escaped* to be safe for HTML
    display (all "<", ">" and "&" are turned into special entities). The
-   ``structure`` expression modifier turns off this escaping - the result
-   of the expression is now assumed to be HTML structured text.
+   ``structure`` expression modifier turns off this escaping - the
+   result of the expression is now assumed to be HTML, which is passed
+   to the web browser for rendering.
 
 **not:** - eg. ``not:python:1=1``
-   This simply inverts the logical true/false value of another expression.
+   This simply inverts the logical true/false value of another
+   expression.
 
 
 Template Macros
 ~~~~~~~~~~~~~~~
 
-Macros are used in Roundup to save us from repeating the same common page
-stuctures over and over. The most common (and probably only) macro you'll use
-is the "icing" macro defined in the "page" template.
+Macros are used in Roundup to save us from repeating the same common
+page stuctures over and over. The most common (and probably only) macro
+you'll use is the "icing" macro defined in the "page" template.
 
-Macros are generated and used inside your templates using special attributes
-similar to the `basic templating actions`_. In this case though, the
-attributes belong to the Macro Expansion Template Attribute Language, or
-METAL. The macro commands are:
+Macros are generated and used inside your templates using special
+attributes similar to the `basic templating actions`_. In this case,
+though, the attributes belong to the Macro Expansion Template Attribute
+Language, or METAL. The macro commands are:
 
 **metal:define-macro="macro name"**
-  Define that the tag and its contents are now a macro that may be inserted
-  into other templates using the *use-macro* command. For example::
+  Define that the tag and its contents are now a macro that may be
+  inserted into other templates using the *use-macro* command. For
+  example::
 
     <html metal:define-macro="page">
      ...
     </html>
 
-  defines a macro called "page" using the ``<html>`` tag and its contents.
-  Once defined, macros are stored on the template they're defined on in the
-  ``macros`` attribute. You can access them later on through the ``templates``
-  variable, eg. the most common ``templates/page/macros/icing`` to access the
-  "page" macro of the "page" template.
+  defines a macro called "page" using the ``<html>`` tag and its
+  contents. Once defined, macros are stored on the template they're
+  defined on in the ``macros`` attribute. You can access them later on
+  through the ``templates`` variable, eg. the most common
+  ``templates/page/macros/icing`` to access the "page" macro of the
+  "page" template.
 
 **metal:use-macro="path expression"**
-  Use a macro, which is identified by the path expression (see above). This
-  will replace the current tag with the identified macro contents. For
-  example::
+  Use a macro, which is identified by the path expression (see above).
+  This will replace the current tag with the identified macro contents.
+  For example::
 
    <tal:block metal:use-macro="templates/page/macros/icing">
     ...
    </tal:block>
 
-   will replace the tag and its contents with the "page" macro of the "page"
-   template.
+   will replace the tag and its contents with the "page" macro of the
+   "page" template.
 
 **metal:define-slot="slot name"** and **metal:fill-slot="slot name"**
-  To define *dynamic* parts of the macro, you define "slots" which may be 
-  filled when the macro is used with a *use-macro* command. For example, the
-  ``templates/page/macros/icing`` macro defines a slot like so::
+  To define *dynamic* parts of the macro, you define "slots" which may
+  be filled when the macro is used with a *use-macro* command. For
+  example, the ``templates/page/macros/icing`` macro defines a slot like
+  so::
 
     <title metal:define-slot="head_title">title goes here</title>
 
-  In your *use-macro* command, you may now use a *fill-slot* command like
-  this::
+  In your *use-macro* command, you may now use a *fill-slot* command
+  like this::
 
     <title metal:fill-slot="head_title">My Title</title>
 
-  where the tag that fills the slot completely replaces the one defined as
-  the slot in the macro.
+  where the tag that fills the slot completely replaces the one defined
+  as the slot in the macro.
 
-Note that you may not mix METAL and TAL commands on the same tag, but TAL
-commands may be used freely inside METAL-using tags (so your *fill-slots*
-tags may have all manner of TAL inside them).
+Note that you may not mix METAL and TAL commands on the same tag, but
+TAL commands may be used freely inside METAL-using tags (so your
+*fill-slots* tags may have all manner of TAL inside them).
 
 
 Information available to templates
 ----------------------------------
 
-Note: this is implemented by roundup.cgi.templating.RoundupPageTemplate
+Note: this is implemented by
+``roundup.cgi.templating.RoundupPageTemplate``
 
 The following variables are available to templates.
 
 **context**
-  The current context. This is either None, a
-  `hyperdb class wrapper`_ or a `hyperdb item wrapper`_
+  The current context. This is either None, a `hyperdb class wrapper`_
+  or a `hyperdb item wrapper`_
 **request**
   Includes information about the current request, including:
    - the current index information (``filterspec``, ``filter`` args,
@@ -1120,23 +1187,24 @@ The following variables are available to templates.
    - methods for easy filterspec link generation
    - *user*, the current user item as an HTMLItem instance
    - *form*
-     The current CGI form information as a mapping of form argument
-     name to value
+     The current CGI form information as a mapping of form argument name
+     to value
 **config**
-  This variable holds all the values defined in the tracker config.py file 
-  (eg. TRACKER_NAME, etc.)
+  This variable holds all the values defined in the tracker config.py
+  file (eg. TRACKER_NAME, etc.)
 **db**
   The current database, used to access arbitrary database items.
 **templates**
-  Access to all the tracker templates by name. Used mainly in *use-macro*
-  commands.
+  Access to all the tracker templates by name. Used mainly in
+  *use-macro* commands.
 **utils**
   This variable makes available some utility functions like batching.
 **nothing**
-  This is a special variable - if an expression evaluates to this, then the
-  tag (in the case of a tal:replace), its contents (in the case of
-  tal:content) or some attributes (in the case of tal:attributes) will not
-  appear in the the output. So for example::
+  This is a special variable - if an expression evaluates to this, then
+  the tag (in the case of a ``tal:replace``), its contents (in the case
+  of ``tal:content``) or some attributes (in the case of
+  ``tal:attributes``) will not appear in the the output. So, for
+  example::
 
     <span tal:attributes="class nothing">Hello, World!</span>
 
@@ -1155,11 +1223,12 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
+
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
 
-The *context* variable is one of three things based on the current context
-(see `determining web context`_ for how we figure this out):
+The *context* variable is one of three things based on the current
+context (see `determining web context`_ for how we figure this out):
 
 1. if we're looking at a "home" page, then it's None
 2. if we're looking at a specific hyperdb class, it's a
@@ -1167,42 +1236,45 @@ The *context* variable is one of three things based on the current context
 3. if we're looking at a specific hyperdb item, it's a
    `hyperdb item wrapper`_.
 
-If the context is not None, we can access the properties of the class or item.
-The only real difference between cases 2 and 3 above are:
+If the context is not None, we can access the properties of the class or
+item. The only real difference between cases 2 and 3 above are:
 
-1. the properties may have a real value behind them, and this will appear if
-   the property is displayed through ``context/property`` or
+1. the properties may have a real value behind them, and this will
+   appear if the property is displayed through ``context/property`` or
    ``context/property/field``.
-2. the context's "id" property will be a false value in the second case, but
-   a real, or true value in the third. Thus we can determine whether we're
-   looking at a real item from the hyperdb by testing "context/id".
+2. the context's "id" property will be a false value in the second case,
+   but a real, or true value in the third. Thus we can determine whether
+   we're looking at a real item from the hyperdb by testing
+   "context/id".
 
 Hyperdb class wrapper
 :::::::::::::::::::::
 
-Note: this is implemented by the roundup.cgi.templating.HTMLClass class.
+Note: this is implemented by the ``roundup.cgi.templating.HTMLClass``
+class.
 
-This wrapper object provides access to a hyperb class. It is used primarily
-in both index view and new item views, but it's also usable anywhere else that
-you wish to access information about a class, or the items of a class, when
-you don't have a specific item of that class in mind.
+This wrapper object provides access to a hyperb class. It is used
+primarily in both index view and new item views, but it's also usable
+anywhere else that you wish to access information about a class, or the
+items of a class, when you don't have a specific item of that class in
+mind.
 
 We allow access to properties. There will be no "id" property. The value
-accessed through the property will be the current value of the same name from
-the CGI form.
+accessed through the property will be the current value of the same name
+from the CGI form.
 
 There are several methods available on these wrapper objects:
 
 =========== =============================================================
 Method      Description
 =========== =============================================================
-properties  return a `hyperdb property wrapper`_ for all of this class'
+properties  return a `hyperdb property wrapper`_ for all of this class's
             properties.
 list        lists all of the active (not retired) items in the class.
 csv         return the items of this class as a chunk of CSV text.
 propnames   lists the names of the properties of this class.
-filter      lists of items from this class, filtered and sorted
-            by the current *request* filterspec/filter/sort/group args
+filter      lists of items from this class, filtered and sorted by the
+            current *request* filterspec/filter/sort/group args
 classhelp   display a link to a javascript popup containing this class'
             "help" template.
 submit      generate a submit button (and action hidden element)
@@ -1212,8 +1284,9 @@ is_edit_ok  is the user allowed to Edit the current class?
 is_view_ok  is the user allowed to View the current class?
 =========== =============================================================
 
-Note that if you have a property of the same name as one of the above methods,
-you'll need to access it using a python "item access" expression. For example::
+Note that if you have a property of the same name as one of the above
+methods, you'll need to access it using a python "item access"
+expression. For example::
 
    python:context['list']
 
@@ -1223,33 +1296,35 @@ will access the "list" property, rather than the list method.
 Hyperdb item wrapper
 ::::::::::::::::::::
 
-Note: this is implemented by the roundup.cgi.templating.HTMLItem class.
+Note: this is implemented by the ``roundup.cgi.templating.HTMLItem``
+class.
 
 This wrapper object provides access to a hyperb item.
 
 We allow access to properties. There will be no "id" property. The value
-accessed through the property will be the current value of the same name from
-the CGI form.
+accessed through the property will be the current value of the same name
+from the CGI form.
 
 There are several methods available on these wrapper objects:
 
-=============== =============================================================
+=============== ========================================================
 Method          Description
-=============== =============================================================
+=============== ========================================================
 submit          generate a submit button (and action hidden element)
-journal         return the journal of the current item (**not implemented**)
+journal         return the journal of the current item (**not
+                implemented**)
 history         render the journal of the current item as HTML
-renderQueryForm specific to the "query" class - render the search form for
-                the query
-hasPermission   specific to the "user" class - determine whether the user
-                has a Permission
+renderQueryForm specific to the "query" class - render the search form
+                for the query
+hasPermission   specific to the "user" class - determine whether the
+                user has a Permission
 is_edit_ok      is the user allowed to Edit the current item?
 is_view_ok      is the user allowed to View the current item?
-=============== =============================================================
+=============== ========================================================
 
-
-Note that if you have a property of the same name as one of the above methods,
-you'll need to access it using a python "item access" expression. For example::
+Note that if you have a property of the same name as one of the above
+methods, you'll need to access it using a python "item access"
+expression. For example::
 
    python:context['journal']
 
@@ -1259,98 +1334,106 @@ will access the "journal" property, rather than the journal method.
 Hyperdb property wrapper
 ::::::::::::::::::::::::
 
-Note: this is implemented by subclasses roundup.cgi.templating.HTMLProperty
-class (HTMLStringProperty, HTMLNumberProperty, and so on).
+Note: this is implemented by subclasses of the
+``roundup.cgi.templating.HTMLProperty`` class (``HTMLStringProperty``,
+``HTMLNumberProperty``, and so on).
 
 This wrapper object provides access to a single property of a class. Its
 value may be either:
 
-1. if accessed through a `hyperdb item wrapper`_, then it's a value from the
-   hyperdb
-2. if access through a `hyperdb class wrapper`_, then it's a value from the
-   CGI form
+1. if accessed through a `hyperdb item wrapper`_, then it's a value from
+   the hyperdb
+2. if access through a `hyperdb class wrapper`_, then it's a value from
+   the CGI form
 
 
 The property wrapper has some useful attributes:
 
-=============== =============================================================
+=============== ========================================================
 Attribute       Description
-=============== =============================================================
+=============== ========================================================
 _name           the name of the property
-_value          the value of the property if any - this is the actual value
-                retrieved from the hyperdb for this property
-=============== =============================================================
+_value          the value of the property if any - this is the actual
+                value retrieved from the hyperdb for this property
+=============== ========================================================
 
 There are several methods available on these wrapper objects:
 
-========= =====================================================================
+========= ================================================================
 Method    Description
-========= =====================================================================
-plain     render a "plain" representation of the property. This method may
-          take two arguments:
+========= ================================================================
+plain     render a "plain" representation of the property. This method
+          may take two arguments:
 
           escape
            If true, escape the text so it is HTML safe (default: no). The
            reason this defaults to off is that text is usually escaped
            at a later stage by the TAL commands, unless the "structure"
-           option is used in the template. The following are all equivalent::
+           option is used in the template. The following are all
+           equivalent::
 
             <p tal:content="structure python:msg.content.plain(escape=1)" />
             <p tal:content="python:msg.content.plain()" />
             <p tal:content="msg/content/plain" />
             <p tal:content="msg/content" />
 
-           Usually you'll only want to use the escape option in a complex
-           expression.
+           Usually you'll only want to use the escape option in a
+           complex expression.
 
           hyperlink
-           If true, turn URLs, email addresses and hyperdb item designators
-           in the text into hyperlinks (default: no). Note that you'll need
-           to use the "structure" TAL option if you want to use this::
+           If true, turn URLs, email addresses and hyperdb item
+           designators in the text into hyperlinks (default: no). Note
+           that you'll need to use the "structure" TAL option if you
+           want to use this::
 
             <p tal:content="structure python:msg.content.plain(hyperlink=1)" />
 
-           Note also that the text is automatically HTML-escape before the
-           hyperlinking transformation.
+           Note also that the text is automatically HTML-escaped before
+           the hyperlinking transformation.
 
-field     render an appropriate form edit field for the property - for most
-          types this is a text entry box, but for Booleans it's a tri-state
-          yes/no/neither selection.
-stext     only on String properties - render the value of the
-          property as StructuredText (requires the StructureText module
-          to be installed separately)
+field     render an appropriate form edit field for the property - for
+          most types this is a text entry box, but for Booleans it's a
+          tri-state yes/no/neither selection.
+stext     only on String properties - render the value of the property
+          as StructuredText (requires the StructureText module to be
+          installed separately)
 multiline only on String properties - render a multiline form edit
           field for the property
-email     only on String properties - render the value of the 
-          property as an obscured email address
-confirm   only on Password properties - render a second form edit field for
-          the property, used for confirmation that the user typed the
-          password correctly. Generates a field with name "name:confirm".
-now       only on Date properties - return the current date as a new property
-reldate   only on Date properties - render the interval between the
-          date and now
-local     only on Date properties - return this date as a new property with
-          some timezone offset
-pretty    only on Interval properties - render the interval in a
-          pretty format (eg. "yesterday")
+email     only on String properties - render the value of the property
+          as an obscured email address
+confirm   only on Password properties - render a second form edit field
+          for the property, used for confirmation that the user typed
+          the password correctly. Generates a field with name
+          "name:confirm".
+now       only on Date properties - return the current date as a new
+          property
+reldate   only on Date properties - render the interval between the date
+          and now
+local     only on Date properties - return this date as a new property
+          with some timezone offset
+pretty    only on Interval properties - render the interval in a pretty
+          format (eg. "yesterday")
 menu      only on Link and Multilink properties - render a form select
           list for this property
 reverse   only on Multilink properties - produce a list of the linked
           items in reverse order
 ========= =====================================================================
 
+
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the roundup.cgi.templating.HTMLRequest class.
+Note: this is implemented by the ``roundup.cgi.templating.HTMLRequest``
+class.
 
-The request variable is packed with information about the current request.
+The request variable is packed with information about the current
+request.
 
-.. taken from roundup.cgi.templating.HTMLRequest docstring
+.. taken from ``roundup.cgi.templating.HTMLRequest`` docstring
 
-=========== =================================================================
+=========== ============================================================
 Variable    Holds
-=========== =================================================================
+=========== ============================================================
 form        the CGI form as a cgi.FieldStorage
 env         the CGI environment variables
 base        the base URL for this tracker
@@ -1358,13 +1441,13 @@ user        a HTMLUser instance for this user
 classname   the current classname (possibly None)
 template    the current template (suffix, also possibly None)
 form        the current CGI form variables in a FieldStorage
-=========== =================================================================
+=========== ============================================================
 
 **Index page specific variables (indexing arguments)**
 
-=========== =================================================================
+=========== ============================================================
 Variable    Holds
-=========== =================================================================
+=========== ============================================================
 columns     dictionary of the columns to display in an index page
 show        a convenience access to columns - request/show/colname will
             be true if the columns should be displayed, false otherwise
@@ -1373,28 +1456,28 @@ group       index grouping property (direction, column name)
 filter      properties to filter the index on
 filterspec  values to filter the index on
 search_text text to perform a full-text search on for an index
-=========== =================================================================
+=========== ============================================================
 
 There are several methods available on the request variable:
 
-=============== =============================================================
+=============== ========================================================
 Method          Description
-=============== =============================================================
-description     render a description of the request - handle for the page
-                title
+=============== ========================================================
+description     render a description of the request - handle for the
+                page title
 indexargs_form  render the current index args as form elements
 indexargs_url   render the current index args as a URL
-base_javascript render some javascript that is used by other components of
-                the templating
+base_javascript render some javascript that is used by other components
+                of the templating
 batch           run the current index args through a filter and return a
                 list of items (see `hyperdb item wrapper`_, and
                 `batching`_)
-=============== =============================================================
+=============== ========================================================
 
 The form variable
 :::::::::::::::::
 
-The form variable is a little special because it's actually a python
+The form variable is a bit special because it's actually a python
 FieldStorage object. That means that you have two ways to access its
 contents. For example, to look up the CGI form value for the variable
 "name", use the path expression::
@@ -1405,35 +1488,39 @@ or the python expression::
 
    python:request.form['name'].value
 
-Note the "item" access used in the python case, and also note the explicit
-"value" attribute we have to access. That's because the form variables are
-stored as MiniFieldStorages. If there's more than one "name" value in
-the form, then the above will break since ``request/form/name`` is actually a
-*list* of MiniFieldStorages. So it's best to know beforehand what you're
-dealing with.
+Note the "item" access used in the python case, and also note the
+explicit "value" attribute we have to access. That's because the form
+variables are stored as MiniFieldStorages. If there's more than one
+"name" value in the form, then the above will break since
+``request/form/name`` is actually a *list* of MiniFieldStorages. So it's
+best to know beforehand what you're dealing with.
 
 
 The db variable
 ~~~~~~~~~~~~~~~
 
-Note: this is implemented by the roundup.cgi.templating.HTMLDatabase class.
+Note: this is implemented by the ``roundup.cgi.templating.HTMLDatabase``
+class.
 
-Allows access to all hyperdb classes as attributes of this variable. If you
-want access to the "user" class, for example, you would use::
+Allows access to all hyperdb classes as attributes of this variable. If
+you want access to the "user" class, for example, you would use::
 
   db/user
   python:db.user
 
 The access results in a `hyperdb class wrapper`_.
 
+
 The templates variable
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the roundup.cgi.templating.Templates class.
+Note: this is implemented by the ``roundup.cgi.templating.Templates``
+class.
 
 This variable doesn't have any useful methods defined. It supports being
-used in expressions to access the templates, and subsequently the template
-macros. You may access the templates using the following path expression::
+used in expressions to access the templates, and consequently the
+template macros. You may access the templates using the following path
+expression::
 
    templates/name
 
@@ -1441,9 +1528,9 @@ or the python expression::
 
    templates[name]
 
-where "name" is the name of the template you wish to access. The template you
-get access to has one useful attribute, "macros". To access a specific macro
-(called "macro_name"), use the path expression::
+where "name" is the name of the template you wish to access. The
+template has one useful attribute, namely "macros". To access a specific
+macro (called "macro_name"), use the path expression::
 
    templates/name/macros/macro_name
 
@@ -1455,28 +1542,30 @@ or the python expression::
 The utils variable
 ~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the roundup.cgi.templating.TemplatingUtils class,
-but it may be extended as described below.
+Note: this is implemented by the
+``roundup.cgi.templating.TemplatingUtils`` class, but it may be extended
+as described below.
 
-=============== =============================================================
+=============== ========================================================
 Method          Description
-=============== =============================================================
+=============== ========================================================
 Batch           return a batch object using the supplied list
-=============== =============================================================
+=============== ========================================================
 
 You may add additional utility methods by writing them in your tracker
-``interfaces.py`` module's ``TemplatingUtils`` class. See `adding a time log
-to your issues`_ for an example. The TemplatingUtils class itself will have a
-single attribute, ``client``, which may be used to access the ``client.db``
-when you need to perform arbitrary database queries.
+``interfaces.py`` module's ``TemplatingUtils`` class. See `adding a time
+log to your issues`_ for an example. The TemplatingUtils class itself
+will have a single attribute, ``client``, which may be used to access
+the ``client.db`` when you need to perform arbitrary database queries.
 
 Batching
 ::::::::
 
-Use Batch to turn a list of items, or item ids of a given class, into a series
-of batches. Its usage is::
+Use Batch to turn a list of items, or item ids of a given class, into a
+series of batches. Its usage is::
 
-    python:utils.Batch(sequence, size, start, end=0, orphan=0, overlap=0)
+    python:utils.Batch(sequence, size, start, end=0, orphan=0,
+    overlap=0)
 
 or, to get the current index batch::
 
@@ -1484,42 +1573,42 @@ or, to get the current index batch::
 
 The parameters are:
 
-========= ==================================================================
+========= ==============================================================
 Parameter  Usage
-========= ==================================================================
+========= ==============================================================
 sequence  a list of HTMLItems
 size      how big to make the sequence.
 start     where to start (0-indexed) in the sequence.
 end       where to end (0-indexed) in the sequence.
-orphan    if the next batch would contain less items than this
-          value, then it is combined with this batch
+orphan    if the next batch would contain less items than this value,
+          then it is combined with this batch
 overlap   the number of items shared between adjacent batches
-========= ==================================================================
+========= ==============================================================
 
 All of the parameters are assigned as attributes on the batch object. In
 addition, it has several more attributes:
 
-=============== ============================================================
+=============== ========================================================
 Attribute       Description
-=============== ============================================================
-start           indicates the start index of the batch. *Note: unlike the
-                argument, is a 1-based index (I know, lame)*
+=============== ========================================================
+start           indicates the start index of the batch. *Note: unlike
+                the argument, is a 1-based index (I know, lame)*
 first           indicates the start index of the batch *as a 0-based
                 index*
 length          the actual number of elements in the batch
 sequence_length the length of the original, unbatched, sequence.
-=============== ============================================================
+=============== ========================================================
 
 And several methods:
 
-=============== ============================================================
+=============== ========================================================
 Method          Description
-=============== ============================================================
+=============== ========================================================
 previous        returns a new Batch with the previous batch settings
 next            returns a new Batch with the next batch settings
 propchanged     detect if the named property changed on the current item
                 when compared to the last item
-=============== ============================================================
+=============== ========================================================
 
 An example of batching::
 
@@ -1528,22 +1617,22 @@ An example of batching::
   <tr tal:define="keywords db/keyword/list"
       tal:repeat="start python:range(0, len(keywords), 4)">
    <td tal:define="batch python:utils.Batch(keywords, 4, start)"
-       tal:repeat="keyword batch" tal:content="keyword/name">keyword here</td>
+       tal:repeat="keyword batch" tal:content="keyword/name">
+       keyword here</td>
   </tr>
  </table>
 
-... which will produce a table with four columns containing the items of the
-"keyword" class (well, their "name" anyway).
+... which will produce a table with four columns containing the items of
+the "keyword" class (well, their "name" anyway).
 
 Displaying Properties
 ---------------------
 
-Properties appear in the user interface in three contexts: in indices, in
-editors, and as search arguments.
-For each type of property, there are several display possibilities.
-For example, in an index view, a string property may just be
-printed as a plain string, but in an editor view, that property may be
-displayed in an editable field.
+Properties appear in the user interface in three contexts: in indices,
+in editors, and as search arguments. For each type of property, there
+are several display possibilities. For example, in an index view, a
+string property may just be printed as a plain string, but in an editor
+view, that property may be displayed in an editable field.
 
 
 Index Views
@@ -1552,11 +1641,12 @@ Index Views
 This is one of the class context views. It is also the default view for
 classes. The template used is "*classname*.index".
 
+
 Index View Specifiers
 ~~~~~~~~~~~~~~~~~~~~~
 
-An index view specifier (URL fragment) looks like this (whitespace has been
-added for clarity)::
+An index view specifier (URL fragment) looks like this (whitespace has
+been added for clarity)::
 
      /issue?status=unread,in-progress,resolved&
             topic=security,ui&
@@ -1565,61 +1655,65 @@ added for clarity)::
             :filters=status,topic&
             :columns=title,status,fixer
 
-The index view is determined by two parts of the specifier: the layout part and
-the filter part. The layout part consists of the query parameters that begin
-with colons, and it determines the way that the properties of selected items
-are displayed. The filter part consists of all the other query parameters, and
-it determines the criteria by which items are selected for display.
-The filter part is interactively manipulated with the form widgets displayed in
-the filter section. The layout part is interactively manipulated by clicking on
-the column headings in the table.
+The index view is determined by two parts of the specifier: the layout
+part and the filter part. The layout part consists of the query
+parameters that begin with colons, and it determines the way that the
+properties of selected items are displayed. The filter part consists of
+all the other query parameters, and it determines the criteria by which
+items are selected for display. The filter part is interactively
+manipulated with the form widgets displayed in the filter section. The
+layout part is interactively manipulated by clicking on the column
+headings in the table.
 
-The filter part selects the union of the sets of items with values matching any
-specified Link properties and the intersection of the sets of items with values
-matching any specified Multilink properties.
+The filter part selects the union of the sets of items with values
+matching any specified Link properties and the intersection of the sets
+of items with values matching any specified Multilink properties.
 
-The example specifies an index of "issue" items. Only items with a "status" of
-either "unread" or "in-progres" or "resolved" are displayed, and only items
-with "topic" values including both "security" and "ui" are displayed. The items
-are grouped by priority, arranged in ascending order; and within groups, sorted
-by activity, arranged in descending order. The filter section shows filters for
-the "status" and "topic" properties, and the table includes columns for the
-"title", "status", and "fixer" properties.
+The example specifies an index of "issue" items. Only items with a
+"status" of either "unread" or "in-progress" or "resolved" are
+displayed, and only items with "topic" values including both "security"
+and "ui" are displayed. The items are grouped by priority, arranged in
+ascending order; and within groups, sorted by activity, arranged in
+descending order. The filter section shows filters for the "status" and
+"topic" properties, and the table includes columns for the "title",
+"status", and "fixer" properties.
 
 Searching Views
 ---------------
 
-Note: if you add a new column to the ``:columns`` form variable potentials
-      then you will need to add the column to the appropriate `index views`_
-      template so it is actually displayed.
+Note: if you add a new column to the ``:columns`` form variable
+      potentials then you will need to add the column to the appropriate
+      `index views`_ template so that it is actually displayed.
 
 This is one of the class context views. The template used is typically
 "*classname*.search". The form on this page should have "search" as its
 ``:action`` variable. The "search" action:
 
-- sets up additional filtering, as well as performing indexed text searching
+- sets up additional filtering, as well as performing indexed text
+  searching
 - sets the ``:filter`` variable correctly
 - saves the query off if ``:query_name`` is set.
 
-The searching page should lay out any fields that you wish to allow the user
-to search one. If your schema contains a large number of properties, you
-should be wary of making all of those properties available for searching, as
-this can cause confusion. If the additional properties are Strings, consider
-having their value indexed, and then they will be searchable using the full
-text indexed search. This is both faster, and more useful for the end user.
+The search page should lay out any fields that you wish to allow the
+user to search on. If your schema contains a large number of properties,
+you should be wary of making all of those properties available for
+searching, as this can cause confusion. If the additional properties are
+Strings, consider having their value indexed, and then they will be
+searchable using the full text indexed search. This is both faster, and
+more useful for the end user.
 
-The two special form values on search pages which are handled by the "search"
-action are:
+The two special form values on search pages which are handled by the
+"search" action are:
 
 :search_text
-  Text to perform a search of the text index with. Results from that search
-  will be used to limit the results of other filters (using an intersection
-  operation)
+  Text with which to perform a search of the text index. Results from
+  that search will be used to limit the results of other filters (using
+  an intersection operation)
 :query_name
-  If supplied, the search parameters (including :search_text) will be saved
-  off as a the query item and registered against the user's queries property.
-  Note that the *classic* template schema has this ability, but the *minimal*
-  template schema does not.
+  If supplied, the search parameters (including :search_text) will be
+  saved off as a the query item and registered against the user's
+  queries property. Note that the *classic* template schema has this
+  ability, but the *minimal* template schema does not.
 
 
 Item Views
@@ -1633,16 +1727,17 @@ template. It generally has three sections; an "editor", a "spool" and a
 Editor Section
 ~~~~~~~~~~~~~~
 
-The editor section is used to manipulate the item - it may be a
-static display if the user doesn't have permission to edit the item.
+The editor section is used to manipulate the item - it may be a static
+display if the user doesn't have permission to edit the item.
 
-Here's an example of a basic editor template (this is the default "classic"
-template issue item edit form - from the "issue.item" template)::
+Here's an example of a basic editor template (this is the default
+"classic" template issue item edit form - from the "issue.item.html"
+template)::
 
  <table class="form">
  <tr>
   <th nowrap>Title</th>
-  <td colspan=3 tal:content="structure python:context.title.field(size=60)">title</td>
+  <td colspan="3" tal:content="structure python:context.title.field(size=60)">title</td>
  </tr>
  
  <tr>
@@ -1679,19 +1774,19 @@ template issue item edit form - from the "issue.item" template)::
  
  <tr>
   <th nowrap>Change Note</th>
-  <td colspan=3>
+  <td colspan="3">
    <textarea name=":note" wrap="hard" rows="5" cols="60"></textarea>
   </td>
  </tr>
  
  <tr>
   <th nowrap>File</th>
-  <td colspan=3><input type="file" name=":file" size="40"></td>
+  <td colspan="3"><input type="file" name=":file" size="40"></td>
  </tr>
  
  <tr>
   <td>&nbsp;</td>
-  <td colspan=3 tal:content="structure context/submit">
+  <td colspan="3" tal:content="structure context/submit">
    submit button will go here
   </td>
  </tr>
@@ -1701,7 +1796,8 @@ template issue item edit form - from the "issue.item" template)::
 When a change is submitted, the system automatically generates a message
 describing the changed properties. As shown in the example, the editor
 template can use the ":note" and ":file" fields, which are added to the
-standard change note message generated by Roundup.
+standard changenote message generated by Roundup.
+
 
 Form values
 :::::::::::
@@ -1715,8 +1811,8 @@ meet the various needs of:
 3. creating new information to be linked to the current item (eg. time
    spent on an issue)
 
-In the following, ``<bracketed>`` values are variable, ":" may be
-one of ":" or "@", and other text "required" is fixed.
+In the following, ``<bracketed>`` values are variable, ":" may be one of
+":" or "@", and other text ("required") is fixed.
 
 Properties are specified as form variables:
 
@@ -1730,12 +1826,12 @@ Properties are specified as form variables:
   property on the Nth new item of classname (generally for creating new
   items to attach to the current item)
 
-Once we have determined the "propname", we check to see if it
-is one of the special form values:
+Once we have determined the "propname", we check to see if it is one of
+the special form values:
 
 ``:required``
-  The named property values must be supplied or a ValueError
-  will be raised.
+  The named property values must be supplied or a ValueError will be
+  raised.
 
 ``:remove:<propname>=id(s)``
   The ids will be removed from the multilink property.
@@ -1744,34 +1840,32 @@ is one of the special form values:
   The ids will be added to the multilink property.
 
 ``:link:<propname>=<designator>``
-  Used to add a link to new items created during edit.
-  These are collected up and returned in all_links. This will
-  result in an additional linking operation (either Link set or
-  Multilink append) after the edit/create is done using
-  all_props in _editnodes. The <propname> on the current item
-  will be set/appended the id of the newly created item of
-  class <designator> (where <designator> must be
+  Used to add a link to new items created during edit. These are
+  collected and returned in ``all_links``. This will result in an
+  additional linking operation (either Link set or Multilink append)
+  after the edit/create is done using ``all_props`` in ``_editnodes``.
+  The <propname> on the current item will be set/appended the id of the
+  newly created item of class <designator> (where <designator> must be
   <classname>-<N>).
 
 Any of the form variables may be prefixed with a classname or
 designator.
 
-Two special form values are supported for backwards
-compatibility:
+Two special form values are supported for backwards compatibility:
 
 ``:note``
-  create a message (with content, author and date), link
-  to the context item. This is ALWAYS desginated "msg-1".
+  create a message (with content, author and date), linked to the
+  context item. This is ALWAYS designated "msg-1".
 ``:file``
-  create a file, attach to the current item and any
-  message created by :note. This is ALWAYS designated "file-1".
+  create a file, attached to the current item and any message created by
+  :note. This is ALWAYS designated "file-1".
 
 
 Spool Section
 ~~~~~~~~~~~~~
 
-The spool section lists related information like the messages and files of
-an issue.
+The spool section lists related information like the messages and files
+of an issue.
 
 TODO
 
@@ -1779,15 +1873,15 @@ TODO
 History Section
 ~~~~~~~~~~~~~~~
 
-The final section displayed is the history of the item - its database journal.
-This is generally generated with the template::
+The final section displayed is the history of the item - its database
+journal. This is generally generated with the template::
 
  <tal:block tal:replace="structure context/history" />
 
 *To be done:*
 
-*The actual history entries of the item may be accessed for manual templating
-through the "journal" method of the item*::
+*The actual history entries of the item may be accessed for manual
+templating through the "journal" method of the item*::
 
  <tal:block tal:repeat="entry context/journal">
   a journal entry
@@ -1798,17 +1892,18 @@ through the "journal" method of the item*::
 Defining new web actions
 ------------------------
 
-You may define new actions to be triggered by the ``:action`` form variable.
-These are added to the tracker ``interfaces.py`` as methods on the ``Client``
-class. 
+You may define new actions to be triggered by the ``:action`` form
+variable. These are added to the tracker ``interfaces.py`` as methods on
+the ``Client`` class. 
 
-Adding action methods takes three steps; first you `define the new action
-method`_, then you `register the action method`_ with the cgi interface so
-it may be triggered by the ``:action`` form variable. Finally you actually
-`use the new action`_ in your HTML form.
+Adding action methods takes three steps; first you `define the new
+action method`_, then you `register the action method`_ with the cgi
+interface so it may be triggered by the ``:action`` form variable.
+Finally you `use the new action`_ in your HTML form.
 
-See "`setting up a "wizard" (or "druid") for controlled adding of issues`_"
-for an example.
+See "`setting up a "wizard" (or "druid") for controlled adding of
+issues`_" for an example.
+
 
 Define the new action method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1819,15 +1914,16 @@ The action methods have the following interface::
         ''' Perform some action. No return value is required.
         '''
 
-The *self* argument is an instance of your tracker ``instance.Client`` class - 
-thus it's mostly implemented by ``roundup.cgi.Client``. See the docstring of
-that class for details of what it can do.
+The *self* argument is an instance of your tracker ``instance.Client``
+class - thus it's mostly implemented by ``roundup.cgi.Client``. See the
+docstring of that class for details of what it can do.
 
-The method will typically check the ``self.form`` variable's contents. It
-may then:
+The method will typically check the ``self.form`` variable's contents.
+It may then:
 
 - add information to ``self.ok_message`` or ``self.error_message``
-- change the ``self.template`` variable to alter what the user will see next
+- change the ``self.template`` variable to alter what the user will see
+  next
 - raise Unauthorised, SendStaticFile, SendFile, NotFound or Redirect
   exceptions
 
@@ -1835,8 +1931,8 @@ may then:
 Register the action method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The method is now written, but isn't available to the user until you add it to
-the `instance.Client`` class ``actions`` variable, like so::
+The method is now written, but isn't available to the user until you add
+it to the `instance.Client`` class ``actions`` variable, like so::
 
     actions = client.Class.actions + (
         ('myaction', 'myActionMethod'),
@@ -1862,30 +1958,34 @@ Examples
    :local:
    :depth: 1
 
+
 Adding a new field to the classic schema
 ----------------------------------------
 
-This example shows how to add a new constrained property (ie. a selection of
-distinct values) to your tracker.
+This example shows how to add a new constrained property (i.e. a
+selection of distinct values) to your tracker.
+
 
 Introduction
 ~~~~~~~~~~~~
 
-To make the classic schema of roundup useful as a todo tracking system
-for a group of systems administrators, it needed an extra data field
-per issue: a category.
+To make the classic schema of roundup useful as a TODO tracking system
+for a group of systems administrators, it needed an extra data field per
+issue: a category.
 
-This would let sysads quickly list all todos in their particular
-area of interest without having to do complex queries, and without
-relying on the spelling capabilities of other sysads (a losing
-proposition at best).
+This would let sysadmins quickly list all TODOs in their particular area
+of interest without having to do complex queries, and without relying on
+the spelling capabilities of other sysadmins (a losing proposition at
+best).
+
 
 Adding a field to the database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is the easiest part of the change. The category would just be a plain
-string, nothing fancy. To change what is in the database you need to add
-some lines to the ``open()`` function in ``dbinit.py`` under the comment::
+This is the easiest part of the change. The category would just be a
+plain string, nothing fancy. To change what is in the database you need
+to add some lines to the ``open()`` function in ``dbinit.py``. Under the
+comment::
 
     # add any additional database schema configuration here
 
@@ -1896,43 +1996,50 @@ add::
 
 Here we are setting up a chunk of the database which we are calling
 "category". It contains a string, which we are refering to as "name" for
-lack of a more imaginative title. Then we are setting the key of this chunk
-of the database to be that "name". This is equivalent to an index for
-database types. This also means that there can only be one category with a
-given name.
+lack of a more imaginative title. (Since "name" is one of the properties
+that Roundup looks for on items if you do not set a key for them, it's
+probably a good idea to stick with it for new classes if at all
+appropriate.) Then we are setting the key of this chunk of the database
+to be that "name". This is equivalent to an index for database types.
+This also means that there can only be one category with a given name.
 
-Adding the above lines allows us to create categories, but they're not tied
-to the issues that we are going to be creating. It's just a list of categories
-off on its own, which isn't much use. We need to link it in with the issues.
-To do that, find the lines in the ``open()`` function in ``dbinit.py`` which
-set up the "issue" class, and then add a link to the category::
+Adding the above lines allows us to create categories, but they're not
+tied to the issues that we are going to be creating. It's just a list of
+categories off on its own, which isn't much use. We need to link it in
+with the issues. To do that, find the lines in the ``open()`` function
+in ``dbinit.py`` which set up the "issue" class, and then add a link to
+the category::
 
-    issue = IssueClass(db, "issue", ... , category=Multilink("category"), ... )
+    issue = IssueClass(db, "issue", ... ,
+        category=Multilink("category"), ... )
 
-The Multilink() means that each issue can have many categories. If you were
-adding something with a more one to one relationship use Link() instead.
+The ``Multilink()`` means that each issue can have many categories. If
+you were adding something with a one-to-one relationship to issues (such
+as the "assignedto" property), use ``Link()`` instead.
 
-That is all you need to do to change the schema. The rest of the effort is
-fiddling around so you can actually use the new category.
+That is all you need to do to change the schema. The rest of the effort
+is fiddling around so you can actually use the new category.
+
 
 Populating the new category class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you haven't initialised the database with the roundup-admin "initialise"
-command, then you can add the following to the tracker ``dbinit.py`` in the
-``init()`` function under the comment::
+If you haven't initialised the database with the roundup-admin
+"initialise" command, then you can add the following to the tracker
+``dbinit.py`` in the ``init()`` function under the comment::
 
     # add any additional database create steps here - but only if you
     # haven't initialised the database with the admin "initialise" command
 
-add::
+Add::
 
      category = db.getclass('category')
      category.create(name="scipy", order="1")
      category.create(name="chaco", order="2")
      category.create(name="weave", order="3")
 
-If the database is initalised, the you need to use the roundup-admin tool::
+If the database has already been initalised, then you need to use the
+``roundup-admin`` tool::
 
      % roundup-admin -i <tracker home>
      Roundup <version> ready for input.
@@ -1946,20 +2053,23 @@ If the database is initalised, the you need to use the roundup-admin tool::
      roundup> exit...
      There are unsaved changes. Commit them (y/N)? y
 
+TODO: explain why order=1 in each case. Also, does key get set to "name"
+automatically when added via roundup-admin?
+
 
 Setting up security on the new objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default only the admin user can look at and change objects. This doesn't
-suit us, as we want any user to be able to create new categories as
-required, and obviously everyone needs to be able to view the categories of
-issues for it to be useful.
+By default only the admin user can look at and change objects. This
+doesn't suit us, as we want any user to be able to create new categories
+as required, and obviously everyone needs to be able to view the
+categories of issues for it to be useful.
 
-We therefore need to change the security of the category objects. This is
-also done in the ``open()`` function of ``dbinit.py``.
+We therefore need to change the security of the category objects. This
+is also done in the ``open()`` function of ``dbinit.py``.
 
-There are currently two loops which set up permissions and then assign them
-to various roles. Simply add the new "category" to both lists::
+There are currently two loops which set up permissions and then assign
+them to various roles. Simply add the new "category" to both lists::
 
     # new permissions for this schema
     for cl in 'issue', 'file', 'msg', 'user', 'category':
@@ -1976,7 +2086,8 @@ to various roles. Simply add the new "category" to both lists::
         p = db.security.getPermission('Edit', cl)
         db.security.addPermissionToRole('User', p)
 
-So you are in effect doing the following::
+So you are in effect doing the following (with 'cl' substituted by its
+value)::
 
     db.security.addPermission(name="Edit", klass='category',
         description="User is allowed to edit "+'category')
@@ -1984,9 +2095,9 @@ So you are in effect doing the following::
         description="User is allowed to access "+'category')
 
 which is creating two permission types; that of editing and viewing
-"category" objects respectively. Then the following lines assign those new
-permissions to the "User" role, so that normal users can view and edit
-"category" objects::
+"category" objects respectively. Then the following lines assign those
+new permissions to the "User" role, so that normal users can view and
+edit "category" objects::
 
     p = db.security.getPermission('View', 'category')
     db.security.addPermissionToRole('User', p)
@@ -1994,23 +2105,24 @@ permissions to the "User" role, so that normal users can view and edit
     p = db.security.getPermission('Edit', 'category')
     db.security.addPermissionToRole('User', p)
 
-This is all the work that needs to be done for the database. It will store
-categories, and let users view and edit them. Now on to the interface
-stuff.
+This is all the work that needs to be done for the database. It will
+store categories, and let users view and edit them. Now on to the
+interface stuff.
+
 
 Changing the web left hand frame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We need to give the users the ability to create new categories, and the
 place to put the link to this functionality is in the left hand function
-bar, under the "Issues" area. The file that defines how this area looks is
-``html/page``, which is what we are going to be editing next.
+bar, under the "Issues" area. The file that defines how this area looks
+is ``html/page``, which is what we are going to be editing next.
 
-If you look at this file you can see that it contains a lot of "classblock"
-sections which are chunks of HTML that will be included or excluded in the
-output depending on whether the condition in the classblock is met. Under
-the end of the classblock for issue is where we are going to add the
-category code::
+If you look at this file you can see that it contains a lot of
+"classblock" sections which are chunks of HTML that will be included or
+excluded in the output depending on whether the condition in the
+classblock is met. Under the end of the classblock for issue is where we
+are going to add the category code::
 
   <p class="classblock"
      tal:condition="python:request.user.hasPermission('View', 'category')">
@@ -2019,23 +2131,26 @@ category code::
       href="category?:template=item">New Category<br></a>
   </p>
 
-The first two lines is the classblock definition, which sets up a condition
-that only users who have "View" permission to the "category" object will
-have this section included in their output. Next comes a plain "Categories"
-header in bold. Everyone who can view categories will get that.
+The first two lines is the classblock definition, which sets up a
+condition that only users who have "View" permission for the "category"
+object will have this section included in their output. Next comes a
+plain "Categories" header in bold. Everyone who can view categories will
+get that.
 
-Next comes the link to the editing area of categories. This link will only
-appear if the condition is matched: that condition being that the user has
-"Edit" permissions for the "category" objects. If they do have permission
-then they will get a link to another page which will let the user add new
+Next comes the link to the editing area of categories. This link will
+only appear if the condition - that the user has "Edit" permissions for
+the "category" objects - is matched. If they do have permission then
+they will get a link to another page which will let the user add new
 categories.
 
-Note that if you have permission to view but not edit categories then all
-you will see is a "Categories" header with nothing underneath it. This is
-obviously not very good interface design, but will do for now. I just claim
-that it is so I can add more links in this section later on. However to fix
-the problem you could change the condition in the classblock statement, so
-that only users with "Edit" permission would see the "Categories" stuff.
+Note that if you have permission to *view* but not to *edit* categories,
+then all you will see is a "Categories" header with nothing underneath
+it. This is obviously not very good interface design, but will do for
+now. I just claim that it is so I can add more links in this section
+later on. However to fix the problem you could change the condition in
+the classblock statement, so that only users with "Edit" permission
+would see the "Categories" stuff.
+
 
 Setting up a page to edit categories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2044,12 +2159,13 @@ We defined code in the previous section which let users with the
 appropriate permissions see a link to a page which would let them edit
 conditions. Now we have to write that page.
 
-The link was for the item template for the category object. This translates
-into the system looking for a file called ``category.item`` in the ``html``
-tracker directory. This is the file that we are going to write now.
+The link was for the *item* template of the *category* object. This
+translates into Roundup looking for a file called ``category.item.html``
+in the ``html`` tracker directory. This is the file that we are going to
+write now.
 
 First we add an info tag in a comment which doesn't affect the outcome
-of the code at all but is useful for debugging. If you load a page in a
+of the code at all, but is useful for debugging. If you load a page in a
 browser and look at the page source, you can see which sections come
 from which files by looking for these comments::
 
@@ -2066,48 +2182,51 @@ trappings::
   <td class="content" metal:fill-slot="content">
 
 Next we need to setup up a standard HTML form, which is the whole
-purpose of this file. We link to some handy javascript which sends the form
-through only once. This is to stop users hitting the send button
+purpose of this file. We link to some handy javascript which sends the
+form through only once. This is to stop users hitting the send button
 multiple times when they are impatient and thus having the form sent
 multiple times::
 
     <form method="POST" onSubmit="return submit_once()"
           enctype="multipart/form-data">
 
-Next we define some code which sets up the minimum list of fields that we
-require the user to enter. There will be only one field, that of "name", so
-they user better put something in it otherwise the whole form is pointless::
+Next we define some code which sets up the minimum list of fields that
+we require the user to enter. There will be only one field - "name" - so
+they better put something in it, otherwise the whole form is pointless::
 
     <input type="hidden" name=":required" value="name">
 
 To get everything to line up properly we will put everything in a table,
-and put a nice big header on it so the user has an idea what is happening::
+and put a nice big header on it so the user has an idea what is
+happening::
 
     <table class="form">
-     <tr><th class="header" colspan=2>Category</th></tr>
+     <tr><th class="header" colspan="2">Category</th></tr>
 
-Next we need the actual field that the user is going to enter the new
-category. The "context.name.field(size=60)" bit tells roundup to generate a
-normal HTML field of size 60, and the contents of that field will be the
-"name" variable of the current context (which is "category"). The upshot of
-this is that when the user types something in to the form, a new category
-will be created with that name::
+Next, we need the field into which the user is going to enter the new
+category. The "context.name.field(size=60)" bit tells Roundup to
+generate a normal HTML field of size 60, and the contents of that field
+will be the "name" variable of the current context (which is
+"category"). The upshot of this is that when the user types something in
+to the form, a new category will be created with that name::
 
     <tr>
      <th nowrap>Name</th>
-     <td tal:content="structure python:context.name.field(size=60)">name</td>
+     <td tal:content="structure python:context.name.field(size=60)">
+     name</td>
     </tr>
 
 Then a submit button so that the user can submit the new category::
 
     <tr>
      <td>&nbsp;</td>
-     <td colspan=3 tal:content="structure context/submit">
+     <td colspan="3" tal:content="structure context/submit">
       submit button will go here
      </td>
     </tr>
 
-Finally we finish off the tags we used at the start to do the METAL stuff::
+Finally we finish off the tags we used at the start to do the METAL
+stuff::
 
   </td>
  </tal:block>
@@ -2127,16 +2246,17 @@ So putting it all together, and closing the table and form we get::
     <input type="hidden" name=":required" value="name">
 
     <table class="form">
-     <tr><th class="header" colspan=2>Category</th></tr>
+     <tr><th class="header" colspan="2">Category</th></tr>
 
      <tr>
       <th nowrap>Name</th>
-      <td tal:content="structure python:context.name.field(size=60)">name</td>
+      <td tal:content="structure python:context.name.field(size=60)">
+      name</td>
      </tr>
 
      <tr>
       <td>&nbsp;</td>
-      <td colspan=3 tal:content="structure context/submit">
+      <td colspan="3" tal:content="structure context/submit">
        submit button will go here
       </td>
      </tr>
@@ -2145,54 +2265,58 @@ So putting it all together, and closing the table and form we get::
   </td>
  </tal:block>
 
-This is quite a lot to just ask the user one simple question, but
-there is a lot of setup for basically one line (the form line) to do
-its work. To add another field to "category" would involve one more line
-(well maybe a few extra to get the formatting correct).
+This is quite a lot to just ask the user one simple question, but there
+is a lot of setup for basically one line (the form line) to do its work.
+To add another field to "category" would involve one more line (well,
+maybe a few extra to get the formatting correct).
+
 
 Adding the category to the issue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We now have the ability to create issues to our hearts content, but
+We now have the ability to create issues to our heart's content, but
 that is pointless unless we can assign categories to issues.  Just like
-the ``html/category.item`` file was used to define how to add a new
-category, the ``html/issue.item`` is used to define how a new issue is
-created.
+the ``html/category.item.html`` file was used to define how to add a new
+category, the ``html/issue.item.html`` is used to define how a new issue
+is created.
 
-Just like ``category.issue`` this file defines a form which has a table to lay
-things out. It doesn't matter where in the table we add new stuff,
-it is entirely up to your sense of aesthetics::
+Just like ``category.issue.html`` this file defines a form which has a
+table to lay things out. It doesn't matter where in the table we add new
+stuff, it is entirely up to your sense of aesthetics::
 
    <th nowrap>Category</th>
    <td><span tal:replace="structure context/category/field" />
        <span tal:replace="structure db/category/classhelp" />
    </td>
 
-First we define a nice header so that the user knows what the next section
-is, then the middle line does what we are most interested in. This
-``context/category/field`` gets replaced with a field which contains the
-category in the current context (the current context being the new issue).
+First, we define a nice header so that the user knows what the next
+section is, then the middle line does what we are most interested in.
+This ``context/category/field`` gets replaced by a field which contains
+the category in the current context (the current context being the new
+issue).
 
 The classhelp lines generate a link (labelled "list") to a popup window
 which contains the list of currently known categories.
 
+
 Searching on categories
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-We can add categories, and create issues with categories. The next obvious
-thing that we would like to be would be to search issues based on their
-category, so that any one working on the web server could look at all
-issues in the category "Web" for example.
+We can add categories, and create issues with categories. The next
+obvious thing that we would like to be able to do, would be to search
+for issues based on their category, so that, for example, anyone working
+on the web server could look at all issues in the category "Web".
 
-If you look in the html/page file and look for the "Search Issues" you will
-see that it looks something like ``<a href="issue?:template=search">Search
-Issues</a>`` which shows us that when you click on "Search Issues" it will
-be looking for a ``issue.search`` file to display. So that is indeed the file
-that we are going to change.
+If you look for "Search Issues" in the 'html/page.html' file, you will
+find that it looks something like 
+``<a href="issue?:template=search">Search Issues</a>``. This shows us
+that when you click on "Search Issues" it will be looking for a
+``issue.search.html`` file to display. So that is the file that we will
+change.
 
-If you look at this file it should be starting to seem familiar. It is a
-simple HTML form using a table to define structure. You can add the new
-category search code anywhere you like within that form::
+This file should begin to look familiar, by now. It is a simple HTML
+form using a table to define structure. You can add the new category
+search code anywhere you like within that form::
 
     <tr>
      <th>Category:</th>
@@ -2200,11 +2324,13 @@ category search code anywhere you like within that form::
       <select name="category">
        <option value="">don't care</option>
        <option value="">------------</option>
-       <option tal:repeat="s db/category/list" tal:attributes="value s/name"
+       <option tal:repeat="s db/category/list"
+               tal:attributes="value s/name"
                tal:content="s/name">category to filter on</option>
       </select>
      </td>
-     <td><input type="checkbox" name=":columns" value="category" checked></td>
+     <td><input type="checkbox" name=":columns" value="category"
+                checked></td>
      <td><input type="radio" name=":sort" value="category"></td>
      <td><input type="radio" name=":group" value="category"></td>
     </tr>
@@ -2214,64 +2340,70 @@ setting up a select list followed by a checkbox and a couple of radio
 buttons. 
 
 The ``tal:repeat`` part repeats the tag for every item in the "category"
-table and setting "s" to be each category in turn.
+table and sets "s" to each category in turn.
 
-The ``tal:attributes`` part is setting up the ``value=`` part of the option tag
-to be the name part of "s" which is the current category in the loop.
+The ``tal:attributes`` part is setting up the ``value=`` part of the
+option tag to be the name part of "s", which is the current category in
+the loop.
 
-The ``tal:content`` part is setting the contents of the option tag to be the
-name part of "s" again. For objects more complex than category, obviously
-you would put an id in the value, and the descriptive part in the content;
-but for category they are the same.
+The ``tal:content`` part is setting the contents of the option tag to be
+the name part of "s" again. For objects more complex than category,
+obviously you would put an id in the value, and the descriptive part in
+the content; but for categories they are the same.
+
 
 Adding category to the default view
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can now add categories, add issues with categories, and search issues
-based on categories. This is everything that we need to do, however there
-is some more icing that we would like. I think the category of an issue is
-important enough that it should be displayed by default when listing all
-the issues.
+We can now add categories, add issues with categories, and search for
+issues based on categories. This is everything that we need to do;
+however, there is some more icing that we would like. I think the
+category of an issue is important enough that it should be displayed by
+default when listing all the issues.
 
-Unfortunately, this is a bit less obvious than the previous steps. The code
-defining how the issues look is in ``html/issue.index``. This is a large table
-with a form down the bottom for redisplaying and so forth. 
+Unfortunately, this is a bit less obvious than the previous steps. The
+code defining how the issues look is in ``html/issue.index.html``. This
+is a large table with a form down at the bottom for redisplaying and so
+forth. 
 
 Firstly we need to add an appropriate header to the start of the table::
 
     <th tal:condition="request/show/category">Category</th>
 
-The condition part of this statement is so that if the user has selected
-not to see the Category column then they won't.
+The *condition* part of this statement is to avoid displaying the
+Category column if the user has selected not to see it.
 
 The rest of the table is a loop which will go through every issue that
-matches the display criteria. The loop variable is "i" - which means that
-every issue gets assigned to "i" in turn.
+matches the display criteria. The loop variable is "i" - which means
+that every issue gets assigned to "i" in turn.
 
 The new part of code to display the category will look like this::
 
-    <td tal:condition="request/show/category" tal:content="i/category"></td>
+    <td tal:condition="request/show/category"
+        tal:content="i/category"></td>
 
 The condition is the same as above: only display the condition when the
-user hasn't asked for it to be hidden. The next part is to set the content
-of the cell to be the category part of "i" - the current issue.
+user hasn't asked for it to be hidden. The next part is to set the
+content of the cell to be the category part of "i" - the current issue.
 
-Finally we have to edit ``html/page`` again. This time to tell it that when the
-user clicks on "Unnasigned Issues" or "All Issues" that the category should
-be displayed. If you scroll down the page file, you can see the links with
-lots of options. The option that we are interested in is the ``:columns=`` one
-which tells roundup which fields of the issue to display. Simply add
+Finally we have to edit ``html/page.html`` again. This time, we need to
+tell it that when the user clicks on "Unasigned Issues" or "All Issues",
+the category column should be included in the resulting list. If you
+scroll down the page file, you can see the links with lots of options.
+The option that we are interested in is the ``:columns=`` one which
+tells roundup which fields of the issue to display. Simply add
 "category" to that list and it all should work.
 
 
 Adding in state transition control
 ----------------------------------
 
-Sometimes tracker admins want to control the states that users may move issues
-to.
+Sometimes tracker admins want to control the states that users may move
+issues to. You can do this by following these steps:
 
 1. make "status" a required variable. This is achieved by adding the
-   following to the top of the form in the ``issue.item`` template::
+   following to the top of the form in the ``issue.item.html``
+   template::
 
      <input type="hidden" name="@required" value="status">
 
@@ -2279,15 +2411,16 @@ to.
 
 2. add a Multilink property to the status class::
 
-     stat = Class(db, "status", ... , transitions=Multilink('status'), ...)
+     stat = Class(db, "status", ... , transitions=Multilink('status'),
+                  ...)
 
-   and then edit the statuses already created either:
+   and then edit the statuses already created, either:
 
    a. through the web using the class list -> status class editor, or
    b. using the roundup-admin "set" command.
 
 3. add an auditor module ``checktransition.py`` in your tracker's
-   ``detectors`` directory::
+   ``detectors`` directory, for example::
 
      def checktransition(db, cl, nodeid, newvalues):
          ''' Check that the desired transition is valid for the "status"
@@ -2307,7 +2440,8 @@ to.
      def init(db):
          db.issue.audit('set', checktransition)
 
-4. in the ``issue.item`` template, change the status editing bit from::
+4. in the ``issue.item.html`` template, change the status editing bit
+   from::
 
     <th nowrap>Status</th>
     <td tal:content="structure context/status/menu">status</td>
@@ -2320,8 +2454,9 @@ to.
       <tal:block tal:define="ok context/status/transitions"
                  tal:repeat="state db/status/list">
        <option tal:condition="python:state.id in ok"
-               tal:attributes="value state/id;
-                               selected python:state.id == context.status.id"
+               tal:attributes="
+                    value state/id;
+                    selected python:state.id == context.status.id"
                tal:content="state/name"></option>
       </tal:block>
      </select>
@@ -2338,7 +2473,7 @@ Displaying only message summaries in the issue display
 Alter the issue.item template section for messages to::
 
  <table class="messages" tal:condition="context/messages">
-  <tr><th colspan=5 class="header">Messages</th></tr>
+  <tr><th colspan="5" class="header">Messages</th></tr>
   <tr tal:repeat="msg context/messages">
    <td><a tal:attributes="href string:msg${msg/id}"
           tal:content="string:msg${msg/id}"></a></td>
@@ -2346,7 +2481,8 @@ Alter the issue.item template section for messages to::
    <td nowrap tal:content="msg/date/pretty">date</td>
    <td tal:content="msg/summary">summary</td>
    <td>
-    <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
+    <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">
+    remove</a>
    </td>
   </tr>
  </table>
@@ -2358,7 +2494,8 @@ Restricting the list of users that are assignable to a task
 
      db.security.addRole(name='Developer', description='A developer')
 
-2. Just after that, create a new Permission, say "Fixer", specific to "issue"::
+2. Just after that, create a new Permission, say "Fixer", specific to
+   "issue"::
 
      p = db.security.addPermission(name='Fixer', klass='issue',
          description='User is allowed to be assigned to fix issues')
@@ -2367,26 +2504,29 @@ Restricting the list of users that are assignable to a task
 
      db.security.addPermissionToRole('Developer', p)
 
-4. In the issue item edit page ("html/issue.item" in your tracker dir), use
-   the new Permission in restricting the "assignedto" list::
+4. In the issue item edit page ("html/issue.item.html" in your tracker
+   directory), use the new Permission in restricting the "assignedto"
+   list::
 
     <select name="assignedto">
      <option value="-1">- no selection -</option>
      <tal:block tal:repeat="user db/user/list">
-     <option tal:condition="python:user.hasPermission('Fixer', context._classname)"
-             tal:attributes="value user/id;
-                             selected python:user.id == context.assignedto"
+     <option tal:condition="python:user.hasPermission(
+                                'Fixer', context._classname)"
+             tal:attributes="
+                value user/id;
+                selected python:user.id == context.assignedto"
              tal:content="user/realname"></option>
      </tal:block>
     </select>
 
-For extra security, you may wish to set up an auditor to enforce the
-Permission requirement (install this as "assignedtoFixer.py" in your tracker
-"detectors" directory)::
+For extra security, you may wish to setup an auditor to enforce the
+Permission requirement (install this as "assignedtoFixer.py" in your
+tracker "detectors" directory)::
 
   def assignedtoMustBeFixer(db, cl, nodeid, newvalues):
-      ''' Ensure the assignedto value in newvalues is a used with the Fixer
-          Permission
+      ''' Ensure the assignedto value in newvalues is a used with the
+          Fixer Permission
       '''
       if not newvalues.has_key('assignedto'):
           # don't care
@@ -2401,18 +2541,18 @@ Permission requirement (install this as "assignedtoFixer.py" in your tracker
       db.issue.audit('set', assignedtoMustBeFixer)
       db.issue.audit('create', assignedtoMustBeFixer)
 
-So now, if the edit attempts to set the assignedto to a user that doesn't have
-the "Fixer" Permission, the error will be raised.
+So now, if an edit action attempts to set "assignedto" to a user that
+doesn't have the "Fixer" Permission, the error will be raised.
 
 
 Setting up a "wizard" (or "druid") for controlled adding of issues
 ------------------------------------------------------------------
 
 1. Set up the page templates you wish to use for data input. My wizard
-   is going to be a two-step process, first figuring out what category of
-   issue the user is submitting, and then getting details specific to that
-   category. The first page includes a table of help, explaining what the
-   category names mean, and then the core of the form::
+   is going to be a two-step process: first figuring out what category
+   of issue the user is submitting, and then getting details specific to
+   that category. The first page includes a table of help, explaining
+   what the category names mean, and then the core of the form::
 
     <form method="POST" onSubmit="return submit_once()"
           enctype="multipart/form-data">
@@ -2424,17 +2564,17 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
       <input type="submit" value="Continue">
     </form>
 
-   The next page has the usual issue entry information, with the addition of
-   the following form fragments::
+   The next page has the usual issue entry information, with the
+   addition of the following form fragments::
 
     <form method="POST" onSubmit="return submit_once()"
-          enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+          enctype="multipart/form-data"
+          tal:condition="context/is_edit_ok"
           tal:define="cat request/form/category/value">
 
       <input type="hidden" name=":template" value="add_page2">
       <input type="hidden" name=":required" value="title">
       <input type="hidden" name="category" tal:attributes="value cat">
-
        .
        .
        .
@@ -2454,21 +2594,22 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
      </tr>
     </tal:block>
 
-   ... the above section will only be displayed if the category is one of 6,
-   10, 13, 14, 15, 16 or 17.
+   ... the above section will only be displayed if the category is one
+   of 6, 10, 13, 14, 15, 16 or 17.
 
 3. Determine what actions need to be taken between the pages - these are
    usually to validate user choices and determine what page is next. Now
-   encode those actions in methods on the interfaces Client class and insert
-   hooks to those actions in the "actions" attribute on that class, like so::
+   encode those actions in methods on the ``interfaces.Client`` class
+   and insert hooks to those actions in the "actions" attribute on that
+   class, like so::
 
     actions = client.Client.actions + (
         ('page1_submit', 'page1SubmitAction'),
     )
 
     def page1SubmitAction(self):
-        ''' Verify that the user has selected a category, and then move on
-            to page 2.
+        ''' Verify that the user has selected a category, and then move
+            on to page 2.
         '''
         category = self.form['category'].value
         if category == '-1':
@@ -2477,54 +2618,57 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
         # everything's ok, move on to the next page
         self.template = 'add_page2'
 
-4. Use the usual "new" action as the :action on the final page, and you're
-   done (the standard context/submit method can do this for you).
+4. Use the usual "new" action as the ``:action`` on the final page, and
+   you're done (the standard context/submit method can do this for you).
 
 
 Using an external password validation source
 --------------------------------------------
 
 We have a centrally-managed password changing system for our users. This
-results in a UN*X passwd-style file that we use for verification of users.
-Entries in the file consist of ``name:password`` where the password is
-encrypted using the standard UN*X ``crypt()`` function (see the ``crypt``
-module in your Python distribution). An example entry would be::
+results in a UN*X passwd-style file that we use for verification of
+users. Entries in the file consist of ``name:password`` where the
+password is encrypted using the standard UN*X ``crypt()`` function (see
+the ``crypt`` module in your Python distribution). An example entry
+would be::
 
     admin:aamrgyQfDFSHw
 
-Each user of Roundup must still have their information stored in the Roundup
-database - we just use the passwd file to check their password. To do this, we
-add the following code to our ``Client`` class in the tracker home
-``interfaces.py`` module::
+Each user of Roundup must still have their information stored in the
+Roundup database - we just use the passwd file to check their password.
+To do this, we add the following code to our ``Client`` class in the
+tracker home ``interfaces.py`` module::
 
     def verifyPassword(self, userid, password):
         # get the user's username
         username = self.db.user.get(userid, 'username')
 
-        # the passwords are stored in the "passwd.txt" file in the tracker
-        # home
+        # the passwords are stored in the "passwd.txt" file in the
+        # tracker home
         file = os.path.join(self.db.config.TRACKER_HOME, 'passwd.txt')
 
         # see if we can find a match
-        for ent in [line.strip().split(':') for line in open(file).readlines()]:
+        for ent in [line.strip().split(':') for line in
+                                            open(file).readlines()]:
             if ent[0] == username:
                 return crypt.crypt(password, ent[1][:2]) == ent[1]
 
         # user doesn't exist in the file
         return 0
 
-What this does is look through the file, line by line, looking for a name that
-matches.
+What this does is look through the file, line by line, looking for a
+name that matches.
 
-We also remove the redundant password fields from the ``user.item`` template.
+We also remove the redundant password fields from the ``user.item``
+template.
 
 
 Adding a "vacation" flag to users for stopping nosy messages
 ------------------------------------------------------------
 
-When users go on vacation and set up vacation email bouncing, you'll start to
-see a lot of messages come back through Roundup "Fred is on vacation". Not
-very useful, and relatively easy to stop.
+When users go on vacation and set up vacation email bouncing, you'll
+start to see a lot of messages come back through Roundup "Fred is on
+vacation". Not very useful, and relatively easy to stop.
 
 1. add a "vacation" flag to your users::
 
@@ -2561,12 +2705,12 @@ very useful, and relatively easy to stop.
                 for recipid in messages.get(msgid, 'recipients'):
                     r[recipid] = 1
 
-                # figure the author's id, and indicate they've received the
-                # message
+                # figure the author's id, and indicate they've received
+                # the message
                 authid = messages.get(msgid, 'author')
 
-                # possibly send the message to the author, as long as they aren't
-                # anonymous
+                # possibly send the message to the author, as long as
+                # they aren't anonymous
                 if (db.config.MESSAGES_TO_AUTHOR == 'yes' and
                         users.get(authid, 'username') != 'anonymous'):
                     sendto.append(authid)
@@ -2575,9 +2719,9 @@ very useful, and relatively easy to stop.
                 # now figure the nosy people who weren't recipients
                 nosy = cl.get(nodeid, 'nosy')
                 for nosyid in nosy:
-                    # Don't send nosy mail to the anonymous user (that user
-                    # shouldn't appear in the nosy list, but just in case they
-                    # do...)
+                    # Don't send nosy mail to the anonymous user (that
+                    # user shouldn't appear in the nosy list, but just
+                    # in case they do...)
                     if users.get(nosyid, 'username') == 'anonymous':
                         continue
                     # make sure they haven't seen the message already
@@ -2595,7 +2739,8 @@ very useful, and relatively easy to stop.
                 # we have new recipients
                 if sendto:
                     # filter out the people on vacation
-                    sendto = [i for i in sendto if not users.get(i, 'vacation', 0)]
+                    sendto = [i for i in sendto 
+                              if not users.get(i, 'vacation', 0)]
 
                     # map userids to addresses
                     sendto = [users.get(i, 'address') for i in sendto]
@@ -2608,8 +2753,8 @@ very useful, and relatively easy to stop.
             except roundupdb.MessageSendError, message:
                 raise roundupdb.DetectorError, message
 
-   Note that this is the standard nosy reaction code, with the small addition
-   of::
+   Note that this is the standard nosy reaction code, with the small
+   addition of::
 
     # filter out the people on vacation
     sendto = [i for i in sendto if not users.get(i, 'vacation', 0)]
@@ -2620,18 +2765,19 @@ very useful, and relatively easy to stop.
 Adding a time log to your issues
 --------------------------------
 
-We want to log the dates and amount of time spent working on issues, and be
-able to give a summary of the total time spent on a particular issue.
+We want to log the dates and amount of time spent working on issues, and
+be able to give a summary of the total time spent on a particular issue.
 
 1. Add a new class to your tracker ``dbinit.py``::
 
     # storage for time logging
     timelog = Class(db, "timelog", period=Interval())
 
-   Note that we automatically get the date of the time log entry creation
-   through the standard property "creation".
+   Note that we automatically get the date of the time log entry
+   creation through the standard property "creation".
 
-2. Link to the new class from your issue class (again, in ``dbinit.py``)::
+2. Link to the new class from your issue class (again, in
+   ``dbinit.py``)::
 
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
@@ -2640,26 +2786,27 @@ able to give a summary of the total time spent on a particular issue.
 
    the "times" property is the new link to the "timelog" class.
 
-3. We'll need to let people add in times to the issue, so in the web interface
-   we'll have a new entry field, just below the change note box::
+3. We'll need to let people add in times to the issue, so in the web
+   interface we'll have a new entry field, just below the change note
+   box::
 
     <tr>
      <th nowrap>Time Log</th>
-     <td colspan=3><input name=":timelog">
+     <td colspan="3"><input name=":timelog">
       (enter as "3y 1m 4d 2:40:02" or parts thereof)
      </td>
     </tr>
 
-   Note that we've made up a new form variable, but since we place a colon ":"
-   in front of it, it won't clash with any existing property variables. The
-   names you *can't* use are ``:note``, ``:file``, ``:action``, ``:required``
-   and ``:template``. These variables are described in the section
-   `performing actions in web requests`_.
+   Note that we've made up a new form variable, but since we place a
+   colon ":" in front of it, it won't clash with any existing property
+   variables. The names you *can't* use are ``:note``, ``:file``,
+   ``:action``, ``:required`` and ``:template``. These variables are
+   described in the section `performing actions in web requests`_.
 
-4. We also need to handle this new field in the CGI interface - the way to
-   do this is through implementing a new form action (see `Setting up a
-   "wizard" (or "druid") for controlled adding of issues`_ for another example
-   where we implemented a new CGI form action).
+4. We also need to handle this new field in the CGI interface - the way
+   to do this is through implementing a new form action (see `Setting up
+   a "wizard" (or "druid") for controlled adding of issues`_ for another
+   example where we implemented a new CGI form action).
 
    In this case, we'll want our action to:
 
@@ -2679,10 +2826,11 @@ able to give a summary of the total time spent on a particular issue.
         )
 
         def timelogEditAction(self):
-            ''' Handle the creation of a new time log entry if necessary.
+            ''' Handle the creation of a new time log entry if
+                necessary.
 
-                If we create a new entry, fake up a CGI form value for the
-                altered "times" property of the issue being edited.
+                If we create a new entry, fake up a CGI form value for
+                the altered "times" property of the issue being edited.
    
                 Punt to the regular edit action when we're done.
             '''
@@ -2693,7 +2841,8 @@ able to give a summary of the total time spent on a particular issue.
                 # create it
                 newid = self.db.timelog.create(period=period)
 
-                # if we're editing an existing item, get the old timelog value
+                # if we're editing an existing item, get the old timelog
+                # value
                 if self.nodeid:
                     l = self.db.issue.get(self.nodeid, 'times')
                     l.append(newid)
@@ -2702,7 +2851,8 @@ able to give a summary of the total time spent on a particular issue.
 
                 # now make the fake CGI form values
                 for entry in l:
-                    self.form.list.append(MiniFieldStorage('times', entry))
+                    self.form.list.append(
+                        MiniFieldStorage('times', entry))
 
             # punt to the normal edit action
             if self.nodeid:
@@ -2710,24 +2860,24 @@ able to give a summary of the total time spent on a particular issue.
             else:
                 return self.newItemAction()
    
-   you add this code to your Client class in your tracker's ``interfaces.py``
-   file. Locate the section that looks like::
+   you add this code to your Client class in your tracker's
+   ``interfaces.py`` file. Locate the section that looks like::
 
     class Client:
-        ''' derives basic CGI implementation from the standard module, 
+        ''' derives basic CGI implementation from the standard module,
             with any specific extensions 
         ''' 
         pass
 
    and insert this code in place of the ``pass`` statement.
 
-5. You'll also need to modify your ``issue.item`` form submit action so it
-   calls the time logging action we just created. The current template will
-   look like this::
+5. You'll also need to modify your ``issue.item`` form submit action so
+   it calls the time logging action we just created. The current
+   template will look like this::
 
     <tr>
      <td>&nbsp;</td>
-     <td colspan=3 tal:content="structure context/submit">
+     <td colspan="3" tal:content="structure context/submit">
       submit button will go here
      </td>
     </tr>
@@ -2736,7 +2886,7 @@ able to give a summary of the total time spent on a particular issue.
 
     <tr>
      <td>&nbsp;</td>
-     <td colspan=3>
+     <td colspan="3">
       <tal:block tal:condition="context/id">
         <input type="hidden" name=":action" value="edit_with_timelog">
         <input type="submit" name="submit" value="Submit Changes">
@@ -2752,34 +2902,36 @@ able to give a summary of the total time spent on a particular issue.
    edit operations (where the item exists) and "new_with_timelog" for
    creations operations.
 
-6. We want to display a total of the time log times that have been accumulated
-   for an issue. To do this, we'll need to actually write some Python code,
-   since it's beyond the scope of PageTemplates to perform such calculations.
-   We do this by adding a method to the TemplatingUtils class in our tracker
-   ``interfaces.py`` module::
+6. We want to display a total of the time log times that have been
+   accumulated for an issue. To do this, we'll need to actually write
+   some Python code, since it's beyond the scope of PageTemplates to
+   perform such calculations. We do this by adding a method to the
+   TemplatingUtils class in our tracker ``interfaces.py`` module::
 
     class TemplatingUtils:
         ''' Methods implemented on this class will be available to HTML
             templates through the 'utils' variable.
         '''
         def totalTimeSpent(self, times):
-            ''' Call me with a list of timelog items (which have an Interval 
-                "period" property)
+            ''' Call me with a list of timelog items (which have an
+                Interval "period" property)
             '''
             total = Interval('')
             for time in times:
                 total += time.period._value
             return total
 
-   Replace the ``pass`` line as we did in step 4 above with the Client class.
-   As indicated in the docstrings, we will be able to access the
-   ``totalTimeSpent`` method via the ``utils`` variable in our templates.
+   Replace the ``pass`` line as we did in step 4 above with the Client
+   class. As indicated in the docstrings, we will be able to access the
+   ``totalTimeSpent`` method via the ``utils`` variable in our
+   templates.
 
 7. Display the time log for an issue::
 
      <table class="otherinfo" tal:condition="context/times">
       <tr><th colspan="3" class="header">Time Log
-       <tal:block tal:replace="python:utils.totalTimeSpent(context.times)" />
+       <tal:block
+            tal:replace="python:utils.totalTimeSpent(context.times)" />
       </th></tr>
       <tr><th>Date</th><th>Period</th><th>Logged By</th></tr>
       <tr tal:repeat="time context/times">
@@ -2789,33 +2941,36 @@ able to give a summary of the total time spent on a particular issue.
       </tr>
      </table>
 
-   I put this just above the Messages log in my issue display. Note our use
-   of the ``totalTimeSpent`` method which will total up the times for the
-   issue and return a new Interval. That will be automatically displayed in
-   the template as text like "+ 1y 2:40" (1 year, 2 hours and 40 minutes).
+   I put this just above the Messages log in my issue display. Note our
+   use of the ``totalTimeSpent`` method which will total up the times
+   for the issue and return a new Interval. That will be automatically
+   displayed in the template as text like "+ 1y 2:40" (1 year, 2 hours
+   and 40 minutes).
 
-8. If you're using a persistent web server - roundup-server or mod_python for
-   example - then you'll need to restart that to pick up the code changes.
-   When that's done, you'll be able to use the new time logging interface.
+8. If you're using a persistent web server - roundup-server or
+   mod_python for example - then you'll need to restart that to pick up
+   the code changes. When that's done, you'll be able to use the new
+   time logging interface.
 
 Using a UN*X passwd file as the user database
 ---------------------------------------------
 
-On some systems the primary store of users is the UN*X passwd file. It holds
-information on users such as their username, real name, password and primary
-user group.
+On some systems the primary store of users is the UN*X passwd file. It
+holds information on users such as their username, real name, password
+and primary user group.
 
-Roundup can use this store as its primary source of user information, but it
-needs additional information too - email address(es), roundup Roles, vacation
-flags, roundup hyperdb item ids, etc. Also, "retired" users must still exist
-in the user database, unlike some passwd files in which the users are removed
-when they no longer have access to a system.
+Roundup can use this store as its primary source of user information,
+but it needs additional information too - email address(es), roundup
+Roles, vacation flags, roundup hyperdb item ids, etc. Also, "retired"
+users must still exist in the user database, unlike some passwd files in
+which the users are removed when they no longer have access to a system.
 
-To make use of the passwd file, we therefore synchronise between the two user
-stores. We also use the passwd file to validate the user logins, as described
-in the previous example, `using an external password validation source`_. We
-keep the users lists in sync using a fairly simple script that runs once a
-day, or several times an hour if more immediate access is needed. In short, it:
+To make use of the passwd file, we therefore synchronise between the two
+user stores. We also use the passwd file to validate the user logins, as
+described in the previous example, `using an external password
+validation source`_. We keep the users lists in sync using a fairly
+simple script that runs once a day, or several times an hour if more
+immediate access is needed. In short, it:
 
 1. parses the passwd file, finding usernames, passwords and real names,
 2. compares that list to the current roundup user list:
@@ -2826,17 +2981,17 @@ day, or several times an hour if more immediate access is needed. In short, it:
 
 3. send an email to administrators to let them know what's been done.
 
-The retiring and updating are simple operations, requiring only a call to
-``retire()`` or ``set()``. The creation operation requires more information
-though - the user's email address and their roundup Roles. We're going to
-assume that the user's email address is the same as their login name, so we
-just append the domain name to that. The Roles are determined using the
-passwd group identifier - mapping their UN*X group to an appropriate set of
-Roles.
+The retiring and updating are simple operations, requiring only a call
+to ``retire()`` or ``set()``. The creation operation requires more
+information though - the user's email address and their roundup Roles.
+We're going to assume that the user's email address is the same as their
+login name, so we just append the domain name to that. The Roles are
+determined using the passwd group identifier - mapping their UN*X group
+to an appropriate set of Roles.
 
-The script to perform all this, broken up into its main components, is as
-follows. Firstly, we import the necessary modules and open the tracker we're
-to work on::
+The script to perform all this, broken up into its main components, is
+as follows. Firstly, we import the necessary modules and open the
+tracker we're to work on::
 
     import sys, os, smtplib
     from roundup import instance, date
@@ -2851,16 +3006,16 @@ Next we read in the *passwd* file from the tracker home::
     file = os.path.join(tracker_home, 'users.passwd')
     users = [x.strip().split(':') for x in open(file).readlines()]
 
-Handle special users (those to ignore in the file, and those who don't appear
-in the file)::
+Handle special users (those to ignore in the file, and those who don't
+appear in the file)::
 
     # users to not keep ever, pre-load with the users I know aren't
     # "real" users
     ignore = ['ekmmon', 'bfast', 'csrmail']
 
     # users to keep - pre-load with the roundup-specific users
-    keep = ['comment_pool', 'network_pool', 'admin', 'dev-team', 'cs_pool',
-        'anonymous', 'system_pool', 'automated']
+    keep = ['comment_pool', 'network_pool', 'admin', 'dev-team',
+            'cs_pool', 'anonymous', 'system_pool', 'automated']
 
 Now we map the UN*X group numbers to the Roles that users should have::
 
@@ -2872,10 +3027,10 @@ Now we map the UN*X group numbers to the Roles that users should have::
      '505': 'User',       # marketing
     }
 
-Now we do all the work. Note that the body of the script (where we have the
-tracker database open) is wrapped in a ``try`` / ``finally`` clause, so that
-we always close the database cleanly when we're finished. So, we now do all
-the work::
+Now we do all the work. Note that the body of the script (where we have
+the tracker database open) is wrapped in a ``try`` / ``finally`` clause,
+so that we always close the database cleanly when we're finished. So, we
+now do all the work::
 
     # open the database
     db = tracker.open('admin')
@@ -2903,8 +3058,8 @@ the work::
                     address='%s@ekit-inc.com'%user, roles=roles[gid])
                 msg.append('ADD %s - %s (%s)'%(user, real, roles[gid]))
 
-        # now check that all the users in the tracker are also in our "keep"
-        # list - retire those who aren't
+        # now check that all the users in the tracker are also in our
+        # "keep" list - retire those who aren't
         for uid in db.user.list():
             user = db.user.get(uid, 'username')
             if user not in keep:
@@ -2936,16 +3091,16 @@ And that's it!
 Enabling display of either message summaries or the entire messages
 -------------------------------------------------------------------
 
-This is pretty simple - all we need to do is copy the code from the example
-`displaying only message summaries in the issue display`_ into our template
-alongside the summary display, and then introduce a switch that shows either
-one or the other. We'll use a new form variable, ``:whole_messages`` to
-achieve this::
+This is pretty simple - all we need to do is copy the code from the
+example `displaying only message summaries in the issue display`_ into
+our template alongside the summary display, and then introduce a switch
+that shows either one or the other. We'll use a new form variable,
+``:whole_messages`` to achieve this::
 
  <table class="messages" tal:condition="context/messages">
   <tal:block tal:condition="not:request/form/:whole_messages/value | python:0">
-   <tr><th colspan=3 class="header">Messages</th>
-       <th colspan=2 class="header">
+   <tr><th colspan="3" class="header">Messages</th>
+       <th colspan="2" class="header">
          <a href="?:whole_messages=yes">show entire messages</a>
        </th>
    </tr>
@@ -2962,8 +3117,10 @@ achieve this::
   </tal:block>
 
   <tal:block tal:condition="request/form/:whole_messages/value | python:0">
-   <tr><th colspan=2 class="header">Messages</th>
-       <th class="header"><a href="?:whole_messages=">show only summaries</a></th>
+   <tr><th colspan="2" class="header">Messages</th>
+       <th class="header">
+         <a href="?:whole_messages=">show only summaries</a>
+       </th>
    </tr>
    <tal:block tal:repeat="msg context/messages">
     <tr>
@@ -2973,7 +3130,7 @@ achieve this::
       (<a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>)
      </th>
     </tr>
-    <tr><td colspan=3 tal:content="msg/content"></td></tr>
+    <tr><td colspan="3" tal:content="msg/content"></td></tr>
    </tal:block>
   </tal:block>
  </table>
@@ -2983,12 +3140,12 @@ Blocking issues that depend on other issues
 -------------------------------------------
 
 We needed the ability to mark certain issues as "blockers" - that is,
-they can't be resolved until another issue (the blocker) they rely on
-is resolved. To achieve this:
+they can't be resolved until another issue (the blocker) they rely on is
+resolved. To achieve this:
 
-1. Create a new property on the issue Class, ``blockers=Multilink("issue")``.
-   Edit your tracker's dbinit.py file. Where the "issue" class is defined,
-   something like::
+1. Create a new property on the issue Class,
+   ``blockers=Multilink("issue")``. Edit your tracker's dbinit.py file.
+   Where the "issue" class is defined, something like::
 
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
@@ -3009,15 +3166,16 @@ is resolved. To achieve this:
      <span tal:replace="structure python:context.blockers.field(showid=1,
                                   size=20)" />
      <span tal:replace="structure python:db.issue.classhelp('id,title')" />
-     <span tal:condition="context/blockers" tal:repeat="blk context/blockers">
+     <span tal:condition="context/blockers"
+           tal:repeat="blk context/blockers">
       <br>View: <a tal:attributes="href string:issue${blk/id}"
                    tal:content="blk/id"></a>
      </span>
 
-   You'll need to fiddle with your item page layout to find an appropriate
-   place to put it - I'll leave that fun part up to you. Just make sure it
-   appears in the first table, possibly somewhere near the "superseders"
-   field.
+   You'll need to fiddle with your item page layout to find an
+   appropriate place to put it - I'll leave that fun part up to you.
+   Just make sure it appears in the first table, possibly somewhere near
+   the "superseders" field.
 
 3. Create a new detector module (attached) which enforces the rules:
 
@@ -3035,7 +3193,8 @@ is resolved. To achieve this:
             blockers = cl.get(nodeid, 'blockers')
         blockers = newvalues.get('blockers', blockers)
 
-        # don't do anything if there's no blockers or the status hasn't changed
+        # don't do anything if there's no blockers or the status hasn't
+        # changed
         if not blockers or not newvalues.has_key('status'):
             return
 
@@ -3044,7 +3203,8 @@ is resolved. To achieve this:
 
         # format the info
         u = db.config.TRACKER_WEB
-        s = ', '.join(['<a href="%sissue%s">%s</a>'%(u,id,id) for id in blockers])
+        s = ', '.join(['<a href="%sissue%s">%s</a>'%(
+                        u,id,id) for id in blockers])
         if len(blockers) == 1:
             s = 'issue %s is'%s
         else:
@@ -3068,8 +3228,8 @@ is resolved. To achieve this:
         if newvalues['status'] != resolved_id:
             return
 
-        # yes - find all the blocked issues, if any, and remove me from their
-        # blockers list
+        # yes - find all the blocked issues, if any, and remove me from
+        # their blockers list
         issues = cl.find(blockers=nodeid)
         for issueid in issues:
             blockers = cl.get(issueid, 'blockers')
@@ -3089,11 +3249,11 @@ is resolved. To achieve this:
    Put the above code in a file called "blockers.py" in your tracker's
    "detectors" directory.
 
-4. Finally, and this is an optional step, modify the tracker web page URLs
-   so they filter out issues with any blockers. You do this by adding an
-   additional filter on "blockers" for the value "-1". For example, the
-   existing "Show All" link in the "page" template (in the tracker's
-   "html" directory) looks like this::
+4. Finally, and this is an optional step, modify the tracker web page
+   URLs so they filter out issues with any blockers. You do this by
+   adding an additional filter on "blockers" for the value "-1". For
+   example, the existing "Show All" link in the "page" template (in the
+   tracker's "html" directory) looks like this::
 
      <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
@@ -3102,11 +3262,11 @@ is resolved. To achieve this:
 
      <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers&blockers=-1&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
-That's it. You should now be able to se blockers on your issues. Note that
-if you want to know whether an issue has any other issues dependent on it
-(ie. it's in their blockers list) you can look at the journal history
-at the bottom of the issue page - look for a "link" event to another
-issue's "blockers" property.
+That's it. You should now be able to set blockers on your issues. Note
+that if you want to know whether an issue has any other issues dependent
+on it (i.e. it's in their blockers list) you can look at the journal
+history at the bottom of the issue page - look for a "link" event to
+another issue's "blockers" property.
 
 
 -------------------
