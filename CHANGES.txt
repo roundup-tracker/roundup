@@ -10,6 +10,7 @@ Fixed:
 - fixed some more mysql 0.6->0.7 upgrade bugs (sf bug 950410)
 - fixed Boolean values in postgresql (sf bugs 972546 and 972600)
 - fixed -g arg to roundup-server (sf bug 973946)
+- better roundup-server usage string (sf bug 973352)
 
 
 2004-06-10 0.7.4
