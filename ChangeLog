@@ -1,6 +1,7 @@
-2001-07-24 11:08  richard
+2001-07-24 14:26  anthonybaxter
 
-	* CHANGES.TXT: noted changes in changes.txt
+	* roundup/backends/back_bsddb3.py: bsddb3 implementation. For now,
+	it's the bsddb implementation with a "3" added in crayon.
 
 2001-07-24 11:07  richard
 
@@ -15,10 +16,6 @@
 2001-07-24 09:32  richard
 
 	* INSTALL.TXT: minor edit
-
-2001-07-24 09:32  richard
-
-	* CHANGES.TXT: added mention of the new template
 
 2001-07-24 09:28  richard
 
@@ -50,9 +47,9 @@
 
 2001-07-23 18:55  richard
 
-	* CHANGES, CHANGES.TXT, INSTALL.TXT, README, README.TXT: renamed
-	the text files so that they're recognised as text files on windows
-	added INSTALL.TXT
+	* CHANGES, INSTALL.TXT, README, README.TXT: renamed the text files
+	so that they're recognised as text files on windows added
+	INSTALL.TXT
 
 2001-07-23 18:53  richard
 
@@ -278,7 +275,7 @@
 
 	* cgitb.py, config.py, date.py, hyperdb.py, roundup-mailgw.py,
 	roundup.py, roundup_cgi.py, roundupdb.py, server.py, template.py:
-	Added CVS keywords $Id: ChangeLog,v 1.1 2001-07-24 04:19:07 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
+	Added CVS keywords $Id: ChangeLog,v 1.2 2001-07-24 04:53:39 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
 
 2001-07-19 15:46  anthonybaxter
 
