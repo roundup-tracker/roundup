@@ -95,10 +95,6 @@ date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
 
-filter:
-  . incorrectly embeds hidden fields for filters being displayed - and
-    doesn't use the existing values for filters being displayed either.
-
 
 6. Author
 =========

@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-07-?? - 0.2.2
+2001-07-29 - 0.2.2
 Features:
  . Added implementation.txt to the doc directory. Contains implementation
    notes specific to this implementations of Roundup.
@@ -22,6 +22,8 @@ Fixed:
  . New issue form handles lack of note better now.
  . HTML templating uses section-bar style for index group headers now.
  . Fixed problem in link display when Link value is None.
+ . Form handling in cgi client wasn't propogating through the previous
+   query elements.
 
 
 2001-07-28 - 0.2.1
