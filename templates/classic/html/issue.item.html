@@ -100,8 +100,9 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 </p>
 
 <table class="files" tal:condition="context/files">
- <tr><th colspan="4" class="header">Files</th></tr>
- <tr><th>File name</th><th>Uploaded</th><th>Type</th><th>Edit</th></tr>
+ <tr><th colspan="5" class="header">Files</th></tr>
+ <tr><th>File name</th><th>Uploaded</th><th>Type</th><th>Edit</th>
+    <th>Remove</th></tr>
  <tr tal:repeat="file context/files">
   <td>
    <a tal:attributes="href file/download_url"
@@ -114,6 +115,14 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
   <td tal:content="file/type" />
   <td><a tal:condition="file/is_edit_ok"
           tal:attributes="href string:file${file/id}">edit</a>
+  </td>
+  <td>
+   <form style="padding:0" tal:condition="context/is_edit_ok"
+         tal:attributes="action string:issue${context/id}">
+    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
+    <input type="hidden" name="@action" value="edit">
+    <input type="submit" value="remove">
+   </form>
   </td>
  </tr>
 </table>
