@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.157 2004-02-13 01:32:37 richard Exp $
+# $Id: client.py,v 1.158 2004-02-14 01:17:38 jlgijsbers Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -522,7 +522,7 @@ class Client:
     actions = (
         ('edit',     EditItemAction),
         ('editcsv',  EditCSVAction),
-        ('new',      EditItemAction),
+        ('new',      NewItemAction),
         ('register', RegisterAction),
         ('confrego', ConfRegoAction),
         ('passrst',  PassResetAction),

@@ -8,7 +8,8 @@ from roundup.mailgw import uidFromAddress
 
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
-           'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction']
+           'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
+           'NewItemAction']
 
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -275,39 +276,7 @@ class EditCSVAction(Action):
         return self.db.security.hasPermission('Edit', self.client.userid,
                                               self.client.classname)
 
-class EditItemAction(Action):
-    def handle(self):
-        """Perform an edit of an item in the database.
-
-        See parsePropsFromForm and _editnodes for special variables.
-        
-        """
-        props, links = self.client.parsePropsFromForm()
-
-        # handle the props
-        try:
-            message = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError), message:
-            self.client.error_message.append(_('Apply Error: ') + str(message))
-            return
-
-        # commit now that all the tricky stuff is done
-        self.db.commit()
-
-        # redirect to the item's edit page
-        # redirect to finish off
-        url = self.base + self.classname
-        # note that this action might have been called by an index page, so
-        # we will want to include index-page args in this URL too
-        if self.nodeid is not None:
-            url += self.nodeid
-        url += '?@ok_message=%s&@template=%s'%(urllib.quote(message),
-            urllib.quote(self.template))
-        if self.nodeid is None:
-            req = templating.HTMLRequest(self)
-            url += '&' + req.indexargs_href('', {})[1:]
-        raise Redirect, url
-    
+class _EditAction(Action):
     def editItemPermission(self, props):
         """Determine whether the user has permission to edit this item.
 
@@ -332,37 +301,6 @@ class EditItemAction(Action):
         if self.db.security.hasPermission('Edit', self.userid, self.classname):
             return 1
         return 0
-
-    def newItemAction(self):
-        ''' Add a new item to the database.
-
-            This follows the same form as the editItemAction, with the same
-            special form values.
-        '''
-        # parse the props from the form
-        try:
-            props, links = self.parsePropsFromForm(create=True)
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
-
-        # handle the props - edit or create
-        try:
-            # when it hits the None element, it'll set self.nodeid
-            messages = self._editnodes(props, links)
-
-        except (ValueError, KeyError, IndexError), message:
-            # these errors might just be indicative of user dumbness
-            self.error_message.append(_('Error: ') + str(message))
-            return
-
-        # commit now that all the tricky stuff is done
-        self.db.commit()
-
-        # redirect to the new item's page
-        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
-            self.classname, self.nodeid, urllib.quote(messages),
-            urllib.quote(self.template))
 
     def newItemPermission(self, props):
         """Determine whether the user has permission to create (edit) this item.
@@ -446,7 +384,7 @@ class EditItemAction(Action):
                 # make a new node
                 newid = self._createnode(cn, props)
                 if nodeid is None:
-                    self.client.nodeid = newid
+                    self.nodeid = newid
                 nodeid = newid
 
                 # and some nice feedback for the user
@@ -495,6 +433,71 @@ class EditItemAction(Action):
         # create the node and return its id
         cl = self.db.classes[cn]
         return cl.create(**props)
+
+class EditItemAction(_EditAction):
+    def handle(self):
+        """Perform an edit of an item in the database.
+
+        See parsePropsFromForm and _editnodes for special variables.
+        
+        """
+        props, links = self.client.parsePropsFromForm()
+
+        # handle the props
+        try:
+            message = self._editnodes(props, links)
+        except (ValueError, KeyError, IndexError), message:
+            self.client.error_message.append(_('Apply Error: ') + str(message))
+            return
+
+        # commit now that all the tricky stuff is done
+        self.db.commit()
+
+        # redirect to the item's edit page
+        # redirect to finish off
+        url = self.base + self.classname
+        # note that this action might have been called by an index page, so
+        # we will want to include index-page args in this URL too
+        if self.nodeid is not None:
+            url += self.nodeid
+        url += '?@ok_message=%s&@template=%s'%(urllib.quote(message),
+            urllib.quote(self.template))
+        if self.nodeid is None:
+            req = templating.HTMLRequest(self)
+            url += '&' + req.indexargs_href('', {})[1:]
+        raise Redirect, url
+    
+class NewItemAction(_EditAction):
+    def handle(self):
+        ''' Add a new item to the database.
+
+            This follows the same form as the EditItemAction, with the same
+            special form values.
+        '''
+        # parse the props from the form
+        try:
+            props, links = self.client.parsePropsFromForm(create=True)
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
+        # handle the props - edit or create
+        try:
+            # when it hits the None element, it'll set self.nodeid
+            messages = self._editnodes(props, links)
+
+        except (ValueError, KeyError, IndexError), message:
+            # these errors might just be indicative of user dumbness
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
+        # commit now that all the tricky stuff is done
+        self.db.commit()
+
+        # redirect to the new item's page
+        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
+            self.classname, self.nodeid, urllib.quote(messages),
+            urllib.quote(self.template))
         
 class PassResetAction(Action):
     def handle(self):
