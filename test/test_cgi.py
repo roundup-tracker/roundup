@@ -8,9 +8,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.9 2003-02-14 00:31:46 richard Exp $
+# $Id: test_cgi.py,v 1.10 2003-02-17 06:44:01 richard Exp $
 
-import unittest, os, shutil, errno, sys, difflib, cgi
+import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client
 from roundup import init, instance, password, hyperdb, date
@@ -62,6 +62,11 @@ class FormTestCase(unittest.TestCase):
             multilink=hyperdb.Multilink('test'), date=hyperdb.Date(),
             interval=hyperdb.Interval())
 
+        # compile the labels re
+        classes = '|'.join(self.db.classes.keys())
+        self.FV_SPECIAL = re.compile(client.Client.FV_LABELS%classes,
+            re.VERBOSE)
+
     def parseForm(self, form, classname='test', nodeid=None):
         cl = client.Client(self.instance, None, {'PATH_INFO':'/'},
             makeForm(form))
@@ -76,6 +81,44 @@ class FormTestCase(unittest.TestCase):
             shutil.rmtree(self.dirname)
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    #
+    # form label extraction
+    #
+    def tl(self, s, c, i, a, p):
+        m = self.FV_SPECIAL.match(s)
+        self.assertNotEqual(m, None)
+        d = m.groupdict()
+        self.assertEqual(d['classname'], c)
+        self.assertEqual(d['id'], i)
+        for action in 'required add remove link note file'.split():
+            if a == action:
+                self.assertNotEqual(d[action], None)
+            else:
+                self.assertEqual(d[action], None)
+        self.assertEqual(d['propname'], p)
+
+    def testLabelMatching(self):
+        self.tl('<propname>', None, None, None, '<propname>')
+        self.tl(':required', None, None, 'required', None)
+        self.tl(':confirm:<propname>', None, None, 'confirm', '<propname>')
+        self.tl(':add:<propname>', None, None, 'add', '<propname>')
+        self.tl(':remove:<propname>', None, None, 'remove', '<propname>')
+        self.tl(':link:<propname>', None, None, 'link', '<propname>')
+        self.tl('test1:<prop>', 'test', '1', None, '<prop>')
+        self.tl('test1:required', 'test', '1', 'required', None)
+        self.tl('test1:add:<prop>', 'test', '1', 'add', '<prop>')
+        self.tl('test1:remove:<prop>', 'test', '1', 'remove', '<prop>')
+        self.tl('test1:link:<prop>', 'test', '1', 'link', '<prop>')
+        self.tl('test1:confirm:<prop>', 'test', '1', 'confirm', '<prop>')
+        self.tl('test-1:<prop>', 'test', '-1', None, '<prop>')
+        self.tl('test-1:required', 'test', '-1', 'required', None)
+        self.tl('test-1:add:<prop>', 'test', '-1', 'add', '<prop>')
+        self.tl('test-1:remove:<prop>', 'test', '-1', 'remove', '<prop>')
+        self.tl('test-1:link:<prop>', 'test', '-1', 'link', '<prop>')
+        self.tl('test-1:confirm:<prop>', 'test', '-1', 'confirm', '<prop>')
+        self.tl(':note', None, None, 'note', None)
+        self.tl(':file', None, None, 'file', None)
 
     #
     # Empty form
@@ -277,18 +320,18 @@ class FormTestCase(unittest.TestCase):
         self.assertRaises(ValueError, self.parseForm, {'password': ['', '']},
             'user')
         self.assertRaises(ValueError, self.parseForm, {'password': 'foo',
-            'password:confirm': ['', '']}, 'user')
+            ':confirm:password': ['', '']}, 'user')
 
     def testSetPassword(self):
         self.assertEqual(self.parseForm({'password': 'foo',
-            'password:confirm': 'foo'}, 'user'),
+            ':confirm:password': 'foo'}, 'user'),
             ({('user', None): {'password': 'foo'}}, []))
 
     def testSetPasswordConfirmBad(self):
         self.assertRaises(ValueError, self.parseForm, {'password': 'foo'},
             'user')
         self.assertRaises(ValueError, self.parseForm, {'password': 'foo',
-            'password:confirm': 'bar'}, 'user')
+            ':confirm:password': 'bar'}, 'user')
 
     def testEmptyPasswordNotSet(self):
         nodeid = self.db.user.create(username='1',
@@ -298,7 +341,7 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.user.create(username='2',
             password=password.Password('foo'))
         self.assertEqual(self.parseForm({'password': '',
-            'password:confirm': ''}, 'user', nodeid),
+            ':confirm:password': ''}, 'user', nodeid),
             ({('user', nodeid): {}}, []))
 
     #
@@ -361,31 +404,36 @@ class FormTestCase(unittest.TestCase):
     #
     def testMultiple(self):
         self.assertEqual(self.parseForm({'string': 'a', 'issue-1@title': 'b'}),
-            ({('test', None): {'string': 'a'}, ('issue', '-1'):
-            {'title': 'b'}}, []))
+            ({('test', None): {'string': 'a'},
+              ('issue', '-1'): {'title': 'b'}
+             }, []))
+
+    def testMultipleExistingContext(self):
         nodeid = self.db.test.create()
         self.assertEqual(self.parseForm({'string': 'a', 'issue-1@title': 'b'},
-            'test', nodeid), ({('test', nodeid): {'string': 'a'},
+            'test', nodeid),({('test', nodeid): {'string': 'a'},
             ('issue', '-1'): {'title': 'b'}}, []))
+
+    def testLinking(self):
         self.assertEqual(self.parseForm({
             'string': 'a',
-            'issue-1@:add:nosy': '1',
-            'issue-2@:link:superseder': 'issue-1',
+            'issue-1@add@nosy': '1',
+            'issue-2@link@superseder': 'issue-1',
             }),
             ({('test', None): {'string': 'a'},
               ('issue', '-1'): {'nosy': ['1']},
-              ('issue', '-2'): {}},
-              [('issue', '-2', 'superseder',
-                [(('issue', '-1'), ('issue', '-1'))])
-              ]
+              ('issue', '-2'): {}
+             },
+             [('issue', '-2', 'superseder', [('issue', '-1')])
+             ]
             )
         )
 
     def testLinkBadDesignator(self):
         self.assertRaises(ValueError, self.parseForm,
-            {'test-1@:link:link': 'blah'})
+            {'test-1@link@link': 'blah'})
         self.assertRaises(ValueError, self.parseForm,
-            {'test-1@:link:link': 'issue'})
+            {'test-1@link@link': 'issue'})
 
     def testBackwardsCompat(self):
         res = self.parseForm({':note': 'spam'}, 'issue')

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.88 2003-02-17 01:04:31 richard Exp $
+# $Id: client.py,v 1.89 2003-02-17 06:44:00 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -93,16 +93,27 @@ class Client:
     FV_OK_MESSAGE = re.compile(r'[@:]ok_message')
     FV_ERROR_MESSAGE = re.compile(r'[@:]error_message')
 
-    # specials for parsePropsFromForm
-    FV_REQUIRED = re.compile(r'[@:]required')
-    FV_ADD = re.compile(r'([@:])add\1')
-    FV_REMOVE = re.compile(r'([@:])remove\1')
-    FV_CONFIRM = re.compile(r'.+[@:]confirm')
-    FV_LINK = re.compile(r'([@:])link\1(.+)')
-
-    # deprecated
-    FV_NOTE = re.compile(r'[@:]note')
-    FV_FILE = re.compile(r'[@:]file')
+    # edit form variable handling (see unit tests)
+    FV_LABELS = r'''
+       ^(
+         (?P<note>[@:]note)|
+         (?P<file>[@:]file)|
+         (
+          ((?P<classname>%s)(?P<id>[-\d]+))?  # optional leading designator
+          ((?P<required>[@:]required$)|       # :required
+           (
+            (
+             (?P<add>[@:]add[@:])|            # :add:<prop>
+             (?P<remove>[@:]remove[@:])|      # :remove:<prop>
+             (?P<confirm>[@:]confirm[@:])|    # :confirm:<prop>
+             (?P<link>[@:]link[@:])|          # :link:<prop>
+             ([@:])                           # just a separator
+            )?
+            (?P<propname>[^@:]+)             # <prop>
+           )
+          )
+         )
+        )$'''
 
     # Note: index page stuff doesn't appear here:
     # columns, sort, sortdir, filter, group, groupdir, search_text,
@@ -1097,39 +1108,44 @@ class Client:
         return cl.create(**props)
 
     def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
-        ''' Pull properties for the given class out of the form.
+        ''' Pull properties out of the form.
 
             In the following, <bracketed> values are variable, ":" may be
             one of ":" or "@", and other text "required" is fixed.
 
-            Properties are specified as form variables
+            Properties are specified as form variables:
+
+             <propname>
+              - property on the current context item
+
              <designator>:<propname>
+              - property on the indicated item
 
-            where the propery belongs to the context class or item if the
-            designator is not specified. The designator may specify a
-            negative item id value (ie. "issue-1") and a new item of the
-            specified class will be created for each negative id found.
+             <classname>-<N>:<propname>
+              - property on the Nth new item of classname
 
-            If a "<designator>:required" parameter is supplied,
-            then the named property values must be supplied or a
-            ValueError will be raised.
+            Once we have determined the "propname", we check to see if it
+            is one of the special form values:
 
-            Other special form values:
-             [classname|designator]:remove:<propname>=id(s)
+             :required
+              The named property values must be supplied or a ValueError
+              will be raised.
+
+             :remove:<propname>=id(s)
               The ids will be removed from the multilink property.
-             [classname|designator]:add:<propname>=id(s)
+
+             :add:<propname>=id(s)
               The ids will be added to the multilink property.
 
-             [classname|designator]:link:<propname>=<classname>
+             :link:<propname>=<designator>
               Used to add a link to new items created during edit.
               These are collected up and returned in all_links. This will
               result in an additional linking operation (either Link set or
               Multilink append) after the edit/create is done using
-              all_props in _editnodes. The <propname> on
-              [classname|designator] will be set/appended the id of the
-              newly created item of class <classname>.
-
-            Note: the colon may be either ":" or "@".
+              all_props in _editnodes. The <propname> on the current item
+              will be set/appended the id of the newly created item of
+              class <designator> (where <designator> must be
+              <classname>-<N>).
 
             Any of the form variables may be prefixed with a classname or
             designator.
@@ -1149,19 +1165,21 @@ class Client:
             Two special form values are supported for backwards
             compatibility:
              :note - create a message (with content, author and date), link
-                     to the context item
+                     to the context item. This is ALWAYS desginated "msg-1".
              :file - create a file, attach to the current item and any
-                     message created by :note
+                     message created by :note. This is ALWAYS designated
+                     "file-1".
         '''
         # some very useful variables
         db = self.db
         form = self.form
 
-        if not hasattr(self, 'FV_ITEMSPEC'):
-            # generate the regexp for detecting
-            # <classname|designator>[@:+]property
+        if not hasattr(self, 'FV_SPECIAL'):
+            # generate the regexp for handling special form values
             classes = '|'.join(db.classes.keys())
-            self.FV_ITEMSPEC = re.compile(r'(%s)([-\d]+)[@:](.+)$'%classes)
+            # specials for parsePropsFromForm
+            # handle the various forms (see unit tests)
+            self.FV_SPECIAL = re.compile(self.FV_LABELS%classes, re.VERBOSE)
             self.FV_DESIGNATOR = re.compile(r'(%s)([-\d]+)'%classes)
 
         # these indicate the default class / item
@@ -1181,53 +1199,51 @@ class Client:
         keys = form.keys()
         timezone = db.getUserTimezone()
 
+        # sentinels for the :note and :file props
+        have_note = have_file = 0
+
+        # extract the usable form labels from the form
+        matches = []
         for key in keys:
-            # see if this value modifies a different item to the default
-            m = self.FV_ITEMSPEC.match(key)
+            m = self.FV_SPECIAL.match(key)
             if m:
+                matches.append((key, m.groupdict()))
+
+        # now handle the matches
+        for key, d in matches:
+            if d['classname']:
                 # we got a designator
-                cn = m.group(1)
+                cn = d['classname']
                 cl = self.db.classes[cn]
-                nodeid = m.group(2)
-                propname = m.group(3)
-            elif key == ':note':
-                # backwards compatibility: the special note field
+                nodeid = d['id']
+                propname = d['propname']
+            elif d['note']:
+                # the special note field
                 cn = 'msg'
                 cl = self.db.classes[cn]
                 nodeid = '-1'
                 propname = 'content'
                 all_links.append((default_cn, default_nodeid, 'messages',
                     [('msg', '-1')]))
-            elif key == ':file':
-                # backwards compatibility: the special file field
+                have_note = 1
+            elif d['file']:
+                # the special file field
                 cn = 'file'
                 cl = self.db.classes[cn]
                 nodeid = '-1'
                 propname = 'content'
                 all_links.append((default_cn, default_nodeid, 'files',
                     [('file', '-1')]))
-                if self.form.has_key(':note'):
-                    all_links.append(('msg', '-1', 'files', [('file', '-1')]))
+                have_file = 1
             else:
                 # default
                 cn = default_cn
                 cl = default_cl
                 nodeid = default_nodeid
-                propname = key
+                propname = d['propname']
 
             # the thing this value relates to is...
             this = (cn, nodeid)
-
-            # is this a link command?
-            if self.FV_LINK.match(propname):
-                value = []
-                for entry in extractFormList(form[key]):
-                    m = self.FV_DESIGNATOR.match(entry)
-                    if not m:
-                        raise ValueError, \
-                            'link "%s" value "%s" not a designator'%(key, entry)
-                    value.append((m.groups(1), m.groups(2)))
-                all_links.append((cn, nodeid, propname[6:], value))
 
             # get more info about the class, and the current set of
             # form props for it
@@ -1238,8 +1254,20 @@ class Client:
                 all_props[this] = {}
             props = all_props[this]
 
+            # is this a link command?
+            if d['link']:
+                value = []
+                for entry in extractFormList(form[key]):
+                    m = self.FV_DESIGNATOR.match(entry)
+                    if not m:
+                        raise ValueError, \
+                            'link "%s" value "%s" not a designator'%(key, entry)
+                    value.append((m.group(1), m.group(2)))
+                all_links.append((cn, nodeid, propname, value))
+                continue
+
             # detect the special ":required" variable
-            if self.FV_REQUIRED.match(key):
+            if d['required']:
                 all_required[this] = extractFormList(form[key])
                 continue
 
@@ -1250,11 +1278,9 @@ class Client:
 
             # see if we're performing a special multilink action
             mlaction = 'set'
-            if self.FV_REMOVE.match(propname):
-                propname = propname[8:]
+            if d['remove']:
                 mlaction = 'remove'
-            elif self.FV_ADD.match(propname):
-                propname = propname[5:]
+            elif d['add']:
                 mlaction = 'add'
 
             # does the property exist?
@@ -1263,6 +1289,8 @@ class Client:
                     raise ValueError, 'You have submitted a %s action for'\
                         ' the property "%s" which doesn\'t exist'%(mlaction,
                         propname)
+                # the form element is probably just something we don't care
+                # about - ignore it
                 continue
             proptype = propdef[propname]
 
@@ -1285,7 +1313,7 @@ class Client:
 
             # now that we have the props field, we need a teensy little
             # extra bit of help for the old :note field...
-            if key == ':note' and value:
+            if d['note'] and value:
                 props['author'] = self.db.getuid()
                 props['date'] = date.Date()
 
@@ -1294,8 +1322,8 @@ class Client:
                 if not value:
                     # ignore empty password values
                     continue
-                for key in keys:
-                    if self.FV_CONFIRM.match(key):
+                for key, d in matches:
+                    if d['confirm'] and d['propname'] == propname:
                         confirm = form[key]
                         break
                 else:
@@ -1465,6 +1493,10 @@ class Client:
             # register this as received if required?
             if propname in required and value is not None:
                 required.remove(propname)
+
+        # check to see if we need to specially link a file to the note
+        if have_note and have_file:
+            all_links.append(('msg', '-1', 'files', [('file', '-1')]))
 
         # see if all the required properties have been supplied
         s = []

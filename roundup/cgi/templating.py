@@ -876,9 +876,9 @@ class PasswordHTMLProperty(HTMLProperty):
     def confirm(self, size = 30):
         ''' Render a second form edit field for the property, used for 
             confirmation that the user typed the password correctly. Generates
-            a field with name "name:confirm".
+            a field with name ":confirm:name".
         '''
-        return '<input type="password" name="%s:confirm" size="%s">'%(
+        return '<input type="password" name=":confirm:name" size="%s">'%(
             self._name, size)
 
 class NumberHTMLProperty(HTMLProperty):
