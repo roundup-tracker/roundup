@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.151 2004-01-17 01:59:33 richard Exp $
+# $Id: client.py,v 1.152 2004-01-19 23:56:07 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -10,8 +10,7 @@ import stat, rfc822
 
 from roundup import roundupdb, date, hyperdb, password, token, rcsv
 from roundup.i18n import _
-from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
-from roundup.cgi import cgitb
+from roundup.cgi import templating, cgitb
 from roundup.cgi.PageTemplates import PageTemplate
 from roundup.rfc2822 import encode_header
 from roundup.mailgw import uidFromAddress
@@ -223,6 +222,9 @@ class Client:
               the action is cancelled, the request is rendered and an error
               message is displayed indicating that permission was not
               granted for the action to take place
+            - templating.Unauthorised   (templating action not permitted)
+              raised by an attempted rendering of a template when the user
+              doesn't have permission
             - NotFound       (raised wherever it needs to be)
               percolates up to the CGI interface that called the client
         '''
@@ -272,7 +274,8 @@ class Client:
                 self.request.send_response(304)
                 self.request.end_headers()
         except Unauthorised, message:
-            self.classname = None
+            # users may always see the front page
+            self.classname = self.nodeid = None
             self.template = ''
             self.error_message.append(message)
             self.write(self.renderContext())
@@ -413,6 +416,12 @@ class Client:
                 error_message = self.form[key].value
                 error_message = clean_message(error_message)
 
+        # see if we were passed in a message
+        if ok_message:
+            self.ok_message.append(ok_message)
+        if error_message:
+            self.error_message.append(error_message)
+
         # determine the classname and possibly nodeid
         path = self.path.split('/')
         if not path or path[0] in ('', 'home', 'index'):
@@ -455,12 +464,6 @@ class Client:
         if template_override is not None:
             self.template = template_override
 
-        # see if we were passed in a message
-        if ok_message:
-            self.ok_message.append(ok_message)
-        if error_message:
-            self.error_message.append(error_message)
-
     def serve_file(self, designator, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Serve the file from the content property of the designated item.
         '''
@@ -474,9 +477,9 @@ class Client:
 
         # make sure we have the appropriate properties
         props = klass.getprops()
-        if not pops.has_key('type'):
+        if not props.has_key('type'):
             raise NotFound, designator
-        if not pops.has_key('content'):
+        if not props.has_key('content'):
             raise NotFound, designator
 
         mime_type = klass.get(nodeid, 'type')
@@ -539,7 +542,8 @@ class Client:
         '''
         name = self.classname
         extension = self.template
-        pt = Templates(self.instance.config.TEMPLATES).get(name, extension)
+        pt = templating.Templates(self.instance.config.TEMPLATES).get(name,
+            extension)
 
         # catch errors so we can handle PT rendering errors more nicely
         args = {
@@ -551,8 +555,10 @@ class Client:
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type
             return result
-        except NoTemplate, message:
+        except templating.NoTemplate, message:
             return '<strong>%s</strong>'%message
+        except templating.Unauthorised, message:
+            raise Unauthorised, str(message)
         except:
             # everything else
             return cgitb.pt_html()
@@ -1307,7 +1313,7 @@ You should then receive another email with the new password.
         # handle saving the query params
         if queryname:
             # parse the environment and figure what the query _is_
-            req = HTMLRequest(self)
+            req = templating.HTMLRequest(self)
 
             # The [1:] strips off the '?' character, it isn't part of the
             # query string.
