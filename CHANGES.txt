@@ -20,6 +20,7 @@ Fixed:
 - rdbms backend full text search failure after import (sf bug 980314)
 - rdbms backends not filtering correctly on link=None
 - fix anydbm journal import (sf bug 983166)
+- handle postgresql bug in SQL generation (sf bug 984591)
 
 
 2004-06-24 0.7.5

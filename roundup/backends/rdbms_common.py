@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.118 2004-07-03 16:51:52 a1s Exp $
+# $Id: rdbms_common.py,v 1.119 2004-07-03 23:05:15 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1992,7 +1992,7 @@ class Class(hyperdb.Class):
         timezone = self.db.getUserTimezone()
 
         # vars to hold the components of the SQL statement
-        frum = ['_'+cn] # FROM clauses
+        frum = [] # FROM clauses
         loj = []        # LEFT OUTER JOIN clauses
         where = []      # WHERE clauses
         args = []       # *any* positional arguments
@@ -2164,6 +2164,7 @@ class Class(hyperdb.Class):
                 orderby.append(o)
 
         # construct the SQL
+        frum.append('_'+cn)
         frum = ','.join(frum)
         if where:
             where = ' where ' + (' and '.join(where))
@@ -2183,6 +2184,7 @@ class Class(hyperdb.Class):
         cols = ','.join(cols)
         loj = ' '.join(loj)
         sql = 'select %s from %s %s %s%s'%(cols, frum, loj, where, order)
+        print sql
         args = tuple(args)
         __traceback_info__ = (sql, args)
         self.db.sql(sql, args)
