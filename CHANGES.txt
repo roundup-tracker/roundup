@@ -11,6 +11,7 @@ Fixed:
  . missed a "from i18n import _" in date.py
  . #501690 ] MIGRATION.txt incomplete
  . #502342 ] pipe interface
+ . #502437 ] rogue reactor and unittest
 
 2002-01-08 - 0.4.0b1
 Feature:

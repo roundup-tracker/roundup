@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.96 2002-01-10 05:26:10 richard Exp $
+# $Id: cgi_client.py,v 1.97 2002-01-11 23:22:29 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -424,7 +424,7 @@ class Client:
         return cl.create(**props)
 
     def _handle_message(self):
-        ''' generate and edit message
+        ''' generate an edit message
         '''
         # handle file attachments 
         files = []
@@ -1178,6 +1178,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.96  2002/01/10 05:26:10  richard
+# missed a parsePropsFromForm in last update
+#
 # Revision 1.95  2002/01/10 03:39:45  richard
 #  . fixed some problems with web editing and change detection
 #

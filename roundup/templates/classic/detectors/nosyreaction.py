@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.9 2001-12-15 19:24:39 rochecompaan Exp $
+#$Id: nosyreaction.py,v 1.10 2002-01-11 23:22:29 richard Exp $
 
 from roundup import roundupdb
 
@@ -61,39 +61,19 @@ def nosyreaction(db, cl, nodeid, oldvalues):
         except roundupdb.MessageSendError, message:
             raise roundupdb.DetectorError, message
 
-    # update the nosy list with the recipients from the new messages
-    nosy = cl.get(nodeid, 'nosy')
-    n = {}
-    for nosyid in nosy: n[nosyid] = 1
-    change = 0
-    # but don't add admin or the anonymous user to the nosy list and
-    # don't add the author if he just removed himself
-    for msgid in messages:
-        authid = db.msg.get(msgid, 'author')
-        for recipid in db.msg.get(msgid, 'recipients'):
-            if recipid == '1': continue
-            if n.has_key(recipid): continue
-            if db.user.get(recipid, 'username') == 'anonymous': continue
-            if recipid == authid and not n.has_key(authid): continue
-            change = 1
-            nosy.append(recipid)
-        if authid == '1': continue
-        if n.has_key(authid): continue
-        if db.user.get(authid, 'username') == 'anonymous': continue
-        change = 1
-        # append the author only after issue creation
-        if oldvalues is None:
-            nosy.append(authid)
-    if change:
-        cl.set(nodeid, nosy=nosy)
-
-
 def init(db):
     db.issue.react('create', nosyreaction)
     db.issue.react('set', nosyreaction)
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.9  2001/12/15 19:24:39  rochecompaan
+# . Modified cgi interface to change properties only once all changes are
+#   collected, files created and messages generated.
+# . Moved generation of change note to nosyreactors.
+# . We now check for changes to "assignedto" to ensure it's added to the
+#   nosy list.
+#
 #Revision 1.8  2001/12/05 14:26:44  rochecompaan
 #Removed generation of change note from "sendmessage" in roundupdb.py.
 #The change note is now generated when the message is created.
