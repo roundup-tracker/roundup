@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.15 2003-01-12 23:53:19 richard Exp $
+#$Id: indexer.py,v 1.16 2003-01-14 03:56:44 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -214,9 +214,9 @@ class Indexer:
                 # word outside the bounds of what we index - ignore
                 continue
             word = word.upper()
-            entry = self.words[word]    # For each word, get index
-            entries[word] = entry       #   of matching files
-            if not entry:               # Nothing for this one word (fail)
+            entry = self.words.get(word)    # For each word, get index
+            entries[word] = entry           #   of matching files
+            if not entry:                   # Nothing for this one word (fail)
                 return {}
             if hits is None:
                 hits = {}
