@@ -693,13 +693,15 @@ superseder  hyperdb.Multilink("issue")
 =========== ==========================
 
 Also, two Date properties named "creation" and "activity" are fabricated
-by the Roundup database layer.  By "fabricated" we mean that no such
+by the Roundup database layer. Two user Link properties, "creator" and
+"actor" are also fabricated. By "fabricated" we mean that no such
 properties are actually stored in the hyperdatabase, but when properties
-on issues are requested, the "creation" and "activity" properties are
-made available. The value of the "creation" property is the date when an
-issue was created, and the value of the "activity" property is the date
-when any property on the issue was last edited (equivalently, these are
-the dates on the first and last records in the issue's journal).
+on issues are requested, the "creation"/"creator" and "activity"/"actor"
+properties are made available. The value of the "creation"/"creator"
+properties relate to issue creation, and the value of the "activity"/
+"actor" properties relate to the last editing of any property on the issue
+(equivalently, these are the dates on the first and last records in the
+issue's journal).
 
 
 Roundupdb Interface Specification
@@ -720,8 +722,8 @@ hyperdatabase, except for the following changes and additional methods::
         def set(self, **propvalues):
         def retire(self, itemid):
             """These operations trigger detectors and can be vetoed.
-            Attempts to modify the "creation" or "activity" properties
-            cause a KeyError.
+            Attempts to modify the "creation", "creator", "activity"
+            properties or "actor" cause a KeyError.
             """
 
         # New methods:
@@ -737,13 +739,14 @@ hyperdatabase, except for the following changes and additional methods::
             """The newly-created class automatically includes the
             "messages", "files", "nosy", and "superseder" properties.
             If the 'properties' dictionary attempts to specify any of
-            these properties or a "creation" or "activity" property, a
-            ValueError is raised."""
+            these properties or a "creation", "creator", "activity" or
+            "actor" property, a ValueError is raised."""
 
         def get(self, itemid, propname):
         def getprops(self):
             """In addition to the actual properties on the item, these
-            methods provide the "creation" and "activity" properties."""
+            methods provide the "creation", "creator", "activity" and
+            "actor" properties."""
 
         # New methods:
 
@@ -1611,6 +1614,7 @@ Changes to this document
   nature of the Class.
 - New Templating
 - Access Controls
+- Added "actor" property
 
 ------------------
 
