@@ -11,10 +11,19 @@ class Permission:
         - name
         - description
         - klass (optional)
+        - property (optional)
+        - check function (optional)
 
         The klass may be unset, indicating that this permission is not
         locked to a particular class. That means there may be multiple
         Permissions for the same name for different classes.
+
+        If property name is set, permission is restricted to that
+        property only.
+
+        If check function is set, permission is granted only when
+        the function returns value interpreted as boolean true.
+        The function is called with arguments db, userid, itemid.
     '''
     def __init__(self, name='', description='', klass=None,
             property=None, check=None):
@@ -90,10 +99,6 @@ class Security:
         ae = self.addPermission(name="View",
             description="User may access everything")
         self.addPermissionToRole('Admin', ae)
-        reg = self.addPermission(name="Register Web",
-            description="User may register through the web")
-        reg = self.addPermission(name="Register Email",
-            description="User may register through the email")
 
         # initialise the permissions and roles needed for the UIs
         from roundup.cgi import client
@@ -189,4 +194,4 @@ class Security:
         role = self.role[rolename.lower()]
         role.permissions.append(permission)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
