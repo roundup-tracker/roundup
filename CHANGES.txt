@@ -66,6 +66,7 @@ are given with the most recent entry first.
 - added Node.get() method
 - open static files using binary mode (sf bug 693208)
 - fixed deja-vu bug 692910
+- don't display "Editing" on read-only pages (sf bug 651967)
 
 
 2003-??-?? 0.5.6
