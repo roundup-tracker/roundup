@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: builder.py,v 1.2 2002-09-05 23:39:13 richard Exp $
+# $Id: builder.py,v 1.3 2002-09-13 04:27:04 richard Exp $
 import os, sys, glob, errno, re
 
 __doc__ = """
@@ -73,8 +73,6 @@ def installHtmlBase(template, installDir):
 #    print "installing from", htmlbase.__file__, "into", installDir
     modulecontents = dir(htmlbase)
     for mangledfile in modulecontents:
-        if mangledfile[0] == "_": 
-            continue
         filename = re.sub('DOT', '.', mangledfile)
         outfile = os.path.join(installDir, filename)
         outfd = open(outfile, 'w')
@@ -91,6 +89,12 @@ if __name__ == "__main__":
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/09/05 23:39:13  richard
+# Fixed instance installation ... moved the htmlbase module into templates
+# and call it <template>_htmlbase.py ... no more try/except in instance __init__!
+# Added :required to form handling.
+# Handle multiple values for single form items with decent error report.
+#
 # Revision 1.1  2002/08/16 04:25:03  richard
 # cleanup: moved templatebuilder into templates.builder
 #
