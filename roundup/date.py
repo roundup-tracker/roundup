@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.24 2002-08-21 07:07:27 richard Exp $
+# $Id: date.py,v 1.25 2002-08-23 04:42:43 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -368,7 +368,7 @@ class Interval:
         info = m.groupdict()
         for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
                 'H':'hour', 'M':'minute', 'S':'second'}.items():
-            if info.getr(group, None) is not None:
+            if info.get(group, None) is not None:
                 setattr(self, attr, int(info[group]))
 
         if self.week:
@@ -461,6 +461,15 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/08/21 07:07:27  richard
+# In preparing to turn back on link/unlink journal events (by default these
+# are turned off) I've:
+# - fixed back_anydbm so it can journal those events again (had broken it
+#   with recent changes)
+# - changed the serialisation format for dates and intervals to use a
+#   numbers-only (and sign for Intervals) string instead of tuple-of-ints.
+#   Much smaller.
+#
 # Revision 1.23  2002/07/18 23:07:08  richard
 # Unit tests and a few fixes.
 #
