@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.9 2004-03-24 05:39:47 richard Exp $
+# $Id: demo.py,v 1.10 2004-03-31 23:07:51 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -12,7 +12,24 @@ def install_demo(home, backend):
     # create the instance
     if os.path.exists(home):
         shutil.rmtree(home)
-    from roundup import init, instance, password
+    from roundup import init, instance, password, backends
+
+    # see if we have further db nuking to perform
+    module = getattr(backends, backend)
+    if backend == 'mysql':
+        class config:
+            MYSQL_DBHOST = 'localhost'
+            MYSQL_DBUSER = 'rounduptest'
+            MYSQL_DBPASSWORD = 'rounduptest'
+            MYSQL_DBNAME = 'rounduptest'
+            DATABASE = 'home'
+        module.db_nuke(config)
+    elif backend == 'postgresql':
+        class config:
+            POSTGRESQL_DATABASE = {'database': 'rounduptest'}
+            DATABASE = 'home'
+        module.db_nuke(config, 1)
+
     init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around
     os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
