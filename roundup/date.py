@@ -15,13 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.65 2004-04-06 22:43:59 richard Exp $
+# $Id: date.py,v 1.66 2004-04-13 05:28:00 richard Exp $
 
 """Date, time and time interval handling.
 """
 __docformat__ = 'restructuredtext'
 
 import time, re, calendar, types
+from types import *
 from i18n import _
 
 def _add_granularity(src, order, value = 1):
@@ -433,7 +434,9 @@ class Interval:
     '''
     def __init__(self, spec, sign=1, allowdate=1, add_granularity=0):
         """Construct an interval given a specification."""
-        if type(spec) == type(''):
+        if type(spec) in (IntType, FloatType, LongType):
+            self.from_seconds(spec)
+        elif type(spec) in (StringType, UnicodeType):
             self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
         else:
             if len(spec) == 7:
@@ -533,6 +536,8 @@ class Interval:
             l.append('%d:%02d'%(self.hour, self.minute))
         if l:
             l.insert(0, {1:'+', -1:'-'}[self.sign])
+        else:
+            l.append('00:00')
         return ' '.join(l)
 
     def __add__(self, other):
@@ -679,6 +684,42 @@ class Interval:
         sign = self.sign > 0 and '+' or '-'
         return '%s%04d%02d%02d%02d%02d%02d'%(sign, self.year, self.month,
             self.day, self.hour, self.minute, self.second)
+
+    def as_seconds(self):
+        '''Calculate the Interval as a number of seconds.
+        
+        Months are counted as 30 days, years as 365 days. Returns a Long
+        int.
+        '''
+        n = self.year * 365L
+        n = n + self.month * 30
+        n = n + self.day
+        n = n * 24
+        n = n + self.hour
+        n = n * 60
+        n = n + self.minute
+        n = n * 60
+        n = n + self.second
+        return n * self.sign
+
+    def from_seconds(self, val):
+        '''Figure my second, minute, hour and day values using a seconds
+        value.
+        '''
+        if val < 0:
+            self.sign = -1
+            val = -val
+        else:
+            self.sign = 1
+        self.second = val % 60
+        val = val / 60
+        self.minute = val % 60
+        val = val / 60
+        self.hour = val % 24
+        val = val / 24
+        self.day = val
+        self.month = self.year = 0
+
 
 def fixTimeOverflow(time):
     """ Handle the overflow in the time portion (H, M, S) of "time":
