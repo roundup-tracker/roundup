@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.26 2001-10-14 10:55:00 richard Exp $
+# $Id: htmltemplate.py,v 1.27 2001-10-20 12:13:44 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -569,6 +569,8 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
                         value = cl.get(nodeid, name)
                         if value is None:
                             value = '[empty %s]'%name
+                        else:
+                            value = str(value)
                         l.append(value)
                 w('<tr class="section-bar">'
                   '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
@@ -756,6 +758,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2001/10/14 10:55:00  richard
+# Handle empty strings in HTML template Link function
+#
 # Revision 1.25  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.
