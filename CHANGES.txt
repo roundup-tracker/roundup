@@ -2,8 +2,13 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-08-?? - 0.2.6
+Note:
+ . Roundup is now released under the same terms as the Python License.
+
 Feature:
  . Added tests for instance initialisation.
+ . Now bundling unittest with the package so that everyone can use the unit
+   tests.
 
 Fixed:
  . Implemented correct mail splitting. Added unit tests. Also snips
