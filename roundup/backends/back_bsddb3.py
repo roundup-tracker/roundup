@@ -15,70 +15,28 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.11 2002-01-14 02:20:15 richard Exp $
+#$Id: back_bsddb3.py,v 1.12 2002-05-21 05:52:11 richard Exp $
 
 import bsddb3, os, marshal
-from roundup import hyperdb, date, password
+from roundup import hyperdb, date
+
+# these classes are so similar, we just use the anydbm methods
+import back_anydbm
 
 #
 # Now the database
 #
-class Database(hyperdb.Database):
+class Database(back_anydbm.Database):
     """A database for storing records containing flexible data types."""
-
-    def __init__(self, config, journaltag=None):
-        """Open a hyperdatabase given a specifier to some storage.
-
-        The 'storagelocator' is obtained from config.DATABASE.
-        The meaning of 'storagelocator' depends on the particular
-        implementation of the hyperdatabase.  It could be a file name,
-        a directory path, a socket descriptor for a connection to a
-        database over the network, etc.
-
-        The 'journaltag' is a token that will be attached to the journal
-        entries for any edits done on the database.  If 'journaltag' is
-        None, the database is opened in read-only mode: the Class.create(),
-        Class.set(), and Class.retire() methods are disabled.
-        """
-        self.config, self.journaltag = config, journaltag
-        self.dir = config.DATABASE
-        self.classes = {}
-
-    #
-    # Classes
-    #
-    def __getattr__(self, classname):
-        """A convenient way of calling self.getclass(classname)."""
-        return self.classes[classname]
-
-    def addclass(self, cl):
-        cn = cl.classname
-        if self.classes.has_key(cn):
-            raise ValueError, cn
-        self.classes[cn] = cl
-
-    def getclasses(self):
-        """Return a list of the names of all existing classes."""
-        l = self.classes.keys()
-        l.sort()
-        return l
-
-    def getclass(self, classname):
-        """Get the Class object representing a particular class.
-
-        If 'classname' is not a valid class name, a KeyError is raised.
-        """
-        return self.classes[classname]
-
     #
     # Class DBs
     #
     def clear(self):
         for cn in self.classes.keys():
             db = os.path.join(self.dir, 'nodes.%s'%cn)
-            bsddb3.btopen(db, 'c')
+            bsddb3.btopen(db, 'n')
             db = os.path.join(self.dir, 'journals.%s'%cn)
-            bsddb3.btopen(db, 'c')
+            bsddb3.btopen(db, 'n')
 
     def getclassdb(self, classname, mode='r'):
         ''' grab a connection to the class db that will be used for
@@ -88,73 +46,29 @@ class Database(hyperdb.Database):
         if os.path.exists(path):
             return bsddb3.btopen(path, mode)
         else:
-            return bsddb3.btopen(path, 'c')
+            return bsddb3.btopen(path, 'n')
 
-    #
-    # Nodes
-    #
-    def addnode(self, classname, nodeid, node):
-        ''' add the specified node to its class's db
+    def _opendb(self, name, mode):
+        '''Low-level database opener that gets around anydbm/dbm
+           eccentricities.
         '''
-        db = self.getclassdb(classname, 'c')
-        # now save the marshalled data
-        db[nodeid] = marshal.dumps(node)
-        db.close()
-    setnode = addnode
+        if __debug__:
+            print >>hyperdb.DEBUG, self, '_opendb', (self, name, mode)
+        # determine which DB wrote the class file
+        path = os.path.join(os.getcwd(), self.dir, name)
+        if not os.path.exists(path):
+            if __debug__:
+                print >>hyperdb.DEBUG, "_opendb bsddb3.open(%r, 'n')"%path
+            return bsddb3.btopen(path, 'n')
 
-    def getnode(self, classname, nodeid, cldb=None):
-        ''' add the specified node to its class's db
-        '''
-        db = cldb or self.getclassdb(classname)
-        if not db.has_key(nodeid):
-            raise IndexError, nodeid
-        res = marshal.loads(db[nodeid])
-        if not cldb: db.close()
-        return res
-
-    def hasnode(self, classname, nodeid, cldb=None):
-        ''' add the specified node to its class's db
-        '''
-        db = cldb or self.getclassdb(classname)
-        res = db.has_key(nodeid)
-        if not cldb: db.close()
-        return res
-
-    def countnodes(self, classname, cldb=None):
-        db = cldb or self.getclassdb(classname)
-        return len(db.keys())
-        if not cldb: db.close()
-        return res
-
-    def getnodeids(self, classname, cldb=None):
-        db = cldb or self.getclassdb(classname)
-        res = db.keys()
-        if not cldb: db.close()
-        return res
+        # open the database with the correct module
+        if __debug__:
+            print >>hyperdb.DEBUG, "_opendb bsddb3.open(%r, %r)"%(path, mode)
+        return bsddb3.btopen(path, mode)
 
     #
     # Journal
     #
-    def addjournal(self, classname, nodeid, action, params):
-        ''' Journal the Action
-        'action' may be:
-
-            'create' or 'set' -- 'params' is a dictionary of property values
-            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
-            'retire' -- 'params' is None
-        '''
-        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
-            params)
-        db = bsddb3.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
-        if db.has_key(nodeid):
-            s = db[nodeid]
-            l = marshal.loads(db[nodeid])
-            l.append(entry)
-        else:
-            l = [entry]
-        db[nodeid] = marshal.dumps(l)
-        db.close()
-
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
@@ -163,46 +77,53 @@ class Database(hyperdb.Database):
         try:
             db = bsddb3.btopen(os.path.join(self.dir, 'journals.%s'%classname),
                 'r')
-        except bsddb3.error, error:
-            if error.args[0] != 2: raise
+        except bsddb3.NoSuchFileError:
             return []
         # mor handling of bad journals
         if not db.has_key(nodeid): return []
         journal = marshal.loads(db[nodeid])
         res = []
         for entry in journal:
-            (nodeid, date_stamp, self.journaltag, action, params) = entry
+            (nodeid, date_stamp, user, action, params) = entry
             date_obj = date.Date(date_stamp)
-            res.append((nodeid, date_obj, self.journaltag, action, params))
+            res.append((nodeid, date_obj, user, action, params))
         db.close()
         return res
 
-    def close(self):
-        ''' Close the Database - we must release the circular refs so that
-            we can be del'ed and the underlying bsddb connections closed
-            cleanly.
-        '''
-        self.classes = {}
+    def _doSaveJournal(self, classname, nodeid, action, params):
+        # serialise first
+        if action in ('set', 'create'):
+            params = self.serialise(classname, params)
 
+        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
+            params)
 
-    #
-    # Basic transaction support
-    #
-    # TODO: well, write these methods (and then use them in other code)
-    def register_action(self):
-        ''' Register an action to the transaction undo log
-        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, '_doSaveJournal', entry
 
-    def commit(self):
-        ''' Commit the current transaction, start a new one
-        '''
+        db = bsddb3.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
 
-    def rollback(self):
-        ''' Reverse all actions from the current transaction
-        '''
+        if db.has_key(nodeid):
+            s = db[nodeid]
+            l = marshal.loads(s)
+            l.append(entry)
+        else:
+            l = [entry]
+
+        db[nodeid] = marshal.dumps(l)
+        db.close()
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.11  2002/01/14 02:20:15  richard
+# . changed all config accesses so they access either the instance or the
+#   config attriubute on the db. This means that all config is obtained from
+#   instance_config instead of the mish-mash of classes. This will make
+#   switching to a ConfigParser setup easier too, I hope.
+#
+#At a minimum, this makes migration a _little_ easier (a lot easier in the
+#0.5.0 switch, I hope!)
+#
 #Revision 1.10  2001/11/21 02:34:18  richard
 #Added a target version field to the extended issue schema
 #
