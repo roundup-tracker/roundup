@@ -13,6 +13,7 @@ Feature:
   optional Interval (string or object) to the DateHTMLProperty.now (patch
   from Vickenty Fesunov)
 - hide "(list)" popup links when issue is only viewable
+- roundup-server options -g and -u accept both ids and names (sf bug 983769)
 
 
 2004-??-?? 0.7.6
