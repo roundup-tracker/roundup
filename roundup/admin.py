@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.41 2003-03-06 06:06:49 richard Exp $
+# $Id: admin.py,v 1.42 2003-03-06 07:33:29 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -921,7 +921,9 @@ Command help:
             properties = cl.getprops()
             propnames = properties.keys()
             propnames.sort()
-            print >> f, p.join(propnames)
+            l = propnames[:]
+            l.append('is retired')
+            print >> f, p.join(l)
 
             # all nodes for this class (not using list() 'cos it doesn't
             # include retired nodes)
@@ -965,14 +967,16 @@ Command help:
             cl = self.get_class(classname)
             p = csv.parser(field_sep=':')
             file_props = p.parse(f.readline())
-            properties = cl.getprops()
-            propnames = properties.keys()
-            propnames.sort()
-            m = file_props[:]
-            m.sort()
-            if m != propnames:
-                raise UsageError, _('Import file doesn\'t define the same '
-                    'properties as "%(arg0)s".')%{'arg0': args[0]}
+
+# XXX we don't _really_ need to do this...
+#            properties = cl.getprops()
+#            propnames = properties.keys()
+#            propnames.sort()
+#            m = file_props[:]
+#            m.sort()
+#            if m != propnames:
+#                raise UsageError, _('Import file doesn\'t define the same '
+#                    'properties as "%(arg0)s".')%{'arg0': args[0]}
 
             # loop through the file and create a node for each entry
             maxid = 1
@@ -989,7 +993,7 @@ Command help:
                         raise ValueError, "Unexpected EOF during CSV parse"
 
                 # do the import and figure the current highest nodeid
-                maxid = max(maxid, int(cl.import_list(propnames, l)))
+                maxid = max(maxid, int(cl.import_list(file_props, l)))
 
             print 'setting', classname, maxid+1
             self.db.setid(classname, str(maxid+1))

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.39 2003-03-06 06:03:51 richard Exp $
+# $Id: rdbms_common.py,v 1.40 2003-03-06 07:33:29 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -450,8 +450,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # default the non-multilink columns
         for col, prop in cl.properties.items():
-            if not isinstance(col, Multilink):
-                if not node.has_key(col):
+            if not node.has_key(col):
+                if isinstance(prop, Multilink):
+                    node[col] = []
+                else:
                     node[col] = None
 
         # clear this node out of the cache if it's in there
@@ -1100,19 +1102,27 @@ class Class(hyperdb.Class):
 
         # make the new node's property map
         d = {}
+        retire = 0
+        newid = None
         for i in range(len(propnames)):
             # Use eval to reverse the repr() used to output the CSV
             value = eval(proplist[i])
 
             # Figure the property for this column
             propname = propnames[i]
-            prop = properties[propname]
 
             # "unmarshal" where necessary
             if propname == 'id':
                 newid = value
                 continue
-            elif value is None:
+            elif propname == 'is retired':
+                # is the item retired?
+                if int(value):
+                    retire = 1
+                continue
+
+            prop = properties[propname]
+            if value is None:
                 # don't set Nones
                 continue
             elif isinstance(prop, hyperdb.Date):
@@ -1125,8 +1135,12 @@ class Class(hyperdb.Class):
                 value = pwd
             d[propname] = value
 
+        # get a new id if necessary
+        if newid is None:
+            newid = self.db.newid(self.classname)
+
         # retire?
-        if int(proplist[-1]):
+        if retire:
             # use the arg for __retired__ to cope with any odd database type
             # conversion (hello, sqlite)
             sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,

@@ -1106,11 +1106,18 @@ class Class:
             value = eval(proplist[i])
             if not value:
                 continue
+
             propname = propnames[i]
-            prop = properties[propname]
             if propname == 'id':
                 newid = value = int(value)
-            elif isinstance(prop, hyperdb.Date):
+            elif propname == 'is retired':
+                # is the item retired?
+                if int(value):
+                    d['_isdel'] = 1
+                continue
+
+            prop = properties[propname]
+            if isinstance(prop, hyperdb.Date):
                 value = int(calendar.timegm(value))
             elif isinstance(prop, hyperdb.Interval):
                 value = str(date.Interval(value))
@@ -1124,16 +1131,23 @@ class Class:
                 # we handle multilinks separately
                 continue
             d[propname] = value
-        # is the item retired?
-        if int(proplist[-1]):
-            d['_isdel'] = 1
+
+        # possibly make a new node
+        if not d.has_key('id'):
+            d['id'] = newid = self.maxid
+            self.maxid += 1
+
+        # save off the node
         view.append(d)
 
+        # fix up multilinks
         ndx = view.find(id=newid)
         row = view[ndx]
         for i in range(len(propnames)):
             value = eval(proplist[i])
             propname = propnames[i]
+            if propname == 'is retired':
+                continue
             prop = properties[propname]
             if not isinstance(prop, hyperdb.Multilink):
                 continue

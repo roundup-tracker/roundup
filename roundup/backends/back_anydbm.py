@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.108 2003-03-03 21:05:17 richard Exp $
+#$Id: back_anydbm.py,v 1.109 2003-03-06 07:33:29 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -920,22 +920,29 @@ class Class(hyperdb.Class):
 
         # make the new node's property map
         d = {}
+        newid = None
         for i in range(len(propnames)):
-            # Use eval to reverse the repr() used to output the CSV
-            value = eval(proplist[i])
-
             # Figure the property for this column
             propname = propnames[i]
-            prop = properties[propname]
+
+            # Use eval to reverse the repr() used to output the CSV
+            value = eval(proplist[i])
 
             # "unmarshal" where necessary
             if propname == 'id':
                 newid = value
                 continue
+            elif propname == 'is retired':
+                # is the item retired?
+                if int(value):
+                    d[self.db.RETIRED_FLAG] = 1
+                continue
             elif value is None:
                 # don't set Nones
                 continue
-            elif isinstance(prop, hyperdb.Date):
+
+            prop = properties[propname]
+            if isinstance(prop, hyperdb.Date):
                 value = date.Date(value)
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value)
@@ -945,9 +952,9 @@ class Class(hyperdb.Class):
                 value = pwd
             d[propname] = value
 
-        # check retired flag
-        if int(proplist[-1]):
-            d[self.db.RETIRED_FLAG] = 1
+        # get a new id if necessary
+        if newid is None:
+            newid = self.db.newid(self.classname)
 
         # add the node and journal
         self.db.addnode(self.classname, newid, d)

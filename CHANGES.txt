@@ -40,6 +40,7 @@ Feature:
   file serving
 - added Node.get() method
 - nicer page titles (sf feature 65197)
+- relaxed CVS importing (sf feature 693277)
 
 
 Fixed:
