@@ -360,6 +360,16 @@ letters and numbers). The "name" forms part of the URL that appears in the
 tracker config TRACKER_WEB variable, so make sure they match. The "home"
 part of the configuration is the tracker home directory.
 
+If you're using Apache, you can use an additional trick to hide the
+``.cgi`` extension of the cgi script. Place the ``roundup.cgi`` script
+wherever you want it to be, renamed it to just ``roundup``, and add a
+couple lines to your Apache configuration::
+ 
+ <Location /path/to/roundup>
+   SetHandler cgi-script
+ </Location>
+
+
 Stand-alone Web Server
 ~~~~~~~~~~~~~~~~~~~~~~
 
