@@ -50,7 +50,6 @@ Fixed:
 - the mail gateway now searches recursively for the text/plain and the
   attachments of a message (sf bug 841241).
 - fixed display of feedback messages in some situations (sf bug 739545)
-- use supplied content-type on file uploads before trying filename)
 
 Cleanup:
 - replace curuserid attribute on Database with the extended getuid() method.
@@ -78,6 +77,7 @@ Fixed:
 - fixed IE double-submit when it shouldn't (sf bug 842254)
 - fixed check for JS pop()/push() to make more general (sf bug 877504)
 - fix re-enabling queries (sf bug 861940)
+- use supplied content-type on file uploads before trying filename)
 
 
 2003-12-17 0.6.4
