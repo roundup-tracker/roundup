@@ -19,6 +19,7 @@ Fixed:
 - NumberHTMLProperty should return '' not "None" if not set (thanks
   William)
 - ensure multilink ordering in RDBMS backends (thanks Marcus Priesch)
+- always honor indexme property on Strings (sf patch 1063711)
 
 
 2004-10-15 0.7.8
