@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2004-??-?? 0.7.6
+2004-07-20 0.7.6
 Fixed:
 - rdbms backend full text search failure after import (sf bug 980314)
 - rdbms backends not filtering correctly on link=None
@@ -16,6 +16,12 @@ Fixed:
 - document the STATIC_FILES config var
 - implement the HTTP HEAD command (sf bug 992544)
 - fix journal export of files to remove content from CSV files
+- API clarification. Previously, the anydbm/bsddb/metakit filter() methods
+  had required exact matches to Multilink argument lists. The RDBMS
+  backends treated Multilink matches like all other data types - matching
+  any of the Multilink argument list is good enough. The latter behaviour
+  is implemented across the board now.
+- fix metakit handling of filter on Link==None
 
 
 2004-06-24 0.7.5

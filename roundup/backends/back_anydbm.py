@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.14 2004-07-20 05:58:47 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.15 2004-07-20 23:27:02 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -943,8 +943,6 @@ class Class(hyperdb.Class):
                 raise ValueError, 'key property "%s" is required'%key
             if isinstance(prop, Multilink):
                 propvalues[key] = []
-            else:
-                propvalues[key] = None
 
         # done
         self.db.addnode(self.classname, newid, propvalues)
@@ -1588,9 +1586,7 @@ class Class(hyperdb.Class):
 
         The filter must match all properties specificed - but if the
         property value to match is a list, any one of the values in the
-        list may match for that property to match. Unless the property
-        is a Multilink, in which case the item's property list must
-        match the filterspec list.
+        list may match for that property to match.
         """
         if __debug__:
             start_t = time.time()
@@ -1718,10 +1714,9 @@ class Class(hyperdb.Class):
                             # othewise, make sure this node has each of the
                             # required values
                             for want in v:
-                                if want not in nv:
+                                if want in nv:
+                                    match = True
                                     break
-                            else:
-                                match = True
                     elif t == STRING:
                         if nv is None:
                             nv = ''
@@ -2107,10 +2102,6 @@ class FileClass(hyperdb.FileClass, Class):
 
         # do the database create
         newid = self.create_inner(**propvalues)
-
-        # and index!
-        self.db.indexer.add_text((self.classname, newid, 'content'), content,
-            mime_type)
 
         # fire reactors
         self.fireReactors('create', newid, None)
