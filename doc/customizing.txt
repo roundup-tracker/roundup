@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.40 $
+:Version: $Revision: 1.41 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1875,21 +1875,78 @@ the "Fixer" Permission, the error will be raised.
 Setting up a "wizard" (or "druid") for controlled adding of issues
 ------------------------------------------------------------------
 
-1. set up the page templates you wish to use for data input
-2. determine what actions need to be taken between the pages - these are
-   usually to validate user choices and determine what page is next
-3. encode those actions in methods on the interfaces Client class and insert
+1. Set up the page templates you wish to use for data input. My wizard
+   is going to be a two-step process, first figuring out what category of
+   issue the user is submitting, and then getting details specific to that
+   category. The first page includes a table of help, explaining what the
+   category names mean, and then the core of the form::
+
+    <form method="POST" onSubmit="return submit_once()"
+          enctype="multipart/form-data">
+      <input type="hidden" name=":template" value="add_page1">
+      <input type="hidden" name=":action" value="page1submit">
+
+      <strong>Category:</strong>
+      <span tal:replace="structure context/category/menu" />
+      <input type="submit" value="Continue">
+    </form>
+
+   The next page has the usual issue entry information, with the addition of
+   the following form fragments::
+
+
+    <form method="POST" onSubmit="return submit_once()"
+          enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+          tal:define="cat request/form/category/value">
+
+      <input type="hidden" name=":template" value="add_page2">
+      <input type="hidden" name=":required" value="title">
+      <input type="hidden" name="category" tal:attributes="value cat">
+
+       .
+       .
+       .
+    </form>
+
+   Note that later in the form, I test the value of "cat" include form
+   elements that are appropriate. For example::
+
+    <tal:block tal:condition="python:cat in '6 10 13 14 15 16 17'.split()">
+     <tr>
+      <th nowrap>Operating System</th>
+      <td tal:content="structure context/os/field"></td>
+     </tr>
+     <tr>
+      <th nowrap>Web Browser</th>
+      <td tal:content="structure context/browser/field"></td>
+     </tr>
+    </tal:block>
+
+   ... the above section will only be displayed if the category is one of 6,
+   10, 13, 14, 15, 16 or 17.
+
+3. Determine what actions need to be taken between the pages - these are
+   usually to validate user choices and determine what page is next. Now
+   encode those actions in methods on the interfaces Client class and insert
    hooks to those actions in the "actions" attribute on that class, like so::
 
     actions = client.Class.actions + (
         ('page1_submit', page1SubmitAction),
-        ...
     )
 
     def page1SubmitAction(self):
-        # do the page 1 submit stuff, redirecting the user to the appropriate
-        # next page if necessary
+        ''' Verify that the user has selected a category, and then move on
+            to page 2.
+        '''
+        category = self.form['category'].value
+        if category == '-1':
+            self.error_message.append('You must select a category of report')
+            return
+        # everything's ok, move on to the next page
+        self.template = 'add_page2'
 
+4. Use the usual "edit" action as the :action on the final page, and you're
+   done (the standard context/submit method can do this for you).
 
 -------------------
 
