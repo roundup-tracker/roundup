@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.77 2004-07-27 00:57:17 richard Exp $
+# $Id: admin.py,v 1.78 2004-07-28 05:00:30 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1154,15 +1154,28 @@ Erase it? Y/N: """))
         self.db.pack(pack_before)
         return 0
 
-    def do_reindex(self, args):
-        ""'''Usage: reindex
+    def do_reindex(self, args, desre=re.compile('([A-Za-z]+)([0-9]+)')):
+        '''Usage: reindex [classname|designator]*
         Re-generate a tracker's search indexes.
 
-        This will re-generate the search indexes for a tracker.
-        This will typically happen automatically.
+        This will re-generate the search indexes for a tracker. This will
+        typically happen automatically.
         '''
-        self.db.indexer.force_reindex()
-        self.db.reindex()
+        if args:
+            for arg in args:
+                m = desre.match(arg)
+                if m:
+                    cl = self.get_class(m.group(1))
+                    try:
+                        cl.index(m.group(2))
+                    except IndexError:
+                        raise UsageError, _('no such item "%(designator)s"')%{
+                            'designator': arg}
+                else:
+                    cl = self.get_class(arg)
+                    self.db.reindex(arg)
+        else:
+            self.db.reindex()
         return 0
 
     def do_security(self, args):

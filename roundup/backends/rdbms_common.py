@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.127 2004-07-28 02:29:45 richard Exp $
+# $Id: rdbms_common.py,v 1.128 2004-07-28 05:00:32 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -298,8 +298,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def refresh_database(self):
         self.post_init()
 
-    def reindex(self):
-        for klass in self.classes.values():
+
+    def reindex(self, classname=None):
+        if classname:
+            classes = [self.getclass(classname)]
+        else:
+            classes = self.classes.values()
+        for klass in classes:
             for nodeid in klass.list():
                 klass.index(nodeid)
         self.indexer.save_index()

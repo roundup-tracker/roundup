@@ -10,6 +10,7 @@ Required:
 - fix documentation referring to customisation using interfaces.py
 - fix admin_guide referring to structure of trackers
 - add config.ini section descriptions
+- review use of hasPermission etc. in classic template
 
 
 Optionally:

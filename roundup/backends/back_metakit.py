@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.83 2004-07-28 02:29:45 richard Exp $
+# $Id: back_metakit.py,v 1.84 2004-07-28 05:00:31 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -104,8 +104,12 @@ class _Database(hyperdb.Database, roundupdb.Database):
         # XXX handle refresh
         self.reindex()
 
-    def reindex(self):
-        for klass in self.classes.values():
+    def reindex(self, classname=None):
+        if classname:
+            classes = [self.getclass(classname)]
+        else:
+            classes = self.classes.values()
+        for klass in classes:
             for nodeid in klass.list():
                 klass.index(nodeid)
         self.indexer.save_index()
