@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-01-?? - 0.4.0??
+2002-01-?? - 0.4.0
 Feature:
  . much nicer history display (actualy real handling of property types etc)
  . journal entries for link and mutlilink properties can be switched on or 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.28 2002-01-11 03:24:15 richard Exp $
+# $Id: setup.py,v 1.29 2002-01-23 06:05:36 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -24,12 +24,6 @@ from distutils.util import get_platform
 from glob import glob
 import sys,os
 from roundup.templatebuilder import makeHtmlBase
-
-print 'Running unit tests...'
-import test
-if not test.go():
-    sys.exit(0)
-
 
 def isTemplateDir(dir):
     return dir[0] != '.' and dir != 'CVS' and os.path.isdir(dir) \
@@ -64,7 +58,7 @@ for template in templates:
 
 setup(
     name = "roundup", 
-    version = "0.4.0b2",
+    version = "0.4.0",
     description = "Roundup issue tracking system.",
     author = "Richard Jones",
     author_email = "richard@users.sourceforge.net",
@@ -77,6 +71,9 @@ setup(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2002/01/11 03:24:15  richard
+# minor changes for 0.4.0b2
+#
 # Revision 1.27  2002/01/05 02:09:46  richard
 # make setup abort if tests fail
 #
