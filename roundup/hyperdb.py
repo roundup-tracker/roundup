@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.56 2002-02-20 05:05:28 richard Exp $
+# $Id: hyperdb.py,v 1.57 2002-02-20 05:23:24 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -508,7 +508,7 @@ class Class:
 
             # if the value's the same as the existing value, no sense in
             # doing anything
-            if value == node[key]:
+            if node.has_key(key) and value == node[key]:
                 del propvalues[key]
                 continue
 
@@ -1083,6 +1083,12 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.56  2002/02/20 05:05:28  richard
+#  . Added simple editing for classes that don't define a templated interface.
+#    - access using the admin "class list" interface
+#    - limited to admin-only
+#    - requires the csv module from object-craft (url given if it's missing)
+#
 # Revision 1.55  2002/02/15 07:27:12  richard
 # Oops, precedences around the way w0rng.
 #
