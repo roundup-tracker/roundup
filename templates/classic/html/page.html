@@ -115,9 +115,28 @@
 </html>
 </tal:block>
 
+<!--
+The following macros are intended to be used in search pages.
+
+The invoking context must define a "name" variable which names the
+property being searched.
+
+See issue.search.html in the classic template for examples.
+-->
 <td metal:define-macro="search_input">
   <input tal:attributes="value python:request.form.getvalue(name) or nothing;
                          name name">
+</td>
+
+<td metal:define-macro="search_popup">
+  <!-- 
+    context needs to specify the popup "columns" as a comma-separated
+    string (eg. "id,title" or "id,name,description") as well as name
+  -->
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name">
+  <span tal:replace="structure python:db.issue.classhelp(columns,
+                                      property=name)" />
 </td>
 
 <td metal:define-macro="search_select">
