@@ -3,6 +3,7 @@
 localconfig.py
 build
 dist
+demo
 MANIFEST
 _test_*
 *.cover
