@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.57 2002-02-20 05:23:24 richard Exp $
+# $Id: hyperdb.py,v 1.58 2002-02-27 03:23:16 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
 """
 
 # standard python modules
-import cPickle, re, string, weakref, os
+import re, string, weakref, os
 
 # roundup modules
 import date, password
@@ -490,7 +490,6 @@ class Class:
         if node.has_key(self.db.RETIRED_FLAG):
             raise IndexError
         num_re = re.compile('^\d+$')
-        set = {}
         for key, value in propvalues.items():
             # check to make sure we're not duplicating an existing key
             if key == self.key and node[key] != value:
@@ -1075,14 +1074,19 @@ class Node:
         return self.cl.retire(self.nodeid)
 
 
-def Choice(name, *options):
-    cl = Class(db, name, name=hyperdb.String(), order=hyperdb.String())
+def Choice(name, db, *options):
+    '''Quick helper to create a simple class with choices
+    '''
+    cl = Class(db, name, name=String(), order=String())
     for i in range(len(options)):
-        cl.create(name=option[i], order=i)
+        cl.create(name=options[i], order=i)
     return hyperdb.Link(name)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.57  2002/02/20 05:23:24  richard
+# Didn't accomodate new values for new properties
+#
 # Revision 1.56  2002/02/20 05:05:28  richard
 #  . Added simple editing for classes that don't define a templated interface.
 #    - access using the admin "class list" interface
