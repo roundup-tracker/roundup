@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.1 2003-04-17 03:26:03 richard Exp $
+# $Id: config.py,v 1.2 2003-04-23 11:59:36 richard Exp $
 
 import os
 
@@ -57,8 +57,11 @@ ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 #    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 EMAIL_FROM_TAG = ""
 
-# Send nosy messages to the author of the message
-MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
+# Send nosy messages to the author of the message?
+# If 'new' is used, then the author will only be sent the message when the
+# message creates a new issue. If 'yes' then the author will always be sent
+# a copy of the message they wrote.
+MESSAGES_TO_AUTHOR = 'no'           # one of 'yes', 'no', 'new'
 
 # Does the author of a message get placed on the nosy list automatically?
 # If 'new' is used, then the author will only be added when a message

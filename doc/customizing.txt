@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.82 $
+:Version: $Revision: 1.83 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -127,8 +127,11 @@ The configuration variables available are:
 
     "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
-**MESSAGES_TO_AUTHOR** - ``'yes'`` or``'no'``
- Send nosy messages to the author of the message.
+**MESSAGES_TO_AUTHOR** - ``'new'``, ``'yes'`` or``'no'``
+ Send nosy messages to the author of the message?
+ If 'new' is used, then the author will only be sent the message when the
+ message creates a new issue. If 'yes' then the author will always be sent
+ a copy of the message they wrote.
 
 **ADD_AUTHOR_TO_NOSY** - ``'new'``, ``'yes'`` or ``'no'``
  Does the author of a message get placed on the nosy list automatically?
