@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.20 2001-08-15 23:43:18 richard Exp $
+# $Id: htmltemplate.py,v 1.21 2001-08-16 07:34:59 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -505,18 +505,18 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         columns = l
 
     # now display the index section
-    w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
-    w('<tr class="list-header">')
+    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
+    w('<tr class="list-header">\n')
     for name in columns:
         cname = name.capitalize()
         if show_display_form:
             anchor = "%s?%s"%(classname, sortby(name, columns, filter,
                 sort, group, filterspec))
-            w('<td><span class="list-item"><a href="%s">%s</a></span></td>'%(
+            w('<td><span class="list-item"><a href="%s">%s</a></span></td>\n'%(
                 anchor, cname))
         else:
-            w('<td><span class="list-item">%s</span></td>'%cname)
-    w('</tr>')
+            w('<td><span class="list-item">%s</span></td>\n'%cname)
+    w('</tr>\n')
 
     # this stuff is used for group headings - optimise the group names
     old_group = None
@@ -575,49 +575,49 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
 
     # now add in the filter/columns/group/etc config table form
     w('<p>')
-    w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
+    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
     names = []
     for name in cl.getprops().keys():
         if name in all_filters or name in all_columns:
             names.append(name)
     w('<tr class="location-bar">')
-    w('<th align="left" colspan=%s>View customisation...</th></tr>'%
+    w('<th align="left" colspan=%s>View customisation...</th></tr>\n'%
         (len(names)+1))
     w('<tr class="location-bar"><th>&nbsp;</th>')
     for name in names:
         w('<th>%s</th>'%name.capitalize())
-    w('</tr>')
+    w('</tr>\n')
 
     # filter
     if all_filters:
-        w('<tr><th width="1%" align=right class="location-bar">Filters</th>')
+        w('<tr><th width="1%" align=right class="location-bar">Filters</th>\n')
         for name in names:
             if name not in all_filters:
                 w('<td>&nbsp;</td>')
                 continue
             if name in filter: checked=' checked'
             else: checked=''
-            w('<td align=middle>')
-            w('<input type="checkbox" name=":filter" value="%s" %s></td>'%(name,
-                checked))
-        w('</tr>')
+            w('<td align=middle>\n')
+            w(' <input type="checkbox" name=":filter" value="%s" %s></td>\n'%(
+                name, checked))
+        w('</tr>\n')
 
     # columns
     if all_columns:
-        w('<tr><th width="1%" align=right class="location-bar">Columns</th>')
+        w('<tr><th width="1%" align=right class="location-bar">Columns</th>\n')
         for name in names:
             if name not in all_columns:
                 w('<td>&nbsp;</td>')
                 continue
             if name in columns: checked=' checked'
             else: checked=''
-            w('<td align=middle>')
-            w('<input type="checkbox" name=":columns" value="%s" %s></td>'%(
+            w('<td align=middle>\n')
+            w(' <input type="checkbox" name=":columns" value="%s" %s></td>\n'%(
                 name, checked))
-        w('</tr>')
+        w('</tr>\n')
 
         # group
-        w('<tr><th width="1%" align=right class="location-bar">Grouping</th>')
+        w('<tr><th width="1%" align=right class="location-bar">Grouping</th>\n')
         for name in names:
             prop = properties[name]
             if name not in all_columns:
@@ -625,16 +625,16 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
                 continue
             if name in group: checked=' checked'
             else: checked=''
-            w('<td align=middle>')
-            w('<input type="checkbox" name=":group" value="%s" %s></td>'%(
+            w('<td align=middle>\n')
+            w(' <input type="checkbox" name=":group" value="%s" %s></td>\n'%(
                 name, checked))
-        w('</tr>')
+        w('</tr>\n')
 
     w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
     w('<td colspan="%s">'%len(names))
-    w('<input type="submit" value="Redisplay"></td></tr>')
-    w('</table>')
-    w('</form>')
+    w('<input type="submit" value="Redisplay"></td></tr>\n')
+    w('</table>\n')
+    w('</form>\n')
 
 
 #
@@ -742,6 +742,10 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/08/15 23:43:18  richard
+# Fixed some isFooTypes that I missed.
+# Refactored some code in the CGI code.
+#
 # Revision 1.19  2001/08/12 06:32:36  richard
 # using isinstance(blah, Foo) now instead of isFooType
 #

@@ -105,6 +105,10 @@ cgi_client
 date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
+cgi:
+  . setting an issue to resolved, and no other changes, results in a change
+    message with no indication of what changed
+  . enabling a filter disables the current filter hidden fields...
 
 
 6. Author

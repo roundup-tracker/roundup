@@ -2,6 +2,10 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-xx-xx - 0.2.7
+Feature:
+ . Text searches are now case insensitive. All forms of text search use
+   regular expressions now.
+
 Fixed:
  . Had another 2.1-ism in the unit tests
  . Made the mail parser a little more robust w.r.t missing Subject:
