@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.29 2002-09-12 06:02:45 richard Exp $
+# $Id: client.py,v 1.30 2002-09-12 06:05:34 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1143,7 +1143,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             'value': value, 'classname': link}
                     except TypeError, message:
                         raise ValueError, _('you may only enter ID values '
-                            'for property "%(propname)s": %(message)s'%{
+                            'for property "%(propname)s": %(message)s')%{
                             'propname':key, 'message': message}
         elif isinstance(proptype, hyperdb.Multilink):
             if isinstance(value, type([])):
@@ -1166,7 +1166,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             'propname':key, 'value': entry, 'classname': link}
                     except TypeError, message:
                         raise ValueError, _('you may only enter ID values '
-                            'for property "%(propname)s": %(message)s'%{
+                            'for property "%(propname)s": %(message)s')%{
                             'propname':key, 'message': message}
                 l.append(entry)
             l.sort()
