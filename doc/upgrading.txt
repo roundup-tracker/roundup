@@ -28,6 +28,9 @@ Migrating from 0.5 to 0.6
 
 XXX Form handling changed significantly! Document it!
 
+lose :multilink
+name:confirm -> :confirm:name
+
 
 0.6.0 Multilingual character set support
 ----------------------------------------

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.80 2003-01-27 17:02:46 kedder Exp $
+# $Id: roundupdb.py,v 1.81 2003-02-17 06:45:38 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -260,12 +260,13 @@ class IssueClass:
         # create the message
         message = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
-        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, encode_header(title)))
+        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid,
+            encode_header(title)))
         writer.addheader('To', ', '.join(sendto))
         writer.addheader('From', straddr((encode_header(authname) + 
             from_tag, from_address)))
-        writer.addheader('Reply-To', straddr((self.db.config.TRACKER_NAME,
-            from_address)))
+        tracker_name = encode_header(self.db.config.TRACKER_NAME)
+        writer.addheader('Reply-To', straddr((tracker_name, from_address)))
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
             time.gmtime()))
         writer.addheader('MIME-Version', '1.0')
@@ -275,7 +276,7 @@ class IssueClass:
             writer.addheader('In-Reply-To', inreplyto)
 
         # add a uniquely Roundup header to help filtering
-        writer.addheader('X-Roundup-Name', self.db.config.TRACKER_NAME)
+        writer.addheader('X-Roundup-Name', tracker_name)
 
         # avoid email loops
         writer.addheader('X-Roundup-Loop', 'hello')

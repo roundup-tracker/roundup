@@ -122,7 +122,6 @@ def encode_header(header):
     if not header:
         return header
 
-    global hqre
     # return plain header if it is not contains non-ascii characters
     if hqre.match(header):
         return header
