@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.30 $
+:Version: $Revision: 1.30.2.1 $
 
 .. contents::
 
@@ -309,30 +309,32 @@ Under the covers
 The searching page converts your selections into the following
 arguments:
 
-========== =============================================================
-Argument   Description
-========== =============================================================
-:sort      sort by prop name, optionally preceeded with '-' to give
-           descending or nothing for ascending sorting.
-:group     group by prop name, optionally preceeded with '-' or to sort
-           in descending or nothing for ascending order.
-:filter    selects which props should be displayed in the filter
-           section. Default is all.           
-:columns   selects the columns that should be displayed. Default is
-           all.                     
-propname   selects the values the item properties given by propname must
-           have (very basic search/filter).
-========== =============================================================
+============ =============================================================
+Argument     Description
+============ =============================================================
+@sort        sort by prop name, optionally preceeded with '-' to give
+             descending or nothing for ascending sorting.
+@group       group by prop name, optionally preceeded with '-' or to sort
+             in descending or nothing for ascending order.
+@columns     selects the columns that should be displayed. Default is
+             all.                     
+@filter      indicates which properties are being used in filtering.
+             Default is none.
+propname     selects the values the item properties given by propname must
+             have (very basic search/filter).
+@search_text performs a full-text search (message bodies, issue titles,
+             etc)
+============ =============================================================
 
 You may manually write URLS that contain these arguments, like so
 (whitespace has been added for clarity)::
 
     /issue?status=unread,in-progress,resolved&
         topic=security,ui&
-        :group=priority&
-        :sort=-activity&
-        :filters=status,topic&
-        :columns=title,status,fixer
+        @group=priority&
+        @sort=-activity&
+        @filters=status,topic&
+        @columns=title,status,fixer
 
 
 Access Controls

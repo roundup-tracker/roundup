@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161 $
+:Version: $Revision: 1.161.2.1 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2180,12 +2180,12 @@ Index View Specifiers
 An index view specifier (URL fragment) looks like this (whitespace has
 been added for clarity)::
 
-     /issue?status=unread,in-progress,resolved&
-            topic=security,ui&
-            :group=+priority&
-            :sort==activity&
-            :filters=status,topic&
-            :columns=title,status,fixer
+    /issue?status=unread,in-progress,resolved&
+        topic=security,ui&
+        @group=priority&
+        @sort=-activity&
+        @filters=status,topic&
+        @columns=title,status,fixer
 
 The index view is determined by two parts of the specifier: the layout
 part and the filter part. The layout part consists of the query
@@ -2210,11 +2210,28 @@ descending order. The filter section shows filters for the "status" and
 "topic" properties, and the table includes columns for the "title",
 "status", and "fixer" properties.
 
+============ =============================================================
+Argument     Description
+============ =============================================================
+@sort        sort by prop name, optionally preceeded with '-' to give
+             descending or nothing for ascending sorting.
+@group       group by prop name, optionally preceeded with '-' or to sort
+             in descending or nothing for ascending order.
+@columns     selects the columns that should be displayed. Default is
+             all.                     
+@filter      indicates which properties are being used in filtering.
+             Default is none.
+propname     selects the values the item properties given by propname must
+             have (very basic search/filter).
+@search_text if supplied, performs a full-text search (message bodies,
+             issue titles, etc)
+============ =============================================================
+
 
 Searching Views
 ---------------
 
-Note: if you add a new column to the ``:columns`` form variable
+Note: if you add a new column to the ``@columns`` form variable
       potentials then you will need to add the column to the appropriate
       `index views`_ template so that it is actually displayed.
 
@@ -2224,8 +2241,8 @@ This is one of the class context views. The template used is typically
 
 - sets up additional filtering, as well as performing indexed text
   searching
-- sets the ``:filter`` variable correctly
-- saves the query off if ``:query_name`` is set.
+- sets the ``@filter`` variable correctly
+- saves the query off if ``@query_name`` is set.
 
 The search page should lay out any fields that you wish to allow the
 user to search on. If your schema contains a large number of properties,
@@ -2235,18 +2252,18 @@ Strings, consider having their value indexed, and then they will be
 searchable using the full text indexed search. This is both faster, and
 more useful for the end user.
 
-The two special form values on search pages which are handled by the
-"search" action are:
+If the search view does specify the "search" ``@action``, then it may also
+provide an additional argument:
 
-:search_text
-  Text with which to perform a search of the text index. Results from
-  that search will be used to limit the results of other filters (using
-  an intersection operation)
-:query_name
-  If supplied, the search parameters (including :search_text) will be
-  saved off as a the query item and registered against the user's
-  queries property. Note that the *classic* template schema has this
-  ability, but the *minimal* template schema does not.
+============ =============================================================
+Argument     Description
+============ =============================================================
+@query_name  if supplied, the index parameters (including @search_text)
+             will be saved off as a the query item and registered against
+             the user's queries property. Note that the *classic* template
+             schema has this ability, but the *minimal* template schema
+             does not.
+============ =============================================================
 
 
 Item Views
