@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.207 2004-11-22 09:12:02 a1s Exp $
+# $Id: client.py,v 1.208 2004-11-22 10:46:18 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -149,6 +149,9 @@ class Client:
         # before the first write
         self.additional_headers = {}
         self.response_code = 200
+
+        # default character set
+        self.charset = self.STORAGE_CHARSET
 
         # parse cookies (used in charset and session lookups)
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
@@ -315,8 +318,6 @@ class Client:
         If the charset is found, and differs from the storage charset,
         recode all form fields of type 'text/plain'
         """
-        # default to storage charset
-        self.charset = self.STORAGE_CHARSET
 
         # look for client charset
         charset_parameter = 0
