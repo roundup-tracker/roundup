@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-08-?? - 0.2.3
+2001-07-30 - 0.2.3
 Big change:
  . I've split off the support class from the issue class in "extended".
    Anyone who has any support entries, sorry. It should be possible to
@@ -17,6 +17,7 @@ Features:
    help and better command-line arg handling.
  . The cgi_client.Client base class now reflects the structure of "classic"
    rather than "extended" since "classic" is more of a "base" template.
+ . Added more DB to test. Skips tests where imports fail.
 
 Fixed:
  . One of the tests in test_date had the wrong expected result.
