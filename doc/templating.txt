@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.1 $
+:Version: $Revision: 1.3 $
 
 Current Situation and Issues
 ============================
@@ -28,8 +28,8 @@ parser to parse the above "correctly", so a wholly new parser would be
 required. That is a large undertaking, and doesn't address another couple of
 issues that have arisen:
 
-1. the template syntax is neither HTML-editor friendly, not a well-formed
-   syntax for other tools to work with, and
+1. the template syntax is not well-formed, and therefore is a pain to parse
+   and doesn't play well with other tools, and
 2. user requirements generally have to be anticipated and accounted for in
    templating functions (like ``plain()`` and ``checklist()`` above), and
    we are therefore artificially restrictive.
@@ -38,8 +38,8 @@ Arguments for switching templating systems:
 
 *Pros*
 
-  - we can be editor-friendly
   - more flexibility in templating control and content
+  - we can be well-formed
 
 *Cons*
 
