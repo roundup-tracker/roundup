@@ -34,10 +34,10 @@ class ShowActionTestCase(ActionTestCase):
         except exception, msg:
             self.assertEqual(str(msg), message)
         else:
-            if hasattr(excClass,'__name__'):
-                excName = excClass.__name__
+            if hasattr(exception, '__name__'):
+                excName = exception.__name__
             else:
-                excName = str(excClass)
+                excName = str(exception)
             raise self.failureException, excName
 
     def testShowAction(self):
@@ -98,7 +98,8 @@ class StandardSearchActionTestCase(SearchActionTestCase):
 class FakeFilterVarsTestCase(SearchActionTestCase):
     def setUp(self):
         SearchActionTestCase.setUp(self)
-        self.client.db.classes.getprops = lambda: {'foo': hyperdb.Multilink('foo')}
+        self.client.db.classes.getprops = lambda: {'foo':
+            hyperdb.Multilink('foo')}
 
     def assertFilterEquals(self, expected):
         self.action.fakeFilterVars()
@@ -136,7 +137,8 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
         self.assertFilterEquals('foo')
 
         # The single value gets replaced with the tokenized list.
-        self.assertEqual([x.value for x in self.form['foo']], ['hello', 'world'])
+        self.assertEqual([x.value for x in self.form['foo']],
+            ['hello', 'world'])
 
 class CollisionDetectionTestCase(ActionTestCase):
     def setUp(self):
@@ -149,7 +151,8 @@ class CollisionDetectionTestCase(ActionTestCase):
     def testLastUserActivity(self):
         self.assertEqual(self.action.lastUserActivity(), None)
 
-        self.client.form.value.append(MiniFieldStorage('@lastactivity', str(self.now)))
+        self.client.form.value.append(
+            MiniFieldStorage('@lastactivity', str(self.now)))
         self.assertEqual(self.action.lastUserActivity(), self.now)
 
     def testLastNodeActivity(self):
@@ -165,9 +168,58 @@ class CollisionDetectionTestCase(ActionTestCase):
         self.assertEqual(self.action.lastNodeActivity(), self.now)
 
     def testCollision(self):
-        self.failUnless(self.action.detectCollision(self.now, self.now + Interval("1d")))
-        self.failIf(self.action.detectCollision(self.now, self.now - Interval("1d")))
+        self.failUnless(self.action.detectCollision(
+            self.now, self.now + Interval("1d")))
+        self.failIf(self.action.detectCollision(
+            self.now, self.now - Interval("1d")))
         self.failIf(self.action.detectCollision(None, self.now))
+
+class LoginTestCase(ActionTestCase):
+    def setUp(self):
+        ActionTestCase.setUp(self)
+        self.client.error_message = []
+
+        # set the db password to 'right'
+        self.client.db.user.get = lambda a,b: 'right'
+
+        # unless explicitly overridden, we should never get here
+        self.client.opendb = lambda a: self.fail(
+            "Logged in, but we shouldn't be.")
+
+    def assertLoginLeavesMessages(self, messages, username=None, password=None):
+        if username is not None:
+            self.form.value.append(MiniFieldStorage('__login_name', username))
+        if password is not None:
+            self.form.value.append(
+                MiniFieldStorage('__login_password', password))
+
+        LoginAction(self.client).handle()
+        self.assertEqual(self.client.error_message, messages)
+
+    def testNoUsername(self):
+        self.assertLoginLeavesMessages(['Username required'])
+
+    def testInvalidUsername(self):
+        def raiseKeyError(a):
+            raise KeyError
+        self.client.db.user.lookup = raiseKeyError
+        self.assertLoginLeavesMessages(['Invalid login'], 'foo')
+
+    def testInvalidPassword(self):
+        self.assertLoginLeavesMessages(['Invalid login'], 'foo', 'wrong')
+
+    def testNoWebAccess(self):
+        self.assertLoginLeavesMessages(['You do not have permission to login'],
+                                        'foo', 'right')
+
+    def testCorrectLogin(self):
+        self.client.db.security.hasPermission = lambda a,b,c: True
+
+        def opendb(username):
+            self.assertEqual(username, 'foo')
+        self.client.opendb = opendb
+
+        self.assertLoginLeavesMessages([], 'foo', 'right')
 
 def test_suite():
     suite = unittest.TestSuite()
@@ -176,9 +228,11 @@ def test_suite():
     suite.addTest(unittest.makeSuite(FakeFilterVarsTestCase))
     suite.addTest(unittest.makeSuite(ShowActionTestCase))
     suite.addTest(unittest.makeSuite(CollisionDetectionTestCase))
+    suite.addTest(unittest.makeSuite(LoginTestCase))
     return suite
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
+# vim: set et sts=4 sw=4 :
