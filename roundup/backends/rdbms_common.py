@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.109 2004-06-14 03:36:11 richard Exp $
+# $Id: rdbms_common.py,v 1.110 2004-06-16 03:54:00 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -52,6 +52,12 @@ def _num_cvt(num):
         return int(num)
     except:
         return float(num)
+
+def _bool_cvt(value):
+    if value in ('TRUE', 'FALSE'):
+        return {'TRUE': 1, 'FALSE': 0}[value]
+    # assume it's a number returned from the db API
+    return int(value)
 
 class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     ''' Wrapper around an SQL database that presents a hyperdb interface.
@@ -740,7 +746,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             prop = props[col[1:]]
             value = values[col[1:]]
-            if value:
+            if value is not None:
                 value = self.hyperdb_to_sql_value[prop.__class__](value)
             vals.append(value)
         vals.append(nodeid)
@@ -880,7 +886,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Link   : str,
         hyperdb.Interval  : date.Interval,
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
-        hyperdb.Boolean   : int,
+        hyperdb.Boolean   : _bool_cvt,
         hyperdb.Number    : _num_cvt,
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }

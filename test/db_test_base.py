@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.31 2004-06-13 01:05:46 richard Exp $ 
+# $Id: db_test_base.py,v 1.32 2004-06-16 03:54:00 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -263,11 +263,19 @@ class DBTest(MyTestCase):
             self.assertEqual(self.db.issue.get(nid, "foo"), None)
 
     # Boolean
+    def testBooleanSet(self):
+        nid = self.db.user.create(username='one', assignable=1)
+        self.assertEqual(self.db.user.get(nid, "assignable"), 1)
+        nid = self.db.user.create(username='two', assignable=0)
+        self.assertEqual(self.db.user.get(nid, "assignable"), 0)
+
     def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
         self.assertEqual(1, self.db.user.get(userid, 'assignable'))
         self.db.user.set(userid, assignable=0)
         self.assertEqual(self.db.user.get(userid, 'assignable'), 0)
+        self.db.user.set(userid, assignable=1)
+        self.assertEqual(self.db.user.get(userid, 'assignable'), 1)
 
     def testBooleanUnset(self):
         nid = self.db.user.create(username='foo', assignable=1)

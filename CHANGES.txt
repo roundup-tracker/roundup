@@ -21,6 +21,7 @@ Fixed:
 - allow list of values for id, Number and Boolean filtering in anydbm
   backend
 - fixed some more mysql 0.6->0.7 upgrade bugs (sf bug 950410)
+- fixed Boolean values in postgresql (sf bugs 972546 and 972600)
 
 
 2004-06-10 0.7.4
