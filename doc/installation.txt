@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 .. contents::
 
@@ -190,7 +190,7 @@ Python -- see `testing your python`_.
 Upgrading
 =========
 
-Read the separate upgrading_ document, which describes the steps needed to
+Read the separate `upgrading document`_, which describes the steps needed to
 upgrade existing tracker instances for each version of Roundup that is
 released.
 
@@ -254,5 +254,5 @@ Next: `Getting Started`_
 .. _`getting started`: getting_started.html
 .. _`roundup specification`: spec.html
 .. _`customising roundup`: customizing.html
-.. _`upgrading`: upgrading.html
+.. _`upgrading document`: upgrading.html
 
