@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.54 2002-07-26 08:26:59 richard Exp $
+#$Id: back_anydbm.py,v 1.55 2002-07-30 08:22:38 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -26,6 +26,7 @@ serious bugs, and is not available)
 import whichdb, anydbm, os, marshal, re, weakref, string, copy
 from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
+from sessions import Sessions
 from roundup.indexer import Indexer
 from locking import acquire_lock, release_lock
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
@@ -66,6 +67,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
         self.indexer = Indexer(self.dir)
+        self.sessions = Sessions(self.config)
         self.security = security.Security(self)
         # ensure files are group readable and writable
         os.umask(0002)
@@ -1776,6 +1778,11 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.54  2002/07/26 08:26:59  richard
+#Very close now. The cgi and mailgw now use the new security API. The two
+#templates have been migrated to that setup. Lots of unit tests. Still some
+#issue in the web form for editing Roles assigned to users.
+#
 #Revision 1.53  2002/07/25 07:14:06  richard
 #Bugger it. Here's the current shape of the new security implementation.
 #Still to do:

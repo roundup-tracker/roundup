@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.146 2002-07-30 05:27:30 richard Exp $
+# $Id: cgi_client.py,v 1.147 2002-07-30 08:22:38 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1197,6 +1197,31 @@ function help_window(helpurl, width, height) {
         self.write('</table>')
         self.pagefoot()
 
+    def unauthorised(self, message):
+        ''' The user is not authorised to do something. If they're
+            anonymous, throw up a login box. If not, just tell them they
+            can't do whatever it was they were trying to do.
+
+            Bot cases print up the message, which is most likely the
+            argument to the Unauthorised exception.
+        '''
+        self.header(response=403)
+        if self.desired_action is None or self.desired_action == 'login':
+            if not message:
+                message=_("You do not have permission.")
+            action = 'index'
+        else:
+            if not message:
+                message=_("You do not have permission to access"\
+                    " %(action)s.")%{'action': self.desired_action}
+            action = self.desired_action
+        if self.user == 'anonymous':
+            self.login(action=action, message=message)
+        else:
+            self.pagehead(_('Not Authorised'))
+            self.write('<p class="system-msg">%s</p>'%message)
+            self.pagefoot()
+
     def login(self, message=None, newuser_form=None, action='index'):
         '''Display a login page.
         '''
@@ -1331,19 +1356,17 @@ function help_window(helpurl, width, height) {
 
     def set_cookie(self, user, password):
         # TODO generate a much, much stronger session key ;)
-        session = binascii.b2a_base64(repr(time.time())).strip()
+        self.session = binascii.b2a_base64(repr(time.time())).strip()
 
         # clean up the base64
-        if session[-1] == '=':
-          if session[-2] == '=':
-            session = session[:-2]
-          else:
-            session = session[:-1]
+        if self.session[-1] == '=':
+            if self.session[-2] == '=':
+                self.session = self.session[:-2]
+            else:
+                self.session = self.session[:-1]
 
         # insert the session in the sessiondb
-        sessions = self.db.getclass('__sessions')
-        self.session = sessions.create(sessid=session, user=user,
-            last_use=date.Date())
+        self.db.sessions.set(self.session, user=user, last_use=time.time())
 
         # and commit immediately
         self.db.commit()
@@ -1355,10 +1378,10 @@ function help_window(helpurl, width, height) {
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
         self.header({'Set-Cookie': 'roundup_user=%s; expires=%s; Path=%s;'%(
-            session, expire, path)})
+            self.session, expire, path)})
 
     def make_user_anonymous(self):
-        ''' Make use anonymous
+        ''' Make us anonymous
 
             This method used to handle non-existence of the 'anonymous'
             user, but that user is mandatory now.
@@ -1367,7 +1390,10 @@ function help_window(helpurl, width, height) {
         self.user = 'anonymous'
 
     def logout(self, message=None):
+        ''' Make us really anonymous - nuke the cookie too
+        '''
         self.make_user_anonymous()
+
         # construct the logout cookie
         now = Cookie._getdate()
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
@@ -1383,19 +1409,6 @@ function help_window(helpurl, width, height) {
         # open the db
         self.db = self.instance.open(user)
 
-        # make sure we have the session Class
-        try:
-            sessions = self.db.getclass('__sessions')
-        except:
-            # add the sessions Class - use a non-journalling Class
-            # TODO: not happy with how we're getting the Class here :(
-            sessions = self.instance.dbinit.Class(self.db, '__sessions',
-                sessid=hyperdb.String(), user=hyperdb.String(),
-                last_use=hyperdb.Date())
-            sessions.setkey('sessid')
-            # make sure session db isn't journalled
-            sessions.disableJournalling()
-
     def main(self):
         ''' Wrap the request and handle unauthorised requests
         '''
@@ -1403,17 +1416,7 @@ function help_window(helpurl, width, height) {
         try:
             self.main_action()
         except Unauthorised, message:
-            self.header(response=403)
-            if self.desired_action is None or self.desired_action == 'login':
-                if not message:
-                    message=_("You do not have permission.")
-                # go to the index after login
-                self.login(message=message)
-            else:
-                if not message:
-                    message=_("You do not have permission to access"\
-                        " %(action)s.")%{'action': self.desired_action}
-                self.login(action=self.desired_action, message=message)
+            self.unauthorised(message)
 
     def main_action(self):
         '''Wrap the database accesses so we can close the database cleanly
@@ -1422,12 +1425,12 @@ function help_window(helpurl, width, height) {
         self.opendb('admin')
 
         # make sure we have the session Class
-        sessions = self.db.getclass('__sessions')
+        sessions = self.db.sessions
 
         # age sessions, remove when they haven't been used for a week
         # TODO: this shouldn't be done every access
-        week = date.Interval('7d')
-        now = date.Date()
+        week = 60*60*24*7
+        now = time.time()
         for sessid in sessions.list():
             interval = now - sessions.get(sessid, 'last_use')
             if interval > week:
@@ -1436,22 +1439,21 @@ function help_window(helpurl, width, height) {
         # look up the user session cookie
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
+
         if (cookie.has_key('roundup_user') and
                 cookie['roundup_user'].value != 'deleted'):
 
             # get the session key from the cookie
-            session = cookie['roundup_user'].value
+            self.session = cookie['roundup_user'].value
 
             # get the user from the session
             try:
-                self.session = sessions.lookup(session)
+                # update the lifetime datestamp
+                sessions.set(self.session, last_use=time.time())
+                sessions.commit()
+                user = sessions.get(self.session, 'user')
             except KeyError:
                 user = 'anonymous'
-            else:
-                # update the lifetime datestamp
-                sessions.set(self.session, last_use=date.Date())
-                self.db.commit()
-                user = sessions.get(sessid, 'user')
 
         # sanity check on the user still being valid
         try:
@@ -1689,6 +1691,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.146  2002/07/30 05:27:30  richard
+# nicer error messages, and a bugfix
+#
 # Revision 1.145  2002/07/26 08:26:59  richard
 # Very close now. The cgi and mailgw now use the new security API. The two
 # templates have been migrated to that setup. Lots of unit tests. Still some

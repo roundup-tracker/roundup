@@ -1,5 +1,6 @@
-from roundup import hyperdb, date, password, roundupdb
+from roundup import hyperdb, date, password, roundupdb, security
 import metakit
+from sessions import Sessions
 import re, marshal, os, sys, weakref, time, calendar
 from roundup import indexer 
 
@@ -12,13 +13,15 @@ class Database(hyperdb.Database):
         self.dirty = 0
         self._db = self.__open()
         self.indexer = Indexer(self.config.DATABASE, self._db)
+        self.sessions = Sessions(self.config)
+        self.security = security.Security(self)
+
         os.umask(0002)
     def post_init(self):
         if self.indexer.should_reindex():
             self.reindex()
 
     def reindex(self):
-        print "Reindexing!!!"
         for klass in self.classes.values():
             for nodeid in klass.list():
                 klass.index(nodeid)
