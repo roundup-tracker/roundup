@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.142 2004-04-25 22:19:15 richard Exp $
+#$Id: back_anydbm.py,v 1.143 2004-04-26 00:46:34 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1662,7 +1662,7 @@ class Class(hyperdb.Class):
         filterspec = l
 
         # now, find all the nodes that are active and pass filtering
-        l = []
+        matches = []
         cldb = self.db.getclassdb(cn)
         try:
             # TODO: only full-scan once (use items())
@@ -1724,123 +1724,70 @@ class Class(hyperdb.Class):
                         if node[k] != v:
                             break
                 else:
-                    l.append((nodeid, node))
+                    matches.append([nodeid, node])
         finally:
             cldb.close()
-        l.sort()
 
         # filter based on full text search
         if search_matches is not None:
             k = []
-            for v in l:
+            for v in matches:
                 if search_matches.has_key(v[0]):
                     k.append(v)
-            l = k
+            matches = k
 
-        # now, sort the result
-        def sortfun(a, b, sort=sort, group=group, properties=self.getprops(),
-                db = self.db, cl=self):
-            a_id, an = a
-            b_id, bn = b
-            # sort by group and then sort
-            for dir, prop in group, sort:
-                if dir is None or prop is None: continue
-
-                # sorting is class-specific
-                propclass = properties[prop]
-
+        # add sorting information to the match entries
+        directions = []
+        for dir, prop in sort, group:
+            if dir is None or prop is None:
+                continue
+            directions.append(dir)
+            propclass = props[prop]
+            for entry in matches:
+                itemid = entry[-2]
+                item = entry[-1]
                 # handle the properties that might be "faked"
                 # also, handle possible missing properties
                 try:
-                    if not an.has_key(prop):
-                        an[prop] = cl.get(a_id, prop)
-                    av = an[prop]
+                    v = self.get(itemid, prop)
                 except KeyError:
                     # the node doesn't have a value for this property
-                    if isinstance(propclass, Multilink): av = []
-                    else: av = ''
-                try:
-                    if not bn.has_key(prop):
-                        bn[prop] = cl.get(b_id, prop)
-                    bv = bn[prop]
-                except KeyError:
-                    # the node doesn't have a value for this property
-                    if isinstance(propclass, Multilink): bv = []
-                    else: bv = ''
+                    if isinstance(propclass, Multilink): v = []
+                    else: v = None
+                    s.append((v, itemid, item))
+                    continue
 
-                # String and Date values are sorted in the natural way
                 if isinstance(propclass, String):
-                    # clean up the strings
-                    if av and av[0] in string.uppercase:
-                        av = av.lower()
-                    if bv and bv[0] in string.uppercase:
-                        bv = bv.lower()
-                if (isinstance(propclass, String) or
-                        isinstance(propclass, Date)):
                     # it might be a string that's really an integer
-                    try:
-                        av = int(av)
-                        bv = int(bv)
-                    except:
-                        pass
-                    if dir == '+':
-                        r = cmp(av, bv)
-                        if r != 0: return r
-                    elif dir == '-':
-                        r = cmp(bv, av)
-                        if r != 0: return r
-
-                # Link properties are sorted according to the value of
-                # the "order" property on the linked nodes if it is
-                # present; or otherwise on the key string of the linked
-                # nodes; or finally on  the node ids.
+                    try: tv = int(v)
+                    except: v = v.lower()
+                    else: v = tv
                 elif isinstance(propclass, Link):
-                    link = db.classes[propclass.classname]
-                    if av is None and bv is not None: return -1
-                    if av is not None and bv is None: return 1
-                    if av is None and bv is None: continue
+                    link = self.db.classes[propclass.classname]
                     if link.getprops().has_key('order'):
-                        if dir == '+':
-                            r = cmp(link.get(av, 'order'),
-                                link.get(bv, 'order'))
-                            if r != 0: return r
-                        elif dir == '-':
-                            r = cmp(link.get(bv, 'order'),
-                                link.get(av, 'order'))
-                            if r != 0: return r
+                        v = link.get(v, 'order')
                     elif link.getkey():
                         key = link.getkey()
-                        if dir == '+':
-                            r = cmp(link.get(av, key), link.get(bv, key))
-                            if r != 0: return r
-                        elif dir == '-':
-                            r = cmp(link.get(bv, key), link.get(av, key))
-                            if r != 0: return r
+                        v = link.get(v, key)
+                entry.insert(0, v)
+
+        if directions:
+            # sort using the first one or two columns
+            def sortfun(a, b, directions=directions, n=range(len(directions))):
+                for i in n:
+                    if a[i] == b[i]: continue
+                    if directions[i] == '-':
+                        return cmp(a[i],b[i])
                     else:
-                        if dir == '+':
-                            r = cmp(av, bv)
-                            if r != 0: return r
-                        elif dir == '-':
-                            r = cmp(bv, av)
-                            if r != 0: return r
+                        return cmp(b[i],a[i])
+                return 0
+            matches.sort(sortfun)
 
-                else:
-                    # all other types just compare
-                    if dir == '+':
-                        r = cmp(av, bv)
-                    elif dir == '-':
-                        r = cmp(bv, av)
-                    if r != 0: return r
-                    
-            # end for dir, prop in sort, group:
-            # if all else fails, compare the ids
-            return cmp(a[0], b[0])
-
-        l.sort(sortfun)
-        l = [i[0] for i in l]
+        # pull the id out of the individual entries
+        matches = [entry[-2] for entry in matches]
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
-        return l
+        return matches
 
     def count(self):
         '''Get the number of nodes in this class.
