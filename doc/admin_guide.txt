@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.5.2.3 $
+:Version: $Revision: 1.5.2.4 $
 
 .. contents::
 
@@ -100,7 +100,7 @@ Software Upgrade
 Always make a backup of your tracker before upgrading software. Steps you may
 take:
 
-1. Ensure that the unit tests run on your system:
+1. Ensure that the unit tests run on your system::
 
     python run_tests.py
 
