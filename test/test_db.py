@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.71 2003-02-15 23:19:01 kedder Exp $ 
+# $Id: test_db.py,v 1.72 2003-02-27 11:07:39 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -85,6 +85,56 @@ class anydbmDBTestCase(MyTestCase):
         self.db = anydbm.Database(config, 'admin')
         setupSchema(self.db, 1, anydbm)
 
+    #
+    # schema mutation
+    #
+    def testAddProperty(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        self.db.issue.addprop(fixer=Link("user"))
+        # force any post-init stuff to happen
+        self.db.post_init()
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder', 'title'])
+        self.assertEqual(self.db.issue.get('1', "fixer"), None)
+
+    def testRemoveProperty(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        del self.db.issue.properties['title']
+        self.db.post_init()
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder'])
+        self.assertEqual(self.db.issue.list(), ['1'])
+
+    def testAddRemoveProperty(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        self.db.issue.addprop(fixer=Link("user"))
+        del self.db.issue.properties['title']
+        self.db.post_init()
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder'])
+        self.assertEqual(self.db.issue.list(), ['1'])
+
+    #
+    # basic operations
+    #
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db.issue.create(title="eggs", status='2')
@@ -223,19 +273,6 @@ class anydbmDBTestCase(MyTestCase):
         # use the key again now that the old is retired
         newid2 = self.db.user.create(username="spam")
         self.assertNotEqual(newid, newid2)
-
-    def testNewProperty(self):
-        self.db.issue.create(title="spam", status='1')
-        self.db.issue.addprop(fixer=Link("user"))
-        # force any post-init stuff to happen
-        self.db.post_init()
-        props = self.db.issue.getprops()
-        keys = props.keys()
-        keys.sort()
-        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
-            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'status', 'superseder', 'title'])
-        self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRetire(self):
         self.db.issue.create(title="spam", status='1')
@@ -850,11 +887,10 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, metakit)
 
 def suite():
-    l = []
-#    l = [
-#         unittest.makeSuite(anydbmDBTestCase, 'test'),
-#         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
-#    ]
+    l = [
+         unittest.makeSuite(anydbmDBTestCase, 'test'),
+         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
+    ]
 #    return unittest.TestSuite(l)
 
     from roundup import backends
