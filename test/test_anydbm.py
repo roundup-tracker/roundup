@@ -15,27 +15,39 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.25 2003-10-25 22:53:26 richard Exp $
+# $Id: test_anydbm.py,v 1.1 2003-10-25 22:53:26 richard Exp $ 
 
-''' Container for the hyperdb storage backend implementations.
+import unittest, os, shutil, time
 
-The __all__ variable is constructed containing only the backends which are
-available.
-'''
+from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest
 
-__all__ = []
+class anydbmOpener:
+    from roundup.backends import anydbm as module
 
-for backend in ['anydbm', ('mysql', 'MySQLdb'), 'bsddb', 'bsddb3', 'sqlite',
-                'metakit', ('postgresql', 'psycopg')]:
-    if len(backend) == 2:
-        backend, backend_module = backend
-    else:
-        backend_module = backend
-    try:
-        globals()[backend] = __import__('back_%s'%backend, globals())
-        __all__.append(backend)
-    except ImportError, e:
-        if not str(e).startswith('No module named %s'%backend_module):
-            raise
+class anydbmDBTest(anydbmOpener, DBTest):
+    pass
+
+class anydbmROTest(anydbmOpener, ROTest):
+    pass
+
+class anydbmSchemaTest(anydbmOpener, SchemaTest):
+    pass
+
+class anydbmClassicInitTest(ClassicInitTest):
+    backend = 'anydbm'
+
+def test_suite():
+    suite = unittest.TestSuite()
+    print 'Including anydbm tests'
+    suite.addTest(unittest.makeSuite(anydbmDBTest))
+    suite.addTest(unittest.makeSuite(anydbmROTest))
+    suite.addTest(unittest.makeSuite(anydbmSchemaTest))
+    suite.addTest(unittest.makeSuite(anydbmClassicInitTest))
+    return suite
+
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
+
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.14 2003-10-25 12:02:37 jlgijsbers Exp $
+# $Id: test_mailsplit.py,v 1.15 2003-10-25 22:53:26 richard Exp $
 
 import unittest, cStringIO
 
@@ -227,8 +227,13 @@ Testing, testing.'''
         summary, content = parseContent(body, 1, 0)
         self.assertEqual(body, content)
 
-def suite():
-   return unittest.makeSuite(MailsplitTestCase, 'test')
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(MailsplitTestCase))
+    return suite
 
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si

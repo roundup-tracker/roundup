@@ -8,16 +8,19 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.56 2003-10-25 12:02:36 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.57 2003-10-25 22:53:26 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
 from cStringIO import StringIO
 
+if not os.environ.has_key('SENDMAILDEBUG'):
+    os.environ['SENDMAILDEBUG'] = 'mail-test.log'
+SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, parseContent
 from roundup import init, instance, rfc2822
 
-NEEDS_INSTANCE = 1
 
 class Message(rfc822.Message):
     """String-based Message class with equivalence test."""
@@ -79,10 +82,13 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        shutil.copytree('_empty_instance', self.dirname)
+        init.install(self.dirname, 'templates/classic')
+        init.write_select_db(self.dirname, 'anydbm')
+        init.initialise(self.dirname, 'sekrit')
         
         # check we can load the package
         self.instance = instance.open(self.dirname)
+
         # and open the database
         self.db = self.instance.open('admin')
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
@@ -96,13 +102,20 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             realname='John Doe')
 
     def tearDown(self):
-        if os.path.exists(os.environ['SENDMAILDEBUG']):
-            os.remove(os.environ['SENDMAILDEBUG'])
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
         self.db.close()
         try:
             shutil.rmtree(self.dirname)
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def _get_mail(self):
+        f = open(SENDMAILDEBUG)
+        try:
+            return f.read()
+        finally:
+            f.close()
 
     def testEmptyMessage(self):
         message = StringIO('''Content-Type: text/plain;
@@ -117,9 +130,7 @@ Subject: [issue] Testing...
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         nodeid = handler.main(message)
-        if os.path.exists(os.environ['SENDMAILDEBUG']):
-            error = open(os.environ['SENDMAILDEBUG']).read()
-            self.assertEqual('no error', error)
+        assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
 
     def doNewIssue(self):
@@ -136,9 +147,7 @@ This is a test submission of a new issue.
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         nodeid = handler.main(message)
-        if os.path.exists(os.environ['SENDMAILDEBUG']):
-            error = open(os.environ['SENDMAILDEBUG']).read()
-            self.assertEqual('no error', error)
+        assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4'])
@@ -162,9 +171,7 @@ This is a test submission of a new issue.
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         nodeid = handler.main(message)
-        if os.path.exists(os.environ['SENDMAILDEBUG']):
-            error = open(os.environ['SENDMAILDEBUG']).read()
-            self.assertEqual('no error', error)
+        assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4'])
@@ -183,9 +190,7 @@ This is a test submission of a new issue.
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        if os.path.exists(os.environ['SENDMAILDEBUG']):
-            error = open(os.environ['SENDMAILDEBUG']).read()
-            self.assertEqual('no error', error)
+        assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(userlist, self.db.user.list(),
             "user created when it shouldn't have been")
 
@@ -203,9 +208,7 @@ This is a test submission of a new issue.
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        if os.path.exists(os.environ['SENDMAILDEBUG']):
-            error = open(os.environ['SENDMAILDEBUG']).read()
-            self.assertEqual('no error', error)
+        assert not os.path.exists(SENDMAILDEBUG)
 
     def testNewIssueAuthMsg(self):
         message = StringIO('''Content-Type: text/plain;
@@ -223,7 +226,7 @@ This is a test submission of a new issue.
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -278,7 +281,7 @@ This is a second followup
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -326,7 +329,7 @@ This is a followup
         l.sort()
         self.assertEqual(l, ['3', '4', '5', '6'])
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain; charset=utf-8
@@ -372,7 +375,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain; charset=utf-8
@@ -419,7 +422,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -467,7 +470,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain; charset=utf-8
@@ -515,7 +518,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -562,7 +565,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -609,7 +612,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain; charset=utf-8
@@ -658,7 +661,7 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
         self.assertEqual(l, ['3', '4', '5', '6'])
 
         # should be no file created (ie. no message)
-        assert not os.path.exists(os.environ['SENDMAILDEBUG'])
+        assert not os.path.exists(SENDMAILDEBUG)
 
     def testNosyRemove(self):
         self.doNewIssue()
@@ -680,7 +683,7 @@ Subject: [issue1] Testing... [nosy=-richard]
         self.assertEqual(l, ['3'])
 
         # NO NOSY MESSAGE SHOULD BE SENT!
-        self.assert_(not os.path.exists(os.environ['SENDMAILDEBUG']))
+        assert not os.path.exists(SENDMAILDEBUG)
 
     def testNewUserAuthor(self):
         # first without the permission
@@ -739,7 +742,7 @@ A message with encoding (encoded oe =F6)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -794,7 +797,7 @@ A message with first part encoded (encoded oe =F6)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         handler.main(message)
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain; charset=utf-8
@@ -874,7 +877,7 @@ This is a followup
         handler.trapExceptions = 0
         handler.main(message)
 
-        self.compareMessages(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain; charset=utf-8
@@ -994,9 +997,13 @@ This is a test confirmation of registration.
 
         self.db.user.lookup('johannes')
 
-def suite():
-    l = [unittest.makeSuite(MailgwTestCase)]
-    return unittest.TestSuite(l)
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(MailgwTestCase))
+    return suite
 
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -5,9 +5,15 @@ are given with the most recent entry first.
 Feature:
 - support confirming registration by replying to the email (sf bug 763668)
 - support setgid and running on port < 1024 (sf patch 777528)
+- using Zope3's test runner now, allowing GC checks, nicer controls and
+  coverage analysis
+- !BETA! added postgresql backend, needs work !BETA!
+- all RDMBS backends now have indexes on several columns
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
+- added testing of schema mutation, fixed rdbms backends handling of a
+  couple of cases
 
 
 2003-10-?? 0.6.3

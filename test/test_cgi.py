@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.20 2003-09-24 14:54:23 jlgijsbers Exp $
+# $Id: test_cgi.py,v 1.21 2003-10-25 22:53:26 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -68,7 +68,9 @@ class FormTestCase(unittest.TestCase):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        shutil.copytree('_empty_instance', self.dirname)
+        init.install(self.dirname, 'templates/classic')
+        init.write_select_db(self.dirname, 'anydbm')
+        init.initialise(self.dirname, 'sekrit')
         
         # check we can load the package
         self.instance = instance.open(self.dirname)
@@ -530,18 +532,14 @@ class FormTestCase(unittest.TestCase):
             'name': 'foo.txt', 'type': 'text/plain'}},
             [('issue', None, 'files', [('file', '-1')])]))
 
-def suite():
-    l = [
-        unittest.makeSuite(FormTestCase),
-        unittest.makeSuite(MessageTestCase),
-    ]
-    return unittest.TestSuite(l)
-
-def run():
-    runner = unittest.TextTestRunner()
-    unittest.main(testRunner=runner)
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(FormTestCase))
+    suite.addTest(unittest.makeSuite(MessageTestCase))
+    return suite
 
 if __name__ == '__main__':
-    run()
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si

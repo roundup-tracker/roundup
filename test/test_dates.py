@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.24 2003-04-22 20:53:54 kedder Exp $ 
+# $Id: test_dates.py,v 1.25 2003-10-25 22:53:26 richard Exp $ 
 
 import unittest, time
 
@@ -256,8 +256,13 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval('+1w', add_granularity=1)), '+ 14d')
         ae(str(Interval('-2m 3w', add_granularity=1)), '- 2m 14d')
 
-def suite():
-   return unittest.makeSuite(DateTestCase, 'test')
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(DateTestCase))
+    return suite
 
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si

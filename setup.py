@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.56 2003-08-18 06:31:59 richard Exp $
+# $Id: setup.py,v 1.57 2003-10-25 22:53:26 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -180,7 +180,9 @@ def main():
     setup(
         name = "roundup", 
         version = __version__,
-        description = "Roundup issue tracking system.",
+        description = "A simple-to-use and -install issue-tracking system"
+            " with command-line, web and e-mail interfaces. Highly"
+            " customisable.",
         long_description = 
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design

@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.2 2002-09-10 00:19:54 richard Exp $
+# $Id: test_indexer.py,v 1.3 2003-10-25 22:53:26 richard Exp $
 
 import os, unittest, shutil
 
@@ -49,8 +49,13 @@ class IndexerTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree('test-index')
 
-def suite():
-    return unittest.makeSuite(IndexerTest)
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(IndexerTest))
+    return suite
 
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si

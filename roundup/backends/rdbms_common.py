@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.65 2003-10-07 11:58:58 anthonybaxter Exp $
+# $Id: rdbms_common.py,v 1.66 2003-10-25 22:53:26 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -129,9 +129,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.database_schema[classname] = spec.schema()
                 save = 1
 
-        for classname in self.database_schema.keys():
+        for classname, spec in self.database_schema.items():
             if not self.classes.has_key(classname):
-                self.drop_class(classname)
+                self.drop_class(classname, spec)
+                del self.database_schema[classname]
+                save = 1
 
         # update the database version of the schema
         if save:
@@ -190,10 +192,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             database version of the spec, and update where necessary.
             If 'force' is true, update the database anyway.
         '''
-        new_spec = spec
-        new_has = new_spec.properties.has_key
-
-        new_spec = new_spec.schema()
+        new_has = spec.properties.has_key
+        new_spec = spec.schema()
         new_spec[1].sort()
         old_spec[1].sort()
         if not force and new_spec == old_spec:
@@ -202,29 +202,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         if __debug__:
             print >>hyperdb.DEBUG, 'update_class FIRING'
-
-        # key property changed?
-        if force or old_spec[0] != new_spec[0]:
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class setting keyprop', `spec[0]`
-            # XXX turn on indexing for the key property. 
-            index_sql = 'drop index _%s_%s_idx'%(
-                        spec.classname, old_spec[0])
-            if __debug__:
-                print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
-            try:
-                self.cursor.execute(index_sql1)
-            except:
-                # Hackage. Until we update the schema to include some 
-                # backend-specific knowledge, assume that this might fail.
-                pass
-
-            index_sql = 'create index _%s_%s_idx on _%s(%s)'%(
-                        spec.classname, new_spec[0],
-                        spec.classname, new_spec[0])
-            if __debug__:
-                print >>hyperdb.DEBUG, 'create_index', (self, index_sql)
-            self.cursor.execute(index_sql1)
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}
@@ -275,9 +252,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cursor.execute(sql)
         olddata = self.cursor.fetchall()
 
-        # drop the old table - indexes first
+        # drop the old table indexes first
         index_sqls = [ 'drop index _%s_id_idx'%cn,
                        'drop index _%s_retired_idx'%cn ]
+        if old_spec[0]:
+            index_sqls.append('drop index _%s_%s_idx'%(cn, old_spec[0]))
         for index_sql in index_sqls:
             if __debug__:
                 print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
@@ -287,7 +266,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 # The database may not actually have any indexes.
                 # assume the worst.
                 pass
+
+        # drop the old table
         self.cursor.execute('drop table _%s'%cn)
+
         # create the new table
         self.create_class_table(spec)
 
@@ -317,16 +299,32 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+
+        # create id index
         index_sql1 = 'create index _%s_id_idx on _%s(id)'%(
                         spec.classname, spec.classname)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_index', (self, index_sql1)
         self.cursor.execute(index_sql1)
+
+        # create __retired__ index
         index_sql2 = 'create index _%s_retired_idx on _%s(__retired__)'%(
                         spec.classname, spec.classname)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_index', (self, index_sql2)
         self.cursor.execute(index_sql2)
+
+        # create index for key property
+        if spec.key:
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class setting keyprop %r'% \
+                    spec.key
+            index_sql3 = 'create index _%s_%s_idx on _%s(_%s)'%(
+                        spec.classname, spec.key,
+                        spec.classname, spec.key)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'create_index', (self, index_sql3)
+            self.cursor.execute(index_sql3)
 
         return cols, mls
 
@@ -341,6 +339,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+
+        # index on nodeid
         index_sql = 'create index %s_journ_idx on %s__journal(nodeid)'%(
                         spec.classname, spec.classname)
         if __debug__:
@@ -351,16 +351,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Create a multilink table for the "ml" property of the class
             given by the spec
         '''
+        # create the table
         sql = 'create table %s_%s (linkid varchar, nodeid varchar)'%(
             spec.classname, ml)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+
+        # create index on linkid
         index_sql = 'create index %s_%s_l_idx on %s_%s(linkid)'%(
                         spec.classname, ml, spec.classname, ml)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_index', (self, index_sql)
         self.cursor.execute(index_sql)
+
+        # create index on nodeid
         index_sql = 'create index %s_%s_n_idx on %s_%s(nodeid)'%(
                         spec.classname, ml, spec.classname, ml)
         if __debug__:
@@ -384,20 +389,23 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'create_class', (self, sql, vals)
         self.cursor.execute(sql, vals)
 
-    def drop_class(self, spec):
+    def drop_class(self, cn, spec):
         ''' Drop the given table from the database.
 
             Drop the journal and multilink tables too.
         '''
+        properties = spec[1]
         # figure the multilinks
         mls = []
-        for col, prop in spec.properties.items():
+        for propanme, prop in properties:
             if isinstance(prop, Multilink):
-                mls.append(col)
+                mls.append(propname)
 
         index_sqls = [ 'drop index _%s_id_idx'%cn,
                        'drop index _%s_retired_idx'%cn,
                        'drop index %s_journ_idx'%cn ]
+        if spec[0]:
+            index_sqls.append('drop index _%s_%s_idx'%(cn, spec[0]))
         for index_sql in index_sqls:
             if __debug__:
                 print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
@@ -408,19 +416,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 # assume the worst.
                 pass
 
-        sql = 'drop table _%s'%spec.classname
+        sql = 'drop table _%s'%cn
         if __debug__:
             print >>hyperdb.DEBUG, 'drop_class', (self, sql)
         self.cursor.execute(sql)
-        sql = 'drop table %s__journal'%spec.classname
+
+        sql = 'drop table %s__journal'%cn
         if __debug__:
             print >>hyperdb.DEBUG, 'drop_class', (self, sql)
         self.cursor.execute(sql)
 
         for ml in mls:
             index_sqls = [ 
-                'drop index %s_%s_n_idx'%(spec.classname, ml),
-                'drop index %s_%s_l_idx'%(spec.classname, ml),
+                'drop index %s_%s_n_idx'%(cn, ml),
+                'drop index %s_%s_l_idx'%(cn, ml),
             ]
             for index_sql in index_sqls:
                 if __debug__:

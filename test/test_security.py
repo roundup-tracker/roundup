@@ -18,12 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.5 2002-09-20 05:08:00 richard Exp $
+# $Id: test_security.py,v 1.6 2003-10-25 22:53:26 richard Exp $
 
 import os, unittest, shutil
 
 from roundup.password import Password
-from test_db import setupSchema, MyTestCase, config
+from db_test_base import setupSchema, MyTestCase, config
 
 class PermissionTest(MyTestCase):
     def setUp(self):
@@ -99,8 +99,13 @@ class PermissionTest(MyTestCase):
         self.assertEquals(self.db.security.hasNodePermission('issue',
             issueid, nosy=userid), 1)
 
-def suite():
-    return unittest.makeSuite(PermissionTest)
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(PermissionTest))
+    return suite
 
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si

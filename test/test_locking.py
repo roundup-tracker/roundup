@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_locking.py,v 1.3 2002-12-09 02:51:46 richard Exp $
+# $Id: test_locking.py,v 1.4 2003-10-25 22:53:26 richard Exp $
 
 import os, unittest, tempfile
 
@@ -46,8 +46,13 @@ class LockingTest(unittest.TestCase):
     def tearDown(self):
         os.remove(self.path)
 
-def suite():
-    return unittest.makeSuite(LockingTest)
+def test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(LockingTest))
+    return suite
 
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
 
 # vim: set filetype=python ts=4 sw=4 et si
