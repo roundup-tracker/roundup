@@ -8,6 +8,7 @@ Fixed:
 - added script to help migrating queries from pre-0.6 trackers
 - Fixed "documentation" of getnodeids in roundup.hyperdb
 - added flush() to DevNull (sf bug #835365)
+- fixed javascript for help window for only one checkbox case
 - Date arithmetic was utterly broken, and has been for a long time.
   Date +/- Interval now works, and Date - Date also works (produces
   an Interval.
