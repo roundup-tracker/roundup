@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.46 2002-07-14 06:06:34 richard Exp $
+#$Id: back_anydbm.py,v 1.47 2002-07-14 23:18:20 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -876,9 +876,13 @@ class Class(hyperdb.Class):
         if node.has_key(self.db.RETIRED_FLAG):
             raise IndexError
         num_re = re.compile('^\d+$')
-        for key, value in propvalues.items():
+
+        # if the journal value is to be different, store it in here
+        journalvalues = {}
+
+        for propname, value in propvalues.items():
             # check to make sure we're not duplicating an existing key
-            if key == self.key and node[key] != value:
+            if propname == self.key and node[propname] != value:
                 try:
                     self.lookup(value)
                 except KeyError:
@@ -889,17 +893,17 @@ class Class(hyperdb.Class):
             # this will raise the KeyError if the property isn't valid
             # ... we don't use getprops() here because we only care about
             # the writeable properties.
-            prop = self.properties[key]
+            prop = self.properties[propname]
 
             # if the value's the same as the existing value, no sense in
             # doing anything
-            if node.has_key(key) and value == node[key]:
-                del propvalues[key]
+            if node.has_key(propname) and value == node[propname]:
+                del propvalues[propname]
                 continue
 
             # do stuff based on the prop type
             if isinstance(prop, Link):
-                link_class = self.properties[key].classname
+                link_class = self.properties[propname].classname
                 # if it isn't a number, it's a key
                 if type(value) != type(''):
                     raise ValueError, 'link value must be String'
@@ -908,89 +912,106 @@ class Class(hyperdb.Class):
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
                         raise IndexError, 'new property "%s": %s not a %s'%(
-                            key, value, self.properties[key].classname)
+                            propname, value, self.properties[propname].classname)
 
                 if not self.db.hasnode(link_class, value):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
-                if self.do_journal and self.properties[key].do_journal:
+                if self.do_journal and self.properties[propname].do_journal:
                     # register the unlink with the old linked node
-                    if node[key] is not None:
-                        self.db.addjournal(link_class, node[key], 'unlink',
-                            (self.classname, nodeid, key))
+                    if node[propname] is not None:
+                        self.db.addjournal(link_class, node[propname], 'unlink',
+                            (self.classname, nodeid, propname))
 
                     # register the link with the newly linked node
                     if value is not None:
                         self.db.addjournal(link_class, value, 'link',
-                            (self.classname, nodeid, key))
+                            (self.classname, nodeid, propname))
 
             elif isinstance(prop, Multilink):
                 if type(value) != type([]):
-                    raise TypeError, 'new property "%s" not a list of ids'%key
-                link_class = self.properties[key].classname
+                    raise TypeError, 'new property "%s" not a list of'\
+                        ' ids'%propname
+                link_class = self.properties[propname].classname
                 l = []
                 for entry in value:
                     # if it isn't a number, it's a key
                     if type(entry) != type(''):
                         raise ValueError, 'new property "%s" link value ' \
-                            'must be a string'%key
+                            'must be a string'%propname
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except (TypeError, KeyError):
                             raise IndexError, 'new property "%s": %s not a %s'%(
-                                key, entry, self.properties[key].classname)
+                                propname, entry,
+                                self.properties[propname].classname)
                     l.append(entry)
                 value = l
-                propvalues[key] = value
+                propvalues[propname] = value
+
+                # figure the journal entry for this property
+                add = []
+                remove = []
 
                 # handle removals
-                if node.has_key(key):
-                    l = node[key]
+                if node.has_key(propname):
+                    l = node[propname]
                 else:
                     l = []
                 for id in l[:]:
                     if id in value:
                         continue
                     # register the unlink with the old linked node
-                    if self.do_journal and self.properties[key].do_journal:
+                    if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'unlink',
-                            (self.classname, nodeid, key))
+                            (self.classname, nodeid, propname))
                     l.remove(id)
+                    remove.append(id)
 
                 # handle additions
                 for id in value:
                     if not self.db.hasnode(link_class, id):
-                        raise IndexError, '%s has no node %s'%(
-                            link_class, id)
+                        raise IndexError, '%s has no node %s'%(link_class, id)
                     if id in l:
                         continue
                     # register the link with the newly linked node
-                    if self.do_journal and self.properties[key].do_journal:
+                    if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'link',
-                            (self.classname, nodeid, key))
+                            (self.classname, nodeid, propname))
                     l.append(id)
+                    add.append(id)
+
+                # figure the journal entry
+                l = []
+                if add:
+                    l.append(('add', add))
+                if remove:
+                    l.append(('remove', remove))
+                if l:
+                    journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, String):
                 if value is not None and type(value) != type(''):
-                    raise TypeError, 'new property "%s" not a string'%key
+                    raise TypeError, 'new property "%s" not a string'%propname
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
-                    raise TypeError, 'new property "%s" not a Password'% key
-                propvalues[key] = value
+                    raise TypeError, 'new property "%s" not a Password'%propname
+                propvalues[propname] = value
 
             elif value is not None and isinstance(prop, Date):
                 if not isinstance(value, date.Date):
-                    raise TypeError, 'new property "%s" not a Date'% key
-                propvalues[key] = value
+                    raise TypeError, 'new property "%s" not a Date'% propname
+                propvalues[propname] = value
 
             elif value is not None and isinstance(prop, Interval):
                 if not isinstance(value, date.Interval):
-                    raise TypeError, 'new property "%s" not an Interval'% key
-                propvalues[key] = value
+                    raise TypeError, 'new property "%s" not an '\
+                        'Interval'%propname
+                propvalues[propname] = value
 
-            node[key] = value
+            node[propname] = value
 
         # nothing to do?
         if not propvalues:
@@ -998,7 +1019,9 @@ class Class(hyperdb.Class):
 
         # do the set, and journal it
         self.db.setnode(self.classname, nodeid, node)
+
         if self.do_journal:
+            propvalues.update(journalvalues)
             self.db.addjournal(self.classname, nodeid, 'set', propvalues)
 
         self.fireReactors('set', nodeid, oldvalues)
@@ -1615,6 +1638,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.46  2002/07/14 06:06:34  richard
+#Did some old TODOs
+#
 #Revision 1.45  2002/07/14 04:03:14  richard
 #Implemented a switch to disable journalling for a Class. CGI session
 #database now uses it.

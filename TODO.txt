@@ -15,14 +15,14 @@ pending  meta/parent bug support/implementation
 pending  user preferences
          feature request #507842
 pending  rename to "instance" to "tracker"
-pending  journalling: fix the journal bloat
-         related: Re-enable link backrefs from messages
+done     journalling: fix the journal bloat
+pending  related: Re-enable link backrefs from messages
                   feature request #568714
 pending  alternative user auth: at least an LDAP implementation
 active   security overhaul: see doc/security.txt (RJ)
 done     - switch to sessions for web authentication
-         - authenticate over a secure connection
          - implement and use the new logical control mechanisms
+         - authenticate over a secure connection
          - use digital signatures in mailgw
 active   implement an RDB backend (RJ)
 done     - further split the *dbm backends from the core code, allowing
