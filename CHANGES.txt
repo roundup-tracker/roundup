@@ -9,6 +9,8 @@ Fixed:
 - fixed bug in args to new DateHTMLProperty in the local() method (sf bug
   901444)
 - fixed registration (sf bug 903283)
+- also changed rego to not use a 302 during confirmation, as this seems to
+  confuse some email clients or browsers.
 
 
 2004-02-16 0.6.5

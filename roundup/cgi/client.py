@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.10 2004-02-24 21:13:26 richard Exp $
+# $Id: client.py,v 1.130.2.11 2004-02-24 23:37:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -243,7 +243,12 @@ class Client:
 
             # possibly handle a form submit action (may change self.classname
             # and self.template, and may also append error/ok_messages)
-            self.handle_action()
+            html = self.handle_action()
+
+            # if the action renders HTML, stop processing here
+            if html:
+                self.write(html)
+                return
 
             # now render the page
             # we don't want clients caching our dynamic pages
@@ -562,7 +567,7 @@ class Client:
             else:
                 raise ValueError, 'No such action "%s"'%action
             # call the mapped action
-            getattr(self, method)()
+            return getattr(self, method)()
         except Redirect:
             raise
         except Unauthorised:
@@ -888,10 +893,16 @@ please visit the following URL:
 
         # nice message
         message = _('You are now registered, welcome!')
+        url = '%suser%s?@ok_message=%s'%(self.base, self.userid,
+            urllib.quote(message))
 
-        # redirect to the user's page
-        raise Redirect, '%suser%s?@ok_message=%s'%(self.base,
-            self.userid, urllib.quote(message))
+        # redirect to the user's page (but not 302, as some email clients seem
+        # to want to reload the page, or something)
+        return '''<html><head><title>%s</title></head>
+            <body><p><a href="%s">%s</a></p>
+            <script type="text/javascript">
+            window.setTimeout('window.location = "%s"', 1000);
+            </script>'''%(message, url, message, url)
 
     def passResetAction(self):
         ''' Handle password reset requests.
