@@ -22,6 +22,7 @@ Fixed:
  . #503164 ] create and passwords
  . plain rendering of links in the htmltemplate now generate a hyperlink to
    the linked node's page.
+ . #503330 ] ANONYMOUS_REGISTER now applies to mail
 
 
 2002-01-08 - 0.4.0b1

@@ -62,6 +62,11 @@ INSTANCE_NAME and EMAIL_SIGNATURE_POSITION have been added to the
 instance_config.py. Simplest solution is to copy the default values from
 template in the core source.
 
+The mail gateway now checks ANONYMOUS_REGISTER to see if unknown users are to
+be automatically registered with the tracker. If it is set to "deny" then
+unknown users will not have access. If it is set to "allow" they will be
+automatically registered with the tracker.
+
 
 CGI script roundup.cgi
 ----------------------
