@@ -19,25 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: locking.py,v 1.6 2003-02-20 22:56:49 richard Exp $
+# $Id: locking.py,v 1.7 2003-07-03 23:43:46 richard Exp $
 
 '''This module provides a generic interface to acquire and release
 exclusive access to a file.
 
 It should work on Unix and Windows.
 '''
-
-# portalocker has a 0xffff0000 constant, and I don't need to know about it
-# being positive in 2.4+ :)
-try:
-    x=FutureWarning
-    import warnings
-    warnings.filterwarnings("ignore",
-        r'hex/oct constants > sys\.maxint .*', FutureWarning,
-        'portalocker', 0)
-    del x
-except:
-    pass
 
 import portalocker
 

@@ -5,7 +5,7 @@ are given with the most recent entry first.
 - plugged cross-site-scripting hole (thanks Jeff Epler)
 - handle deprecation of FCNTL in python2.2+ (sf bug 756756)
 - handle missing Subject: line (sf bug 755331)
-- handle New User creation (sf bug 754510)
+- fix New User creation (sf bug 754510)
 - fix hackish message escaping (sf bug 757128)
 - fix :required ordering problem (sf bug 740214)
 - audit some user properties for valid values (roles, address) (sf bugs
@@ -13,7 +13,7 @@ are given with the most recent entry first.
 - fix HTML file detection (hence history xref linking) (sf bug 741478)
 - session database caches it's type, rather than calling whichdb each time 
   around.
-- changed rdbms_common to fix sql backends under Py2.3
+- changed rdbms_common to fix sql backends for new Boolean types under Py2.3
 
 
 2003-06-10 0.6.0b3

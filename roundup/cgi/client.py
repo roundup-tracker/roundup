@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.124 2003-06-24 05:00:43 richard Exp $
+# $Id: client.py,v 1.125 2003-07-03 23:43:47 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -319,6 +319,7 @@ class Client:
         '''
         # clean age sessions
         self.clean_sessions()
+
         # make sure we have the session Class
         sessions = self.db.sessions
 

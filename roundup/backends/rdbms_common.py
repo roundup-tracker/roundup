@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.56 2003-06-24 08:06:27 anthonybaxter Exp $
+# $Id: rdbms_common.py,v 1.57 2003-07-03 23:43:46 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1741,7 +1741,10 @@ class Class(hyperdb.Class):
         '''
         # flip the sense of the 'retired' flag if we don't want all of them
         if retired is not None:
-            args = (((retired==0) and 1) or 0, )
+            if retired:
+                args = (0, )
+            else:
+                args = (1, )
             sql = 'select id from _%s where __retired__ <> %s'%(self.classname,
                 self.db.arg)
         else:
