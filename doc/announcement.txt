@@ -50,7 +50,7 @@ Roundup manages a number of issues (with flexible properties such as
 The system will facilitate communication among the participants by managing
 discussions and notifying interested parties when issues are edited. One of
 the major design goals for Roundup that it be simple to get going. Roundup
-is therefore usable "out of the box" with any python 2.1+ installation. It
+is therefore usable "out of the box" with any python 2.3+ installation. It
 doesn't even need to be "installed" to be operational, though a
 disutils-based install script is provided.
 
