@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.41 2002-01-15 00:12:40 richard Exp $
+# $Id: roundupdb.py,v 1.42 2002-01-21 09:55:14 rochecompaan Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -461,13 +461,13 @@ class IssueClass(Class):
 
         # list the values
         m = []
-	l = props.items()
-	l.sort()
+        l = props.items()
+        l.sort()
         for propname, prop in l:
             value = cl.get(nodeid, propname, None)
-	    # skip boring entries
-	    if not value:
-		continue
+            # skip boring entries
+            if not value:
+                continue
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]
                 if value:
@@ -514,7 +514,9 @@ class IssueClass(Class):
 
         # list the changes
         m = []
-        for propname, oldvalue in changed.items():
+        l = changed.items()
+        l.sort()
+        for propname, oldvalue in l:
             prop = cl.properties[propname]
             value = cl.get(nodeid, propname, None)
             if isinstance(prop, hyperdb.Link):
@@ -566,6 +568,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.41  2002/01/15 00:12:40  richard
+# #503340 ] creating issue with [asignedto=p.ohly]
+#
 # Revision 1.40  2002/01/14 22:21:38  richard
 # #503353 ] setting properties in initial email
 #

@@ -6,6 +6,7 @@ Feature:
  . much nicer history display (actualy real handling of property types etc)
  . journal entries for link and mutlilink properties can be switched on or 
    off
+ . properties in change note are now sorted
 
 Fixed:
  . handle attachments with no name (eg tnef)
