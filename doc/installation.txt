@@ -472,9 +472,16 @@ My group now looks like this::
 
      support:*:1002:jblaine,samh,geezer,mail,apache
 
-The tracker "db" directory should be chmod'ed g+sw so that the group can
-write to the database, and any new files created in the database will be owned
-by the group.
+After this change, you'll need to make sure you restart roundup-server,
+apache and any other long-running process associated with Roundup.  
+The tracker "db" directory permissions and owner information should be
+fixed with::
+
+   chmod g+sw db
+   chgrp support db
+   
+This allows the group to write to the database, and any new files
+created in the database will be owned by the group.
 
 If you're using the mysql or postgresql backend then you'll need to ensure
 that the tracker user has appropriate permissions to create/modify the

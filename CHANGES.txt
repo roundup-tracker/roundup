@@ -7,6 +7,7 @@ Fixed:
 - fixed history display when "ascending"
 - removed references to py2.3+ boolean values (sf bug 995682)
 - fix static file path normalisation in security check (thanks David Linke)
+- less specific messages for login failures (thanks Chris Withers)
 
 2004-07-21 0.7.6
 Fixed:
