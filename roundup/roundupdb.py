@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.116 2004-10-16 13:31:29 a1s Exp $
+# $Id: roundupdb.py,v 1.117 2004-11-12 04:07:03 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -55,6 +55,17 @@ class Database:
                 self.journal_uid = (self.journaltag, uid)
             return self.journal_uid[1]
 
+    def setCurrentUser(self, username):
+        """Set the user that is responsible for current database 
+        activities.
+        """
+        self.journaltag = username
+
+    def isCurrentUser(self, username):
+        """Check if a given username equals the already active user.
+        """
+        return self.journaltag == username
+    
     def getUserTimezone(self):
         """Return user timezone defined in 'timezone' property of user class.
         If no such property exists return 0

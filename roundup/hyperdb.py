@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.104 2004-10-08 05:44:33 richard Exp $
+# $Id: hyperdb.py,v 1.105 2004-11-12 04:07:03 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -753,7 +753,7 @@ class FileClass:
     def import_files(self, dirname, nodeid):
         ''' Import the "content" property as a file
         '''
-        dest = self.db.filename(self.classname, nodeid)
+        dest = self.db.filename(self.classname, nodeid, create=True)
         x, filename = os.path.split(dest)
         x, subdir = os.path.split(x)
         source = os.path.join(dirname, self.classname+'-files', subdir,

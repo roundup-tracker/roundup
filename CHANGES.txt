@@ -34,6 +34,8 @@ Feature:
   Use this to specify server configuration file for the service.
 - added experimental multi-thread server
 - don't try to import all backends in backends.__init__ unless we *want* to
+- unless in debug mode, keep a single persistent connection through a
+  single web or mailgw request.
 
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)

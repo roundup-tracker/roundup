@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.21 2004-11-03 09:44:47 a1s Exp $
+# $Id: configuration.py,v 1.22 2004-11-12 04:07:03 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -1013,14 +1013,15 @@ class CoreConfig(Config):
 
     # module name for old style configuration
     PYCONFIG = "config"
-    # logging engine
-    logging = rlog.BasicLogging()
+    # placeholder so we can assign later
+    logging = None
     # user configs
     ext = None
     detectors = None
 
     def __init__(self, home_dir=None):
         Config.__init__(self, home_dir, SETTINGS)
+        self.logging = rlog.BasicLogging()
         # load the config if home_dir given
         if home_dir is None:
             self.init_logging()

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.199 2004-11-11 21:11:41 richard Exp $
+# $Id: client.py,v 1.200 2004-11-12 04:07:05 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -800,14 +800,27 @@ class Client:
         self.userid = self.db.user.lookup('anonymous')
         self.user = 'anonymous'
 
-    def opendb(self, user):
-        ''' Open the database.
+    def opendb(self, username):
+        ''' Open the database and set the current user.
+        
+        Opens a database once. On subsequent calls only the user is set on
+        the database object the instance.optimize is set. If we are in
+        "Development Mode" (cf. roundup_server) then the database is always
+        re-opened.
         '''
-        # open the db if the user has changed
-        if not hasattr(self, 'db') or user != self.db.journaltag:
-            if hasattr(self, 'db'):
+        # don't do anything if the db is open and the user has not changed
+        if hasattr(self, 'db') and self.db.isCurrentUser(username):
+            return
+        
+        # open the database or only set the user
+        if not hasattr(self, 'db'):
+            self.db = self.instance.open(username)
+        else:
+            if self.instance.optimize:
+                self.db.setCurrentUser(username)
+            else:
                 self.db.close()
-            self.db = self.instance.open(user)
+                self.db = self.instance.open(username)
 
     def standard_message(self, to, subject, body, author=None):
         '''Send a standard email message from Roundup.
