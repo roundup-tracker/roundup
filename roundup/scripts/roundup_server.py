@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.26.2.4 2003-12-04 22:53:54 richard Exp $
+$Id: roundup_server.py,v 1.26.2.5 2004-02-15 22:22:20 richard Exp $
 """
 
 # python version check
@@ -214,6 +214,16 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             host, port = self.client_address
             return socket.getfqdn(host)
+
+    def log_message(self, format, *args):
+        ''' Try to *safely* log to stderr.
+        '''
+        try:
+            BaseHTTPServer.BaseHTTPRequestHandler.log_message(self,
+                format, *args)
+        except IOError:
+            # stderr is no longer viable
+            pass
 
 try:
     import win32serviceutil
