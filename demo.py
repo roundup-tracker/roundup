@@ -2,13 +2,13 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.8 2004-03-24 03:07:51 richard Exp $
+# $Id: demo.py,v 1.9 2004-03-24 05:39:47 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
 from glob import glob
 
-def install_demo(home):
+def install_demo(home, backend):
     # create the instance
     if os.path.exists(home):
         shutil.rmtree(home)
@@ -21,7 +21,7 @@ def install_demo(home):
     except os.error, error:
         if error.errno != errno.ENOENT:
             raise
-    init.write_select_db(home, 'mysql')
+    init.write_select_db(home, backend)
 
     # figure basic params for server
     hostname = socket.gethostname()
@@ -49,12 +49,14 @@ def install_demo(home):
     s = f.read().replace('http://tracker.example/cgi-bin/roundup.cgi/bugs/',
         url)
     f.close()
+    # DB connection stuff for mysql and postgresql
     s = s + """
 MYSQL_DBHOST = 'localhost'
 MYSQL_DBUSER = 'rounduptest'
 MYSQL_DBPASSWORD = 'rounduptest'
 MYSQL_DBNAME = 'rounduptest'
 MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
+POSTGRESQL_DATABASE = {'database': 'rounduptest'}
 """
     f = open(os.path.join(home, 'config.py'), 'w')
     f.write(s)
@@ -77,8 +79,11 @@ def run_demo():
         Sets up the web service on localhost. Disables nosy lists.
     '''
     home = os.path.abspath('demo')
+    backend = 'anydbm'
     if not os.path.exists(home) or sys.argv[-1] == 'nuke':
-        install_demo(home)
+        if len(sys.argv) > 2:
+            backend = sys.argv[1]
+        install_demo(home, backend)
 
     f = open(os.path.join(home, 'config.py'), 'r')
     url = re.search(r'^TRACKER_WEB\s*=\s*[\'"](http.+/)[\'"]$', f.read(),

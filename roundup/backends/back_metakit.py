@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.68 2004-03-24 05:33:13 richard Exp $
+# $Id: back_metakit.py,v 1.69 2004-03-24 05:39:47 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -789,7 +789,7 @@ class Class(hyperdb.Class):
 
         if self.do_journal:
             if isnew:
-                self.db.addjournal(self.classname, nodeid, _CREATE, changes)
+                self.db.addjournal(self.classname, nodeid, _CREATE, {})
             else:
                 self.db.addjournal(self.classname, nodeid, _SET, changes)
 
