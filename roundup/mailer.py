@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.7 2004-02-29 00:35:55 richard Exp $
+# $Id: mailer.py,v 1.8 2004-03-25 22:52:12 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -92,12 +92,23 @@ class Mailer:
 
         Arguments:
         - bounced_message: an RFC822 Message object.
-        - to: a list of addresses usable by rfc822.parseaddr().
+        - to: a list of addresses usable by rfc822.parseaddr(). Might be
+          extended or overridden according to the config
+          ERROR_MESSAGES_TO setting.
         - error: the reason of failure as a string.
         - subject: the subject as a string.
-        
+
         """
         message, writer = self.get_standard_message(to, subject)
+
+        # see whether we should send to the dispatcher or not
+        dispatcher_email = getattr(self.config, "DISPATCHER_EMAIL",
+            getattr(self.config, "ADMIN_EMAIL"))
+        error_messages_to = getattr(self.config, "ERROR_MESSAGES_TO", "user")
+        if error_messages_to == "dispatcher":
+            to = [dispatcher_email]
+        elif error_messages_to == "both":
+            to.append(dispatcher_email)
 
         part = writer.startmultipartbody('mixed')
         part = writer.nextpart()

@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.144 2004-03-25 19:27:15 eparker Exp $
+$Id: mailgw.py,v 1.145 2004-03-25 22:52:12 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -430,10 +430,6 @@ class MailGW:
         # in some rare cases, a particularly stuffed-up e-mail will make
         # its way into here... try to handle it gracefully
 
-        # Setting the dispatcher e-mail here, so as not to clutter things. Defaulting to ADMIN_EMAIL, if not set.
-        dispatcherEmail = getattr(self.instance.config, "DISPATCHER_EMAIL", getattr(self.instance.config, "ADMIN_EMAIL"))
-        errorMessagesTo = getattr(self.instance.config, "ERROR_MESSAGES_TO", "user")
-
         sendto = message.getaddrlist('resent-from')
         if not sendto:
             sendto = message.getaddrlist('from')
@@ -441,14 +437,7 @@ class MailGW:
             # very bad-looking message - we don't even know who sent it
             # XXX we should use a log file here...
             
-            # [EP] This section was originally only to admin.. Not sure if this should ever go to the user?
-
-            if(errorMessagesTo == "dispatcher"):
-                sendto = [dispatcherEmail]
-            elif(errorMessagesTo == "both"):
-                sendto = [dispatcherEmail, self.instance.config.ADMIN_EMAIL]
-            else:
-                sendto = [self.instance.config.ADMIN_EMAIL]
+            sendto = [self.instance.config.ADMIN_EMAIL]
 
             m = ['Subject: badly formed message from mail gateway']
             m.append('')
@@ -468,45 +457,24 @@ class MailGW:
         except MailUsageHelp:
             # bounce the message back to the sender with the usage message
             fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
-            if(errorMessagesTo == "dispatcher"):
-                sendto = [dispatcherEmail]
-            elif(errorMessagesTo == "both"):
-                sendto = [dispatcherEmail, sendto[0][1]]
-            else:
-                sendto = [sendto[0][1]]
-
             m = ['']
             m.append('\n\nMail Gateway Help\n=================')
             m.append(fulldoc)
-            self.mailer.bounce_message(message, sendto, m,
+            self.mailer.bounce_message(message, [sendto[0][1]], m,
                 subject="Mail Gateway Help")
         except MailUsageError, value:
             # bounce the message back to the sender with the usage message
             fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
-
-            if(errorMessagesTo == "dispatcher"):
-                sendto = [dispatcherEmail]
-            elif(errorMessagesTo == "both"):
-                sendto = [dispatcherEmail, sendto[0][1]]
-            else:
-                sendto = [sendto[0][1]]
             m = ['']
             m.append(str(value))
             m.append('\n\nMail Gateway Help\n=================')
             m.append(fulldoc)
-            self.mailer.bounce_message(message, sendto, m)
+            self.mailer.bounce_message(message, [sendto[0][1]], m)
         except Unauthorized, value:
             # just inform the user that he is not authorized
-            
-            if(errorMessagesTo == "dispatcher"):
-                sendto = [dispatcherEmail]
-            elif(errorMessagesTo == "both"):
-                sendto = [dispatcherEmail, sendto[0][1]]
-            else:
-                sendto = [sendto[0][1]]
             m = ['']
             m.append(str(value))
-            self.mailer.bounce_message(message, sendto, m)
+            self.mailer.bounce_message(message, [sendto[0][1]], m)
         except IgnoreMessage:
             # XXX we should use a log file here...
             # do not take any action
@@ -515,14 +483,8 @@ class MailGW:
         except:
             # bounce the message back to the sender with the error message
             # XXX we should use a log file here...
-
-            if(errorMessagesTo == "dispatcher"):
-                sendto = [dispatcherEmail]
-            elif(errorMessagesTo == "both"):
-                sendto = [dispatcherEmail, sendto[0][1], self.instance.config.ADMIN_EMAIL]
-            else:
-                sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
-
+            # let the admin know that something very bad is happening
+            sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
             m = ['']
             m.append('An unexpected error occurred during the processing')
             m.append('of your message. The tracker administrator is being')
