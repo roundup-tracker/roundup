@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.18 2001-11-01 22:04:37 richard Exp $
+$Id: roundup-server,v 1.19 2001-11-12 22:51:04 jhermann Exp $
 
 """
 import sys
@@ -181,7 +181,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         client.main()
 
 def usage(message=''):
-    if message: message = 'Error: %s\n'%message
+    if message: message = 'Error: %s\n\n'%message
     print '''%sUsage:
 roundup-server [-n hostname] [-p port] [name=instance home]*
 
@@ -203,7 +203,11 @@ def main():
     port = 8080
     try:
         # handle the command-line args
-        optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:')
+        try:
+            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:')
+        except getopt.GetoptError, e:
+            usage(str(e))
+
         user = ROUNDUP_USER
         for (opt, arg) in optlist:
             if opt == '-n': hostname = arg
@@ -240,6 +244,8 @@ def main():
                     raise ValueError, "Instances must be name=home"
                 d[name] = home
             RoundupRequestHandler.ROUNDUP_INSTANCE_HOMES = d
+    except SystemExit:
+        raise
     except:
         type, value = sys.exc_info()[:2]
         usage('%s: %s'%(type, value))
@@ -256,6 +262,12 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/11/01 22:04:37  richard
+# Started work on supporting a pop3-fetching server
+# Fixed bugs:
+#  . bug #477104 ] HTML tag error in roundup-server
+#  . bug #477107 ] HTTP header problem
+#
 # Revision 1.17  2001/10/29 23:55:44  richard
 # Fix to CGI top-level index (thanks Juergen Hermann)
 #
