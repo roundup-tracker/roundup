@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 .. contents::
 
@@ -152,6 +152,34 @@ moved using the above steps) then you'll need to:
 5. use the roundup-admin "import" command to import the tracker on the new
    machine, and
 6. start the tracker web and email frontends on the new machine.
+
+
+Running the Servers
+===================
+
+Unix
+----
+
+On Unix systems, use the scripts/server-ctl script to control the
+roundup-server server. Copy it somewhere and edit the variables at the top
+to reflect your specific installation.
+
+
+Windows
+-------
+
+On Windows, the roundup-server program runs as a Windows Service, and 
+therefore may be controlled through the Services control panel.
+
+TODO: info how to bring up the services panel.
+
+TODO: how to start the server in "service" mode.
+
+On windows, use::
+
+   roundup-server -c stop
+
+to stop the running server.
 
 
 -------------------
