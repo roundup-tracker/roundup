@@ -31,6 +31,26 @@ permission to auto-register users in the mail gateway is now called
 ANONYMOUS_REGISTER_MAIL rather than overloading ANONYMOUS_REGISTER. If the
 variable doesn't exist, then ANONYMOUS_REGISTER is tested as before.
 
+Configuring the links in the web header is now easier too. The following
+variables have been added to the classic instance_config.py:
+
+  HEADER_INDEX_LINKS   - defines the "index" links to be made available
+  HEADER_ADD_LINKS     - defines the "add" links
+  DEFAULT_INDEX        - specifies the index view for DEFAULT
+  UNASSIGNED_INDEX     - specifies the index view for UNASSIGNED
+  USER_INDEX           - specifies the index view for USER
+
+See the <roundup source>/roundup/templates/classic/instance_config.py for more
+information - including how the variables are to be set up. Most users will
+just be able to copy the variables from the source to their instance home. If
+you've modified the header by changing the source of the interfaces.py file in
+the instance home, you'll need to remove that customisation and move it into
+the appropriate variables in instance_config.py.
+
+The extended schema has similar variables added too - see the source for more
+info.
+
+
 
 Alternate E-Mail Addresses
 --------------------------
@@ -41,7 +61,7 @@ communicate with roundup as. All email from roundup will continue to be sent
 to their primary address.
 
 If you have not edited the dbinit.py file in your instance home directory,
-you may simply copy the new dbinit.py file from the core code. If you used
+YOU MAY Simply copy the new dbinit.py file from the core code. If you used
 the classic schema, the interfaces file is in:
 
  <roundup source>/roundup/templates/classic/dbinit.py
@@ -56,9 +76,9 @@ class:
 
     user = Class(db, "msg",
                     username=String(),   password=Password(),
-		    address=String(),    realname=String(), 
-		    phone=String(),      organisation=String(),
-		    alternate_addresses=String())
+                    address=String(),    realname=String(), 
+                    phone=String(),      organisation=String(),
+                    alternate_addresses=String())
 
 You will also want to add the property to the user's details page. The
 template for this is the "user.item" file in your instance home "html"
