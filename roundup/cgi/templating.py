@@ -2219,14 +2219,6 @@ class Batch(ZTUtils.Batch):
         return Batch(self.client, self._sequence, self._size,
             self.end - self.overlap, 0, self.orphan, self.overlap)
 
-class TemplatingUtil:
-    def __init__(self, utils, callable):
-        self.utils = utils
-        self.callable = callable
-    def __call__(self, *args, **kw):
-        args = (self.utils,)+args
-        return self.callable(*args, **kw)
-
 class TemplatingUtils:
     ''' Utilities for templating
     '''
@@ -2251,6 +2243,6 @@ class TemplatingUtils:
             raise AttributeError, name
         if not self.client.instance.templating_utils.has_key(name):
             raise AttributeError, name
-        return TemplatingUtil(self, self.client.instance.templating_utils[name])
+        return self.client.instance.templating_utils[name]
 
 # vim: set et sts=4 sw=4 :
