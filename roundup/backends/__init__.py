@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.7 2001-12-10 00:57:38 richard Exp $
+# $Id: __init__.py,v 1.8 2001-12-10 22:20:01 richard Exp $
 
 __all__ = []
 
@@ -27,15 +27,15 @@ try:
     del dumbdbm
     import back_anydbm
     anydbm = back_anydbm
-    del back_anydbm
     __all__.append('anydbm')
+except AssertionError:
+    del back_anydbm
 except:
     pass
 
 try:
     import back_bsddb
     bsddb = back_bsddb
-    del back_bsddb
     __all__.append('bsddb')
 except:
     pass
@@ -43,14 +43,22 @@ except:
 try:
     import back_bsddb3
     bsddb3 = back_bsddb3
-    del back_bsddb3
     __all__.append('bsddb3')
 except:
     pass
 
-
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/12/10 00:57:38  richard
+# From CHANGES:
+#  . Added the "display" command to the admin tool - displays a node's values
+#  . #489760 ] [issue] only subject
+#  . fixed the doc/index.html to include the quoting in the mail alias.
+#
+# Also:
+#  . fixed roundup-admin so it works with transactions
+#  . disabled the back_anydbm module if anydbm tries to use dumbdbm
+#
 # Revision 1.6  2001/08/07 00:24:42  richard
 # stupid typo
 #

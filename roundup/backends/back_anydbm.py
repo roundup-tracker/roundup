@@ -15,7 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.13 2001-12-02 05:06:16 richard Exp $
+#$Id: back_anydbm.py,v 1.14 2001-12-10 22:20:01 richard Exp $
+'''
+This module defines a backend that saves the hyperdatabase in a database
+chosen by anydbm. It is guaranteed to always be available in python
+versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
+serious bugs, and is not available)
+'''
 
 import anydbm, os, marshal
 from roundup import hyperdb, date, password
@@ -32,7 +38,6 @@ class Database(hyperdb.Database):
         . perhaps detect write collisions (related to above)?
 
     """
-
     def __init__(self, storagelocator, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
 
@@ -52,6 +57,7 @@ class Database(hyperdb.Database):
         self.dirtynodes = {}    # keep track of the dirty nodes by class
         self.newnodes = {}      # keep track of the new nodes by class
         self.transactions = []
+
     #
     # Classes
     #
@@ -248,6 +254,20 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.13  2001/12/02 05:06:16  richard
+#. We now use weakrefs in the Classes to keep the database reference, so
+#  the close() method on the database is no longer needed.
+#  I bumped the minimum python requirement up to 2.1 accordingly.
+#. #487480 ] roundup-server
+#. #487476 ] INSTALL.txt
+#
+#I also cleaned up the change message / post-edit stuff in the cgi client.
+#There's now a clearly marked "TODO: append the change note" where I believe
+#the change note should be added there. The "changes" list will obviously
+#have to be modified to be a dict of the changes, or somesuch.
+#
+#More testing needed.
+#
 #Revision 1.12  2001/12/01 07:17:50  richard
 #. We now have basic transaction support! Information is only written to
 #  the database when the commit() method is called. Only the anydbm

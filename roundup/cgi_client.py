@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.78 2001-12-07 05:59:27 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.79 2001-12-10 22:20:01 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -341,6 +341,8 @@ class Client:
                 if changed:
                     message = _('%(changes)s edited ok')%{'changes':
                         ', '.join(changed.keys())}
+                elif self.form.has_key('__note') and self.form['__note'].value:
+                    message = _('note added')
                 else:
                     message = _('nothing changed')
             except:
@@ -452,7 +454,7 @@ class Client:
                 props['status'] = unread_id
         return cl.create(**props)
 
-    def _post_editnode(self, nid, change_note=None):
+    def _post_editnode(self, nid, change_note=''):
         ''' do the linking and message sending part of the node creation
         '''
         cn = self.classname
@@ -501,8 +503,7 @@ class Client:
         props = cl.getprops()
         note = None
         if self.form.has_key('__note'):
-            note = self.form['__note']
-            note = note.value
+            note = self.form['__note'].value
         if not props.has_key('messages'):
             return
         if not isinstance(props['messages'], hyperdb.Multilink):
@@ -616,6 +617,7 @@ class Client:
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
             except:
+                self.db.rollback()
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
@@ -1085,6 +1087,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.78  2001/12/07 05:59:27  rochecompaan
+# Fixed small bug that prevented adding issues through the web.
+#
 # Revision 1.77  2001/12/06 22:48:29  richard
 # files multilink was being nuked in post_edit_node
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.27 2001-12-10 21:02:53 richard Exp $
+# $Id: roundupdb.py,v 1.28 2001-12-10 22:20:01 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -439,6 +439,7 @@ class IssueClass(Class):
                 changed[key] = new_value
 
         # list the changes
+        m = []
         for propname, value in changed.items():
             prop = cl.properties[propname]
             oldvalue = cl.get(nodeid, propname, None)
@@ -490,6 +491,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/12/10 21:02:53  richard
+# only insert the -------- change note marker if there is a change note
+#
 # Revision 1.26  2001/12/05 14:26:44  rochecompaan
 # Removed generation of change note from "sendmessage" in roundupdb.py.
 # The change note is now generated when the message is created.

@@ -15,59 +15,22 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.12 2001-11-21 02:34:18 richard Exp $
+#$Id: back_bsddb.py,v 1.13 2001-12-10 22:20:01 richard Exp $
+'''
+This module defines a backend that saves the hyperdatabase in BSDDB.
+'''
 
 import bsddb, os, marshal
 from roundup import hyperdb, date, password
 
+# these classes are so similar, we just use the anydbm methods
+import back_anydbm
+
 #
 # Now the database
 #
-class Database(hyperdb.Database):
+class Database(back_anydbm.Database):
     """A database for storing records containing flexible data types."""
-
-    def __init__(self, storagelocator, journaltag=None):
-        """Open a hyperdatabase given a specifier to some storage.
-
-        The meaning of 'storagelocator' depends on the particular
-        implementation of the hyperdatabase.  It could be a file name,
-        a directory path, a socket descriptor for a connection to a
-        database over the network, etc.
-
-        The 'journaltag' is a token that will be attached to the journal
-        entries for any edits done on the database.  If 'journaltag' is
-        None, the database is opened in read-only mode: the Class.create(),
-        Class.set(), and Class.retire() methods are disabled.
-        """
-        self.dir, self.journaltag = storagelocator, journaltag
-        self.classes = {}
-
-    #
-    # Classes
-    #
-    def __getattr__(self, classname):
-        """A convenient way of calling self.getclass(classname)."""
-        return self.classes[classname]
-
-    def addclass(self, cl):
-        cn = cl.classname
-        if self.classes.has_key(cn):
-            raise ValueError, cn
-        self.classes[cn] = cl
-
-    def getclasses(self):
-        """Return a list of the names of all existing classes."""
-        l = self.classes.keys()
-        l.sort()
-        return l
-
-    def getclass(self, classname):
-        """Get the Class object representing a particular class.
-
-        If 'classname' is not a valid class name, a KeyError is raised.
-        """
-        return self.classes[classname]
-
     #
     # Class DBs
     #
@@ -89,69 +52,8 @@ class Database(hyperdb.Database):
             return bsddb.btopen(path, 'n')
 
     #
-    # Nodes
-    #
-    def addnode(self, classname, nodeid, node):
-        ''' add the specified node to its class's db
-        '''
-        db = self.getclassdb(classname, 'c')
-        db[nodeid] = marshal.dumps(node)
-        db.close()
-    setnode = addnode
-
-    def getnode(self, classname, nodeid, cldb=None):
-        ''' add the specified node to its class's db
-        '''
-        db = cldb or self.getclassdb(classname)
-        if not db.has_key(nodeid):
-            raise IndexError, nodeid
-        res = marshal.loads(db[nodeid])
-        if not cldb: db.close()
-        return res
-
-    def hasnode(self, classname, nodeid, cldb=None):
-        ''' add the specified node to its class's db
-        '''
-        db = cldb or self.getclassdb(classname)
-        res = db.has_key(nodeid)
-        if not cldb: db.close()
-        return res
-
-    def countnodes(self, classname, cldb=None):
-        db = cldb or self.getclassdb(classname)
-        return len(db.keys())
-        if not cldb: db.close()
-        return res
-
-    def getnodeids(self, classname, cldb=None):
-        db = cldb or self.getclassdb(classname)
-        res = db.keys()
-        if not cldb: db.close()
-        return res
-
-    #
     # Journal
     #
-    def addjournal(self, classname, nodeid, action, params):
-        ''' Journal the Action
-        'action' may be:
-
-            'create' or 'set' -- 'params' is a dictionary of property values
-            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
-            'retire' -- 'params' is None
-        '''
-        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
-            params)
-        db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
-        if db.has_key(nodeid):
-            s = db[nodeid]
-            l = marshal.loads(db[nodeid])
-            l.append(entry)
-        else:
-            l = [entry]
-        db[nodeid] = marshal.dumps(l)
-        db.close()
-
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
@@ -174,32 +76,24 @@ class Database(hyperdb.Database):
         db.close()
         return res
 
-    def close(self):
-        ''' Close the Database - we must release the circular refs so that
-            we can be del'ed and the underlying bsddb connections closed
-            cleanly.
-        '''
-        self.classes = {}
-
-
-    #
-    # Basic transaction support
-    #
-    # TODO: well, write these methods (and then use them in other code)
-    def register_action(self):
-        ''' Register an action to the transaction undo log
-        '''
-
-    def commit(self):
-        ''' Commit the current transaction, start a new one
-        '''
-
-    def rollback(self):
-        ''' Reverse all actions from the current transaction
-        '''
+    def _doSaveJournal(self, classname, nodeid, action, params):
+        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
+            params)
+        db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
+        if db.has_key(nodeid):
+            s = db[nodeid]
+            l = marshal.loads(db[nodeid])
+            l.append(entry)
+        else:
+            l = [entry]
+        db[nodeid] = marshal.dumps(l)
+        db.close()
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.12  2001/11/21 02:34:18  richard
+#Added a target version field to the extended issue schema
+#
 #Revision 1.11  2001/10/09 23:58:10  richard
 #Moved the data stringification up into the hyperdb.Class class' get, set
 #and create methods. This means that the data is also stringified for the

@@ -11,15 +11,15 @@ Feature:
  . Login now takes you to the page you back to the were denied access to.
  . Admin user now can has a user index link on their web interface.
  . We now have basic transaction support. Information is only written to
-   the database when the commit() method is called. Only the anydbm backend
-   is modified in this way - neither of the bsddb backends have been.
+   the database when the commit() method is called. Only the anydbm and
+   bsddb3 backends are modified in this way - the bsddb3 backend needs a
+   lot more work anyway...
     - the CGI and mailgw automatically commit() at the end of processing a
       single transaction
     - the admin tool requires an explicit "commit" - it will prompt at exit
       if there are unsaved changes. A "rollback" removes all changes made
       during the session (up to the last commit).
  . Added the "display" command to the admin tool - displays a node's values
-
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
@@ -34,6 +34,8 @@ Fixed:
  . #487476 ] INSTALL.txt
  . #489760 ] [issue] only subject
  . fixed doc/index.html to include the quoting in the mail alias.
+ . fixed the backends __init__ so we can pydoc the backend modules
+ . web i/f reports "note added" if there are no changes but a note is entered
 
 
 2001-11-23 - 0.3.0 
