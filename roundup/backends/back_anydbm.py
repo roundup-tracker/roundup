@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.145 2004-05-05 00:17:13 richard Exp $
+#$Id: back_anydbm.py,v 1.146 2004-05-05 01:52:34 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1664,6 +1664,7 @@ class Class(hyperdb.Class):
         # now, find all the nodes that are active and pass filtering
         matches = []
         cldb = self.db.getclassdb(cn)
+        t = 0
         try:
             # TODO: only full-scan once (use items())
             for nodeid in self.getnodeids(cldb):
@@ -1725,55 +1726,74 @@ class Class(hyperdb.Class):
                             break
                 else:
                     matches.append([nodeid, node])
+
+            # filter based on full text search
+            if search_matches is not None:
+                k = []
+                for v in matches:
+                    if search_matches.has_key(v[0]):
+                        k.append(v)
+                matches = k
+
+            # always sort by id if no other sort is specified
+            if sort == (None, None):
+                sort = ('+', 'id')
+
+            # add sorting information to the match entries
+            directions = []
+            for dir, prop in sort, group:
+                if dir is None or prop is None:
+                    continue
+                directions.append(dir)
+                propclass = props[prop]
+                try:
+                    # cache the opened link class db, if needed.
+                    lcldb = None
+                    # cache the linked class items too
+                    lcache = {}
+
+                    for entry in matches:
+                        itemid = entry[-2]
+                        item = entry[-1]
+                        # handle the properties that might be "faked"
+                        # also, handle possible missing properties
+                        try:
+                            v = item[prop]
+                        except KeyError:
+                            # the node doesn't have a value for this property
+                            if isinstance(propclass, Multilink): v = []
+                            else: v = None
+                            entry.insert(0, v)
+                            continue
+
+                        if isinstance(propclass, String):
+                            # it might be a string that's really an integer
+                            try: tv = int(v)
+                            except: v = v.lower()
+                            else: v = tv
+                        elif isinstance(propclass, Link):
+                            lcn = propclass.classname
+                            link = self.db.classes[lcn]
+                            key = None
+                            if link.getprops().has_key('order'):
+                                key = 'order'
+                            elif link.getkey():
+                                key = link.getkey()
+                            if key:
+                                if not lcache.has_key(v):
+                                    # open the link class db if it's not already
+                                    if lcldb is None:
+                                        lcldb = self.db.getclassdb(lcn)
+                                    lcache[v] = self.db.getnode(lcn, v, lcldb)
+                                v = lcache[v][key]
+                        entry.insert(0, v)
+                finally:
+                    # if we opened the link class db, close it now
+                    if lcldb is not None:
+                        lcldb.close()
+                del lcache
         finally:
             cldb.close()
-
-        # filter based on full text search
-        if search_matches is not None:
-            k = []
-            for v in matches:
-                if search_matches.has_key(v[0]):
-                    k.append(v)
-            matches = k
-
-        # always sort by id if no other sort is specified
-        if sort == (None, None):
-            sort = ('+', 'id')
-
-        # add sorting information to the match entries
-        directions = []
-        for dir, prop in sort, group:
-            if dir is None or prop is None:
-                continue
-            directions.append(dir)
-            propclass = props[prop]
-            for entry in matches:
-                itemid = entry[-2]
-                item = entry[-1]
-                # handle the properties that might be "faked"
-                # also, handle possible missing properties
-                try:
-                    v = self.get(itemid, prop)
-                except KeyError:
-                    # the node doesn't have a value for this property
-                    if isinstance(propclass, Multilink): v = []
-                    else: v = None
-                    s.append((v, itemid, item))
-                    continue
-
-                if isinstance(propclass, String):
-                    # it might be a string that's really an integer
-                    try: tv = int(v)
-                    except: v = v.lower()
-                    else: v = tv
-                elif isinstance(propclass, Link):
-                    link = self.db.classes[propclass.classname]
-                    if link.getprops().has_key('order'):
-                        v = link.get(v, 'order')
-                    elif link.getkey():
-                        key = link.getkey()
-                        v = link.get(v, key)
-                entry.insert(0, v)
 
         if '-' in directions:
             # one or more of the sort specs is in reverse order, so we have
