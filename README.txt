@@ -1,13 +1,14 @@
 
 Installation
 ============
-For installation instructions, please see installation.txt /
-installation.html in the "doc" directory.
+For installation instructions, please see installation.txt in the "doc"
+directory.
 
+For upgrading instructions, please see upgrading.txt in the "doc" directory.
 
 Usage and Other Information
 ===========================
-See the index.txt / index.html file in the "doc" directory.
+See the index.txt file in the "doc" directory.
 
 
 License
