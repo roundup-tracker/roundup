@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: date.py,v 1.68 2004-05-06 02:35:46 richard Exp $
+#
+# $Id: date.py,v 1.69 2004-05-19 17:12:18 a1s Exp $
 
 """Date, time and time interval handling.
 """
@@ -23,7 +23,7 @@ __docformat__ = 'restructuredtext'
 
 import time, re, calendar, types
 from types import *
-from i18n import _
+import i18n
 
 def _add_granularity(src, order, value = 1):
     '''Increment first non-None value in src dictionary ordered by 'order'
@@ -43,7 +43,7 @@ class Date:
     "2000-06-24.13:03:59". We'll call this the "full date format". When
     Timestamp objects are printed as strings, they appear in the full date
     format with the time always given in GMT. The full date format is
-    always exactly 19 characters long. 
+    always exactly 19 characters long.
 
     For user input, some partial forms are also permitted: the whole time
     or just the seconds may be omitted; and the whole date may be omitted
@@ -109,7 +109,7 @@ class Date:
         <Date 2003-07-01.00:00:0.000000>
     '''
 
-    def __init__(self, spec='.', offset=0, add_granularity=0):
+    def __init__(self, spec='.', offset=0, add_granularity=0, translator=i18n):
         """Construct a date given a specification and a time zone offset.
 
         'spec'
@@ -117,7 +117,13 @@ class Date:
            subtracted interval. Or a date 9-tuple.
         'offset'
            is the local time zone offset from GMT in hours.
+        'translator'
+           is i18n module or one of gettext translation classes.
+           It must have attributes 'gettext' and 'ngettext',
+           serving as translation functions.
         """
+        self._ = translator.gettext
+        self.ngettext = translator.ngettext
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
@@ -159,7 +165,7 @@ class Date:
         # not serialised data, try usual format
         m = date_re.match(spec)
         if m is None:
-            raise ValueError, _('Not a date spec: %s' % self.usagespec)
+            raise ValueError, self._('Not a date spec: %s') % self.usagespec
 
         info = m.groupdict()
 
@@ -170,7 +176,7 @@ class Date:
         ts = time.time()
         frac = ts - int(ts)
         y,m,d,H,M,S,x,x,x = time.gmtime(ts)
-        # gmtime loses the fractional seconds 
+        # gmtime loses the fractional seconds
         S = S + frac
 
         if info['y'] is not None or info['a'] is not None:
@@ -197,7 +203,7 @@ class Date:
 
         if add_granularity:
             S = S - 1
-        
+
         # now handle the adjustment of hour
         frac = S - int(S)
         ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
@@ -210,7 +216,7 @@ class Date:
             try:
                 self.applyInterval(Interval(info['o'], allowdate=0))
             except ValueError:
-                raise ValueError, _('%r not a date spec (%s)')%(spec,
+                raise ValueError, self._('%r not a date spec (%s)')%(spec,
                     self.usagespec)
 
     def addInterval(self, interval):
@@ -249,11 +255,11 @@ class Date:
 
         while month < 1 or month > 12 or day < 1 or day > get_mdays(year,month):
             # now to day under/over
-            if day < 1: 
+            if day < 1:
                 # When going backwards, decrement month, then increment days
                 month -= 1
                 day += get_mdays(year,month)
-            elif day > get_mdays(year,month): 
+            elif day > get_mdays(year,month):
                 # When going forwards, decrement days, then increment month
                 day -= get_mdays(year,month)
                 month += 1
@@ -432,8 +438,12 @@ class Interval:
 
     TODO: more examples, showing the order of addition operation
     '''
-    def __init__(self, spec, sign=1, allowdate=1, add_granularity=0):
+    def __init__(self, spec, sign=1, allowdate=1, add_granularity=0,
+        translator=i18n
+    ):
         """Construct an interval given a specification."""
+        self._ = translator.gettext
+        self.ngettext = translator.ngettext
         if type(spec) in (IntType, FloatType, LongType):
             self.from_seconds(spec)
         elif type(spec) in (StringType, UnicodeType):
@@ -474,8 +484,8 @@ class Interval:
         if not m:
             m = interval_re.match(spec)
             if not m:
-                raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
-                    '[#d] [[[H]H:MM]:SS] [date spec]')
+                raise ValueError, self._('Not an interval spec:'
+                    ' [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]')
         else:
             allowdate = 0
 
@@ -493,8 +503,8 @@ class Interval:
 
         # make sure it's valid
         if not valid and not info['D']:
-            raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
-                '[#d] [[[H]H:MM]:SS]')
+            raise ValueError, self._('Not an interval spec:'
+                ' [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]')
 
         if self.week:
             self.day = self.day + self.week*7
@@ -625,55 +635,61 @@ class Interval:
     def pretty(self):
         ''' print up the date date using one of these nice formats..
         '''
+        _quarters = self.minute / 15
         if self.year:
-            if self.year == 1:
-                s = _('1 year')
-            else:
-                s = _('%(number)s years')%{'number': self.year}
-        elif self.month or self.day > 13:
-            days = (self.month * 30) + self.day
-            if days > 28:
-                if int(days/30) > 1:
-                    s = _('%(number)s months')%{'number': int(days/30)}
-                else:
-                    s = _('1 month')
-            else:
-                s = _('%(number)s weeks')%{'number': int(days/7)}
+            s = self.ngettext("%(number)s year", "%(number)s years",
+                self.year) % {'number': self.year}
+        elif self.month or self.day > 28:
+            _months = int(((self.month * 30) + self.day) / 30)
+            s = self.ngettext("%(number)s month", "%(number)s months",
+                _months) % {'number': _months}
         elif self.day > 7:
-            s = _('1 week')
+            _weeks = int(self.day / 7)
+            s = self.ngettext("%(number)s week", "%(number)s weeks",
+                _weeks) % {'number': _weeks}
         elif self.day > 1:
-            s = _('%(number)s days')%{'number': self.day}
+            # Note: singular form is not used
+            s = self.ngettext('%(number)s day', '%(number)s days',
+                self.day) % {'number': self.day}
         elif self.day == 1 or self.hour > 12:
             if self.sign > 0:
-                return _('tomorrow')
+                return self._('tomorrow')
             else:
-                return _('yesterday')
+                return self._('yesterday')
         elif self.hour > 1:
-            s = _('%(number)s hours')%{'number': self.hour}
+            # Note: singular form is not used
+            s = self.ngettext('%(number)s hour', '%(number)s hours',
+                self.hour) % {'number': self.hour}
         elif self.hour == 1:
             if self.minute < 15:
-                s = _('an hour')
-            elif self.minute/15 == 2:
-                s = _('1 1/2 hours')
+                s = self._('an hour')
+            elif _quarters == 2:
+                s = self._('1 1/2 hours')
             else:
-                s = _('1 %(number)s/4 hours')%{'number': self.minute/15}
+                s = self.ngettext('1 %(number)s/4 hours',
+                    '1 %(number)s/4 hours', _quarters) % {'number': _quarters}
         elif self.minute < 1:
             if self.sign > 0:
-                return _('in a moment')
+                return self._('in a moment')
             else:
-                return _('just now')
+                return self._('just now')
         elif self.minute == 1:
-            s = _('1 minute')
+            # Note: used in expressions "in 1 minute" or "1 minute ago"
+            s = self._('1 minute')
         elif self.minute < 15:
-            s = _('%(number)s minutes')%{'number': self.minute}
-        elif int(self.minute/15) == 2:
-            s = _('1/2 an hour')
+            # Note: used in expressions "in 2 minutes" or "2 minutes ago"
+            s = self.ngettext('%(number)s minute', '%(number)s minutes',
+                self.minute) % {'number': self.minute}
+        elif _quarters == 2:
+            s = self._('1/2 an hour')
         else:
-            s = _('%(number)s/4 hour')%{'number': int(self.minute/15)}
-        if self.sign < 0: 
-            s = s + _(' ago')
+            s = self.ngettext('%(number)s/4 hours', '%(number)s/4 hours',
+                _quarters) % {'number': _quarters}
+        # XXX this is internationally broken
+        if self.sign < 0:
+            s = self._('%s ago') % s
         else:
-            s = _('in ') + s
+            s = self._('in %s') % s
         return s
 
     def get_tuple(self):
@@ -687,7 +703,7 @@ class Interval:
 
     def as_seconds(self):
         '''Calculate the Interval as a number of seconds.
-        
+
         Months are counted as 30 days, years as 365 days. Returns a Long
         int.
         '''
@@ -756,7 +772,7 @@ def fixTimeOverflow(time):
 class Range:
     """Represents range between two values
     Ranges can be created using one of theese two alternative syntaxes:
-        
+
     1. Native english syntax::
 
             [[From] <value>][ To <value>]
@@ -774,33 +790,33 @@ class Range:
 
         >>> Range("from 2-12 to 4-2")
         <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
-        
+
         >>> Range("18:00 TO +2m")
         <Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
-        
+
         >>> Range("12:00")
         <Range from 2003-03-08.12:00:00 to None>
-        
+
         >>> Range("tO +3d")
         <Range from None to 2003-03-11.20:07:48>
-        
+
         >>> Range("2002-11-10; 2002-12-12")
         <Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
-        
+
         >>> Range("; 20:00 +1d")
         <Range from None to 2003-03-09.20:00:00>
 
     """
     def __init__(self, spec, Type, allow_granularity=1, **params):
         """Initializes Range of type <Type> from given <spec> string.
-        
+
         Sets two properties - from_value and to_value. None assigned to any of
         this properties means "infinitum" (-infinitum to from_value and
         +infinitum to to_value)
 
         The Type parameter here should be class itself (e.g. Date), not a
         class instance.
-        
+
         """
         self.range_type = Type
         re_range = r'(?:^|from(.+?))(?:to(.+?)$|$)'
@@ -830,7 +846,7 @@ class Range:
 
     def __repr__(self):
         return "<Range %s>" % self.__str__()
- 
+
 def test_range():
     rspecs = ("from 2-12 to 4-2", "from 18:00 TO +2m", "12:00;", "tO +3d",
         "2002-11-10; 2002-12-12", "; 20:00 +1d", '2002-10-12')
