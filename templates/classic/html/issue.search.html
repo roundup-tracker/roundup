@@ -74,7 +74,7 @@
                 db_content string:username;">
   <th i18n:translate="">Creator:</th>
   <td metal:use-macro="search_select">
-    <option metal:fill-slot="extra_options"
+    <option metal:fill-slot="extra_options" i18n:translate=""
             tal:attributes="value request/user/id">created by me</option>
   </td>
   <td metal:use-macro="column_input"></td>
@@ -93,7 +93,7 @@
 <tr tal:define="name string:actor">
   <th i18n:translate="">Actor:</th>
   <td metal:use-macro="search_select">
-    <option metal:fill-slot="extra_options"
+    <option metal:fill-slot="extra_options" i18n:translate=""
             tal:attributes="value request/user/id">done by me</option>
   </td>
   <td metal:use-macro="column_input"></td>
@@ -106,7 +106,7 @@
                 db_content string:name;">
   <th i18n:translate="">Priority:</th>
   <td metal:use-macro="search_select">
-    <option metal:fill-slot="extra_options" value="-1"
+    <option metal:fill-slot="extra_options" value="-1" i18n:translate=""
             tal:attributes="selected python:value == '-1'">not selected</option>
   </td>
   <td metal:use-macro="column_input"></td>
@@ -120,9 +120,9 @@
   <th i18n:translate="">Status:</th>
   <td metal:use-macro="search_select">
     <tal:block metal:fill-slot="extra_options">
-      <option value="-1,1,2,3,4,5,6,7"
+      <option value="-1,1,2,3,4,5,6,7" i18n:translate=""
               tal:attributes="selected python:value == '-1,1,2,3,4,5,6,7'">not resolved</option>
-      <option value="-1"
+      <option value="-1" i18n:translate=""
               tal:attributes="selected python:value == '-1'">not selected</option>
     </tal:block>
   </td>
@@ -137,8 +137,10 @@
   <th i18n:translate="">Assigned to:</th>
   <td metal:use-macro="search_select">
     <tal:block metal:fill-slot="extra_options">
-      <option tal:attributes="value request/user/id">assigned to me</option>
-      <option value="-1" tal:attributes="selected python:value == '-1'">unassigned</option>
+      <option tal:attributes="value request/user/id"
+       i18n:translate="">assigned to me</option>
+      <option value="-1" tal:attributes="selected python:value == '-1'"
+       i18n:translate="">unassigned</option>
     </tal:block>
   </td>
   <td metal:use-macro="column_input"></td>
@@ -183,7 +185,7 @@
    &nbsp;
    <input type="hidden" name="@action" value="search">
   </td>
-  <td><input type="submit" value="Search"></td>
+  <td><input type="submit" value="Search" i18n:attributes="value"></td>
 </tr>
 
 <tr><td>&nbsp;</td>
