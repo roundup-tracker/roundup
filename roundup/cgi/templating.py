@@ -197,11 +197,10 @@ class Templates:
         except NoTemplate, message:
             raise KeyError, message
 
-class RoundupPageTemplate(PageTemplate.PageTemplate):
-    '''A Roundup-specific PageTemplate.
+def context(client, template=None, classname=None, request=None):
+    """Return the rendering context dictionary
 
-    Interrogate the client to set up the various template variables to
-    be available:
+    The dictionary includes following symbols:
 
     *context*
      this is one of three things:
@@ -211,6 +210,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         instance.
      3. The current item from the database, if we're viewing a specific
         item, as an HTMLItem instance.
+
     *request*
       Includes information about the current request, including:
 
@@ -220,48 +220,88 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
        - methods for easy filterspec link generation
        - *user*, the current user node as an HTMLItem instance
        - *form*, the current CGI form information as a FieldStorage
+
     *config*
       The current tracker config.
+
     *db*
       The current database, used to access arbitrary database items.
+
     *utils*
       This is a special class that has its base in the TemplatingUtils
       class in this file. If the tracker interfaces module defines a
       TemplatingUtils class then it is mixed in, overriding the methods
       in the base class.
-    '''
-    def getContext(self, client, classname, request):
-        # construct the TemplatingUtils class
-        utils = TemplatingUtils
-        if hasattr(client.instance.interfaces, 'TemplatingUtils'):
-            class utils(client.instance.interfaces.TemplatingUtils, utils):
-                pass
 
-        c = {
-             'options': {},
-             'nothing': None,
-             'request': request,
-             'db': HTMLDatabase(client),
-             'config': client.instance.config,
-             'tracker': client.instance,
-             'utils': utils(client),
-             'templates': Templates(client.instance.config.TEMPLATES),
-             'template': self,
-        }
-        # add in the item if there is one
-        if client.nodeid:
-            if classname == 'user':
-                c['context'] = HTMLUser(client, classname, client.nodeid,
-                    anonymous=1)
-            else:
-                c['context'] = HTMLItem(client, classname, client.nodeid,
-                    anonymous=1)
-        elif client.db.classes.has_key(classname):
-            if classname == 'user':
-                c['context'] = HTMLUserClass(client, classname, anonymous=1)
-            else:
-                c['context'] = HTMLClass(client, classname, anonymous=1)
-        return c
+    *templates*
+      Access to all the tracker templates by name.
+      Used mainly in *use-macro* commands.
+
+    *template*
+      Current rendering template.
+
+    *true*
+      Logical True value.
+
+    *false*
+      Logical False value.
+
+    """
+    # construct the TemplatingUtils class
+    utils = TemplatingUtils
+    if hasattr(client.instance.interfaces, 'TemplatingUtils'):
+        class utils(client.instance.interfaces.TemplatingUtils, utils):
+            pass
+
+    # if template, classname and/or request are not passed explicitely,
+    # compute form client
+    if template is None:
+        template = client.template
+    if classname is None:
+        classname = client.classname
+    if request is None:
+        request = HTMLRequest(client)
+
+    c = {
+         'context': None,
+         'options': {},
+         'nothing': None,
+         'request': request,
+         'db': HTMLDatabase(client),
+         'config': client.instance.config,
+         'tracker': client.instance,
+         'utils': utils(client),
+         'templates': Templates(client.instance.config.TEMPLATES),
+         'template': template,
+         'true': 1,
+         'false': 0,
+    }
+    # add in the item if there is one
+    if client.nodeid:
+        if classname == 'user':
+            c['context'] = HTMLUser(client, classname, client.nodeid,
+                anonymous=1)
+        else:
+            c['context'] = HTMLItem(client, classname, client.nodeid,
+                anonymous=1)
+    elif client.db.classes.has_key(classname):
+        if classname == 'user':
+            c['context'] = HTMLUserClass(client, classname, anonymous=1)
+        else:
+            c['context'] = HTMLClass(client, classname, anonymous=1)
+    return c
+
+class RoundupPageTemplate(PageTemplate.PageTemplate):
+    '''A Roundup-specific PageTemplate.
+
+    Interrogate the client to set up Roundup-specific template variables
+    to be available.  See 'context' function for the list of variables.
+
+    '''
+
+    # 06-jun-2004 [als] i am not sure if this method is used yet
+    def getContext(self, client, classname, request):
+        return context(client, self, classname, request)
 
     def render(self, client, classname, request, **options):
         """Render this Page Template"""
@@ -276,9 +316,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
                 'Page Template %s has errors.'%self.id
 
         # figure the context
-        classname = classname or client.classname
-        request = request or HTMLRequest(client)
-        c = self.getContext(client, classname, request)
+        c = context(client, self, classname, request)
         c.update({'options': options})
 
         # and go
