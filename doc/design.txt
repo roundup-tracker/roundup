@@ -26,17 +26,17 @@ Lots of software design documents come with a picture of a cake.
 Everybody seems to like them.  I also like cakes (i think they are
 tasty).  So I, too, shall include a picture of a cake here::
 
-     _________________________________________________________________________
-    |  E-mail Client   |   Web Browser   |   Detector Scripts   |    Shell    |
-    |------------------+-----------------+----------------------+-------------|
-    |   E-mail User    |    Web User     |      Detector        |   Command   | 
-    |-------------------------------------------------------------------------|
-    |                         Roundup Database Layer                          |
-    |-------------------------------------------------------------------------|
-    |                          Hyperdatabase Layer                            |
-    |-------------------------------------------------------------------------|
-    |                             Storage Layer                               |
-     -------------------------------------------------------------------------
+     ________________________________________________________________
+    | E-mail Client |  Web Browser  |  Detector Scripts  |   Shell   |
+    |---------------+---------------+--------------------+-----------|
+    |  E-mail User  |   Web User    |     Detector       |  Command  | 
+    |----------------------------------------------------------------|
+    |                    Roundup Database Layer                      |
+    |----------------------------------------------------------------|
+    |                     Hyperdatabase Layer                        |
+    |----------------------------------------------------------------|
+    |                        Storage Layer                           |
+     ----------------------------------------------------------------
 
 The colourful parts of the cake are part of our system; the faint grey
 parts of the cake are external components.
@@ -122,7 +122,8 @@ Here is an outline of the Date and Interval classes::
 
     class Date:
         def __init__(self, spec, offset):
-            """Construct a date given a specification and a time zone offset.
+            """Construct a date given a specification and a time zone
+            offset.
 
             'spec' is a full date or a partial form, with an optional
             added or subtracted interval.  'offset' is the local time
@@ -133,16 +134,22 @@ Here is an outline of the Date and Interval classes::
             """Add an interval to this date to produce another date."""
 
         def __sub__(self, interval):
-            """Subtract an interval from this date to produce another date."""
+            """Subtract an interval from this date to produce another
+            date.
+            """
 
         def __cmp__(self, other):
             """Compare this date to another date."""
 
         def __str__(self):
-            """Return this date as a string in the yyyy-mm-dd.hh:mm:ss format."""
+            """Return this date as a string in the yyyy-mm-dd.hh:mm:ss
+            format.
+            """
 
         def local(self, offset):
-            """Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone."""
+            """Return this date as yyyy-mm-dd.hh:mm:ss in a local time
+            zone.
+            """
 
     class Interval:
         def __init__(self, spec):
@@ -179,6 +186,7 @@ and the current local time is 19:34:02 on 25 June 2000::
     >>> Date(". + 2d") - Interval("3w")
     <Date 2000-06-07.00:34:02>
 
+
 Items and Classes
 ~~~~~~~~~~~~~~~~~
 
@@ -186,6 +194,7 @@ Items contain data in properties.  To Python, these properties are
 presented as the key-value pairs of a dictionary. Each item belongs to a
 class which defines the names and types of its properties.  The database
 permits the creation and modification of classes as well as items.
+
 
 Identifiers and Designators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,10 +207,11 @@ class concatenated with the item's numeric identifier.
 
 For example, if "spam" and "eggs" are classes, the first item created in
 class "spam" has id 1 and designator "spam1". The first item created in
-class "eggs" also has id 1 but has the distinct designator "eggs1".
-Item designators are conventionally enclosed in square brackets when
+class "eggs" also has id 1 but has the distinct designator "eggs1". Item
+designators are conventionally enclosed in square brackets when
 mentioned in plain text.  This permits a casual mention of, say,
 "[patch37]" in an e-mail message to be turned into an active hyperlink.
+
 
 Property Names and Types
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -231,6 +241,7 @@ attempt to store None into a Multilink property stores an empty list.
 
 A property that is not specified will return as None from a *get*
 operation.
+
 
 Hyperdb Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -279,7 +290,9 @@ properties belong in classes::
 Here is the interface provided by the hyperdatabase::
 
     class Database:
-        """A database for storing records containing flexible data types."""
+        """A database for storing records containing flexible data
+        types.
+        """
 
         def __init__(self, config, journaltag=None):
             """Open a hyperdatabase given a specifier to some storage.
@@ -306,18 +319,34 @@ Here is the interface provided by the hyperdatabase::
         def getclass(self, classname):
             """Get the Class object representing a particular class.
 
-            If 'classname' is not a valid class name, a KeyError is raised.
+            If 'classname' is not a valid class name, a KeyError is
+            raised.
             """
 
     class Class:
-        """The handle to a particular class of items in a hyperdatabase."""
+        """The handle to a particular class of items in a hyperdatabase.
+        """
 
         def __init__(self, db, classname, **properties):
-            """Create a new class with a given name and property specification.
+            """Create a new class with a given name and property
+            specification.
 
-            'classname' must not collide with the name of an existing class,
-            or a ValueError is raised.  The keyword arguments in 'properties'
-            must map names to property objects, or a TypeError is raised.
+            'classname' must not collide with the name of an existing
+            class, or a ValueError is raised.  The keyword arguments in
+            'properties' must map names to property objects, or a
+            TypeError is raised.
+
+            A proxied reference to the database is available as the
+            'db' attribute on instances. For example, in
+            'IssueClass.send_message', the following is used to lookup
+            users, messages and files::
+
+                users = self.db.user
+                messages = self.db.msg
+                files = self.db.file
+
+            The id of the current user is also available on the database
+            as 'self.db.curuserid'.
             """
 
         # Editing items:
@@ -325,156 +354,174 @@ Here is the interface provided by the hyperdatabase::
         def create(self, **propvalues):
             """Create a new item of this class and return its id.
 
-            The keyword arguments in 'propvalues' map property names to values.
-            The values of arguments must be acceptable for the types of their
-            corresponding properties or a TypeError is raised.  If this class
-            has a key property, it must be present and its value must not
-            collide with other key strings or a ValueError is raised.  Any other
-            properties on this class that are missing from the 'propvalues'
-            dictionary are set to None.  If an id in a link or multilink
-            property does not refer to a valid item, an IndexError is raised.
+            The keyword arguments in 'propvalues' map property names to
+            values. The values of arguments must be acceptable for the
+            types of their corresponding properties or a TypeError is
+            raised.  If this class has a key property, it must be
+            present and its value must not collide with other key
+            strings or a ValueError is raised.  Any other properties on
+            this class that are missing from the 'propvalues' dictionary
+            are set to None.  If an id in a link or multilink property
+            does not refer to a valid item, an IndexError is raised.
             """
 
         def get(self, itemid, propname):
-            """Get the value of a property on an existing item of this class.
+            """Get the value of a property on an existing item of this
+            class.
 
-            'itemid' must be the id of an existing item of this class or an
-            IndexError is raised.  'propname' must be the name of a property
-            of this class or a KeyError is raised.
+            'itemid' must be the id of an existing item of this class or
+            an IndexError is raised.  'propname' must be the name of a
+            property of this class or a KeyError is raised.
             """
 
         def set(self, itemid, **propvalues):
             """Modify a property on an existing item of this class.
             
-            'itemid' must be the id of an existing item of this class or an
-            IndexError is raised.  Each key in 'propvalues' must be the name
-            of a property of this class or a KeyError is raised.  All values
-            in 'propvalues' must be acceptable types for their corresponding
-            properties or a TypeError is raised.  If the value of the key
-            property is set, it must not collide with other key strings or a
-            ValueError is raised.  If the value of a Link or Multilink
-            property contains an invalid item id, a ValueError is raised.
+            'itemid' must be the id of an existing item of this class or
+            an IndexError is raised.  Each key in 'propvalues' must be
+            the name of a property of this class or a KeyError is
+            raised.  All values in 'propvalues' must be acceptable types
+            for their corresponding properties or a TypeError is raised.
+            If the value of the key property is set, it must not collide
+            with other key strings or a ValueError is raised.  If the
+            value of a Link or Multilink property contains an invalid
+            item id, a ValueError is raised.
             """
 
         def retire(self, itemid):
             """Retire an item.
             
-            The properties on the item remain available from the get() method,
-            and the item's id is never reused.  Retired items are not returned
-            by the find(), list(), or lookup() methods, and other items may
-            reuse the values of their key properties.
+            The properties on the item remain available from the get()
+            method, and the item's id is never reused.  Retired items
+            are not returned by the find(), list(), or lookup() methods,
+            and other items may reuse the values of their key
+            properties.
             """
 
         def restore(self, nodeid):
         '''Restore a retired node.
 
-        Make node available for all operations like it was before retirement.
+        Make node available for all operations like it was before
+        retirement.
         '''
 
         def history(self, itemid):
             """Retrieve the journal of edits on a particular item.
 
-            'itemid' must be the id of an existing item of this class or an
-            IndexError is raised.
+            'itemid' must be the id of an existing item of this class or
+            an IndexError is raised.
 
             The returned list contains tuples of the form
 
                 (date, tag, action, params)
 
-            'date' is a Timestamp object specifying the time of the change and
-            'tag' is the journaltag specified when the database was opened.
-            'action' may be:
+            'date' is a Timestamp object specifying the time of the
+            change and 'tag' is the journaltag specified when the
+            database was opened. 'action' may be:
 
-                'create' or 'set' -- 'params' is a dictionary of property values
-                'link' or 'unlink' -- 'params' is (classname, itemid, propname)
+                'create' or 'set' -- 'params' is a dictionary of
+                    property values
+                'link' or 'unlink' -- 'params' is (classname, itemid,
+                    propname)
                 'retire' -- 'params' is None
             """
 
         # Locating items:
 
         def setkey(self, propname):
-            """Select a String property of this class to be the key property.
+            """Select a String property of this class to be the key
+            property.
 
-            'propname' must be the name of a String property of this class or
-            None, or a TypeError is raised.  The values of the key property on
-            all existing items must be unique or a ValueError is raised.
+            'propname' must be the name of a String property of this
+            class or None, or a TypeError is raised.  The values of the
+            key property on all existing items must be unique or a
+            ValueError is raised.
             """
 
         def getkey(self):
-            """Return the name of the key property for this class or None."""
+            """Return the name of the key property for this class or
+            None.
+            """
 
         def lookup(self, keyvalue):
-            """Locate a particular item by its key property and return its id.
+            """Locate a particular item by its key property and return
+            its id.
 
-            If this class has no key property, a TypeError is raised.  If the
-            'keyvalue' matches one of the values for the key property among
-            the items in this class, the matching item's id is returned;
-            otherwise a KeyError is raised.
+            If this class has no key property, a TypeError is raised.
+            If the 'keyvalue' matches one of the values for the key
+            property among the items in this class, the matching item's
+            id is returned; otherwise a KeyError is raised.
             """
 
         def find(self, propname, itemid):
-            """Get the ids of items in this class which link to the given items.
+            """Get the ids of items in this class which link to the
+            given items.
 
-            'propspec' consists of keyword args propname={itemid:1,}   
-            'propname' must be the name of a property in this class, or a
-            KeyError is raised.  That property must be a Link or Multilink
-            property, or a TypeError is raised.
+            'propspec' consists of keyword args propname={itemid:1,}
+            'propname' must be the name of a property in this class, or
+            a KeyError is raised.  That property must be a Link or
+            Multilink property, or a TypeError is raised.
 
-            Any item in this class whose 'propname' property links to any of the
-            itemids will be returned. Used by the full text indexing, which
-            knows that "foo" occurs in msg1, msg3 and file7, so we have hits
-            on these issues:
+            Any item in this class whose 'propname' property links to
+            any of the itemids will be returned. Used by the full text
+            indexing, which knows that "foo" occurs in msg1, msg3 and
+            file7, so we have hits on these issues:
 
                 db.issue.find(messages={'1':1,'3':1}, files={'7':1})
             """
 
         def filter(self, search_matches, filterspec, sort, group):
-            ''' Return a list of the ids of the active items in this class that
-                match the 'filter' spec, sorted by the group spec and then the
-                sort spec.
-            '''
+            """ Return a list of the ids of the active items in this
+            class that match the 'filter' spec, sorted by the group spec
+            and then the sort spec.
+            """
 
         def list(self):
-            """Return a list of the ids of the active items in this class."""
+            """Return a list of the ids of the active items in this
+            class.
+            """
 
         def count(self):
             """Get the number of items in this class.
 
-            If the returned integer is 'numitems', the ids of all the items
-            in this class run from 1 to numitems, and numitems+1 will be the
-            id of the next item to be created in this class.
+            If the returned integer is 'numitems', the ids of all the
+            items in this class run from 1 to numitems, and numitems+1
+            will be the id of the next item to be created in this class.
             """
 
         # Manipulating properties:
 
         def getprops(self):
-            """Return a dictionary mapping property names to property objects."""
+            """Return a dictionary mapping property names to property
+            objects.
+            """
 
         def addprop(self, **properties):
             """Add properties to this class.
 
-            The keyword arguments in 'properties' must map names to property
-            objects, or a TypeError is raised.  None of the keys in 'properties'
-            may collide with the names of existing properties, or a ValueError
-            is raised before any properties have been added.
+            The keyword arguments in 'properties' must map names to
+            property objects, or a TypeError is raised.  None of the
+            keys in 'properties' may collide with the names of existing
+            properties, or a ValueError is raised before any properties
+            have been added.
             """
 
         def getitem(self, itemid, cache=1):
-            ''' Return a Item convenience wrapper for the item.
+            """ Return a Item convenience wrapper for the item.
 
-            'itemid' must be the id of an existing item of this class or an
-            IndexError is raised.
+            'itemid' must be the id of an existing item of this class or
+            an IndexError is raised.
 
-            'cache' indicates whether the transaction cache should be queried
-            for the item. If the item has been modified and you need to
-            determine what its values prior to modification are, you need to
-            set cache=0.
-            '''
+            'cache' indicates whether the transaction cache should be
+            queried for the item. If the item has been modified and you
+            need to determine what its values prior to modification are,
+            you need to set cache=0.
+            """
 
     class Item:
-        ''' A convenience wrapper for the given item. It provides a mapping
-            interface to a single item's properties
-        '''
+        """ A convenience wrapper for the given item. It provides a
+        mapping interface to a single item's properties
+        """
 
 Hyperdatabase Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -485,7 +532,7 @@ mechanism. Examples are relational databases, \*dbm key-value databases,
 and so on.
 
 Several implementations are provided - they belong in the
-roundup.backends package.
+``roundup.backends`` package.
 
 
 Application Example
@@ -530,7 +577,8 @@ practice::
     4
     >>> db.issue.create(title="abuse", status=1)
     5
-    >>> hyperdb.Class(db, "user", username=hyperdb.Key(), password=hyperdb.String())
+    >>> hyperdb.Class(db, "user", username=hyperdb.Key(),
+    ... password=hyperdb.String())
     <hyperdb.Class "user">
     >>> db.issue.addprop(fixer=hyperdb.Link("user"))
     >>> db.issue.getprops()
@@ -546,7 +594,8 @@ practice::
     >>> db.issue.find("status", db.status.lookup("in-progress"))
     [2, 4, 5]
     >>> db.issue.history(5)
-    [(<Date 2000-06-28.19:09:43>, "ping", "create", {"title": "abuse", "status": 1}),
+    [(<Date 2000-06-28.19:09:43>, "ping", "create", {"title": "abuse",
+    "status": 1}),
      (<Date 2000-06-28.19:11:04>, "ping", "set", {"status": 2})]
     >>> db.status.history(1)
     [(<Date 2000-06-28.19:09:43>, "ping", "link", ("issue", 5, "status")),
@@ -570,6 +619,7 @@ and mediates calls to the database. Some of the classes in the Roundup
 database are considered issue classes. The Roundup database layer adds
 detectors and user items, and on issues it provides mail spools, nosy
 lists, and superseders.
+
 
 Reserved Classes
 ~~~~~~~~~~~~~~~~
@@ -612,6 +662,7 @@ must exist in the hyperdatabase for any messages that are stored in the
 system). The "summary" property contains a summary of the message for
 display in a message index.
 
+
 Files
 """""
 
@@ -627,6 +678,7 @@ database, named after the file item designator (e.g. "file17"). The
 The "user" property indicates the user who submitted the file, the
 "name" property holds the original name of the file, and the "type"
 property holds the MIME type of the file as received.
+
 
 Issue Classes
 ~~~~~~~~~~~~~
@@ -651,6 +703,7 @@ made available. The value of the "creation" property is the date when an
 issue was created, and the value of the "activity" property is the date
 when any property on the issue was last edited (equivalently, these are
 the dates on the first and last records in the issue's journal).
+
 
 Roundupdb Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -723,7 +776,8 @@ Default Schema
 The default schema included with Roundup turns it into a typical
 software bug tracker.  The database is set up like this::
 
-    pri = Class(db, "priority", name=hyperdb.String(), order=hyperdb.String())
+    pri = Class(db, "priority", name=hyperdb.String(),
+                order=hyperdb.String())
     pri.setkey("name")
     pri.create(name="critical", order="1")
     pri.create(name="urgent", order="2")
@@ -731,7 +785,8 @@ software bug tracker.  The database is set up like this::
     pri.create(name="feature", order="4")
     pri.create(name="wish", order="5")
 
-    stat = Class(db, "status", name=hyperdb.String(), order=hyperdb.String())
+    stat = Class(db, "status", name=hyperdb.String(),
+                 order=hyperdb.String())
     stat.setkey("name")
     stat.create(name="unread", order="1")
     stat.create(name="deferred", order="2")
@@ -758,7 +813,8 @@ addition of a convenience function like Choice for setting up the
 "priority" and "status" classes::
 
     def Choice(name, *options):
-        cl = Class(db, name, name=hyperdb.String(), order=hyperdb.String())
+        cl = Class(db, name, name=hyperdb.String(),
+                   order=hyperdb.String())
         for i in range(len(options)):
             cl.create(name=option[i], order=i)
         return hyperdb.Link(name)
@@ -787,6 +843,7 @@ may raise a *Reject* exception to abort the operation.
 If none of the auditors raises an exception, the database proceeds to
 carry out the operation.  After it's done, it then calls all of the
 *reactors* that have been registered for the operation.
+
 
 Detector Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -845,6 +902,7 @@ values of properties that were changed.
 For a ``retire()`` or ``restore()`` operation, ``itemid`` is the id of
 the retired or restored item and ``olddata`` is None.
 
+
 Detector Example
 ~~~~~~~~~~~~~~~~
 
@@ -864,18 +922,20 @@ proceeds when it has three approvals::
             new = newdata["approvals"]
             for uid in old:
                 if uid not in new and uid != db.getuid():
-                    raise Reject, "You can't remove other users from the "
-                        "approvals list; you can only remove yourself."
+                    raise Reject, "You can't remove other users from " \
+                        "the approvals list; you can only remove " \
+                        "yourself."
             for uid in new:
                 if uid not in old and uid != db.getuid():
-                    raise Reject, "You can't add other users to the approvals "
-                        "list; you can only add yourself."
+                    raise Reject, "You can't add other users to the " \
+                        "approvals list; you can only add yourself."
 
-    # When three people have approved a project, change its
-    # status from "pending" to "approved".
+    # When three people have approved a project, change its status from
+    # "pending" to "approved".
 
     def approve_project(db, cl, id, olddata):
-        if olddata.has_key("approvals") and len(cl.get(id, "approvals")) == 3:
+        if (olddata.has_key("approvals") and 
+            len(cl.get(id, "approvals")) == 3):
             if cl.get(id, "status") == db.status.lookup("pending"):
                 cl.set(id, status=db.status.lookup("approved"))
 
@@ -890,7 +950,8 @@ ensure that there are text/plain attachments on the message.  The
 maintainer of the package can then apply the patch by setting its status
 to "applied"::
 
-    # Only accept attempts to create new patches that come with patch files.
+    # Only accept attempts to create new patches that come with patch
+    # files.
 
     def check_new_patch(db, cl, id, newdata):
         if not newdata["files"]:
@@ -898,13 +959,15 @@ to "applied"::
                           "attaching a patch file."
         for fileid in newdata["files"]:
             if db.file.get(fileid, "type") != "text/plain":
-                raise Reject, "Submitted patch files must be text/plain."
+                raise Reject, "Submitted patch files must be " \
+                              "text/plain."
 
-    # When the status is changed from "approved" to "applied", apply the patch.
+    # When the status is changed from "approved" to "applied", apply the
+    # patch.
 
     def apply_patch(db, cl, id, olddata):
-        if cl.get(id, "status") == db.status.lookup("applied") and \
-            olddata["status"] == db.status.lookup("approved"):
+        if (cl.get(id, "status") == db.status.lookup("applied") and 
+            olddata["status"] == db.status.lookup("approved")):
             # ...apply the patch...
 
     def init(db):
@@ -919,6 +982,7 @@ The command interface is a very simple and minimal interface, intended
 only for quick searches and checks from the shell prompt. (Anything more
 interesting can simply be written in Python using the Roundup database
 module.)
+
 
 Command Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -962,6 +1026,7 @@ When multiple results are returned by the roundup get or roundup find
 commands, they are printed one per line (default) or joined by commas
 (with the -list) option.
 
+
 Usage Example
 ~~~~~~~~~~~~~
 
@@ -996,6 +1061,7 @@ The Roundup system must be assigned an e-mail address at which to
 receive mail.  Messages should be piped to the Roundup mail-handling
 script by the mail delivery system (e.g. using an alias beginning with
 "|" for sendmail).
+
 
 Message Processing
 ~~~~~~~~~~~~~~~~~~
@@ -1049,6 +1115,7 @@ we are calling the create() method to create a new item).  If an auditor
 raises an exception, the original message is bounced back to the sender
 with the explanatory message given in the exception.
 
+
 Nosy Lists
 ~~~~~~~~~~
 
@@ -1060,6 +1127,7 @@ to the "recipients" property on the message, so multiple copies of a
 message are never sent to the same user.  The journal recorded by the
 hyperdatabase on the "recipients" property then provides a log of when
 the message was sent to whom.
+
 
 Setting Properties
 ~~~~~~~~~~~~~~~~~~
@@ -1083,6 +1151,7 @@ containing mostly HTML.  Among the HTML tags in templates are
 interspersed some nonstandard tags, which we use as placeholders to be
 replaced by properties and their values.
 
+
 Views and View Specifiers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1098,6 +1167,7 @@ script or the web server to form the complete URL to a view.  When the
 result of selecting a link or submitting a form takes the user to a new
 view, the Web browser should be redirected to a canonical location
 containing a complete view specifier so that the view can be bookmarked.
+
 
 Displaying Properties
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1150,6 +1220,7 @@ Index Views
 An index view contains two sections: a filter section and an index
 section. The filter section provides some widgets for selecting which
 issues appear in the index.  The index section is a table of issues.
+
 
 Index View Specifiers
 """""""""""""""""""""
@@ -1250,7 +1321,8 @@ Here's an example of a basic editor template::
 
     <table>
     <tr>
-        <td colspan=2 tal:content="python:context.title.field(size='60')"></td>
+        <td colspan=2
+            tal:content="python:context.title.field(size='60')"></td>
     </tr>
     <tr>
         <td tal:content="context/fixer/field"></td>
@@ -1286,6 +1358,7 @@ If a note is given in the ":note" field, the note is appended to the
 description.  The message is then added to the issue's message spool
 (thus triggering the standard detector to react by sending out this
 message to the nosy list).
+
 
 Spool Section
 """""""""""""
@@ -1441,7 +1514,8 @@ to perform some action::
     if db.security.hasPermission('issue', 'Edit', userid):
         # all ok
 
-    if db.security.hasItemPermission('issue', itemid, assignedto=userid):
+    if db.security.hasItemPermission('issue', itemid,
+                                     assignedto=userid):
         # all ok
 
 Code in the core will make use of these methods, as should code in
@@ -1473,9 +1547,9 @@ submission to their user details.
 Anonymous Users
 ~~~~~~~~~~~~~~~
 
-The "anonymous" user must always exist, and defines the access permissions for
-anonymous users. Unknown users accessing Roundup through the web or email
-interfaces will be logged in as the "anonymous" user.
+The "anonymous" user must always exist, and defines the access
+permissions for anonymous users. Unknown users accessing Roundup through
+the web or email interfaces will be logged in as the "anonymous" user.
 
 
 Use Cases
@@ -1529,6 +1603,7 @@ My thanks are due to Christy Heyl for reviewing and contributing
 suggestions to this paper and motivating me to get it done, and to Jesse
 Vincent, Mark Miller, Christopher Simons, Jeff Dunmall, Wayne Gramlich,
 and Dean Tribble for their assistance with the first-round submission.
+
 
 Changes to this document
 ------------------------
