@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.36 2003-02-06 05:43:47 richard Exp $
+# $Id: admin.py,v 1.37 2003-02-15 23:19:01 kedder Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -368,19 +368,31 @@ Command help:
         # make sure the tracker home is installed
         if not os.path.exists(tracker_home):
             raise UsageError, _('Instance home does not exist')%locals()
-        if not os.path.exists(os.path.join(tracker_home, 'html')):
+        try:
+            tracker = roundup.instance.open(tracker_home)
+        except roundup.instance.TrackerError:
             raise UsageError, _('Instance has not been installed')%locals()
 
         # is there already a database?
-        if os.path.exists(os.path.join(tracker_home, 'db')):
+        try:
+            db_exists = tracker.select_db.Database.exists(tracker.config)
+        except AttributeError:
+            # TODO: move this code to exists() static method in every backend
+            db_exists = os.path.exists(os.path.join(tracker_home, 'db'))
+        if db_exists:
             print _('WARNING: The database is already initialised!')
             print _('If you re-initialise it, you will lose all the data!')
             ok = raw_input(_('Erase it? Y/[N]: ')).strip()
             if ok.lower() != 'y':
                 return 0
 
-            # nuke it
-            shutil.rmtree(os.path.join(tracker_home, 'db'))
+            # Get a database backend in use by tracker
+            try:
+                # nuke it
+                tracker.select_db.Database.nuke(tracker.config)
+            except AttributeError:
+                # TODO: move this code to nuke() static method in every backend
+                shutil.rmtree(os.path.join(tracker_home, 'db'))
 
         # GO
         init.initialise(tracker_home, adminpw)

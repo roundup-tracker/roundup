@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.70 2003-02-15 14:26:38 kedder Exp $ 
+# $Id: test_db.py,v 1.71 2003-02-15 23:19:01 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -738,8 +738,7 @@ class mysqlDBTestCase(anydbmDBTestCase):
     def tearDown(self):
         from roundup.backends import mysql
         self.db.close()
-        mysql.nuke(config)
-        anydbmDBTestCase.tearDown(self)
+        mysql.Database.nuke(config)
 
 class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -754,8 +753,7 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def tearDown(self):
         from roundup.backends import mysql
         self.db.close()
-        mysql.nuke(config)
-        anydbmReadOnlyDBTestCase.tearDown(self)
+        mysql.Database.nuke(config)
 
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
@@ -873,7 +871,7 @@ def suite():
             if tables:
                 # Database should be empty. We don't dare to delete any data
                 raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
-            db.sql("DROP DATABASE IF EXISTS %s" % config.MYSQL_DBNAME)
+            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
             db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
             db.close()
         except (MySQLdb.ProgrammingError, DatabaseError), msg:

@@ -38,6 +38,23 @@ Note, that mysql database should not contain any tables. Tests will not dare to
 drop database with data.
 
 
+Additional configuration
+========================
+
+To initialise and use mysql database roundup' configuration file (config.py in
+the tracker' home directory) should be appended with the following constants:
+
+    MYSQL_DBHOST = 'localhost'
+    MYSQL_DBUSER = 'rounduptest'
+    MYSQL_DBPASSWORD = 'rounduptest'
+    MYSQL_DBNAME = 'rounduptest'
+    MYSQL_DATABASE = ( MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME )
+
+Fill first four constants with real values before running 
+"roundup-admin initialise". 
+
+
+
     Andrey Lebedev <andrey@micro.lt>
 
 

@@ -11,7 +11,32 @@
 from roundup.backends.rdbms_common import *
 from roundup.backends import rdbms_common
 import MySQLdb
+import os, shutil
 from MySQLdb.constants import ER
+
+class Maintenance:
+    """ Database maintenance functions """
+    def db_nuke(self, config):
+        """Clear all database contents and drop database itself"""
+        db = Database(config, 'admin')
+        db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
+        db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        
+    def db_exists(self, config):
+        """Check if database already exists"""
+        # Yes, this is a hack, but we must must open connection without
+        # selecting a database to prevent creation of some tables
+        config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)        
+        db = Database(config, 'admin')
+        db.conn.select_db(config.MYSQL_DBNAME)
+        config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD, config.MYSQL_DBNAME)
+        db.sql("SHOW TABLES")
+        tables = db.sql_fetchall()
+        if tables or os.path.exists(config.DATABASE):
+            return 1
+        return 0        
 
 class Database(Database):
     arg = '%s'
@@ -115,6 +140,10 @@ class Database(Database):
           print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
 
+    # Static methods
+    nuke = Maintenance().db_nuke
+    exists = Maintenance().db_exists
+
 class MysqlClass:
     def find(self, **propspec):
         '''Get the ids of nodes in this class which link to the given nodes.
@@ -174,7 +203,7 @@ class MysqlClass:
             self.db.sql(query, vals)
             l += [x[0] for x in self.db.sql_fetchall()]
         if __debug__:
-            print >>hyperdb.DEBUG, 'find ... ', l            #db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
+            print >>hyperdb.DEBUG, 'find ... ', l
 
         # Remove duplicated ids
         d = {}
@@ -191,9 +220,4 @@ class IssueClass(MysqlClass, rdbms_common.IssueClass):
 class FileClass(MysqlClass, rdbms_common.FileClass):
     pass
 
-def nuke(config):
-    """ Clear all database contents and drop database itself"""
-    # Connect to db
-    db = Database(config, 'admin')
-    db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-    db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
+#vim: set et
