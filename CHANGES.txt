@@ -69,8 +69,12 @@ Cleanup:
   * exceptions.py - all exceptions
   * form_parser.py - parsePropsFromForm & extractFormList in a FormParser class
 
+2004-??-?? 0.6.6
+Fixed:
+- don't insert spaces into designators, it just confuses users (sf bug 898087)
 
-2004-??-?? 0.6.5
+
+2004-02-16 0.6.5
 Fixed:
 - mailgw handling of subject-line errors
 - allow serving of FileClass file content when the class isn't called

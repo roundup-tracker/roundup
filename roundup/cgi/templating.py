@@ -961,8 +961,10 @@ class StringHTMLProperty(HTMLProperty):
             s2 = match.group('id')
             try:
                 # make sure s1 is a valid tracker classname
-                self._db.getclass(s1)
-                return '<a href="%s">%s %s</a>'%(s, s1, s2)
+                cl = self._db.getclass(s1)
+                if not cl.hasnode(s2):
+                    raise KeyError, 'oops'
+                return '<a href="%s">%s%s</a>'%(s, s1, s2)
             except KeyError:
                 return '%s%s'%(s1, s2)
 
