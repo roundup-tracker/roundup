@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-09-?? 0.5.0 ????
+2002-09-27 0.5.0 pr1
 - handling of None for Date/Interval/Password values in export/import
 - handling of journal values in export/import
 - password edit now has a confirmation field

@@ -1,6 +1,6 @@
-=================================================================
-SC-Track Roundup 0.5 final pre-release - an issue tracking system
-=================================================================
+===========================================================
+SC-Track Roundup 0.5 pre-release - an issue tracking system
+===========================================================
 
 Note: This is the final pre-release of the newest version of Roundup. It is
       strongly recommended that you maintain your existing 0.4 installation if
@@ -41,7 +41,7 @@ This beta release fixes the following specific problems:
 - handle stupid mailers that QUOTE their Re; 'Re: "[issue1] bla blah"'
 - giving a user a Role that doesn't exist doesn't break stuff any more
 - revamped user guide, customisation guide, added basic maintenance guide
-- merge Zope Collector #580 fix from ZPT CVS trunk
+- merged some bugfixes from the Zope Page Templates trunk
 - added the "minimal" template
 
 A lot has been done since 0.4:
