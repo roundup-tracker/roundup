@@ -411,14 +411,6 @@ class HTMLPermissions:
             raise Unauthorised("view", self._classname,
                 translator=self._client.translator)
 
-    def create_check(self):
-        ''' Raise the Unauthorised exception if the user's not permitted to
-            create items of this class.
-        '''
-        if not self.is_create_ok():
-            raise Unauthorised("create", self._classname,
-                translator=self._client.translator)
-
     def edit_check(self):
         ''' Raise the Unauthorised exception if the user's not permitted to
             edit items of this class.
@@ -455,12 +447,12 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if self._db.security.hasPermission('View', self._client.userid,
                 self._classname):
             return 1
-        return self.is_create_ok()
+        return self.is_edit_ok()
 
     def is_only_view_ok(self):
         ''' Is the user only allowed to View (ie. not Create) the current class?
         '''
-        return self.is_view_ok() and not self.is_create_ok()
+        return self.is_view_ok() and not self.is_edit_ok()
 
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
