@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.9 2003-11-16 19:59:06 jlgijsbers Exp $ 
+# $Id: db_test_base.py,v 1.10 2003-11-16 22:56:46 jlgijsbers Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -801,12 +801,8 @@ class DBTest(MyTestCase):
     def testSafeGet(self):
         # existent nodeid, existent property
         self.assertEqual(self.db.user.safeget('1', 'username'), 'admin')
-        # existent nodeid, nonexistent property
-        self.assertEqual(self.db.user.safeget('1', 'nonexistent'), None)
         # nonexistent nodeid, existent property
         self.assertEqual(self.db.user.safeget('999', 'username'), None)
-        # nonexistent nodeid, nonexistent property
-        self.assertEqual(self.db.user.safeget('999', 'nonexistent'), None)
         # different default
         self.assertEqual(self.db.issue.safeget('999', 'nosy', []), [])
 

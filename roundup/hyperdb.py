@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.94 2003-11-16 20:01:16 jlgijsbers Exp $
+# $Id: hyperdb.py,v 1.95 2003-11-16 22:56:46 jlgijsbers Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -573,9 +573,13 @@ class Class:
         raise NotImplementedError
 
     def safeget(self, nodeid, propname, default=None):
+        """Safely get the value of a property on an existing node of this class.
+
+        Return 'default' if the node doesn't exist.
+        """
         try:
             return self.get(nodeid, propname)
-        except (KeyError, IndexError):
+        except IndexError:
             return default            
 
 class HyperdbValueError(ValueError):
