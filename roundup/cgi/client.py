@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.200 2004-11-12 04:07:05 richard Exp $
+# $Id: client.py,v 1.201 2004-11-18 14:05:35 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -163,6 +163,7 @@ class Client:
         """
         if translator is None:
             translator = TranslationService.get_translation(
+                language=self.instance.config["TRACKER_LANGUAGE"],
                 tracker_home=self.instance.config["TRACKER_HOME"])
         self.translator = translator
         self._ = self.gettext = translator.gettext
@@ -802,7 +803,7 @@ class Client:
 
     def opendb(self, username):
         ''' Open the database and set the current user.
-        
+
         Opens a database once. On subsequent calls only the user is set on
         the database object the instance.optimize is set. If we are in
         "Development Mode" (cf. roundup_server) then the database is always
@@ -811,7 +812,7 @@ class Client:
         # don't do anything if the db is open and the user has not changed
         if hasattr(self, 'db') and self.db.isCurrentUser(username):
             return
-        
+
         # open the database or only set the user
         if not hasattr(self, 'db'):
             self.db = self.instance.open(username)
