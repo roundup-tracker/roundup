@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.155 2002-08-01 00:56:22 richard Exp $
+# $Id: cgi_client.py,v 1.156 2002-08-01 15:06:06 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -717,7 +717,7 @@ function help_window(helpurl, width, height) {
                 else:
                     props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
                     # make changes to the node
-                    self._changenode(props)
+                    props = self._changenode(props)
                     # handle linked nodes 
                     self._post_editnode(self.nodeid)
                     # and some nice feedback for the user
@@ -814,7 +814,7 @@ function help_window(helpurl, width, height) {
             props['files'] = cl.get(self.nodeid, 'files') + files
 
         # make the changes
-        cl.set(self.nodeid, **props)
+        return cl.set(self.nodeid, **props)
 
     def _createnode(self):
         ''' create a node based on the contents of the form
@@ -1703,6 +1703,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.155  2002/08/01 00:56:22  richard
+# Added the web access and email access permissions, so people can restrict
+# access to users who register through the email interface (for example).
+# Also added "security" command to the roundup-admin interface to display the
+# Role/Permission config for an instance.
+#
 # Revision 1.154  2002/07/31 23:57:36  richard
 #  . web forms may now unset Link values (like assignedto)
 #

@@ -12,6 +12,12 @@ def Database(config, journaltag=None):
     if db is None or db._db is None:
         db = _Database(config, journaltag)
         _dbs[config.DATABASE] = db
+    else:
+        db.journaltag = journaltag
+        try:
+            delattr(db, 'curuserid')
+        except AttributeError:
+            pass
     return db
 
 class _Database(hyperdb.Database):
@@ -273,7 +279,7 @@ class Class:
         if not isnew:
             self.fireAuditors('set', nodeid, propvalues)
         if not propvalues:
-            return
+            return propvalues
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
         if self.db.journaltag is None:
@@ -328,6 +334,9 @@ class Class:
                 if value is not None and not isinstance(value, type('')):
                     raise ValueError, 'property "%s" link value be a string'%(
                         propname)
+                # Roundup sets to "unselected" by passing None
+                if value is None:
+                    value = 0   
                 # if it isn't a number, it's a key
                 try:
                     int(value)
@@ -408,6 +417,8 @@ class Class:
                 for id in adds:
                     sv.append(fid=int(id))
                 changes[key] = oldvalue
+                if not rmvd and not adds:
+                    del propvalues[key]
                     
 
             elif isinstance(prop, hyperdb.String):
@@ -456,7 +467,7 @@ class Class:
 
         # nothing to do?
         if not propvalues:
-            return
+            return propvalues
         if not propvalues.has_key('activity'):
             row.activity = int(time.time())
         if isnew:
@@ -474,6 +485,8 @@ class Class:
                 self.db.addjournal(self.classname, nodeid, _SET, changes)
                 self.fireReactors('set', nodeid, oldnode)
 
+        return propvalues
+    
     def retire(self, nodeid):
         self.fireAuditors('retire', nodeid, None)
         view = self.getview(1)

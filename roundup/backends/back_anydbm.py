@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.57 2002-07-31 23:57:36 richard Exp $
+#$Id: back_anydbm.py,v 1.58 2002-08-01 15:06:24 gmcm Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -944,7 +944,7 @@ class Class(hyperdb.Class):
         to modify the "creation" or "activity" properties cause a KeyError.
         """
         if not propvalues:
-            return
+            return propvalues
 
         if propvalues.has_key('creation') or propvalues.has_key('activity'):
             raise KeyError, '"creation" and "activity" are reserved'
@@ -1124,7 +1124,7 @@ class Class(hyperdb.Class):
 
         # nothing to do?
         if not propvalues:
-            return
+            return propvalues
 
         # do the set, and journal it
         self.db.setnode(self.classname, nodeid, node)
@@ -1134,6 +1134,8 @@ class Class(hyperdb.Class):
             self.db.addjournal(self.classname, nodeid, 'set', propvalues)
 
         self.fireReactors('set', nodeid, oldvalues)
+
+        return propvalues        
 
     def retire(self, nodeid):
         """Retire a node.
@@ -1793,6 +1795,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.57  2002/07/31 23:57:36  richard
+# . web forms may now unset Link values (like assignedto)
+#
 #Revision 1.56  2002/07/31 22:04:33  richard
 #cleanup
 #

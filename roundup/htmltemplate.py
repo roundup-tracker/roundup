@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.108 2002-07-31 22:40:50 gmcm Exp $
+# $Id: htmltemplate.py,v 1.109 2002-08-01 15:06:08 gmcm Exp $
 
 __doc__ = """
 Template engine.
@@ -403,13 +403,13 @@ class TemplateFunctions:
 
         # get the value
         value = self.determine_value(property)
-        if value in ('', None, []):
-            return _('[no %(propname)s]')%{'propname':property.capitalize()}
 
         propclass = self.properties[property]
         if isinstance(propclass, hyperdb.Boolean):
             value = value and "Yes" or "No"
         elif isinstance(propclass, hyperdb.Link):
+            if value in ('', None, []):
+                return _('[no %(propname)s]')%{'propname':property.capitalize()}
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop(1)
@@ -427,6 +427,8 @@ class TemplateFunctions:
             else:
                 return '<a href="%s%s"%s>%s</a>'%(linkname, value, title, label)
         elif isinstance(propclass, hyperdb.Multilink):
+            if value in ('', None, []):
+                return _('[no %(propname)s]')%{'propname':property.capitalize()}
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop(1)
@@ -448,9 +450,13 @@ class TemplateFunctions:
                         title, label))
             return ', '.join(l)
         if is_download:
+            if value in ('', None, []):
+                return _('[no %(propname)s]')%{'propname':property.capitalize()}
             return '<a href="%s%s/%s">%s</a>'%(self.classname, self.nodeid,
                 value, value)
         else:
+            if value in ('', None, []):
+                value =  _('[no %(propname)s]')%{'propname':property.capitalize()}
             return '<a href="%s%s">%s</a>'%(self.classname, self.nodeid, value)
 
     def do_count(self, property, **args):
@@ -929,6 +935,7 @@ class IndexTemplate(TemplateFunctions):
 
     def clear(self):
         self.db = self.cl = self.properties = None
+        del self.globals['handle_require']
         TemplateFunctions.clear(self)
 
     def buildurl(self, filterspec, search_text, filter, columns, sort, group, pagesize):
@@ -1019,7 +1026,8 @@ class IndexTemplate(TemplateFunctions):
             if nodeids is None:
                 if search_text != '':
                     matches = self.db.indexer.search(
-                        search_text.split(' '), self.cl)
+                        re.findall(r'\b\w{2,25}\b', search_text), self.cl)
+                        #search_text.split(' '), self.cl)
                 nodeids = self.cl.filter(matches, filterspec, sort, group)
             for nodeid in nodeids[startwith:startwith+pagesize]:
                 # check for a group heading
@@ -1351,6 +1359,7 @@ class ItemTemplate(TemplateFunctions):
 
     def clear(self):
         self.db = self.cl = self.properties = None
+        del self.globals['handle_require']
         TemplateFunctions.clear(self)
         
     def render(self, nodeid):
@@ -1441,6 +1450,10 @@ class NewItemTemplate(ItemTemplate):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.108  2002/07/31 22:40:50  gmcm
+# Fixes to the search form and saving queries.
+# Fixes to  sorting in back_metakit.py.
+#
 # Revision 1.107  2002/07/30 05:27:30  richard
 # nicer error messages, and a bugfix
 #
