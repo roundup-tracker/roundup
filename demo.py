@@ -2,14 +2,28 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.18 2004-10-08 00:18:27 richard Exp $
+# $Id: demo.py,v 1.19 2004-10-18 07:46:59 a1s Exp $
 
 import sys, os, string, re, urlparse, ConfigParser
 import shutil, socket, errno, BaseHTTPServer
 from glob import glob
 
-def install_demo(home, backend):
-    from roundup import init, instance, password, backends, configuration
+from roundup import configuration
+from roundup.scripts import roundup_server
+
+def install_demo(home, backend, template):
+    """Install a demo tracker
+
+    Parameters:
+        home:
+            tracker home directory path
+        backend:
+            database backend name
+        template:
+            full path to the tracker template directory
+
+    """
+    from roundup import init, instance, password, backends
 
     # set up the config for this tracker
     config = configuration.CoreConfig()
@@ -27,7 +41,7 @@ def install_demo(home, backend):
     if module.db_exists(config):
         module.db_nuke(config)
 
-    init.install(home, os.path.join('templates', 'classic'))
+    init.install(home, template)
     # don't have email flying around
     os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
     try:
@@ -60,7 +74,7 @@ def install_demo(home, backend):
 
     # write the config
     config['INSTANT_REGISTRATION'] = 1
-    config.save()
+    config.save(os.path.join(home, config.INI_FILE))
 
     # open the tracker and initialise
     tracker = instance.open(home)
@@ -73,39 +87,37 @@ def install_demo(home, backend):
     db.commit()
     db.close()
 
-def run_demo():
-    ''' Run a demo server for users to play with for instant gratification.
-
-        Sets up the web service on localhost. Disables nosy lists.
-    '''
-    home = os.path.abspath('demo')
-    backend = 'anydbm'
-    if not os.path.exists(home) or sys.argv[-1] == 'nuke':
-        if len(sys.argv) > 2:
-            backend = sys.argv[-2]
-        install_demo(home, backend)
-
-    cfg = ConfigParser.ConfigParser()
-    cfg.read(os.path.join(home, 'config.ini'))
-    url = cfg.get('tracker', 'web')
-    hostname, port = urlparse.urlparse(url)[1].split(':')
-    port = int(port)
-
-    # ok, so start up the server
-    from roundup.scripts import roundup_server
+def run_demo(home):
+    """Run the demo tracker installed in ``home``"""
     roundup_server.RoundupRequestHandler.TRACKER_HOMES = {'demo': home}
-
+    cfg = configuration.CoreConfig(home)
     success_message = '''Server running - connect to:
     %s
 1. Log in as "demo"/"demo" or "admin"/"admin".
 2. Hit Control-C to stop the server.
 3. Re-start the server by running "python demo.py" again.
-4. Re-initialise the server by running "python demo.py nuke".''' % url
+4. Re-initialise the server by running "python demo.py nuke".
+''' % cfg["TRACKER_WEB"]
 
+    # disable command line processing in roundup_server
     sys.argv = sys.argv[:1]
-    roundup_server.run(port, success_message)
+    roundup_server.run(success_message=success_message)
+
+def demo_main():
+    """Run a demo server for users to play with for instant gratification.
+
+    Sets up the web service on localhost. Disables nosy lists.
+    """
+    home = os.path.abspath('demo')
+    if not os.path.exists(home) or (sys.argv[-1] == 'nuke'):
+        if len(sys.argv) > 2:
+            backend = sys.argv[-2]
+        else:
+            backend = 'anydbm'
+        install_demo(home, backend, os.path.join('templates', 'classic'))
+    run_demo(home)
 
 if __name__ == '__main__':
-    run_demo()
+    demo_main()
 
 # vim: set filetype=python sts=4 sw=4 et si :
