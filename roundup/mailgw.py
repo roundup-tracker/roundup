@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.104 2003-01-06 21:28:38 richard Exp $
+$Id: mailgw.py,v 1.105 2003-01-11 23:52:27 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -306,7 +306,7 @@ class MailGW:
 
         # now send the message
         if SENDMAILDEBUG:
-            open(SENDMAILDEBUG, 'w').write('From: %s\nTo: %s\n%s\n'%(
+            open(SENDMAILDEBUG, 'a').write('From: %s\nTo: %s\n%s\n'%(
                 self.instance.config.ADMIN_EMAIL, ', '.join(sendto),
                     m.getvalue()))
         else:
@@ -386,6 +386,23 @@ class MailGW:
         # detect loops
         if message.getheader('x-roundup-loop', ''):
             raise MailLoop
+
+        # XXX Don't enable. This doesn't work yet.
+#  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"
+        # handle delivery to addresses like:tracker+issue25@some.dom.ain
+        # use the embedded issue number as our issue
+#        if hasattr(self.instance.config, 'EMAIL_ISSUE_ADDRESS_RE') and \
+#                self.instance.config.EMAIL_ISSUE_ADDRESS_RE:
+#            issue_re = self.instance.config.EMAIL_ISSUE_ADDRESS_RE
+#            for header in ['to', 'cc', 'bcc']:
+#                addresses = message.getheader(header, '')
+#            if addresses:
+#              # FIXME, this only finds the first match in the addresses.
+#                issue = re.search(issue_re, addresses, 'i')
+#                if issue:
+#                    classname = issue.group('classname')
+#                    nodeid = issue.group('nodeid')
+#                    break
 
         # handle the subject line
         subject = message.getheader('subject', '')
@@ -480,6 +497,52 @@ Subject was: "%s"
 '''%(nodeid, subject)
 
         #
+        # Handle the options specified by the email gateway
+        # command line. I do this by looping over the list of
+        # self.options looking for a -C to tell me what class
+        # I add the -S setting string to.
+        #
+        msg_props = {}
+        user_props = {}
+        file_props = {}
+        issue_props = {}
+        # this should be true if options are set on command
+        # line
+        if hasattr(self, 'options'):
+            current_class = 'msg'
+            for option, propstring in self.options:
+                if option in ( '-C', '--class'):
+                    current_class = propstring.strip()
+                    if current_class not in ('msg', 'file', 'user', 'issue'):
+                        raise MailUsageError, '''
+The mail gateway is not properly set up. Please contact
+%s and have them fix the incorrect class specified as:
+  %s
+'''%(self.instance.config.ADMIN_EMAIL, current_class)
+                if option in ('-S', '--set'):
+                    if current_class == 'issue' :
+                        errors, issue_props = setPropArrayFromString(self,
+                            cl, propstring.strip(), nodeid)
+                    elif current_class == 'file' :
+                        temp_cl = self.db.getclass('file')
+                        errors, file_props = setPropArrayFromString(self,
+                            temp_cl, propstring.strip())
+                    elif current_class == 'msg' :
+                        temp_cl = self.db.getclass('msg')
+                        errors, msg_props = setPropArrayFromString(self,
+                            temp_cl, propstring.strip())
+                    elif current_class == 'user' :
+                        temp_cl = self.db.getclass('user')
+                        errors, user_props = setPropArrayFromString(self,
+                            temp_cl, propstring.strip())
+                    if errors:
+                        raise MailUsageError, '''
+The mail gateway is not properly set up. Please contact
+%s and have them fix the incorrect properties:
+  %s
+'''%(self.instance.config.ADMIN_EMAIL, errors)
+
+        #
         # handle the users
         #
         # Don't create users if anonymous isn't allowed to register
@@ -538,14 +601,14 @@ Unknown address: %s
 
             # look up the recipient - create if necessary (and we're
             # allowed to)
-            recipient = uidFromAddress(self.db, recipient, create)
+            recipient = uidFromAddress(self.db, recipient, create, **user_props)
 
             # if all's well, add the recipient to the list
             if recipient:
                 recipients.append(recipient)
 
         #
-        # extract the args
+        # XXX extract the args NOT USED WHY -- rouilj
         #
         subject_args = m.group('args')
 
@@ -557,113 +620,7 @@ Unknown address: %s
         props = {}
         args = m.group('args')
         if args:
-            errors = []
-            for prop in string.split(args, ';'):
-                # extract the property name and value
-                try:
-                    propname, value = prop.split('=')
-                except ValueError, message:
-                    errors.append('not of form [arg=value,'
-                        'value,...;arg=value,value...]')
-                    break
-
-                # ensure it's a valid property name
-                propname = propname.strip()
-                try:
-                    proptype =  properties[propname]
-                except KeyError:
-                    errors.append('refers to an invalid property: '
-                        '"%s"'%propname)
-                    continue
-
-                # convert the string value to a real property value
-                if isinstance(proptype, hyperdb.String):
-                    props[propname] = value.strip()
-                if isinstance(proptype, hyperdb.Password):
-                    props[propname] = password.Password(value.strip())
-                elif isinstance(proptype, hyperdb.Date):
-                    try:
-                        props[propname] = date.Date(value.strip())
-                    except ValueError, message:
-                        errors.append('contains an invalid date for '
-                            '%s.'%propname)
-                elif isinstance(proptype, hyperdb.Interval):
-                    try:
-                        props[propname] = date.Interval(value)
-                    except ValueError, message:
-                        errors.append('contains an invalid date interval'
-                            'for %s.'%propname)
-                elif isinstance(proptype, hyperdb.Link):
-                    linkcl = self.db.classes[proptype.classname]
-                    propkey = linkcl.labelprop(default_to_id=1)
-                    try:
-                        props[propname] = linkcl.lookup(value)
-                    except KeyError, message:
-                        errors.append('"%s" is not a value for %s.'%(value,
-                            propname))
-                elif isinstance(proptype, hyperdb.Multilink):
-                    # get the linked class
-                    linkcl = self.db.classes[proptype.classname]
-                    propkey = linkcl.labelprop(default_to_id=1)
-                    if nodeid:
-                        curvalue = cl.get(nodeid, propname)
-                    else:
-                        curvalue = []
-
-                    # handle each add/remove in turn
-                    # keep an extra list for all items that are
-                    # definitely in the new list (in case of e.g.
-                    # <propname>=A,+B, which should replace the old
-                    # list with A,B)
-                    set = 0
-                    newvalue = []
-                    for item in value.split(','):
-                        item = item.strip()
-
-                        # handle +/-
-                        remove = 0
-                        if item.startswith('-'):
-                            remove = 1
-                            item = item[1:]
-                        elif item.startswith('+'):
-                            item = item[1:]
-                        else:
-                            set = 1
-
-                        # look up the value
-                        try:
-                            item = linkcl.lookup(item)
-                        except KeyError, message:
-                            errors.append('"%s" is not a value for %s.'%(item,
-                                propname))
-                            continue
-
-                        # perform the add/remove
-                        if remove:
-                            try:
-                                curvalue.remove(item)
-                            except ValueError:
-                                errors.append('"%s" is not currently in '
-                                    'for %s.'%(item, propname))
-                                continue
-                        else:
-                            newvalue.append(item)
-                            if item not in curvalue:
-                                curvalue.append(item)
-
-                    # that's it, set the new Multilink property value,
-                    # or overwrite it completely
-                    if set:
-                        props[propname] = newvalue
-                    else:
-                        props[propname] = curvalue
-                elif isinstance(proptype, hyperdb.Boolean):
-                    value = value.strip()
-                    props[propname] = value.lower() in ('yes', 'true', 'on', '1')
-                elif isinstance(proptype, hyperdb.Number):
-                    value = value.strip()
-                    props[propname] = int(value)
-
+            errors, props = setPropArrayFromString(self, cl, args, nodeid)
             # handle any errors parsing the argument list
             if errors:
                 errors = '\n- '.join(errors)
@@ -814,7 +771,7 @@ not find a text/plain part to use.
             if not name:
                 name = "unnamed"
             files.append(self.db.file.create(type=mime_type, name=name,
-                content=data))
+                content=data, **file_props))
 
         # 
         # create the message if there's a message body (content)
@@ -823,7 +780,7 @@ not find a text/plain part to use.
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files, messageid=messageid,
-                inreplyto=inreplyto)
+                inreplyto=inreplyto, **msg_props)
 
             # attach the message to the node
             if nodeid:
@@ -843,6 +800,12 @@ not find a text/plain part to use.
         # perform the node change / create
         #
         try:
+            # merge the command line props defined in issue_props into
+            # the props dictionary because function(**props, **issue_props)
+            # is a syntax error.
+            for prop in issue_props.keys() :
+                if not props.has_key(prop) :
+                    props[prop] = issue_props[prop]
             if nodeid:
                 cl.set(nodeid, **props)
             else:
@@ -857,6 +820,119 @@ There was a problem with the message you sent:
         self.db.commit()
 
         return nodeid
+
+ 
+def setPropArrayFromString(self, cl, propString, nodeid = None):
+    ''' takes string of form prop=value,value;prop2=value
+        and returns (error, prop[..])
+    '''
+    properties = cl.getprops()
+    props = {}
+    errors = []
+    for prop in string.split(propString, ';'):
+        # extract the property name and value
+        try:
+            propname, value = prop.split('=')
+        except ValueError, message:
+            errors.append('not of form [arg=value,value,...;'
+                'arg=value,value,...]')
+            return (errors, props)
+
+        # ensure it's a valid property name
+        propname = propname.strip()
+        try:
+            proptype =  properties[propname]
+        except KeyError:
+            errors.append('refers to an invalid property: "%s"'%propname)
+            continue
+
+        # convert the string value to a real property value
+        if isinstance(proptype, hyperdb.String):
+            props[propname] = value.strip()
+        if isinstance(proptype, hyperdb.Password):
+            props[propname] = password.Password(value.strip())
+        elif isinstance(proptype, hyperdb.Date):
+            try:
+                props[propname] = date.Date(value.strip())
+            except ValueError, message:
+                errors.append('contains an invalid date for %s.'%propname)
+        elif isinstance(proptype, hyperdb.Interval):
+            try:
+                props[propname] = date.Interval(value)
+            except ValueError, message:
+                errors.append('contains an invalid date interval for %s.'%
+                    propname)
+        elif isinstance(proptype, hyperdb.Link):
+            linkcl = self.db.classes[proptype.classname]
+            propkey = linkcl.labelprop(default_to_id=1)
+            try:
+                props[propname] = linkcl.lookup(value)
+            except KeyError, message:
+                errors.append('"%s" is not a value for %s.'%(value, propname))
+        elif isinstance(proptype, hyperdb.Multilink):
+            # get the linked class
+            linkcl = self.db.classes[proptype.classname]
+            propkey = linkcl.labelprop(default_to_id=1)
+            if nodeid:
+                curvalue = cl.get(nodeid, propname)
+            else:
+                curvalue = []
+
+            # handle each add/remove in turn
+            # keep an extra list for all items that are
+            # definitely in the new list (in case of e.g.
+            # <propname>=A,+B, which should replace the old
+            # list with A,B)
+            set = 0
+            newvalue = []
+            for item in value.split(','):
+                item = item.strip()
+
+                # handle +/-
+                remove = 0
+                if item.startswith('-'):
+                    remove = 1
+                    item = item[1:]
+                elif item.startswith('+'):
+                    item = item[1:]
+                else:
+                    set = 1
+
+                # look up the value
+                try:
+                    item = linkcl.lookup(item)
+                except KeyError, message:
+                    errors.append('"%s" is not a value for %s.'%(item,
+                        propname))
+                    continue
+
+                # perform the add/remove
+                if remove:
+                    try:
+                        curvalue.remove(item)
+                    except ValueError:
+                        errors.append('"%s" is not currently in for %s.'%(item,
+                            propname))
+                        continue
+                else:
+                    newvalue.append(item)
+                    if item not in curvalue:
+                        curvalue.append(item)
+
+            # that's it, set the new Multilink property value,
+            # or overwrite it completely
+            if set:
+                props[propname] = newvalue
+            else:
+                props[propname] = curvalue
+        elif isinstance(proptype, hyperdb.Boolean):
+            value = value.strip()
+            props[propname] = value.lower() in ('yes', 'true', 'on', '1')
+        elif isinstance(proptype, hyperdb.Number):
+            value = value.strip()
+            props[propname] = int(value)
+    return errors, props
+
 
 def extractUserFromList(userClass, users):
     '''Given a list of users, try to extract the first non-anonymous user
@@ -875,10 +951,12 @@ def extractUserFromList(userClass, users):
         return users[0]
     return None
 
-def uidFromAddress(db, address, create=1):
+
+def uidFromAddress(db, address, create=1, **user_props):
     ''' address is from the rfc822 module, and therefore is (name, addr)
 
         user is created if they don't exist in the db already
+        user_props may supply additional user information
     '''
     (realname, address) = address
 
@@ -900,9 +978,11 @@ def uidFromAddress(db, address, create=1):
     # couldn't match address or username, so create a new user
     if create:
         return db.user.create(username=address, address=address,
-            realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES)
+            realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
+            **user_props)
     else:
         return 0
+
 
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),

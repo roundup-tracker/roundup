@@ -2,7 +2,10 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2003-??-?? 0.6.0 (?)
-- better hyperlinking
+- better hyperlinking in web message texts
+- support setting of properties on message and file through web and
+  email interface (thanks John Rouillard)
+
 
 2003-01-10 0.5.4
 - key the templates cache off full path, not filename

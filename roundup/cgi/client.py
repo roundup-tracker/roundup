@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.65 2003-01-08 04:39:36 richard Exp $
+# $Id: client.py,v 1.66 2003-01-11 23:52:28 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1050,14 +1050,28 @@ class Client:
         files = []
         if self.form.has_key(':file'):
             file = self.form[':file']
+
+            # if there's a filename, then we create a file
             if file.filename:
+                # see if there are any file properties we should set
+                file_props={};
+                if self.form.has_key(':file_fields'):
+                    for field in self.form[':file_fields'].value.split(','):
+                        if self.form.has_key(field):
+                            if field.startswith("file_"):
+                                file_props[field[5:]] = self.form[field].value
+                            else :
+                                file_props[field] = self.form[field].value
+
+                # try to determine the file content-type
                 filename = file.filename.split('\\')[-1]
                 mime_type = mimetypes.guess_type(filename)[0]
                 if not mime_type:
                     mime_type = "application/octet-stream"
+
                 # create the new file entry
                 files.append(self.db.file.create(type=mime_type,
-                    name=filename, content=file.file.read()))
+                    name=filename, content=file.file.read(), **file_props))
 
         # we don't want to do a message if none of the following is true...
         cn = self.classname
@@ -1092,11 +1106,21 @@ class Client:
         messageid = "<%s.%s.%s@%s>"%(time.time(), random.random(),
             self.classname, self.instance.config.MAIL_DOMAIN)
 
+        # see if there are any message properties we should set
+        msg_props={};
+        if self.form.has_key(':msg_fields'):
+            for field in self.form[':msg_fields'].value.split(','):
+                if self.form.has_key(field):
+                    if field.startswith("msg_"):
+                        msg_props[field[4:]] = self.form[field].value
+                    else :
+                        msg_props[field] = self.form[field].value
+
         # now create the message, attaching the files
         content = '\n'.join(m)
         message_id = self.db.msg.create(author=self.userid,
             recipients=[], date=date.Date('.'), summary=summary,
-            content=content, files=files, messageid=messageid)
+            content=content, files=files, messageid=messageid, **msg_props)
 
         # update the messages property
         return message_id, files
