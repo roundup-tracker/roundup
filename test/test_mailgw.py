@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.35 2002-12-10 00:46:55 richard Exp $
+# $Id: test_mailgw.py,v 1.36 2002-12-11 03:17:50 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -31,19 +31,13 @@ class DiffHelper:
            the first to be the "original" but in the calls in this file,
            the second arg is the original. Ho hum.
         '''
-        if s1 == s2:
+        # we have to special-case the Date: header here 'cos we can't test
+        # for it properly
+        l1=s1.strip().split('\n')
+        l2=[x for x in s2.strip().split('\n') if not x.startswith('Date: ')]
+        if l1 == l2:
             return
 
-        # under python2.[12] we allow a difference of one trailing empty line.
-        if sys.version_info[0:2] == (2,1):
-            if s1+'\n' == s2:
-                return
-        if sys.version_info[0:2] == (2,2):
-            if s1 == s2+'\n':
-                return
-        
-        l1=s1.split('\n')
-        l2=s2.split('\n')
         s = difflib.SequenceMatcher(None, l1, l2)
         res = ['Generated message not correct (diff follows):']
         for value, s1s, s1e, s2s, s2e in s.get_opcodes():
