@@ -33,6 +33,7 @@ Feature:
  . split instance initialisation into two steps, allowing config changes
    before the database is initialised.
  . don't create an empty message on email issue creation if the email is empty
+ . may now display additional fields in Multilink form menus
  . #541941 ] changing multilink properties by mail
  . #526730 ] search for messages capability
  . #505180 ] split MailGW.handle_Message
