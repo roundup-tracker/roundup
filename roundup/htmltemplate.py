@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.49 2001-12-20 15:43:01 rochecompaan Exp $
+# $Id: htmltemplate.py,v 1.50 2002-01-05 02:35:10 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -24,6 +24,7 @@ Template engine.
 import os, re, StringIO, urllib, cgi, errno
 
 import hyperdb, date, password
+from i18n import _
 
 # This imports the StructureText functionality for the do_stext function
 # get it from http://dev.zope.org/Members/jim/StructuredTextWiki/NGReleases
@@ -52,7 +53,7 @@ class TemplateFunctions:
             linked nodes (or the ids if the linked class has no key property)
         '''
         if not self.nodeid and self.form is None:
-            return '[Field: not called from item]'
+            return _('[Field: not called from item]')
         propclass = self.properties[property]
         if self.nodeid:
             # make sure the property is a valid one
@@ -76,7 +77,7 @@ class TemplateFunctions:
             else: value = str(value)
         elif isinstance(propclass, hyperdb.Password):
             if value is None: value = ''
-            else: value = '*encrypted*'
+            else: value = _('*encrypted*')
         elif isinstance(propclass, hyperdb.Date):
             value = str(value)
         elif isinstance(propclass, hyperdb.Interval):
@@ -85,7 +86,7 @@ class TemplateFunctions:
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
             if value: value = str(linkcl.get(value, k))
-            else: value = '[unselected]'
+            else: value = _('[unselected]')
         elif isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
@@ -158,7 +159,7 @@ class TemplateFunctions:
                 s = 'selected '
             else:
                 s = ''
-            l.append('<option %svalue="-1">- no selection -</option>'%s)
+            l.append(_('<option %svalue="-1">- no selection -</option>')%s)
             options = linkcl.list()
             options.sort(sortfunc)
             for optionid in options:
@@ -197,7 +198,7 @@ class TemplateFunctions:
                 size, ','.join(input_value)))
             s = "<br>\n".join(l)
         else:
-            s = 'Plain: bad propclass "%s"'%propclass
+            s = _('Plain: bad propclass "%(propclass)s"')%locals()
         return s
 
     def do_menu(self, property, size=None, height=None, showid=0):
@@ -217,7 +218,7 @@ class TemplateFunctions:
             s = ''
             if value is None:
                 s = 'selected '
-            l.append('<option %svalue="-1">- no selection -</option>'%s)
+            l.append(_('<option %svalue="-1">- no selection -</option>')%s)
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -246,7 +247,7 @@ class TemplateFunctions:
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid, option))
             l.append('</select>')
             return '\n'.join(l)
-        return '[Menu: not a link]'
+        return _('[Menu: not a link]')
 
     #XXX deviates from spec
     def do_link(self, property=None, is_download=0):
@@ -260,7 +261,7 @@ class TemplateFunctions:
            downloaded file name is correct.
         '''
         if not self.nodeid and self.form is None:
-            return '[Link: not called from item]'
+            return _('[Link: not called from item]')
         propclass = self.properties[property]
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
@@ -283,7 +284,8 @@ class TemplateFunctions:
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
-            if not value : return '[no %s]'%property.capitalize()
+            if not value:
+                return _('[no %(propname)s]')%{'propname': property.capitalize()}
             l = []
             for value in value:
                 linkvalue = linkcl.get(value, k)
@@ -294,8 +296,8 @@ class TemplateFunctions:
                     l.append('<a href="%s%s">%s</a>'%(linkname, value,
                         linkvalue))
             return ', '.join(l)
-        if isinstance(propclass, hyperdb.String):
-            if value == '': value = '[no %s]'%property.capitalize()
+        if isinstance(propclass, hyperdb.String) and value == '':
+            return _('[no %(propname)s]')%{'propname': property.capitalize()}
         if is_download:
             return '<a href="%s%s/%s">%s</a>'%(self.classname, self.nodeid,
                 value, value)
@@ -307,12 +309,12 @@ class TemplateFunctions:
             the list
         '''
         if not self.nodeid:
-            return '[Count: not called from item]'
+            return _('[Count: not called from item]')
         propclass = self.properties[property]
         value = self.cl.get(self.nodeid, property)
         if isinstance(propclass, hyperdb.Multilink):
             return str(len(value))
-        return '[Count: not a Multilink]'
+        return _('[Count: not a Multilink]')
 
     # XXX pretty is definitely new ;)
     def do_reldate(self, property, pretty=0):
@@ -322,10 +324,10 @@ class TemplateFunctions:
             with the 'pretty' flag, make it pretty
         '''
         if not self.nodeid and self.form is None:
-            return '[Reldate: not called from item]'
+            return _('[Reldate: not called from item]')
         propclass = self.properties[property]
         if isinstance(not propclass, hyperdb.Date):
-            return '[Reldate: not a Date]'
+            return _('[Reldate: not a Date]')
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
         else:
@@ -333,7 +335,7 @@ class TemplateFunctions:
         interval = value - date.Date('.')
         if pretty:
             if not self.nodeid:
-                return 'now'
+                return _('now')
             pretty = interval.pretty()
             if pretty is None:
                 pretty = value.pretty()
@@ -345,7 +347,7 @@ class TemplateFunctions:
             allow you to download files
         '''
         if not self.nodeid:
-            return '[Download: not called from item]'
+            return _('[Download: not called from item]')
         propclass = self.properties[property]
         value = self.cl.get(self.nodeid, property)
         if isinstance(propclass, hyperdb.Link):
@@ -359,7 +361,7 @@ class TemplateFunctions:
                 linkvalue = linkcl.get(value, k)
                 l.append('<a href="%s%s">%s</a>'%(linkcl, value, linkvalue))
             return ', '.join(l)
-        return '[Download: not a link]'
+        return _('[Download: not a link]')
 
 
     def do_checklist(self, property, **args):
@@ -369,7 +371,7 @@ class TemplateFunctions:
         propclass = self.properties[property]
         if (not isinstance(propclass, hyperdb.Link) and not
                 isinstance(propclass, hyperdb.Multilink)):
-            return '[Checklist: not a link]'
+            return _('[Checklist: not a link]')
 
         # get our current checkbox state
         if self.nodeid:
@@ -404,8 +406,8 @@ class TemplateFunctions:
                 checked = 'checked'
             else:
                 checked = ''
-            l.append('[unselected]:<input type="checkbox" %s name="%s" '
-                'value="-1">'%(checked, property))
+            l.append(_('[unselected]:<input type="checkbox" %s name="%s" '
+                'value="-1">')%(checked, property))
         return '\n'.join(l)
 
     def do_note(self, rows=5, cols=80):
@@ -423,7 +425,7 @@ class TemplateFunctions:
         '''
         propcl = self.properties[property]
         if not isinstance(propcl, hyperdb.Multilink):
-            return '[List: not a Multilink]'
+            return _('[List: not a Multilink]')
         value = self.cl.get(self.nodeid, property)
         if reverse:
             value.reverse()
@@ -445,14 +447,14 @@ class TemplateFunctions:
         ''' list the history of the item
         '''
         if self.nodeid is None:
-            return "[History: node doesn't exist]"
+            return _("[History: node doesn't exist]")
 
         l = ['<table width=100% border=0 cellspacing=0 cellpadding=2>',
             '<tr class="list-header">',
-            '<td><span class="list-item"><strong>Date</strong></span></td>',
-            '<td><span class="list-item"><strong>User</strong></span></td>',
-            '<td><span class="list-item"><strong>Action</strong></span></td>',
-            '<td><span class="list-item"><strong>Args</strong></span></td>']
+            _('<td><span class="list-item"><strong>Date</strong></span></td>'),
+            _('<td><span class="list-item"><strong>User</strong></span></td>'),
+            _('<td><span class="list-item"><strong>Action</strong></span></td>'),
+            _('<td><span class="list-item"><strong>Args</strong></span></td>')]
 
         for id, date, user, action, args in self.cl.history(self.nodeid):
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
@@ -465,11 +467,11 @@ class TemplateFunctions:
         ''' add a submit button for the item
         '''
         if self.nodeid:
-            return '<input type="submit" value="Submit Changes">'
+            return _('<input type="submit" value="Submit Changes">')
         elif self.form is not None:
-            return '<input type="submit" value="Submit New Entry">'
+            return _('<input type="submit" value="Submit New Entry">')
         else:
-            return '[Submit: not called from item]'
+            return _('[Submit: not called from item]')
 
 
 #
@@ -589,7 +591,7 @@ class IndexTemplate(TemplateFunctions):
         for nodeid in nodeids:
             # check for a group heading
             if group_names:
-                this_group = [self.cl.get(nodeid, name, '[no value]') for name in group_names]
+                this_group = [self.cl.get(nodeid, name, _('[no value]')) for name in group_names]
                 if this_group != old_group:
                     l = []
                     for name in group_names:
@@ -599,7 +601,8 @@ class IndexTemplate(TemplateFunctions):
                             key = group_cl.getkey()
                             value = self.cl.get(nodeid, name)
                             if value is None:
-                                l.append('[unselected %s]'%prop.classname)
+                                l.append(_('[unselected %(classname)s]')%{
+                                    'classname': prop.classname})
                             else:
                                 l.append(group_cl.get(self.cl.get(nodeid,
                                     name), key))
@@ -609,9 +612,9 @@ class IndexTemplate(TemplateFunctions):
                             for value in self.cl.get(nodeid, name):
                                 l.append(group_cl.get(value, key))
                         else:
-                            value = self.cl.get(nodeid, name, '[no value]')
+                            value = self.cl.get(nodeid, name, _('[no value]'))
                             if value is None:
-                                value = '[empty %s]'%name
+                                value = _('[empty %(name)s]')%locals()
                             else:
                                 value = str(value)
                             l.append(value)
@@ -654,12 +657,12 @@ class IndexTemplate(TemplateFunctions):
             # display the filter section
             w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
             w('<tr class="location-bar">')
-            w(' <th align="left" colspan="2">Filter specification...</th>')
+            w(_(' <th align="left" colspan="2">Filter specification...</th>'))
             w('</tr>')
             replace = IndexTemplateReplace(self.globals, locals(), filter)
             w(replace.go(template))
             w('<tr class="location-bar"><td width="1%%">&nbsp;</td>')
-            w('<td><input type="submit" name="action" value="Redisplay"></td></tr>')
+            w(_('<td><input type="submit" name="action" value="Redisplay"></td></tr>'))
             w('</table>')
 
         # now add in the filter/columns/group/etc config table form
@@ -685,9 +688,9 @@ class IndexTemplate(TemplateFunctions):
                     w('<input type="hidden" name=":group" value="%s">' % name)
 
         # TODO: The widget style can go into the stylesheet
-        w('<th align="left" colspan=%s>'
+        w(_('<th align="left" colspan=%s>'
           '<input style="height : 1em; width : 1em; font-size: 12pt" type="submit" name="action" value="%s">&nbsp;View '
-          'customisation...</th></tr>\n'%(len(names)+1, action))
+          'customisation...</th></tr>\n')%(len(names)+1, action))
 
         if not show_customization:
             w('</table>\n')
@@ -700,8 +703,7 @@ class IndexTemplate(TemplateFunctions):
 
         # Filter
         if all_filters:
-            w('<tr><th width="1%" align=right class="location-bar">'
-              'Filters</th>\n')
+            w(_('<tr><th width="1%" align=right class="location-bar">Filters</th>\n'))
             for name in names:
                 if name not in all_filters:
                     w('<td>&nbsp;</td>')
@@ -715,8 +717,7 @@ class IndexTemplate(TemplateFunctions):
 
         # Columns
         if all_columns:
-            w('<tr><th width="1%" align=right class="location-bar">'
-              'Columns</th>\n')
+            w(_('<tr><th width="1%" align=right class="location-bar">Columns</th>\n'))
             for name in names:
                 if name not in all_columns:
                     w('<td>&nbsp;</td>')
@@ -729,8 +730,7 @@ class IndexTemplate(TemplateFunctions):
             w('</tr>\n')
 
             # Grouping
-            w('<tr><th width="1%" align=right class="location-bar">'
-              'Grouping</th>\n')
+            w(_('<tr><th width="1%" align=right class="location-bar">Grouping</th>\n'))
             for name in names:
                 prop = self.properties[name]
                 if name not in all_columns:
@@ -745,7 +745,7 @@ class IndexTemplate(TemplateFunctions):
 
         w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
         w('<td colspan="%s">'%len(names))
-        w('<input type="submit" name="action" value="Redisplay"></td>')
+        w(_('<input type="submit" name="action" value="Redisplay"></td>'))
         w('</tr>\n')
         w('</table>\n')
 
@@ -885,6 +885,14 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2001/12/20 15:43:01  rochecompaan
+# Features added:
+#  .  Multilink properties are now displayed as comma separated values in
+#     a textbox
+#  .  The add user link is now only visible to the admin user
+#  .  Modified the mail gateway to reject submissions from unknown
+#     addresses if ANONYMOUS_ACCESS is denied
+#
 # Revision 1.48  2001/12/20 06:13:24  rochecompaan
 # Bugs fixed:
 #   . Exception handling in hyperdb for strings-that-look-like numbers got
