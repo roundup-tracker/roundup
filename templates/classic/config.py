@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.9 2004-06-08 05:29:18 richard Exp $
+# $Id: config.py,v 1.10 2004-07-20 00:15:23 richard Exp $
 
 import os
 
@@ -47,6 +47,11 @@ DATABASE = os.path.join(TRACKER_HOME, 'db')
 
 # This is the directory that the HTML templates reside in
 TEMPLATES = os.path.join(TRACKER_HOME, 'html')
+
+# Optional: the directory that static files are served from (files with the
+# URL /@@file/<filename>). If this is not defined, then static files are
+# served from the TEMPLATES directory.
+# STATIC_FILES = os.path.join(TRACKER_HOME, 'files')
 
 # A descriptive name for your roundup instance
 TRACKER_NAME = 'Roundup issue tracker'
