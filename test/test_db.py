@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.52 2002-09-20 05:08:00 richard Exp $ 
+# $Id: test_db.py,v 1.53 2002-09-20 19:26:28 gmcm Exp $ 
 
 import unittest, os, shutil, time
 
@@ -314,7 +314,7 @@ class anydbmDBTestCase(MyTestCase):
         # class get
         #
         # invalid node id
-        ar(IndexError, self.db.issue.get, '1', 'title')
+        ar(IndexError, self.db.issue.get, '99', 'title')
         # invalid property name
         ar(KeyError, self.db.status.get, '2', 'foo')
 
@@ -322,7 +322,7 @@ class anydbmDBTestCase(MyTestCase):
         # class set
         #
         # invalid node id
-        ar(IndexError, self.db.issue.set, '1', title='foo')
+        ar(IndexError, self.db.issue.set, '99', title='foo')
         # invalid property name
         ar(KeyError, self.db.status.set, '1', foo='foo')
         # string property
@@ -330,19 +330,19 @@ class anydbmDBTestCase(MyTestCase):
         # key name clash
         ar(ValueError, self.db.status.set, '2', name='unread')
         # set up a valid issue for me to work on
-        self.db.issue.create(title="spam", status='1')
+        id = self.db.issue.create(title="spam", status='1')
         # invalid link index
-        ar(IndexError, self.db.issue.set, '6', title='foo', status='bar')
+        ar(IndexError, self.db.issue.set, id, title='foo', status='bar')
         # invalid link value
-        ar(ValueError, self.db.issue.set, '6', title='foo', status=1)
+        ar(ValueError, self.db.issue.set, id, title='foo', status=1)
         # invalid multilink type
-        ar(TypeError, self.db.issue.set, '6', title='foo', status='1',
+        ar(TypeError, self.db.issue.set, id, title='foo', status='1',
             nosy='hello')
         # invalid multilink index type
-        ar(ValueError, self.db.issue.set, '6', title='foo', status='1',
+        ar(ValueError, self.db.issue.set, id, title='foo', status='1',
             nosy=[1])
         # invalid multilink index
-        ar(IndexError, self.db.issue.set, '6', title='foo', status='1',
+        ar(IndexError, self.db.issue.set, id, title='foo', status='1',
             nosy=['10'])
         # invalid number value
         ar(TypeError, self.db.user.create, username='foo', age='a')
@@ -422,22 +422,23 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(date_stamp, date_stamp2)
 
     def testPack(self):
-        self.db.issue.create(title="spam", status='1')
+        id = self.db.issue.create(title="spam", status='1')
         self.db.commit()
-        self.db.issue.set('1', status='2')
+        self.db.issue.set(id, status='2')
         self.db.commit()
 
         # sleep for at least a second, then get a date to pack at
         time.sleep(1)
         pack_before = date.Date('.')
+        time.sleep(1)
 
         # one more entry
-        self.db.issue.set('1', status='3')
+        self.db.issue.set(id, status='3')
         self.db.commit()
 
         # pack
         self.db.pack(pack_before)
-        journal = self.db.getjournal('issue', '1')
+        journal = self.db.getjournal('issue', id)
 
         # we should have the create and last set entries now
         self.assertEqual(2, len(journal))
