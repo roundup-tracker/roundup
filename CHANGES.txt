@@ -38,6 +38,7 @@ Fixed:
 - less specific messages for login failures (thanks Chris Withers)
 - Reject raised against email messages should result in email rejection, not
   discarding of the message
+- mailgw can override the MAIL_DEFAULT_CLASS
 - handle Py2.3+ datetime objects as Date specs (sf bug 971300)
 
 
