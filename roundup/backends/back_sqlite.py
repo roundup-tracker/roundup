@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.25 2004-04-18 05:31:02 richard Exp $
+# $Id: back_sqlite.py,v 1.26 2004-04-18 23:05:18 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -200,7 +200,7 @@ class Database(rdbms_common.Database):
         self.create_class_table(spec)
 
         if olddata:
-            inscols = []
+            inscols = ['_actor', '_activity', '_creation', '_creator']
             for propname,x in new_spec[1]:
                 prop = properties[propname]
                 if isinstance(prop, hyperdb.Multilink):

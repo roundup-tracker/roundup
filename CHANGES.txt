@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-??-?? 0.7.0
+Fixed:
+- sqlite migration drops some journal information (thanks David Linke)
+
+
 2004-04-18 0.7.0b3
 Feature:
 - added a favicon
