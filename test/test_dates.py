@@ -1,4 +1,4 @@
-# $Id: test_dates.py,v 1.2 2001-07-25 04:34:31 richard Exp $ 
+# $Id: test_dates.py,v 1.1 2001-07-27 06:55:07 richard Exp $ 
 
 import unittest, time
 
@@ -56,4 +56,7 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/25 04:34:31  richard
+# Added id and log to tests files...
+#
 #

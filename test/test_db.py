@@ -1,4 +1,4 @@
-# $Id: test_db.py,v 1.7 2001-07-27 06:26:43 richard Exp $ 
+# $Id: test_db.py,v 1.1 2001-07-27 06:55:07 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -157,6 +157,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/27 06:26:43  richard
+# oops - wasn't deleting the test dir after the read-only tests
+#
 # Revision 1.6  2001/07/27 06:23:59  richard
 # consistency
 #

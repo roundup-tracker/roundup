@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.3 2001-07-25 04:34:31 richard Exp $
+# $Id: __init__.py,v 1.1 2001-07-27 06:55:07 richard Exp $
 
 import unittest
 
@@ -15,4 +15,7 @@ def go():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/25 04:34:31  richard
+# Added id and log to tests files...
+#
 #
