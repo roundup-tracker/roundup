@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.2 2003-05-11 07:33:55 richard Exp $
+# $Id: demo.py,v 1.3 2003-05-16 01:44:43 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -10,12 +10,8 @@ from glob import glob
 
 def install_demo(home):
     # create the instance
-    try:
-        if os.path.exists(home):
-            shutil.rmtree(home)
-    except os.error, error:
-        if error.errno != errno.ENOENT:
-            raise
+    if os.path.exists(home):
+        shutil.rmtree(home)
     from roundup import init, instance, password
     init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around
