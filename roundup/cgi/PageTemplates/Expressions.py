@@ -25,7 +25,7 @@ Modified for Roundup 0.5 release:
 
 """
 
-__version__='$Revision: 1.3 $'[11:-2]
+__version__='$Revision: 1.4 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
@@ -287,9 +287,9 @@ def restrictedTraverse(self, path, securityManager,
             object = apply(object, name)
             continue
 
-        if name[0] == '_':
-            # Never allowed in a URL.
-            raise AttributeError, name
+#        if name[0] == '_':
+#            # Never allowed in a URL.
+#            raise AttributeError, name
 
         # Try an attribute.
         o = get(object, name, M)

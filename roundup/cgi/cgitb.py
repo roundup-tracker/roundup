@@ -1,13 +1,14 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.3 2002-09-06 07:23:29 richard Exp $
+# $Id: cgitb.py,v 1.4 2002-09-09 05:28:48 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
 
-import sys, os, types, string, keyword, linecache, tokenize, inspect, pydoc
+import sys, os, types, string, keyword, linecache, tokenize, inspect
+import pydoc, traceback
 
 from roundup.i18n import _
 
@@ -51,6 +52,10 @@ def pt_html(context=5):
                     niceDict('    ', context.global_vars),
                     niceDict('    ', context.local_vars)))
                 # context._scope_stack))
+
+    l.append('\n')
+    l.append(''.join(traceback.format_exception(etype, evalue,
+        sys.exc_traceback)))
     return head + cgi.escape('\n'.join(l)) + '</pre><p>&nbsp;</p>'
 
 def html(context=5):
@@ -163,6 +168,9 @@ def handler():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/09/06 07:23:29  richard
+# tweak
+#
 # Revision 1.2  2002/09/06 07:21:31  richard
 # much nicer error messages when there's a templating error
 #

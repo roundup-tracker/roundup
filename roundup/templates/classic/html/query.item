@@ -1,25 +1,24 @@
-<table border=0 cellspacing=0 cellpadding=2>
-<tr class="strong-header">
-  <td colspan=2>Query</td>
+<table class="form">
+<tr>
+  <th>Class</th>
+  <td tal:content="structure context/klass/field"></td>
 </tr>
 
-<tr bgcolor="ffffea">
-  <td width=1% nowrap class="form-label" align=right>Class</td>
-  <td class="form-text"><display call="plain('klass')"></td>
+<tr>
+  <th>Name</th>
+  <td tal:content="structure context/name/field"></td>
 </tr>
 
-<tr bgcolor="ffffea">
-  <td width=1% nowrap class="form-label" align=right>Name</td>
-  <td class="form-text"><display call="field('name')"></td>
+<tr>
+  <td colspan=2>
+   hrm. filterspec here...
+   <display call="filterspec('klass','url')">
+  </td>
 </tr>
 
-<tr bgcolor="ffffea">
-  <td colspan=2><display call="filterspec('klass','url')"></td>
-</tr>
-
-<tr bgcolor="ffffea">
-  <td></td>
-  <td class="form-text"><display call="submit()"></td>
+<tr>
+  <td>&nbsp;</td>
+  <td tal:content="structure context/submit">submit button here</td>
 </tr>
 </table>
 

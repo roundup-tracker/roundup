@@ -24,7 +24,7 @@
   <p class="classblock" tal:condition="request/user/queries">
    <b>Your Queries</b><br>
    <a tal:repeat="qs request/user/queries"
-      tal:attributes="href python:'%s%s'%(qs['klass'], qs['url'])"
+      tal:attributes="href string:${qs/klass}${qs/url}"
       tal:content="qs/name">link</a>
   </p>
 

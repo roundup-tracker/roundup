@@ -187,29 +187,34 @@ class HTMLDatabase:
     ''' Return HTMLClasses for valid class fetches
     '''
     def __init__(self, client):
-        self.client = client
+        self._client = client
+
+        # we want config to be exposed
         self.config = client.db.config
+
     def __getattr__(self, attr):
         try:
-            self.client.db.getclass(attr)
+            self._client.db.getclass(attr)
         except KeyError:
             raise AttributeError, attr
-        return HTMLClass(self.client, attr)
+        return HTMLClass(self._client, attr)
     def classes(self):
-        l = self.client.db.classes.keys()
+        l = self._client.db.classes.keys()
         l.sort()
-        return [HTMLClass(self.client, cn) for cn in l]
+        return [HTMLClass(self._client, cn) for cn in l]
         
 class HTMLClass:
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
     def __init__(self, client, classname):
-        self.client = client
-        self.db = client.db
+        self._client = client
+        self._db = client.db
+
+        # we want classname to be exposed
         self.classname = classname
         if classname is not None:
-            self.klass = self.db.getclass(self.classname)
-            self.props = self.klass.getprops()
+            self._klass = self._db.getclass(self.classname)
+            self._props = self._klass.getprops()
 
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
@@ -224,10 +229,10 @@ class HTMLClass:
             return None
         if item == 'creator':
             # but we will be created by this user...
-            return HTMLUser(self.client, 'user', self.client.userid)
+            return HTMLUser(self._client, 'user', self._client.userid)
 
         # get the property
-        prop = self.props[item]
+        prop = self._props[item]
 
         # look up the correct HTMLProperty class
         for klass, htmlklass in propclasses:
@@ -236,7 +241,7 @@ class HTMLClass:
             else:
                 value = None
             if isinstance(prop, klass):
-                return htmlklass(self.client, '', prop, item, value)
+                return htmlklass(self._client, '', prop, item, value)
 
         # no good
         raise KeyError, item
@@ -252,14 +257,14 @@ class HTMLClass:
         ''' Return HTMLProperty for all props
         '''
         l = []
-        for name, prop in self.props.items():
+        for name, prop in self._props.items():
             for klass, htmlklass in propclasses:
                 if isinstance(prop, hyperdb.Multilink):
                     value = []
                 else:
                     value = None
                 if isinstance(prop, klass):
-                    l.append(htmlklass(self.client, '', prop, name, value))
+                    l.append(htmlklass(self._client, '', prop, name, value))
         return l
 
     def list(self):
@@ -267,7 +272,7 @@ class HTMLClass:
             klass = HTMLUser
         else:
             klass = HTMLItem
-        l = [klass(self.client, self.classname, x) for x in self.klass.list()]
+        l = [klass(self._client, self.classname, x) for x in self._klass.list()]
         return l
 
     def csv(self):
@@ -284,23 +289,23 @@ class HTMLClass:
         p = csv.parser()
         s = StringIO.StringIO()
         s.write(p.join(props) + '\n')
-        for nodeid in self.klass.list():
+        for nodeid in self._klass.list():
             l = []
             for name in props:
-                value = self.klass.get(nodeid, name)
+                value = self._klass.get(nodeid, name)
                 if value is None:
                     l.append('')
                 elif isinstance(value, type([])):
                     l.append(':'.join(map(str, value)))
                 else:
-                    l.append(str(self.klass.get(nodeid, name)))
+                    l.append(str(self._klass.get(nodeid, name)))
             s.write(p.join(l) + '\n')
         return s.getvalue()
 
     def propnames(self):
         ''' Return the list of the names of the properties of this class.
         '''
-        idlessprops = self.klass.getprops(protected=0).keys()
+        idlessprops = self._klass.getprops(protected=0).keys()
         idlessprops.sort()
         return ['id'] + idlessprops
 
@@ -316,8 +321,8 @@ class HTMLClass:
             klass = HTMLUser
         else:
             klass = HTMLItem
-        l = [klass(self.client, self.classname, x)
-             for x in self.klass.filter(None, filterspec, sort, group)]
+        l = [klass(self._client, self.classname, x)
+             for x in self._klass.filter(None, filterspec, sort, group)]
         return l
 
     def classhelp(self, properties, label='?', width='400', height='400'):
@@ -348,17 +353,17 @@ class HTMLClass:
         ''' Render this class with the given template.
         '''
         # create a new request and override the specified args
-        req = HTMLRequest(self.client)
+        req = HTMLRequest(self._client)
         req.classname = self.classname
         req.update(kwargs)
 
         # new template, using the specified classname and request
-        pt = getTemplate(self.db.config.TEMPLATES, self.classname, name)
+        pt = getTemplate(self._db.config.TEMPLATES, self.classname, name)
 
         # XXX handle PT rendering errors here nicely
         try:
             # use our fabricated request
-            return pt.render(self.client, self.classname, req)
+            return pt.render(self._client, self.classname, req)
         except PageTemplate.PTRuntimeError, message:
             return '<strong>%s</strong><ol>%s</ol>'%(message,
                 cgi.escape('<li>'.join(pt._v_errors)))
@@ -367,36 +372,37 @@ class HTMLItem:
     ''' Accesses through an *item*
     '''
     def __init__(self, client, classname, nodeid):
-        self.client = client
-        self.db = client.db
-        self.classname = classname
-        self.nodeid = nodeid
-        self.klass = self.db.getclass(classname)
-        self.props = self.klass.getprops()
+        self._client = client
+        self._db = client.db
+        self._classname = classname
+        self._nodeid = nodeid
+        self._klass = self._db.getclass(classname)
+        self._props = self._klass.getprops()
 
     def __repr__(self):
-        return '<HTMLItem(0x%x) %s %s>'%(id(self), self.classname, self.nodeid)
+        return '<HTMLItem(0x%x) %s %s>'%(id(self), self._classname,
+            self._nodeid)
 
     def __getitem__(self, item):
         ''' return an HTMLProperty instance
         '''
         #print 'getitem', (self, item)
         if item == 'id':
-            return self.nodeid
+            return self._nodeid
 
         # get the property
-        prop = self.props[item]
+        prop = self._props[item]
 
         # get the value, handling missing values
-        value = self.klass.get(self.nodeid, item, None)
+        value = self._klass.get(self._nodeid, item, None)
         if value is None:
-            if isinstance(self.props[item], hyperdb.Multilink):
+            if isinstance(self._props[item], hyperdb.Multilink):
                 value = []
 
         # look up the correct HTMLProperty class
         for klass, htmlklass in propclasses:
             if isinstance(prop, klass):
-                return htmlklass(self.client, self.nodeid, prop, item, value)
+                return htmlklass(self._client, self._nodeid, prop, item, value)
 
         raise KeyErorr, item
 
@@ -425,7 +431,7 @@ class HTMLItem:
              _('<th>Args</th>'),
             '</tr>']
         comments = {}
-        history = self.klass.history(self.nodeid)
+        history = self._klass.history(self._nodeid)
         history.sort()
         if direction == 'descending':
             history.reverse()
@@ -454,7 +460,7 @@ class HTMLItem:
                     # try to get the relevant property and treat it
                     # specially
                     try:
-                        prop = self.props[k]
+                        prop = self._props[k]
                     except KeyError:
                         prop = None
                     if prop is not None:
@@ -463,14 +469,14 @@ class HTMLItem:
                             # figure what the link class is
                             classname = prop.classname
                             try:
-                                linkcl = self.db.getclass(classname)
+                                linkcl = self._db.getclass(classname)
                             except KeyError:
                                 labelprop = None
                                 comments[classname] = _('''The linked class
                                     %(classname)s no longer exists''')%locals()
                             labelprop = linkcl.labelprop(1)
                             hrefable = os.path.exists(
-                                os.path.join(self.db.config.TEMPLATES,
+                                os.path.join(self._db.config.TEMPLATES,
                                 classname+'.item'))
 
                         if isinstance(prop, hyperdb.Multilink) and \
@@ -567,10 +573,10 @@ class HTMLUser(HTMLItem):
     '''
     def __init__(self, client, classname, nodeid):
         HTMLItem.__init__(self, client, 'user', nodeid)
-        self.default_classname = client.classname
+        self._default_classname = client.classname
 
         # used for security checks
-        self.security = client.db.security
+        self._security = client.db.security
     _marker = []
     def hasPermission(self, role, classname=_marker):
         ''' Determine if the user has the Role.
@@ -579,8 +585,8 @@ class HTMLUser(HTMLItem):
             be overidden for this test by suppling an alternate classname.
         '''
         if classname is self._marker:
-            classname = self.default_classname
-        return self.security.hasPermission(role, self.nodeid, classname)
+            classname = self._default_classname
+        return self._security.hasPermission(role, self._nodeid, classname)
 
 class HTMLProperty:
     ''' String, Number, Date, Interval HTMLProperty
@@ -588,28 +594,28 @@ class HTMLProperty:
         A wrapper object which may be stringified for the plain() behaviour.
     '''
     def __init__(self, client, nodeid, prop, name, value):
-        self.client = client
-        self.db = client.db
-        self.nodeid = nodeid
-        self.prop = prop
-        self.name = name
-        self.value = value
+        self._client = client
+        self._db = client.db
+        self._nodeid = nodeid
+        self._prop = prop
+        self._name = name
+        self._value = value
     def __repr__(self):
-        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self.name, self.prop, self.value)
+        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._name, self._prop, self._value)
     def __str__(self):
         return self.plain()
     def __cmp__(self, other):
         if isinstance(other, HTMLProperty):
-            return cmp(self.value, other.value)
-        return cmp(self.value, other)
+            return cmp(self._value, other._value)
+        return cmp(self._value, other)
 
 class StringHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
-        if self.value is None:
+        if self._value is None:
             return ''
         if escape:
-            return cgi.escape(str(self.value))
-        return str(self.value)
+            return cgi.escape(str(self._value))
+        return str(self._value)
 
     def stext(self, escape=0):
         s = self.plain(escape=escape)
@@ -618,26 +624,26 @@ class StringHTMLProperty(HTMLProperty):
         return StructuredText(s,level=1,header=0)
 
     def field(self, size = 30):
-        if self.value is None:
+        if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self.value))
+            value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self.name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
     def multiline(self, escape=0, rows=5, cols=40):
-        if self.value is None:
+        if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self.value))
+            value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
         return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
-            self.name, rows, cols, value)
+            self._name, rows, cols, value)
 
     def email(self, escape=1):
         ''' fudge email '''
         if self.value is None: value = ''
-        else: value = str(self.value)
+        else: value = str(self._value)
         value = value.replace('@', ' at ')
         value = value.replace('.', ' ')
         if escape:
@@ -646,83 +652,83 @@ class StringHTMLProperty(HTMLProperty):
 
 class PasswordHTMLProperty(HTMLProperty):
     def plain(self):
-        if self.value is None:
+        if self._value is None:
             return ''
         return _('*encrypted*')
 
     def field(self, size = 30):
-        return '<input type="password" name="%s" size="%s">'%(self.name, size)
+        return '<input type="password" name="%s" size="%s">'%(self._name, size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
-        return str(self.value)
+        return str(self._value)
 
     def field(self, size = 30):
-        if self.value is None:
+        if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self.value))
+            value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self.name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
 class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
         if self.value is None:
             return ''
-        return self.value and "Yes" or "No"
+        return self._value and "Yes" or "No"
 
     def field(self):
-        checked = self.value and "checked" or ""
-        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(self.name,
+        checked = self._value and "checked" or ""
+        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(self._name,
             checked)
         if checked:
             checked = ""
         else:
             checked = "checked"
-        s += '<input type="radio" name="%s" value="no" %s>No'%(self.name,
+        s += '<input type="radio" name="%s" value="no" %s>No'%(self._name,
             checked)
         return s
 
 class DateHTMLProperty(HTMLProperty):
     def plain(self):
-        if self.value is None:
+        if self._value is None:
             return ''
-        return str(self.value)
+        return str(self._value)
 
     def field(self, size = 30):
-        if self.value is None:
+        if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self.value))
+            value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self.name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
     def reldate(self, pretty=1):
-        if not self.value:
+        if not self._value:
             return ''
 
         # figure the interval
-        interval = date.Date('.') - self.value
+        interval = date.Date('.') - self._value
         if pretty:
             return interval.pretty()
         return str(interval)
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
-        if self.value is None:
+        if self._value is None:
             return ''
-        return str(self.value)
+        return str(self._value)
 
     def pretty(self):
-        return self.value.pretty()
+        return self._value.pretty()
 
     def field(self, size = 30):
-        if self.value is None:
+        if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self.value))
+            value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self.name, value, size)
+        return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
 class LinkHTMLProperty(HTMLProperty):
     ''' Link HTMLProperty
@@ -736,28 +742,28 @@ class LinkHTMLProperty(HTMLProperty):
     '''
     def __getattr__(self, attr):
         ''' return a new HTMLItem '''
-        #print 'getattr', (self, attr, self.value)
-        if not self.value:
+        #print 'getattr', (self, attr, self._value)
+        if not self._value:
             raise AttributeError, "Can't access missing value"
-        if self.prop.classname == 'user':
+        if self._prop.classname == 'user':
             klass = HTMLItem
         else:
             klass = HTMLUser
-        i = klass(self.client, self.prop.classname, self.value)
+        i = klass(self._client, self._prop.classname, self._value)
         return getattr(i, attr)
 
     def plain(self, escape=0):
-        if self.value is None:
+        if self._value is None:
             return _('[unselected]')
-        linkcl = self.db.classes[self.prop.classname]
+        linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
-        value = str(linkcl.get(self.value, k))
+        value = str(linkcl.get(self._value, k))
         if escape:
             value = cgi.escape(value)
         return value
 
     def field(self):
-        linkcl = self.db.getclass(self.prop.classname)
+        linkcl = self._db.getclass(self._prop.classname)
         if linkcl.getprops().has_key('order'):  
             sort_on = 'order'  
         else:  
@@ -777,7 +783,7 @@ class LinkHTMLProperty(HTMLProperty):
             if optionid == value:
                 s = 'selected '
             if showid:
-                lab = '%s%s: %s'%(self.prop.classname, optionid, option)
+                lab = '%s%s: %s'%(self._prop.classname, optionid, option)
             else:
                 lab = option
             if size is not None and len(lab) > size:
@@ -788,10 +794,10 @@ class LinkHTMLProperty(HTMLProperty):
         return '\n'.join(l)
 
     def download(self, showid=0):
-        linkname = self.prop.classname
-        linkcl = self.db.getclass(linkname)
+        linkname = self._prop.classname
+        linkcl = self._db.getclass(linkname)
         k = linkcl.labelprop(1)
-        linkvalue = cgi.escape(str(linkcl.get(self.value, k)))
+        linkvalue = cgi.escape(str(linkcl.get(self._value, k)))
         if showid:
             label = value
             title = ' title="%s"'%linkvalue
@@ -799,21 +805,21 @@ class LinkHTMLProperty(HTMLProperty):
         else:
             label = linkvalue
             title = ''
-        return '<a href="%s%s/%s"%s>%s</a>'%(linkname, self.value,
+        return '<a href="%s%s/%s"%s>%s</a>'%(linkname, self._value,
             linkvalue, title, label)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
-        value = self.value
+        value = self._value
 
         # sort function
-        sortfunc = make_sort_function(self.db, self.prop.classname)
+        sortfunc = make_sort_function(self._db, self._prop.classname)
 
         # force the value to be a single choice
         if isinstance(value, type('')):
             value = value[0]
-        linkcl = self.db.getclass(self.prop.classname)
-        l = ['<select name="%s">'%self.name]
+        linkcl = self._db.getclass(self._prop.classname)
+        l = ['<select name="%s">'%self._name]
         k = linkcl.labelprop(1)
         s = ''
         if value is None:
@@ -830,7 +836,7 @@ class LinkHTMLProperty(HTMLProperty):
             if value in [optionid, option]:
                 s = 'selected '
             if showid:
-                lab = '%s%s: %s'%(self.prop.classname, optionid, option)
+                lab = '%s%s: %s'%(self._prop.classname, optionid, option)
             else:
                 lab = option
             if size is not None and len(lab) > size:
@@ -855,7 +861,7 @@ class MultilinkHTMLProperty(HTMLProperty):
     '''
     def __len__(self):
         ''' length of the multilink '''
-        return len(self.value)
+        return len(self._value)
 
     def __getattr__(self, attr):
         ''' no extended attribute accesses make sense here '''
@@ -865,29 +871,29 @@ class MultilinkHTMLProperty(HTMLProperty):
         ''' iterate and return a new HTMLItem
         '''
         #print 'getitem', (self, num)
-        value = self.value[num]
-        if self.prop.classname == 'user':
+        value = self._value[num]
+        if self._prop.classname == 'user':
             klass = HTMLUser
         else:
             klass = HTMLItem
-        return klass(self.client, self.prop.classname, value)
+        return klass(self._client, self._prop.classname, value)
 
     def reverse(self):
         ''' return the list in reverse order
         '''
-        l = self.value[:]
+        l = self._value[:]
         l.reverse()
-        if self.prop.classname == 'user':
+        if self._prop.classname == 'user':
             klass = HTMLUser
         else:
             klass = HTMLItem
-        return [klass(self.client, self.prop.classname, value) for value in l]
+        return [klass(self._client, self._prop.classname, value) for value in l]
 
     def plain(self, escape=0):
-        linkcl = self.db.classes[self.prop.classname]
+        linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
         labels = []
-        for v in self.value:
+        for v in self._value:
             labels.append(linkcl.get(v, k))
         value = ', '.join(labels)
         if escape:
@@ -895,9 +901,9 @@ class MultilinkHTMLProperty(HTMLProperty):
         return value
 
     def field(self, size=30, showid=0):
-        sortfunc = make_sort_function(self.db, self.prop.classname)
-        linkcl = self.db.getclass(self.prop.classname)
-        value = self.value[:]
+        sortfunc = make_sort_function(self._db, self._prop.classname)
+        linkcl = self._db.getclass(self._prop.classname)
+        value = self._value[:]
         if value:
             value.sort(sortfunc)
         # map the id to the label property
@@ -905,23 +911,23 @@ class MultilinkHTMLProperty(HTMLProperty):
             k = linkcl.labelprop(1)
             value = [linkcl.get(v, k) for v in value]
         value = cgi.escape(','.join(value))
-        return '<input name="%s" size="%s" value="%s">'%(self.name, size, value)
+        return '<input name="%s" size="%s" value="%s">'%(self._name, size, value)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
-        value = self.value
+        value = self._value
 
         # sort function
-        sortfunc = make_sort_function(self.db, self.prop.classname)
+        sortfunc = make_sort_function(self._db, self._prop.classname)
 
-        linkcl = self.db.getclass(self.prop.classname)
+        linkcl = self._db.getclass(self._prop.classname)
         if linkcl.getprops().has_key('order'):  
             sort_on = ('+', 'order')
         else:  
             sort_on = ('+', linkcl.labelprop())
         options = linkcl.filter(None, conditions, sort_on, (None,None)) 
         height = height or min(len(options), 7)
-        l = ['<select multiple name="%s" size="%s">'%(self.name, height)]
+        l = ['<select multiple name="%s" size="%s">'%(self._name, height)]
         k = linkcl.labelprop(1)
         for optionid in options:
             option = linkcl.get(optionid, k)
@@ -929,7 +935,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             if optionid in value or option in value:
                 s = 'selected '
             if showid:
-                lab = '%s%s: %s'%(self.prop.classname, optionid, option)
+                lab = '%s%s: %s'%(self._prop.classname, optionid, option)
             else:
                 lab = option
             if size is not None and len(lab) > size:
