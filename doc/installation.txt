@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.55.2.4 $
+:Version: $Revision: 1.55.2.5 $
 
 .. contents::
 
@@ -370,7 +370,7 @@ As a regular job using a mailbox source
 
 Set ``roundup-mailgw`` up to run every 10 minutes or so. For example::
 
-  10 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support mailbox <mail_spool_file>
+  0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support mailbox <mail_spool_file>
 
 Where the ``mail_spool_file`` argument is the location of the roundup submission
 user's mail spool. On most systems, the spool for a user "issue_tracker"
@@ -379,9 +379,9 @@ will be "``/var/mail/issue_tracker``".
 As a regular job using a POP source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To retrieve from a POP mailbox, use a *cron* entry to the mailbox one::
+To retrieve from a POP mailbox, use a *cron* entry similar to the mailbox one::
 
-  10 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support pop <pop_spec>
+  0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support pop <pop_spec>
 
 where pop_spec is "``username:password@server``" that specifies the roundup
 submission user's POP account name, password and server.
