@@ -1,5 +1,5 @@
 I'm pleased to announce Roundup 0.6.6, a maintenance release which fixes
-some bugs:
+some bugs (notably registration was broken in 0.6.5, and is fixed now):
 
 - fixed registration (sf bug 903283)
 - don't insert spaces into designators, it just confuses users (sf bug
