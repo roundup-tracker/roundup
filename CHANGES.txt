@@ -26,6 +26,8 @@ Feature:
      field won't exist in most installations, but it will be added to the
      default templates.
  . #517734 ] web header customisation is obscure
+ . All messages sent to the nosy list are now encoded as
+   quoted-printable before they are sent.
 
 Fixed:
  . Clean up mail handling, multipart handling.

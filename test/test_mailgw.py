@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.13 2002-02-15 07:08:45 richard Exp $
+# $Id: test_mailgw.py,v 1.14 2002-03-18 18:32:00 rochecompaan Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -45,7 +45,7 @@ class MailgwTestCase(unittest.TestCase):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
-    def xtestNewIssue(self):
+    def testNewIssue(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
@@ -81,7 +81,7 @@ This is a test submission of a new issue.
         self.assertEqual(userlist, self.db.user.list(),
             "user created when it shouldn't have been")
 
-    def xtestNewIssueNoClass(self):
+    def testNewIssueNoClass(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
@@ -98,7 +98,7 @@ This is a test submission of a new issue.
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
 
-    def xtestNewIssueAuthMsg(self):
+    def testNewIssueAuthMsg(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
@@ -124,6 +124,7 @@ Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
 
 
 New submission from Chef <chef@bork.bork.bork>:
@@ -152,7 +153,7 @@ ___________________________________________________
 
     # BUG should test some binary attamchent too.
 
-    def xtestFollowup(self):
+    def testFollowup(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -179,6 +180,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
 
 
 richard <richard@test> added the comment:
@@ -196,7 +198,7 @@ http://some.useful.url/issue1
 ___________________________________________________
 ''', 'Generated message not correct')
 
-    def xtestFollowup2(self):
+    def testFollowup2(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -222,6 +224,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
 
 
 mary <mary@test> added the comment:
@@ -237,7 +240,7 @@ http://some.useful.url/issue1
 ___________________________________________________
 ''', 'Generated message not correct')
 
-    def xtestFollowupTitleMatch(self):
+    def testFollowupTitleMatch(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -264,6 +267,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
 
 
 richard <richard@test> added the comment:
@@ -281,7 +285,7 @@ http://some.useful.url/issue1
 ___________________________________________________
 ''') #, 'Generated message not correct')
 
-    def xtestEnc01(self):
+    def testEnc01(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -312,11 +316,12 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
 
 
 mary <mary@test> added the comment:
 
-A message with encoding (encoded oe ö)
+A message with encoding (encoded oe =F6)
 
 ----------
 status: unread -> chatting
@@ -327,7 +332,7 @@ ___________________________________________________
 ''', 'Generated message not correct')
 
 
-    def xtestMultipartEnc01(self):
+    def testMultipartEnc01(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -365,11 +370,12 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
 
 
 mary <mary@test> added the comment:
 
-A message with first part encoded (encoded oe ö)
+A message with first part encoded (encoded oe =F6)
 
 ----------
 status: unread -> chatting
@@ -391,6 +397,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2002/02/15 07:08:45  richard
+#  . Alternate email addresses are now available for users. See the MIGRATION
+#    file for info on how to activate the feature.
+#
 # Revision 1.12  2002/02/15 00:13:38  richard
 #  . #503204 ] mailgw needs a default class
 #     - partially done - the setting of additional properties can wait for a

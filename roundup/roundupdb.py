@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.47 2002-02-27 03:16:02 richard Exp $
+# $Id: roundupdb.py,v 1.48 2002-03-18 18:32:00 rochecompaan Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -23,7 +23,7 @@ Extending hyperdb with types specific to issue-tracking.
 
 import re, os, smtplib, socket, copy, time, random
 import MimeWriter, cStringIO
-import base64, mimetypes
+import base64, quopri, mimetypes
 
 import hyperdb, date
 
@@ -398,6 +398,13 @@ class IssueClass(Class):
         if self.db.config.EMAIL_SIGNATURE_POSITION == 'bottom':
             m.append(self.email_signature(nodeid, msgid))
 
+        # encode the content as quoted-printable
+        content = cStringIO.StringIO('\n'.join(m))
+        content_encoded = cStringIO.StringIO()
+        quopri.encode(content, content_encoded, 0)
+        content_encoded.seek(0)
+        content_encoded = content_encoded.read()
+
         # get the files for this message
         message_files = messages.get(msgid, 'files')
 
@@ -423,8 +430,9 @@ class IssueClass(Class):
         if message_files:
             part = writer.startmultipartbody('mixed')
             part = writer.nextpart()
+            part.addheader('Content-Transfer-Encoding', 'quoted-printable')
             body = part.startbody('text/plain')
-            body.write('\n'.join(m))
+            body.write(content_encoded)
             for fileid in message_files:
                 name = files.get(fileid, 'name')
                 mime_type = files.get(fileid, 'type')
@@ -450,8 +458,9 @@ class IssueClass(Class):
                     body.write(base64.encodestring(content))
             writer.lastpart()
         else:
+            writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
             body = writer.startbody('text/plain')
-            body.write('\n'.join(m))
+            body.write(content_encoded)
 
         # now try to send the message
         if SENDMAILDEBUG:
@@ -596,6 +605,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.47  2002/02/27 03:16:02  richard
+# Fixed a couple of dodgy bits found by pychekcer.
+#
 # Revision 1.46  2002/02/25 14:22:59  grubert
 #  . roundup db: catch only IOError in getfile.
 #
