@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.15 $
+:Version: $Revision: 1.16 $
 
 .. contents::
 
@@ -60,14 +60,11 @@ Then add::
   
   # General Roundup
   RewriteRule ^/Roundup$  Roundup/    [R]
-  RewriteRule ^/Roundup/(.*) http://foohost.com:8888/$1   [P]
-  
-  # Redirect to Foo Issues
-  RewriteRule ^/Roundup/foo_issues(.*) FooIssues$1    [R]
+  RewriteRule ^/Roundup/(.*)$ http://foohost.com:8888/$1   [P,L]
   
   # Handle Foo Issues
   RewriteRule ^/FooIssues$  FooIssues/    [R]
-  RewriteRule ^/FooIssues/(.*) http://foohost.com:8888/foo_issues/$1 [P]
+  RewriteRule ^/FooIssues/(.*)$ http://foohost.com:8888/foo_issues/$1 [P,L]
   
   </IfModule>
 
