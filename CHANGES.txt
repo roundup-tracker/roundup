@@ -16,6 +16,7 @@ Fixed:
  . Bug #447671 - typo in roundup/init.py
  . Changed date.Date to use regular string formatting instead of strftime -
    win32 seems to have problems with %T and no hour... or something...
+ . Bug #448484 - now catching correct exception from makedirs.
  . Instances are now opened by a special function that generates a unique
    module name for the instances on import time.
 
