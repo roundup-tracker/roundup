@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.46 2002-02-25 14:22:59 grubert Exp $
+# $Id: roundupdb.py,v 1.47 2002-02-27 03:16:02 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
 """
 
 import re, os, smtplib, socket, copy, time, random
-import mimetools, MimeWriter, cStringIO
+import MimeWriter, cStringIO
 import base64, mimetypes
 
 import hyperdb, date
@@ -42,7 +42,7 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     return m.group(1), m.group(2)
 
 
-def extractUserFromList(users):
+def extractUserFromList(userClass, users):
     '''Given a list of users, try to extract the first non-anonymous user
        and return that user, otherwise return None
     '''
@@ -50,7 +50,7 @@ def extractUserFromList(users):
         # make sure we don't match the anonymous or admin user
         for user in users:
             if user == '1': continue
-            if self.user.get(user, 'username') == 'anonymous': continue
+            if userClass.get(user, 'username') == 'anonymous': continue
             # first valid match will do
             return user
         # well, I guess we have no choice
@@ -73,7 +73,8 @@ class Database:
         (realname, address) = address
 
         # try a straight match of the address
-        user = extractUserFromList(self.user.stringFind(address=address))
+        user = extractUserFromList(self.user,
+            self.user.stringFind(address=address))
         if user is not None: return user
 
         # try the user alternate addresses if possible
@@ -81,12 +82,13 @@ class Database:
         if props.has_key('alternate_addresses'):
             users = self.user.filter({'alternate_addresses': address},
                 [], [])
-            user = extractUserFromList(users)
+            user = extractUserFromList(self.user, users)
             if user is not None: return user
 
         # try to match the username to the address (for local
         # submissions where the address is empty)
-        user = extractUserFromList(self.user.stringFind(username=address))
+        user = extractUserFromList(self.user,
+            self.user.stringFind(username=address))
 
         # couldn't match address or username, so create a new user
         if create:
@@ -543,7 +545,7 @@ class IssueClass(Class):
         l = changed.items()
         l.sort()
         for propname, oldvalue in l:
-            prop = cl.properties[propname]
+            prop = props[propname]
             value = cl.get(nodeid, propname, None)
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]
@@ -594,6 +596,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.46  2002/02/25 14:22:59  grubert
+#  . roundup db: catch only IOError in getfile.
+#
 # Revision 1.44  2002/02/15 07:08:44  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.
