@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.45 2002-01-02 04:18:17 richard Exp $
+# $Id: hyperdb.py,v 1.46 2002-01-07 10:42:23 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -978,7 +978,7 @@ class Node:
     def __init__(self, cl, nodeid, cache=1):
         self.__dict__['cl'] = cl
         self.__dict__['nodeid'] = nodeid
-        self.cache = cache
+        self.__dict__['cache'] = cache
     def keys(self, protected=1):
         return self.cl.getprops(protected=protected).keys()
     def values(self, protected=1):
@@ -1027,6 +1027,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.45  2002/01/02 04:18:17  richard
+# hyperdb docstrings
+#
 # Revision 1.44  2002/01/02 02:31:38  richard
 # Sorry for the huge checkin message - I was only intending to implement #496356
 # but I found a number of places where things had been broken by transactions:
