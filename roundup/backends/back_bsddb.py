@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.17 2002-04-03 05:54:31 richard Exp $
+#$Id: back_bsddb.py,v 1.18 2002-05-15 06:21:21 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
@@ -55,18 +55,18 @@ class Database(back_anydbm.Database):
         '''Low-level database opener that gets around anydbm/dbm
            eccentricities.
         '''
-        if hyperdb.DEBUG:
-            print self, '_opendb', (self, name, mode)
+        if __debug__:
+            print >>hyperdb.DEBUG, self, '_opendb', (self, name, mode)
         # determine which DB wrote the class file
         path = os.path.join(os.getcwd(), self.dir, name)
         if not os.path.exists(path):
-            if hyperdb.DEBUG:
-                print "_opendb bsddb.open(%r, 'n')"%path
+            if __debug__:
+                print >>hyperdb.DEBUG, "_opendb bsddb.open(%r, 'n')"%path
             return bsddb.btopen(path, 'n')
 
         # open the database with the correct module
-        if hyperdb.DEBUG:
-            print "_opendb bsddb.open(%r, %r)"%(path, mode)
+        if __debug__:
+            print >>hyperdb.DEBUG, "_opendb bsddb.open(%r, %r)"%(path, mode)
         return bsddb.btopen(path, mode)
 
     #
@@ -102,8 +102,8 @@ class Database(back_anydbm.Database):
         entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
             params)
 
-        if hyperdb.DEBUG:
-            print '_doSaveJournal', entry
+        if __debug__:
+            print >>hyperdb.DEBUG, '_doSaveJournal', entry
 
         db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
 
@@ -119,6 +119,14 @@ class Database(back_anydbm.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.17  2002/04/03 05:54:31  richard
+#Fixed serialisation problem by moving the serialisation step out of the
+#hyperdb.Class (get, set) into the hyperdb.Database.
+#
+#Also fixed htmltemplate after the showid changes I made yesterday.
+#
+#Unit tests for all of the above written.
+#
 #Revision 1.16  2002/02/27 03:40:59  richard
 #Ran it through pychecker, made fixes
 #

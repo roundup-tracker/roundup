@@ -15,19 +15,35 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.63 2002-04-15 23:25:15 richard Exp $
+# $Id: hyperdb.py,v 1.64 2002-05-15 06:21:21 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
 """
 
 # standard python modules
-import re, string, weakref, os
+import re, string, weakref, os, time
 
 # roundup modules
 import date, password
 
+# configure up the DEBUG and TRACE captures
+class Sink:
+    def write(self, content):
+        pass
 DEBUG = os.environ.get('HYPERDBDEBUG', '')
+if DEBUG and __debug__:
+    DEBUG = open(DEBUG, 'a')
+else:
+    DEBUG = Sink()
+TRACE = os.environ.get('HYPERDBTRACE', '')
+if TRACE and __debug__:
+    TRACE = open(TRACE, 'w')
+else:
+    TRACE = Sink()
+def traceMark():
+    print >>TRACE, '**MARK', time.ctime()
+del Sink
 
 #
 # Types
@@ -175,7 +191,8 @@ transaction.
         '''Copy the node contents, converting non-marshallable data into
            marshallable data.
         '''
-        if DEBUG: print 'serialise', classname, node
+        if __debug__:
+            print >>DEBUG, 'serialise', classname, node
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
@@ -206,7 +223,8 @@ transaction.
     def unserialise(self, classname, node):
         '''Decode the marshalled node data
         '''
-        if DEBUG: print 'unserialise', classname, node
+        if __debug__:
+            print >>DEBUG, 'unserialise', classname, node
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
@@ -1127,6 +1145,12 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.63  2002/04/15 23:25:15  richard
+# . node ids are now generated from a lockable store - no more race conditions
+#
+# We're using the portalocker code by Jonathan Feinberg that was contributed
+# to the ASPN Python cookbook. This gives us locking across Unix and Windows.
+#
 # Revision 1.62  2002/04/03 07:05:50  richard
 # d'oh! killed retirement of nodes :(
 # all better now...

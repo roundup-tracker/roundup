@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.33 2002-04-24 10:38:26 rochecompaan Exp $
+#$Id: back_anydbm.py,v 1.34 2002-05-15 06:21:21 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -73,14 +73,14 @@ class Database(FileStorage, hyperdb.Database):
     def __getattr__(self, classname):
         """A convenient way of calling self.getclass(classname)."""
         if self.classes.has_key(classname):
-            if hyperdb.DEBUG:
-                print '__getattr__', (self, classname)
+            if __debug__:
+                print >>hyperdb.DEBUG, '__getattr__', (self, classname)
             return self.classes[classname]
         raise AttributeError, classname
 
     def addclass(self, cl):
-        if hyperdb.DEBUG:
-            print 'addclass', (self, cl)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'addclass', (self, cl)
         cn = cl.classname
         if self.classes.has_key(cn):
             raise ValueError, cn
@@ -88,8 +88,8 @@ class Database(FileStorage, hyperdb.Database):
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
-        if hyperdb.DEBUG:
-            print 'getclasses', (self,)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getclasses', (self,)
         l = self.classes.keys()
         l.sort()
         return l
@@ -99,8 +99,8 @@ class Database(FileStorage, hyperdb.Database):
 
         If 'classname' is not a valid class name, a KeyError is raised.
         """
-        if hyperdb.DEBUG:
-            print 'getclass', (self, classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getclass', (self, classname)
         return self.classes[classname]
 
     #
@@ -109,8 +109,8 @@ class Database(FileStorage, hyperdb.Database):
     def clear(self):
         '''Delete all database contents
         '''
-        if hyperdb.DEBUG:
-            print 'clear', (self,)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'clear', (self,)
         for cn in self.classes.keys():
             for dummy in 'nodes', 'journals':
                 path = os.path.join(self.dir, 'journals.%s'%cn)
@@ -123,16 +123,16 @@ class Database(FileStorage, hyperdb.Database):
         ''' grab a connection to the class db that will be used for
             multiple actions
         '''
-        if hyperdb.DEBUG:
-            print 'getclassdb', (self, classname, mode)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getclassdb', (self, classname, mode)
         return self._opendb('nodes.%s'%classname, mode)
 
     def _opendb(self, name, mode):
         '''Low-level database opener that gets around anydbm/dbm
            eccentricities.
         '''
-        if hyperdb.DEBUG:
-            print '_opendb', (self, name, mode)
+        if __debug__:
+            print >>hyperdb.DEBUG, '_opendb', (self, name, mode)
 
         # determine which DB wrote the class file
         db_type = ''
@@ -148,8 +148,8 @@ class Database(FileStorage, hyperdb.Database):
 
         # new database? let anydbm pick the best dbm
         if not db_type:
-            if hyperdb.DEBUG:
-                print "_opendb anydbm.open(%r, 'n')"%path
+            if __debug__:
+                print >>hyperdb.DEBUG, "_opendb anydbm.open(%r, 'n')"%path
             return anydbm.open(path, 'n')
 
         # open the database with the correct module
@@ -159,8 +159,9 @@ class Database(FileStorage, hyperdb.Database):
             raise hyperdb.DatabaseError, \
                 "Couldn't open database - the required module '%s'"\
                 "is not available"%db_type
-        if hyperdb.DEBUG:
-            print "_opendb %r.open(%r, %r)"%(db_type, path, mode)
+        if __debug__:
+            print >>hyperdb.DEBUG, "_opendb %r.open(%r, %r)"%(db_type, path,
+                mode)
         return dbm.open(path, mode)
 
     def _lockdb(self, name):
@@ -194,8 +195,8 @@ class Database(FileStorage, hyperdb.Database):
     def addnode(self, classname, nodeid, node):
         ''' add the specified node to its class's db
         '''
-        if hyperdb.DEBUG:
-            print 'addnode', (self, classname, nodeid, node)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'addnode', (self, classname, nodeid, node)
         self.newnodes.setdefault(classname, {})[nodeid] = 1
         self.cache.setdefault(classname, {})[nodeid] = node
         self.savenode(classname, nodeid, node)
@@ -203,8 +204,8 @@ class Database(FileStorage, hyperdb.Database):
     def setnode(self, classname, nodeid, node):
         ''' change the specified node
         '''
-        if hyperdb.DEBUG:
-            print 'setnode', (self, classname, nodeid, node)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'setnode', (self, classname, nodeid, node)
         self.dirtynodes.setdefault(classname, {})[nodeid] = 1
 
         # can't set without having already loaded the node
@@ -214,20 +215,26 @@ class Database(FileStorage, hyperdb.Database):
     def savenode(self, classname, nodeid, node):
         ''' perform the saving of data specified by the set/addnode
         '''
-        if hyperdb.DEBUG:
-            print 'savenode', (self, classname, nodeid, node)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'savenode', (self, classname, nodeid, node)
         self.transactions.append((self._doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1):
         ''' get a node from the database
         '''
-        if hyperdb.DEBUG:
-            print 'getnode', (self, classname, nodeid, db)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getnode', (self, classname, nodeid, db)
         if cache:
             # try the cache
-            cache = self.cache.setdefault(classname, {})
-            if cache.has_key(nodeid):
-                return cache[nodeid]
+            cache_dict = self.cache.setdefault(classname, {})
+            if cache_dict.has_key(nodeid):
+                if __debug__:
+                    print >>hyperdb.TRACE, 'get %s %s cached'%(classname,
+                        nodeid)
+                return cache_dict[nodeid]
+
+        if __debug__:
+            print >>hyperdb.TRACE, 'get %s %s'%(classname, nodeid)
 
         # get from the database and save in the cache
         if db is None:
@@ -241,21 +248,26 @@ class Database(FileStorage, hyperdb.Database):
         # reverse the serialisation
         res = self.unserialise(classname, res)
 
-        # store off in the cache
+        # store off in the cache dict
         if cache:
-            cache[nodeid] = res
+            cache_dict[nodeid] = res
 
         return res
 
     def hasnode(self, classname, nodeid, db=None):
         ''' determine if the database has a given node
         '''
-        if hyperdb.DEBUG:
-            print 'hasnode', (self, classname, nodeid, db)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'hasnode', (self, classname, nodeid, db)
+
         # try the cache
         cache = self.cache.setdefault(classname, {})
         if cache.has_key(nodeid):
+            if __debug__:
+                print >>hyperdb.TRACE, 'has %s %s cached'%(classname, nodeid)
             return 1
+        if __debug__:
+            print >>hyperdb.TRACE, 'has %s %s'%(classname, nodeid)
 
         # not in the cache - check the database
         if db is None:
@@ -264,8 +276,8 @@ class Database(FileStorage, hyperdb.Database):
         return res
 
     def countnodes(self, classname, db=None):
-        if hyperdb.DEBUG:
-            print 'countnodes', (self, classname, db)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'countnodes', (self, classname, db)
         # include the new nodes not saved to the DB yet
         count = len(self.newnodes.get(classname, {}))
 
@@ -276,8 +288,8 @@ class Database(FileStorage, hyperdb.Database):
         return count
 
     def getnodeids(self, classname, db=None):
-        if hyperdb.DEBUG:
-            print 'getnodeids', (self, classname, db)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getnodeids', (self, classname, db)
         # start off with the new nodes
         res = self.newnodes.get(classname, {}).keys()
 
@@ -302,16 +314,17 @@ class Database(FileStorage, hyperdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        if hyperdb.DEBUG:
-            print 'addjournal', (self, classname, nodeid, action, params)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'addjournal', (self, classname, nodeid,
+                action, params)
         self.transactions.append((self._doSaveJournal, (classname, nodeid,
             action, params)))
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
-        if hyperdb.DEBUG:
-            print 'getjournal', (self, classname, nodeid)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getjournal', (self, classname, nodeid)
         # attempt to open the journal - in some rare cases, the journal may
         # not exist
         try:
@@ -330,8 +343,8 @@ class Database(FileStorage, hyperdb.Database):
 
     def pack(self, pack_before):
         ''' delete all journal entries before 'pack_before' '''
-        if hyperdb.DEBUG:
-            print 'packjournal', (self, pack_before)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'packjournal', (self, pack_before)
 
         pack_before = pack_before.get_tuple()
 
@@ -383,8 +396,8 @@ class Database(FileStorage, hyperdb.Database):
     def commit(self):
         ''' Commit the current transactions.
         '''
-        if hyperdb.DEBUG:
-            print 'commit', (self,)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'commit', (self,)
         # TODO: lock the DB
 
         # keep a handle to all the database files opened
@@ -407,8 +420,9 @@ class Database(FileStorage, hyperdb.Database):
         self.transactions = []
 
     def _doSaveNode(self, classname, nodeid, node):
-        if hyperdb.DEBUG:
-            print '_doSaveNode', (self, classname, nodeid, node)
+        if __debug__:
+            print >>hyperdb.DEBUG, '_doSaveNode', (self, classname, nodeid,
+                node)
 
         # get the database handle
         db_name = 'nodes.%s'%classname
@@ -429,8 +443,8 @@ class Database(FileStorage, hyperdb.Database):
         entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
             params)
 
-        if hyperdb.DEBUG:
-            print '_doSaveJournal', entry
+        if __debug__:
+            print >>hyperdb.DEBUG, '_doSaveJournal', entry
 
         # get the database handle
         db_name = 'journals.%s'%classname
@@ -457,8 +471,8 @@ class Database(FileStorage, hyperdb.Database):
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
-        if hyperdb.DEBUG:
-            print 'rollback', (self, )
+        if __debug__:
+            print >>hyperdb.DEBUG, 'rollback', (self, )
         for method, args in self.transactions:
             # delete temporary files
             if method == self._doStoreFile:
@@ -471,6 +485,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.33  2002/04/24 10:38:26  rochecompaan
+#All database files are now created group readable and writable.
+#
 #Revision 1.32  2002/04/15 23:25:15  richard
 #. node ids are now generated from a lockable store - no more race conditions
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.118 2002-05-12 23:46:33 richard Exp $
+# $Id: cgi_client.py,v 1.119 2002-05-15 06:21:21 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -47,6 +47,7 @@ class Client:
     '''
 
     def __init__(self, instance, request, env, form=None):
+        hyperdb.traceMark()
         self.instance = instance
         self.request = request
         self.env = env
@@ -1382,6 +1383,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.118  2002/05/12 23:46:33  richard
+# ehem, part 2
+#
 # Revision 1.117  2002/05/12 23:42:29  richard
 # ehem
 #
