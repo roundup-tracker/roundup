@@ -79,16 +79,53 @@ class Indexer(Indexer):
 
         l = [word.upper() for word in wordlist if 26 > len(word) > 2]
 
-        a = ','.join([self.db.arg] * len(l))
-        sql = 'select distinct(_textid) from __words where _word in (%s)'%a
-        self.db.cursor.execute(sql, tuple(l))
-        r = self.db.cursor.fetchall()
-        if not r:
+        if not l:
             return {}
-        a = ','.join([self.db.arg] * len(r))
-        sql = 'select _class, _itemid, _prop from __textids '\
-            'where _textid in (%s)'%a
-        self.db.cursor.execute(sql, tuple([int(id) for (id,) in r]))
+
+        if self.db.implements_intersect:
+            # simple AND search
+            sql = 'select distinct(_textid) from __words where _word=%s'%self.db.arg
+            sql = '\nINTERSECT\n'.join([sql]*len(l))
+            self.db.cursor.execute(sql, tuple(l))
+            r = self.db.cursor.fetchall()
+            if not r:
+                return {}
+            a = ','.join([self.db.arg] * len(r))
+            sql = 'select _class, _itemid, _prop from __textids '\
+                'where _textid in (%s)'%a
+            self.db.cursor.execute(sql, tuple([int(id) for (id,) in r]))
+
+        else:
+            # A more complex version for MySQL since it doesn't implement INTERSECT
+
+            # Construct SQL statement to join __words table to itself
+            # multiple times.
+            sql = """select distinct(__words1._textid)
+                        from __words as __words1 %s
+                        where __words1._word=%s %s"""
+
+            join_tmpl = ' left join __words as __words%d using (_textid) \n'
+            match_tmpl = ' and __words%d._word=%s \n'
+
+            join_list = []
+            match_list = []
+            for n in xrange(len(l) - 1):
+                join_list.append(join_tmpl % (n + 2))
+                match_list.append(match_tmpl % (n + 2, self.db.arg))
+
+            sql = sql%(' '.join(join_list), self.db.arg, ' '.join(match_list))
+            self.db.cursor.execute(sql, l)
+
+            r = map(lambda x: x[0], self.db.cursor.fetchall())
+            if not r:
+                return {}
+
+            a = ','.join([self.db.arg] * len(r))
+            sql = 'select _class, _itemid, _prop from __textids '\
+                'where _textid in (%s)'%a
+
+            self.db.cursor.execute(sql, tuple(map(int, r)))
+
         # self.search_index has the results as {some id: identifier} ...
         # sigh
         r = {}

@@ -73,6 +73,7 @@ Fixed:
 - fix indexer searching with no valid words (sf bug 1086787)
 - updated searching / indexing docs
 - fix "(list)" popup when list is one item long (sf bug 1064716)
+- have RDBMS full-text indexer do AND searching (sf bug 1055435)
 
 
 2004-10-26 0.7.9
