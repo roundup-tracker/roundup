@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.13 2002-09-10 03:01:18 richard Exp $
+# $Id: ZRoundup.py,v 1.14 2002-10-10 03:47:27 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -149,10 +149,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         else:
             # For some reason, CRs are embeded in multiline notes.
             # It doesn't occur with apache/roundup.cgi, though.
-            form = self.REQUEST.form 
-            if form.has_key( '__note' ) :
-                form['__note'] = form['__note'].replace( '\r' , '' )
-            form = FormWrapper(form)
+            form = FormWrapper(self.REQUEST.form)
 
         return instance.Client(instance, request, env, form)
 
@@ -161,9 +158,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
     def index_html(self):
         '''Alias index_html to roundup's index
         '''
-
         # Redirect misdirected requests -- bugs 558867 , 565992
-       
         # PATH_INFO, as defined by the CGI spec, has the *real* request path
         orig_path = self.REQUEST.environ[ 'PATH_INFO' ]
         if orig_path[-1] != '/' : 
