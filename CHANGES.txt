@@ -15,7 +15,7 @@ Feature:
 - hide "(list)" popup links when issue is only viewable
 
 
-2004-??-?? 0.7.5
+2004-??-?? 0.7.6
 Fixed:
 - rdbms backend full text search failure after import (sf bug 980314)
 
