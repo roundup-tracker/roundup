@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.56 2002-09-26 03:04:24 richard Exp $ 
+# $Id: test_db.py,v 1.57 2002-10-02 19:15:46 gmcm Exp $ 
 
 import unittest, os, shutil, time
 
@@ -738,15 +738,21 @@ class metakitDBTestCase(anydbmDBTestCase):
         self.assertNotEqual(num_issues, len(self.db.issue.list()))
         self.db.file.create(name="test", type="text/plain", content="hi")
         self.db.rollback()
+        num_files = len(self.db.file.list())
         for i in range(10):
             self.db.file.create(name="test", type="text/plain", 
                     content="hi %d"%(i))
             self.db.commit()
         # TODO: would be good to be able to ensure the file is not on disk after
         # a rollback...
+        num_files2 = len(self.db.file.list())
         self.assertNotEqual(num_files, num_files2)
         self.db.file.create(name="test", type="text/plain", content="hi")
+        num_rfiles = len(os.listdir(self.db.config.DATABASE + '/files/file/0'))
         self.db.rollback()
+        num_rfiles2 = len(os.listdir(self.db.config.DATABASE + '/files/file/0'))
+        self.assertEqual(num_files2, len(self.db.file.list()))
+        self.assertEqual(num_rfiles2, num_rfiles-1)
 
 class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):

@@ -87,6 +87,7 @@ class _Database(hyperdb.Database):
             self._db = metakit.storage(self.dbnm, 1)
             self.hist = self._db.view('history')
             self.tables = self._db.view('tables')
+            self.indexer.rollback()
             self.indexer.datadb = self._db
         self.dirty = 0
     def clearCache(self):
@@ -492,7 +493,7 @@ class Class:
                 changes[key] = oldvalue
                 if hasattr(prop, 'isfilename') and prop.isfilename:
                     propvalues[key] = os.path.basename(value)
-                if prop.indexme and value is not None:
+                if prop.indexme:
                     self.db.indexer.add_text((self.classname, nodeid, key),
                         value, 'text/plain')
 
@@ -680,16 +681,24 @@ class Class:
         vws = []
         for propname, ids in propspec:
             if type(ids) is _STRINGTYPE:
-                ids = {ids:1}
+                ids = {int(ids):1}
+            else:
+                d = {}
+                for id in ids.keys():
+                    d[int(id)] = 1
+                ids = d
             prop = self.ruprops[propname]
             view = self.getview()
             if isinstance(prop, hyperdb.Multilink):
-                view = view.flatten(getattr(view, propname))
                 def ff(row, nm=propname, ids=ids):
-                    return ids.has_key(str(row.fid))
+                    sv = getattr(row, nm)
+                    for sr in sv:
+                        if ids.has_key(sr.fid):
+                            return 1
+                    return 0
             else:
                 def ff(row, nm=propname, ids=ids):
-                    return ids.has_key(str(getattr(row, nm)))
+                    return ids.has_key(getattr(row, nm))
             ndxview = view.filter(ff)
             vws.append(ndxview.unique())
 
@@ -700,7 +709,7 @@ class Class:
         ndxview = vws[0]
         for v in vws[1:]:
             ndxview = ndxview.union(v)
-        view = view.remapwith(ndxview)
+        view = self.getview().remapwith(ndxview)
         rslt = []
         for row in view:
             rslt.append(str(row.id))
@@ -1170,12 +1179,13 @@ class IssueClass(Class, roundupdb.IssueClass):
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
         
-CURVERSION = 1
+CURVERSION = 2
 
 class Indexer(indexer.Indexer):
     disallows = {'THE':1, 'THIS':1, 'ZZZ':1, 'THAT':1, 'WITH':1}
     def __init__(self, path, datadb):
-        self.db = metakit.storage(os.path.join(path, 'index.mk4'), 1)
+        self.path = os.path.join(path, 'index.mk4')
+        self.db = metakit.storage(self.path, 1)
         self.datadb = datadb
         self.reindex = 0
         v = self.db.view('version')
@@ -1188,7 +1198,7 @@ class Indexer(indexer.Indexer):
             v[0].vers = CURVERSION
             self.reindex = 1
         if self.reindex:
-            self.db.getas('ids[tblid:I,nodeid:I,propid:I]')
+            self.db.getas('ids[tblid:I,nodeid:I,propid:I,ignore:I]')
             self.db.getas('index[word:S,hits[pos:I]]')
             self.db.commit()
             self.reindex = 1
@@ -1225,12 +1235,16 @@ class Indexer(indexer.Indexer):
             raise KeyError, "unknown class %r"%classname
         nodeid = int(nodeid)
         propid = self._getpropid(classname, property)
-        pos = self.db.view('ids').append(tblid=tblid,nodeid=nodeid,propid=propid)
+        ids = self.db.view('ids')
+        oldpos = ids.find(tblid=tblid,nodeid=nodeid,propid=propid,ignore=0)
+        if oldpos > -1:
+            ids[oldpos].ignore = 1
+            self.changed = 1
+        pos = ids.append(tblid=tblid,nodeid=nodeid,propid=propid)
         
-        wordlist = re.findall(r'\b\w{3,25}\b', text)
+        wordlist = re.findall(r'\b\w{2,25}\b', text.upper())
         words = {}
         for word in wordlist:
-	    word = word.upper()
 	    if not self.disallows.has_key(word):
             	words[word] = 1
         words = words.keys()
@@ -1239,16 +1253,16 @@ class Indexer(indexer.Indexer):
         for word in words:
             ndx = index.find(word=word)
             if ndx < 0:
-                ndx = index.append(word=word)
-            hits = index[ndx].hits
-            if len(hits)==0 or hits.find(pos=pos) < 0:
-                hits.append(pos=pos)
-                self.changed = 1
+                index.append(word=word)
+                ndx = index.find(word=word)
+            index[ndx].hits.append(pos=pos)
+            self.changed = 1
 
     def find(self, wordlist):
         hits = None
         index = self.db.view('index').ordered(1)
         for word in wordlist:
+            word = word.upper()
             if not 2 < len(word) < 26:
                 continue
             ndx = index.find(word=word)
@@ -1267,12 +1281,18 @@ class Indexer(indexer.Indexer):
         tbls = self.datadb.view('tables')
         for i in range(len(ids)):
             hit = ids[i]
-            classname = tbls[hit.tblid].name
-            nodeid = str(hit.nodeid)
-            property = self._getpropname(classname, hit.propid)
-            rslt[i] = (classname, nodeid, property)
+            if not hit.ignore:
+                classname = tbls[hit.tblid].name
+                nodeid = str(hit.nodeid)
+                property = self._getpropname(classname, hit.propid)
+                rslt[i] = (classname, nodeid, property)
         return rslt
     def save_index(self):
         if self.changed:
             self.db.commit()
+        self.changed = 0
+    def rollback(self):
+        if self.changed:
+            self.db.rollback()
+            self.db = metakit.storage(self.path, 1)
         self.changed = 0
