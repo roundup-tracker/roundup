@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.42 $
+:Version: $Revision: 1.43 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -359,6 +359,10 @@ TODO
 Detectors - adding behaviour to your tracker
 ============================================
 .. _detectors:
+
+Detectors are initialised every time you open your tracker database, so you're
+free to add and remove them any time, even after the database is initliased
+via the "roundup-admin initalise" command.
 
 The detectors in your tracker fire before (*auditors*) and after (*reactors*)
 changes to the contents of your database. They are Python modules that sit in
@@ -1945,7 +1949,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
         # everything's ok, move on to the next page
         self.template = 'add_page2'
 
-4. Use the usual "edit" action as the :action on the final page, and you're
+4. Use the usual "new" action as the :action on the final page, and you're
    done (the standard context/submit method can do this for you).
 
 -------------------
