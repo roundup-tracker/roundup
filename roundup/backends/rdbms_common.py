@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.58.2.4 2004-03-31 01:13:22 richard Exp $
+# $Id: rdbms_common.py,v 1.58.2.5 2004-04-12 23:50:04 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1726,6 +1726,9 @@ class Class(hyperdb.Class):
 
         # generate the where clause
         s = ' and '.join(['lower(_%s)=%s'%(col, self.db.arg) for col in where])
+        # don't match retired items
+        s = s + ' and __retired__ <> %s'%self.db.arg
+        args.append(1)
         sql = 'select id from _%s where %s'%(self.classname, s)
         self.db.sql(sql, tuple(args))
         l = [x[0] for x in self.db.sql_fetchall()]

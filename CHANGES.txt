@@ -6,6 +6,7 @@ Fixed:
 - paging in classhelp popup was broken
 - socket timeout error logging can fail
 - hyperlink designators in message display (sf bug 931828)
+- don't match retired items in RDBMS stringFind
 
 
 2004-04-01 0.6.8
