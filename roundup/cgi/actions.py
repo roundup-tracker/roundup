@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.38 2004-11-18 15:58:23 a1s Exp $
+#$Id: actions.py,v 1.39 2004-11-18 17:20:40 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -27,6 +27,10 @@ class Action:
         self.base = client.base
         self.user = client.user
         self.context = templating.context(client)
+
+    def handle(self):
+        """Action handler procedure"""
+        raise NotImplementedError
 
     def execute(self):
         """Execute the action specified by this object."""
@@ -68,14 +72,17 @@ class Action:
     _ = gettext
 
 class ShowAction(Action):
-    def handle(self, typere=re.compile('[@:]type'),
-               numre=re.compile('[@:]number')):
+
+    typere=re.compile('[@:]type')
+    numre=re.compile('[@:]number')
+
+    def handle(self):
         """Show a node of a particular class/id."""
         t = n = ''
         for key in self.form.keys():
-            if typere.match(key):
+            if self.typere.match(key):
                 t = self.form[key].value.strip()
-            elif numre.match(key):
+            elif self.numre.match(key):
                 n = self.form[key].value.strip()
         if not t:
             raise ValueError, self._('No type specified')
@@ -120,7 +127,7 @@ class SearchAction(Action):
     name = 'search'
     permissionType = 'View'
 
-    def handle(self, wcre=re.compile(r'[\s,]+')):
+    def handle(self):
         """Mangle some of the form variables.
 
         Set the form ":filter" variable based on the values of the filter
@@ -317,9 +324,10 @@ class EditCSVAction(Action):
 
         self.client.ok_message.append(self._('Items edited OK'))
 
-class EditCommon:
+class EditCommon(Action):
     '''Utility methods for editing.'''
-    def _editnodes(self, all_props, all_links, newids=None):
+
+    def _editnodes(self, all_props, all_links):
         ''' Use the props in all_props to perform edit and creation, then
             use the link specs in all_links to do linking.
         '''
@@ -471,7 +479,7 @@ class EditCommon:
         """
         return self.hasPermission('Create', self.classname)
 
-class EditItemAction(EditCommon, Action):
+class EditItemAction(EditCommon):
     def lastUserActivity(self):
         if self.form.has_key(':lastactivity'):
             d = date.Date(self.form[':lastactivity'].value)
@@ -491,6 +499,8 @@ class EditItemAction(EditCommon, Action):
     def detectCollision(self, user_activity, node_activity):
         if user_activity:
             return user_activity < node_activity
+        else:
+            return 0
 
     def handleCollision(self):
         self.client.template = 'collision'
@@ -535,7 +545,7 @@ class EditItemAction(EditCommon, Action):
             url += '&' + req.indexargs_href('', {})[1:]
         raise exceptions.Redirect, url
 
-class NewItemAction(EditCommon, Action):
+class NewItemAction(EditCommon):
     def handle(self):
         ''' Add a new item to the database.
 
@@ -673,7 +683,7 @@ You should then receive another email with the new password.
 
         self.client.ok_message.append(self._('Email sent to %s') % address)
 
-class RegoCommon:
+class RegoCommon(Action):
     def finishRego(self):
         # log the new user in
         self.client.userid = self.userid
@@ -702,7 +712,7 @@ class RegoCommon:
             window.setTimeout('window.location = "%s"', 1000);
             </script>'''%(message, url, message, url)
 
-class ConfRegoAction(RegoCommon, Action):
+class ConfRegoAction(RegoCommon):
     def handle(self):
         """Grab the OTK, use it to load up the new user details."""
         try:
@@ -713,7 +723,7 @@ class ConfRegoAction(RegoCommon, Action):
             return
         self.finishRego()
 
-class RegisterAction(RegoCommon, EditCommon, Action):
+class RegisterAction(RegoCommon, EditCommon):
     name = 'register'
     permissionType = 'Create'
 
@@ -758,7 +768,8 @@ class RegisterAction(RegoCommon, EditCommon, Action):
 
             # finish off by logging the user in
             self.userid = self.nodeid
-            return self.finishRego()
+            self.finishRego()
+            return
 
         # generate the one-time-key and store the props for later
         for propname, proptype in self.db.user.getprops().items():
@@ -869,9 +880,8 @@ class LoginAction(Action):
                 "You do not have permission to login")
 
     def verifyPassword(self, userid, password):
-        ''' Verify the password that the user has supplied
-        '''
-        stored = self.db.user.get(self.client.userid, 'password')
+        '''Verify the password that the user has supplied'''
+        stored = self.db.user.get(userid, 'password')
         if password == stored:
             return 1
         if not password and not stored:
@@ -919,4 +929,4 @@ class ExportCSVAction(Action):
 
         return '\n'
 
-# vim: set filetype=python ts=4 sw=4 et si :
+# vim: set filetype=python sts=4 sw=4 et si :
