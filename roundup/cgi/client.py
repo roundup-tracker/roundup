@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.65.2.4 2003-02-08 23:03:36 richard Exp $
+# $Id: client.py,v 1.65.2.5 2003-03-15 23:30:07 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1236,6 +1236,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         if isinstance(proptype, hyperdb.String):
             # fix the CRLF/CR -> LF stuff
             value = fixNewlines(value)
+            if not value:
+                value = None
         elif isinstance(proptype, hyperdb.Password):
             if not value:
                 # ignore empty password values
