@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.75 2004-09-29 07:27:08 richard Exp $
+# $Id: date.py,v 1.76 2004-10-08 00:32:34 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -476,6 +476,9 @@ class Interval:
             self.from_seconds(spec)
         elif type(spec) in (StringType, UnicodeType):
             self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
+        elif isinstance(spec, Interval):
+            (self.sign, self.year, self.month, self.day, self.hour,
+                self.minute, self.second) = spec.get_tuple()
         else:
             if len(spec) == 7:
                 self.sign, self.year, self.month, self.day, self.hour, \

@@ -45,6 +45,7 @@ Fixed:
 - extend OTK and session table value cols to TEXT (sf bug 1031271)
 - fix lookup of REMOTE_USER (sf bug 1002923)
 - new Interval props weren't created properly in rdbms
+- date.Interval() now accepts an Interval as a spec (sf bug 1041266)
 
 
 2004-07-21 0.7.6
