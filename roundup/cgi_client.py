@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.68 2001-11-29 04:57:23 richard Exp $
+# $Id: cgi_client.py,v 1.69 2001-11-29 23:19:51 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -488,15 +488,14 @@ class Client:
                 props['messages'].classname == 'msg'):
 
             # handle the note
-            edit_msg = 'This %s has been edited through the web.\n'%cn
             if note:
                 if '\n' in note:
                     summary = re.split(r'\n\r?', note)[0]
                 else:
                     summary = note
-                m = [edit_msg + '%s\n'%note]
+                m = ['%s\n'%note]
             else:
-                summary = edit_msg
+                summary = 'This %s has been edited through the web.\n'%cn
                 m = [summary]
 
             # figure the changes and add them to the message
@@ -1047,6 +1046,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.68  2001/11/29 04:57:23  richard
+# a little comment
+#
 # Revision 1.67  2001/11/28 21:55:35  richard
 #  . login_action and newuser_action return values were being ignored
 #  . Woohoo! Found that bloody re-login bug that was killing the mail
