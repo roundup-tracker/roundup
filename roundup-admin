@@ -1,5 +1,5 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.4 2001-07-29 07:01:39 richard Exp $
+# $Id: roundup-admin,v 1.5 2001-07-30 00:04:48 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -144,12 +144,24 @@ def main():
             template = backend = ''
         while not instance_home:
             instance_home = raw_input('Enter instance home: ').strip()
-        # TODO: list the templates
-        while not template:
-            template = raw_input('Select template: ').strip()
-        # TODO: list the backends
-        while not backend:
-            backend = raw_input('Select backend: ').strip()
+
+        # select template
+        import roundup.templates
+        templates = roundup.templates.listTemplates()
+        print 'Templates:', ', '.join(templates)
+        template = ''
+        while template not in templates:
+            template = raw_input('Select template [classic]: ').strip()
+            if not template:
+                template = 'classic'
+
+        import roundup.backends
+        backends = roundup.backends.__all__
+        backend = ''
+        while backend not in backends:
+            backend = raw_input('Select backend [anydbm]: ').strip()
+            if not backend:
+                backend = 'anydbm'
         while adminpw != confirm:
             adminpw = getpass.getpass('Admin Password: ')
             confirm = getpass.getpass('       Confirm: ')
@@ -291,6 +303,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.3  2001/07/23 08:45:28  richard
 # ok, so now "./roundup-admin init" will ask questions in an attempt to get a
 # workable instance_home set up :)
