@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.118 $
+:Version: $Revision: 1.119 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -613,6 +613,9 @@ A set of Permissions is built into the security module by default:
 - Edit (everything)
 - View (everything)
 
+Every Class you define in your tracker's schema also gets an Edit and View
+Permission of its own.
+
 The default interfaces define:
 
 - Web Registration
@@ -643,13 +646,6 @@ settings appear in the ``open()`` function of the tracker ``dbinit.py``
     #
     # SECURITY SETTINGS
     #
-    # new permissions for this schema
-    for cl in ('user', ):
-        db.security.addPermission(name="Edit", klass=cl,
-            description="User is allowed to edit "+cl)
-        db.security.addPermission(name="View", klass=cl,
-            description="User is allowed to access "+cl)
-
     # and give the regular users access to the web and email interface
     p = db.security.getPermission('Web Access')
     db.security.addPermissionToRole('User', p)
@@ -697,7 +693,13 @@ Adding a new Permission
 
 When adding a new Permission, you will need to:
 
-1. add it to your tracker's dbinit so it is created
+1. add it to your tracker's dbinit so it is created, using
+   ``security.addPermission``, for example::
+
+    self.security.addPermission(name="View", klass='frozzle',
+        description="User is allowed to access frozzles")
+
+   will set up a new "View" permission on the Class "frozzle".
 2. enable it for the Roles that should have it (verify with
    "``roundup-admin security``")
 3. add it to the relevant HTML interface templates

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.60 2004-02-23 17:19:09 wc2so1 Exp $
+# $Id: back_metakit.py,v 1.61 2004-03-12 05:36:26 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -169,6 +169,13 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self.classes[cl.classname] = cl
         if self.tables.find(name=cl.classname) < 0:
             self.tables.append(name=cl.classname)
+
+        # add default Edit and View permissions
+        self.security.addPermission(name="Edit", klass=cl.classname,
+            description="User is allowed to edit "+cl.classname)
+        self.security.addPermission(name="View", klass=cl.classname,
+            description="User is allowed to access "+cl.classname)
+
     def addjournal(self, tablenm, nodeid, action, params, creator=None,
                    creation=None):
         ''' Journal the Action

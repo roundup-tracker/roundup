@@ -11,6 +11,47 @@ accordingly. Note that there is information about upgrade procedures in the
 Migrating from 0.6 to 0.7
 =========================
 
+0.7.0 Permission setup
+----------------------
+
+0.7 automatically sets up the Edit and View Permissions for all classes,
+thus you don't need to do so. Feel free to remove the code::
+
+    # Add new Permissions for this schema
+    for cl in 'issue', 'file', 'msg', 'user', 'query', 'keyword':
+        db.security.addPermission(name="Edit", klass=cl,
+            description="User is allowed to edit "+cl)
+        db.security.addPermission(name="View", klass=cl,
+            description="User is allowed to access "+cl)
+
+from your ``dbinit.py``.
+
+
+0.7.0 Permission assignments
+----------------------------
+
+Due to a change in the rendering of web widgets, permissions are now
+checked on Classes where they previously weren't (this is a good thing).
+
+You will need to add some additional Permission assignments for your
+regular users, or some displays will break. After the following in your 
+tracker's ``dbinit.py``::
+
+    # Assign the access and edit Permissions for issue, file and message
+    # to regular users now
+    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Edit', cl)
+        db.security.addPermissionToRole('User', p)
+
+add::
+
+    for cl in 'priority', 'status':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+
+
 0.7.0 Extending the cgi interface
 ---------------------------------
 
@@ -23,6 +64,7 @@ password validation source`__ example.
 
 __ customizing.html#defining-new-web-actions
 __ customizing.html#using-an-external-password-validation-source
+
 
 0.7.0 Getting the current user id
 ---------------------------------

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.77 2004-03-12 04:08:59 richard Exp $
+# $Id: rdbms_common.py,v 1.78 2004-03-12 05:36:26 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -508,6 +508,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if self.classes.has_key(cn):
             raise ValueError, cn
         self.classes[cn] = cl
+
+        # add default Edit and View permissions
+        self.security.addPermission(name="Edit", klass=cn,
+            description="User is allowed to edit "+cn)
+        self.security.addPermission(name="View", klass=cn,
+            description="User is allowed to access "+cn)
 
     def getclasses(self):
         ''' Return a list of the names of all existing classes.

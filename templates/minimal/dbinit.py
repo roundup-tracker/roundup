@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.1 2003-04-17 03:27:27 richard Exp $
+# $Id: dbinit.py,v 1.2 2004-03-12 05:36:26 richard Exp $
 
 import os
 
@@ -49,13 +49,6 @@ def open(name=None):
     #
     # SECURITY SETTINGS
     #
-    # new permissions for this schema
-    for cl in ('user', ):
-        db.security.addPermission(name="Edit", klass=cl,
-            description="User is allowed to edit "+cl)
-        db.security.addPermission(name="View", klass=cl,
-            description="User is allowed to access "+cl)
-
     # and give the regular users access to the web and email interface
     p = db.security.getPermission('Web Access')
     db.security.addPermissionToRole('User', p)
