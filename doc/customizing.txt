@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.55 $
+:Version: $Revision: 1.56 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -705,7 +705,7 @@ triggered by using a ``:action`` CGI variable, where the value is one of:
 
  :link=designator:property and :multilink=designator:property
   The value specifies an item designator and the property on that
-  item to add _this_ item to as a link or multilink.
+  item to add *this* item to as a link or multilink.
  :note
   Create a message and attach it to the current item's
   "messages" property.
@@ -2264,7 +2264,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
    encode those actions in methods on the interfaces Client class and insert
    hooks to those actions in the "actions" attribute on that class, like so::
 
-    actions = client.Class.actions + (
+    actions = client.Client.actions + (
         ('page1_submit', 'page1SubmitAction'),
     )
 
@@ -2409,6 +2409,134 @@ very useful, and relatively easy to stop.
     sendto = [i for i in sendto if not users.get(i, 'vacation', 0)]
 
    which filters out the users that have the vacation flag set to true.
+
+
+Adding a time log to your issues
+--------------------------------
+
+We want to log the dates and amount of time spent working on issues, and be
+able to give a summary of the total time spent on a particular issue.
+
+1. Add a new class to your tracker ``dbinit.py``::
+
+    # storage for time logging
+    timelog = Class(db, "timelog", period=Interval())
+
+   Note that we automatically get the date of the time log entry creation
+   through the standard property "creation".
+
+2. Link to the new class from your issue class (again, in ``dbinit.py``)::
+
+    issue = IssueClass(db, "issue", 
+                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    priority=Link("priority"), status=Link("status"),
+                    times=Multilink("timelog"))
+
+   the "times" property is the new link to the "timelog" class.
+
+3. We'll need to let people add in times to the issue, so in the web interface
+   we'll have a new entry field, just below the change note box::
+
+    <tr>
+     <th nowrap>Time Log</th>
+     <td colspan=3><input name=":timelog">
+      (enter as "3y 1m 4d 2:40:02" or parts thereof)
+     </td>
+    </tr>
+
+   Note that we've made up a new form variable, but since we place a colon ":"
+   in front of it, it won't clash with any existing property variables. The
+   names you *can't* use are ``:note``, ``:file``, ``:action``, ``:required``
+   and ``:template``. These variables are described in the section
+   `performing actions in web requests`_.
+
+4. We also need to handle this new field in the CGI interface - the way to
+   do this is through implementing a new form action (see `Setting up a
+   "wizard" (or "druid") for controlled adding of issues`_ for another example
+   where we implemented a new CGI form action).
+
+   In this case, we'll want our action to:
+
+   1. create a new "timelog" entry,
+   2. fake that the issue's "times" property has been edited, and then
+   3. call the normal CGI edit action handler.
+
+   The code to do this is::
+
+    actions = client.Client.actions + (
+        ('edit_with_timelog', 'timelogEditAction'),
+    )
+
+    def timelogEditAction(self):
+        ''' Handle the creation of a new time log entry if necessary.
+
+            If we create a new entry, fake up a CGI form value for the altered
+            "times" property of the issue being edited.
+
+            Punt to the regular edit action when we're done.
+        '''
+        # if there's a timelog value specified, create an entry
+        if self.form.has_key(':timelog') and \
+                self.form[':timelog'].value.strip():
+            period = Interval(self.form[':timelog'].value)
+            # create it
+            newid = self.db.timelog.create(period=period)
+
+            # if we're editing an existing item, get the old timelog value
+            if self.nodeid:
+                l = self.db.issue.get(self.nodeid, 'times')
+                l.append(newid)
+            else:
+                l = [newid]
+
+            # now make the fake CGI form values
+            for entry in l:
+                self.form.list.append(MiniFieldStorage('times', entry))
+
+        # punt to the normal edit action
+        return self.editItemAction()
+
+   you add this code to your Client class in your tracker's ``interfaces.py``
+   file.
+
+5. You'll also need to modify your ``issue.item`` form submit action so it
+   calls the time logging action we just created::
+
+    <tr>
+     <td>&nbsp;</td>
+     <td colspan=3>
+      <tal:block tal:condition="context/id">
+        <input type="hidden" name=":action" value="edit_with_timelog">
+        <input type="submit" name="submit" value="Submit Changes">
+      </tal:block>
+      <tal:block tal:condition="not:context/id">
+        <input type="hidden" name=":action" value="new">
+        <input type="submit" name="submit" value="Submit New Issue">
+      </tal:block>
+     </td>
+    </tr>
+
+   Note that the "context/submit" command usually handles all that for you -
+   isn't it handy? The important change is setting the action to
+   "edit_with_timelog" for edit operations (where the item exists)
+
+6. Display the time log for an issue::
+
+     <table class="otherinfo" tal:condition="context/times">
+      <tr><th colspan="3" class="header">Time Log</th></tr>
+      <tr><th>Date</th><th>Period</th><th>Logged By</th></tr>
+      <tr tal:repeat="time context/times">
+       <td tal:content="time/creation"></td>
+       <td tal:content="time/period"></td>
+       <td tal:content="time/creator"></td>
+      </tr>
+     </table>
+
+   I put this just above the Messages log in my issue display.
+
+6. If you're using a persistent web server - roundup-server or mod_python for
+   example - then you'll need to restart that to pick up the code changes.
+   When that's done, you'll be able to use the new time logging interface.
 
 
 -------------------
