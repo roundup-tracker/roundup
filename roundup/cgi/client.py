@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.8 2002-09-03 03:23:56 richard Exp $
+# $Id: client.py,v 1.9 2002-09-03 07:13:42 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -125,7 +125,7 @@ class Client:
         except SendFile, designator:
             self.serve_file(designator)
         except SendStaticFile, file:
-            self.serve_static_file(file)
+            self.serve_static_file(str(file))
         except Unauthorised, message:
             self.write(self.template('page.unauthorised',
                 error_message=message))
