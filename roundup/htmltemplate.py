@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.22 2001-08-30 06:01:17 richard Exp $
+# $Id: htmltemplate.py,v 1.23 2001-09-10 09:47:18 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -207,19 +207,21 @@ class Link(Base):
             if isinstance(propclass, hyperdb.Multilink): value = []
             else: value = ''
         if isinstance(propclass, hyperdb.Link):
+            linkname = propclass.classname
             if value is None:
                 return '[not assigned]'
-            linkcl = self.db.classes[propclass.classname]
+            linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
             linkvalue = linkcl.get(value, k)
-            return '<a href="%s%s">%s</a>'%(linkcl, value, linkvalue)
+            return '<a href="%s%s">%s</a>'%(linkname, value, linkvalue)
         if isinstance(propclass, hyperdb.Multilink):
-            linkcl = self.db.classes[propclass.classname]
+            linkname = propclass.classname
+            linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
             l = []
             for value in value:
                 linkvalue = linkcl.get(value, k)
-                l.append('<a href="%s%s">%s</a>'%(linkcl, value, linkvalue))
+                l.append('<a href="%s%s">%s</a>'%(linkname, value, linkvalue))
             return ', '.join(l)
         return '<a href="%s%s">%s</a>'%(self.classname, self.nodeid, value)
 
@@ -743,6 +745,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/08/30 06:01:17  richard
+# Fixed missing import in mailgw :(
+#
 # Revision 1.21  2001/08/16 07:34:59  richard
 # better CGI text searching - but hidden filter fields are disappearing...
 #

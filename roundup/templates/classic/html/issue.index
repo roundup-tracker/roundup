@@ -1,4 +1,4 @@
-<!-- $Id: issue.index,v 1.2 2001-07-29 04:07:37 richard Exp $-->
+<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
 <tr class="row-<display call="plain('status')">">
     <property name="id">
         <td valign="top"><display call="plain('id')"></td>

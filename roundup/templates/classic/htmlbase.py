@@ -102,6 +102,13 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Ex
 </tr>
 
 <tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
+    <td class="form-text"><display call="field('assignedto')"></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Change Note</span></td>
     <td colspan=3 class="form-text"><display call="note()"></td>
 </tr>
