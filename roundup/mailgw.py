@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.159.2.2 2005-02-14 02:55:30 richard Exp $
+$Id: mailgw.py,v 1.159.2.3 2005-02-14 05:55:20 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -579,8 +579,9 @@ class MailGW:
         if message.getheader('x-roundup-loop', ''):
             raise IgnoreLoop
 
-        # detect Precedence: Bulk
-        if (message.getheader('precedence', '') == 'bulk'):
+        # detect Precedence: Bulk, or Microsoft Outlook autoreplies
+        if (message.getheader('precedence', '') == 'bulk'
+            or message.getheader('subject', '').lower().find("autoreply") > 0):
             raise IgnoreBulk
 
         # config is used many times in this method.
