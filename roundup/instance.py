@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.7 2002-09-17 23:59:32 richard Exp $
+# $Id: instance.py,v 1.8 2002-09-18 00:02:13 richard Exp $
 
 __doc__ = '''
 Tracker handling (open tracker).
@@ -26,7 +26,7 @@ a tracker. Note that trackers used to be called instances.
 
 import imp, os
 
-class InstanceError(Exception):
+class TrackerError(Exception):
     pass
 
 class Opener:
@@ -54,7 +54,7 @@ class Opener:
         # ensure the tracker has all the required bits
         for required in 'config open init Client MailGW'.split():
             if not hasattr(tracker, required):
-                raise InstanceError, 'Required tracker attribute "%s" '\
+                raise TrackerError, 'Required tracker attribute "%s" '\
                     'missing'%required
 
         return tracker
