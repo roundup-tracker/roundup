@@ -1,4 +1,4 @@
-# $Id: init.py,v 1.10 2001-08-03 01:28:33 richard Exp $
+# $Id: init.py,v 1.11 2001-08-04 22:42:43 richard Exp $
 
 import os, shutil, sys, errno, imp
 
@@ -50,11 +50,14 @@ from roundup.backends.back_%s import Database'''%backend
     open(os.path.join(instance_home, 'select_db.py'), 'w').write(db)
 
     # now import the instance and call its init
-    instance = imp.loa_package('instance', instance_home)
+    instance = imp.load_package('instance', instance_home)
     instance.init(adminpw)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/08/03 01:28:33  richard
+# Used the much nicer load_package, pointed out by Steve Majewski.
+#
 # Revision 1.9  2001/08/03 00:59:34  richard
 # Instance import now imports the instance using imp.load_module so that
 # we can have instance homes of "roundup" or other existing python package
