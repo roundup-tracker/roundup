@@ -15,21 +15,37 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.26 2001-09-12 08:31:42 richard Exp $
+# $Id: cgi_client.py,v 1.27 2001-10-05 02:23:24 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
+import base64, Cookie, time
 
 import roundupdb, htmltemplate, date, hyperdb
 
 class Unauthorised(ValueError):
     pass
 
+class NotFound(ValueError):
+    pass
+
 class Client:
-    def __init__(self, out, db, env, user):
+    '''
+
+    A note about login
+    ------------------
+
+    If the user has no login cookie, then they are anonymous. There
+    are two levels of anonymous use. If there is no 'anonymous' user, there
+    is no login at all and the database is opened in read-only mode. If the
+    'anonymous' user exists, the user is logged in using that user (though
+    there is no cookie). This allows them to modify the database, and all
+    modifications are attributed to the 'anonymous' user.
+    '''
+
+    def __init__(self, instance, out, env):
+        self.instance = instance
         self.out = out
-        self.db = db
         self.env = env
-        self.user = user
         self.path = env['PATH_INFO']
         self.split_path = self.path.split('/')
 
@@ -60,7 +76,11 @@ class Client:
         else:
             message = ''
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
-        userid = self.db.user.lookup(self.user)
+        if self.user is not None:
+            userid = self.db.user.lookup(self.user)
+            user_info = '(login: <a href="user%s">%s</a>)'%(userid, self.user)
+        else:
+            user_info = ''
         self.write('''<html><head>
 <title>%s</title>
 <style type="text/css">%s</style>
@@ -68,10 +88,9 @@ class Client:
 <body bgcolor=#ffffff>
 %s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%s</strong></big>
-(login: <a href="user%s">%s</a>)</td></tr>
+<tr class="location-bar"><td><big><strong>%s</strong></big> %s</td></tr>
 </table>
-'''%(title, style, message, title, userid, self.user))
+'''%(title, style, message, title, user_info))
 
     def pagefoot(self):
         if self.debug:
@@ -122,6 +141,7 @@ class Client:
         filterspec = {}
         for key in self.form.keys():
             if key[0] == ':': continue
+            if not props.has_key(key): continue
             prop = props[key]
             value = self.form[key]
             if (isinstance(prop, hyperdb.Link) or
@@ -433,7 +453,143 @@ class Client:
         else:
             raise Unauthorised
 
-    def main(self, dre=re.compile(r'([^\d]+)(\d+)'), nre=re.compile(r'new(\w+)')):
+    def login(self, message=None):
+        self.pagehead('Login to roundup', message)
+        self.write('''
+<table>
+<tr><td colspan=2 class="strong-header">Existing User Login</td></tr>
+<form action="login_action" method=POST>
+<tr><td align=right>Login name: </td>
+    <td><input name="__login_name"></td></tr>
+<tr><td align=right>Password: </td>
+    <td><input type="password" name="__login_password"></td></tr>
+<tr><td></td>
+    <td><input type="submit" value="Log In"></td></tr>
+</form>
+
+<p>
+<tr><td colspan=2 class="strong-header">New User Registration</td></tr>
+<tr><td colspan=2><em>marked items</em> are optional...</td></tr>
+<form action="newuser_action" method=POST>
+<tr><td align=right><em>Name: </em></td>
+    <td><input name="__newuser_realname"></td></tr>
+<tr><td align=right><em>Organisation: </em></td>
+    <td><input name="__newuser_organisation"></td></tr>
+<tr><td align=right>E-Mail Address: </td>
+    <td><input name="__newuser_address"></td></tr>
+<tr><td align=right><em>Phone: </em></td>
+    <td><input name="__newuser_phone"></td></tr>
+<tr><td align=right>Preferred Login name: </td>
+    <td><input name="__newuser_username"></td></tr>
+<tr><td align=right>Password: </td>
+    <td><input type="password" name="__newuser_password"></td></tr>
+<tr><td align=right>Password Again: </td>
+    <td><input type="password" name="__newuser_confirm"></td></tr>
+<tr><td></td>
+    <td><input type="submit" value="Register"></td></tr>
+</form>
+</table>
+''')
+
+    def login_action(self, message=None):
+        self.user = self.form['__login_name'].value
+        password = self.form['__login_password'].value
+        # make sure the user exists
+        try:
+            uid = self.db.user.lookup(self.user)
+        except KeyError:
+            name = self.user
+            self.make_user_anonymous()
+            return self.login(message='No such user "%s"'%name)
+
+        # and that the password is correct
+        if password != self.db.user.get(uid, 'password'):
+            return self.login(message='Incorrect password')
+
+        # construct the cookie
+        uid = self.db.user.lookup(self.user)
+        user = base64.encodestring('%s:%s'%(self.user, password))[:-1]
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+            ''))
+        cookie = Cookie.SmartCookie()
+        cookie['roundup_user'] = user
+        cookie['roundup_user']['path'] = path
+        self.header({'Set-Cookie': str(cookie)})
+        return self.index()
+
+    def make_user_anonymous(self):
+        # make us anonymous if we can
+        try:
+            self.db.user.lookup('anonymous')
+            self.user = 'anonymous'
+        except KeyError:
+            self.user = None
+
+    def logout(self, message=None):
+        self.make_user_anonymous()
+        # construct the logout cookie
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+            ''))
+        cookie = Cookie.SmartCookie()
+        cookie['roundup_user'] = 'deleted'
+        cookie['roundup_user']['path'] = path
+        cookie['roundup_user']['expires'] = 0
+        cookie['roundup_user']['max-age'] = 0
+        self.header({'Set-Cookie': str(cookie)})
+        return self.index()
+
+    def newuser_action(self, message=None):
+        ''' create a new user based on the contents of the form and then
+        set the cookie
+        '''
+        # TODO: pre-check the required fields and username key property
+        cl = self.db.classes['user']
+        props, dummy = parsePropsFromForm(cl, self.form)
+        uid = cl.create(**props)
+        self.user = self.db.user.get(uid, 'username')
+        password = self.db.user.get(uid, 'password')
+        # construct the cookie
+        uid = self.db.user.lookup(self.user)
+        user = base64.encodestring('%s:%s'%(self.user, password))[:-1]
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+            ''))
+        cookie = Cookie.SmartCookie()
+        cookie['roundup_user'] = user
+        cookie['roundup_user']['path'] = path
+        self.header({'Set-Cookie': str(cookie)})
+        return self.index()
+
+    def main(self, dre=re.compile(r'([^\d]+)(\d+)'),
+            nre=re.compile(r'new(\w+)')):
+
+        # determine the uid to use
+        self.db = self.instance.open('admin')
+        cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
+        user = 'anonymous'
+        if (cookie.has_key('roundup_user') and
+                cookie['roundup_user'].value != 'deleted'):
+            cookie = cookie['roundup_user'].value
+            user, password = base64.decodestring(cookie).split(':')
+            # make sure the user exists
+            try:
+                uid = self.db.user.lookup(user)
+                # now validate the password
+                if password != self.db.user.get(uid, 'password'):
+                    user = 'anonymous'
+            except KeyError:
+                user = 'anonymous'
+
+        # make sure the anonymous user is valid if we're using it
+        if user == 'anonymous':
+            self.make_user_anonymous()
+        else:
+            self.user = user
+        self.db.close()
+
+        # re-open the database for real, using the user
+        self.db = self.instance.open(self.user)
+
+        # now figure which function to call
         path = self.split_path
         if not path or path[0] in ('', 'index'):
             self.index()
@@ -441,18 +597,48 @@ class Client:
             if path[0] == 'list_classes':
                 self.classes()
                 return
+            if path[0] == 'login':
+                self.login()
+                return
+            if path[0] == 'login_action':
+                self.login_action()
+                return
+            if path[0] == 'newuser_action':
+                self.newuser_action()
+                return
+            if path[0] == 'logout':
+                self.logout()
+                return
             m = dre.match(path[0])
             if m:
                 self.classname = m.group(1)
                 self.nodeid = m.group(2)
-                getattr(self, 'show%s'%self.classname)()
+                try:
+                    cl = self.db.classes[self.classname]
+                except KeyError:
+                    raise NotFound
+                try:
+                    cl.get(self.nodeid, 'id')
+                except IndexError:
+                    raise NotFound
+                try:
+                    getattr(self, 'show%s'%self.classname)()
+                except AttributeError:
+                    raise NotFound
                 return
             m = nre.match(path[0])
             if m:
                 self.classname = m.group(1)
-                getattr(self, 'new%s'%self.classname)()
+                try:
+                    getattr(self, 'new%s'%self.classname)()
+                except AttributeError:
+                    raise NotFound
                 return
             self.classname = path[0]
+            try:
+                self.db.getclass(self.classname)
+            except KeyError:
+                raise NotFound
             self.list()
         else:
             raise 'ValueError', 'Path not understood'
@@ -515,6 +701,9 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2001/09/12 08:31:42  richard
+# handle cases where mime type is not guessable
+#
 # Revision 1.25  2001/08/29 05:30:49  richard
 # change messages weren't being saved when there was no-one on the nosy list.
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.9 2001-08-07 00:24:43 richard Exp $
+# $Id: interfaces.py,v 1.10 2001-10-05 02:23:24 richard Exp $
 
 import instance_config, urlparse, os
 from roundup import cgi_client, mailgw 
@@ -47,11 +47,29 @@ class Client(cgi_client.Client):
         else:
             message = ''
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
-        userid = self.db.user.lookup(self.user)
+        user_name = self.user or ''
         if self.user == 'admin':
-            extras = ' | <a href="list_classes">Class List</a>'
+            admin_links = ' | <a href="list_classes">Class List</a>'
         else:
-            extras = ''
+            admin_links = ''
+        if self.user not in (None, 'anonymous'):
+            userid = self.db.user.lookup(self.user)
+            user_info = '''
+<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
+<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">My Support</a> |
+<a href="user%s">My Details</a> | <a href="logout">Logout</a>
+'''%(userid, userid, userid)
+        else:
+            user_info = '<a href="login">Login</a>'
+        if self.user is not None:
+            add_links = '''
+| Add
+<a href="newissue">Issue</a>,
+<a href="newsupport">Support</a>,
+<a href="newuser">User</a>
+'''
+        else:
+            add_links = ''
         self.write('''<html><head>
 <title>%s</title>
 <style type="text/css">%s</style>
@@ -68,17 +86,12 @@ class Client(cgi_client.Client):
 | Unassigned
 <a href="issue?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
 <a href="support?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
-| Add
-<a href="newissue">Issue</a>,
-<a href="newsupport">Support</a>,
-<a href="newuser">User</a>
+%s
 %s</td>
-<td align=right>
-<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
-<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">My Support</a> |
-<a href="user%s">My Details</a></td>
+<td align=right>%s</td>
 </table>
-'''%(title, style, message, title, self.user, extras, userid, userid, userid))
+'''%(title, style, message, title, user_name, add_links, admin_links,
+    user_info))
  
 class MailGW(mailgw.MailGW): 
     ''' derives basic mail gateway implementation from the standard module, 
@@ -90,6 +103,9 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.8  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

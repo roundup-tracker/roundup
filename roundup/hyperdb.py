@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.20 2001-10-04 02:12:42 richard Exp $
+# $Id: hyperdb.py,v 1.21 2001-10-05 02:23:24 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -219,9 +219,9 @@ class Class:
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
         """
+        d = self.db.getnode(self.classname, nodeid)
         if propname == 'id':
             return nodeid
-        d = self.db.getnode(self.classname, nodeid)
         if not d.has_key(propname) and default is not _marker:
             return default
         return d[propname]
@@ -800,6 +800,14 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/10/04 02:12:42  richard
+# Added nicer command-line item adding: passing no arguments will enter an
+# interactive more which asks for each property in turn. While I was at it, I
+# fixed an implementation problem WRT the spec - I wasn't raising a
+# ValueError if the key property was missing from a create(). Also added a
+# protected=boolean argument to getprops() so we can list only the mutable
+# properties (defaults to yes, which lists the immutables).
+#
 # Revision 1.19  2001/08/29 04:47:18  richard
 # Fixed CGI client change messages so they actually include the properties
 # changed (again).

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.12 2001-10-01 05:55:41 richard Exp $
+# $Id: roundup.cgi,v 1.13 2001-10-05 02:23:24 richard Exp $
 
 # python version check
 import sys
@@ -59,55 +59,38 @@ except:
     traceback.print_exc(None, s)
     print cgi.escape(s.getvalue()), "</pre>"
 
-def main(instance, out):
-    from roundup import cgi_client
-    db = instance.open('admin')
-    auth = os.environ.get("HTTP_CGI_AUTHORIZATION", None)
-    message = 'Unauthorised'
-    if auth:
-        import binascii
-        l = binascii.a2b_base64(auth.split(' ')[1]).split(':')
-        user = l[0]
-        password = None
-        if len(l) > 1:
-            password = l[1]
+def main(out, err):
+    import os, string
+    import roundup.instance
+    path = string.split(os.environ['PATH_INFO'], '/')
+    instance = path[1]
+    os.environ['INSTANCE_NAME'] = instance
+    os.environ['PATH_INFO'] = string.join(path[2:], '/')
+    if ROUNDUP_INSTANCE_HOMES.has_key(instance):
+        instance_home = ROUNDUP_INSTANCE_HOMES[instance]
+        instance = roundup.instance.open(instance_home)
+        from roundup import cgi_client
+        client = instance.Client(instance, out, os.environ)
         try:
-            uid = db.user.lookup(user)
-        except KeyError:
-            auth = None
-            message = 'Username not recognised'
-        else:
-            if password != db.user.get(uid, 'password'):
-                message = 'Incorrect password'
-                auth = None
-    if not auth:
-        out.write('Content-Type: text/html\n')
-        out.write('Status: 401\n')
-        out.write('WWW-Authenticate: basic realm="Roundup"\n\n')
-        keys = os.environ.keys()
-        keys.sort()
-        out.write(message)
-        return
-    client = instance.Client(out, db, os.environ, user)
-    try:
-        client.main()
-    except cgi_client.Unauthorised:
-        out.write('Content-Type: text/html\n')
-        out.write('Status: 403\n\n')
-        out.write('Unauthorised')
-
-def index(out):
-    ''' Print up an index of the available instances
-    '''
-    import urllib
-    w = out.write
-    w("Content-Type: text/html\n\n")
-    w('<html><head><title>Roundup instances index</title><head>\n')
-    w('<body><h1>Roundup instances index</h1><ol>\n')
-    for instance in ROUNDUP_INSTANCE_HOMES.keys():
-        w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
-            instance))
-    w('</ol></body></html>')
+            client.main()
+        except cgi_client.Unauthorised:
+            out.write('Content-Type: text/html\n')
+            out.write('Status: 403\n\n')
+            out.write('Unauthorised')
+        except cgi_client.NotFound:
+            out.write('Content-Type: text/html\n')
+            out.write('Status: 404\n\n')
+            out.write('Not found: %s'%client.path)
+    else:
+        import urllib
+        w = out.write
+        w("Content-Type: text/html\n\n")
+        w('<html><head><title>Roundup instances index</title><head>\n')
+        w('<body><h1>Roundup instances index</h1><ol>\n')
+        for instance in ROUNDUP_INSTANCE_HOMES.keys():
+            w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
+                instance))
+        w('</ol></body></html>')
 
 #
 # Now do the actual CGI handling
@@ -115,17 +98,7 @@ def index(out):
 out, err = sys.stdout, sys.stderr
 try:
     sys.stdout = sys.stderr = LOG
-    import os, string
-    import roundup.instance
-    path = string.split(os.environ['PATH_INFO'], '/')
-    instance = path[1]
-    os.environ['PATH_INFO'] = string.join(path[2:], '/')
-    if ROUNDUP_INSTANCE_HOMES.has_key(instance):
-        instance_home = ROUNDUP_INSTANCE_HOMES[instance]
-        instance = roundup.instance.open(instance_home)
-        main(instance, out)
-    else:
-        index(out)
+    main(out, err)
 except:
     sys.stdout, sys.stderr = out, err
     out.write('Content-Type: text/html\n\n')
@@ -135,6 +108,9 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/10/01 05:55:41  richard
+# Fixes to the top-level index
+#
 # Revision 1.11  2001/09/29 13:27:00  richard
 # CGI interfaces now spit up a top-level index of all the instances they can
 # serve.

@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.12 2001-09-29 13:27:00 richard Exp $
+$Id: roundup-server,v 1.13 2001-10-05 02:23:24 richard Exp $
 
 """
 import sys
@@ -75,10 +75,12 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         sys.stdin = self.rfile
         try:
             self.inner_run_cgi()
+        except cgi_client.NotFound:
+            self.send_error(404, self.path)
         except cgi_client.Unauthorised:
             self.wfile.write('Content-Type: text/html\n')
-            self.wfile.write('Status: 403\n')
-            self.wfile.write('Unauthorised')
+            self.wfile.write('Status: 403\n\n')
+            self.wfile.write('You are not authorised to access this URL.')
         except:
             try:
                 reload(cgitb)
@@ -121,12 +123,12 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         if rest == '/':
             return self.index()
         l_path = string.split(rest, '/')
-        instance = urllib.unquote(l_path[1])
-        if self.ROUNDUP_INSTANCE_HOMES.has_key(instance):
-            instance_home = self.ROUNDUP_INSTANCE_HOMES[instance]
+        instance_name = urllib.unquote(l_path[1])
+        if self.ROUNDUP_INSTANCE_HOMES.has_key(instance_name):
+            instance_home = self.ROUNDUP_INSTANCE_HOMES[instance_name]
             instance = roundup.instance.open(instance_home)
         else:
-            return self.index()
+            raise cgi_client.NotFound
 
         # figure out what the rest of the path is
         if len(l_path) > 2:
@@ -136,6 +138,7 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         # Set up the CGI environment
         env = {}
+        env['INSTANCE_NAME'] = instance_name
         env['REQUEST_METHOD'] = self.command
         env['PATH_INFO'] = urllib.unquote(rest)
         if query:
@@ -176,41 +179,12 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #finally:
         #    del sys.path[0]
 
-        # initialise the roundupdb, check for auth
-        db = instance.open('admin')
-        message = 'Unauthorised'
-        auth = self.headers.getheader('authorization')
-        if auth:
-            l = binascii.a2b_base64(auth.split(' ')[1]).split(':')
-            user = l[0]
-            password = None
-            if len(l) > 1:
-                password = l[1]
-            try:
-                uid = db.user.lookup(user)
-            except KeyError:
-                auth = None
-                message = 'Username not recognised'
-            else:
-                if password != db.user.get(uid, 'password'):
-                    message = 'Incorrect password'
-                    auth = None
-        db.close()
-        del db
-        if not auth:
-            self.send_response(401)
-            self.send_header('Content-Type', 'text/html')
-            self.send_header('WWW-Authenticate', 'basic realm="Roundup"')
-            self.end_headers()
-            self.wfile.write(message)
-            return
-
         self.send_response(200, "Script output follows")
 
         # do the roundup thang
-        db = instance.open(user)
-        client = instance.Client(self.wfile, db, env, user)
+        client = instance.Client(instance, self.wfile, env)
         client.main()
+
     do_POST = run_cgi
 
 nobody = None
@@ -282,6 +256,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/09/29 13:27:00  richard
+# CGI interfaces now spit up a top-level index of all the instances they can
+# serve.
+#
 # Revision 1.11  2001/08/07 00:24:42  richard
 # stupid typo
 #

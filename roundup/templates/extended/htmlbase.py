@@ -182,7 +182,7 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.5 2001/07/30 08:03:56 richard Ex
 
 """
 
-msgDOTindex = """<!-- dollarId: msg.index,v 1.1 2001/07/23 04:21:20 richard Exp dollar-->
+msgDOTindex = """<!-- dollarId: msg.index,v 1.3 2001/09/27 06:45:58 richard Exp dollar-->
 <tr class="row-hilite">
     <property name="date">
         <td><display call="link('date')"></td>

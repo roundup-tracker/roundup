@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.15 2001-08-30 06:01:17 richard Exp $
+$Id: mailgw.py,v 1.16 2001-10-05 02:23:24 richard Exp $
 '''
 
 
@@ -230,7 +230,9 @@ Subject was: "%s"
                 elif isinstance(type, hyperdb.Multilink):
                     props[key] = value.split(',')
 
+        #
         # handle the users
+        #
         author = self.db.uidFromAddress(message.getaddrlist('from')[0])
         recipients = []
         for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
@@ -398,6 +400,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/08/30 06:01:17  richard
+# Fixed missing import in mailgw :(
+#
 # Revision 1.14  2001/08/13 23:02:54  richard
 # Make the mail parser a little more robust.
 #
