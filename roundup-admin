@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.25 2001-10-10 04:12:32 richard Exp $
+# $Id: roundup-admin,v 1.26 2001-10-11 05:03:51 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -340,6 +340,7 @@ def do_retire(db, args):
 
 def do_export(db, args):
     '''Usage: export class[,class] destination_dir
+    ** EXPERIMENTAL **
     Export the database to CSV files by class in the given directory.
 
     This action exports the current data from the database into
@@ -381,6 +382,7 @@ def do_export(db, args):
 
 def do_import(db, args):
     '''Usage: import class file
+    ** EXPERIMENTAL **
     Import the contents of the CSV file as new nodes for the given class.
 
     The file must define the same properties as the class (including having
@@ -565,6 +567,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/10/10 04:12:32  richard
+# The setup.cfg file is just causing pain. Away it goes.
+#
 # Revision 1.24  2001/10/10 03:54:57  richard
 # Added database importing and exporting through CSV files.
 # Uses the csv module from object-craft for exporting if it's available.
