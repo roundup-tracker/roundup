@@ -198,6 +198,7 @@ class HTMLDatabase:
     '''
     def __init__(self, client):
         self._client = client
+        self._db = client.db
 
         # we want config to be exposed
         self.config = client.db.config
