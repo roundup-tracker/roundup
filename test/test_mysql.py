@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_mysql.py,v 1.14 2004-11-03 01:34:21 richard Exp $
+# $Id: test_mysql.py,v 1.15 2004-11-10 22:22:59 richard Exp $
 
 import unittest, os, shutil, time, imp
 
@@ -27,7 +27,7 @@ from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 
 class mysqlOpener:
     if have_backend('mysql'):
-        module = get_backends('mysql')
+        module = get_backend('mysql')
 
     def setUp(self):
         self.module.db_nuke(config)

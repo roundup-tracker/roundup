@@ -34,6 +34,8 @@ Feature:
   Use this to specify server configuration file for the service.
 - added experimental multi-thread server
 - don't try to import all backends in backends.__init__ unless we *want* to
+- TAL expressions like 'request/show/whatever' return True
+  if the request does not contain explicit @columns list
 
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
@@ -53,11 +55,10 @@ Fixed:
 - enforce View Permission when serving file content (sf bug 1050470)
 - don't index common words (sf bug 1046612)
 - don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
-- TAL expressions like 'request/show/whatever' return True
-  if the request does not contain explicit @columns list
 - NumberHTMLProperty should return '' not "None" if not set (thanks
   William)
 - ensure multilink ordering in RDBMS backends (thanks Marcus Priesch)
+- always honor indexme property on Strings (sf patch 1063711)
 
 
 2004-10-15 0.7.8

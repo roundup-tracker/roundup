@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.139 2004-11-09 04:07:54 richard Exp $
+# $Id: rdbms_common.py,v 1.140 2004-11-10 22:22:58 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1379,7 +1379,9 @@ class Class(hyperdb.Class):
             elif isinstance(prop, String):
                 if type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%key
-                self.db.indexer.add_text((self.classname, newid, key), value)
+                if prop.indexme:
+                    self.db.indexer.add_text((self.classname, newid, key),
+                        value)
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
@@ -1656,8 +1658,9 @@ class Class(hyperdb.Class):
             elif isinstance(prop, String):
                 if value is not None and type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%propname
-                self.db.indexer.add_text((self.classname, nodeid, propname),
-                    value)
+                if prop.indexme:
+                    self.db.indexer.add_text((self.classname, nodeid, propname),
+                        value)
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
@@ -2428,13 +2431,14 @@ class Class(hyperdb.Class):
                 pwd.unpack(value)
                 value = pwd
             d[propname] = value
-            if isinstance(prop, String) and prop.indexme:
+            if isinstance(prop, String):
                 if type(value) != type('') and type(value) != type(u''):
                     raise TypeError, \
                         'new property "%(propname)s" not a string: %(value)r' \
                         % locals()
-                self.db.indexer.add_text((self.classname, newid, propname),
-                    value)
+                if prop.indexme:
+                    self.db.indexer.add_text((self.classname, newid, propname),
+                        value)
 
         # get a new id if necessary
         if newid is None:
