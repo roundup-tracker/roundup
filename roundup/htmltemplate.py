@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.87 2002-04-03 06:12:46 richard Exp $
+# $Id: htmltemplate.py,v 1.88 2002-04-24 08:34:35 rochecompaan Exp $
 
 __doc__ = """
 Template engine.
@@ -223,9 +223,8 @@ class TemplateFunctions:
         elif isinstance(propclass, hyperdb.Multilink):
             sortfunc = self.make_sort_function(propclass.classname)
             linkcl = self.db.classes[propclass.classname]
-            list = linkcl.list()
-            list.sort(sortfunc)
-            l = []
+            if value:
+                value.sort(sortfunc)
             # map the id to the label property
             if not showid:
                 k = linkcl.labelprop()
@@ -1128,6 +1127,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.87  2002/04/03 06:12:46  richard
+# Fix for date properties as labels.
+#
 # Revision 1.86  2002/04/03 05:54:31  richard
 # Fixed serialisation problem by moving the serialisation step out of the
 # hyperdb.Class (get, set) into the hyperdb.Database.

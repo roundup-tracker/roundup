@@ -26,6 +26,10 @@ Fixed:
  . stop sending blank (whitespace-only) notes
  . cleanup of serialisation for database storage
  . node ids are now generated from a lockable store - no more race conditions
+ . sorting was applied to all nodes of the MultiLink class instead of
+   to the nodes that are actually linked to in the "field" template
+   function.  This adds about 20+ seconds in the display of an issue if
+   your database has a 1000 or more issues in it.
 
 
 2002-03-25 - 0.4.1
