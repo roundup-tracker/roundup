@@ -8,19 +8,21 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.2 2002-01-22 00:12:07 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.3 2002-01-22 06:35:40 richard Exp $ 
 
 import unittest, cgi
 
+from roundup import date, password
 from roundup.htmltemplate import TemplateFunctions
-from roundup import date
-from roundup import password
+from roundup.i18n import _
 from roundup.hyperdb import String, Password, Date, Interval, Link, Multilink
 
 class Class:
     def get(self, nodeid, attribute, default=None):
         if attribute == 'string':
             return 'Node %s: I am a string'%nodeid
+        elif attribute == 'filename':
+            return 'file.foo'
         elif attribute == 'date':
             return date.Date('2000-01-01')
         elif attribute == 'interval':
@@ -40,7 +42,8 @@ class Class:
     def getprops(self):
         return {'string': String(), 'date': Date(), 'interval': Interval(),
             'link': Link('other'), 'multilink': Multilink('other'),
-            'password': Password(), 'html': String(), 'key': String()}
+            'password': Password(), 'html': String(), 'key': String(),
+            'novalue': String(), 'filename': String()}
     def labelprop(self):
         return 'key'
 
@@ -58,6 +61,7 @@ class NodeCase(unittest.TestCase):
         self.tf = tf = TemplateFunctions()
         tf.nodeid = '1'
         tf.cl = Class()
+        tf.classname = 'test_class'
         tf.properties = tf.cl.getprops()
         tf.db = Database()
 
@@ -134,6 +138,12 @@ class NodeCase(unittest.TestCase):
             '<input name="multilink" size="10" value="the key,the key">')
 
 #    def do_menu(self, property, size=None, height=None, showid=0):
+    def testMenu_nonlinks(self):
+        self.assertEqual(self.tf.do_menu('string'), _('[Menu: not a link]'))
+        self.assertEqual(self.tf.do_menu('date'), _('[Menu: not a link]'))
+        self.assertEqual(self.tf.do_menu('interval'), _('[Menu: not a link]'))
+        self.assertEqual(self.tf.do_menu('password'), _('[Menu: not a link]'))
+
     def testMenu_link(self):
         self.assertEqual(self.tf.do_menu('link'), '''<select name="link">
 <option value="-1">- no selection -</option>
@@ -170,12 +180,45 @@ class NodeCase(unittest.TestCase):
 <option selected value="2">other2: the key</option>
 </select>''')
 
+#    def do_link(self, property=None, is_download=0):
+    def testLink_novalue(self):
+        self.assertEqual(self.tf.do_link('novalue'),
+	        _('[no %(propname)s]')%{'propname':'novalue'.capitalize()})
+
+    def testLink_string(self):
+        self.assertEqual(self.tf.do_link('string'),
+            '<a href="test_class1">Node 1: I am a string</a>')
+
+    def testLink_file(self):
+        self.assertEqual(self.tf.do_link('filename', is_download=1),
+            '<a href="test_class1/file.foo">file.foo</a>')
+
+    def testLink_date(self):
+        self.assertEqual(self.tf.do_link('date'),
+            '<a href="test_class1">2000-01-01.00:00:00</a>')
+
+    def testLink_interval(self):
+        self.assertEqual(self.tf.do_link('interval'),
+            '<a href="test_class1">- 3d</a>')
+
+    def testLink_link(self):
+        self.assertEqual(self.tf.do_link('link'),
+            '<a href="other1">the key</a>')
+
+    def testLink_multilink(self):
+        self.assertEqual(self.tf.do_link('multilink'),
+            '<a href="other1">the key</a>, <a href="other2">the key</a>')
+
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/01/22 00:12:07  richard
+# Wrote more unit tests for htmltemplate, and while I was at it, I polished
+# off the implementation of some of the functions so they behave sanely.
+#
 # Revision 1.1  2002/01/21 11:05:48  richard
 # New tests for htmltemplate (well, it's a beginning)
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.65 2002-01-22 00:12:06 richard Exp $
+# $Id: htmltemplate.py,v 1.66 2002-01-22 06:35:40 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -299,19 +299,18 @@ class TemplateFunctions:
         '''
         if not self.nodeid and self.form is None:
             return _('[Link: not called from item]')
+
+        # get the value
+        value = self.determine_value(property)
+	if not value:
+	    return _('[no %(propname)s]')%{'propname':property.capitalize()}
+
         propclass = self.properties[property]
-        if self.nodeid:
-            value = self.cl.get(self.nodeid, property)
-        else:
-            if isinstance(propclass, hyperdb.Multilink): value = []
-            elif isinstance(propclass, hyperdb.Link): value = None
-            else: value = ''
         if isinstance(propclass, hyperdb.Link):
             linkname = propclass.classname
-            if value is None: return '[no %s]'%property.capitalize()
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
-            linkvalue = linkcl.get(value, k)
+            linkvalue = cgi.escape(linkcl.get(value, k))
             if is_download:
                 return '<a href="%s%s/%s">%s</a>'%(linkname, value,
                     linkvalue, linkvalue)
@@ -321,11 +320,9 @@ class TemplateFunctions:
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
-            if not value:
-                return _('[no %(propname)s]')%{'propname': property.capitalize()}
             l = []
             for value in value:
-                linkvalue = linkcl.get(value, k)
+                linkvalue = cgi.escape(linkcl.get(value, k))
                 if is_download:
                     l.append('<a href="%s%s/%s">%s</a>'%(linkname, value,
                         linkvalue, linkvalue))
@@ -333,8 +330,6 @@ class TemplateFunctions:
                     l.append('<a href="%s%s">%s</a>'%(linkname, value,
                         linkvalue))
             return ', '.join(l)
-        if isinstance(propclass, hyperdb.String) and value == '':
-            return _('[no %(propname)s]')%{'propname': property.capitalize()}
         if is_download:
             return '<a href="%s%s/%s">%s</a>'%(self.classname, self.nodeid,
                 value, value)
@@ -1043,6 +1038,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.65  2002/01/22 00:12:06  richard
+# Wrote more unit tests for htmltemplate, and while I was at it, I polished
+# off the implementation of some of the functions so they behave sanely.
+#
 # Revision 1.64  2002/01/21 03:25:59  richard
 # oops
 #
