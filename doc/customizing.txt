@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.54 $
+:Version: $Revision: 1.55 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2080,8 +2080,10 @@ to.
 
      stat = Class(db, "status", ... , transitions=Multilink('status'), ...)
 
-   and then edit the statuses already created through the web using the
-   generic class list / CSV editor.
+   and then edit the statuses already created either:
+
+   a. through the web using the class list -> status class editor, or
+   b. using the roundup-admin "set" command.
 
 2. add an auditor module ``checktransition.py`` in your tracker's
    ``detectors`` directory::
