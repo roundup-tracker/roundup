@@ -60,6 +60,8 @@ pending web       column-heading sort stuff isn't implemented
 
 active  web       UNIX init.d script for roundup-server
 bug     docs      need to mention somewhere how sorting works
+                  - it's mentioned in the design doc
+                  - multilink sorting by length is dumb
 bug     web       query editing isn't fully implemented
 ======= ========= =============================================================
 

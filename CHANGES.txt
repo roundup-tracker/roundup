@@ -16,6 +16,8 @@ are given with the most recent entry first.
 - allow blank passwords again (sf bug 619714)
 - expose the tracker config as a variable for templating
 - homogenise newlines in CGI text submissions (sf bug 614072)
+- merged Zope Collector #372 fix from ZPT CVS trunk
+- fixed history to display username instead of userid
 
 
 2002-10-02 0.5.0
