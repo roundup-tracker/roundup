@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.5 2002-01-21 16:33:19 rochecompaan Exp $
+# $Id: admin.py,v 1.6 2002-01-23 07:27:19 grubert Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -209,7 +209,11 @@ Command help:
         initopts  -- init command options
         all       -- all available help
         '''
-        topic = args[0]
+        if len(args)>0:
+            topic = args[0]
+        else:
+            topic = 'help'
+ 
 
         # try help_ methods
         if self.help.has_key(topic):
@@ -1035,6 +1039,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/01/21 16:33:19  rochecompaan
+# You can now use the roundup-admin tool to pack the database
+#
 # Revision 1.4  2002/01/14 06:51:09  richard
 #  . #503164 ] create and passwords
 #

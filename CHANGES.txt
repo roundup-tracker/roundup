@@ -14,6 +14,7 @@ Feature:
  . you can now use the roundup-admin tool pack the database
  . unit tests for html templating (and re-enabled the listbox field for
    multilinks)
+ . allow abbreviation of "help" in admin tool too.
 
 Fixed:
  . handle attachments with no name (eg tnef)
