@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.53 2003-06-09 23:17:20 richard Exp $
+# $Id: setup.py,v 1.54 2003-06-17 11:03:27 neaj Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -78,7 +78,8 @@ class build_scripts_create(build_scripts):
             module = os.path.splitext(os.path.basename(script))[0]
             module = string.translate(module, to_module)
             cmdopt=self.distribution.command_options
-            if cmdopt['install'].has_key('prefix'):
+            if (cmdopt.has_key('install') and
+                cmdopt['install'].has_key('prefix')):
                 prefix = cmdopt['install']['prefix'][1]
                 version = '%d.%d'%sys.version_info[:2]
                 prefix = '''
