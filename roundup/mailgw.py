@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.109 2003-02-06 05:43:47 richard Exp $
+$Id: mailgw.py,v 1.110 2003-02-22 06:47:04 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -168,7 +168,7 @@ class MailGW:
     def __init__(self, instance, db, arguments={}):
         self.instance = instance
         self.db = db
-        self.arguments = {}
+        self.arguments = arguments
 
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)
