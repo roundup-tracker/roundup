@@ -27,7 +27,9 @@ are given with the most recent entry first.
   convered to GMT (see doc/upgrading.txt).
 - added a form to show a specific issue
 - fixed layout issues with forms in sidebar
-
+- more proper sorting/grouping on mulitilink properties. Sorting is performed
+  not only by number of links, but also by links itself. This makes usable
+  grouping e.g. by topic multilink
 
 2003-??-?? 0.5.5
 - fixed rdbms searching by ID (sf bug 666615)

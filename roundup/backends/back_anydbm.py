@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.98 2003-01-21 23:44:27 richard Exp $
+#$Id: back_anydbm.py,v 1.99 2003-02-03 11:14:16 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1760,12 +1760,15 @@ class Class(hyperdb.Class):
                 # Multilink properties are sorted according to how many
                 # links are present.
                 elif isinstance(propclass, Multilink):
+                    r = cmp(len(av), len(bv))
+                    if r == 0:
+                        # Compare contents of multilink property if lenghts is
+                        # equal
+                        r = cmp ('.'.join(av), '.'.join(bv))
                     if dir == '+':
-                        r = cmp(len(av), len(bv))
-                        if r != 0: return r
+                        return r
                     elif dir == '-':
-                        r = cmp(len(bv), len(av))
-                        if r != 0: return r
+                        return -r
                 elif isinstance(propclass, Number) or isinstance(propclass, Boolean):
                     if dir == '+':
                         r = cmp(av, bv)
