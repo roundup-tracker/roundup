@@ -64,20 +64,19 @@ The ``dbinit.py`` file has been split into two new files,
 ``initial_data.py`` and ``schema.py``. The contents of this file are:
 
 ``initial_data.py``
-  You don't need on of these as your tracker is already initialised.
+  You don't need one of these as your tracker is already initialised.
 
 ``schema.py``
-  The contents of the ``def open(name=None):`` function go in this file.
+  Copy the body of the ``def open(name=None)`` function from your old
+  tracker's ``dbinit.py`` file to this file. As the lines you're copying
+  aren't part of a function definition anymore, one level of indentation
+  needs to be removed (remove only the leading four spaces on each
+  line). 
 
-  Copy the lines of that function (down to the next ``def`` statement) from
-  the ``dbinit.py`` file and *remove* the leading four spaces on each line
-  (if there's 8 leading spaces, only remove 4).
-
-  Remove the first few lines - those starting with ``from roundup.hyperdb
-  import ...`` and the ``db = Database(config, name)`` line.
-
-  Remove the last few lines starting with ``import detectors`` down to
-  ``return db`` inclusive.
+  The first few lines -- those starting with ``from roundup.hyperdb
+  import ...`` and the ``db = Database(config, name)`` line -- don't
+  need to be copied. Neither do the last few lines -- those starting
+  with ``import detectors``, down to ``return db`` inclusive.
 
 There's a new way to write extension code for Roundup - the old
 ``interfaces.py`` file will be ignored. See the `customisation
