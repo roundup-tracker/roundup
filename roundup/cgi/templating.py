@@ -1280,8 +1280,8 @@ class DateHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-        return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._formname, self._value.local(offset))
+        return DateHTMLProperty(self._client, self._classname, self._nodeid,
+            self._prop, self._formname, self._value.local(offset))
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
