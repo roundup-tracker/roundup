@@ -4,16 +4,15 @@
 Installation
 ===============
 These instructions work on redhat 6.2 and mandrake 8.0 - with the caveat
-that these systems don't come with python 2.0 or newer installed, so you'll
+that these systems don't come with python 2.1.1 or newer installed, so you'll
 have to upgrade python before this stuff will work.
 
 
 Prerequisites
 -------------
-Either:
- . Python 2.0 with pydoc installed. See http://www.lfw.org/ for pydoc.
-or
- . Python 2.1
+Python 2.1.1 or newer.
+
+Note: Python 2.1.1 shipped with SuSE7.3 might miss module _weakref.
 
 You will need either the anydbm or bsddb module.
 
@@ -23,7 +22,6 @@ Testing the Software
 
 Run "python -c 'import test;test.go()'" and make sure there's no errors.
 If there are errors, please let us know!
-
 
 Installing the Software
 -----------------------
