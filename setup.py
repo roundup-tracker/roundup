@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.9 2004-03-25 00:32:30 richard Exp $
+# $Id: setup.py,v 1.55.2.10 2004-04-01 00:15:55 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -188,15 +188,18 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.7 release fixes some bugs:
-- be more backward-compatible when asking for EMAIL_CHARSET
-- made error on create consistent with edit when user enters invalid data
-  for Multilink and Link form fields (sf bug 904072)
-- made errors from bad input in the quick "Show issue:" form more
-  user-friendly (sf bug 904064)
-- don't add a query to a user's list if it's already there
-- nicer invalid property error in HTML templating
-- use EMAIL_CHARSET for message body too (still sf bug 900046)
+The 0.6.8 release fixes some bugs:
+- existing trackers (ie. live ones) may be used as templates for new
+  trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
+  appended (so the demo tracker's template name is "classic-demo")
+- handle bad multilink input at item creation time better (sf bug 917834)
+- make sure email signature starts on a newline (sf bug 919759)
+- add line to rego email to help URL detection (sf bug 906247)
+- look harder for text/plain in email
+- fixed fallback excel writer in rcsv so it has a delimiter
+- fixed setup.py's use of listTemplates (!)
+- make rdbms serialise() less trusting
+- handle Boolean values in history HTML display
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.5.2.3 2004-03-24 20:31:43 richard Exp $
+# $Id: demo.py,v 1.5.2.4 2004-04-01 00:15:55 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -21,7 +21,7 @@ def install_demo(home):
     except os.error, error:
         if error.errno != errno.ENOENT:
             raise
-    init.write_select_db(home, 'sqlite')
+    init.write_select_db(home, 'anydbm')
 
     # figure basic params for server
     hostname = socket.gethostname()
