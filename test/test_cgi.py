@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.25 2004-10-24 10:00:13 a1s Exp $
+# $Id: test_cgi.py,v 1.26 2004-11-18 16:23:58 a1s Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -72,7 +72,7 @@ class FormTestCase(unittest.TestCase):
         self.db.user.create(username='mary', address='mary@test',
             roles='User', realname='Contrary, Mary')
 
-        test = self.instance.get_backend().Class(self.db, "test",
+        test = self.instance.backend.Class(self.db, "test",
             string=hyperdb.String(), number=hyperdb.Number(),
             boolean=hyperdb.Boolean(), link=hyperdb.Link('test'),
             multilink=hyperdb.Multilink('test'), date=hyperdb.Date(),
