@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.68 2004-04-18 06:14:26 richard Exp $
+# $Id: test_mailgw.py,v 1.69 2004-04-20 21:55:45 richard Exp $
 
 # TODO: test bcc
 
@@ -101,7 +101,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
         init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, 'sqlite')
+        init.write_select_db(self.dirname, 'anydbm')
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
