@@ -29,10 +29,6 @@ You are not allowed to view this page.
   <th>Content Type</th>
   <td tal:content="structure context/type/field"></td>
  </tr>
- <tr>
-  <th>Content</th>
-  <td><input type="file" name="content" size="40"></td>
- </tr>
 
  <tr>
   <td>&nbsp;</td>
