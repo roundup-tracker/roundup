@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.61 $
+:Version: $Revision: 1.62 $
 
 .. contents::
 
@@ -53,12 +53,12 @@ Download the latest version from http://roundup.sf.net/.
 Testing your Python
 -------------------
 
-Once you've unpacked roundup's source, run ``python ./run_tests`` in the
+Once you've unpacked roundup's source, run ``python run_tests.py`` in the
 source directory and make sure there are no errors. If there are errors,
 please let us know!
 
 If the above fails, you may be using the wrong version of python. Try
-``python2 ./run_tests``. If that works, you will need to substitute
+``python2 run_tests.py``. If that works, you will need to substitute
 ``python2`` for ``python`` in all further commands you use in relation to
 Roundup -- from installation and scripts.
 
