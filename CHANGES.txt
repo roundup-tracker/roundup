@@ -3,6 +3,10 @@ are given with the most recent entry first.
 
 2002-04-?? 0.4.2
 Feature:
+ . added a "detectors" directory for people to put their useful auditors and
+   reactors in. Note - the roundupdb.IssueClass.sendmessage method has been
+   split and renamed "nosymessage" specifically for things like the nosy
+   reactor, and "send_message" which just sends the message.
  . link() htmltemplate function now has a "showid" option for links and
    multilinks. When true, it only displays the linked node id as the anchor
    text. The link value is displayed as a tooltip using the title anchor

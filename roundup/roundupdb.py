@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.49 2002-03-19 06:41:49 richard Exp $
+# $Id: roundupdb.py,v 1.50 2002-04-08 03:40:31 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -297,7 +297,7 @@ class IssueClass(Class):
         appended to the "messages" field of the specified issue.
         """
 
-    def sendmessage(self, nodeid, msgid, change_note):
+    def nosymessage(self, nodeid, msgid, change_note):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -307,7 +307,6 @@ class IssueClass(Class):
         """
         users = self.db.user
         messages = self.db.msg
-        files = self.db.file
 
         # figure the recipient ids
         sendto = []
@@ -342,13 +341,30 @@ class IssueClass(Class):
                 sendto.append(nosyid)
                 recipients.append(nosyid)
 
-        # no new recipients
-        if not sendto:
-            return
+        # we have new recipients
+        if sendto:
+            # update the message's recipients list
+            messages.set(msgid, recipients=recipients)
+
+            # send the message
+            self.send_message(nodeid, msgid, change_note, sendto)
+
+    # XXX backwards compatibility - don't remove
+    sendmessage = nosymessage
+
+    def send_message(self, nodeid, msgid, note, sendto):
+        '''Actually send the nominated message from this node to the sendto
+           recipients, with the note appended.
+        '''
+        users = self.db.user
+        messages = self.db.msg
+        files = self.db.file
 
         # determine the messageid and inreplyto of the message
         inreplyto = messages.get(msgid, 'inreplyto')
         messageid = messages.get(msgid, 'messageid')
+
+        # make up a messageid if there isn't one (web edit)
         if not messageid:
             # this is an old message that didn't get a messageid, so
             # create one
@@ -356,8 +372,8 @@ class IssueClass(Class):
                 self.classname, nodeid, self.db.config.MAIL_DOMAIN)
             messages.set(msgid, messageid=messageid)
 
-        # update the message's recipients list
-        messages.set(msgid, recipients=recipients)
+        # figure the author's id
+        authid = messages.get(msgid, 'author')
 
         # send an email to the people who missed out
         sendto = [users.get(i, 'address') for i in sendto]
@@ -391,8 +407,8 @@ class IssueClass(Class):
         m.append(messages.get(msgid, 'content'))
 
         # add the change note
-        if change_note:
-            m.append(change_note)
+        if note:
+            m.append(note)
 
         # put in roundup's signature
         if self.db.config.EMAIL_SIGNATURE_POSITION == 'bottom':
@@ -604,6 +620,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2002/03/19 06:41:49  richard
+# Faster, easier, less mess ;)
+#
 # Revision 1.48  2002/03/18 18:32:00  rochecompaan
 # All messages sent to the nosy list are now encoded as quoted-printable.
 #

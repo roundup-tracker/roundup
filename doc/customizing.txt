@@ -242,6 +242,19 @@ create(information)
 Create a node in the database. This is generally used to create nodes in the
 "definitional" classes like "priority" and "status".
 
+
+Detectors - adding behaviour to your tracker
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sample additional detectors that have been found useful will appear in the
+``detectors`` directory of the Roundup distribution:
+
+newissuecopy.py
+  This detector sends an email to a team address whenever a new issue is
+  created. The address is hard-coded into the detector, so edit it before you
+  use it (look for the text 'team@team.host') or you'll get email errors!
+
+
 Web Interface
 -------------
 
