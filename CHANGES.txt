@@ -24,7 +24,6 @@ Fixed:
   (bug #798659).
 - Remove empty lines before sending strings off to the csv parser 
   (bug #821364).
-- added flush() to DevNull (sf bug #835365)
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.
@@ -42,6 +41,7 @@ Fixed:
 - Added note to upgrading doc for detectors fix in 0.6.2
 - added script to help migrating queries from pre-0.6 trackers
 - Fixed "documentation" of getnodeids in roundup.hyperdb
+- added flush() to DevNull (sf bug #835365)
 
 
 2003-09-29 0.6.2
