@@ -18,8 +18,8 @@ This has been a fairly major revision of Roundup:
    transition. Please don't hesitate to ask on roundup-users for help (or
    complete conversions if you're completely stuck)!
 2. The database backed got a lot more flexible, allowing Metakit and SQL
-   databases! The only SQL database implemented at present is gadfly, but
-   others shouldn't be a whole lot more work.
+   databases! The only decent SQL database implemented at present is sqlite,
+   but others shouldn't be a whole lot more work.
 3. A brand new, highly flexible and much more robust security system including
    a system of Permissions, Roles and Role assignments to users. You may now
    define your own Permissions that may be checked in CGI transactions.
@@ -177,7 +177,7 @@ like so::
                     messageid=String(),  inreplyto=String())
 
 Nosy list link event journalling is actually turned off by default now. If you
-want to turn it onn, change to your issue class' nosy list, change its
+want to turn it on, change to your issue class' nosy list, change its
 definition from::
 
     issue = IssueClass(db, "issue",

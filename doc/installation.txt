@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.26 $
+:Version: $Revision: 1.27 $
 
 .. contents::
 
@@ -147,6 +147,14 @@ Classic Template
 The classic template is the one defined in the `Roundup Specification`_. It
 holds issues which have priorities and statuses. Each issue may also have a
 set of messages which are disseminated to the issue's list of nosy users.
+
+Minimal Template
+~~~~~~~~~~~~~~~~
+
+The minimal template has the minimum setup required for a tracker
+installation. That is, it has the configuration files, defines a user database
+and the basic HTML interface to that. It's a completely clean slate for you to
+create your tracker on.
 
 
 Choosing Your Backend

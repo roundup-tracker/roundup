@@ -48,11 +48,15 @@
   </p>
 
   <p class="classblock"
-       tal:condition="python:request.user.hasPermission('Edit', None)">
-   <b>Admin</b><br>
-   <a href="home?:template=classlist">Class List</a><br>
-   <a href="user">User List</a><br>
-   <a href="user?:template=item">Add User</a>
+       tal:condition="python:request.user.username != 'anonymous'">
+   <b>Administration</b><br>
+   <a tal:condition="python:request.user.hasPermission('Edit', None)"
+      href="home?:template=classlist">Class List</a><br>
+   <a tal:condition="python:request.user.hasPermission('View', 'user')
+                            or request.user.hasPermission('Edit', 'user')"
+      href="user" >User List</a><br>
+   <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
+      href="user?:template=item">Add User</a>
   </p>
 
   <p class="userblock" tal:condition="python:request.user.username=='anonymous'">
