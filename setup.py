@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.41 2002-12-10 00:11:13 richard Exp $
+# $Id: setup.py,v 1.41.2.1 2003-02-20 22:59:01 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -29,6 +29,7 @@ from glob import glob
 if sys.version < '2.2.3':
     from distutils.dist import DistributionMetadata
     DistributionMetadata.classifiers = None
+    DistributionMetadata.download_url = None
 
 from roundup.templates.builder import makeHtmlBase
 
@@ -184,6 +185,7 @@ if __name__ == '__main__':
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
         url = 'http://sourceforge.net/projects/roundup/',
+        download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         packages = packagelist,
         classifiers = [
             'Development Status :: 4 - Beta',
