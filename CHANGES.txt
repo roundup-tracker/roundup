@@ -2,37 +2,6 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2003-??-?? 0.6.0
-Fixed:
-- better hyperlinking in web message texts (sf bug 669777)
-- fixed bug in metakit unlink journalling
-- applied unicode patch. All data is stored in utf-8. Incoming messages
-  converted from any encoding to utf-8, outgoing messages are encoded 
-  according to rfc2822 (sf bug 568873)
-- fixed cookie path to use TRACKER_WEB (sf bug 667020) (thanks Nathaniel Smith
-  for helping chase it down and Luke Opperman for confirming fix)
-- fixed layout issues with forms in sidebar
-- fixed templating filter function arguments (sf bug 678911)
-- fixed multiselect in searching (sf bug 676874)
-- fixed parsing of content-disposition filenames (sf bug 675116)
-- added 'h' to roundup-server optarg list (sf bug 674070)
-- fixed doc for db.history in anydbm and rdbms_common (sf bug 679221)
-- fixed timelog example so it handles new issues (sf bug 678908)
-- handle missing os.fork() (sf bug 681046)
-- fixed roundup-reminder (sf bug 681042)
-- fixed int assumptions about Number values (sf bug 677762)
-- added warning filter for "FutureWarning: hex/oct constants > sys.maxint will
-  return positive values..." (literal 0xffff0000 in portalocker.py)
-- fixed ZPT code generating SyntaxWarning for assignment to None
-- fixed error in indexargs_url (thanks Patrick Ohly)
-- fixed getnode (sf bug 684531)
-- open static files using binary mode (sf bug 693208)
-- fixed deja-vu bug 692910
-- don't display "Editing" on read-only pages (sf bug 651967)
-- re-worked detectors initialisation - woohoo, no more cross-importing!
-- fixed export/import of retired nodes (sf bug 685273)
-- fixed mutation of properties bug in RDBMS backends
-- fixed Interval maths (sf bug 665357)
-
 Feature:
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
@@ -54,7 +23,6 @@ Feature:
   not only by number of links, but also by links itself. This makes usable
   grouping e.g. by topic multilink
 - add "ago" to intervals in the past (sf bug 679232)
-- clarified licensing
 - included UN*X manual pages from Bastian Kleineidam
 - implemented extension to form parsing to allow editing of multiple items
   and creation of multiple items (but only one per class)
@@ -72,13 +40,55 @@ Feature:
   file serving
 - added Node.get() method
 
+Fixed:
+- applied unicode patch. All data is stored in utf-8. Incoming messages
+  converted from any encoding to utf-8, outgoing messages are encoded 
+  according to rfc2822 (sf bug 568873)
+- fixed layout issues with forms in sidebar
+- fixed timelog example so it handles new issues (sf bug 678908)
+- handle missing os.fork() (sf bug 681046)
+- added warning filter for "FutureWarning: hex/oct constants > sys.maxint will
+  return positive values..." (literal 0xffff0000 in portalocker.py)
+- fixed ZPT code generating SyntaxWarning for assignment to None
+- open static files using binary mode (sf bug 693208)
+- fixed deja-vu bug 692910
+- don't display "Editing" on read-only pages (sf bug 651967)
+- re-worked detectors initialisation - woohoo, no more cross-importing!
+- fixed export/import of retired nodes (sf bug 685273)
 
-2003-02-28 0.5.6
-- changes appear in 0.6.0
+
+2003-??-?? 0.5.7
+- fixed Interval maths (sf bug 665357)
+
+
+2003-02-27 0.5.6
+- fixed templating filter function arguments (sf bug 678911)
+- fixed multiselect in searching (sf bug 676874)
+- fixed parsing of content-disposition filenames (sf bug 675116)
+- added 'h' to roundup-server optarg list (sf bug 674070)
+- fixed doc for db.history in anydbm and rdbms_common (sf bug 679221)
+- fixed roundup-reminder (sf bug 681042)
+- fixed int assumptions about Number values (sf bug 677762)
+- clarified licensing
+- another attempt to fix cookie misbehaviour - customise cookie name using
+  tracker name
+- fixed error in indexargs_url (thanks Patrick Ohly)
+- fixed getnode (sf bug 684531)
+- fixed args to some date templating methods (sf bug 689670)
+- fixed database corruption in rdbms property mutation
 
 
 2003-01-24 0.5.5
-- changes appear in 0.6.0
+- fixed rdbms searching by ID (sf bug 666615)
+- fixed metakit searching by ID
+- detect corrupted index and raise semi-useful exception (sf bug 666767)
+- open server logfile unbuffered
+- revert StringHTMLProperty to not hyperlink text by default
+- fixes to CGI form handling
+- fix unlink bug in metakit backend
+- fixed hyperlinking ambiguity (sf bug 669777)
+- fixed cookie path to use TRACKER_WEB (sf bug 667020) (thanks Nathaniel Smith
+  for helping chase it down and Luke Opperman for confirming fix)
 
 
 2003-01-10 0.5.4
