@@ -1,6 +1,10 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2003-??-?? 0.6.0??
+- Fixed editing attributes on FileClass nodes.
+- Query editing now works correctly. (sf bug 621248)
+
 2003-07-29 0.6.0b4
 - plugged cross-site-scripting hole (thanks Jeff Epler)
 - handle deprecation of FCNTL in python2.2+ (sf bug 756756)
