@@ -1,17 +1,10 @@
-I'm pleased to announce Roundup 0.6.8, a maintenance release which fixes
+I'm pleased to announce Roundup 0.6.9, a maintenance release which fixes
 some bugs:
 
-- existing trackers (ie. live ones) may be used as templates for new
-  trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
-  appended (so the demo tracker's template name is "classic-demo")
-- handle bad multilink input at item creation time better (sf bug 917834)
-- make sure email signature starts on a newline (sf bug 919759)
-- add line to rego email to help URL detection (sf bug 906247)
-- look harder for text/plain in email
-- fixed fallback excel writer in rcsv so it has a delimiter
-- fixed setup.py's use of listTemplates (!)
-- make rdbms serialise() less trusting
-- handle Boolean values in history HTML display
+- paging in classhelp popup was broken
+- socket timeout error logging can fail
+- hyperlink designators in message display (sf bug 931828)
+- don't match retired items in RDBMS stringFind
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

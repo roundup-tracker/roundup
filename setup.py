@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.10 2004-04-01 00:15:55 richard Exp $
+# $Id: setup.py,v 1.55.2.11 2004-04-18 06:38:22 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -188,18 +188,11 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.8 release fixes some bugs:
-- existing trackers (ie. live ones) may be used as templates for new
-  trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
-  appended (so the demo tracker's template name is "classic-demo")
-- handle bad multilink input at item creation time better (sf bug 917834)
-- make sure email signature starts on a newline (sf bug 919759)
-- add line to rego email to help URL detection (sf bug 906247)
-- look harder for text/plain in email
-- fixed fallback excel writer in rcsv so it has a delimiter
-- fixed setup.py's use of listTemplates (!)
-- make rdbms serialise() less trusting
-- handle Boolean values in history HTML display
+The 0.6.9 release fixes some bugs:
+- paging in classhelp popup was broken
+- socket timeout error logging can fail
+- hyperlink designators in message display (sf bug 931828)
+- don't match retired items in RDBMS stringFind
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
