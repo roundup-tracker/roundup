@@ -15,36 +15,49 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.6 2002-09-10 00:18:20 richard Exp $
+# $Id: instance.py,v 1.7 2002-09-17 23:59:32 richard Exp $
 
 __doc__ = '''
-Instance handling (open instance).
+Tracker handling (open tracker).
 
 Currently this module provides one function: open. This function opens
-an instance.
+a tracker. Note that trackers used to be called instances.
 '''
 
 import imp, os
 
+class InstanceError(Exception):
+    pass
+
 class Opener:
     def __init__(self):
         self.number = 0
-        self.instances = {}
+        self.trackers = {}
 
-    def open(self, instance_home):
-        '''Open the instance.
+    def open(self, tracker_home):
+        ''' Open the tracker.
 
-        Raise ValueError if the instance home doesn't exist.
+            Raise ValueError if the tracker home doesn't exist.
         '''
-        if not os.path.exists(instance_home):
-            raise ValueError, 'no such directory: "%s"'%instance_home
-        if self.instances.has_key(instance_home):
-            return imp.load_package(self.instances[instance_home],
-                instance_home)
+        if not os.path.exists(tracker_home):
+            raise ValueError, 'no such directory: "%s"'%tracker_home
+        if self.trackers.has_key(tracker_home):
+            return imp.load_package(self.trackers[tracker_home],
+                tracker_home)
         self.number = self.number + 1
-        modname = '_roundup_instance_%s'%self.number
-        self.instances[instance_home] = modname
-        return imp.load_package(modname, instance_home)
+        modname = '_roundup_tracker_%s'%self.number
+        self.trackers[tracker_home] = modname
+
+        # load the tracker
+        tracker = imp.load_package(modname, tracker_home)
+
+        # ensure the tracker has all the required bits
+        for required in 'config open init Client MailGW'.split():
+            if not hasattr(tracker, required):
+                raise InstanceError, 'Required tracker attribute "%s" '\
+                    'missing'%required
+
+        return tracker
 
 opener = Opener()
 open = opener.open
