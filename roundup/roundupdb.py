@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.6 2001-07-30 00:05:54 richard Exp $
+# $Id: roundupdb.py,v 1.7 2001-07-30 02:38:31 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -27,6 +27,7 @@ class Database:
         return self.user.create(username=address, address=address,
             realname=realname)
 
+_marker = []
 # XXX: added the 'creator' faked attribute
 class Class(hyperdb.Class):
     # Overridden methods:
@@ -71,9 +72,9 @@ class Class(hyperdb.Class):
         for react in self.reactors['retire']:
             react(self.db, self, nodeid, None)
 
-    def get(self, nodeid, propname):
+    def get(self, nodeid, propname, default=_marker):
         """Attempts to get the "creation" or "activity" properties should
-        do the right thing
+        do the right thing.
         """
         if propname == 'creation':
             journal = self.db.getjournal(self.classname, nodeid)
@@ -96,7 +97,10 @@ class Class(hyperdb.Class):
             else:
                 return None
             return self.db.user.lookup(name)
-        return hyperdb.Class.get(self, nodeid, propname)
+        if default is not _marker:
+            return hyperdb.Class.get(self, nodeid, propname, default)
+        else:
+            return hyperdb.Class.get(self, nodeid, propname)
 
     def getprops(self):
         """In addition to the actual properties on the node, these
@@ -145,12 +149,15 @@ class FileClass(Class):
         '''
         return open(self.filename(classname, nodeid), 'rb').read()
 
-    def get(self, nodeid, propname):
+    def get(self, nodeid, propname, default=_marker):
         ''' trap the content propname and get it from the file
         '''
         if propname == 'content':
             return self.getcontent(self.classname, nodeid)
-        return Class.get(self, nodeid, propname)
+        if default is not _marker:
+            return Class.get(self, nodeid, propname, default)
+        else:
+            return Class.get(self, nodeid, propname)
 
     def getprops(self):
         ''' In addition to the actual properties on the node, these methods
@@ -247,6 +254,10 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/30 00:05:54  richard
+# Fixed IssueClass so that superseders links to its classname rather than
+# hard-coded to "issue".
+#
 # Revision 1.5  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #

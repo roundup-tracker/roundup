@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.9 2001-07-29 09:28:23 richard Exp $
+# $Id: hyperdb.py,v 1.10 2001-07-30 02:38:31 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -58,6 +58,7 @@ class Database:
     RETIRED_FLAG = '__hyperdb_retired'
 
 
+_marker = []
 #
 # The base Class class
 #
@@ -192,7 +193,7 @@ class Class:
         self.db.addjournal(self.classname, newid, 'create', propvalues)
         return newid
 
-    def get(self, nodeid, propname):
+    def get(self, nodeid, propname, default=_marker):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -203,6 +204,8 @@ class Class:
             return nodeid
 #        nodeid = str(nodeid)
         d = self.db.getnode(self.classname, nodeid)
+        if not d.has_key(propname) and default is not _marker:
+            return default
         return d[propname]
 
     # XXX not in spec
@@ -790,6 +793,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/07/29 09:28:23  richard
+# Fixed sorting by clicking on column headings.
+#
 # Revision 1.8  2001/07/29 08:27:40  richard
 # Fixed handling of passed-in values in form elements (ie. during a
 # drill-down)
