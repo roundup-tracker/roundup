@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.46 2003-05-06 21:49:20 kedder Exp $
+# $Id: test_mailgw.py,v 1.47 2003-09-06 10:21:03 jlgijsbers Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 import rfc822
@@ -959,9 +959,30 @@ This is a followup
         self.assertEqual(rfc2822.encode_header(ascii_header), ascii_header)
         self.assertEqual(rfc2822.encode_header(unicode_header), unicode_encoded)
 
+    def testRegistrationConfirmation(self):
+        otk = "Aj4euk4LZSAdwePohj90SME5SpopLETL"
+        self.db.otks.set(otk, username='johannes', __time='')
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: Re: Complete your registration to Roundup issue tracker
+ -- key %s
+
+This is a test confirmation of registration.
+''' % otk)
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        handler.main(message)
+
+        self.db.user.lookup('johannes')
+    
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),
     ]
+    l = [MailgwTestCase("testRegistrationConfirmation")]
     return unittest.TestSuite(l)
 
 

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.127 2003-09-05 20:56:39 jlgijsbers Exp $
+$Id: mailgw.py,v 1.128 2003-09-06 10:21:18 jlgijsbers Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -514,9 +514,15 @@ Emails to Roundup trackers must include a Subject: line!
             # get the classname
             classname = m.group('classname')
             if classname is None:
-                # no classname, fallback on the default
-                if hasattr(self.instance.config, 'MAIL_DEFAULT_CLASS') and \
-                        self.instance.config.MAIL_DEFAULT_CLASS:
+                # no classname, check if this a registration confirmation email
+                # or fallback on the default class
+                otk_re = re.compile('-- key (?P<otk>[a-zA-Z0-9]{32})')
+                otk = otk_re.search(m.group('title')).group('otk')
+                if otk:
+                    self.db.confirm_registration(otk)
+                    return
+                elif hasattr(self.instance.config, 'MAIL_DEFAULT_CLASS') and \
+                         self.instance.config.MAIL_DEFAULT_CLASS:
                     classname = self.instance.config.MAIL_DEFAULT_CLASS
                 else:
                     # fail
