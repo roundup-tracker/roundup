@@ -23,9 +23,10 @@
  <td rowspan="2" valign="top" nowrap class="sidebar">
   <p class="classblock" tal:condition="request/user/queries">
    <b>Your Queries</b><br>
-   <a tal:repeat="qs request/user/queries"
-      tal:attributes="href string:${qs/klass}${qs/url}"
-      tal:content="qs/name">link</a>
+   <tal:block tal:repeat="qs request/user/queries">
+    <a tal:attributes="href string:${qs/klass}${qs/url}"
+       tal:content="qs/name">link</a><br>
+   </tal:block>
   </p>
 
   <p class="classblock"
