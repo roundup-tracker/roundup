@@ -71,8 +71,8 @@
 </tr>
 <tr class="form-help">
  <td colspan=4>
-   <a href="newfile?:multilink=issue<display
-call="plain('id')">:files">Attach a file to this issue</a>
+  <display call="href('id', 'newfile?:multilink=issue', ':files',
+    'Attach a file to this issue')">
  </td>
 </tr>
 <property name="files">
