@@ -54,6 +54,8 @@ are given with the most recent entry first.
 - the colon ":" special form variable designator may now be any of : + @
 - trackers' templates directory can contain subdirectories with static files
   (e.g. images). They are accessible naturally: _file/images/img.gif
+- altered Class.create() and FileClass.create() methods to make "content"
+  property available in auditors
 
 
 2003-??-?? 0.5.6

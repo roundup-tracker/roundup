@@ -325,6 +325,11 @@ class Class:
     # --- the hyperdb.Class methods
     def create(self, **propvalues):
         self.fireAuditors('create', None, propvalues)
+        newid = self.create_inner(**propvalues)
+        # self.set() (called in self.create_inner()) does reactors)
+        return newid
+
+    def create_inner(self, **propvalues):
         rowdict = {}
         rowdict['id'] = newid = self.maxid
         self.maxid += 1
@@ -606,7 +611,7 @@ class Class:
                 row.creation = int(time.time())
             if not row.creator:
                 row.creator = self.db.curuserid
-            
+
         self.db.dirty = 1
         if self.do_journal:
             if isnew:
@@ -1219,9 +1224,10 @@ class FileClass(Class):
         return x
 
     def create(self, **propvalues):
+        self.fireAuditors('create', None, propvalues)
         content = propvalues['content']
         del propvalues['content']
-        newid = Class.create(self, **propvalues)
+        newid = Class.create_inner(self, **propvalues)
         if not content:
             return newid
         nm = bnm = '%s%s' % (self.classname, newid)

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.8 2003-02-13 07:38:34 richard Exp $
+# $Id: test_cgi.py,v 1.9 2003-02-14 00:31:46 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
@@ -388,8 +388,10 @@ class FormTestCase(unittest.TestCase):
             {'test-1@:link:link': 'issue'})
 
     def testBackwardsCompat(self):
-        self.assertEqual(self.parseForm({':note': 'spam'}, 'issue'),
-            ({('issue', None): {}, ('msg', '-1'): {'content': 'spam'}},
+        res = self.parseForm({':note': 'spam'}, 'issue')
+        date = res[0][('msg', '-1')]['date']
+        self.assertEqual(res, ({('issue', None): {}, ('msg', '-1'):
+            {'content': 'spam', 'author': '1', 'date': date}},
             [('issue', None, 'messages', [('msg', '-1')])]))
         file = FileUpload('foo', 'foo.txt')
         self.assertEqual(self.parseForm({':file': file}, 'issue'),

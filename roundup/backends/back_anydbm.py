@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.102 2003-02-13 07:33:38 richard Exp $
+#$Id: back_anydbm.py,v 1.103 2003-02-14 00:31:44 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -765,6 +765,14 @@ class Class(hyperdb.Class):
         These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
         '''
+        self.fireAuditors('create', None, propvalues)
+        newid = self.create_inner(**propvalues)
+        self.fireReactors('create', newid, None)
+        return newid
+
+    def create_inner(self, **propvalues):
+        ''' Called by create, in-between the audit and react calls.
+        '''
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
 
@@ -773,9 +781,6 @@ class Class(hyperdb.Class):
 
         if propvalues.has_key('creation') or propvalues.has_key('activity'):
             raise KeyError, '"creation" and "activity" are reserved'
-
-        self.fireAuditors('create', None, propvalues)
-
         # new node's id
         newid = self.db.newid(self.classname)
 
@@ -894,8 +899,6 @@ class Class(hyperdb.Class):
         self.db.addnode(self.classname, newid, propvalues)
         if self.do_journal:
             self.db.addjournal(self.classname, newid, 'create', {})
-
-        self.fireReactors('create', newid, None)
 
         return newid
 
@@ -1888,11 +1891,23 @@ class FileClass(Class):
     default_mime_type = 'text/plain'
 
     def create(self, **propvalues):
-        ''' snaffle the file propvalue and store in a file
+        ''' Snarf the "content" propvalue and store in a file
         '''
+        # we need to fire the auditors now, or the content property won't
+        # be in propvalues for the auditors to play with
+        self.fireAuditors('create', None, propvalues)
+
+        # now remove the content property so it's not stored in the db
         content = propvalues['content']
         del propvalues['content']
-        newid = Class.create(self, **propvalues)
+
+        # do the database create
+        newid = Class.create_inner(self, **propvalues)
+
+        # fire reactors
+        self.fireReactors('create', newid, None)
+
+        # store off the content as a file
         self.db.storefile(self.classname, newid, None, content)
         return newid
 

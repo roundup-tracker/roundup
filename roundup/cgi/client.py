@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.84 2003-02-13 12:10:34 kedder Exp $
+# $Id: client.py,v 1.85 2003-02-14 00:31:46 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1021,7 +1021,6 @@ class Client:
         if newids is None:
             newids = {}
         for (cn, nodeid), props in all_props.items():
-            print ((cn, nodeid), props)
             if int(nodeid) > 0:
                 # make changes to the node
                 props = self._changenode(cn, nodeid, props)
