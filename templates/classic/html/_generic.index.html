@@ -1,10 +1,14 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
 
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title"
-       tal:content="python:context._classname.capitalize()+' editing'"></title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1"
-      tal:content="python:context._classname.capitalize()+' editing'"></span>
+<title metal:fill-slot="head_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> editing - <span i18n:name="tracker"
+ tal:replace="config/TRACKER_NAME" /></title>
+<tal:block metal:fill-slot="body_title" i18n:translate=""
+ ><span tal:replace="python:context._classname.capitalize()"
+ i18n:name="class" /> editing</tal:block>
+
 <td class="content" metal:fill-slot="content">
 
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
