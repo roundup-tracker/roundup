@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.113 2002-03-14 23:59:24 richard Exp $
+# $Id: cgi_client.py,v 1.114 2002-03-17 23:06:05 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -338,13 +338,14 @@ function help_window(helpurl, width, height) {
                 break
         if defaults:
             # try the instance config first
-            if hasattr(self.instance, 'DEFAULT_INDEX_CLASS'):
-                self.classname = self.instance.DEFAULT_INDEX_CLASS
-                sort = self.instance.DEFAULT_INDEX_SORT
-                group = self.instance.DEFAULT_INDEX_GROUP
-                filter = self.instance.DEFAULT_INDEX_FILTER
-                columns = self.instance.DEFAULT_INDEX_COLUMNS
-                filterspec = self.instance.DEFAULT_INDEX_FILTERSPEC
+            if hasattr(self.instance, 'DEFAULT_INDEX'):
+                d = self.instance.DEFAULT_INDEX
+                self.classname = d['CLASS']
+                sort = d['SORT']
+                group = d['GROUP']
+                filter = d['FILTER']
+                columns = d['COLUMNS']
+                filterspec = d['FILTERSPEC']
 
             else:
                 # nope - fall back on the old way of doing it
@@ -1356,6 +1357,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.113  2002/03/14 23:59:24  richard
+#  . #517734 ] web header customisation is obscure
+#
 # Revision 1.112  2002/03/12 22:52:26  richard
 # more pychecker warnings removed
 #
