@@ -49,15 +49,10 @@ Most of the TODO items are captured in comments in the code. In summary:
 in general:
   . more unit tests
   . more back-ends
-  . better error handling (nicer messages for users)
 hyperdb:
-  . transaction support
   . more efficient reverse lookups
 roundupdb:
   . split the file storage into multiple dirs?
-roundup-mailgw:
-  . errors as attachments
-  . limits on the e-mail addresses that may use the mail gateway
 roundup-server:
   . check the source file timestamps before reloading
 cgi_client
@@ -70,8 +65,6 @@ cgi_client
 date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
-cgi:
-  . enabling a filter disables the current filter hidden fields.
 
 
 6. Author
