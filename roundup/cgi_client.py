@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.127 2002-06-11 06:38:24 richard Exp $
+# $Id: cgi_client.py,v 1.128 2002-06-12 21:28:25 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -833,6 +833,7 @@ function help_window(helpurl, width, height) {
         '''
         cn = self.classname
         cl = self.db.classes[cn]
+        props = parsePropsFromForm(self.db, cl, self.form)
 
         # possibly perform a create
         keys = self.form.keys()
@@ -843,8 +844,10 @@ function help_window(helpurl, width, height) {
                 if not mime_type:
                     mime_type = "application/octet-stream"
                 # save the file
-                nid = cl.create(content=file.file.read(), type=mime_type,
-                    name=file.filename)
+                props['type'] = mime_type
+                props['name'] = file.filename
+                props['content'] = file.file.read()
+                nid = cl.create(**props)
                 # handle linked nodes
                 self._post_editnode(nid)
                 # and some nice feedback for the user
@@ -925,7 +928,7 @@ function help_window(helpurl, width, height) {
         ''' display a file
         '''
         nodeid = self.nodeid
-        cl = self.db.file
+        cl = self.db.classes[self.classname]
         mime_type = cl.get(nodeid, 'type')
         if mime_type == 'message/rfc822':
             mime_type = 'text/plain'
@@ -1363,6 +1366,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.127  2002/06/11 06:38:24  richard
+#  . #565996 ] The "Attach a File to this Issue" fails
+#
 # Revision 1.126  2002/05/29 01:16:17  richard
 # Sorry about this huge checkin! It's fixing a lot of related stuff in one go
 # though.
