@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.39 2002-12-16 05:03:02 richard Exp $
+# $Id: date.py,v 1.40 2002-12-18 00:15:53 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -245,7 +245,7 @@ class Date:
         info = m.groupdict()
 
         # get the current date as our default
-        y,m,d = time.gmtime(time.time())[:3]
+        y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
 
         # override year, month, day parts
         if info['m'] is not None and info['d'] is not None:
