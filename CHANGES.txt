@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2003-05-?? 0.6.0
+2003-06-10 0.6.0b3
+Fixed:
+- cgi client was broken during b2 fixing
+
+
+2003-06-09 0.6.0b2
 Feature:
 - added the start/stop/restart/condstart/status roundup-server control
   script
@@ -9,6 +14,7 @@ Feature:
 Fixed:
 - handle non-existant demo dir (thanks Ollie Rutherfurd)
 - strip whitespace from Role names so "User, Admin" will work
+- fixed template searching on Windows (thanks J Vickroy)
 
 
 2003-05-09 0.6.0b1

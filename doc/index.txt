@@ -83,7 +83,8 @@ Jeffrey P Shell,
 Joel Shprentz,
 Terrel Shumway,
 Nathaniel Smith,
-Mike Thompson.
+Mike Thompson,
+J Vickroy.
 
 
 

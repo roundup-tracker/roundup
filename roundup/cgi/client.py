@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.117 2003-05-09 04:04:27 richard Exp $
+# $Id: client.py,v 1.118 2003-06-09 23:17:23 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1423,49 +1423,146 @@ You should then receive another email with the new password.
         raise Redirect, url
 
     def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
-        ''' Pull properties out of the form.
+        ''' Item properties and their values are edited with html FORM
+            variables and their values. You can:
 
-            In the following, <bracketed> values are variable, ":" may be
-            one of ":" or "@", and other text "required" is fixed.
+            - Change the value of some property of the current item.
+            - Create a new item of any class, and edit the new item's
+              properties,
+            - Attach newly created items to a multilink property of the
+              current item.
+            - Remove items from a multilink property of the current item.
+            - Specify that some properties are required for the edit
+              operation to be successful.
 
-            Properties are specified as form variables:
+            In the following, <bracketed> values are variable, "@" may be
+            either ":" or "@", and other text "required" is fixed.
+
+            Most properties are specified as form variables:
 
              <propname>
               - property on the current context item
 
-             <designator>:<propname>
+             <designator>"@"<propname>
               - property on the indicated item (for editing related
                 information)
 
-             <classname>-<N>:<propname>
-              - property on the Nth new item of classname (generally for
-                creating new items to attach to the current item)
+            Designators name a specific item of a class.
 
-            Once we have determined the "propname", we check to see if it
-            is one of the special form values:
+            <classname><N>
 
-             :required
-              The named property values must be supplied or a ValueError
-              will be raised.
+                Name an existing item of class <classname>.
 
-             :remove:<propname>=id(s)
-              The ids will be removed from the multilink property.
+            <classname>"-"<N>
 
-             :add:<propname>=id(s)
-              The ids will be added to the multilink property.
+                Name the <N>th new item of class <classname>. If the form
+                submission is successful, a new item of <classname> is
+                created. Within the submitted form, a particular
+                designator of this form always refers to the same new
+                item.
 
-             :link:<propname>=<designator>
-              Used to add a link to new items created during edit.
-              These are collected up and returned in all_links. This will
-              result in an additional linking operation (either Link set or
-              Multilink append) after the edit/create is done using
-              all_props in _editnodes. The <propname> on the current item
-              will be set/appended the id of the newly created item of
-              class <designator> (where <designator> must be
-              <classname>-<N>).
+            Once we have determined the "propname", we look at it to see
+            if it's special:
+
+            @required
+                The associated form value is a comma-separated list of
+                property names that must be specified when the form is
+                submitted for the edit operation to succeed.  
+
+                When the <designator> is missing, the properties are
+                for the current context item.  When <designator> is
+                present, they are for the item specified by
+                <designator>.
+
+                The "@required" specifier must come before any of the
+                properties it refers to are assigned in the form.
+
+            @remove@<propname>=id(s) or @add@<propname>=id(s)
+                The "@add@" and "@remove@" edit actions apply only to
+                Multilink properties.  The form value must be a
+                comma-separate list of keys for the class specified by
+                the simple form variable.  The listed items are added
+                to (respectively, removed from) the specified
+                property.
+
+            @link@<propname>=<designator>
+                If the edit action is "@link@", the simple form
+                variable must specify a Link or Multilink property.
+                The form value is a comma-separated list of
+                designators.  The item corresponding to each
+                designator is linked to the property given by simple
+                form variable.
+
+XXX              Used to add a link to new items created during edit.
+XXX              These are collected up and returned in all_links. This will
+XXX              result in an additional linking operation (either Link set or
+XXX              Multilink append) after the edit/create is done using
+XXX              all_props in _editnodes. The <propname> on the current item
+XXX              will be set/appended the id of the newly created item of
+XXX              class <designator> (where <designator> must be
+XXX              <classname>-<N>).
+
+            None of the above (ie. just a simple form value)
+                The value of the form variable is converted
+                appropriately, depending on the type of the property.
+
+                For a Link('klass') property, the form value is a
+                single key for 'klass', where the key field is
+                specified in dbinit.py.  
+
+                For a Multilink('klass') property, the form value is a
+                comma-separated list of keys for 'klass', where the
+                key field is specified in dbinit.py.  
+
+                Note that for simple-form-variables specifiying Link
+                and Multilink properties, the linked-to class must
+                have a key field.
+
+                For a String() property specifying a filename, the
+                file named by the form value is uploaded. This means we
+                try to set additional properties "filename" and "type" (if
+                they are valid for the class).  Otherwise, the property
+                is set to the form value.
+
+                For Date(), Interval(), Boolean(), and Number()
+                properties, the form value is converted to the
+                appropriate
 
             Any of the form variables may be prefixed with a classname or
             designator.
+
+            Two special form values are supported for backwards
+            compatibility:
+
+            @note
+                This is equivalent to::
+
+                    @link@messages=msg-1
+                    @msg-1@content=value
+
+                except that in addition, the "author" and "date"
+                properties of "msg-1" are set to the userid of the
+                submitter, and the current time, respectively.
+
+            @file
+                This is equivalent to::
+
+                    @link@files=file-1
+                    @file-1@content=value
+
+                The String content value is handled as described above for
+                file uploads.
+
+            If both the "@note" and "@file" form variables are
+            specified, the action::
+
+                    @link@msg-1@files=file-1
+
+            is also performed.
+
+            We also check that FileClass items have a "content" property with
+            actual content, otherwise we remove them from all_props before
+            returning.
 
             The return from this method is a dict of 
                 (classname, id): properties
@@ -1474,22 +1571,6 @@ You should then receive another email with the new password.
             doesn't result in any changes would return {('issue','123'): {}})
             The id may be None, which indicates that an item should be
             created.
-
-            If a String property's form value is a file upload, then we
-            try to set additional properties "filename" and "type" (if
-            they are valid for the class).
-
-            Two special form values are supported for backwards
-            compatibility:
-             :note - create a message (with content, author and date), link
-                     to the context item. This is ALWAYS desginated "msg-1".
-             :file - create a file, attach to the current item and any
-                     message created by :note. This is ALWAYS designated
-                     "file-1".
-
-            We also check that FileClass items have a "content" property with
-            actual content, otherwise we remove them from all_props before
-            returning.
         '''
         # some very useful variables
         db = self.db

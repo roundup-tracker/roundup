@@ -1,8 +1,8 @@
 ===================================================
-SC-Track Roundup 0.6.0b1 - an issue tracking system
+SC-Track Roundup 0.6.0b2 - an issue tracking system
 ===================================================
 
-This is the first release of the new version of Roundup which contains a
+This is the second release of the new version of Roundup which contains a
 lot of new features. This release may contain bugs, so please run this using
 a backup of your production tracker. Always follow the "Software Upgrade"
 guidelines given in the maintenance documentation. If you're upgrading from
@@ -17,8 +17,10 @@ backend.
 
 Roundup requires python 2.1.3 or later for correct operation.
 
-This release has all the bugfixes from the latest 0.5 maintnenance release
-plus lots of new goodies including:
+This release has a couple of bufixes mostly important to Windows users,
+making it possible for them to install new trackers!
+
+The 0.6 release has lots of new goodies including:
 
 - new instant-gratification Demo Mode ("python demo.py" :)
 - added mysql backend (see doc/mysql.txt for details)

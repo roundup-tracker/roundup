@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.52 2003-05-09 05:28:42 richard Exp $
+# $Id: setup.py,v 1.53 2003-06-09 23:17:20 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -185,8 +185,10 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-This release has all the bugfixes from the latest 0.5 maintnenance release
-plus lots of new goodies including:
+This release has a couple of bufixes mostly important to Windows users,
+making it possible for them to install new trackers!
+
+The 0.6 release has lots of new goodies including:
 
 - new instant-gratification Demo Mode ("python demo.py" :)
 - added mysql backend (see doc/mysql.txt for details)
@@ -215,7 +217,7 @@ plus lots of new goodies including:
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
-        url = 'http://sourceforge.net/projects/roundup/',
+        url = 'http://roundup.sourceforge.net/',
         download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         packages = packagelist,
         classifiers = [

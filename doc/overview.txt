@@ -1,0 +1,603 @@
+=======================================================
+Roundup: an Issue-Tracking System for Knowledge Workers
+=======================================================
+
+:Authors: Ka-Ping Yee (original_), Richard Jones (implementation)
+
+.. _original: original_overview.html
+
+.. contents::
+
+
+Introduction
+============
+
+Roundup is an issue-tracking system called which will manage a
+number of issues (with properties such as "description", "priority",
+and so on) and provides the ability to:
+
+(a) submit new issues,
+(b) find and edit existing issues, and
+(c) discuss issues with other participants.
+
+Roundup facilitates communication among the participants by managing
+discussions and notifying interested parties when issues are edited.
+
+
+Background
+----------
+
+A typical software project requires the management of
+many tasks, usually distributed among several collaborators.
+In fact, any project team
+could use a tool for sorting out and discussing all the
+relevant issues.  A common approach is to set up some kind
+of "to-do" list that people can share.
+
+However, to address the overall problem we need much more
+than just a shared to-do list; we need to
+manage a growing body of knowledge and experience to help a
+team collaborate effectively on a project.  The issue-tracking
+tool becomes a nexus for communication: the Grand Central
+Station of the group intelligence.
+
+The primary focus of this design is to help
+developers work together well, not to provide a customer
+service interface to the developers.  This is not to say that
+the design is to be made unsuitable for customers to use.
+Rather, it is assumed that many of the same qualities
+that are good for supporting development (see below)
+are also good for non-developers using the system.
+Additional niceties
+for providing a safe or simplified interface to clients are
+intentionally deferred for later consideration.
+
+A good issue-tracking system should have at least the
+following properties:
+
+**Low barrier to participation**
+  The usefulness of the tool depends entirely on the
+  information people contribute to it.  It must be made
+  as easy as possible to submit new issues and contribute
+  information about existing issues.
+
+**Straightforward navigation**
+  It should be easy for users to extract information they need
+  from the system to direct their decisions and tasks.
+  They should be able to get a decent overview of
+  things as well as finding specific information when
+  they know what they're after.
+
+**Controlled information flow**
+  The users must have control over how much information and
+  what information they get.  A common flaw of some issue-tracking
+  systems is that they inundate users with so much useless
+  e-mail that people avoid the system altogether.
+
+With a nod to the time-honoured computer science tradition
+of "filling in the fourth quadrant", we note that
+there are really four kinds of information flow
+going on here.  The three mentioned qualities
+really address the first three quadrants of this 2-by-2 matrix,
+respectively:
+
+1. User push: a user submits information to the system.
+2. User pull: a user queries for information from the system.
+3. System push: the system sends information out to users.
+4. System pull: the system solicits information from users.
+
+An example of the fourth kind of flow is voting.
+Voting isn't described in this design,
+but it should be noted as a potential enhancement.
+
+
+Guiding Principles
+------------------
+
+**Simplicity**
+  It is a strong requirement
+  that the tool be accessible and understandable.  It should
+  be fairly obvious what different parts of the interface do,
+  and the inner mechanisms should operate in ways that most
+  users can easily predict.
+
+**Efficiency**
+  We aim to optimize for minimum effort to do the most common
+  operations, and best use of resources like screen real estate
+  to maximize the amount of information that we summarize and present.
+
+**Generality**
+  We try to avoid making
+  unnecessary assumptions that would restrict the applicability
+  of the tool.  For example, there is no reason why one might
+  not also want to use this tool to manage a design process,
+  non-software projects, or organizational decisions.
+
+**Persistence** We
+  prefer hiding or reclassifying information to deleting it.
+  This helps support the collection of statistics later.
+  If records are never destroyed, there is little danger
+  in providing access to a larger community, and logging yields
+  accountability, which may encourage better behaviour.
+
+
+Data Model
+==========
+
+Roundup stores a number of *items*, each of
+which can have several properties and an associated discussion.
+The properties can be used to classify or search for items.
+The discussion is a sequence of e-mail messages.
+Each item is identified by a unique number, and has
+an activity log which
+records the time and content of edits made on its properties.
+The log stays fairly small since the design intentionally
+provides only small data types as item properties, and
+encourages anything large to be attached to
+e-mail where it becomes part of the discussion.
+The next section explains how items are organized.
+
+
+The Hyperdatabase
+-----------------
+
+Often when classifying information we are
+asked to select exactly one of a number of categories
+or to fit it into a rigid hierarchy.  Yet things
+only sometimes fall into one category; often,
+a piece of information may be related to several concepts.
+
+For example, forcing each item into a single topic
+category is not just suboptimal but counterproductive:
+seekers of that
+item may expect to find it in a different category
+and conclude that the item is not present in the
+database -- which has them *worse* off
+than if the items were not categorized at all.
+
+Some systems try to alleviate this problem by
+allowing items to appear at multiple locations
+in a tree, as with "aliases" or "symbolic links" in
+a filesystem, for example.  This does help somewhat,
+but we want to be even more flexible
+by allowing the
+organization of items into sets that may freely
+intersect.  Rather than putting each item at exactly
+one place in an overall "grand scheme", a item can
+belong to as many sets as are appropriate.
+
+If we choose to represent the sets themselves as items
+and set membership as a link between items,
+we're now ready to present the definition of a
+hyperdatabase.
+
+A *hyperdatabase* is a collection of *items*
+that may be hyperlinked to
+each other (hence the name "hyperdatabase").
+Each item carries a collection of key-value pairs,
+where some of the values may be links to other items.
+Any item may have an arbitrary number of outgoing and
+incoming links.  Hyperdatabases are able to efficiently
+answer queries such as "what items link to this item?"
+and "what items does this item link to?"
+
+Rationale
+---------
+
+There are several reasons for building our
+own kind of database for Roundup rather than using an existing one.
+
+Requiring the installation of a full-blown third-party
+SQL database system would probably deter many potential
+users from attempting to set up Roundup;
+yet a real relational database would be too
+complicated to implement on our own.
+
+On the other hand, a hyperdatabase can be implemented fairly easily
+using one of the Python DBM modules, so we can
+take the "batteries-included" approach and provide it
+as part of the system.  It's easier to build and understand
+than a true relational database (in accordance with our guiding
+principle of *simplicity*), but provides
+most of the query functionality we want.
+
+A hyperdatabase is well suited for finding the intersection
+of a number of sets in which items belong.  We expect that
+most of the queries people want to do will be of this
+form, rather than complicated SQL queries.  For example, a
+typical request might be
+"show me all critical items related to security".
+The ability to store arbitrary key-value pairs and links
+on items gives it more flexibility than an RDBMS.
+
+Users are not going to be making thousands of queries
+per second, so it makes sense to optimize for simplicity
+and flexibility rather than performance.
+
+.. img: images/hyperdb.png
+
+
+Roundup's Hyperdatabase
+-----------------------
+
+For our application, we store each item as a item in a
+hyperdatabase.  The item's properties are stored
+as key-value pairs on its item.
+Several types of properties are allowed:
+*string*, *number*, *boolean*, *date*, *interval, *link*,
+and *multlink*. Another type, *password*, is a special type
+of string and it's only used internally to Roundup.
+
+The *string* type is for short, free-form strings.
+String properties are not intended to contain large
+amounts of text, and it is recommended that they be presented
+as one-line fields to encourage brevity. A *number* is a special
+type of string that represents a numeric value. A *boolean* is
+further constrained to be a *true* or *false* value.
+
+The *date* type is for calendar dates and times. An *interval*
+is the time between two dates.
+
+The *link* type denotes a single selection from a number of
+options.  A *link* property entails a link from the item
+possessing the property to the item representing the chosen option.
+
+The *multilink* type is for a list of links to any
+number of other items in the in the database.  A *multilink*
+property, for example, can be used to refer to related items
+or topic categories relevant to an item.
+
+For Roundup, all items have four properties that are not customizable:
+
+1. a *date* property named **creation**
+2. a *link* property named **creator**
+3. a *date* property named **activity**
+
+These properties represent the date of the creation of the item, who
+created it, and when the last change was made.
+
+Further, all *issue* items have an additional four properties:
+
+1. a *string* property named **title**
+2. a *multilink* property named **nosy**
+3. a *multilink* property named **messages**
+4. a *multilink* property named **files**
+5. a *multilink* property named **superseder**
+
+The **title** property is a short one-line description of the item.
+The detailed description can go in the first e-mail message of the
+item's messages spool.
+
+The **nosy** property contains a list of
+the people who are interested in an item.  This
+mechanism is explained in the section on `Submission and Discussion`_.
+
+Each message added to the item goes in the **messages** spool - any
+attached files go in the **files** spool.
+
+The **superseder** property is used to 
+support the splitting, joining, or replacing of items.
+When several items need to be
+joined into a single item, all the old items
+link to the new item in their **superseder**
+property.
+When an item needs to be split apart, the item
+references all the new items in its **superseder**
+propety.
+We can easily list all active items just by checking
+for an empty **superseder** property, and trace
+the path of an item's origins by querying the hyperdatabase
+for links.
+
+Users of the system are also represented by items in the
+hyperdatabase, containing properties
+like the user's e-mail address, login name, and password.
+
+The Default Schema
+------------------
+
+It is hoped that the hyperdatabase together with the
+specializations mentioned above for Roundup will be
+applicable in a variety of situations
+(in accordance with our guiding principle of *generality*).
+
+To address the problem at hand, we need
+a specific schema for items applied particularly to software development.
+Again, we are trying to keep the schema simple: too many
+options make it tougher for someone to make a good choice::
+
+    # IssueClass automatically gets these properties:
+    #   title = String()
+    #   messages = Multilink("msg")
+    #   files = Multilink("file")
+    #   nosy = Multilink("user")
+    #   superseder = Multilink("issue")
+    #   (it also gets the Class properties creation, activity and creator)
+    issue = IssueClass(db, "issue", 
+                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    priority=Link("priority"), status=Link("status"))
+
+The **assignedto** property assigns
+responsibility for an item to a person or a list of people.
+The **topic** property places the
+item in an arbitrary number of relevant topic sets (see
+the section on `Browsing and Searching`_).
+
+The **prority** and **status** values are initially:
+
+=========== =====================================
+Priority    Description
+=========== =====================================
+"critical"  panic: work is stopped!
+"urgent"    important, but not deadly
+"bug"       lost work or incorrect results
+"feature"   want missing functionality
+"wish"      avoidable bugs, missing conveniences
+=========== =====================================
+
+============= =====================================
+Status        Description
+============= =====================================
+"unread"      submitted but no action yet
+"deferred"    intentionally set aside
+"chatting"    under review or seeking clarification
+"need-eg"     need a reproducible example of a bug
+"in-progress" understood; development in progress
+"testing"     we think it's done; others, please test
+"done-cbb"    okay for now, but could be better
+"resolved"    fix has been released
+============= =====================================
+
+As previously mentioned, each item gets an activity log.
+Whenever a property on an item is changed, the log
+records the time of the change, the user making the change,
+and the old and new values of the property.  This permits
+the later gathering of statistics (for example, the average time
+from submission to resolution).
+
+We do not specify or enforce a state transition graph,
+since making the system rigid in that fashion is probably more
+trouble than it's worth.
+Experience has shown that there are probably
+two convenient automatic state transitions:
+
+1. from **unread** to **chatting** when e-mail is written about an item
+2. from **testing** to **resolved** when a new release of the software is made
+
+Beyond these, in accordance with our principle of *generality*,
+we allow access to the hyperdatabase
+API so that scripts can automate transitions themselves or
+be triggered by changes in the database.
+
+
+User Interface
+==============
+
+Roundup provides its services through two main interfaces:
+e-mail and the Web.
+This division is chosen to optimize the most common tasks.
+
+E-mail is best suited for
+the submission of new items since most people are most comfortable
+with composing long messages in their own favourite e-mail client.
+E-mail also permits them to mention URLs or attach files relevant
+to their submission.  Indeed, in many cases people are already
+used to making requests by sending e-mail to a mailing list
+of people; they can do exactly the same thing to use Roundup
+without even thinking about it.
+Similarly, people are already
+familiar with holding discussions in e-mail, and plenty of
+valuable usage conventions and software tools already exist for that medium.
+
+The Web, on the other hand, is best suited for summarizing
+and seeking information, because it can present an interactive
+overview of items.  Since the Web has forms, it's also
+the best place to edit items.
+
+
+Submission and Discussion
+-------------------------
+
+The system needs an address for receiving mail
+and an address that forwards mail to all participants.
+Each item has its own list
+of interested parties, known as its *nosy list*.
+Here's how nosy lists work:
+
+1. New items are always submitted by sending an e-mail message
+   to Roundup.  The "Subject:" field becomes the description
+   of the new item.
+   The message is saved in the mail spool of the new item,
+   and copied to the list of all participants
+   so everyone knows that a new item has been added.
+   The new item's nosy list initially contains the submitter.
+
+2. All e-mail messages sent by Roundup have their "Reply-To:"
+   field set to Roundup's address, and have the item's
+   number in the "Subject:" field.  Thus, any replies to the
+   initial announcement and subsequent threads are all received
+   by Roundup.  Roundup notes the item number in the "Subject:"
+   field of each incoming message and appends the message
+   to the appropriate spool.
+
+3. Any incoming e-mail tagged with an item number is copied
+   to all the people on the item's nosy list,
+   and any users found in the "From:", "To:", or "Cc:" fields
+   are automatically added to the nosy list.  Whenever a user
+   edits an item's properties in the Web interface, they are
+   also added to the nosy list.
+
+The effect is like each item having its own little mailing list,
+except that no one ever has to worry about subscribing to
+anything.  Indicating interest in an issue is sufficient, and if you
+want to bring someone new into the conversation, all you need to do
+is "Cc:" a message to them.  It turns out that no one ever has to worry
+about unsubscribing, either: the nosy lists are so specific in scope
+that the conversation tends to die down by itself when the issue is
+resolved or people no longer find it sufficiently important.
+
+Each nosy list is like an asynchronous chat room,
+lasting only a short time (typically five or ten messages)
+and involving a small group of people.  However, that
+group is the *right* group of people:
+only those who express interest in an item in some way
+ever end up on the list, so no one gets spammed with mail they
+don't care about, and no one who *wants*
+to see mail about a particular item needs to be left
+out, for they can easily join in, and just as easily
+look at the mail spool on an item to catch up on any
+messages they might have missed.
+
+We can take this a step further and
+permit users to monitor particular topics or classifications of items
+by allowing other kinds of items to also have their own nosy lists.
+For example, a manager could be on the
+nosy list of the priority value item for "critical", or a
+developer could be on the nosy list of the topic value item for "security".
+The recipients are then determined by the union of the nosy lists on the
+item and all the items it links to.
+
+Using many small, specific mailing lists results
+in much more effective communication than one big list.
+Taking away the effort of subscribing and unsubscribing
+gives these lists the "feel" of being cheap and
+disposable.
+
+The transparent capture of the mail spool attached to each
+issue also yields a nice knowledge repository over time.
+
+
+Editing
+-------
+
+Since Roundup is intended to support arbitrary user-defined
+schema for item properties, the editing interface must be
+automatically generated from the schema.  The configuration for
+Roundup will include a template describing how to lay out the
+properties to present a UI for inspecting and editing items.
+For example::
+
+ <tr>
+  <th class="required">Priority</th>
+  <td tal:content="structure context/priority/menu">priority</td>
+  <th>Status</th>
+  <td tal:content="structure context/status/menu">status</td>
+ </tr>
+
+To display the editing form for an item, Roundup inserts
+an HTML form widget where it encounters an expression like
+``tal:content="structure context/priority/menu"``.
+Each type has its own appropriate editing widget:
+
+- *string* and *number* properties appear as text fields
+- *boolean* properties appear as a yes/no selection
+- *date* and *interval* properties appear as text fields
+- *link* properties appear as selection lists
+- *multilink* properties appear as multiple-selection lists
+    or text fields with pop-up widgets for larger selections.
+
+We foresee the use of custom date fields for things like deadlines,
+so input fields for *date* properties support a
+simple way of specifying relative dates (such as "3w" for
+"three weeks from now").
+
+The **superseder** property is a special case:
+although it is more efficient to store a **superseder**
+property in the superseded item, it makes more sense to provide
+a "supersedes" edit field on the superseding item.  We use
+a special widget on items for this purpose (a text field containing
+a comma-separated list of items).  Links in the **superseder** property
+appear on both the superseding and superseded items to
+facilitate navigating an item's pedigree.
+
+After the editing widgets, the item inspection page shows
+a "note" text box and then a display of the messages in the
+discussion spool.  This field
+lets you enter a note explaining your change when you edit the
+item, and the note is included in the notification message that
+goes out to tell the interested parties on the nosy list of
+your edits.
+
+Browsing and Searching
+----------------------
+
+The ideal we would like to achieve is to make searching as
+much like browsing as possible: the user simply clicks about
+on things that seem interesting, and the information narrows
+down comfortably until the goal is in sight.  This is preferable
+to trying to digest a screen filled with widgets and buttons
+or entering a search expression in some arcane algebraic syntax.
+
+While a one-shot search may be appropriate when you're
+looking for a single item and you know exactly what you want, it's
+not very helpful when you want an overview of
+things ("Gee, there are a lot more high-priority items than
+there were last week!") or trying to do comparisons ("I have
+some time today, so who is busiest and could most use some help?")
+
+The browsing interface presents filtering
+functionality for each of the properties in the schema.  As with
+editing, the interface is generated from a template
+describing how to lay out the properties.
+Each type of property has its own appropriate filtering widget:
+
+- *string* properties appear as text fields supporting
+  case-insensitive substring match
+- *date* properties appear as a text field which accepts a date
+  range with start, end or both
+- *link* properties appear as a group of selectable options
+  (the filter selects the *union* of the sets of items
+  associated with the active options)
+- *multilink* properties appear as a group of selectable options
+  (the filter selects the *intersection* of the sets of items
+  associated with the active options)
+
+For a *multilink* property like **topic**,
+one possibility is to show, as hyperlinks, the keywords whose
+sets have non-empty intersections with the currently displayed set of
+items.  Sorting the keywords by popularity seems
+reasonable.  Clicking on a keyword then narrows both the list of items
+and the list of keywords.  This gives some of the feel of walking
+around a directory tree -- but without the restriction of having
+to select keywords in a particular hierarchical order, and without
+the need to travel all the way to the leaves of the tree before
+any items are visible.
+
+Below the filtering form is a listing of items, with their
+properties displayed in a table.  Rows in the table are 
+generated from a template, as with the editing interface.
+This listing is the central overview of the system, and it
+should aim to maximize the density of
+useful information in accordance with our guiding principle of
+*efficiency*.  Colour may be used to indicate
+the status of each item to help the eye sift through the index quickly.
+
+Roundup sorts items
+in groups by priority, and then within groups by the date
+of last activity.  This reveals at a glance where discussion is
+most active, and provides an easy way for anyone to move an issue
+up in the list.
+
+The page produced by a given set of browsing options constitutes
+an *index*.  The options should all be part of the query
+parameters in the URL so that views may be bookmarked.  An index
+specifies:
+
+- search strings for string properties
+- date ranges for date properties
+- acceptable values for choice properties
+- required values for reference properties
+- a sorting key
+- a grouping key
+- a list of properties for which to display filtering widgets
+
+Our default index is:
+
+- all **status** values except "resolved"
+- show **priority** and **fixer**
+- grouping by **priority** in sections
+- sorting by decreasing **activity** date
+
+The starting URL for Roundup immediately presents the listing of
+items generated by this default index, with no preceding query screen.
+
