@@ -227,9 +227,6 @@ class HTMLClass:
         # we don't exist
         if item == 'id':
             return None
-        if item == 'creator':
-            # but we will be created by this user...
-            return HTMLUser(self._client, 'user', self._client.userid)
 
         # get the property
         prop = self._props[item]
@@ -768,7 +765,7 @@ class LinkHTMLProperty(HTMLProperty):
 
     def plain(self, escape=0):
         if self._value is None:
-            return _('[unselected]')
+            return ''
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
         value = str(linkcl.get(self._value, k))
@@ -806,21 +803,6 @@ class LinkHTMLProperty(HTMLProperty):
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
-
-    def download(self, showid=0):
-        linkname = self._prop.classname
-        linkcl = self._db.getclass(linkname)
-        k = linkcl.labelprop(1)
-        linkvalue = cgi.escape(str(linkcl.get(self._value, k)))
-        if showid:
-            label = value
-            title = ' title="%s"'%linkvalue
-            # note ... this should be urllib.quote(linkcl.get(value, k))
-        else:
-            label = linkvalue
-            title = ''
-        return '<a href="%s%s/%s"%s>%s</a>'%(linkname, self._value,
-            linkvalue, title, label)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
@@ -864,7 +846,6 @@ class LinkHTMLProperty(HTMLProperty):
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
-
 #    def checklist(self, ...)
 
 class MultilinkHTMLProperty(HTMLProperty):

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.73 2002-09-10 00:11:49 richard Exp $
+#$Id: back_anydbm.py,v 1.74 2002-09-10 08:04:56 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -976,14 +976,9 @@ class Class(hyperdb.Class):
                 raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
-                name = self.db.getjournal(self.classname, nodeid)[0][2]
+                return self.db.getjournal(self.classname, nodeid)[0][2]
             else:
-                return None
-            try:
-                return self.db.user.lookup(name)
-            except KeyError:
-                # the journaltag user doesn't exist any more
-                return None
+                return self.db.journaltag
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
@@ -1734,7 +1729,9 @@ class Class(hyperdb.Class):
             d['id'] = String()
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
-            d['creator'] = hyperdb.Link("user")
+            # can't be a link to user because the user might have been
+            # retired since the journal entry was created
+            d['creator'] = hyperdb.String()
         return d
 
     def addprop(self, **properties):

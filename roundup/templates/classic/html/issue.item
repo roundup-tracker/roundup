@@ -62,7 +62,7 @@
 </table>
 
 <span tal:condition="context/id" tal:content="structure string:Created on
-<b>${context/creation}</b> by <b>${context/creator/username}</b>, last
+<b>${context/creation}</b> by <b>${context/creator}</b>, last
 changed <b>${context/activity}</b>.">activity info</span>
 
 <tal:block tal:condition="context/id">
