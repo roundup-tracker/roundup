@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.77 2004-11-29 14:32:55 a1s Exp $
+# $Id: date.py,v 1.77.2.1 2005-01-03 03:06:30 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -367,8 +367,14 @@ class Date:
             Note that if the day is zero, and the day appears first in the
             format, then the day number will be removed from output.
         '''
-        str = time.strftime(format, (self.year, self.month, self.day,
-            self.hour, self.minute, int(self.second), 0, 0, 0))
+        # Python2.4 strftime() enforces the non-zero-ness of the day-of-year
+        # component of the time tuple, so we need to figure it out
+        t = (self.year, self.month, self.day, self.hour, self.minute,
+            int(self.second), 0, 0, 0)
+        t = calendar.timegm(t)
+        t = time.gmtime(t)
+        str = time.strftime(format, t)
+
         # handle zero day by removing it
         if format.startswith('%d') and str[0] == '0':
             return ' ' + str[1:]

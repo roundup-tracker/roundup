@@ -67,6 +67,7 @@ Fixed:
 - fix roundup-admin find command handling of Multilinks
 - fix some security assertions (sf bug 1085481)
 - don't set the title to nothing from incoming mail (thanks Bruce Guenter)
+- fix py2.4 strftime() API change bug (sf bug 1087746)
 
 
 2004-10-26 0.7.9
