@@ -1,0 +1,25 @@
+<!-- dollarId: keyword.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
+
+<p class="help" tal:condition="not:context/id">
+ Use this form to create a new keyword.
+</p>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data">
+
+ <input type="hidden" name=":required" value="name">
+
+ <table class="form">
+  <tr>
+   <th nowrap>Keyword</th>
+   <td tal:content="structure context/name/field">name</td>
+  </tr>
+
+  <tr>
+   <td>&nbsp;</td>
+   <td colspan=3 tal:content="structure context/submit">
+    submit button will go here
+   </td>
+  </tr>
+ </table>
+</form>
