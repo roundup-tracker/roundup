@@ -16,6 +16,10 @@ steps.
 Migrating from 0.7.1 to 0.8.0
 =============================
 
+You *must* fully uninstall previous Roundup version before installing
+Roundup 0.8.0.  If you don't do that, ``roundup-admin install``
+command may fail to function properly.
+
 0.8.0 Backend changes
 ---------------------
 
