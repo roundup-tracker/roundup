@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.48 2003-03-26 10:43:58 richard Exp $
+# $Id: admin.py,v 1.49 2003-03-26 11:02:28 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -110,13 +110,20 @@ class AdminTool:
         ''' Display a simple usage message.
         '''
         if message:
-            message = _('Problem: %(message)s)\n\n')%locals()
-        print _('''%(message)sUsage: roundup-admin [options] <command> <arguments>
+            message = _('Problem: %(message)s\n\n')%locals()
+        print _('''%(message)sUsage: roundup-admin [options] [<command> <arguments>]
 
 Options:
  -i instance home  -- specify the issue tracker "home directory" to administer
  -u                -- the user[:password] to use for commands
- -c                -- when outputting lists of data, just comma-separate them
+ -d                -- print full designators not just class id numbers
+ -c                -- when outputting lists of data, comma-separate them.
+		      Same as '-S ","'.
+ -S <string>       -- when outputting lists of data, string-separate them
+ -s                -- when outputting lists of data, space-separate them.
+		      Same as '-S " "'.
+
+ Only one of -s, -c or -S can be specified.
 
 Help:
  roundup-admin -h
@@ -422,17 +429,55 @@ Command help:
             # get the class
             cl = self.get_class(classname)
             try:
-                if self.comma_sep:
-                    l.append(cl.get(nodeid, propname))
+	        id=[]
+                if self.separator:
+                    if self.print_designator:
+		        # see if property is a link or multilink for
+			# which getting a desginator make sense.
+			# Algorithm: Get the properties of the
+			#     current designator's class. (cl.getprops)
+			# get the property object for the property the
+			#     user requested (properties[propname])
+			# verify its type (isinstance...)
+			# raise error if not link/multilink
+			# get class name for link/multilink property
+			# do the get on the designators
+			# append the new designators
+			# print
+		        properties = cl.getprops()
+			property = properties[propname]
+			if not (isinstance(property, hyperdb.Multilink) or
+                          isinstance(property, hyperdb.Link)):
+                            raise UsageError, _('property %s is not of type Multilink or Link so -d flag does not apply.')%propname
+                        propclassname = self.db.getclass(property.classname).classname
+		        id = cl.get(nodeid, propname)
+			for i in id:
+			    l.append(propclassname + i)
+		    else:
+		        id = cl.get(nodeid, propname)
+                        for i in id:
+			    l.append(i)
                 else:
-                    print cl.get(nodeid, propname)
+                    if self.print_designator:
+		        properties = cl.getprops()
+			property = properties[propname]
+			if not (isinstance(property, hyperdb.Multilink) or
+                          isinstance(property, hyperdb.Link)):
+                            raise UsageError, _('property %s is not of type Multilink or Link so -d flag does not apply.')%propname
+                        propclassname = self.db.getclass(property.classname).classname
+		        id = cl.get(nodeid, propname)
+			for i in id:
+                            print propclassname + i
+                    else:
+                        print cl.get(nodeid, propname)
             except IndexError:
                 raise UsageError, _('no such %(classname)s node "%(nodeid)s"')%locals()
             except KeyError:
                 raise UsageError, _('no such %(classname)s property '
                     '"%(propname)s"')%locals()
-        if self.comma_sep:
-            print ','.join(l)
+        if self.separator:
+            print self.separator.join(l)
+
         return 0
 
 
@@ -440,7 +485,7 @@ Command help:
         '''Usage: set [items] property=value property=value ...
         Set the given properties of one or more items(s).
 
-        The items may be specified as a class or as a comma-separeted
+        The items may be specified as a class or as a comma-separated
         list of item designators (ie "designator[,designator,...]").
 
         This command sets the properties to the values for all designators
@@ -566,10 +611,25 @@ Command help:
 
         # now do the find 
         try:
-            if self.comma_sep:
-                print ','.join(apply(cl.find, (), props))
+            id = []
+            designator = []
+            if self.separator:
+                if self.print_designator:
+		    id=apply(cl.find, (), props)
+		    for i in id:
+		        designator.append(classname + i)
+                    print self.separator.join(designator)
+                else:
+		    print self.separator.join(apply(cl.find, (), props))
+
             else:
-                print apply(cl.find, (), props)
+                if self.print_designator:
+		    id=apply(cl.find, (), props)
+		    for i in id:
+		        designator.append(classname + i)
+                    print designator
+		else:
+		    print apply(cl.find, (), props)
         except KeyError:
             raise UsageError, _('%(classname)s has no property '
                 '"%(propname)s"')%locals()
@@ -598,8 +658,8 @@ Command help:
                 print _('%(key)s: %(value)s')%locals()
 
     def do_display(self, args):
-        '''Usage: display designator
-        Show the property values for the given node.
+        '''Usage: display designator[,designator]*
+        Show the property values for the given node(s).
 
         This lists the properties and their associated values for the given
         node.
@@ -608,18 +668,19 @@ Command help:
             raise UsageError, _('Not enough arguments supplied')
 
         # decode the node designator
-        try:
-            classname, nodeid = hyperdb.splitDesignator(args[0])
-        except hyperdb.DesignatorError, message:
-            raise UsageError, message
+	for designator in args[0].split(','):
+            try:
+                classname, nodeid = hyperdb.splitDesignator(designator)
+	    except hyperdb.DesignatorError, message:
+		raise UsageError, message
 
-        # get the class
-        cl = self.get_class(classname)
+	    # get the class
+	    cl = self.get_class(classname)
 
-        # display the values
-        for key in cl.properties.keys():
-            value = cl.get(nodeid, key)
-            print _('%(key)s: %(value)s')%locals()
+	    # display the values
+	    for key in cl.properties.keys():
+		value = cl.get(nodeid, key)
+		print _('%(key)s: %(value)s')%locals()
 
     def do_create(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
         '''Usage: create classname property=value ...
@@ -721,7 +782,13 @@ Command help:
         specified, the  "label" property is used. The label property is tried
         in order: the key, "name", "title" and then the first property,
         alphabetically.
+
+	With -c, -S or -s print a list of item id's if no property specified.
+        If property specified, print list of that property for every class
+	instance.
         '''
+	if len(args) > 2:
+	    raise UsageError, _('Too many arguments supplied')
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         classname = args[0]
@@ -735,8 +802,21 @@ Command help:
         else:
             propname = cl.labelprop()
 
-        if self.comma_sep:
-            print ','.join(cl.list())
+        if self.separator:
+	    if len(args) == 2:
+	       # create a list of propnames since user specified propname
+		proplist=[]
+		for nodeid in cl.list():
+		    try:
+			proplist.append(cl.get(nodeid, propname))
+		    except KeyError:
+			raise UsageError, _('%(classname)s has no property '
+			    '"%(propname)s"')%locals()
+		print self.separator.join(proplist)
+	    else:
+	        # create a list of index id's since user didn't specify
+		# otherwise
+                print self.separator.join(cl.list())
         else:
             for nodeid in cl.list():
                 try:
@@ -1243,7 +1323,7 @@ Date format is "YYYY-MM-DD" eg:
 
     def main(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hc')
+            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:')
         except getopt.GetoptError, e:
             self.usage(str(e))
             return 1
@@ -1257,7 +1337,8 @@ Date format is "YYYY-MM-DD" eg:
             name = l[0]
             if len(l) > 1:
                 password = l[1]
-        self.comma_sep = 0
+        self.separator = None
+        self.print_designator = 0
         for opt, arg in opts:
             if opt == '-h':
                 self.usage()
@@ -1265,7 +1346,22 @@ Date format is "YYYY-MM-DD" eg:
             if opt == '-i':
                 self.tracker_home = arg
             if opt == '-c':
-                self.comma_sep = 1
+	        if self.separator != None:
+	            self.usage('Only one of -c, -S and -s may be specified')
+		    return 1
+                self.separator = ','
+            if opt == '-S':
+	        if self.separator != None:
+	            self.usage('Only one of -c, -S and -s may be specified')
+		    return 1
+                self.separator = arg
+	    if opt == '-s':
+	        if self.separator != None:
+	            self.usage('Only one of -c, -S and -s may be specified')
+		    return 1
+                self.separator = ' '
+            if opt == '-d':
+                self.print_designator = 1
 
         # if no command - go interactive
         # wrap in a try/finally so we always close off the db

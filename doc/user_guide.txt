@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.15 $
+:Version: $Revision: 1.16 $
 
 .. contents::
 
@@ -402,21 +402,30 @@ Command Line Tool
 
 The basic usage is::
 
- Help:
- roundup-admin -h
-  roundup-admin help                       -- this help
-  roundup-admin help <command>             -- command-specific help
-  roundup-admin help all                   -- all available help
+ Usage: roundup-admin [options] [<command> <arguments>]
 
  Options:
   -i instance home  -- specify the issue tracker "home directory" to administer
   -u                -- the user[:password] to use for commands
-  -c                -- when outputting lists of data, just comma-separate them
+  -d                -- print full designators not just class id numbers
+  -c                -- when outputting lists of data, comma-separate them.
+		       Same as '-S ","'.
+  -S <string>       -- when outputting lists of data, string-separate them
+  -s                -- when outputting lists of data, space-separate them.
+		       Same as '-S " "'.
 
- Commands:
+  Only one of -s, -c or -S can be specified.
+
+ Help:
+  roundup-admin -h
+  roundup-admin help                       -- this help
+  roundup-admin help <command>             -- command-specific help
+  roundup-admin help all                   -- all available help
+
+ Commands: 
   commit
   create classname property=value ...
-  display designator
+  display designator[,designator]*
   export [class[,class]] export_dir
   find classname propname=value ...
   get property designator[,designator]*
@@ -431,12 +440,12 @@ The basic usage is::
   retire designator[,designator]*
   rollback
   security [Role name]
-  set designator[,designator]* propname=value ...
+  set [items] property=value property=value ...
   specification classname
   table classname [property[,property]*]
+ Commands may be abbreviated as long as the abbreviation matches only one
+ command, e.g. l == li == lis == list.
 
-Commands may be abbreviated as long as the abbreviation matches only one
-command, e.g. l == li == lis == list.
 
 All commands (except help) require a tracker specifier. This is just the
 path to the roundup tracker you're working with. A roundup tracker is where
@@ -446,8 +455,8 @@ It may be specified in the environment variable ``TRACKER_HOME`` or on
 the command line as "``-i tracker``".
 
 A designator is a classname and an itemid concatenated, eg. bug1, user10, ...
-Property values are represented as strings in command arguments and in the printed
-results:
+Property values are represented as strings in command arguments and in the
+printed results:
 
 - Strings are, well, strings.
 - Password values will display as their encoded value.
@@ -487,7 +496,84 @@ be specified as either "``name``" or "``name:password``".
 If either the name or password is not supplied, they are obtained from the
 command-line.
 
+Using with the shell
+~~~~~~~~~~~~~~~~~~~~
 
+With version 0.6.0 or newer of roundup which supports: multiple
+designators to display and the -d, -S and -s flags.
+
+To find all messages regarding chatting issues that
+contain the word "spam", for example, you could execute the
+following command from the directory where the database
+dumps its files::
+
+    shell% for issue in `roundup-admin -ds find issue status=chatting`; do
+    > grep -l spam `roundup-admin -ds ' ' get messages $issue`
+    > done
+    msg23
+    msg49
+    msg50
+    msg61
+    shell%
+
+Or, using the -dc option, this can be written as a single command::
+
+    shell% grep -l spam `roundup get messages \
+        \`roundup -dc find issue status=chatting\``
+    msg23
+    msg49
+    msg50
+    msg61
+    shell%
+
+You can also display issue contents::
+
+    shell% roundup-admin display `roundup-admin -dc get messages \
+               issue3,issue1`
+    files: []
+    inreplyto: None
+    recipients: []
+    author: 1
+    date: 2003-02-16.21:23:03
+    messageid: None
+    summary: jkdskldjf
+    files: []
+    inreplyto: None
+    recipients: []
+    author: 1
+    date: 2003-02-15.01:59:11
+    messageid: None
+    summary: jlkfjadsf    
+    
+or status::
+
+    shell% roundup-admin get name `/tools/roundup/bin/roundup-admin \
+	      -dc -i /var/roundup/sysadmin get status issue3,issue1`
+    unread
+    deferred
+
+or status on a single line::
+
+    shell% echo `roundup-admin get name \`/tools/roundup/bin/roundup-admin \
+             -dc -i /var/roundup/sysadmin get status issue3,issue1\``
+    unread deferred
+
+which is the same as::
+
+    shell% roundup-admin -s get name `/tools/roundup/bin/roundup-admin \
+             -dc -i /var/roundup/sysadmin get status issue3,issue1`
+    unread deferred
+
+Also the tautological::
+
+   shell% roundup-admin get name \
+	  `roundup-admin -dc get status \`roundup-admin -dc find issue \
+          status=chatting\``
+   chatting
+   chatting
+
+Remember the roundup commands that accept multiple designators accept
+them ',' separated so using '-dc' is almost always required.
 
 -----------------
 

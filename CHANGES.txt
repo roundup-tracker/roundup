@@ -55,6 +55,7 @@ Feature:
 - implemented ability to search for multilink properties with no value
 - Class.find() may now find unset Links (sf bug 700620)
 - more flexibility in classhelp link labelling (sf feature 608204)
+- added command-line functionality for roundup-adming (sf feature 687664)
 
 
 Fixed:
