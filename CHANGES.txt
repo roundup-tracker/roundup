@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-??-?? 0.4.3
+???? 0.4.4?
+Fixed:
+ . #600699 ] documentation in doc/getting_started.txt
+ . #600700 ] doc/upgrading.txt: no info about 0.4.3
+
+2002-07-25 0.4.3
 Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
