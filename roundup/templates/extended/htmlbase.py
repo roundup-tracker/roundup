@@ -183,16 +183,16 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.5 2001/07/30 08:03:56 richard Ex
 """
 
 msgDOTindex = """<!-- dollarId: msg.index,v 1.1 2001/07/23 04:21:20 richard Exp dollar-->
-<tr>
+<tr class="row-hilite">
     <property name="date">
         <td><display call="link('date')"></td>
     </property>
     <property name="author">
         <td><display call="plain('author')"></td>
     </property>
-    <property name="summary">
-        <td><display call="plain('summary')"></td>
-    </property>
+</tr>
+<tr bgcolor="ffeaff">
+    <td colspan=2><xmp><display call="plain('content')"></xmp></td>
 </tr>
 """
 

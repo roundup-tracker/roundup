@@ -1,12 +1,12 @@
-<!-- $Id: msg.index,v 1.1 2001-07-23 04:21:20 richard Exp $-->
-<tr>
+<!-- $Id: msg.index,v 1.2 2001-09-27 06:36:42 richard Exp $-->
+<tr class="row-hilite">
     <property name="date">
         <td><display call="link('date')"></td>
     </property>
     <property name="author">
         <td><display call="plain('author')"></td>
     </property>
-    <property name="summary">
-        <td><display call="plain('summary')"></td>
-    </property>
+</tr>
+<tr bgcolor="ffeaff">
+    <td colspan=2><xmp><display call="plain('content')"></xmp></td>
 </tr>
