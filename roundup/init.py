@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.23 2002-09-09 23:55:19 richard Exp $
+# $Id: init.py,v 1.24 2002-09-10 12:44:42 richard Exp $
 
 __doc__ = """
 Init (create) a roundup instance.
@@ -36,7 +36,7 @@ def copytree(src, dst, symlinks=0):
     it is false, the contents of the files pointed to by symbolic
     links are copied.
 
-    XXX copied from shutil.py in std lib
+    This was copied from shutil.py in std lib.
 
     """
     names = os.listdir(src)

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.26 2002-09-10 03:01:18 richard Exp $
+# $Id: client.py,v 1.27 2002-09-10 12:44:42 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -317,7 +317,7 @@ class Client:
         ''' Return a PageTemplate for the named page
         '''
         pt = getTemplate(self.instance.config.TEMPLATES, name, extension)
-        # XXX handle PT rendering errors here more nicely
+        # catch errors so we can handle PT rendering errors more nicely
         try:
             # let the template render figure stuff out
             return pt.render(self, None, None, **kwargs)

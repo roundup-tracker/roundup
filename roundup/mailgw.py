@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.85 2002-09-10 03:01:18 richard Exp $
+$Id: mailgw.py,v 1.86 2002-09-10 12:44:42 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -392,6 +392,63 @@ Subject was: "%s"
 '''%(nodeid, subject)
 
         #
+        # handle the users
+        #
+        # Don't create users if anonymous isn't allowed to register
+        create = 1
+        anonid = self.db.user.lookup('anonymous')
+        if not self.db.security.hasPermission('Email Registration', anonid):
+            create = 0
+
+        # ok, now figure out who the author is - create a new user if the
+        # "create" flag is true
+        author = uidFromAddress(self.db, message.getaddrlist('from')[0],
+            create=create)
+
+        # no author? means we're not author
+        if not author:
+            raise Unauthorized, '''
+You are not a registered user.
+
+Unknown address: %s
+'''%message.getaddrlist('from')[0][1]
+
+        # make sure the author has permission to use the email interface
+        if not self.db.security.hasPermission('Email Access', author):
+            raise Unauthorized, 'You are not permitted to access this tracker.'
+
+        # make sure they're allowed to edit this class of information
+        if not self.db.security.hasPermission('Edit', author, classname):
+            raise Unauthorized, 'You are not permitted to edit %s.'%classname
+
+        # the author may have been created - make sure the change is
+        # committed before we reopen the database
+        self.db.commit()
+
+        # reopen the database as the author
+        username = self.db.user.get(author, 'username')
+        self.db = self.instance.open(username)
+
+        # re-get the class with the new database connection
+        cl = self.db.getclass(classname)
+
+        # now update the recipients list
+        recipients = []
+        tracker_email = self.instance.config.TRACKER_EMAIL.lower()
+        for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
+            r = recipient[1].strip().lower()
+            if r == tracker_email or not r:
+                continue
+
+            # look up the recipient - create if necessary (and we're
+            # allowed to)
+            recipient = uidFromAddress(self.db, recipient, create)
+
+            # if all's well, add the recipient to the list
+            if recipient:
+                recipients.append(recipient)
+
+        #
         # extract the args
         #
         subject_args = m.group('args')
@@ -520,60 +577,6 @@ There were problems handling your subject line argument list:
 
 Subject was: "%s"
 '''%(errors, subject)
-
-        #
-        # handle the users
-        #
-
-        # Don't create users if anonymous isn't allowed to register
-        create = 1
-        anonid = self.db.user.lookup('anonymous')
-        if not self.db.security.hasPermission('Email Registration', anonid):
-            create = 0
-
-        # ok, now figure out who the author is - create a new user if the
-        # "create" flag is true
-        author = uidFromAddress(self.db, message.getaddrlist('from')[0],
-            create=create)
-
-        # no author? means we're not author
-        if not author:
-            raise Unauthorized, '''
-You are not a registered user.
-
-Unknown address: %s
-'''%message.getaddrlist('from')[0][1]
-
-        # make sure the author has permission to use the email interface
-        if not self.db.security.hasPermission('Email Access', author):
-            raise Unauthorized, 'You are not permitted to access this tracker.'
-
-        # the author may have been created - make sure the change is
-        # committed before we reopen the database
-        self.db.commit()
-            
-        # reopen the database as the author
-        username = self.db.user.get(author, 'username')
-        self.db = self.instance.open(username)
-
-        # re-get the class with the new database connection
-        cl = self.db.getclass(classname)
-
-        # now update the recipients list
-        recipients = []
-        tracker_email = self.instance.config.TRACKER_EMAIL.lower()
-        for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
-            r = recipient[1].strip().lower()
-            if r == tracker_email or not r:
-                continue
-
-            # look up the recipient - create if necessary (and we're
-            # allowed to)
-            recipient = uidFromAddress(self.db, recipient, create)
-
-            # if all's well, add the recipient to the list
-            if recipient:
-                recipients.append(recipient)
 
         #
         # handle message-id and in-reply-to

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.74 2002-09-10 08:04:56 richard Exp $
+#$Id: back_anydbm.py,v 1.75 2002-09-10 12:44:42 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1001,7 +1001,7 @@ class Class(hyperdb.Class):
 
         return d[propname]
 
-    # XXX not in spec
+    # not in spec
     def getnode(self, nodeid, cache=1):
         ''' Return a convenience wrapper for the node.
 
@@ -1368,7 +1368,7 @@ class Class(hyperdb.Class):
             cldb.close()
         raise KeyError, keyvalue
 
-    # XXX: change from spec - allows multiple props to match
+    # change from spec - allows multiple props to match
     def find(self, **propspec):
         '''Get the ids of nodes in this class which link to the given nodes.
 
@@ -1881,7 +1881,7 @@ class FileClass(Class):
         self.db.indexer.add_text((self.classname, nodeid, 'content'), content,
             mime_type)
 
-# XXX deviation from spec - was called ItemClass
+# deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
     # Overridden methods:
     def __init__(self, db, classname, **properties):

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.27 2002-09-10 07:07:16 richard Exp $
+# $Id: admin.py,v 1.28 2002-09-10 12:44:42 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -811,11 +811,11 @@ Command help:
 
     def do_export(self, args):
         '''Usage: export [class[,class]] export_dir
-        Export the database to tab-separated-value files.
+        Export the database to colon-separated-value files.
 
         This action exports the current data from the database into
-        tab-separated-value files that are placed in the nominated destination
-        directory. The journals are not exported.
+        colon-separated-value files that are placed in the nominated
+        destination directory. The journals are not exported.
         '''
         # we need the CSV module
         if csv is None:
@@ -862,9 +862,9 @@ Command help:
         The imported nodes will have the same nodeid as defined in the
         import file, thus replacing any existing content.
 
-        XXX The new nodes are added to the existing database - if you want to
-        XXX create a new database using the imported data, then create a new
-        XXX database (or, tediously, retire all the old data.)
+        The new nodes are added to the existing database - if you want to
+        create a new database using the imported data, then create a new
+        database (or, tediously, retire all the old data.)
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')

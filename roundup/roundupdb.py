@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.66 2002-09-10 03:01:18 richard Exp $
+# $Id: roundupdb.py,v 1.67 2002-09-10 12:44:42 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -46,9 +46,11 @@ class MessageSendError(RuntimeError):
     pass
 
 class DetectorError(RuntimeError):
+    ''' Raised by detectors that want to indicate that something's amiss
+    '''
     pass
 
-# XXX deviation from spec - was called ItemClass
+# deviation from spec - was called IssueClass
 class IssueClass:
     """ This class is intended to be mixed-in with a hyperdb backend
         implementation. The backend should provide a mechanism that
@@ -134,7 +136,7 @@ class IssueClass:
             # send the message
             self.send_message(nodeid, msgid, note, sendto)
 
-    # XXX backwards compatibility - don't remove
+    # backwards compatibility - don't remove
     sendmessage = nosymessage
 
     def send_message(self, nodeid, msgid, note, sendto):

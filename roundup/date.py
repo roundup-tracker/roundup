@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.27 2002-09-10 01:27:13 richard Exp $
+# $Id: date.py,v 1.28 2002-09-10 12:44:42 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -153,7 +153,7 @@ class Date:
         """
         return Date(self.addInterval(interval))
 
-    # XXX deviates from spec to allow subtraction of dates as well
+    # deviates from spec to allow subtraction of dates as well
     def __sub__(self, other):
         """ Subtract:
              1. an interval from this date to produce another date.

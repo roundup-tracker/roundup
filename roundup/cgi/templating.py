@@ -222,7 +222,7 @@ class HTMLClass:
     def __getitem__(self, item):
         ''' return an HTMLProperty instance
         '''
-        #print 'getitem', (self, item)
+       #print 'HTMLClass.getitem', (self, item)
 
         # we don't exist
         if item == 'id':
@@ -378,7 +378,7 @@ class HTMLItem:
     def __getitem__(self, item):
         ''' return an HTMLProperty instance
         '''
-        #print 'getitem', (self, item)
+       #print 'HTMLItem.getitem', (self, item)
         if item == 'id':
             return self._nodeid
 
@@ -411,7 +411,12 @@ class HTMLItem:
         return '  <input type="hidden" name=":action" value="edit">\n'\
         '  <input type="submit" name="submit" value="%s">'%label
 
-    # XXX this probably should just return the history items, not the HTML
+    def journal(self, direction='descending'):
+        ''' Return a list of HTMLJournalEntry instances.
+        '''
+        # XXX do this
+        return []
+
     def history(self, direction='descending'):
         l = ['<table class="history">'
              '<tr><th colspan="4" class="header">',
@@ -753,13 +758,13 @@ class LinkHTMLProperty(HTMLProperty):
     '''
     def __getattr__(self, attr):
         ''' return a new HTMLItem '''
-        #print 'getattr', (self, attr, self._value)
+       #print 'Link.getattr', (self, attr, self._value)
         if not self._value:
             raise AttributeError, "Can't access missing value"
         if self._prop.classname == 'user':
-            klass = HTMLItem
-        else:
             klass = HTMLUser
+        else:
+            klass = HTMLItem
         i = klass(self._client, self._prop.classname, self._value)
         return getattr(i, attr)
 
@@ -865,13 +870,18 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __getitem__(self, num):
         ''' iterate and return a new HTMLItem
         '''
-        #print 'getitem', (self, num)
+       #print 'Multi.getitem', (self, num)
         value = self._value[num]
         if self._prop.classname == 'user':
             klass = HTMLUser
         else:
             klass = HTMLItem
         return klass(self._client, self._prop.classname, value)
+
+    def __contains__(self, value):
+        ''' Support the "in" operator
+        '''
+        return value in self._value
 
     def reverse(self):
         ''' return the list in reverse order
