@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.71 2002-10-08 04:11:13 richard Exp $
+# $Id: roundupdb.py,v 1.72 2002-10-08 07:28:34 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -291,8 +291,7 @@ class IssueClass:
         # then append a trailing slash if it is missing
         base = self.db.config.TRACKER_WEB 
         if (not isinstance(base , type('')) or
-            not base.startswith('http://') or
-            not base.startswith('https://')):
+            not (base.startswith('http://') or base.startswith('https://'))):
             base = "Configuration Error: TRACKER_WEB isn't a " \
                 "fully-qualified URL"
         elif base[-1] != '/' :

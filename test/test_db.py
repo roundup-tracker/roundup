@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.58 2002-10-03 06:56:30 richard Exp $ 
+# $Id: test_db.py,v 1.59 2002-10-08 07:28:34 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -194,15 +194,15 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(a, self.db.status.list())
 
     def testSerialisation(self):
-        self.db.issue.create(title="spam", status='1',
+        nid = self.db.issue.create(title="spam", status='1',
             deadline=date.Date(), foo=date.Interval('-1d'))
         self.db.commit()
-        assert isinstance(self.db.issue.get('1', 'deadline'), date.Date)
-        assert isinstance(self.db.issue.get('1', 'foo'), date.Interval)
-        self.db.user.create(username="fozzy",
+        assert isinstance(self.db.issue.get(nid, 'deadline'), date.Date)
+        assert isinstance(self.db.issue.get(nid, 'foo'), date.Interval)
+        uid = self.db.user.create(username="fozzy",
             password=password.Password('t. bear'))
         self.db.commit()
-        assert isinstance(self.db.user.get('1', 'password'), password.Password)
+        assert isinstance(self.db.user.get(uid, 'password'), password.Password)
 
     def testTransactions(self):
         # remember the number of items we started
