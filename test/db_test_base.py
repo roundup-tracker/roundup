@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.4 2003-11-05 21:54:57 jlgijsbers Exp $ 
+# $Id: db_test_base.py,v 1.5 2003-11-10 03:56:39 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time
 
@@ -961,6 +961,7 @@ class SchemaTest(MyTestCase):
 class ClassicInitTest(unittest.TestCase):
     count = 0
     db = None
+    extra_config = ''
 
     def setUp(self):
         ClassicInitTest.count = ClassicInitTest.count + 1

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.1 2003-04-17 03:26:03 richard Exp $
+# $Id: dbinit.py,v 1.2 2003-11-10 03:56:39 richard Exp $
 
 import os
 
@@ -198,6 +198,7 @@ def init(adminpw):
     # haven't initialised the database with the admin "initialise" command
 
     db.commit()
+    db.close()
 
 # vim: set filetype=python ts=4 sw=4 et si
 
