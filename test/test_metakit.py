@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_metakit.py,v 1.6 2004-11-03 01:34:21 richard Exp $ 
+#
+# $Id: test_metakit.py,v 1.7 2004-11-18 16:33:43 a1s Exp $
 import unittest, os, shutil, time, weakref
 
 from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config, password
@@ -80,3 +80,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
+# vim: set et sts=4 sw=4 :
