@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.10 2002-02-21 06:57:39 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.11 2002-02-21 23:11:45 richard Exp $ 
 
 import unittest, cgi, time
 
@@ -24,7 +24,9 @@ class Class:
         elif attribute == 'filename':
             return 'file.foo'
         elif attribute == 'date':
-            return date.Date() + date.Interval('- 2y 2m')
+            return date.Date('2000-01-01')
+        elif attribute == 'reldate':
+            return date.Date() + date.Interval('- 2y 1m')
         elif attribute == 'interval':
             return date.Interval('-3d')
         elif attribute == 'link':
@@ -45,7 +47,8 @@ class Class:
         return {'string': String(), 'date': Date(), 'interval': Interval(),
             'link': Link('other'), 'multilink': Multilink('other'),
             'password': Password(), 'html': String(), 'key': String(),
-            'novalue': String(), 'filename': String(), 'multiline': String()}
+            'novalue': String(), 'filename': String(), 'multiline': String(),
+            'reldate': Date()}
     def labelprop(self):
         return 'key'
 
@@ -257,9 +260,9 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_reldate('multilink'), s)
 
     def testReldate_date(self):
-        self.assertEqual(self.tf.do_reldate('date'), '- 2y 1m')
-        date = self.tf.cl.get('1', 'date')
-        self.assertEqual(self.tf.do_reldate('date', pretty=1), date.pretty())
+        self.assertEqual(self.tf.do_reldate('reldate'), '- 2y 1m')
+        date = self.tf.cl.get('1', 'reldate')
+        self.assertEqual(self.tf.do_reldate('reldate', pretty=1), date.pretty())
 
 #    def do_download(self, property):
     def testDownload_novalue(self):
@@ -333,7 +336,7 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
     def testClasshelp(self):
         self.assertEqual(self.tf.do_classhelp('theclass', 'prop1,prop2'),
             '<a href="javascript:help_window(\'classhelp?classname=theclass'
-            '&properties=prop1,prop2\')"><b>(?)</b></a>')
+            '&properties=prop1,prop2\', \'400\', \'400\')"><b>(?)</b></a>')
 
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
@@ -341,6 +344,14 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/02/21 06:57:39  richard
+#  . Added popup help for classes using the classhelp html template function.
+#    - add <display call="classhelp('priority', 'id,name,description')">
+#      to an item page, and it generates a link to a popup window which displays
+#      the id, name and description for the priority class. The description
+#      field won't exist in most installations, but it will be added to the
+#      default templates.
+#
 # Revision 1.9  2002/02/15 07:08:45  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.

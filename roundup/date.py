@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.18 2002-01-23 20:00:50 jhermann Exp $
+# $Id: date.py,v 1.19 2002-02-21 23:11:45 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -104,14 +104,52 @@ class Date:
             self.second, x, x, x = time.gmtime(calendar.timegm(t))
 
     def __add__(self, other):
-        """Add an interval to this date to produce another date."""
-        t = (self.year + other.sign * other.year,
-            self.month + other.sign * other.month,
-            self.day + other.sign * other.day,
-            self.hour + other.sign * other.hour,
-            self.minute + other.sign * other.minute,
-            self.second + other.sign * other.second, 0, 0, 0)
-        return Date(time.gmtime(calendar.timegm(t)))
+        """Add an interval to this date to produce another date.
+        """
+        # do the basic calc
+        sign = other.sign
+        year = self.year + sign * other.year
+        month = self.month + sign * other.month
+        day = self.day + sign * other.day
+        hour = self.hour + sign * other.hour
+        minute = self.minute + sign * other.minute
+        second = self.second + sign * other.second
+
+        # now cope with under- and over-flow
+        # first do the time
+        while (second < 0 or second > 59 or minute < 0 or minute > 59 or
+                hour < 0 or hour > 59):
+            if second < 0: minute -= 1; second += 60
+            elif second > 59: minute += 1; second -= 60
+            if minute < 0: hour -= 1; minute += 60
+            elif minute > 59: hour += 1; minute -= 60
+            if hour < 0: day -= 1; hour += 60
+            elif hour > 59: day += 1; hour -= 60
+
+        # fix up the month so we're within range
+        while month < 1 or month > 12:
+            if month < 1: year -= 1; month += 12
+            if month > 12: year += 1; month -= 12
+
+        # now do the days, now that we know what month we're in
+        mdays = calendar.mdays
+        if month == 2 and calendar.isleap(year): month_days = 29
+        else: month_days = mdays[month]
+        while month < 1 or month > 12 or day < 0 or day > month_days:
+            # now to day under/over
+            if day < 0: month -= 1; day += month_days
+            elif day > month_days: month += 1; day -= month_days
+
+            # possibly fix up the month so we're within range
+            while month < 1 or month > 12:
+                if month < 1: year -= 1; month += 12
+                if month > 12: year += 1; month -= 12
+
+            # re-figure the number of days for this month
+            if month == 2 and calendar.isleap(year): month_days = 29
+            else: month_days = mdays[month]
+
+        return Date((year, month, day, hour, minute, second, 0, 0, 0))
 
     # XXX deviates from spec to allow subtraction of dates as well
     def __sub__(self, other):
@@ -124,14 +162,14 @@ class Date:
             # leap years, phases of the moon, ....
             a = calendar.timegm((self.year, self.month, self.day, self.hour,
                 self.minute, self.second, 0, 0, 0))
-            b = calendar.timegm((other.year, other.month, other.day, other.hour,
-                other.minute, other.second, 0, 0, 0))
+            b = calendar.timegm((other.year, other.month, other.day,
+                other.hour, other.minute, other.second, 0, 0, 0))
             diff = a - b
             if diff < 0:
-                sign = -1
+                sign = 1
                 diff = -diff
             else:
-                sign = 1
+                sign = -1
             S = diff%60
             M = (diff/60)%60
             H = (diff/(60*60))%60
@@ -143,13 +181,7 @@ class Date:
             y = (diff/(365*24*60*60))
             if y>1: d = H = S = M = 0
             return Interval((y, m, d, H, M, S), sign=sign)
-        t = (self.year - other.sign * other.year,
-             self.month - other.sign * other.month,
-             self.day - other.sign * other.day,
-             self.hour - other.sign * other.hour,
-             self.minute - other.sign * other.minute,
-             self.second - other.sign * other.second, 0, 0, 0)
-        return Date(time.gmtime(calendar.timegm(t)))
+        return self.__add__(other)
 
     def __cmp__(self, other):
         """Compare this date to another date."""
@@ -244,8 +276,17 @@ class Interval:
     Example usage:
         >>> Interval("  3w  1  d  2:00")
         <Interval 22d 2:00>
-        >>> Date(". + 2d") - Interval("3w")
+        >>> Date(". + 2d") + Interval("- 3w")
         <Date 2000-06-07.00:34:02>
+
+    Intervals are added/subtracted in order of:
+       seconds, minutes, hours, years, months, days
+
+    Calculations involving monts (eg '+2m') have no effect on days - only
+    days (or over/underflow from hours/mins/secs) will do that, and
+    days-per-month and leap years are accounted for. Leap seconds are not.
+
+    TODO: more examples, showing the order of addition operation
     '''
     def __init__(self, spec, sign=1):
         """Construct an interval given a specification."""
@@ -290,7 +331,7 @@ class Interval:
             \s*
             ((?P<d>\d+\s*)d)?    # day
             \s*
-            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?   # time
+            (((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
             \s*
             ''', re.VERBOSE)):
         ''' set the date to the value in spec
@@ -323,40 +364,47 @@ class Interval:
         '''
         if self.year or self.month > 2:
             return None
-        if self.month or self.day > 13:
+        elif self.month or self.day > 13:
             days = (self.month * 30) + self.day
             if days > 28:
                 if int(days/30) > 1:
-                    return _('%(number)s months')%{'number': int(days/30)}
+                    s = _('%(number)s months')%{'number': int(days/30)}
                 else:
-                    return _('1 month')
+                    s = _('1 month')
             else:
-                return _('%(number)s weeks')%{'number': int(days/7)}
-        if self.day > 7:
-            return _('1 week')
-        if self.day > 1:
-            return _('%(number)s days')%{'number': self.day}
-        if self.day == 1 or self.hour > 12:
-            return _('yesterday')
-        if self.hour > 1:
-            return _('%(number)s hours')%{'number': self.hour}
-        if self.hour == 1:
+                s = _('%(number)s weeks')%{'number': int(days/7)}
+        elif self.day > 7:
+            s = _('1 week')
+        elif self.day > 1:
+            s = _('%(number)s days')%{'number': self.day}
+        elif self.day == 1 or self.hour > 12:
+            if self.sign > 0:
+                return _('tomorrow')
+            else:
+                return _('yesterday')
+        elif self.hour > 1:
+            s = _('%(number)s hours')%{'number': self.hour}
+        elif self.hour == 1:
             if self.minute < 15:
-                return _('an hour')
-            quart = self.minute/15
-            if quart == 2:
-                return _('1 1/2 hours')
-            return _('1 %(number)s/4 hours')%{'number': quart}
-        if self.minute < 1:
-            return _('just now')
-        if self.minute == 1:
-            return _('1 minute')
-        if self.minute < 15:
-            return _('%(number)s minutes')%{'number': self.minute}
-        quart = int(self.minute/15)
-        if quart == 2:
-            return _('1/2 an hour')
-        return _('%(number)s/4 hour')%{'number': quart}
+                s = _('an hour')
+            elif self.minute/15 == 2:
+                s = _('1 1/2 hours')
+            else:
+                s = _('1 %(number)s/4 hours')%{'number': self.minute/15}
+        elif self.minute < 1:
+            if self.sign > 0:
+                return _('in a moment')
+            else:
+                return _('just now')
+        elif self.minute == 1:
+            s = _('1 minute')
+        elif self.minute < 15:
+            s = _('%(number)s minutes')%{'number': self.minute}
+        elif int(self.minute/15) == 2:
+            s = _('1/2 an hour')
+        else:
+            s = _('%(number)s/4 hour')%{'number': int(self.minute/15)}
+        return s
 
     def get_tuple(self):
         return (self.year, self.month, self.day, self.hour, self.minute,
@@ -385,6 +433,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/01/23 20:00:50  jhermann
+# %e is a UNIXism and not documented for Python
+#
 # Revision 1.17  2002/01/16 07:02:57  richard
 #  . lots of date/interval related changes:
 #    - more relaxed date format for input

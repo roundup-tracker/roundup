@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.81 2002-02-21 07:21:38 richard Exp $
+# $Id: htmltemplate.py,v 1.82 2002-02-21 23:11:45 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -400,7 +400,7 @@ class TemplateFunctions:
             return ''
 
         # figure the interval
-        interval = value - date.Date('.')
+        interval = date.Date('.') - value
         if pretty:
             if not self.nodeid:
                 return _('now')
@@ -1091,6 +1091,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.81  2002/02/21 07:21:38  richard
+# docco
+#
 # Revision 1.80  2002/02/21 07:19:08  richard
 # ... and label, width and height control for extra flavour!
 #

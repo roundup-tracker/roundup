@@ -37,6 +37,9 @@ Fixed:
  . #517906 ] Attribute order in "View customisation"
  . #514854 ] History: "User" is always ticket creator
  . wasn't handling cvs parser feeding correctly
+ . fixed some problems in date calculations (calendar.py doesn't handle over-
+   and under-flow). Also, hour/minute/second intervals may now be more than
+   99 each.
 
 
 2002-01-24 - 0.4.0
