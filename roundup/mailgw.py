@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.31 2001-11-12 22:01:06 richard Exp $
+$Id: mailgw.py,v 1.32 2001-11-12 22:04:29 richard Exp $
 '''
 
 
@@ -138,8 +138,7 @@ class MailGW:
         if sendto:
             try:
                 self.handle_message(message)
-                sendto = [sendto[0][1]]
-                m = ['Subject: Well, it seemed to work', '', 'hi, mum!']
+                return
             except MailUsageError, value:
                 # bounce the message back to the sender with the usage message
                 fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
@@ -516,6 +515,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2001/11/12 22:01:06  richard
+# Fixed issues with nosy reaction and author copies.
+#
 # Revision 1.30  2001/11/09 22:33:28  richard
 # More error handling fixes.
 #
