@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.19 2004-07-27 11:34:11 a1s Exp $
+# $Id: instance.py,v 1.20 2004-09-24 08:21:22 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -73,12 +73,13 @@ class Tracker:
 
     def load_extensions(self, parent, dirname):
         dirname = os.path.join(self.tracker_home, dirname)
-        for name in os.listdir(dirname):
-            if not name.endswith('.py'):
-                continue
-            vars = {}
-            self._load_python(os.path.join(dirname, name), vars)
-            vars['init'](parent)
+        if os.path.isdir(dirname):
+            for name in os.listdir(dirname):
+                if not name.endswith('.py'):
+                    continue
+                vars = {}
+                self._load_python(os.path.join(dirname, name), vars)
+                vars['init'](parent)
 
     def init(self, adminpw):
         db = self.open('admin')
