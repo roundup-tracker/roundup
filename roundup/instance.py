@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.25 2004-10-20 05:28:51 richard Exp $
+# $Id: instance.py,v 1.26 2004-10-29 14:01:24 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -38,6 +38,7 @@ class Tracker:
         self.config = configuration.CoreConfig(tracker_home)
         self.cgi_actions = {}
         self.templating_utils = {}
+        self.load_interfaces()
 
     def get_backend_name(self):
         o = __builtins__['open']
@@ -69,7 +70,6 @@ class Tracker:
         self._load_python('schema.py', vars)
         db = vars['db']
 
-        self.load_interfaces()
         self.load_extensions(db, 'detectors')
         self.load_extensions(self, 'extensions')
 
