@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.6 2001-07-29 04:06:42 richard Exp $
+# $Id: htmltemplate.py,v 1.7 2001-07-29 05:36:14 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -41,32 +41,12 @@ class Plain(Base):
             value = str(value)
         elif propclass.isLinkType:
             linkcl = self.db.classes[propclass.classname]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             if value: value = str(linkcl.get(value, k))
             else: value = '[unselected]'
         elif propclass.isMultilinkType:
             linkcl = self.db.classes[propclass.classname]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             value = ', '.join([linkcl.get(i, k) for i in value])
         else:
             s = 'Plain: bad propclass "%s"'%propclass
@@ -98,17 +78,7 @@ class Field(Base):
         elif propclass.isLinkType:
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -128,17 +98,7 @@ class Field(Base):
             list = linkcl.list()
             height = height or min(len(list), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             for optionid in list:
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -171,17 +131,7 @@ class Menu(Base):
         if propclass.isLinkType:
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -195,17 +145,7 @@ class Menu(Base):
             list = linkcl.list()
             height = height or min(len(list), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             for optionid in list:
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -241,32 +181,12 @@ class Link(Base):
             if value is None:
                 return '[not assigned]'
             linkcl = self.db.classes[propclass.classname]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             linkvalue = linkcl.get(value, k)
             return '<a href="%s%s">%s</a>'%(linkcl, value, linkvalue)
         if propclass.isMultilinkType:
             linkcl = self.db.classes[propclass.classname]
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             l = []
             for value in value:
                 linkvalue = linkcl.get(value, k)
@@ -350,17 +270,7 @@ class Checklist(Base):
         if propclass.isLinkType or propclass.isMultilinkType:
             linkcl = self.db.classes[propclass.classname]
             l = []
-            k = linkcl.getkey()
-            # if the linked-to class doesn't have a key property, then try
-            # 'name', then 'title' and then just use a random one.
-            if not k:
-                linkprops = linkcl.getprops()
-                if linkprops.has_key('name'):
-                    k = 'name'
-                elif linkprops.has_key('title'):
-                    k = 'title'
-                else: 
-                    k = linkprops.keys()[0]
+            k = linkcl.labelprop()
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
                 if optionid in value:
@@ -797,6 +707,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/29 04:06:42  richard
+# Fixed problem in link display when Link value is None.
+#
 # Revision 1.5  2001/07/28 08:17:09  richard
 # fixed use of stylesheet
 #
