@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.55 2002-06-11 04:58:07 richard Exp $
+# $Id: roundupdb.py,v 1.56 2002-06-14 03:54:21 dman13 Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -24,6 +24,7 @@ Extending hyperdb with types specific to issue-tracking.
 import re, os, smtplib, socket, copy, time, random
 import MimeWriter, cStringIO
 import base64, quopri, mimetypes
+import rfc822
 
 import hyperdb, date
 
@@ -394,7 +395,7 @@ class IssueClass(Class):
             authname = users.get(authid, 'username')
         authaddr = users.get(authid, 'address')
         if authaddr:
-            authaddr = ' <%s>'%authaddr
+            authaddr = rfc822.dump_address_pair( ('',authaddr) )
         else:
             authaddr = ''
 
@@ -440,10 +441,11 @@ class IssueClass(Class):
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', '%s <%s>'%(authname,
-            self.db.config.ISSUE_TRACKER_EMAIL))
-        writer.addheader('Reply-To', '%s <%s>'%(self.db.config.INSTANCE_NAME,
-            self.db.config.ISSUE_TRACKER_EMAIL))
+        writer.addheader('From', rfc822.dump_address_pair(
+                              (authname, self.db.config.ISSUE_TRACKER_EMAIL) ) )
+        writer.addheader('Reply-To', rfc822.dump_address_pair( 
+                                        (self.db.config.INSTANCE_NAME,
+                                         self.db.config.ISSUE_TRACKER_EMAIL) ) )
         writer.addheader('MIME-Version', '1.0')
         if messageid:
             writer.addheader('Message-Id', messageid)
@@ -511,11 +513,24 @@ class IssueClass(Class):
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information
         '''
-        web = self.db.config.ISSUE_TRACKER_WEB + 'issue'+ nodeid
-        email = '"%s" <%s>'%(self.db.config.INSTANCE_NAME,
-            self.db.config.ISSUE_TRACKER_EMAIL)
+
+        # simplistic check to see if the url is valid,
+        # then append a trailing slash if it is missing
+        base = self.db.config.ISSUE_TRACKER_WEB 
+        if not isinstance( base , "" ) or not base.startswith( "http://" ) :
+            base = "Configuration Error: ISSUE_TRACKER_WEB isn't a fully-qualified URL"
+        elif base[-1] != '/' :
+            base += '/'
+        web = base + 'issue'+ nodeid
+        #web = self.db.config.ISSUE_TRACKER_WEB + 'issue'+ nodeid
+
+        # ensure the email address is properly quoted
+        email = rfc822.dump_address_pair(   self.db.config.INSTANCE_NAME ,
+                                            self.db.config.ISSUE_TRACKER_EMAIL )
+
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)
+
 
     def generateCreateNote(self, nodeid):
         """Generate a create note that lists initial property values
@@ -634,6 +649,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.55  2002/06/11 04:58:07  richard
+# detabbing
+#
 # Revision 1.54  2002/05/29 01:16:17  richard
 # Sorry about this huge checkin! It's fixing a lot of related stuff in one go
 # though.
@@ -815,7 +833,7 @@ class IssueClass(Class):
 #  . Login now takes you to the page you back to the were denied access to.
 #
 # Fixed:
-#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#  . Lots of bugs, thanks RochÃ© and others on the devel mailing list!
 #
 # Revision 1.20  2001/11/25 10:11:14  jhermann
 # Typo fix

@@ -40,6 +40,9 @@ Feature:
    - also changed cgi client since it was duplicating the functionality
 
 Fixed:
+ . #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
+ . use the rfc822 module to ensure that every (oddball) email address and
+   real-name is properly quoted
  . #558867 ] ZRoundup redirect /instance requests to /instance/ 
  . #562130 ] cookie path generated from ZRoundup was wrong in some situations
  . stop sending blank (whitespace-only) notes
