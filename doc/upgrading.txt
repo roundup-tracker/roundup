@@ -23,7 +23,7 @@ The new configuration variables are:
 - EMAIL_LEAVE_BODY_UNCHANGED
 - ADD_RECIPIENTS_TO_NOSY
 
-See the sample condfiguration files in::
+See the sample configuration files in::
 
  <roundup source>/roundup/templates/classic/instance_config.py
 
@@ -31,7 +31,7 @@ and::
 
  <roundup source>/roundup/templates/extended/instance_config.py
 
-for information on how they're used.
+and the documentation in customizing_ for information on how they're used.
 
 
 0.4.2 Changes to detectors
@@ -328,3 +328,4 @@ distribution. Make sure you update the ROUNDUP_INSTANCE_HOMES after the
 copy.
 
 
+.. _customizing: customizing.html

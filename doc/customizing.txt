@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.8 $
+:Version: $Revision: 1.9 $
 
 .. contents::
 
@@ -526,13 +526,13 @@ Repurcussions of changing the instance schema
 If you choose to change_the_instance_schema you will need to ensure the web
 interface knows about it:
 
-   1. Index, item and filter pages for the relevant classes may need to have
-      properties added or removed,
-   2. The default page header relies on the existence of, and some values of
-      the priority, status, assignedto and activity classes. If you change any
-      of these (specifically if you remove any of the classes or their default
-      values) you will need to implement your own pagehead() method in your
-      instance's interfaces.py module.
+1. Index, item and filter pages for the relevant classes may need to have
+   properties added or removed,
+2. The default page header relies on the existence of, and some values of
+   the priority, status, assignedto and activity classes. If you change any
+   of these (specifically if you remove any of the classes or their default
+   values) you will need to implement your own pagehead() method in your
+   instance's interfaces.py module.
 
 Displaying Properties
 ~~~~~~~~~~~~~~~~~~~~~
