@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.7 2004-03-25 22:38:55 eparker Exp $
+# $Id: config.py,v 1.8 2004-03-26 23:45:34 richard Exp $
 
 import os
 
@@ -63,7 +63,8 @@ TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 
-# The 'dispatcher' is a role that can get notified of new items to the database.
+# The 'dispatcher' is a role that can get notified of new items to the
+# database. It is used by the ERROR_MESSAGES_TO config setting.
 DISPATCHER_EMAIL = ADMIN_EMAIL
 
 # Additional text to include in the "name" part of the From: address used
@@ -81,10 +82,12 @@ EMAIL_FROM_TAG = ""
 NEW_WEB_USER_ROLES = 'User'
 NEW_EMAIL_USER_ROLES = 'User'
 
-# Send error messages to the dispatcher, user, or both?
-# If 'dispatcher', error message notifications will only be sent to the dispatcher.
-# If 'user',       error message notifications will only be sent to the user.
-# If 'both',       error message notifications will be sent to both individuals.
+# Send error message emails to the dispatcher, user, or both?
+# If 'dispatcher', error messages will only be sent to the dispatcher.
+# If 'user',       error messages will only be sent to the user.
+# If 'both',       error messages will be sent to both individuals.
+# The dispatcher is configured using the DISPATCHER_EMAIL setting, which
+# defaults to ADMIN_EMAIL.
 ERROR_MESSAGES_TO = 'user'
 
 # Send nosy messages to the author of the message
@@ -130,5 +133,9 @@ HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
 # 'iso-8859-1'.
 EMAIL_CHARSET = 'utf-8'
 #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
+
+# You may specify a different default timezone, for use when users do not
+# choose their own in their settings.
+DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -110,6 +110,15 @@ highly recommended, as the effort is minimal.
 4. You might also wish to remove the redundant query editing section from the
    ``user.item.html`` page.
 
+ZRoundup reinstated
+-------------------
+
+The Zope interface, ZRoundup, lives again!
+
+See the `upgrading documentation`__ if you wish to use it.
+
+__ upgrading.html#zroundup-changes
+
 
 Simple support for collision detection
 --------------------------------------
@@ -184,6 +193,11 @@ have permission to view the information.
 
 This removes the need for the template to perform those checks, which was
 just plain messy.
+
+Some new permissions will need to be created in your trackers to cope with
+this change, as outlined in the `upgrading documentation`__.
+
+__ upgrading.html#permission-assignments
 
 
 Standards changes
@@ -270,20 +284,26 @@ Postgresql is a good choice if you expect your tracker to grow very large,
 and are expecting many users.
 
 
-Other improvements
-------------------
+API change
+----------
 
-All RDBMS backends now have indexes automatically created on critical
-table columns.
+The Database.curuserid attribute was removed. Any code referencing this
+attribute should be replaced with a call to Database.getuid().
 
-Additionally, the RDBMS backends also implement their own session,
-one-time-key and full-text indexing stores. These were previously external
-dbm stores. This change allows control of locking the database to be
-completely handed over to the RDBMS.
 
-Date values capture fractions of seconds now. Note that the MySQL backend
-is not capable of storing this precision though, so it will be lost for
-users of that backend.
+New configuration options
+-------------------------
+
+- Added DEFAULT_TIMEZONE which allows the tracker to have a different
+  default to UTC when users don't specify their own preference.
+
+- Added EMAIL_CHARSET (in 0.6.6, but worth mentioning here) which hard-codes
+  the character set to be used when sending email from Roundup. This works
+  around some email clients' inability to cope well with UTF-8 (the
+  default).
+
+- ERROR_MESSAGES_TO and DISPATCHER_EMAIL as described above in `Dispatcher
+  configuration`_.
 
 
 Typed columns in RDBMS backends
@@ -378,6 +398,23 @@ to another.  Example usage::
     copy-user.py /roundup/tracker1 /roundup/tracker2 `seq 3 10` 14 16
 
 which copies users 3, 4, 5, 6, 7, 8, 9, 10, 14 and 16.
+
+
+Other improvements
+------------------
+
+- All RDBMS backends now have indexes automatically created on critical
+  table columns.
+
+- Additionally, the RDBMS backends also implement their own session,
+  one-time-key and full-text indexing stores. These were previously external
+  dbm stores. This change allows control of locking the database to be
+  completely handed over to the RDBMS.
+
+- Date values capture fractions of seconds now. Note that the MySQL backend
+  is not capable of storing this precision though, so it will be lost for
+  users of that backend.
+
 
 
 .. _`customisation documentation`: customizing.html

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.125 $
+:Version: $Revision: 1.126 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -203,6 +203,11 @@ The configuration variables available are:
  that, so you might need to specify a more limited character set (eg.
  'iso-8859-1'.
 
+**DEFAULT_TIMEZONE** - ``0``
+ Numeric hour timezone offest to be used when displaying local times.
+ The default timezone is used when users do not choose their own in
+ their settings.
+
 The default config.py is given below - as you
 can see, the MAIL_DOMAIN must be edited before any interaction with the
 tracker is attempted.::
@@ -289,6 +294,10 @@ tracker is attempted.::
     # 'iso-8859-1'.
     EMAIL_CHARSET = 'utf-8'
     #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
+
+    # You may specify a different default timezone, for use when users do not
+    # choose their own in their settings.
+    DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
 
     # 
     # SECURITY DEFINITIONS

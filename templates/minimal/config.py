@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.5 2004-03-25 19:27:15 eparker Exp $
+# $Id: config.py,v 1.6 2004-03-26 23:45:34 richard Exp $
 
 import os
 
@@ -130,5 +130,9 @@ HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
 # 'iso-8859-1'.
 EMAIL_CHARSET = 'utf-8'
 #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
+
+# You may specify a different default timezone, for use when users do not
+# choose their own in their settings.
+DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
 
 # vim: set filetype=python ts=4 sw=4 et si

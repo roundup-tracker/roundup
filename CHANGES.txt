@@ -11,6 +11,7 @@ Feature:
   by mailgw and may be used to veto creation of file attachments or
   messages. (sf bug 700265)
 - queries on a per-user basis, and public queries (sf "bug" 891798 :)
+- added DEFAULT_TIMEZONE (sf rfe 895139)
 
 Fixed:
 - Boolean HTML templating was broken
