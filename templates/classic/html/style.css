@@ -50,6 +50,9 @@ td.page-header-top {
   padding: 5px;
   border-bottom: 1px solid #444;
 }
+#searchbox {
+    float: right;
+}
 
 div#body-title {
   float: left;
@@ -86,6 +89,12 @@ td.sidebar p.userblock {
   border: 1px solid #444;
   background-color: #eef;
 }
+
+.form-small {
+  padding: 0;
+  font-size: 75%;
+}
+
 
 td.content {
   padding: 1px 5px 1px 5px;
