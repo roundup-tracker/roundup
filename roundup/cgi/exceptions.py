@@ -1,3 +1,9 @@
+#$Id: exceptions.py,v 1.4 2004-03-26 00:44:11 richard Exp $
+'''Exceptions for use in Roundup's web interface.
+'''
+
+__docformat__ = 'restructuredtext'
+
 import cgi
 
 class HTTPException(Exception):
@@ -51,3 +57,4 @@ class SeriousError(Exception):
 </body></html>
 '''%cgi.escape(self.args[0])
 
+# vim: set filetype=python ts=4 sw=4 et si

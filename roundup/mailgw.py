@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.145 2004-03-25 22:52:12 richard Exp $
+$Id: mailgw.py,v 1.146 2004-03-26 00:44:11 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -80,7 +80,7 @@ import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys
 import traceback, MimeWriter, rfc822
 
-from roundup import hyperdb, date, password, rfc2822
+from roundup import hyperdb, date, password, rfc2822, exceptions
 from roundup.mailer import Mailer
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
@@ -805,8 +805,13 @@ not find a text/plain part to use.
             for (name, mime_type, data) in attachments:
                 if not name:
                     name = "unnamed"
-                files.append(self.db.file.create(type=mime_type, name=name,
-                                                 content=data, **file_props))
+                try:
+                    fileid = self.db.file.create(type=mime_type, name=name,
+                         content=data, **file_props)
+                except exceptions.Reject:
+                    pass
+                else:
+                    files.append(fileid)
             # attach the files to the issue
             if nodeid:
                 # extend the existing files list
@@ -821,20 +826,23 @@ not find a text/plain part to use.
         # create the message if there's a message body (content)
         #
         if (content and properties.has_key('messages')):
-            message_id = self.db.msg.create(author=author,
-                recipients=recipients, date=date.Date('.'), summary=summary,
-                content=content, files=files, messageid=messageid,
-                inreplyto=inreplyto, **msg_props)
-
-            # attach the message to the node
-            if nodeid:
-                # add the message to the node's list
-                messages = cl.get(nodeid, 'messages')
-                messages.append(message_id)
-                props['messages'] = messages
+            try:
+                message_id = self.db.msg.create(author=author,
+                    recipients=recipients, date=date.Date('.'),
+                    summary=summary, content=content, files=files,
+                    messageid=messageid, inreplyto=inreplyto, **msg_props)
+            except exceptions.Reject:
+                pass
             else:
-                # pre-load the messages list
-                props['messages'] = [message_id]
+                # attach the message to the node
+                if nodeid:
+                    # add the message to the node's list
+                    messages = cl.get(nodeid, 'messages')
+                    messages.append(message_id)
+                    props['messages'] = messages
+                else:
+                    # pre-load the messages list
+                    props['messages'] = [message_id]
 
         #
         # perform the node change / create
@@ -948,10 +956,13 @@ def uidFromAddress(db, address, create=1, **user_props):
             trying = username + str(n)
 
         # create!
-        return db.user.create(username=trying, address=address,
-            realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
-            password=password.Password(password.generatePassword()),
-            **user_props)
+        try:
+            return db.user.create(username=trying, address=address,
+                realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
+                password=password.Password(password.generatePassword()),
+                **user_props)
+        except exceptions.Reject:
+            return 0
     else:
         return 0
 

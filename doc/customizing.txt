@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.122 $
+:Version: $Revision: 1.123 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -584,6 +584,37 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
 
     def init(db):
         db.issue.react('create', newissuecopy)
+
+
+Auditor or Reactor?
+-------------------
+
+Generally speaking, the following rules should be observed:
+
+**Auditors**
+  Are used for `vetoing creation of or changes to items`_. They might
+  also make automatic changes to item properties.
+**Reactors**
+  Detect changes in the database and react accordingly. They should avoid
+  making changes to the database where possible, as this could create
+  detector loops.
+
+Vetoing creation of or changes to items
+---------------------------------------
+
+Auditors may raise the ``Reject`` exception to prevent the creation of
+or changes to items in the database.  The mail gateway, for example, will
+not attach files or messages to issues when the creation of those files or
+messages are prevented through the ``Reject`` exception. It'll also not create
+users if that creation is ``Reject``'ed too.
+
+To use, simply add at the top of your auditor::
+
+   from roundup.exceptions import Reject
+
+And then when your rejection criteria have been detected, simply::
+
+   raise Reject
 
 
 Database Content

@@ -1,3 +1,5 @@
+#$Id: actions.py,v 1.15 2004-03-26 00:44:11 richard Exp $
+
 import re, cgi, StringIO, urllib, Cookie, time, random
 
 from roundup import hyperdb, token, date, password, rcsv
@@ -837,3 +839,4 @@ class ExportCSVAction(Action):
 
         return '\n'
 
+# vim: set filetype=python ts=4 sw=4 et si
