@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.61 2004-04-17 01:47:15 richard Exp $
+# $Id: setup.py,v 1.62 2004-04-18 06:21:20 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -227,19 +227,14 @@ beta releases that we can ensure that older trackers will be OK.
 This release introduces far too many features to list here. Some
 highlights:
 
-- added postgresql backend (originally from sf patch 761740, many changes
-  since)
-- RDBMS backends implement their session and one-time-key stores and
-  full-text indexers; thus they are now performing their own locking
-  internally
-- added new "actor" automatic property (indicates user who cause the last
-  "activity")
-- all RDBMS backends have sensible data typed columns and indexes on
-  several columns
-- we support confirming registration by replying to the email (sf bug
-  763668)
-- all HTML templating methods now automatically check for permissions
-  (either view or edit as appropriate), greatly simplifying templates
+- added postgresql backend
+- trackers using postgresql or mysql backends may have many users
+- new "actor" automatic property (user who caused the last "activity")
+- RDBMS backends have data typed columns and indexes on several columns
+- registration may be concluded by replying to the confirmation email
+- HTML templating permission checks are greatly simplified
+- database exports now include full journals
+- IMAP support in the mail gateway
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
