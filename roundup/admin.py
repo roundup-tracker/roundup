@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.35 2002-10-03 06:56:28 richard Exp $
+# $Id: admin.py,v 1.36 2003-02-06 05:43:47 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -497,7 +497,7 @@ Command help:
                 elif isinstance(proptype, hyperdb.Boolean):
                     props[key] = value.lower() in ('yes', 'true', 'on', '1')
                 elif isinstance(proptype, hyperdb.Number):
-                    props[key] = int(value)
+                    props[key] = float(value)
 
             # try the set
             try:
@@ -682,7 +682,7 @@ Command help:
             elif isinstance(proptype, hyperdb.Boolean):
                 props[propname] = value.lower() in ('yes', 'true', 'on', '1')
             elif isinstance(proptype, hyperdb.Number):
-                props[propname] = int(value)
+                props[propname] = float(value)
 
         # check for the key property
         propname = cl.getkey()

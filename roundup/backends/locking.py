@@ -19,13 +19,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: locking.py,v 1.2 2002-09-10 00:11:50 richard Exp $
+# $Id: locking.py,v 1.3 2003-02-06 05:43:47 richard Exp $
 
 '''This module provides a generic interface to acquire and release
 exclusive access to a file.
 
 It should work on Unix and Windows.
 '''
+
+import warnings
+warnings.filterwarnings("ignore",
+    r'hex/oct constants > sys\.maxint .*', FutureWarning,
+    'portalocker', 0)
 
 import portalocker
 

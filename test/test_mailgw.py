@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.38 2003-01-15 22:17:20 kedder Exp $
+# $Id: test_mailgw.py,v 1.39 2003-02-06 05:43:49 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -779,6 +779,41 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
 _______________________________________________________________________
 ''')
+
+    def testContentDisposition(self):
+        self.doNewIssue()
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: mary <mary@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: multipart/mixed; boundary="bCsyhTFzCvuiizWE" 
+Content-Disposition: inline 
+ 
+ 
+--bCsyhTFzCvuiizWE 
+Content-Type: text/plain; charset=us-ascii 
+Content-Disposition: inline 
+
+test attachment binary 
+
+--bCsyhTFzCvuiizWE 
+Content-Type: application/octet-stream 
+Content-Disposition: attachment; filename="main.dvi" 
+
+xxxxxx 
+
+--bCsyhTFzCvuiizWE--
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        handler.main(message)
+        messages = self.db.issue.get('1', 'messages')
+        messages.sort()
+        file = self.db.msg.get(messages[-1], 'files')[0]
+        self.assertEqual(self.db.file.get(file, 'name'), 'main.dvi')
 
     def testFollowupStupidQuoting(self):
         self.doNewIssue()

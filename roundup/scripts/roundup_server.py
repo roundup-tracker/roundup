@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.17 2003-01-13 02:44:42 richard Exp $
+$Id: roundup_server.py,v 1.18 2003-02-06 05:43:49 richard Exp $
 """
 
 # python version check
@@ -247,7 +247,7 @@ def run():
     try:
         # handle the command-line args
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:')
+            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:h')
         except getopt.GetoptError, e:
             usage(str(e))
 
@@ -301,6 +301,10 @@ def run():
 
     # fork?
     if pidfile:
+        if not hasattr(os, 'fork'):
+            print "Sorry, you can't run the server as a daemon on this" \
+                'Operating System'
+            sys.exit(0)
         daemonize(pidfile)
 
     # redirect stdout/stderr to our logfile

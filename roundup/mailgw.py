@@ -73,12 +73,12 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.108 2003-01-27 16:32:46 kedder Exp $
+$Id: mailgw.py,v 1.109 2003-02-06 05:43:47 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys
-import traceback, MimeWriter
+import traceback, MimeWriter, rfc822
 import hyperdb, date, password
 
 import rfc2822
@@ -112,6 +112,26 @@ def initialiseSecurity(security):
     p = security.addPermission(name="Email Access",
         description="User may use the email interface")
     security.addPermissionToRole('Admin', p)
+
+def getparam(str, param):
+    ''' From the rfc822 "header" string, extract "param" if it appears.
+    '''
+    if ';' not in str:
+        return None
+    str = str[str.index(';'):]
+    while str[:1] == ';':
+        str = str[1:]
+        if ';' in str:
+            # XXX Should parse quotes!
+            end = str.index(';')
+        else:
+            end = len(str)
+        f = str[:end]
+        if '=' in f:
+            i = f.index('=')
+            if f[:i].strip().lower() == param:
+                return rfc822.unquote(f[i+1:].strip())
+    return None
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -713,6 +733,7 @@ Subject was: "%s"
                 elif subtype == 'multipart/alternative':
                     # Search for text/plain in message with attachment and
                     # alternative text representation
+                    # skip over intro to first boundary
                     part.getPart()
                     while 1:
                         # get the next part
@@ -730,7 +751,7 @@ Subject was: "%s"
                     if not name:
                         disp = part.getheader('content-disposition', None)
                         if disp:
-                            name = disp.getparam('filename')
+                            name = getparam(disp, 'filename')
                             if name:
                                 name = name.strip()
                     # this is just an attachment
@@ -946,7 +967,7 @@ def setPropArrayFromString(self, cl, propString, nodeid = None):
             props[propname] = value.lower() in ('yes', 'true', 'on', '1')
         elif isinstance(proptype, hyperdb.Number):
             value = value.strip()
-            props[propname] = int(value)
+            props[propname] = float(value)
     return errors, props
 
 

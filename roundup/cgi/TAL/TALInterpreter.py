@@ -168,7 +168,7 @@ class TALInterpreter:
 
     bytecode_handlers = {}
 
-    def interpret(self, program, None=None):
+    def interpret(self, program):
         oldlevel = self.level
         self.level = oldlevel + 1
         handlers = self.dispatch

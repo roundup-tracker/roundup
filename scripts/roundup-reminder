@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.4 2002-09-10 03:01:19 richard Exp $
+# $Id: roundup-reminder,v 1.5 2003-02-06 05:43:49 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -32,7 +32,7 @@ Note: The instance that this script was designed for has a modified schema!
       You will want to modify this script to customise it for your own schema!
 '''
 
-import cStringIO, MimeWriter, smtplib
+import sys, cStringIO, MimeWriter, smtplib
 from roundup import instance, date
 
 # open the instance
@@ -132,7 +132,7 @@ and click on "My Issues". Do NOT respond to this message.
             creation = creation_date.pretty()
         if not timeliness_id: timeliness_id = ' '
         title = db.issue.get(issue_id, 'title')
-        issue_id = '<a href="%sissue%s">%s</a>'%(db.config.ISSUE_TRACKER_WEB,
+        issue_id = '<a href="%sissue%s">%s</a>'%(db.config.TRACKER_WEB,
             issue_id, issue_id)
         colour = colours.get(timeliness, '')
         print >>body, '''<tr%s><td>%s</td><td>%s</td><td>%s</td>

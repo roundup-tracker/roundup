@@ -30,12 +30,25 @@ are given with the most recent entry first.
 - more proper sorting/grouping on mulitilink properties. Sorting is performed
   not only by number of links, but also by links itself. This makes usable
   grouping e.g. by topic multilink
+- fixed templating filter function arguments (sf bug 678911)
+- fixed multiselect in searching (sf bug 676874)
+- fixed parsing of content-disposition filenames (sf bug 675116)
+- added 'h' to roundup-server optarg list (sf bug 674070)
+- fixed doc for db.history in anydbm and rdbms_common (sf bug 679221)
+- fixed timelog example so it handles new issues (sf bug 678908)
+- handle missing os.fork() (sf bug 681046)
+- fixed roundup-reminder (sf bug 681042)
+- fixed int assumptions about Number values (sf bug 677762)
+- added warning filter for "FutureWarning: hex/oct constants > sys.maxint will
+  return positive values..." (literal 0xffff0000 in portalocker.py)
+- fixed ZPT code generating SyntaxWarning for assignment to None
 
-2003-??-?? 0.5.5
-- fixed rdbms searching by ID (sf bug 666615)
-- detect corrupted index and raise semi-useful exception (sf bug 666767)
-- open server logfile unbuffered
-- revert StringHTMLProperty to not hyperlink text by default
+
+2003-??-?? 0.5.6
+- changes appear in 0.6.0
+
+2003-01-24 0.5.5
+- changes appear in 0.6.0
 
 
 2003-01-10 0.5.4

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.75 2003-02-03 00:01:44 richard Exp $
+# $Id: client.py,v 1.76 2003-02-06 05:43:47 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -945,7 +945,15 @@ class Client:
         props = self.db.classes[self.classname].getprops()
         for key in self.form.keys():
             if not props.has_key(key): continue
-            if not self.form[key].value: continue
+            if isinstance(self.form[key], type([])):
+                # search for at least one entry which is not empty
+                for minifield in self.form[key]:
+                    if minifield.value:
+                        break
+                else:
+                    continue
+            else:
+                if not self.form[key].value: continue
             self.form.value.append(cgi.MiniFieldStorage(':filter', key))
 
         # handle saving the query params
@@ -1369,7 +1377,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             elif isinstance(proptype, hyperdb.Boolean):
                 value = value.lower() in ('yes', 'true', 'on', '1')
             elif isinstance(proptype, hyperdb.Number):
-                value = int(value)
+                value = float(value)
         else:
             # if we're creating, just don't include this property
             if not nodeid:

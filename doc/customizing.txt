@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.72 $
+:Version: $Revision: 1.73 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2558,6 +2558,7 @@ able to give a summary of the total time spent on a particular issue.
         ''' 
         actions = client.Client.actions + (
             ('edit_with_timelog', 'timelogEditAction'),
+            ('new_with_timelog', 'timelogEditAction'),
         )
 
         def timelogEditAction(self):
@@ -2587,7 +2588,10 @@ able to give a summary of the total time spent on a particular issue.
                     self.form.list.append(MiniFieldStorage('times', entry))
 
             # punt to the normal edit action
-            return self.editItemAction()
+            if self.nodeid:
+                return self.editItemAction()
+            else:
+                return self.newItemAction()
    
    you add this code to your Client class in your tracker's ``interfaces.py``
    file. Locate the section that looks like::
@@ -2621,14 +2625,15 @@ able to give a summary of the total time spent on a particular issue.
         <input type="submit" name="submit" value="Submit Changes">
       </tal:block>
       <tal:block tal:condition="not:context/id">
-        <input type="hidden" name=":action" value="new">
+        <input type="hidden" name=":action" value="new_with_timelog">
         <input type="submit" name="submit" value="Submit New Issue">
       </tal:block>
      </td>
     </tr>
 
    The important change is setting the action to "edit_with_timelog" for
-   edit operations (where the item exists)
+   edit operations (where the item exists) and "new_with_timelog" for
+   creations operations.
 
 6. We want to display a total of the time log times that have been accumulated
    for an issue. To do this, we'll need to actually write some Python code,
