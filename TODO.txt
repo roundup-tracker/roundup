@@ -50,6 +50,10 @@ pending web: have roundup.cgi pick up instance config from the environment
 
 New templating TODO:
 . rewritten documentation (can come after the beta though so stuff is settled)
+. add :required to edit action
+active web: title is stoopid
+active hyperdb: full-text searching doesn't appear to match stuff in titles,
+                even though they're supposed to be indexed...
 
 ongoing: any bugs
 
