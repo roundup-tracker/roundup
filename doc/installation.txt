@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.8 $
+:Version: $Revision: 1.9 $
 
 .. contents::
 
@@ -66,7 +66,7 @@ later. Download the latest version from http://pybsddb.sourceforge.net/.
 Testing your Python
 -------------------
 
-Run ``"python -c 'import test;test.go()'"`` and make sure there
+Run ``"python ./run_tests"`` and make sure there
 are no errors.  If there are errors, please let us know!
 
 
