@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.169 2004-07-27 04:28:39 richard Exp $
+#$Id: back_anydbm.py,v 1.170 2004-07-28 02:29:45 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -144,6 +144,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.classes[cn] = cl
 
         # add default Edit and View permissions
+        self.security.addPermission(name="Create", klass=cn,
+            description="User is allowed to create "+cn)
         self.security.addPermission(name="Edit", klass=cn,
             description="User is allowed to edit "+cn)
         self.security.addPermission(name="View", klass=cn,

@@ -8,13 +8,6 @@
  tal:replace="db/config/TRACKER_NAME" /></span>
 <td class="content" metal:fill-slot="content">
 
-<tal:block tal:define=" editok python:request.user.username=='anonymous' and
-           request.user.hasPermission('Web Registration')">
-
-<span tal:condition="python:not editok"
- i18n:translate="">You are not allowed to view this page.</span>
-
-<tal:block tal:condition="editok">
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data"
       tal:attributes="action context/designator">
@@ -72,10 +65,6 @@
  </tr>
 </table>
 </form>
-
-</tal:block>
-
-</tal:block>
 
 </td>
 

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.126 2004-07-27 04:28:39 richard Exp $
+# $Id: rdbms_common.py,v 1.127 2004-07-28 02:29:45 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -607,6 +607,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.classes[cn] = cl
 
         # add default Edit and View permissions
+        self.security.addPermission(name="Create", klass=cn,
+            description="User is allowed to create "+cn)
         self.security.addPermission(name="Edit", klass=cn,
             description="User is allowed to edit "+cn)
         self.security.addPermission(name="View", klass=cn,

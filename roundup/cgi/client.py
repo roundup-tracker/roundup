@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.185 2004-07-27 02:30:31 richard Exp $
+# $Id: client.py,v 1.186 2004-07-28 02:29:45 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -22,8 +22,6 @@ def initialiseSecurity(security):
     This function is directly invoked by security.Security.__init__()
     as a part of the Security object instantiation.
     '''
-    security.addPermission(name="Web Registration",
-        description="User may register through the web")
     p = security.addPermission(name="Web Access",
         description="User may access the web interface")
     security.addPermissionToRole('Admin', p)
@@ -398,6 +396,9 @@ class Client:
         # make sure the anonymous user is valid if we're using it
         if user == 'anonymous':
             self.make_user_anonymous()
+            if not self.db.security.hasPermission('Web Access', self.userid):
+                raise Unauthorised, self._("Anonymous users are not "
+                    "allowed to use the web interface")
         else:
             self.user = user
 

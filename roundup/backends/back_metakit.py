@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.82 2004-07-27 00:57:18 richard Exp $
+# $Id: back_metakit.py,v 1.83 2004-07-28 02:29:45 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -186,6 +186,8 @@ class _Database(hyperdb.Database, roundupdb.Database):
             self.tables.append(name=cl.classname)
 
         # add default Edit and View permissions
+        self.security.addPermission(name="Create", klass=cn,
+            description="User is allowed to create "+cn)
         self.security.addPermission(name="Edit", klass=cl.classname,
             description="User is allowed to edit "+cl.classname)
         self.security.addPermission(name="View", klass=cl.classname,

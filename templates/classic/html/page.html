@@ -37,8 +37,9 @@
    <p class="classblock"
        tal:condition="python:request.user.hasPermission('View', 'issue')">
     <b i18n:translate="">Issues</b><br>
-    <a tal:condition="python:request.user.hasPermission('Edit', 'issue')"
-      href="issue?@template=item" i18n:translate="">Create New</a><br>
+    <span tal:condition="python:request.user.hasPermission('Create', 'issue')">
+      <a href="issue?@template=item" i18n:translate="">Create New</a><br>
+    </span>
     <a href="issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1"
      i18n:translate="">Show Unassigned</a><br>
     <a href="issue?@sort=-activity&@group=priority&@filter=status&@columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7"
@@ -52,22 +53,28 @@
   </form>
 
   <p class="classblock"
-     tal:condition="python:request.user.hasPermission('Edit', 'keyword')">
+     tal:condition="python:request.user.hasPermission('Edit', 'keyword')
+        or request.user.hasPermission('Create', 'keyword')">
    <b i18n:translate="">Keywords</b><br>
-   <a href="keyword?@template=item" i18n:translate="">Create New</a><br>
-   <a tal:condition="db/keyword/list"
-      href="keyword?@template=item" i18n:translate="">Edit Existing</a><br>
+   <span tal:condition="python:request.user.hasPermission('Create', 'keyword')">
+    <a href="keyword?@template=item" i18n:translate="">Create New</a><br>
+   </span>
+   <span tal:condition="python:db.keyword.list() and
+        request.user.hasPermission('Edit', 'keyword')">
+    <a href="keyword?@template=item" i18n:translate="">Edit Existing</a><br>
+   </span>
   </p>
 
   <p class="classblock"
        tal:condition="python:request.user.hasPermission('View', 'user')">
    <b i18n:translate="">Administration</b><br>
-   <tal:block tal:condition="python:request.user.hasPermission('Edit', None)">
+   <span tal:condition="python:request.user.hasPermission('Edit', None)">
     <a href="home?@template=classlist" i18n:translate="">Class List</a><br>
-   </tal:block>
-   <a tal:condition="python:request.user.hasPermission('View', 'user')
-                            or request.user.hasPermission('Edit', 'user')"
-      href="user"  i18n:translate="">User List</a><br>
+   </span>
+   <span tal:condition="python:request.user.hasPermission('View', 'user')
+                            or request.user.hasPermission('Edit', 'user')">
+    <a href="user"  i18n:translate="">User List</a><br>
+   </span>
    <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
       href="user?@template=item" i18n:translate="">Add User</a>
   </p>
@@ -82,7 +89,7 @@
     <input type="submit" value="Login" i18n:attributes="value"><br>
     <span tal:replace="structure request/indexargs_form" />
     <a href="user?@template=register"
-       tal:condition="python:request.user.hasPermission('Web Registration')"
+       tal:condition="python:request.user.hasPermission('Create', 'user')"
      i18n:translate="">Register</a><br>
     <a href="user?@template=forgotten" i18n:translate="">Lost&nbsp;your&nbsp;login?</a><br>
    </p>

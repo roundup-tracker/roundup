@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.15 2004-07-27 11:36:01 a1s Exp $
+# $Id: demo.py,v 1.16 2004-07-28 02:29:45 richard Exp $
 
 import sys, os, string, re, urlparse, ConfigParser
 import shutil, socket, errno, BaseHTTPServer
@@ -59,6 +59,7 @@ def install_demo(home, backend):
     config['TRACKER_WEB'] = 'http://%s:%s/demo/'%(hostname, port)
 
     # write the config
+    config['INSTANT_REGISTRATION'] = 1
     config.save()
 
     # open the tracker and initialise

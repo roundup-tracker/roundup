@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.14 2004-07-27 11:26:20 a1s Exp $
+# $Id: configuration.py,v 1.15 2004-07-28 02:29:45 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -436,6 +436,9 @@ SETTINGS = (
             "Numeric timezone offset used when users do not choose their own\n"
             "in their settings.",
             ["DEFAULT_TIMEZONE"]),
+        (BooleanOption, "instant_registration", "no",
+            "Register new users instantly, or require confirmation via\n"
+            "email?"),
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",

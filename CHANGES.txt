@@ -17,6 +17,13 @@ Feature:
 - roundup-server options -g and -u accept both ids and names (sf bug 983769)
 - roundup-server now has a configuration file (-C option)
 - added mod_python interface (see installation.txt)
+- reorganised tracker configuration, using ConfigParser config, cleaned-up
+  schema definition and implementing easier extension writing (sf rfe 661301)
+- Permissions may now be defined on a per-property basis
+- added "Create" Permission. Replaces the "Web"- and "Email Registration"
+  Permissions.
+- added option to turn off registration confirmation via email
+  ("instant_registration" in config) (sf rfe 922209)
 
 
 2004-??-?? 0.7.7

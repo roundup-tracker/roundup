@@ -262,17 +262,10 @@ def context(client, template=None, classname=None, request=None):
     }
     # add in the item if there is one
     if client.nodeid:
-        if classname == 'user':
-            c['context'] = HTMLUser(client, classname, client.nodeid,
-                anonymous=1)
-        else:
-            c['context'] = HTMLItem(client, classname, client.nodeid,
-                anonymous=1)
+        c['context'] = HTMLItem(client, classname, client.nodeid,
+            anonymous=1)
     elif client.db.classes.has_key(classname):
-        if classname == 'user':
-            c['context'] = HTMLUserClass(client, classname, anonymous=1)
-        else:
-            c['context'] = HTMLClass(client, classname, anonymous=1)
+        c['context'] = HTMLClass(client, classname, anonymous=1)
     return c
 
 class RoundupPageTemplate(PageTemplate.PageTemplate):
@@ -328,15 +321,9 @@ class HTMLDatabase:
         if m:
             cl = m.group('cl')
             self._client.db.getclass(cl)
-            if cl == 'user':
-                klass = HTMLUser
-            else:
-                klass = HTMLItem
-            return klass(self._client, cl, m.group('id'))
+            return HTMLItem(self._client, cl, m.group('id'))
         else:
             self._client.db.getclass(item)
-            if item == 'user':
-                return HTMLUserClass(self._client, item)
             return HTMLClass(self._client, item)
 
     def __getattr__(self, attr):
@@ -350,10 +337,7 @@ class HTMLDatabase:
         l.sort()
         m = []
         for item in l:
-            if item == 'user':
-                m.append(HTMLUserClass(self._client, item))
-            else:
-                m.append(HTMLClass(self._client, item))
+            m.append(HTMLClass(self._client, item))
         return m
 
 def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('^-?\d+$')):
@@ -386,42 +370,6 @@ def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
             l.append(entry)
     return l
 
-class HTMLPermissions:
-    ''' Helpers that provide answers to commonly asked Permission questions.
-    '''
-    def is_edit_ok(self):
-        ''' Is the user allowed to Edit the current class?
-        '''
-        return self._db.security.hasPermission('Edit', self._client.userid,
-            self._classname)
-
-    def is_view_ok(self):
-        ''' Is the user allowed to View the current class?
-        '''
-        return self._db.security.hasPermission('View', self._client.userid,
-            self._classname)
-
-    def is_only_view_ok(self):
-        ''' Is the user only allowed to View (ie. not Edit) the current class?
-        '''
-        return self.is_view_ok() and not self.is_edit_ok()
-
-    def view_check(self):
-        ''' Raise the Unauthorised exception if the user's not permitted to
-            view this class.
-        '''
-        if not self.is_view_ok():
-            raise Unauthorised("view", self._classname,
-                translator=self._client.translator)
-
-    def edit_check(self):
-        ''' Raise the Unauthorised exception if the user's not permitted to
-            edit this class.
-        '''
-        if not self.is_edit_ok():
-            raise Unauthorised("edit", self._classname,
-                translator=self._client.translator)
-
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
     return '<input %s>'%' '.join(['%s="%s"'%item for item in attrs.items()])
@@ -453,6 +401,32 @@ class HTMLInputMixin:
 
     _ = gettext
 
+class HTMLPermissions:
+
+    def view_check(self):
+        ''' Raise the Unauthorised exception if the user's not permitted to
+            view this class.
+        '''
+        if not self.is_view_ok():
+            raise Unauthorised("view", self._classname,
+                translator=self._client.translator)
+
+    def create_check(self):
+        ''' Raise the Unauthorised exception if the user's not permitted to
+            create items of this class.
+        '''
+        if not self.is_create_ok():
+            raise Unauthorised("create", self._classname,
+                translator=self._client.translator)
+
+    def edit_check(self):
+        ''' Raise the Unauthorised exception if the user's not permitted to
+            edit items of this class.
+        '''
+        if not self.is_edit_ok():
+            raise Unauthorised("edit", self._classname,
+                translator=self._client.translator)
+
 class HTMLClass(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
@@ -468,6 +442,25 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         self._props = self._klass.getprops()
 
         HTMLInputMixin.__init__(self)
+
+    def is_edit_ok(self):
+        ''' Is the user allowed to Create the current class?
+        '''
+        return self._db.security.hasPermission('Create', self._client.userid,
+            self._classname)
+
+    def is_view_ok(self):
+        ''' Is the user allowed to View the current class?
+        '''
+        if self._db.security.hasPermission('View', self._client.userid,
+                self._classname):
+            return 1
+        return self.is_create_ok()
+
+    def is_only_view_ok(self):
+        ''' Is the user only allowed to View (ie. not Create) the current class?
+        '''
+        return self.is_view_ok() and not self.is_create_ok()
 
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
@@ -534,12 +527,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not isinstance(itemid, type(1)) and not num_re.match(itemid):
             itemid = self._klass.lookup(itemid)
 
-        if self.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-
-        return klass(self._client, self.classname, itemid)
+        return HTMLItem(self._client, self.classname, itemid)
 
     def properties(self, sort=1):
         ''' Return HTMLProperty for all of this class' properties.
@@ -561,17 +549,12 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def list(self, sort_on=None):
         ''' List all items in this class.
         '''
-        if self.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-
         # get the list and sort it nicely
         l = self._klass.list()
         sortfunc = make_sort_function(self._db, self.classname, sort_on)
         l.sort(sortfunc)
 
-        l = [klass(self._client, self.classname, x) for x in l]
+        l = [HTMLItem(self._client, self.classname, x) for x in l]
         return l
 
     def csv(self):
@@ -615,11 +598,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             filterspec = request.filterspec
             sort = request.sort
             group = request.group
-        if self.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-        l = [klass(self._client, self.classname, x)
+        l = [HTMLItem(self._client, self.classname, x)
              for x in self._klass.filter(None, filterspec, sort, group)]
         return l
 
@@ -683,7 +662,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         }
         return pt.render(self._client, self.classname, req, **args)
 
-class HTMLItem(HTMLInputMixin, HTMLPermissions):
+class _HTMLItem(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through an *item*
     '''
     def __init__(self, client, classname, nodeid, anonymous=0):
@@ -698,6 +677,25 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         self._anonymous = anonymous
 
         HTMLInputMixin.__init__(self)
+
+    def is_edit_ok(self):
+        ''' Is the user allowed to Edit the current class?
+        '''
+        return self._db.security.hasPermission('Edit', self._client.userid,
+            self._classname, itemid=self._nodeid)
+
+    def is_view_ok(self):
+        ''' Is the user allowed to View the current class?
+        '''
+        if self._db.security.hasPermission('View', self._client.userid,
+                self._classname, itemid=self._nodeid):
+            return 1
+        return self.is_edit_ok()
+
+    def is_only_view_ok(self):
+        ''' Is the user only allowed to View (ie. not Edit) the current class?
+        '''
+        return self.is_view_ok() and not self.is_edit_ok()
 
     def __repr__(self):
         return '<HTMLItem(0x%x) %s %s>'%(id(self), self._classname,
@@ -1010,66 +1008,26 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         url = '%s%s/%s'%(self._classname, self._nodeid, name)
         return urllib.quote(url)
 
-
-class HTMLUserPermission:
-
-    def is_edit_ok(self):
-        ''' Is the user allowed to Edit the current class?
-            Also check whether this is the current user's info.
-        '''
-        return self._user_perm_check('Edit')
-
-    def is_view_ok(self):
-        ''' Is the user allowed to View the current class?
-            Also check whether this is the current user's info.
-        '''
-        return self._user_perm_check('View')
-
-    def _user_perm_check(self, type):
-        # some users may view / edit all users
-        s = self._db.security
-        userid = self._client.userid
-        if s.hasPermission(type, userid, self._classname):
-            return 1
-
-        # users may view their own info
-        is_anonymous = self._db.user.get(userid, 'username') == 'anonymous'
-        if getattr(self, '_nodeid', None) == userid and not is_anonymous:
-            return 1
-
-        # may anonymous users register? (so, they need to be anonymous,
-        # need the Web Rego permission, and not trying to view an item)
-        rego = s.hasPermission('Web Registration', userid, self._classname)
-        rego = rego and self._client.template == 'register'
-        if is_anonymous and rego and getattr(self, '_nodeid', None) is None:
-            return 1
-
-        # nope, no access here
-        return 0
-
-class HTMLUserClass(HTMLUserPermission, HTMLClass):
-    pass
-
-class HTMLUser(HTMLUserPermission, HTMLItem):
-    ''' Accesses through the *user* (a special case of item)
+class _HTMLUser(_HTMLItem):
+    '''Add ability to check for permissions on users.
     '''
-    def __init__(self, client, classname, nodeid, anonymous=0):
-        HTMLItem.__init__(self, client, 'user', nodeid, anonymous)
-        self._default_classname = client.classname
-
-        # used for security checks
-        self._security = client.db.security
-
     _marker = []
     def hasPermission(self, permission, classname=_marker):
-        ''' Determine if the user has the Permission.
+        '''Determine if the user has the Permission.
 
-            The class being tested defaults to the template's class, but may
-            be overidden for this test by suppling an alternate classname.
+        The class being tested defaults to the template's class, but may
+        be overidden for this test by suppling an alternate classname.
         '''
         if classname is self._marker:
-            classname = self._default_classname
-        return self._security.hasPermission(permission, self._nodeid, classname)
+            classname = self._client.classname
+        return self._client.db.security.hasPermission(permission,
+            self._nodeid, classname)
+
+def HTMLItem(client, classname, nodeid, anonymous=0):
+    if classname == 'user':
+        return _HTMLUser(client, classname, nodeid, anonymous)
+    else:
+        return _HTMLItem(client, classname, nodeid, anonymous)
 
 class HTMLProperty(HTMLInputMixin, HTMLPermissions):
     ''' String, Number, Date, Interval HTMLProperty
@@ -1116,24 +1074,23 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         return self._value is not None
 
     def is_edit_ok(self):
-        ''' Is the user allowed to Edit the current class?
+        '''Should the user be allowed to use an edit form field for this
+        property. Check "Create" for new items, or "Edit" for existing
+        ones.
         '''
-        thing = HTMLDatabase(self._client)[self._classname]
         if self._nodeid:
-            # this is a special-case for the User class where permission's
-            # on a per-item basis :(
-            thing = thing.getItem(self._nodeid)
-        return thing.is_edit_ok()
+            return self._db.security.hasPermission('Edit', self._client.userid,
+                self._classname, self._name, self._nodeid)
+        return self._db.security.hasPermission('Create', self._client.userid,
+            self._classname, self._name)
 
     def is_view_ok(self):
         ''' Is the user allowed to View the current class?
         '''
-        thing = HTMLDatabase(self._client)[self._classname]
-        if self._nodeid:
-            # this is a special-case for the User class where permission's
-            # on a per-item basis :(
-            thing = thing.getItem(self._nodeid)
-        return thing.is_view_ok()
+        if self._db.security.hasPermission('View', self._client.userid,
+                self._classname, self._name, self._nodeid):
+            return 1
+        return self.is_edit_ok()
 
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
@@ -1551,11 +1508,7 @@ class LinkHTMLProperty(HTMLProperty):
        #print 'Link.getattr', (self, attr, self._value)
         if not self._value:
             raise AttributeError, "Can't access missing value"
-        if self._prop.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-        i = klass(self._client, self._prop.classname, self._value)
+        i = HTMLItem(self._client, self._prop.classname, self._value)
         return getattr(i, attr)
 
     def plain(self, escape=0):
@@ -1688,11 +1641,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         '''
        #print 'Multi.getitem', (self, num)
         value = self._value[num]
-        if self._prop.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-        return klass(self._client, self._prop.classname, value)
+        return HTMLItem(self._client, self._prop.classname, value)
 
     def __contains__(self, value):
         ''' Support the "in" operator. We have to make sure the passed-in
@@ -1709,11 +1658,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         '''
         l = self._value[:]
         l.reverse()
-        if self._prop.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-        return [klass(self._client, self._prop.classname, value) for value in l]
+        return [HTMLItem(self._client, self._prop.classname, value)
+            for value in l]
 
     def plain(self, escape=0):
         ''' Render a "plain" representation of the property
@@ -1865,7 +1811,7 @@ class HTMLRequest(HTMLInputMixin):
     - "form" the CGI form as a cgi.FieldStorage
     - "env" the CGI environment variables
     - "base" the base URL for this instance
-    - "user" a HTMLUser instance for this user
+    - "user" a HTMLItem instance for this user
     - "classname" the current classname (possibly None)
     - "template" the current template (suffix, also possibly None)
 
@@ -1888,7 +1834,7 @@ class HTMLRequest(HTMLInputMixin):
         self.form = client.form
         self.env = client.env
         self.base = client.base
-        self.user = HTMLUser(client, 'user', client.userid)
+        self.user = HTMLItem(client, 'user', client.userid)
 
         # store the current class name and action
         self.classname = client.classname
@@ -2220,10 +2166,7 @@ class Batch(ZTUtils.Batch):
         item = self._sequence[index + self.first]
         if self.classname:
             # map the item ids to instances
-            if self.classname == 'user':
-                item = HTMLUser(self.client, self.classname, item)
-            else:
-                item = HTMLItem(self.client, self.classname, item)
+            item = HTMLItem(self.client, self.classname, item)
         self.current_item = item
         return item
 

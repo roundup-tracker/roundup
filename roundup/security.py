@@ -16,13 +16,39 @@ class Permission:
         locked to a particular class. That means there may be multiple
         Permissions for the same name for different classes.
     '''
-    def __init__(self, name='', description='', klass=None):
+    def __init__(self, name='', description='', klass=None,
+            property=None, check=None):
         self.name = name
         self.description = description
         self.klass = klass
+        self.property = property
+        self.check = check
+
+    def test(self, db, permission, classname, property, userid, itemid):
+        if permission != self.name:
+            return 0
+
+        # are we checking the correct class
+        if (classname is not None and self.klass is not None
+                and self.klass != classname):
+            return 0
+
+        # what about property?
+        if (property is not None and self.property is not None
+                and self.property != property):
+            return 0
+
+        # check code
+        if self.check is not None:
+            if not self.check(db, userid, itemid):
+                return 0
+
+        # we have a winner
+        return 1
 
     def __repr__(self):
-        return '<Permission 0x%x %r,%r>'%(id(self), self.name, self.klass)
+        return '<Permission 0x%x %r,%r,%r,%r>'%(id(self), self.name,
+            self.klass, self.property, self.check)
 
 class Role:
     ''' Defines a Role with the attributes
@@ -95,24 +121,25 @@ class Security:
         raise ValueError, 'No permission "%s" defined for "%s"'%(permission,
             classname)
 
-    def hasPermission(self, permission, userid, classname=None):
+    def hasPermission(self, permission, userid, classname=None,
+            property=None, itemid=None):
         ''' Look through all the Roles, and hence Permissions, and see if
             "permission" is there for the specified classname.
         '''
         roles = self.db.user.get(userid, 'roles')
         if roles is None:
             return 0
+        if itemid is not None and classname is None:
+            raise ValueError, 'classname must accompany itemid'
         for rolename in [x.lower().strip() for x in roles.split(',')]:
             if not rolename or not self.role.has_key(rolename):
                 continue
             # for each of the user's Roles, check the permissions
             for perm in self.role[rolename].permissions:
                 # permission name match?
-                if perm.name == permission:
-                    # permission klass match?
-                    if perm.klass is None or perm.klass == classname:
-                        # we have a winner
-                        return 1
+                if perm.test(self.db, permission, classname, property,
+                        userid, itemid):
+                    return 1
         return 0
 
     def hasNodePermission(self, classname, nodeid, **propspec):

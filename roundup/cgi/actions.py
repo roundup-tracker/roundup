@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.35 2004-07-20 02:07:58 richard Exp $
+#$Id: actions.py,v 1.36 2004-07-28 02:29:45 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -53,10 +53,13 @@ class Action:
             raise Unauthorised, self._('You do not have permission to '
                 '%(action)s the %(classname)s class.')%info
 
-    def hasPermission(self, permission):
+    _marker = []
+    def hasPermission(self, permission, classname=_marker):
         """Check whether the user has 'permission' on the current class."""
+        if classname is self._marker:
+            classname = self.client.classname
         return self.db.security.hasPermission(permission, self.client.userid,
-            self.client.classname)
+            classname)
 
     def gettext(self, msgid):
         """Return the localized translation of msgid"""
@@ -314,46 +317,8 @@ class EditCSVAction(Action):
 
         self.client.ok_message.append(self._('Items edited OK'))
 
-class _EditAction(Action):
-    def isEditingSelf(self):
-        """Check whether a user is editing his/her own details."""
-        return (self.nodeid == self.userid
-                and self.db.user.get(self.nodeid, 'username') != 'anonymous')
-
-    def editItemPermission(self, props):
-        """Determine whether the user has permission to edit this item.
-
-        Base behaviour is to check the user can edit this class. If we're
-        editing the "user" class, users are allowed to edit their own details.
-        Unless it's the "roles" property, which requires the special Permission
-        "Web Roles".
-        """
-        if self.classname == 'user':
-            if props.has_key('roles') and not self.hasPermission('Web Roles'):
-                raise Unauthorised, self._(
-                    "You do not have permission to edit user roles")
-            if self.isEditingSelf():
-                return 1
-        if self.hasPermission('Edit'):
-            return 1
-        return 0
-
-    def newItemPermission(self, props):
-        """Determine whether the user has permission to create (edit) this item.
-
-        Base behaviour is to check the user can edit this class. No additional
-        property checks are made. Additionally, new user items may be created
-        if the user has the "Web Registration" Permission.
-
-        """
-        if (self.classname == 'user' and self.hasPermission('Web Registration')
-            or self.hasPermission('Edit')):
-            return 1
-        return 0
-
-    #
-    #  Utility methods for editing
-    #
+class EditCommon:
+    '''Utility methods for editing.'''
     def _editnodes(self, all_props, all_links, newids=None):
         ''' Use the props in all_props to perform edit and creation, then
             use the link specs in all_links to do linking.
@@ -475,7 +440,38 @@ class _EditAction(Action):
         cl = self.db.classes[cn]
         return cl.create(**props)
 
-class EditItemAction(_EditAction):
+    def isEditingSelf(self):
+        """Check whether a user is editing his/her own details."""
+        return (self.nodeid == self.userid
+                and self.db.user.get(self.nodeid, 'username') != 'anonymous')
+
+    def editItemPermission(self, props):
+        """Determine whether the user has permission to edit this item.
+
+        Base behaviour is to check the user can edit this class. If we're
+        editing the "user" class, users are allowed to edit their own details.
+        Unless it's the "roles" property, which requires the special Permission
+        "Web Roles".
+        """
+        if self.classname == 'user':
+            if props.has_key('roles') and not self.hasPermission('Web Roles'):
+                raise Unauthorised, self._(
+                    "You do not have permission to edit user roles")
+            if self.isEditingSelf():
+                return 1
+        if self.hasPermission('Edit'):
+            return 1
+        return 0
+
+    def newItemPermission(self, props):
+        """Determine whether the user has permission to create this item.
+
+        Base behaviour is to check the user can edit this class. No additional
+        property checks are made.
+        """
+        return self.hasPermission('Create', self.classname)
+
+class EditItemAction(EditCommon, Action):
     def lastUserActivity(self):
         if self.form.has_key(':lastactivity'):
             d = date.Date(self.form[':lastactivity'].value)
@@ -539,7 +535,7 @@ class EditItemAction(_EditAction):
             url += '&' + req.indexargs_href('', {})[1:]
         raise Redirect, url
 
-class NewItemAction(_EditAction):
+class NewItemAction(EditCommon, Action):
     def handle(self):
         ''' Add a new item to the database.
 
@@ -677,28 +673,21 @@ You should then receive another email with the new password.
 
         self.client.ok_message.append(self._('Email sent to %s') % address)
 
-class ConfRegoAction(Action):
-    def handle(self):
-        """Grab the OTK, use it to load up the new user details."""
-        try:
-            # pull the rego information out of the otk database
-            self.userid = self.db.confirm_registration(self.form['otk'].value)
-        except (ValueError, KeyError), message:
-            self.client.error_message.append(str(message))
-            return
-
+class RegoCommon:
+    def finishRego(self):
         # log the new user in
-        self.client.user = self.db.user.get(self.userid, 'username')
+        self.client.userid = self.userid
+        user = self.client.user = self.db.user.get(self.userid, 'username')
         # re-open the database for real, using the user
-        self.client.opendb(self.client.user)
+        self.client.opendb(user)
 
         # if we have a session, update it
-        if hasattr(self, 'session'):
-            self.client.db.sessions.set(self.session, user=self.user,
-                last_use=time.time())
+        if hasattr(self.client, 'session'):
+            self.client.db.getSessionManager().set(self.client.session,
+                user=user, last_use=time.time())
         else:
             # new session cookie
-            self.client.set_cookie(self.user)
+            self.client.set_cookie(user)
 
         # nice message
         message = self._('You are now registered, welcome!')
@@ -713,9 +702,20 @@ class ConfRegoAction(Action):
             window.setTimeout('window.location = "%s"', 1000);
             </script>'''%(message, url, message, url)
 
-class RegisterAction(Action):
+class ConfRegoAction(RegoCommon, Action):
+    def handle(self):
+        """Grab the OTK, use it to load up the new user details."""
+        try:
+            # pull the rego information out of the otk database
+            self.userid = self.db.confirm_registration(self.form['otk'].value)
+        except (ValueError, KeyError), message:
+            self.client.error_message.append(str(message))
+            return
+        self.finishRego()
+
+class RegisterAction(RegoCommon, EditCommon, Action):
     name = 'register'
-    permissionType = 'Web Registration'
+    permissionType = 'Create'
 
     def handle(self):
         """Attempt to create a new user based on the contents of the form
@@ -723,38 +723,59 @@ class RegisterAction(Action):
 
         Return 1 on successful login.
         """
-        props = self.client.parsePropsFromForm(create=1)[0][('user', None)]
+        # parse the props from the form
+        try:
+            props, links = self.client.parsePropsFromForm(create=1)
+        except (ValueError, KeyError), message:
+            self.client.error_message.append(self._('Error: %s')
+                % str(message))
+            return
 
         # registration isn't allowed to supply roles
-        if props.has_key('roles'):
+        user_props = props[('user', None)]
+        if user_props.has_key('roles'):
             raise Unauthorised, self._(
                 "It is not permitted to supply roles at registration.")
 
-        username = props['username']
-        try:
-            self.db.user.lookup(username)
-            self.client.error_message.append(self._('Error: A user with the '
-                'username "%(username)s" already exists')%props)
-            return
-        except KeyError:
-            pass
+        # skip the confirmation step?
+        if self.db.config['INSTANT_REGISTRATION']:
+            # handle the create now
+            try:
+                # when it hits the None element, it'll set self.nodeid
+                messages = self._editnodes(props, links)
+            except (ValueError, KeyError, IndexError, exceptions.Reject), \
+                    message:
+                # these errors might just be indicative of user dumbness
+                self.client.error_message.append(_('Error: %s') % str(message))
+                return
+
+            # fix up the initial roles
+            self.db.user.set(self.nodeid,
+                roles=self.db.config['NEW_WEB_USER_ROLES'])
+
+            # commit now that all the tricky stuff is done
+            self.db.commit()
+
+            # finish off by logging the user in
+            self.userid = self.nodeid
+            return self.finishRego()
 
         # generate the one-time-key and store the props for later
         for propname, proptype in self.db.user.getprops().items():
-            value = props.get(propname, None)
+            value = user_props.get(propname, None)
             if value is None:
                 pass
             elif isinstance(proptype, hyperdb.Date):
-                props[propname] = str(value)
+                user_props[propname] = str(value)
             elif isinstance(proptype, hyperdb.Interval):
-                props[propname] = str(value)
+                user_props[propname] = str(value)
             elif isinstance(proptype, hyperdb.Password):
-                props[propname] = str(value)
+                user_props[propname] = str(value)
         otks = self.db.getOTKManager()
         otk = ''.join([random.choice(chars) for x in range(32)])
         while otks.exists(otk):
             otk = ''.join([random.choice(chars) for x in range(32)])
-        otks.set(otk, **props)
+        otks.set(otk, **user_props)
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
@@ -771,9 +792,9 @@ reply's additional "Re:" is ok),
 
 %(url)s?@action=confrego&otk=%(otk)s
 
-""" % {'name': props['username'], 'tracker': tracker_name, 'url': self.base,
-        'otk': otk, 'tracker_email': tracker_email}
-        if not self.client.standard_message([props['address']], subject,
+""" % {'name': user_props['username'], 'tracker': tracker_name,
+        'url': self.base, 'otk': otk, 'tracker_email': tracker_email}
+        if not self.client.standard_message([user_props['address']], subject,
                 body, (tracker_name, tracker_email)):
             return
 
