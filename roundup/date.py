@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.79 2005-02-14 00:06:54 richard Exp $
+# $Id: date.py,v 1.80 2005-02-25 17:15:47 a1s Exp $
 
 """Date, time and time interval handling.
 """
@@ -150,7 +150,7 @@ class Date:
             # we lost the fractional part
             self.second = self.second + frac
         except:
-            raise ValueError, 'Unknown spec %r'%spec
+            raise ValueError, 'Unknown spec %r' % (spec,)
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
             ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
@@ -939,4 +939,4 @@ def test():
 if __name__ == '__main__':
     test()
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
