@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.21 2001-08-15 23:43:18 richard Exp $
+# $Id: cgi_client.py,v 1.22 2001-08-17 00:08:10 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -276,17 +276,14 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
+        # TODO: this should be an auditor
         # see if we want to send a message to the nosy list...
         props = cl.getprops()
-        # don't do the message thing if there's no nosy list, or the editor
-        # of the node is the only person on the nosy list - they're already
-        # aware of the change.
+        # don't do the message thing if there's no nosy list
         nosy = 0
         if props.has_key('nosy'):
             nosy = cl.get(nid, 'nosy')
-            uid = self.getuid()
-            if len(nosy) == 1 and uid in nosy:
-                nosy = 0
+            nosy = len(nosy)
         if (nosy and props.has_key('messages') and
                 isinstance(props['messages'], hyperdb.Multilink) and
                 props['messages'].classname == 'msg'):
@@ -521,6 +518,10 @@ def parsePropsFromForm(cl, form, note_changed=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/08/15 23:43:18  richard
+# Fixed some isFooTypes that I missed.
+# Refactored some code in the CGI code.
+#
 # Revision 1.20  2001/08/12 06:32:36  richard
 # using isinstance(blah, Foo) now instead of isFooType
 #
