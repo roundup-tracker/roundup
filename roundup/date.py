@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.77.2.1 2005-01-03 03:06:30 richard Exp $
+# $Id: date.py,v 1.77.2.2 2005-02-14 01:26:14 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -152,7 +152,6 @@ class Date:
         except:
             raise ValueError, 'Unknown spec %r'%spec
 
-    usagespec='[yyyy]-[mm]-[dd].[H]H:MM[:SS.SSS][offset]'
     def set(self, spec, offset=0, date_re=re.compile(r'''
             ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
             |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
@@ -177,7 +176,9 @@ class Date:
         # not serialised data, try usual format
         m = date_re.match(spec)
         if m is None:
-            raise ValueError, self._('Not a date spec: %s') % self.usagespec
+            raise ValueError, self._('Not a date spec: '
+                '"yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
+                '"yyyy-mm-dd.HH:MM:SS.SSS"')
 
         info = m.groupdict()
 
@@ -228,8 +229,9 @@ class Date:
             try:
                 self.applyInterval(Interval(info['o'], allowdate=0))
             except ValueError:
-                raise ValueError, self._('%r not a date spec (%s)')%(spec,
-                    self.usagespec)
+                raise ValueError, self._('%r not a date / time spec '
+                    '"yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
+                    '"yyyy-mm-dd.HH:MM:SS.SSS"')%(spec,)
 
     def addInterval(self, interval):
         ''' Add the interval to this date, returning the date tuple
