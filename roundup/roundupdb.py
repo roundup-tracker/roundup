@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.79 2003-01-27 16:32:48 kedder Exp $
+# $Id: roundupdb.py,v 1.80 2003-01-27 17:02:46 kedder Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -62,7 +62,7 @@ class Database:
         userid = self.getuid()
         try:
             timezone = int(self.user.get(userid, 'timezone'))
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, TypeError):
             # If there is no class 'user' or current user doesn't have timezone 
             # property or that property is not numeric assume he/she lives in 
             # Greenwich :)
