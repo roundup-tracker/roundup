@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.6 2004-02-15 23:27:44 richard Exp $
+# $Id: setup.py,v 1.55.2.7 2004-02-24 23:41:30 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -150,7 +150,7 @@ def main():
     ]
     installdatafiles = [
         ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
-    ] 
+    ]
 
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -178,32 +178,25 @@ def main():
     # perform the setup action
     from roundup import __version__
     setup(
-        name = "roundup", 
+        name = "roundup",
         version = __version__,
         description = "Roundup is a simple-to-use and -install "\
             "issue-tracking system with command-line, web and e-mail "\
             "interfaces.",
-        long_description = 
+        long_description =
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.5 release fixes some bugs:
-- mailgw handling of subject-line errors
-- allow serving of FileClass file content when the class isn't called
-  "file" (eg. messages and other FileClasses)
-- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
-  allowing "db/file_with_status/-1/status/menu" to generate a useful
-  widget
-- fixed content-type when templates are serving up xml (thanks Godefroid
-  Chapelle)
-- fixed IE double-submit when it shouldn't (sf bug 842254)
-- fixed check for JS pop()/push() to make more general (sf bug 877504)
-- fix re-enabling queries (sf bug 861940)
-- use supplied content-type on file uploads before trying filename
-- fixed roundup-reminder script to use default schema (thanks Klamer Schutte)
-- fixed edit action / parsePropsFromForm to handle index-page edits better
-- safer logging from HTTP server (sf bug 896917)
+The 0.6.6 release fixes some bugs:
+- fixed registration (sf bug 903283)
+- don't insert spaces into designators, it just confuses users (sf bug
+  898087)
+- Eudora can't handle utf-8 headers. We love Eudora. (sf bug 900046)
+- fixed bug in args to new DateHTMLProperty in the local() method (sf bug
+  901444)
+- also changed rego to not use a 302 during confirmation, as this seems to
+  confuse some email clients or browsers
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",

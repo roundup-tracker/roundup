@@ -1,22 +1,14 @@
-I'm pleased to announce this maintenance release of Roundup which fixes
+I'm pleased to announce Roundup 0.6.6, a maintenance release which fixes
 some bugs:
 
-- mailgw handles of subject-line errors better
-- allow serving of FileClass file content when the class isn't called
-  "file" (eg. messages and other FileClasses)
-- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
-  allowing "db/file_with_status/-1/status/menu" to generate a useful
-  widget
-- fixed content-type when templates are serving up xml (thanks Godefroid
-  Chapelle)
-- fixed IE double-submit when it shouldn't (sf bug 842254)
-- fixed check for JS pop()/push() to make more general (sf bug 877504)
-- fix re-enabling queries (sf bug 861940)
-- use supplied content-type on file uploads before trying filename
-- fixed roundup-reminder script to use default schema (thanks Klamer
-  Schutte)
-- fixed edit action / parsePropsFromForm to handle index-page edits better
-- safer logging from HTTP server (sf bug 896917)
+- fixed registration (sf bug 903283)
+- don't insert spaces into designators, it just confuses users (sf bug
+  898087)
+- Eudora can't handle utf-8 headers. We love Eudora. (sf bug 900046)
+- fixed bug in args to new DateHTMLProperty in the local() method (sf bug
+  901444)
+- also changed rego to not use a 302 during confirmation, as this seems to
+  confuse some email clients or browsers
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
