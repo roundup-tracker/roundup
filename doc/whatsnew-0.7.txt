@@ -176,9 +176,9 @@ editing an issue title. Including the expression::
 
    context/title/field
 
-Will present the user with an edit field, if they have edit permission. If
-not, then they will be presented with a static display if they have view
-permission. If they don't even have view permission, then an error message
+will present the user with an edit field if they have Edit Permission. If
+not, then they will be presented with a static display if they have View
+Permission. If they don't even have View Permission, then an error message
 is raised, preventing the display of the page, indicating that they don't
 have permission to view the information.
 
@@ -189,7 +189,7 @@ just plain messy.
 Standards changes
 -----------------
 
-We now set the HTTP Content-Length header when we serve up files, either
+The HTTP Content-Length header when we serve up files, either
 static ones from the "html" folder or file content from the database.
 
 We also handle If-Modified-Since and supply Last-Modified for both types
@@ -199,7 +199,7 @@ The HTML generated in the classic tracker is now HTML4 (or optionally
 XHTML) compliant. The ``config.py`` variable "HTML_VERSION" is used to
 control this behaviour.
 
-We've got a printer setting in the stylesheet now too, so printed pages
+The stylesheet includes printer settings now too, so printed pages
 don't include the sidebar.
 
 
