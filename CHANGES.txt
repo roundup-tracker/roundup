@@ -6,7 +6,7 @@ Fixed:
 - ZRoundup's search interface works now (sf bug 994957)
 - fixed history display when "ascending"
 - removed references to py2.3+ boolean values (sf bug 995682)
-
+- fix static file path normalisation in security check (thanks David Linke)
 
 2004-07-21 0.7.6
 Fixed:
