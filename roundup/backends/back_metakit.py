@@ -108,11 +108,7 @@ class _Database(hyperdb.Database):
             self.tables.append(name=cl.classname)
     def addjournal(self, tablenm, nodeid, action, params, creator=None,
                 creation=None):
-        try:
-            tblid = self.tables.find(name=tablenm)
-        except ValueError:
-            open('/u/roundup-sf/roundup/error.out','w').write('\nself.tables=%s, tablenm=%s\n' % (self.tables.structure(), tablenm))
-            raise
+        tblid = self.tables.find(name=tablenm)
         if tblid == -1:
             tblid = self.tables.append(name=tablenm)
         if creator is None:
