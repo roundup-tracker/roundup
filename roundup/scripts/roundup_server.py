@@ -17,12 +17,12 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.62 2004-09-21 09:29:18 a1s Exp $
+$Id: roundup_server.py,v 1.63 2004-10-17 17:54:48 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
 # python version check
-from roundup import version_check
+from roundup import configuration, version_check
 from roundup import __version__ as roundup_version
 
 import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
@@ -369,7 +369,7 @@ How to use "name=tracker home":
    pairs on the command-line. Make sure the name part doesn't include
    any url-unsafe characters like spaces, as these confuse IE.
 ''')%locals()
-    sys.exit(0)
+    #sys.exit(0)
 
 
 def daemonize(pidfile):
@@ -461,6 +461,76 @@ def setuid(user):
         raise ValueError, _("User %(user)s doesn't exist")%locals()
     os.setuid(uid)
 
+class TrackerHomeOption(configuration.FilePathOption):
+    # Tracker homes do not need description strings
+    # attached to FilePathOption.  Description appears once
+    # before the trackers section.
+    class_description = ""
+
+class ServerConfig(configuration.Config):
+
+    SETTINGS = (
+            ("main", (
+            (configuration.Option, "host", "",
+                "Host name of the Roundup web server instance.\n"
+                "If empty, listen on all network interfaces."),
+            (configuration.IntegerNumberOption, "port", DEFAULT_PORT,
+                "Port to listen on."),
+            (configuration.NullableOption, "user", "",
+                "User ID as which the server will answer requests.\n"
+                "In order to use this option, "
+                "the server must be run initially as root.\n"
+                "Availability: Unix."),
+            (configuration.NullableOption, "group", "",
+                "Group ID as which the server will answer requests.\n"
+                "In order to use this option, "
+                "the server must be run initially as root.\n"
+                "Availability: Unix."),
+            (configuration.BooleanOption, "log_hostnames", "no",
+                "Log client machine names instead of IP addresses "
+                "(much slower)"),
+            (configuration.NullableFilePathOption, "pidfile", "",
+                "File to which the server records "
+                "the process id of the daemon.\n"
+                "If this option is not set, "
+                "the server will run in foreground\n"),
+            (configuration.NullableFilePathOption, "logfile", "",
+                "Log file path.  If unset, log to stderr."),
+        )),
+        ("trackers", (), "Roundup trackers to serve.\n"
+            "Each option in this section defines single Roundup tracker.\n"
+            "Option name identifies the tracker and will appear in the URL.\n"
+            "Option value is tracker home directory path.\n"
+            "The path may be either absolute or relative\n"
+            "to the directory containig this config file."),
+    )
+
+    def __init__(self, config_file=None):
+        configuration.Config.__init__(self, config_file, self.SETTINGS)
+
+    def _adjust_options(self, config):
+        """Add options for tracker homes"""
+        # return early if there are no tracker definitions.
+        # trackers must be specified on the command line.
+        if not config.has_section("trackers"):
+            return
+        # config defaults appear in all sections.
+        # filter them out.
+        defaults = config.defaults().keys()
+        for name in config.options("trackers"):
+            if name not in defaults:
+                self.add_option(TrackerHomeOption(self, "trackers", name))
+
+    def _get_name(self):
+        return "Roundup server"
+
+    def trackers(self):
+        """Return tracker definitions as a list of (name, home) pairs"""
+        trackers = []
+        for option in self._get_section_options("trackers"):
+            trackers.append((option, self["TRACKERS_" + option.upper()]))
+        return trackers
+
 undefined = []
 def run(port=undefined, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
@@ -470,134 +540,98 @@ def run(port=undefined, success_message=None):
     if hasattr(socket, 'setdefaulttimeout'):
         socket.setdefaulttimeout(60)
 
-    hostname = pidfile = logfile = user = group = svc_args = log_ip = undefined
-    config = None
+    config = ServerConfig()
 
+    options = "hvS"
+    if RoundupService:
+        options += 'c'
     try:
-        # handle the command-line args
-        options = 'n:p:g:u:d:l:C:hNv'
-        if RoundupService:
-            options += 'c'
+        (optlist, args) = config.getopt(sys.argv[1:],
+            options, ("help", "version", "save-config",),
+            host="n:", port="p:", group="g:", user="u:",
+            logfile="l:", pidfile="d:", log_hostnames="N")
+    except (getopt.GetoptError), e: #, configuration.ConfigurationError), e:
+        usage(str(e))
+        return
 
-        try:
-            optlist, args = getopt.getopt(sys.argv[1:], options)
-        except getopt.GetoptError, e:
-            usage(str(e))
+    # if running in windows service mode, don't do any other stuff
+    if ("-c", "") in optlist:
+        RoundupService.address = (config.HOST, config.PORT)
+        # XXX why the 1st argument to the service is "-c"
+        #   instead of the script name???
+        return win32serviceutil.HandleCommandLine(RoundupService,
+            argv=["-c"] + args)
 
+    # add tracker names from command line.
+    # this is done early to let '--save-config' handle the trackers.
+    if args:
+        for arg in args:
+            try:
+                name, home = arg.split('=')
+            except ValueError:
+                raise ValueError, _("Instances must be name=home")
+            config.add_option(
+                configuration.FilePathOption(config, "trackers", name))
+            config["TRACKERS_" + name.upper()] = home
+
+    # handle remaining options
+    if optlist:
         for (opt, arg) in optlist:
-            if opt == '-n': hostname = arg
-            elif opt == '-v':
-                print '%s (python %s)'%(roundup_version, sys.version.split()[0])
-                return
-            elif opt == '-p': port = int(arg)
-            elif opt == '-u': user = arg
-            elif opt == '-g': group = arg
-            elif opt == '-d': pidfile = os.path.abspath(arg)
-            elif opt == '-l': logfile = os.path.abspath(arg)
-            elif opt == '-h': usage()
-            elif opt == '-N': log_ip = 0
-            elif opt == '-c': svc_args = [opt] + args; args = None
-            elif opt == '-C': config = arg
+            if opt in ("-h", "--help"):
+                usage()
+            elif opt in ("-v", "--version"):
+                print '%s (python %s)' % (roundup_version,
+                    sys.version.split()[0])
+            elif opt in ("-S", "--save-config"):
+                config.save()
+                print _("Configuration saved to %s") % config.filepath
+        # any of the above options prevent server from running
+        return
 
-        if svc_args and len(optlist) > 1:
-            raise ValueError, _("windows service option must be the only one")
+    RoundupRequestHandler.LOG_IPADDRESS = not config.LOG_HOSTNAMES
 
-        if pidfile and not logfile:
-            raise ValueError, _("logfile *must* be specified if pidfile is")
-
-        # handle the config file
-        if config:
-            cfg = ConfigParser.ConfigParser()
-            cfg.read(filename)
-            if port is undefined and cfg.has_option('server', 'port'):
-                port = cfg.get('server', 'port')
-            if user is undefined and cfg.has_option('server', 'user'):
-                user = cfg.get('server', 'user')
-            if group is undefined and cfg.has_option('server', 'group'):
-                group = cfg.get('server', 'group')
-            if log_ip is undefined and cfg.has_option('server', 'log_ip'):
-                RoundupRequestHandler.LOG_IPADDRESS = cfg.getboolean('server',
-                    'log_ip')
-            if pidfile is undefined and cfg.has_option('server', 'pidfile'):
-                pidfile = cfg.get('server', 'pidfile')
-            if logfile is undefined and cfg.has_option('server', 'logfile'):
-                logfile = cfg.get('server', 'logfile')
-            homes = RoundupRequestHandler.TRACKER_HOMES
-            for section in cfg.sections():
-                if section == 'server':
-                    continue
-                homes[section] = cfg.get(section, 'home')
-
-        # defaults
-        if hostname is undefined:
-            hostname = ''
-        if port is undefined:
-            port = DEFAULT_PORT
-        if group is undefined:
-            group = None
-        if user is undefined:
-            user = None
-        if svc_args is undefined:
-            svc_args = None
-
-        # obtain server before changing user id - allows to use port <
-        # 1024 if started as root
-        address = (hostname, port)
-        try:
-            httpd = server_class(address, RoundupRequestHandler)
-        except socket.error, e:
-            if e[0] == errno.EADDRINUSE:
-                raise socket.error, \
-                      _("Unable to bind to port %s, port already in use."%port)
-            raise
-
-        # change user and/or group
-        setgid(group)
-        setuid(user)
-
-        # handle tracker specs
-        if args:
-            for arg in args:
-                try:
-                    name, home = arg.split('=')
-                except ValueError:
-                    raise ValueError, _("Instances must be name=home")
-                home = os.path.abspath(home)
-                RoundupRequestHandler.TRACKER_HOMES[name] = home
-    except SystemExit:
+    # obtain server before changing user id - allows to use port <
+    # 1024 if started as root
+    try:
+        httpd = server_class((config.HOST, config.PORT), RoundupRequestHandler)
+    except socket.error, e:
+        if e[0] == errno.EADDRINUSE:
+            raise socket.error, \
+                _("Unable to bind to port %s, port already in use.") \
+                % config.PORT
         raise
-    except ValueError:
-        usage(error())
-#    except:
-#        print error()
-#        sys.exit(1)
+
+    # change user and/or group
+    setgid(config.GROUP)
+    setuid(config.USER)
+
+    # apply tracker specs
+    for (name, home) in config.trackers():
+        home = os.path.abspath(home)
+        RoundupRequestHandler.TRACKER_HOMES[name] = home
 
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
 
     # fork the server from our parent if a pidfile is specified
-    if pidfile:
+    if config.PIDFILE:
         if not hasattr(os, 'fork'):
             print _("Sorry, you can't run the server as a daemon"
                 " on this Operating System")
             sys.exit(0)
         else:
-            daemonize(pidfile)
-
-    if svc_args is not None:
-        # don't do any other stuff
-        RoundupService.address = address
-        return win32serviceutil.HandleCommandLine(RoundupService, argv=svc_args)
+            daemonize(config.PIDFILE)
 
     # redirect stdout/stderr to our logfile
-    if logfile:
+    if config.LOGFILE:
         # appending, unbuffered
-        sys.stdout = sys.stderr = open(logfile, 'a', 0)
+        sys.stdout = sys.stderr = open(config.LOGFILE, 'a', 0)
 
     if success_message:
         print success_message
     else:
-        print _('Roundup server started on %(address)s')%locals()
+        print _('Roundup server started on %(HOST)s:%(PORT)s') \
+            % config
 
     try:
         httpd.serve_forever()
