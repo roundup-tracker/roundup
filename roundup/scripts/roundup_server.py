@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.75 2004-12-22 06:57:36 a1s Exp $
+$Id: roundup_server.py,v 1.76 2005-01-15 06:56:38 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -392,13 +392,13 @@ class ServerConfig(configuration.Config):
                 self["TRACKERS_" + option.upper()])))
         return trackers
 
+    def set_logging(self):
+        """Initialise logging to the configured file, if any."""
+        # appending, unbuffered
+        sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 0)
+
     def get_server(self):
         """Return HTTP server object to run"""
-        # redirect stdout/stderr to our logfile
-        # this is done early to have following messages go to this logfile
-        if self["LOGFILE"]:
-            # appending, unbuffered
-            sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 0)
         # we don't want the cgi module interpreting the command-line args ;)
         sys.argv = sys.argv[:1]
         # preload all trackers unless we are in "debug" mode
@@ -478,6 +478,7 @@ else:
                     (self._svc_display_name_, "\r\nMissing logfile option"))
                 self.ReportServiceStatus(win32service.SERVICE_STOPPED)
                 return
+            config.set_logging()
             self.server = config.get_server()
             self.running = 1
             self.ReportServiceStatus(win32service.SERVICE_RUNNING)
@@ -605,7 +606,7 @@ def daemonize(pidfile):
     os.chdir("/")
     os.umask(0)
 
-    # close off sys.std(in|out|err), redirect to devnull so the file
+    # close off std(in|out|err), redirect to devnull so the file
     # descriptors can't be used again
     devnull = os.open('/dev/null', 0)
     os.dup2(devnull, 0)
@@ -688,6 +689,13 @@ def run(port=undefined, success_message=None):
     # port number in function arguments overrides config and command line
     if port is not undefined:
         config.PORT = port
+
+    if config["LOGFILE"]:
+        config["LOGFILE"] = os.path.abspath(config["LOGFILE"])
+        # switch logging from stderr/stdout to logfile
+        config.set_logging()
+    if config["PIDFILE"]:
+        config["PIDFILE"] = os.path.abspath(config["PIDFILE"])
 
     # fork the server from our parent if a pidfile is specified
     if config["PIDFILE"]:
