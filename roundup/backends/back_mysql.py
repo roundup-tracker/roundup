@@ -39,10 +39,17 @@ import MySQLdb
 import os, shutil
 from MySQLdb.constants import ER
 
+def connection_dict(config):
+    d = rdbms_common.connection_dict(config, 'db')
+    if d.has_key('password'):
+        d['passwd'] = d['password']
+        del d['password']
+    return d
+
 def db_nuke(config):
     """Clear all database contents and drop database itself"""
     if db_exists(config):
-        kwargs = rdbms_common.connection_dict(config)
+        kwargs = connection_dict(config)
         conn = MySQLdb.connect(**kwargs)
         try:
             conn.select_db(config.RDBMS_NAME)
@@ -70,7 +77,7 @@ def db_nuke(config):
 
 def db_create(config):
     """Create the database."""
-    kwargs = rdbms_common.connection_dict(config)
+    kwargs = connection_dict(config)
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
     command = "CREATE DATABASE %s"%config.RDBMS_NAME
@@ -81,7 +88,7 @@ def db_create(config):
 
 def db_exists(config):
     """Check if database already exists."""
-    kwargs = rdbms_common.connection_dict(config)
+    kwargs = connection_dict(config)
     conn = MySQLdb.connect(**kwargs)
     try:
         try:
@@ -125,7 +132,7 @@ class Database(Database):
     }
 
     def sql_open_connection(self):
-        kwargs = rdbms_common.connection_dict(config, 'db')
+        kwargs = connection_dict(self.config)
         self.config.logging.getLogger('hyperdb').info('open database %r'%(
             kwargs['db'],))
         try:
@@ -136,7 +143,7 @@ class Database(Database):
         cursor.execute("SET AUTOCOMMIT=OFF")
         cursor.execute("START TRANSACTION")
         return (conn, cursor)
-    
+
     def open_connection(self):
         # make sure the database actually exists
         if not db_exists(self.config):
@@ -218,7 +225,7 @@ class Database(Database):
                 if properties.has_key(name):
                     # re-create and populate the new table
                     self.create_multilink_table(klass, name)
-                    sql = '''insert into %s (linkid, nodeid) values 
+                    sql = '''insert into %s (linkid, nodeid) values
                         (%s, %s)'''%(tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
                         self.sql(sql, (int(linkid), int(nodeid)))
@@ -259,7 +266,7 @@ class Database(Database):
                         v = date.Interval(v)
                     elif isinstance(prop, Password) and v is not None:
                         v = password.Password(encrypted=v)
-                    elif (isinstance(prop, Boolean) or 
+                    elif (isinstance(prop, Boolean) or
                             isinstance(prop, Number)) and v is not None:
                         v = float(v)
 
@@ -323,7 +330,7 @@ class Database(Database):
                     journaltag, action, params)
 
             # make sure the normal schema update code doesn't try to
-            # change things 
+            # change things
             self.database_schema['tables'][cn] = klass.schema()
 
     def fix_version_2_tables(self):
@@ -379,7 +386,7 @@ class Database(Database):
             self.sql(index_sql)
 
     def create_journal_table(self, spec):
-        ''' create the journal table for a class given the spec and 
+        ''' create the journal table for a class given the spec and
             already-determined cols
         '''
         # journal table
@@ -605,7 +612,7 @@ class MysqlClass:
                             args.append(dc(date_rng.to_value))
                     except ValueError:
                         # If range creation fails - ignore that search parameter
-                        pass                        
+                        pass
             elif isinstance(propclass, Interval):
                 # filter using the __<prop>_int__ column
                 if isinstance(v, type([])):
@@ -624,7 +631,7 @@ class MysqlClass:
                             args.append(date_rng.to_value.as_seconds())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
-                        pass                        
+                        pass
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -743,4 +750,4 @@ class IssueClass(MysqlClass, rdbms_common.IssueClass):
 class FileClass(MysqlClass, rdbms_common.FileClass):
     pass
 
-#vim: set et
+# vim: set et sts=4 sw=4 :
