@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.63 2004-10-17 17:54:48 a1s Exp $
+$Id: roundup_server.py,v 1.64 2004-10-17 18:14:22 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -462,10 +462,13 @@ def setuid(user):
     os.setuid(uid)
 
 class TrackerHomeOption(configuration.FilePathOption):
-    # Tracker homes do not need description strings
-    # attached to FilePathOption.  Description appears once
-    # before the trackers section.
-    class_description = ""
+
+    # Tracker homes do not need any description strings
+    def format(self):
+        return "%(name)s = %(value)s\n" % {
+                "name": self.setting,
+                "value": self.value2str(self._value),
+            }
 
 class ServerConfig(configuration.Config):
 
@@ -570,8 +573,7 @@ def run(port=undefined, success_message=None):
                 name, home = arg.split('=')
             except ValueError:
                 raise ValueError, _("Instances must be name=home")
-            config.add_option(
-                configuration.FilePathOption(config, "trackers", name))
+            config.add_option(TrackerHomeOption(config, "trackers", name))
             config["TRACKERS_" + name.upper()] = home
 
     # handle remaining options
