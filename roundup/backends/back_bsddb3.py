@@ -1,4 +1,4 @@
-#$Id: back_bsddb3.py,v 1.3 2001-07-30 02:36:23 richard Exp $
+#$Id: back_bsddb3.py,v 1.4 2001-08-03 02:45:47 anthonybaxter Exp $
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date
@@ -57,9 +57,9 @@ class Database(hyperdb.Database):
     def clear(self):
         for cn in self.classes.keys():
             db = os.path.join(self.dir, 'nodes.%s'%cn)
-            bsddb3.btopen(db, 'n')
+            bsddb3.btopen(db, 'c')
             db = os.path.join(self.dir, 'journals.%s'%cn)
-            bsddb3.btopen(db, 'n')
+            bsddb3.btopen(db, 'c')
 
     def getclassdb(self, classname, mode='r'):
         ''' grab a connection to the class db that will be used for
@@ -69,7 +69,7 @@ class Database(hyperdb.Database):
         if os.path.exists(path):
             return bsddb3.btopen(path, mode)
         else:
-            return bsddb3.btopen(path, 'n')
+            return bsddb3.btopen(path, 'c')
 
     #
     # Nodes
@@ -202,6 +202,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.3  2001/07/30 02:36:23  richard
+#Handle non-existence of db files in the other backends (code from anydbm).
+#
 #Revision 1.2  2001/07/30 01:41:36  richard
 #Makes schema changes mucho easier.
 #
