@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.91 2003-09-04 00:47:01 richard Exp $ 
+# $Id: test_db.py,v 1.92 2003-10-07 08:52:12 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -65,12 +65,23 @@ class config:
     ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
     MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
     EMAIL_SIGNATURE_POSITION = 'bottom'
+
     # Mysql connection data
     MYSQL_DBHOST = 'localhost'
     MYSQL_DBUSER = 'rounduptest'
     MYSQL_DBPASSWORD = 'rounduptest'
     MYSQL_DBNAME = 'rounduptest'
     MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
+
+    # Postgresql connection data
+    POSTGRESQL_DBHOST = 'localhost'
+    POSTGRESQL_DBUSER = 'rounduptest'
+    POSTGRESQL_DBPASSWORD = 'rounduptest'
+    POSTGRESQL_DBNAME = 'rounduptest'
+    POSTGRESQL_PORT = 5432
+    POSTGRESQL_DATABASE = {'host': POSTGRESQL_DBHOST, 'port': POSTGRESQL_PORT,
+        'user': POSTGRESQL_DBUSER, 'password': POSTGRESQL_DBPASSWORD,
+        'database': POSTGRESQL_DBNAME}
 
 class nodbconfig(config):
     MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)
@@ -842,6 +853,37 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         self.db.close()
         mysql.Database.nuke(config)
 
+class postgresqlDBTestCase(anydbmDBTestCase):
+    def setUp(self):
+        from roundup.backends import postgresql
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        # open database for testing
+        self.db = postgresql.Database(config, 'admin')       
+        setupSchema(self.db, 1, mysql)
+         
+    def tearDown(self):
+        from roundup.backends import postgresql
+        self.db.close()
+        postgresql.Database.nuke(config)
+
+class postgresqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import postgresql
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = postgresql.Database(config)
+        setupSchema(self.db, 0, mysql)
+
+    def tearDown(self):
+        from roundup.backends import postgresql
+        self.db.close()
+        postgresql.Database.nuke(config)
+
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import sqlite
@@ -940,13 +982,14 @@ def suite():
     p = []
 
     l = [
-         unittest.makeSuite(anydbmDBTestCase, 'test'),
-         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
+    #     unittest.makeSuite(anydbmDBTestCase, 'test'),
+    #     unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
     p.append('anydbm')
 #    return unittest.TestSuite(l)
 
     from roundup import backends
+
     if hasattr(backends, 'mysql'):
         from roundup.backends import mysql
         try:
@@ -969,6 +1012,30 @@ def suite():
             p.append('mysql')
             l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
             l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+#    return unittest.TestSuite(l)
+
+    if hasattr(backends, 'postgresql'):
+        from roundup.backends import postgresql
+        try:
+            # Check if we can run mysql tests
+            import psycopg
+            db = psycopg.Database(nodbconfig, 'admin')
+            db.conn.select_db(config.POSTGRESQL_DBNAME)
+            db.sql("SHOW TABLES");
+            tables = db.sql_fetchall()
+            if tables:
+                # Database should be empty. We don't dare to delete any data
+                raise DatabaseError, "(Database %s contains tables)"%config.POSTGRESQL_DBNAME
+            db.sql("DROP DATABASE %s" % config.POSTGRESQL_DBNAME)
+            db.sql("CREATE DATABASE %s" % config.POSTGRESQL_DBNAME)
+            db.close()
+        except (MySQLdb.ProgrammingError, DatabaseError), msg:
+            print "Warning! Postgresql tests will not be performed", msg
+            print "See doc/postgresql.txt for more details."
+        else:
+            p.append('postgresql')
+            l.append(unittest.makeSuite(postgresqlDBTestCase, 'test'))
+            l.append(unittest.makeSuite(postgresqlReadOnlyDBTestCase, 'test'))
     #return unittest.TestSuite(l)
 
     if hasattr(backends, 'sqlite'):

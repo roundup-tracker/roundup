@@ -4,6 +4,10 @@ are given with the most recent entry first.
 200?-??-?? 0.7.0
 Feature:
 - support confirming registration by replying to the email (sf bug 763668)
+- support setgid and running on port < 1024 (sf patch 777528)
+
+Fixed:
+- mysql documentation fixed to note requirement of 4.0+ and InnoDB
 
 
 2003-10-?? 0.6.3

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.58 $
+:Version: $Revision: 1.59 $
 
 .. contents::
 
@@ -244,8 +244,9 @@ There's several to choose from, each with benefits and limitations:
 **mysql**
   Backend for popular RDBMS MySQL. According to benchmarks, this backend works
   much faster than any of \*dbm ones, but slightly slower than metakit and
-  sqlite. A good scalability is not a property of this backend for now,
-  though. For more info on backend installation see doc/mysql.txt. 
+  sqlite. Scalability is unknown at present. Roundup requires InnoDB or BDB
+  support in MySQL. For more info on requirements and installation see
+  `additional mysql documentation`_ (doc/mysql.txt)
 **metakit**
   This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.
@@ -584,4 +585,5 @@ Next: `User Guide`_
 .. _`maintenance documentation`: maintenance.html
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _metakit: http://www.equi4.com/metakit/
+.. _`additional mysql documentation`: doc/mysql.html
 
