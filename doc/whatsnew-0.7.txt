@@ -34,7 +34,7 @@ you're not sure whether you have support, run::
 
   python run_tests.py
 
-and if you see a line saynig "Including XXXX tests" where XXXX is the
+and if you see a line saying "Including XXXX tests" where XXXX is the
 backend you wish to try, then you're on your way. The mysql and postgresql
 require their test environments to be set up. Read their respective
 documents in the "doc" directory to do that.
@@ -83,7 +83,7 @@ highly recommended, as the effort is minimal.
                       url=String(),       private_for=Link('user'))
 
    That is, add the "private_for" property, and remove the line that says
-   ``query.setkey("name")``. The latter is the most important edit here.
+   ``query.setkey("name")``.
 
 2. You will also need to copy the ``query.edit.html`` template page from the
    ``templates/classic/html/`` directory of the source to your tracker's
@@ -152,10 +152,10 @@ Added CSV export action
 A new action has been added which exports the current index page or search
 result as a comma-separated-value (CSV) file.
 
-To use it, add this to your "index" templates:
+To use it, add this to your "index" templates::
 
-<a tal:attributes="href python:request.indexargs_url('issue',
-            {'@action':'csv_export'})">Download as CSV</a>
+  <a tal:attributes="href python:request.indexargs_url('issue',
+      {'@action':'export_csv'})">Download as CSV</a>
 
 Making sure that the ``'issue'`` part matches the class name of the page
 you're editing.
