@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.50 2003-03-26 05:28:32 richard Exp $
+# $Id: rdbms_common.py,v 1.51 2003-03-26 05:29:06 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1781,7 +1781,6 @@ class Class(hyperdb.Class):
         where = []
         args = []
         a = self.db.arg
-        print filterspec
         for k, v in filterspec.items():
             propclass = props[k]
             # now do other where clause stuff
@@ -1931,7 +1930,6 @@ class Class(hyperdb.Class):
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
         self.db.cursor.execute(sql, args)
         l = self.db.cursor.fetchall()
-        print sql, l
 
         # return the IDs (the first column)
         # XXX The filter(None, l) bit is sqlite-specific... if there's _NO_
