@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.82 2001-12-15 19:24:39 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.83 2001-12-15 23:51:01 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -324,6 +324,8 @@ class Client:
                         ', '.join(changed.keys())}
                 elif self.form.has_key('__note') and self.form['__note'].value:
                     message = _('note added')
+                elif self.form.has_key('__file'):
+                    message = _('file added')
                 else:
                     message = _('nothing changed')
             except:
@@ -348,75 +350,34 @@ class Client:
     showissue = shownode
     showmsg = shownode
 
-    def showuser(self, message=None):
-        '''Display a user page for editing. Make sure the user is allowed
-            to edit this node, and also check for password changes.
+    def _changenode(self, props):
+        ''' change the node based on the contents of the form
         '''
-        if self.user == 'anonymous':
-            raise Unauthorised
-
-        user = self.db.user
-
-        # get the username of the node being edited
-        node_user = user.get(self.nodeid, 'username')
-
-        if self.user not in ('admin', node_user):
-            raise Unauthorised
-
-        #
-        # perform any editing
-        #
-        keys = self.form.keys()
-        num_re = re.compile('^\d+$')
-        if keys:
-            try:
-                props, changed = parsePropsFromForm(self.db, user, self.form,
-                    self.nodeid)
-                set_cookie = 0
-                if self.nodeid == self.getuid() and changed.has_key('password'):
-                    password = self.form['password'].value.strip()
-                    if password:
-                        set_cookie = password
-                    else:
-                        # no password was supplied - don't change it
-                        del props['password']
-                        del changed['password']
-                user.set(self.nodeid, **props)
-                # and some feedback for the user
-                message = _('%(changes)s edited ok')%{'changes':
-                    ', '.join(changed.keys())}
-            except:
-                self.db.rollback()
-                s = StringIO.StringIO()
-                traceback.print_exc(None, s)
-                message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
+        cl = self.db.classes[self.classname]
+        # set status to chatting if 'unread' or 'resolved'
+        try:
+            # determine the id of 'unread','resolved' and 'chatting'
+            unread_id = self.db.status.lookup('unread')
+            resolved_id = self.db.status.lookup('resolved')
+            chatting_id = self.db.status.lookup('chatting')
+        except KeyError:
+            pass
         else:
-            set_cookie = 0
-
-        # fix the cookie if the password has changed
-        if set_cookie:
-            self.set_cookie(self.user, set_cookie)
-
-        #
-        # now the display
-        #
-        self.pagehead(_('User: %(user)s')%{'user': node_user}, message)
-
-        # use the template to display the item
-        item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 'user')
-        item.render(self.nodeid)
-        self.pagefoot()
-
-    def showfile(self):
-        ''' display a file
-        '''
-        nodeid = self.nodeid
-        cl = self.db.file
-        mime_type = cl.get(nodeid, 'type')
-        if mime_type == 'message/rfc822':
-            mime_type = 'text/plain'
-        self.header(headers={'Content-Type': mime_type})
-        self.write(cl.get(nodeid, 'content'))
+            if (props['status'] == unread_id or props['status'] == resolved_id):
+                props['status'] = chatting_id
+        # add assignedto to the nosy list
+        if props.has_key('assignedto'):
+            assignedto_id = props['assignedto']
+            if assignedto_id not in props['nosy']:
+                props['nosy'].append(assignedto_id)
+        # create the message
+        message, files = self._handle_message()
+        if message:
+            props['messages'] = cl.get(self.nodeid, 'messages') + [message]
+        if files:
+            props['files'] = cl.get(self.nodeid, 'files') + files
+        # make the changes
+        cl.set(self.nodeid, **props)
 
     def _createnode(self):
         ''' create a node based on the contents of the form
@@ -436,47 +397,22 @@ class Client:
         # add assignedto to the nosy list
         if props.has_key('assignedto'):
             assignedto_id = props['assignedto']
-            if props.has_key('nosy') and not assignedto_id in props['nosy']:
+            if props.has_key('nosy') and assignedto_id not in props['nosy']:
                 props['nosy'].append(assignedto_id)
             else:
                 props['nosy'] = [assignedto_id]
-        # check for messages
-        message = self._handle_message()
+        # check for messages and files
+        message, files = self._handle_message()
         if message:
             props['messages'] = [message]
+        if files:
+            props['files'] = files
         # create the node and return it's id
         return cl.create(**props)
 
-    def _changenode(self, props):
-        ''' change the node based on the contents of the form
-        '''
-        cl = self.db.classes[self.classname]
-        # set status to chatting if 'unread' or 'resolved'
-        try:
-            # determine the id of 'unread','resolved' and 'chatting'
-            unread_id = self.db.status.lookup('unread')
-            resolved_id = self.db.status.lookup('resolved')
-            chatting_id = self.db.status.lookup('chatting')
-        except KeyError:
-            pass
-        else:
-            if (props['status'] == unread_id or props['status'] == resolved_id):
-                props['status'] = chatting_id
-        # add assignedto to the nosy list
-        if props.has_key('assignedto'):
-            assignedto_id = props['assignedto']
-            if not assignedto_id in props['nosy']:
-                props['nosy'].append(assignedto_id)
-        # create the message
-        message = self._handle_message()
-        if message:
-            props['messages'] = cl.get(self.nodeid, 'messages') + [message]
-        # make the changes
-        cl.set(self.nodeid, **props)
-
     def _handle_message(self):
-        ''' generate and edit message '''
-
+        ''' generate and edit message
+        '''
         # handle file attachments 
         files = []
         if self.form.has_key('__file'):
@@ -494,16 +430,18 @@ class Client:
         cl = self.db.classes[self.classname]
         props = cl.getprops()
         note = None
+        # in a nutshell, don't do anything if there's no note or there's no
+        # nosy
         if self.form.has_key('__note'):
             note = self.form['__note'].value
         if not props.has_key('messages'):
-            return
+            return None, files
         if not isinstance(props['messages'], hyperdb.Multilink):
-            return
+            return None, files
         if not props['messages'].classname == 'msg':
-            return
+            return None, files
         if not (self.form.has_key('nosy') or note):
-            return
+            return None, files
 
         # handle the note
         if note:
@@ -512,22 +450,32 @@ class Client:
             else:
                 summary = note
             m = ['%s\n'%note]
-        else:
-            summary = _('This %(classname)s has been edited through'
-                ' the web.\n')%{'classname': cn}
-            m = [summary]
+        elif not files:
+            # don't generate a useless message
+            return None, files
 
-        # now create the message
+        # now create the message, attaching the files
         content = '\n'.join(m)
         message_id = self.db.msg.create(author=self.getuid(),
             recipients=[], date=date.Date('.'), summary=summary,
             content=content, files=files)
 
         # update the messages property
-        return message_id
+        return message_id, files
 
     def _post_editnode(self, nid):
-        ''' do the linking part of the node creation
+        '''Do the linking part of the node creation.
+
+           If a form element has :link or :multilink appended to it, its
+           value specifies a node designator and the property on that node
+           to add _this_ node to as a link or multilink.
+
+           This is typically used on, eg. the file upload page to indicated
+           which issue to link the file to.
+
+           TODO: I suspect that this and newfile will go away now that
+           there's the ability to upload a file using the issue __file form
+           element!
         '''
         cn = self.classname
         cl = self.db.classes[cn]
@@ -603,7 +551,39 @@ class Client:
 
         self.pagefoot()
     newissue = newnode
-    newuser = newnode
+
+    def newuser(self, message=None):
+        ''' Add a new user to the database.
+
+            Don't do any of the message or file handling, just create the node.
+        '''
+        cn = self.classname
+        cl = self.db.classes[cn]
+
+        # possibly perform a create
+        keys = self.form.keys()
+        if [i for i in keys if i[0] != ':']:
+            try:
+                props, dummy = parsePropsFromForm(self.db, cl, self.form)
+                nid = cl.create(**props)
+                # handle linked nodes 
+                self._post_editnode(nid)
+                # and some nice feedback for the user
+                message = _('%(classname)s created ok')%{'classname': cn}
+            except:
+                self.db.rollback()
+                s = StringIO.StringIO()
+                traceback.print_exc(None, s)
+                message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
+        self.pagehead(_('New %(classname)s')%{'classname':
+             self.classname.capitalize()}, message)
+
+        # call the template
+        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+            self.classname)
+        newitem.render(self.form)
+
+        self.pagefoot()
 
     def newfile(self, message=None):
         ''' Add a new file to the database.
@@ -641,6 +621,76 @@ class Client:
             self.classname)
         newitem.render(self.form)
         self.pagefoot()
+
+    def showuser(self, message=None):
+        '''Display a user page for editing. Make sure the user is allowed
+            to edit this node, and also check for password changes.
+        '''
+        if self.user == 'anonymous':
+            raise Unauthorised
+
+        user = self.db.user
+
+        # get the username of the node being edited
+        node_user = user.get(self.nodeid, 'username')
+
+        if self.user not in ('admin', node_user):
+            raise Unauthorised
+
+        #
+        # perform any editing
+        #
+        keys = self.form.keys()
+        num_re = re.compile('^\d+$')
+        if keys:
+            try:
+                props, changed = parsePropsFromForm(self.db, user, self.form,
+                    self.nodeid)
+                set_cookie = 0
+                if self.nodeid == self.getuid() and changed.has_key('password'):
+                    password = self.form['password'].value.strip()
+                    if password:
+                        set_cookie = password
+                    else:
+                        # no password was supplied - don't change it
+                        del props['password']
+                        del changed['password']
+                user.set(self.nodeid, **props)
+                # and some feedback for the user
+                message = _('%(changes)s edited ok')%{'changes':
+                    ', '.join(changed.keys())}
+            except:
+                self.db.rollback()
+                s = StringIO.StringIO()
+                traceback.print_exc(None, s)
+                message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
+        else:
+            set_cookie = 0
+
+        # fix the cookie if the password has changed
+        if set_cookie:
+            self.set_cookie(self.user, set_cookie)
+
+        #
+        # now the display
+        #
+        self.pagehead(_('User: %(user)s')%{'user': node_user}, message)
+
+        # use the template to display the item
+        item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 'user')
+        item.render(self.nodeid)
+        self.pagefoot()
+
+    def showfile(self):
+        ''' display a file
+        '''
+        nodeid = self.nodeid
+        cl = self.db.file
+        mime_type = cl.get(nodeid, 'type')
+        if mime_type == 'message/rfc822':
+            mime_type = 'text/plain'
+        self.header(headers={'Content-Type': mime_type})
+        self.write(cl.get(nodeid, 'content'))
 
     def classes(self, message=None):
         ''' display a list of all the classes in the database
@@ -1100,6 +1150,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.82  2001/12/15 19:24:39  rochecompaan
+#  . Modified cgi interface to change properties only once all changes are
+#    collected, files created and messages generated.
+#  . Moved generation of change note to nosyreactors.
+#  . We now check for changes to "assignedto" to ensure it's added to the
+#    nosy list.
+#
 # Revision 1.81  2001/12/12 23:55:00  richard
 # Fixed some problems with user editing
 #
