@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_mysql.py,v 1.9 2004-03-24 06:18:59 richard Exp $ 
+#
+# $Id: test_mysql.py,v 1.9.2.1 2004-10-01 09:04:13 a1s Exp $
 
 import unittest, os, shutil, time, imp
 
@@ -94,12 +94,12 @@ def test_suite():
         return suite
 
     from roundup.backends import mysql
+    import MySQLdb
     try:
-        # Check if we can run mysql tests
-        import MySQLdb
-        db = mysql.Database(config, 'admin')
-        db.close()
-    except (MySQLdb.ProgrammingError, DatabaseError), msg:
+        # Check if we can connect to the server.
+        # use db_exists() to make a connection, ignore it's return value
+        mysql.db_exists(config)
+    except (MySQLdb.MySQLError, DatabaseError), msg:
         print "Skipping mysql tests (%s)"%msg
     else:
         print 'Including mysql tests'
@@ -114,3 +114,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
+# vim: set et sts=4 sw=4 :
