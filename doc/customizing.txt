@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.148 $
+:Version: $Revision: 1.149 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1679,8 +1679,18 @@ properties  return a `hyperdb property wrapper`_ for all of this class's
 list        lists all of the active (not retired) items in the class.
 csv         return the items of this class as a chunk of CSV text.
 propnames   lists the names of the properties of this class.
-filter      lists of items from this class, filtered and sorted by the
-            current *request* filterspec/filter/sort/group args
+filter      lists of items from this class, filtered and sorted. Two
+            options are avaible for sorting:
+
+            1. by the current *request* filterspec/filter/sort/group args
+            2. by the "filterspec", "sort" and "group" keyword args.
+               "filterspec" is ``{propname: value(s)}``. "sort" and
+               "group" are ``(dir, prop)`` where dir is '+', '-' or None
+               and prop is a prop name or None.
+
+            eg. ``issue.filter(filterspec={"priority": "1"},
+            sort=('activity', '+'))``
+
 classhelp   display a link to a javascript popup containing this class'
             "help" template.
 submit      generate a submit button (and action hidden element)

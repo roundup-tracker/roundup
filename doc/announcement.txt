@@ -1,24 +1,12 @@
-I'm proud to release this 7th major feature release of Roundup.
+I'm proud to release this 8th major feature release of Roundup.
 
-Version 0.7 introduces far too many features to list here so I've put
+Version 0.8 introduces far too many features to list here so I've put
 together a What's New page:
 
-  http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
+  http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
 
 Some highlights:
 
-- added postgresql backend
-- trackers using postgresql or mysql backends may have many users
-- new "actor" automatic property (user who caused the last "activity")
-- RDBMS backends have data typed columns and indexes on several columns
-- registration may be concluded by replying to the confirmation email
-- HTML templating permission checks are greatly simplified
-- database exports now include full journals
-- IMAP support in the mail gateway
-
-Known issues:
-
-- the metakit import feature currently has a bug and should not be used
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
