@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.153 2002-07-31 22:40:50 gmcm Exp $
+# $Id: cgi_client.py,v 1.154 2002-07-31 23:57:36 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1631,8 +1631,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             value = form[key].value.strip()
             # see if it's the "no selection" choice
             if value == '-1':
-                # don't set this property
-                continue
+                value = None
             else:
                 # handle key values
                 link = cl.properties[key].classname
@@ -1691,6 +1690,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.153  2002/07/31 22:40:50  gmcm
+# Fixes to the search form and saving queries.
+# Fixes to  sorting in back_metakit.py.
+#
 # Revision 1.152  2002/07/31 22:04:14  richard
 # cleanup
 #

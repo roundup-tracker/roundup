@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.56 2002-07-31 22:04:33 richard Exp $
+#$Id: back_anydbm.py,v 1.57 2002-07-31 23:57:36 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -998,21 +998,23 @@ class Class(hyperdb.Class):
 
             # do stuff based on the prop type
             if isinstance(prop, Link):
-                link_class = self.properties[propname].classname
+                link_class = prop.classname
                 # if it isn't a number, it's a key
-                if type(value) != type(''):
-                    raise ValueError, 'link value must be String'
-                if not num_re.match(value):
+                if value is not None and not isinstance(value, type('')):
+                    raise ValueError, 'property "%s" link value be a string'%(
+                        propname)
+                if isinstance(value, type('')) and not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
                         raise IndexError, 'new property "%s": %s not a %s'%(
-                            propname, value, self.properties[propname].classname)
+                            propname, value, prop.classname)
 
-                if not self.db.getclass(link_class).hasnode(value):
+                if (value is not None and
+                        not self.db.getclass(link_class).hasnode(value)):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
-                if self.do_journal and self.properties[propname].do_journal:
+                if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if node[propname] is not None:
                         self.db.addjournal(link_class, node[propname], 'unlink',
@@ -1791,6 +1793,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.56  2002/07/31 22:04:33  richard
+#cleanup
+#
 #Revision 1.55  2002/07/30 08:22:38  richard
 #Session storage in the hyperdb was horribly, horribly inefficient. We use
 #a simple anydbm wrapper now - which could be overridden by the metakit

@@ -9,8 +9,10 @@ Fixed:
  . #571170 ] gdbm deadlock
  . #576241 ] MultiLink problems in parsePropsFromForm
  . fixed the date module so that Date(". - 2d") works
+ . web forms may now unset Link values (like assignedto)
 
 Feature:
+TODO: roll stuff in from the TODO to here
  . added capability to save queries:
    - a query Class with name, klass (to search) and url (query string) properties
    - a Multilink to query on user called queries

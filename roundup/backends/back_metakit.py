@@ -324,9 +324,11 @@ class Class:
             # do stuff based on the prop type
             if isinstance(prop, hyperdb.Link):
                 link_class = prop.classname
+                # must be a string or None
+                if value is not None and not isinstance(value, type('')):
+                    raise ValueError, 'property "%s" link value be a string'%(
+                        propname)
                 # if it isn't a number, it's a key
-                if type(value) != _STRINGTYPE:
-                    raise ValueError, 'link value must be String'
                 try:
                     int(value)
                 except ValueError:
@@ -336,7 +338,8 @@ class Class:
                         raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, prop.classname)
 
-                if not self.db.getclass(link_class).hasnode(value):
+                if (value is not None and
+                        not self.db.getclass(link_class).hasnode(value)):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
                 setattr(row, key, int(value))
@@ -345,11 +348,13 @@ class Class:
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if oldvalue:
-                        self.db.addjournal(link_class, value, _UNLINK, (self.classname, str(row.id), key))
+                        self.db.addjournal(link_class, value, _UNLINK,
+                            (self.classname, str(row.id), key))
 
                     # register the link with the newly linked node
                     if value:
-                        self.db.addjournal(link_class, value, _LINK, (self.classname, str(row.id), key))
+                        self.db.addjournal(link_class, value, _LINK,
+                            (self.classname, str(row.id), key))
 
             elif isinstance(prop, hyperdb.Multilink):
                 if type(value) != _LISTTYPE:

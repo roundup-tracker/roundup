@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.38 2002-07-26 08:27:00 richard Exp $ 
+# $Id: test_db.py,v 1.39 2002-07-31 23:57:37 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -90,12 +90,16 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
         self.db.commit()
         self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
+        self.db.issue.set('1', title=None)
+        self.assertEqual(self.db.issue.get('1', "title"), None)
 
     def testLinkChange(self):
         self.db.issue.create(title="spam", status='1')
         self.assertEqual(self.db.issue.get('1', "status"), '1')
         self.db.issue.set('1', status='2')
         self.assertEqual(self.db.issue.get('1', "status"), '2')
+        self.db.issue.set('1', status=None)
+        self.assertEqual(self.db.issue.get('1', "status"), None)
 
     def testDateChange(self):
         self.db.issue.create(title="spam", status='1')
@@ -106,12 +110,16 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(a, b)
         self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
         self.db.issue.set('1', deadline=date.Date())
+        self.db.issue.set('1', deadline=None)
+        self.assertEqual(self.db.issue.get('1', "deadline"), None)
 
     def testIntervalChange(self):
         self.db.issue.create(title="spam", status='1')
         a = self.db.issue.get('1', "foo")
         self.db.issue.set('1', foo=date.Interval('-1d'))
         self.assertNotEqual(self.db.issue.get('1', "foo"), a)
+        self.db.issue.set('1', foo=None)
+        self.assertEqual(self.db.issue.get('1', "foo"), None)
 
     def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
@@ -121,6 +129,8 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(self.db.user.get(userid, 'assignable'), a)
         self.db.user.set(userid, assignable=0)
         self.db.user.set(userid, assignable=1)
+        self.db.user.set('1', assignable=None)
+        self.assertEqual(self.db.user.get('1', "assignable"), None)
 
     def testNumberChange(self):
         self.db.user.create(username='foo', age='1')
@@ -128,6 +138,8 @@ class anydbmDBTestCase(MyTestCase):
         self.db.user.set('1', age='3')
         self.assertNotEqual(self.db.user.get('1', 'age'), a)
         self.db.user.set('1', age='1.0')
+        self.db.user.set('1', age=None)
+        self.assertEqual(self.db.user.get('1', "age"), None)
 
     def testNewProperty(self):
         self.db.issue.create(title="spam", status='1')
@@ -576,7 +588,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-#    return unittest.TestSuite(l)
+    #return unittest.TestSuite(l)
 
     try:
         import bsddb
@@ -603,6 +615,11 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2002/07/26 08:27:00  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.37  2002/07/25 07:14:06  richard
 # Bugger it. Here's the current shape of the new security implementation.
 # Still to do:

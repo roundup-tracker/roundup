@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.12 2002-05-29 01:16:17 richard Exp $
+#$Id: nosyreaction.py,v 1.13 2002-07-31 23:57:37 richard Exp $
 
 from roundup import roundupdb, hyperdb
 
@@ -88,7 +88,7 @@ def updatenosy(db, cl, nodeid, newvalues):
                 current[value] = 1
 
     # add assignedto(s) to the nosy list
-    if newvalues.has_key('assignedto'):
+    if newvalues.has_key('assignedto') and newvalues['assignedto'] is not None:
         propdef = cl.getprops()
         if isinstance(propdef['assignedto'], hyperdb.Link):
             assignedto_ids = [newvalues['assignedto']]
@@ -141,6 +141,18 @@ def init(db):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.12  2002/05/29 01:16:17  richard
+#Sorry about this huge checkin! It's fixing a lot of related stuff in one go
+#though.
+#
+#. #541941 ] changing multilink properties by mail
+#. #526730 ] search for messages capability
+#. #505180 ] split MailGW.handle_Message
+#  - also changed cgi client since it was duplicating the functionality
+#. build htmlbase if tests are run using CVS checkout (removed note from
+#  installation.txt)
+#. don't create an empty message on email issue creation if the email is empty
+#
 #Revision 1.11  2002/01/14 22:21:38  richard
 ##503353 ] setting properties in initial email
 #
