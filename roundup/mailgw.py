@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.52 2002-01-15 00:12:40 richard Exp $
+$Id: mailgw.py,v 1.53 2002-01-16 07:20:54 richard Exp $
 '''
 
 
@@ -88,6 +88,9 @@ class MailGWError(ValueError):
     pass
 
 class MailUsageError(ValueError):
+    pass
+
+class MailUsageHelp(Exception):
     pass
 
 class UnAuthorized(Exception):
@@ -145,6 +148,15 @@ class MailGW:
         if sendto:
             try:
                 return self.handle_message(message)
+            except MailUsageHelp:
+                # bounce the message back to the sender with the usage message
+                fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+                sendto = [sendto[0][1]]
+                m = ['']
+                m.append('\n\nMail Gateway Help\n=================')
+                m.append(fulldoc)
+                m = self.bounce_message(message, sendto, m,
+                    subject="Mail Gateway Help")
             except MailUsageError, value:
                 # bounce the message back to the sender with the usage message
                 fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
@@ -238,7 +250,7 @@ class MailGW:
         # attach the original message to the returned message
         part = writer.nextpart()
         part.addheader('Content-Disposition','attachment')
-        part.addheader('Content-Description','Message that caused the error')
+        part.addheader('Content-Description','Message you sent')
         part.addheader('Content-Transfer-Encoding', '7bit')
         body = part.startbody('message/rfc822')
         body.write(m.getvalue())
@@ -253,6 +265,10 @@ class MailGW:
         '''
         # handle the subject line
         subject = message.getheader('subject', '')
+
+        if subject.strip() == 'help':
+            raise MailUsageHelp
+
         m = subject_re.match(subject)
         if not m:
             raise MailUsageError, '''
@@ -731,6 +747,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2002/01/15 00:12:40  richard
+# #503340 ] creating issue with [asignedto=p.ohly]
+#
 # Revision 1.51  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
