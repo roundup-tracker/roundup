@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.68 2004-05-18 19:46:35 a1s Exp $
+# $Id: setup.py,v 1.69 2004-05-26 10:00:53 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -52,8 +52,75 @@ class build_scripts_create(build_scripts):
 
         The mangling of script names replaces '-' and '/' characters
         with '-' and '.', so that they are valid module paths.
+
+        If the target platform is win32, create .bat files instead of
+        *nix shell scripts.  Target platform is set to "win32" if main
+        command is 'bdist_wininst' or if the command is 'bdist' and
+        it has the list of formats (from command line or config file)
+        and the first item on that list is wininst.  Otherwise
+        target platform is set to current (build) platform.
     """
     package_name = None
+
+    def initialize_options(self):
+        build_scripts.initialize_options(self)
+        self.script_preamble = None
+        self.target_platform = None
+        self.python_executable = None
+
+    def finalize_options(self):
+        build_scripts.finalize_options(self)
+        cmdopt=self.distribution.command_options
+
+        # find the target platform
+        if self.target_platform:
+            # TODO? allow explicit setting from command line
+            target = self.target_platform
+        if "bdist_wininst" in cmdopt:
+            target = "win32"
+        elif "formats" in cmdopt.get("bdist", {}):
+            formats = cmdopt["bdist"]["formats"][1].split(",")
+            if formats[0] == "wininst":
+                target = "win32"
+            else:
+                target = sys.platform
+            if len(formats) > 1:
+                self.warn(
+                    "Scripts are built for %s only (requested formats: %s)"
+                    % (target, ",".join(formats)))
+        else:
+            # default to current platform
+            target = sys.platform
+        self.target_platfom = target
+
+        # for native builds, use current python executable path;
+        # for cross-platform builds, use default executable name
+        if self.python_executable:
+            # TODO? allow command-line option
+            pass
+        if target == sys.platform:
+            self.python_executable = os.path.normpath(sys.executable)
+        else:
+            self.python_executable = "python"
+
+        # for windows builds, add ".bat" extension
+        if target == "win32":
+            # *nix-like scripts may be useful also on win32 (cygwin)
+            # to build both script versions, use:
+            #self.scripts = list(self.scripts) + [script + ".bat"
+            #    for script in self.scripts]
+            self.scripts = [script + ".bat" for script in self.scripts]
+
+        # tweak python path for installations outside main python library
+        if "prefix" in cmdopt.get("install", {}):
+            prefix = cmdopt['install']['prefix'][1]
+            version = '%d.%d'%sys.version_info[:2]
+            self.script_preamble = '''
+import sys
+sys.path.insert(1, "%s/lib/python%s/site-packages")
+'''%(prefix, version)
+        else:
+            self.script_preamble = ''
 
     def copy_scripts(self):
         """ Create each script listed in 'self.scripts'
@@ -78,29 +145,23 @@ class build_scripts_create(build_scripts):
 
             module = os.path.splitext(os.path.basename(script))[0]
             module = string.translate(module, to_module)
-            cmdopt=self.distribution.command_options
-            if (cmdopt.has_key('install') and
-                cmdopt['install'].has_key('prefix')):
-                prefix = cmdopt['install']['prefix'][1]
-                version = '%d.%d'%sys.version_info[:2]
-                prefix = '''
-import sys
-sys.path.insert(1, "%s/lib/python%s/site-packages")
-'''%(prefix, version)
-            else:
-                prefix = ''
             script_vars = {
-                'python': os.path.normpath(sys.executable),
+                'python': self.python_executable,
                 'package': self.package_name,
                 'module': module,
-                'prefix': prefix,
+                'prefix': self.script_preamble,
             }
 
             self.announce("creating %s" % outfile)
             file = open(outfile, 'w')
 
             try:
-                if sys.platform == "win32":
+                # could just check self.target_platform,
+                # but looking at the script extension
+                # makes it possible to build both *nix-like
+                # and windows-like scripts on win32.
+                # may be useful for cygwin.
+                if os.path.splitext(outfile)[1] == ".bat":
                     file.write('@echo off\n'
                         'if NOT "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
                         'if     "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
@@ -125,8 +186,6 @@ def scriptname(path):
     """
     script = os.path.splitext(os.path.basename(path))[0]
     script = string.replace(script, '_', '-')
-    if sys.platform == "win32":
-        script = script + ".bat"
     return script
 
 ### Build Roundup
