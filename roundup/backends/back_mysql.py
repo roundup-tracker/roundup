@@ -337,6 +337,13 @@ class Database(Database):
             # change things 
             self.database_schema['tables'][cn] = klass.schema()
 
+    def fix_version_2_tables(self):
+        # Convert journal date column to TIMESTAMP, params column to TEXT
+        self._convert_journal_tables()
+
+        # Convert all String properties to TEXT
+        self._convert_string_properties()
+
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
 
@@ -353,11 +360,7 @@ class Database(Database):
                 return 1
         return 0
 
-    def save_dbschema(self, schema):
-        s = repr(self.database_schema)
-        self.sql('INSERT INTO schema VALUES (%s)', (s,))
-    
-    def create_class_table(self, spec):
+    def create_class_table(self, spec, create_sequence=True):
         cols, mls = self.determine_columns(spec.properties.items())
 
         # add on our special columns
@@ -391,11 +394,14 @@ class Database(Database):
             self.cursor.execute(index_sql)
 
     def create_journal_table(self, spec):
+        ''' create the journal table for a class given the spec and 
+            already-determined cols
+        '''
         # journal table
         cols = ','.join(['%s varchar'%x
             for x in 'nodeid date tag action params'.split()])
         sql = '''create table %s__journal (
-            nodeid integer, date timestamp, tag varchar(255),
+            nodeid integer, date datetime, tag varchar(255),
             action varchar(255), params text) type=%s'''%(
             spec.classname, self.mysql_backend)
         if __debug__:

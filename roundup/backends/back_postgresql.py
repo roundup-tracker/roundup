@@ -122,12 +122,12 @@ class Database(rdbms_common.Database):
     def create_version_2_tables(self):
         # OTK store
         self.cursor.execute('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value VARCHAR(255), otk_time FLOAT(20))''')
+            otk_value VARCHAR(255), otk_time REAL)''')
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.cursor.execute('''CREATE TABLE sessions (
-            session_key VARCHAR(255), session_time FLOAT(20),
+            session_key VARCHAR(255), session_time REAL,
             session_value VARCHAR(255))''')
         self.cursor.execute('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
@@ -140,6 +140,24 @@ class Database(rdbms_common.Database):
         self.cursor.execute('''CREATE TABLE __words (_word VARCHAR(30), 
             _textid integer)''')
         self.cursor.execute('CREATE INDEX words_word_idx ON __words(_word)')
+
+    def fix_version_2_tables(self):
+        # Convert journal date column to TIMESTAMP, params column to TEXT
+        self._convert_journal_tables()
+
+        # Convert all String properties to TEXT
+        self._convert_string_properties()
+
+        # convert session / OTK *_time columns to REAL
+        c = self.cursor
+        for name in ('otk', 'session'):
+            c.execute('drop index %ss_key_idx'%name)
+            c.execute('drop table %ss'%name)
+            c.execute('''CREATE TABLE %ss (%s_key VARCHAR(255),
+                %s_value VARCHAR(255), %s_time REAL)'''%(name, name, name,
+                name))
+            c.execute('CREATE INDEX %ss_key_idx ON %ss(%s_key)'%(name, name,
+                name))
 
     def add_actor_column(self):
         # update existing tables to have the new actor column
@@ -162,11 +180,12 @@ class Database(rdbms_common.Database):
         self.cursor.execute(sql, (table_name, index_name))
         return self.cursor.fetchone()[0]
 
-    def create_class_table(self, spec):
-        sql = 'CREATE SEQUENCE _%s_ids'%spec.classname
-        if __debug__:
-            print >>hyperdb.DEBUG, 'create_class_table', (self, sql)
-        self.cursor.execute(sql)
+    def create_class_table(self, spec, create_sequence=True):
+        if create_sequence:
+            sql = 'CREATE SEQUENCE _%s_ids'%spec.classname
+            if __debug__:
+                print >>hyperdb.DEBUG, 'create_class_table', (self, sql)
+            self.cursor.execute(sql)
 
         return rdbms_common.Database.create_class_table(self, spec)
 
@@ -180,25 +199,6 @@ class Database(rdbms_common.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'drop_class', (self, sql)
         self.cursor.execute(sql)
-
-    def create_journal_table(self, spec):
-        cols = ',' . join(['"%s" VARCHAR(255)'%x
-          for x in 'nodeid date tag action params' . split()])
-        sql  = 'CREATE TABLE "%s__journal" (%s)'%(spec.classname, cols)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'create_journal_table', (self, sql)
-        self.cursor.execute(sql)
-        self.create_journal_table_indexes(spec)
-
-    def create_multilink_table(self, spec, ml):
-        sql = '''CREATE TABLE "%s_%s" (linkid VARCHAR(255),
-            nodeid VARCHAR(255))'''%(spec.classname, ml)
-
-        if __debug__:
-            print >>hyperdb.DEBUG, 'create_class', (self, sql)
-
-        self.cursor.execute(sql)
-        self.create_multilink_table_indexes(spec, ml)
 
     def newid(self, classname):
         sql = "select nextval('_%s_ids') from dual"%classname

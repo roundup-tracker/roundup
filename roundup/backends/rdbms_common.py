@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.104 2004-05-29 01:35:27 richard Exp $
+# $Id: rdbms_common.py,v 1.105 2004-06-09 05:13:14 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -143,10 +143,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         else:
             self.database_schema = {}
 
-    def save_dbschema(self, schema):
+    def save_dbschema(self):
         ''' Save the schema definition that the database currently implements
         '''
         s = repr(self.database_schema)
+        self.sql('delete from schema')
         self.sql('insert into schema values (%s)', (s,))
 
     def post_init(self):
@@ -178,8 +179,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # update the database version of the schema
         if save:
-            self.sql('delete from schema')
-            self.save_dbschema(self.database_schema)
+            self.save_dbschema()
 
         # reindex the db if necessary
         if self.indexer.should_reindex():
@@ -190,7 +190,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     # update this number when we need to make changes to the SQL structure
     # of the backen database
-    current_db_version = 2
+    current_db_version = 3
     def upgrade_db(self):
         ''' Update the SQL database to reflect changes in the backend code.
 
@@ -213,9 +213,65 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # database
             self.create_version_2_tables()
 
+        if version == 2:
+            self.fix_version_2_tables()
+
         self.database_schema['version'] = self.current_db_version
         return 1
 
+    def fix_version_2_tables(self):
+        '''Default (used by sqlite): NOOP'''
+        pass
+
+    def _convert_journal_tables(self):
+        '''Get current journal table contents, drop the table and re-create'''
+        c = self.cursor
+        cols = ','.join('nodeid date tag action params'.split())
+        for klass in self.classes.values():
+            # slurp and drop
+            sql = 'select %s from %s__journal order by date'%(cols,
+                klass.classname)
+            c.execute(sql)
+            contents = c.fetchall()
+            self.drop_journal_table_indexes(klass.classname)
+            c.execute('drop table %s__journal'%klass.classname)
+
+            # re-create and re-populate
+            self.create_journal_table(klass)
+            a = self.arg
+            sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(
+                klass.classname, cols, a, a, a, a, a)
+            for row in contents:
+                # no data conversion needed
+                self.cursor.execute(sql, row)
+
+    def _convert_string_properties(self):
+        '''Get current Class tables that contain String properties, and
+        convert the VARCHAR columns to TEXT'''
+        c = self.cursor
+        for klass in self.classes.values():
+            # slurp and drop
+            cols, mls = self.determine_columns(klass.properties.items())
+            scols = ','.join([i[0] for i in cols])
+            sql = 'select id,%s from _%s'%(scols, klass.classname)
+            c.execute(sql)
+            contents = c.fetchall()
+            self.drop_class_table_indexes(klass.classname, klass.getkey())
+            c.execute('drop table _%s'%klass.classname)
+
+            # re-create and re-populate
+            self.create_class_table(klass, create_sequence=False)
+            a = ','.join([self.arg for i in range(len(cols)+1)])
+            sql = 'insert into _%s (id,%s) values (%s)'%(klass.classname,
+                scols, a)
+            for row in contents:
+                l = []
+                for entry in row:
+                    # mysql will already be a string - psql needs "help"
+                    if entry is not None and not isinstance(entry, type('')):
+                        entry = str(entry)
+                    l.append(entry)
+                self.cursor.execute(sql, l)
 
     def refresh_database(self):
         self.post_init()
@@ -227,7 +283,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.indexer.save_index()
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String : 'VARCHAR(255)',
+        hyperdb.String : 'TEXT',
         hyperdb.Date   : 'TIMESTAMP',
         hyperdb.Link   : 'INTEGER',
         hyperdb.Interval  : 'VARCHAR(255)',
@@ -466,7 +522,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             given by the spec
         '''
         # create the table
-        sql = 'create table %s_%s (linkid varchar, nodeid varchar)'%(
+        sql = 'create table %s_%s (linkid varchar(255), nodeid varchar(255))'%(
             spec.classname, ml)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
