@@ -1,7 +1,8 @@
+==================
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.1 $
+:Version: $Revision: 1.2 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -13,7 +14,7 @@ Getting Started
 ---------------
 
 Anyone wishing to help in the development of Roundup must read `Roundup's
-Design Document`_.
+Design Document`_ and the `implementation notes`_.
 
 All development is coordinated through two resources:
 
@@ -56,3 +57,4 @@ Back to `Table of Contents`_
 .. _`Table of Contents`: index.html
 .. _`Customising Roundup`: customizing.html
 .. _`Roundup's Design Document`: spec.html
+.. _`implementation notes`: implementation.html

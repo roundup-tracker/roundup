@@ -1,7 +1,8 @@
+====================
 Implementation notes
 ====================
 
-:Version: $Revision: 1.2 $
+:Version: $Revision: 1.3 $
 
 [see also the roundup package docstring]
 

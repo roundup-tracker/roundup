@@ -1,7 +1,8 @@
+==========
 User Guide
 ==========
 
-:Version: $Revision: 1.2 $
+:Version: $Revision: 1.3 $
 
 .. contents::
 
