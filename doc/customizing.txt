@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.26 $
+:Version: $Revision: 1.27 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -390,7 +390,26 @@ Sample additional detectors that have been found useful will appear in the
   created. The address is hard-coded into the detector, so edit it before you
   use it (look for the text 'team@team.host') or you'll get email errors!
 
-XXX give the example here.
+  The detector code::
+
+    from roundup import roundupdb
+
+    def newissuecopy(db, cl, nodeid, oldvalues):
+        ''' Copy a message about new issues to a team address.
+        '''
+        # so use all the messages in the create
+        change_note = cl.generateCreateNote(nodeid)
+
+        # send a copy to the nosy list
+        for msgid in cl.get(nodeid, 'messages'):
+            try:
+                # note: last arg must be a list
+                cl.send_message(nodeid, msgid, change_note, ['team@team.host'])
+            except roundupdb.MessageSendError, message:
+                raise roundupdb.DetectorError, message
+
+    def init(db):
+        db.issue.react('create', newissuecopy)
 
 
 Database Content
@@ -407,7 +426,6 @@ case though, so be careful to use the right one.
 **Changing content before tracker initialisation**
     Edit the dbinit module in your tracker to alter the items created in using
     the create() methods.
-
 
 **Changing content after tracker initialisation**
     Use the roundup-admin interface's create, set and retire methods to add,
@@ -606,9 +624,11 @@ Most customisation of the web view can be done by modifying the templates in
 the tracker **html** directory. There are several types of files in there:
 
 page
-  defines the overall look of your tracker. When you
+  This template defines the overall look of your tracker. When you
   view an issue, it appears inside this template. When you view an index, it
-  also appears inside this template.
+  also appears inside this template. It will have a ``tal:content`` or
+  ``tal:replace`` command with the expression ``structure content`` which
+  will show the issue, list of issues or whatever.
 home
   the default page displayed when no other page is indicated by the user
 home.classlist
@@ -627,11 +647,6 @@ user.register
   a special page just for the user class that renders the registration page
 style.css
   a static file that is served up as-is
-
-Overall Look - "page" template
-------------------------------
-
-XXX
 
 How the templates work
 ----------------------
@@ -781,9 +796,27 @@ The following variables are available to templates.
 *db*
   The current database, through which db.config may be reached.
 *nothing*
-  XXX a special variable
+  This is a special variable - if an expression evaluates to this, then the
+  tag (in the case of a tal:replace), its contents (in the case of
+  tal:content) or some attributes (in the case of tal:attributes) will not
+  appear in the the output. So for example::
+
+    <span tal:attributes="class nothing">Hello, World!</span>
+
+  would result in::
+
+    <span>Hello, World!</span>
+
 *default*
-  XXX a special variable
+  Also a special variable - if an expression evaluates to this, then the
+  existing HTML in the template will not be replaced or removed, it will
+  remain. So::
+
+    <span tal:replace="default">Hello, World!</span>
+
+  would result in::
+
+    <span>Hello, World!</span>
 
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
@@ -1080,11 +1113,17 @@ When adding a new Permission, you will need to:
 
 
 
-An example of adding a new field to a roundup schema
-====================================================
+Examples
+========
+
+Adding a new field to a roundup schema
+--------------------------------------
+
+This example shows how to add a new constrained property (ie. a selection of
+distinct values) to your tracker.
 
 Introduction
-------------
+~~~~~~~~~~~~
 
 To make the classic schema of roundup useful as a todo tracking system
 for a group of systems administrators, it needed an extra data field
@@ -1096,7 +1135,7 @@ relying on the spelling capabilities of other sysads (a losing
 proposition at best).
 
 Adding a field to the database
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is the easiest part of the change. The category would just be a plain
 string, nothing fancy. To change what is in the database you need to add
@@ -1127,7 +1166,7 @@ That is all you need to do to change the schema. The rest of the effort is
 fiddling around so you can actually use the new category.
 
 Setting up security on the new objects
---------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default only the admin user can look at and change objects. This doesn't
 suit us, as we want any user to be able to create new categories as
@@ -1178,7 +1217,7 @@ categories, and let users view and edit them. Now on to the interface
 stuff.
 
 Changing the web left hand frame
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We need to give the users the ability to create new categories, and the
 place to put the link to this functionality is in the left hand function
@@ -1217,7 +1256,7 @@ the problem you could change the condition in the classblock statement, so
 that only users with "Edit" permission would see the "Categories" stuff.
 
 Setting up a page to edit categories
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We defined code in the previous section which let users with the
 appropriate permissions see a link to a page which would let them edit
@@ -1309,7 +1348,7 @@ its work. To add another field to "category" would involve one more line
 (well maybe a few extra to get the formatting correct).
 
 Adding the category to the issue
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We now have the ability to create issues to our hearts content, but
 that is pointless unless we can assign categories to issues.  Just like
@@ -1336,7 +1375,7 @@ The classhelp lines generate a link (labelled "list") to a popup window
 which contains the list of currently known categories.
 
 Searching on categories
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 We can add categories, and create issues with categories. The next obvious
 thing that we would like to be would be to search issues based on their
@@ -1384,7 +1423,7 @@ you would put an id in the value, and the descriptive part in the content;
 but for category they are the same.
 
 Adding category to the default view
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can now add categories, add issues with categories, and search issues
 based on categories. This is everything that we need to do, however there
@@ -1421,6 +1460,65 @@ be displayed. If you scroll down the page file, you can see the links with
 lots of options. The option that we are interested in is the ``:columns=`` one
 which tells roundup which fields of the issue to display. Simply add
 "category" to that list and it all should work.
+
+
+Adding in state transition control
+----------------------------------
+
+Sometimes tracker admins want to control the states that users may move issues
+to.
+
+1. add a Multilink property to the status class::
+
+     stat = Class(db, "status", ... , transitions=Multilink('status'), ...)
+
+   and then edit the statuses already created through the web using the
+   generic class list / CSV editor.
+
+2. add an auditor module ``checktransition.py`` in your tracker's
+   ``detectors`` directory::
+
+     def checktransition(db, cl, nodeid, newvalues):
+         ''' Check that the desired transition is valid for the "status"
+             property.
+         '''
+         if not newvalues.has_key('status'):
+             return
+         current = cl.get(nodeid, 'status')
+         new = newvalues['status']
+         if new == current:
+             return
+         ok = db.status.get(current, 'transitions')
+         if new not in ok:
+             raise ValueError, 'Status not allowed to move from "%s" to "%s"'%(
+                 db.status.get(current, 'name'), db.status.get(new, 'name'))
+
+     def init(db):
+         db.issue.audit('set', checktransition)
+
+3. in the ``issue.item`` template, change the status editing bit from::
+
+    <th nowrap>Status</th>
+    <td tal:content="structure context/status/menu">status</td>
+
+   to::
+
+    <th nowrap>Status</th>
+    <td>
+     <select tal:condition="context/id" name="status">
+      <tal:block tal:define="ok context/status/transitions"
+                 tal:repeat="state db/status/list">
+       <option tal:condition="python:state.id in ok"
+               tal:attributes="value state/id;
+                               selected python:state.id == context.status.id"
+               tal:content="state/name"></option>
+      </tal:block>
+     </select>
+     <tal:block tal:condition="not:context/id"
+                tal:replace="structure context/status/menu" />
+    </td>
+
+   which displays only the allowed status to transition to.
 
 
 -------------------
