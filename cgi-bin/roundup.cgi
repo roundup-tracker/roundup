@@ -16,12 +16,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.37 2003-11-03 23:37:06 richard Exp $
+# $Id: roundup.cgi,v 1.38 2004-06-29 05:51:38 richard Exp $
+
+import sys
+sys.path.insert(0, '/home/richard/src/roundup/roundup/')
 
 # python version check
 from roundup import version_check
 from roundup.i18n import _
-import sys
 
 #
 ##  Configuration
