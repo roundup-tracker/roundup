@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.103 2002-12-27 23:54:05 richard Exp $
+$Id: mailgw.py,v 1.104 2003-01-06 21:28:38 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -390,7 +390,7 @@ class MailGW:
         # handle the subject line
         subject = message.getheader('subject', '')
 
-        if subject.strip() == 'help':
+        if subject.strip().lower() == 'help':
             raise MailUsageHelp
 
         m = subject_re.match(subject)
