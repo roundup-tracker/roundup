@@ -98,7 +98,7 @@ class Security:
         roles = self.db.user.get(userid, 'roles')
         if roles is None:
             return 0
-        for rolename in [x.lower() for x in roles.split(',')]:
+        for rolename in [x.lower().strip() for x in roles.split(',')]:
             if not rolename or not self.role.has_key(rolename):
                 continue
             # for each of the user's Roles, check the permissions
