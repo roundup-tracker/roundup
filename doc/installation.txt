@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.69 $
+:Version: $Revision: 1.70 $
 
 .. contents::
 
@@ -507,11 +507,13 @@ multiple trackers, which involve additional URLs, user databases, email
 addresses, databases to back up, etc.
 
 1. Do you want a tracker per product you sell/support? You can just add
-   a new property to your issues called Product, and filter by that.
+   a new property to your issues called Product, and filter by that. See
+   the customisation example `adding a new field to the classic schema`_.
 2. Do you want to track internal software development issues and customer
    support issues separately? You can just set up an additiona "issue"
    class called "cust_issues" in the same tracker, mimicing the normal
-   "issue" class, but with different properties.
+   "issue" class, but with different properties. See the customisation
+   example `tracking different types of issues`_.
 
 
 Platform-Specific Notes
@@ -611,6 +613,10 @@ Next: `User Guide`_
 .. _`roundup specification`: spec.html
 .. _`tracker configuration`: customizing.html#tracker-configuration
 .. _`customisation documentation`: customizing.html
+.. _`Adding a new field to the classic schema`:
+   customizing.html#adding-a-new-field-to-the-classic-schema
+.. _`Tracking different types of issues`:
+   customizing.html#tracking-different-types-of-issues
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`administration guide`: admin_guide.html
