@@ -15,11 +15,19 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.36 2001-10-28 22:51:38 richard Exp $
+# $Id: htmltemplate.py,v 1.37 2001-10-31 06:24:35 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
 import hyperdb, date, password
+
+# This imports the StructureText functionality for the do_stext function
+# get it from http://dev.zope.org/Members/jim/StructuredTextWiki/NGReleases
+try:
+    from StructuredText.StructuredText import HTML as StructuredText
+except ImportError:
+    StructuredText = None
+
 
 class TemplateFunctions:
     def __init__(self):
@@ -73,6 +81,15 @@ class TemplateFunctions:
         if escape:
             return cgi.escape(value)
         return value
+
+    def do_stext(self, property, escape=0):
+        '''Render as structured text using the StructuredText module
+           (see above for details)
+        '''
+        s = self.do_plain(property, escape=escape)
+        if not StructuredText:
+            return s
+        return StructuredText(s,level=1,header=0)
 
     def do_field(self, property, size=None, height=None, showid=0):
         ''' display a property like the plain displayer, but in a text field
@@ -827,6 +844,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2001/10/28 22:51:38  richard
+# Fixed ENOENT/WindowsError thing, thanks Juergen Hermann
+#
 # Revision 1.35  2001/10/24 00:04:41  richard
 # Removed the "infinite authentication loop", thanks Roch'e
 #
