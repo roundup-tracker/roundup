@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.73 2004-10-31 08:56:39 a1s Exp $
+# $Id: setup.py,v 1.74 2004-11-10 22:27:39 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -114,7 +114,7 @@ class build_scripts_create(build_scripts):
 
         # tweak python path for installations outside main python library
         if cmdopt.get("install", {}).has_key("prefix"):
-            prefix = cmdopt['install']['prefix'][1]
+            prefix = os.path.expanduser(cmdopt['install']['prefix'][1])
             version = '%d.%d'%sys.version_info[:2]
             self.script_preamble = '''
 import sys
