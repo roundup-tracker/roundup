@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.48 $
+:Version: $Revision: 1.49 $
 
 .. contents::
 
@@ -248,8 +248,12 @@ There's several to choose from, each with benefits and limitations:
   This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.
 
-Note: you may set your tracker up with the anydbm backend (which is guaranteed
-to be available) and switch to one of the other backends at any time using the
+You should be wary of using all but the mysql backend with high-volume trackers 
+(requests every second or two) as database locking is done on the whole
+database.
+
+You may set your tracker up with the anydbm backend (which is guaranteed to be
+available) and switch to one of the other backends at any time using the
 instructions in the `maintenance documentation`_.
 
 
