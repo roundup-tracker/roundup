@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.23 2003-04-24 06:55:24 richard Exp $
+# $Id: __init__.py,v 1.24 2003-09-14 18:55:37 jlgijsbers Exp $
 
 ''' Container for the hyperdb storage backend implementations.
 
@@ -25,66 +25,17 @@ available.
 
 __all__ = []
 
-try:
-    import sys, anydbm
-    if not hasattr(sys, 'version_info') or sys.version_info < (2,1,2):
-        import dumbdbm
-        # dumbdbm only works in python 2.1.2+
-        assert anydbm._defaultmod != dumbdbm
-        del anydbm
-        del dumbdbm
-except AssertionError:
-    print "WARNING: you should upgrade to python 2.1.3"
-except ImportError, message:
-    if str(message) != 'No module named anydbm': raise
-else:
-    import back_anydbm
-    anydbm = back_anydbm
-    __all__.append('anydbm')
-
-try:
-    import MySQLdb
-except ImportError, message:
-    if str(message) != 'No module named MySQLdb': raise
-else:
-    import back_mysql
-    mysql = back_mysql
-    __all__.append('mysql')
-
-try:
-    import sqlite
-except ImportError, message:
-    if str(message) != 'No module named sqlite': raise
-else:
-    import back_sqlite
-    sqlite = back_sqlite
-    __all__.append('sqlite')
-
-try:
-    import bsddb
-except ImportError, message:
-    if not str(message).startswith('No module named'): raise
-else:
-    import back_bsddb
-    bsddb = back_bsddb
-    __all__.append('bsddb')
-
-try:
-    import bsddb3
-except ImportError, message:
-    if str(message) != 'No module named bsddb3': raise
-else:
-    import back_bsddb3
-    bsddb3 = back_bsddb3
-    __all__.append('bsddb3')
-
-try:
-    import metakit
-except ImportError, message:
-    if str(message) != 'No module named metakit': raise
-else:
-    import back_metakit
-    metakit = back_metakit
-    __all__.append('metakit')
+for backend in ['anydbm', ('mysql', 'MySQLdb'), 'bsddb', 'bsddb3', 'sqlite',
+                'metakit']:
+    if len(backend) == 2:
+        backend, backend_module = backend
+    else:
+        backend_module = backend
+    try:
+        globals()[backend] = __import__('back_%s' % backend, globals())
+        __all__.append(backend)
+    except ImportError, e:
+        if not str(e).startswith('No module named %s' % backend_module):
+            raise
 
 # vim: set filetype=python ts=4 sw=4 et si

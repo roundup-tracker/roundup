@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.127 2003-09-08 20:39:18 jlgijsbers Exp $
+#$Id: back_anydbm.py,v 1.128 2003-09-14 18:55:37 jlgijsbers Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -23,7 +23,17 @@ versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
 serious bugs, and is not available)
 '''
 
-import whichdb, anydbm, os, marshal, re, weakref, string, copy
+try:
+    import anydbm, sys
+    # dumbdbm only works in python 2.1.2+
+    if sys.version_info < (2,1,2):
+        import dumbdbm
+        assert anydbm._defaultmod != dumbdbm
+        del dumbdbm
+except AssertionError:
+    print "WARNING: you should upgrade to python 2.1.3"
+
+import whichdb, os, marshal, re, weakref, string, copy
 from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
 from sessions import Sessions, OneTimeKeys
