@@ -1,7 +1,7 @@
 # German message file for Roundup Issue Tracker
 # Stefan Niederhauser <stefan.niederhauser@unibas.ch>, 2004.
 #
-# $Id: de.po,v 1.1 2004-07-05 15:13:21 a1s Exp $
+# $Id: de.po,v 1.2 2004-07-05 17:48:16 a1s Exp $
 #
 # roundup.pot revision 1.8
 #
@@ -2812,7 +2812,7 @@ msgstr "Tracker Start"
 
 #: ../templates/minimal/html/home.html:16
 msgid "Please select from one of the menu options on the left."
-msgstr "Bitte wählen Sie rechts eine Menu-Option."
+msgstr "Bitte wählen Sie links eine Menu-Option."
 
 #: ../templates/minimal/html/home.html:19
 msgid "Please log in or register."
