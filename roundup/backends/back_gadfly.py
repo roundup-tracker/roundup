@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.24 2002-09-20 01:20:31 richard Exp $
+# $Id: back_gadfly.py,v 1.25 2002-09-23 06:48:34 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -71,43 +71,42 @@ class Database(Database):
                 self.database_schema = {}
                 self.conn = gadfly.gadfly()
                 self.conn.startup(*db)
-                cursor = self.conn.cursor()
-                cursor.execute('create table schema (schema varchar)')
-                cursor.execute('create table ids (name varchar, num integer)')
+                self.cursor = self.conn.cursor()
+                self.cursor.execute('create table schema (schema varchar)')
+                self.cursor.execute('create table ids (name varchar, num integer)')
             else:
-                cursor = self.conn.cursor()
-                cursor.execute('select schema from schema')
-                self.database_schema = cursor.fetchone()[0]
+                self.cursor = self.conn.cursor()
+                self.cursor.execute('select schema from schema')
+                self.database_schema = self.cursor.fetchone()[0]
         else:
             self.conn = gadfly.client.gfclient(*db)
-            self.database_schema = self.load_dbschema(cursor)
+            self.database_schema = self.load_dbschema()
 
     def __repr__(self):
         return '<roundfly 0x%x>'%id(self)
 
-    def sql_fetchone(self, cursor):
+    def sql_fetchone(self):
         ''' Fetch a single row. If there's nothing to fetch, return None.
         '''
         try:
-            return cursor.fetchone()
+            return self.cursor.fetchone()
         except gadfly.database.error, message:
             if message == 'no more results':
                 return None
             raise
 
-    def save_dbschema(self, cursor, schema):
+    def save_dbschema(self, schema):
         ''' Save the schema definition that the database currently implements
         '''
-        self.sql(cursor, 'insert into schema values (?)',
-            (self.database_schema,))
+        self.sql('insert into schema values (?)', (self.database_schema,))
 
-    def load_dbschema(self, cursor):
+    def load_dbschema(self):
         ''' Load the schema definition that the database currently implements
         '''
-        cursor.execute('select schema from schema')
-        return cursor.fetchone()[0]
+        self.cursor.execute('select schema from schema')
+        return self.cursor.fetchone()[0]
 
-    def save_journal(self, cursor, classname, cols, nodeid, journaldate,
+    def save_journal(self, classname, cols, nodeid, journaldate,
             journaltag, action, params):
         ''' Save the journal entry to the database
         '''
@@ -120,9 +119,9 @@ class Database(Database):
             cols)
         if __debug__:
             print >>hyperdb.DEBUG, 'addjournal', (self, sql, entry)
-        cursor.execute(sql, entry)
+        self.cursor.execute(sql, entry)
 
-    def load_journal(self, cursor, classname, cols, nodeid):
+    def load_journal(self, classname, cols, nodeid):
         ''' Load the journal from the database
         '''
         # now get the journal entries
@@ -130,9 +129,9 @@ class Database(Database):
             self.arg)
         if __debug__:
             print >>hyperdb.DEBUG, 'getjournal', (self, sql, nodeid)
-        cursor.execute(sql, (nodeid,))
+        self.cursor.execute(sql, (nodeid,))
         res = []
-        for nodeid, date_stamp, user, action, params in cursor.fetchall():
+        for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
             res.append((nodeid, date.Date(date_stamp), user, action, params))
         return res
 
@@ -223,9 +222,8 @@ class GadflyClass:
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
-        cursor = self.db.conn.cursor()
-        cursor.execute(sql, args)
-        l = cursor.fetchall()
+        self.db.cursor.execute(sql, args)
+        l = self.db.cursor.fetchall()
 
         # return the IDs
         return [row[0] for row in l]

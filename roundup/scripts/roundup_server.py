@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.11 2002-09-23 00:50:32 richard Exp $
+$Id: roundup_server.py,v 1.12 2002-09-23 06:48:35 richard Exp $
 """
 
 # python version check
@@ -58,7 +58,6 @@ ROUNDUP_USER = None
 #
 ##  end configuration
 #
-
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = TRACKER_HOMES

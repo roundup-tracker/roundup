@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.28 2002-09-10 12:44:42 richard Exp $
+# $Id: date.py,v 1.29 2002-09-23 06:48:34 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -220,17 +220,22 @@ class Date:
             (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?      # hh:mm:ss
             (?P<o>.+)?                                         # offset
             ''', re.VERBOSE), serialised_re=re.compile('''
-            (?P<y>\d{4})(?P<m>\d{2})(?P<d>\d{2}) # yyyymmdd
-            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2}) # HHMMSS
-            ''', re.VERBOSE)):
+            (\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})
+            ''')):
         ''' set the date to the value in spec
         '''
         m = serialised_re.match(spec)
+        if m:
+            # we're serialised - easy!
+            self.year, self.month, self.day, self.hour, self.minute, \
+                self.second = map(int, m.groups()[1:7])
+            return
+
+        # not serialised data, try usual format
+        m = date_re.match(spec)
         if not m:
-            m = date_re.match(spec)
-            if not m:
-                raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
-                    '[[h]h:mm[:ss]][offset]')
+            raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
+                '[[h]h:mm[:ss]][offset]')
 
         info = m.groupdict()
 

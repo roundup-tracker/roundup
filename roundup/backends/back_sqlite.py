@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.3 2002-09-19 02:37:41 richard Exp $
+# $Id: back_sqlite.py,v 1.4 2002-09-23 06:48:35 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -15,24 +15,23 @@ class Database(Database):
         os.umask(0002)
         db = os.path.join(self.config.DATABASE, 'db')
         self.conn = sqlite.connect(db=db)
-        cursor = self.conn.cursor()
+        self.cursor = self.conn.cursor()
         try:
-            self.database_schema = self.load_dbschema(cursor)
+            self.database_schema = self.load_dbschema()
         except sqlite.DatabaseError, error:
             if str(error) != 'no such table: schema':
                 raise
             self.database_schema = {}
-            cursor = self.conn.cursor()
-            cursor.execute('create table schema (schema varchar)')
-            cursor.execute('create table ids (name varchar, num integer)')
+            self.cursor.execute('create table schema (schema varchar)')
+            self.cursor.execute('create table ids (name varchar, num integer)')
 
     def __repr__(self):
         return '<roundlite 0x%x>'%id(self)
 
-    def sql_fetchone(self, cursor):
+    def sql_fetchone(self):
         ''' Fetch a single row. If there's nothing to fetch, return None.
         '''
-        return cursor.fetchone()
+        return self.cursor.fetchone()
 
     def sql_commit(self):
         ''' Actually commit to the database.
@@ -45,19 +44,19 @@ class Database(Database):
             if str(error) != 'cannot commit - no transaction is active':
                 raise
 
-    def save_dbschema(self, cursor, schema):
+    def save_dbschema(self, schema):
         ''' Save the schema definition that the database currently implements
         '''
         s = repr(self.database_schema)
-        self.sql(cursor, 'insert into schema values (%s)', (s,))
+        self.sql('insert into schema values (%s)', (s,))
 
-    def load_dbschema(self, cursor):
+    def load_dbschema(self):
         ''' Load the schema definition that the database currently implements
         '''
-        cursor.execute('select schema from schema')
-        return eval(cursor.fetchone()[0])
+        self.cursor.execute('select schema from schema')
+        return eval(self.cursor.fetchone()[0])
 
-    def save_journal(self, cursor, classname, cols, nodeid, journaldate,
+    def save_journal(self, classname, cols, nodeid, journaldate,
             journaltag, action, params):
         ''' Save the journal entry to the database
         '''
@@ -71,9 +70,9 @@ class Database(Database):
             cols, a, a, a, a, a)
         if __debug__:
             print >>hyperdb.DEBUG, 'addjournal', (self, sql, entry)
-        cursor.execute(sql, entry)
+        self.cursor.execute(sql, entry)
 
-    def load_journal(self, cursor, classname, cols, nodeid):
+    def load_journal(self, classname, cols, nodeid):
         ''' Load the journal from the database
         '''
         # now get the journal entries
@@ -81,9 +80,9 @@ class Database(Database):
             self.arg)
         if __debug__:
             print >>hyperdb.DEBUG, 'getjournal', (self, sql, nodeid)
-        cursor.execute(sql, (nodeid,))
+        self.cursor.execute(sql, (nodeid,))
         res = []
-        for nodeid, date_stamp, user, action, params in cursor.fetchall():
+        for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
             params = eval(params)
             res.append((nodeid, date.Date(date_stamp), user, action, params))
         return res

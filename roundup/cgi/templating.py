@@ -63,6 +63,17 @@ templates = {}
 class NoTemplate(Exception):
     pass
 
+def precompileTemplates(dir):
+    ''' Go through a directory and precompile all the templates therein
+    '''
+    for filename in os.listdir(dir):
+        if os.path.isdir(filename): continue
+        if '.' in filename:
+            name, extension = filename.split('.')
+            getTemplate(dir, name, extension)
+        else:
+            getTemplate(dir, filename, None)
+
 def getTemplate(dir, name, extension, classname=None, request=None):
     ''' Interface to get a template, possibly loading a compiled template.
 

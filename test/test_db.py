@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.53 2002-09-20 19:26:28 gmcm Exp $ 
+# $Id: test_db.py,v 1.54 2002-09-23 06:48:35 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -413,6 +413,7 @@ class anydbmDBTestCase(MyTestCase):
         (x, date_stamp2, x, x, x) = entry
         # see if the change was journalled when it shouldn't have been
         self.assertEqual(date_stamp, date_stamp2)
+        time.sleep(1)
         self.db.issue.enableJournalling()
         self.db.issue.set('1', title='hello world 2')
         self.db.commit()
@@ -428,9 +429,9 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
 
         # sleep for at least a second, then get a date to pack at
-        time.sleep(1)
+        time.sleep(2)
         pack_before = date.Date('.')
-        time.sleep(1)
+        time.sleep(2)
 
         # one more entry
         self.db.issue.set(id, status='3')
@@ -718,7 +719,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-#    return unittest.TestSuite(l)
+    return unittest.TestSuite(l)
 
     try:
         import gadfly
