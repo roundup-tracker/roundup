@@ -414,11 +414,28 @@ Example for FreeBSD (``envvars`` is in ``/usr/local/sbin/``)::
   export LD_PRELOAD
 
 Next, you have to add Roundup trackers configuration to apache config.
+Roundup apache interface uses two options specified with ``PythonOption``
+directives:
+
+  TrackerHome:
+    defines the tracker home directory - the directory that was specified
+    when you did ``roundup-admin init``.  This option is required.
+
+  TrackerLaguage:
+    defines web user interface language.  mod_python applications do not
+    receive OS environment variables in the same way as command-line
+    programs, so the language cannot be selected by setting commonly
+    used variables like ``LANG`` or ``LC_ALL``.  ``TrackerLanguage``
+    value has the same syntax as values of these environment variables.
+    This option may be omitted.
+
 In the following example we have two trackers set up in
 ``/var/db/roundup/support`` and ``var/db/roundup/devel`` and accessed
 as ``https://my.host/roundup/support/`` and ``https://my.host/roundup/devel/``
 respectively.  Having them share same parent directory allows us to
-reduce the number of configuration directives.
+reduce the number of configuration directives.  Support tracker has
+russian user interface.  The other tracker (devel) has english user
+interface (default).
 
 Static files from ``html`` directory are served by apache itself - this
 is quickier and generally more robust than doing that from python.
@@ -451,11 +468,12 @@ Example mod_python configuration::
       #PythonDebug On
     </Directory>
     # roundup tracker homes
-    <Directory /var/db/roundup/devel>
-      PythonOption TrackerHome /var/db/roundup/devel
-    </Directory>
     <Directory /var/db/roundup/support>
       PythonOption TrackerHome /var/db/roundup/support
+      PythonOption TrackerLanguage ru
+    </Directory>
+    <Directory /var/db/roundup/devel>
+      PythonOption TrackerHome /var/db/roundup/devel
     </Directory>
 
 
