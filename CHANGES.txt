@@ -15,6 +15,7 @@ Fixed:
 - fixed journal "param" column size in RDBMS backends
 - fixed static file serving
 - fixed rego from email address (sf bug 947414)
+- fixed sqlite journal ordering issue
 
 
 2004-04-18 0.7.0b3

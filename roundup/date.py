@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.66 2004-04-13 05:28:00 richard Exp $
+# $Id: date.py,v 1.67 2004-05-05 00:38:59 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -142,7 +142,7 @@ class Date:
             (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d(\.\d+)?))?)?  # hh:mm:ss
             (?P<o>.+)?                                     # offset
             ''', re.VERBOSE), serialised_re=re.compile(r'''
-            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d(\.\d+)?)
+            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d?(\.\d+)?)
             ''', re.VERBOSE), add_granularity=0):
         ''' set the date to the value in spec
         '''
@@ -369,7 +369,7 @@ class Date:
             self.second, 0, 0, 0)
 
     def serialise(self):
-        return '%4d%02d%02d%02d%02d%02d'%(self.year, self.month,
+        return '%4d%02d%02d%02d%02d%f'%(self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
     def timestamp(self):
