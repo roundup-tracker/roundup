@@ -13,9 +13,10 @@ Migrating from 0.4.x to 0.5.0
 This has been a fairly major revision of Roundup:
 
 1. Brand new, much more powerful, flexible, tasty and nutritious templating.
-   Unfortunately, this means all your current templates are useless. Please
-   don't hesitate to ask on roundup-users for help (or complete conversions
-   if you're completely stuck)!
+   Unfortunately, this means all your current templates are useless. Hopefully
+   the new documentation and examples will be enough to help you make the
+   transition. Please don't hesitate to ask on roundup-users for help (or
+   complete conversions if you're completely stuck)!
 2. The database backed got a lot more flexible, allowing Metakit and SQL
    databases! The only SQL database implemented at present is gadfly, but
    others shouldn't be a whole lot more work.
@@ -30,7 +31,7 @@ This has been a fairly major revision of Roundup:
 6. Because of the above changes, the tracker configuration has seen some
    major changes. See below for the details.
 
-Please, *back up your database* before you start the migration process. This
+Please, **back up your database** before you start the migration process. This
 is as simple as copying the "db" directory and all its contents from your
 tracker to somewhere safe.
 
@@ -380,9 +381,8 @@ cgi-bin directory if you're using it.
 ---------------------
 
 You'll want to make a backup of your current tracker html directory. You
-should then copy the html directory from the Roundup source template that you
-used to create your tracker, and modify it according to your local schema
-changes.
+should then copy the html directory from the Roundup source "classic" template
+and modify it according to your local schema changes.
 
 If you need help with the new templating system, please ask questions on the
 roundup-users mailing list (available through the roundup project page on

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.23 $
+:Version: $Revision: 1.24 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -90,18 +90,6 @@ file is a Python module. The configuration variables available are:
 **ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
  The email address that roundup will complain to if it runs into trouble.
 
-**FILTER_POSITION** - ``'top'``, ``'bottom'`` or ``'top and bottom'``
- Where to place the web filtering HTML on the index page.
-
-**ANONYMOUS_ACCESS** - ``'deny'`` or ``'allow'``
- Deny or allow anonymous access to the web interface.
-
-**ANONYMOUS_REGISTER** - ``'deny'`` or ``'allow'``
- Deny or allow anonymous users to register through the web interface.
-
-**ANONYMOUS_REGISTER_MAIL** - ``'deny'`` or ``'allow'``
- Deny or allow anonymous users to register through the mail interface.
-
 **MESSAGES_TO_AUTHOR** - ``'yes'`` or``'no'``
  Send nosy messages to the author of the message.
 
@@ -133,79 +121,6 @@ file is a Python module. The configuration variables available are:
  Default class to use in the mailgw if one isn't supplied in email
  subjects. To disable, comment out the variable below or leave it blank.
 
-**HEADER_INDEX_LINKS** - ``['DEFAULT', 'UNASSIGNED', 'USER']``
- Define what index links are available in the header, and what their
- labels are. Each key is used to look up one of the index specifications
- below - so ``'DEFAULT'`` will use ``'DEFAULT_INDEX'``.
-
- Example ``DEFAULT_INDEX``::
-
-  {
-   'LABEL': 'All Issues',
-   'CLASS': 'issue',
-   'SORT': ['-activity'],
-   'GROUP': ['priority'],
-   'FILTER': ['status'],
-   'COLUMNS': ['id','activity','title','creator','assignedto'],
-   'FILTERSPEC': {
-     'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-   },
-  }
-
- This defines one of the index links that appears in the
- ``HEADER_INDEX_LINKS`` list.
-
- **LABEL** - ``'All Issues'``
-  The text that appears as the link label.
- **CLASS** - ``'issue'``
-  The class to display the index for.
- **SORT** - ``['-activity']``
-  Sort by prop name, optionally preceeded with '-' to give descending or
-  nothing for ascending sorting.
- **GROUP** - ``['priority']``
-  Group by prop name, optionally preceeded with '-' or to sort in descending
-  or nothing for ascending order.
- **FILTER** - ``['status']``
-  Selects which props should be displayed in the filter section.
-  Default is all. 
- **COLUMNS** - ``['id','activity','title','creator','assignedto']``
-  Selects the columns that should be displayed. Default is all.
- **FILTERSPEC** - *a dictionary giving the filter specification*
-  The ``FILTERSPEC`` gives the filtering arguments. This selects the values
-  the item properties given by propname must have.
-
-  Where the ``FILTERSPEC`` value is ``'CURRENT USER'``, it will be replaced
-  by the id of the logged-in user. For example::
-
-   'FILTERSPEC': {
-     'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-     'assignedto': 'CURRENT USER',
-   },
-
-**HEADER_ADD_LINKS** - ``['issue']``
- List the classes that users are able to add items to.
-
-**HEADER_SEARCH_LINKS** - ``['issue']``
- List the classes that users can search.
-
-**SEARCH_FILTERS** - ``['ISSUE_FILTER', 'SUPPORT_FILTER']``
- List search filters per class. Like the INDEX entries above, each key is
- used to look up one of the filter specifications below - so ``'ISSUE'``
- will use ``'ISSUE_FILTER'``.
-
- Example ``ISSUE_FILTER``::
-
-  ISSUE_FILTER = {
-    'CLASS': 'issue',
-    'FILTER': ['status', 'priority', 'assignedto', 'creator']
-  }
-
-  **CLASS** - ``'issue'``
-   The class that the search page is for.
-  **FILTER** - ``['status', 'priority', 'assignedto', 'creator']``
-   Selects which props should be displayed on the filter page. Default is
-   all.
-
 The default config.py is given below - as you
 can see, the MAIL_DOMAIN must be edited before any interaction with the
 tracker is attempted.::
@@ -218,10 +133,6 @@ tracker is attempted.::
 
     # The domain name used for email addresses.
     MAIL_DOMAIN = 'your.tracker.email.domain.example'
-
-    # the next two are only used for the standalone HTTP server.
-    HTTP_HOST = ''
-    HTTP_PORT = 9080
 
     # This is the directory that the database is going to be stored in
     DATABASE = os.path.join(INSTANCE_HOME, 'db')
@@ -243,18 +154,6 @@ tracker is attempted.::
 
     # Somewhere for roundup to log stuff internally sent to stdout or stderr
     LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
-
-    # Where to place the web filtering HTML on the index page
-    FILTER_POSITION = 'bottom'          # one of 'top', 'bottom', 'top and bottom'
-
-    # Deny or allow anonymous access to the web interface
-    ANONYMOUS_ACCESS = 'deny'           # either 'deny' or 'allow'
-
-    # Deny or allow anonymous users to register through the web interface
-    ANONYMOUS_REGISTER = 'deny'         # either 'deny' or 'allow'
-
-    # Deny or allow anonymous users to register through the mail interface
-    ANONYMOUS_REGISTER_MAIL = 'deny'    # either 'deny' or 'allow'
 
     # Send nosy messages to the author of the message
     MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
@@ -293,10 +192,15 @@ Note: if you modify the schema, you'll most likely need to edit the
       `web interface`_ HTML template files and `detectors`_ to reflect
       your changes.
 
-A tracker schema defines what data is stored in the tracker's database. The
-two schemas shipped with Roundup turn it into a typical software bug tracker
-(the extended schema allowing for support issues as well as bugs). Schemas are
-defined using Python code. The "classic" schema looks like this::
+A tracker schema defines what data is stored in the tracker's database.
+The
+schemas shipped with Roundup turn it into a typical software bug tracker or
+help desk.
+
+XXX make sure we ship the help desk
+
+Schemas are defined using Python code in the ``dbinit.py`` module of your
+tracker. The "classic" schema looks like this::
 
     pri = Class(db, "priority", name=String(), order=String())
     pri.setkey("name")
@@ -365,7 +269,7 @@ In the tracker above, we've defined 7 classes of information:
       Initially empty, will all files attached to issues.
 
   issue
-      Initially emtyp, this is where the issue information is stored.
+      Initially empty, this is where the issue information is stored.
 
 We define the "priority" and "status" classes to allow two things: reduction in
 the amount of information stored on the issue and more powerful, accurate
@@ -373,7 +277,7 @@ searching of issues by priority and status. By only requiring a link on the
 issue (which is stored as a single number) we reduce the chance that someone
 mis-types a priority or status - or simply makes a new one up.
 
-Class and Nodes
+Class and Items
 :::::::::::::::
 
 A Class defines a particular class (or type) of data that will be stored in the
@@ -387,16 +291,19 @@ Properties
 ::::::::::
 
 A Class is comprised of one or more properties of the following types:
-    * String properties are for storing arbitrary-length strings.
-    * Password properties are for storing encoded arbitrary-length strings. The
-      default encoding is defined on the roundup.password.Password class.
-    * Date properties store date-and-time stamps. Their values are Timestamp
-      objects.
-    * A Link property refers to a single other item selected from a specified
-      class. The class is part of the property; the value is an integer, the id
-      of the chosen item.
-    * A Multilink property refers to possibly many items in a specified class.
-      The value is a list of integers.
+
+* String properties are for storing arbitrary-length strings.
+* Password properties are for storing encoded arbitrary-length strings. The
+  default encoding is defined on the roundup.password.Password class.
+* Date properties store date-and-time stamps. Their values are Timestamp
+  objects.
+* Number properties store numeric values.
+* Boolean properties store on/off, yes/no, true/false values.
+* A Link property refers to a single other item selected from a specified
+  class. The class is part of the property; the value is an integer, the id
+  of the chosen item.
+* A Multilink property refers to possibly many items in a specified class.
+  The value is a list of integers.
 
 FileClass
 :::::::::
@@ -420,7 +327,7 @@ directory) handles this action. The superceder link indicates an issue which
 has superceded this one.
 They also have the dynamically generated "creation", "activity" and "creator"
 properties.
-The value of the "creation" property is the date when a item was created, and
+The value of the "creation" property is the date when an item was created, and
 the value of the "activity" property is the date when any property on the item
 was last edited (equivalently, these are the dates on the first and last
 records in the item's journal). The "creator" property holds a link to the user
@@ -447,7 +354,7 @@ Note, the same thing can be done in the web and e-mail interfaces.
 create(information)
 :::::::::::::::::::
 
-Create a item in the database. This is generally used to create items in the
+Create an item in the database. This is generally used to create items in the
 "definitional" classes like "priority" and "status".
 
 
@@ -491,6 +398,8 @@ Sample additional detectors that have been found useful will appear in the
   created. The address is hard-coded into the detector, so edit it before you
   use it (look for the text 'team@team.host') or you'll get email errors!
 
+XXX give the example here.
+
 
 Database Content
 ----------------
@@ -512,46 +421,31 @@ case though, so be careful to use the right one.
     Use the roundup-admin interface's create, set and retire methods to add,
     alter or remove items from the classes in question.
 
+XXX example
 
 
 Web Interface
 -------------
 
-The web interface works behind the cgi-bin/roundup.cgi or roundup-server
-scripts. In both cases, the scripts determine which tracker is being accessed
+The web is provided by the roundup.cgi.client module and is used by
+roundup.cgi, roundup-server and ZRoundup.
+In all cases, we determine which tracker is being accessed
 (the first part of the URL path inside the scope of the CGI handler) and pass
-control on to the tracker interfaces.Client class which handles the rest of
+control on to the tracker interfaces.Client class - which uses the Client class
+from roundup.cgi.client - which handles the rest of
 the access through its main() method. This means that you can do pretty much
 anything you want as a web interface to your tracker.
 
-Figuring out what is displayed
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Repurcussions of changing the tracker schema
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Most customisation of the web view can be done by modifying the templates in
-the tracker **html** directory. There are several types of files in there:
+If you choose to change the `tracker schema`_ you will need to ensure the web
+interface knows about it:
 
-page
-  defines the overall look of your tracker. When you
-  view an issue, it appears inside this template. When you view an index, it
-  also appears inside this template.
-home
-  the default page displayed when no other page is indicated by the user
-home.classlist
-  a special version of the default page that lists the classes in the tracker
-*classname*.item
-  displays an item of the *classname* class
-*classname*.index
-  displays a list of *classname* items
-*classname*.search
-  displays a search page for *classname* items
-_generic.index
-  used to display a list of items where there is no *classname*.index available
-_generic.help
-  used to display a "class help" page where there is no *classname*.help
-user.register
-  a special page just for the user class that renders the registration page
-style.css
-  a static file that is served up as-is
+1. Index, item and search pages for the relevant classes may need to have
+   properties added or removed,
+2. The "page" template may require links to be changed, as might the "home"
+   page's content arguments.
 
 How requests are processed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -652,7 +546,7 @@ edit
  :file
   Create a file and attach it to the current item's
   "files" property. Attach the file to the message created from
-  the __note if it's supplied.
+  the :note if it's supplied.
  :required=property,property,...
   The named properties are required to be filled in the form.
 
@@ -713,16 +607,34 @@ search
  Base behaviour is to check the user can view this class.
 
 
-Repurcussions of changing the tracker schema
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Default templates
+~~~~~~~~~~~~~~~~~
 
-If you choose to change the `tracker schema`_ you will need to ensure the web
-interface knows about it:
+Most customisation of the web view can be done by modifying the templates in
+the tracker **html** directory. There are several types of files in there:
 
-1. Index, item and search pages for the relevant classes may need to have
-   properties added or removed,
-2. The "page" template may require links to be changed, as might the "home"
-   page's content arguments.
+page
+  defines the overall look of your tracker. When you
+  view an issue, it appears inside this template. When you view an index, it
+  also appears inside this template.
+home
+  the default page displayed when no other page is indicated by the user
+home.classlist
+  a special version of the default page that lists the classes in the tracker
+*classname*.item
+  displays an item of the *classname* class
+*classname*.index
+  displays a list of *classname* items
+*classname*.search
+  displays a search page for *classname* items
+_generic.index
+  used to display a list of items where there is no *classname*.index available
+_generic.help
+  used to display a "class help" page where there is no *classname*.help
+user.register
+  a special page just for the user class that renders the registration page
+style.css
+  a static file that is served up as-is
 
 Overall Look - "page" template
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

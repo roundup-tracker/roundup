@@ -12,3 +12,5 @@ all: ${COMPILED}
 %.html: %.txt
 	${PYTHON} ${STXTOHTML} --report=warning -d $< $@
 
+clean:
+	rm -f ${COMPILED}

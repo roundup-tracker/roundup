@@ -189,10 +189,10 @@ Time and the current local time is 19:34:02 on 25 June 2000::
     >>> Date(". + 2d") - Interval("3w")
     <Date 2000-06-07.00:34:02>
 
-Nodes and Classes
+Items and Classes
 ~~~~~~~~~~~~~~~~~
 
-Nodes contain data in properties.  To Python, these
+Items contain data in properties.  To Python, these
 properties are presented as the key-value pairs of a dictionary.
 Each item belongs to a class which defines the names
 and types of its properties.  The database permits the creation
@@ -212,7 +212,7 @@ the item's numeric identifier.
 For example, if "spam" and "eggs" are classes, the first
 item created in class "spam" has id 1 and designator "spam1".
 The first item created in class "eggs" also has id 1 but has
-the distinct designator "eggs1".  Node designators are
+the distinct designator "eggs1".  Item designators are
 conventionally enclosed in square brackets when mentioned
 in plain text.  This permits a casual mention of, say,
 "[patch37]" in an e-mail message to be turned into an active
@@ -468,7 +468,7 @@ Here is the interface provided by the hyperdatabase::
             """
 
         def getitem(self, itemid, cache=1):
-            ''' Return a Node convenience wrapper for the item.
+            ''' Return a Item convenience wrapper for the item.
 
             'itemid' must be the id of an existing item of this class or an
             IndexError is raised.
@@ -479,7 +479,7 @@ Here is the interface provided by the hyperdatabase::
             set cache=0.
             '''
 
-    class Node:
+    class Item:
         ''' A convenience wrapper for the given item. It provides a mapping
             interface to a single item's properties
         '''
@@ -1412,7 +1412,7 @@ application initialises.
 
 There will be two levels of Permission. The Class level permissions define
 logical permissions associated with all items of a particular class (or all
-classes). The Node level permissions define logical permissions associated
+classes). The Item level permissions define logical permissions associated
 with specific items by way of their user-linked properties.
 
 
@@ -1457,7 +1457,7 @@ The security module defines::
                 "permission" is there for the specified classname.
             '''
 
-        def hasNodePermission(self, classname, itemid, **propspec):
+        def hasItemPermission(self, classname, itemid, **propspec):
             ''' Check the named properties of the given item to see if the
                 userid appears in them. If it does, then the user is granted
                 this permission check.
@@ -1529,13 +1529,13 @@ In the dbinit ``init()``::
     user.create(username="anonymous", roles='Anonymous')
 
 Then in the code that matters, calls to ``hasPermission`` and
-``hasNodePermission`` are made to determine if the user has permission
+``hasItemPermission`` are made to determine if the user has permission
 to perform some action::
 
     if db.security.hasPermission('issue', 'Edit', userid):
         # all ok
 
-    if db.security.hasNodePermission('issue', itemid, assignedto=userid):
+    if db.security.hasItemPermission('issue', itemid, assignedto=userid):
         # all ok
 
 Code in the core will make use of these methods, as should code in auditors in
@@ -1553,7 +1553,7 @@ where:
 - the permission attribute gives a comma-separated list of permission names.
   These are checked in turn using ``hasPermission`` and requires one to
   be OK.
-- the other attributes are lookups on the item using ``hasNodePermission``. If
+- the other attributes are lookups on the item using ``hasItemPermission``. If
   the attribute value is "$userid" then the current user's userid is tested.
 
 Any of these tests must pass or the ``<require>`` check will fail. The section

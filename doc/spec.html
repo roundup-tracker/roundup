@@ -44,7 +44,7 @@ src="images/logo-codesourcery-medium.png" alt="[CodeSourcery Logo]" border="0"><
 <li>Hyperdatabase
     <ol>
     <li>Dates and Date Arithmetic
-    <li>Nodes and Classes
+    <li>Items and Classes
     <li>Identifiers and Designators
     <li>Property Names and Types
     <li>Interface Specification
@@ -196,7 +196,7 @@ to stand back a bit so you don't get covered in crumbs.
 <p>The lowest-level component to be implemented is the hyperdatabase.
 The hyperdatabase is intended to be
 a flexible data store that can hold configurable data in
-records which we call <em>nodes</em>.
+records which we call <em>items</em>.
 
 <p>The hyperdatabase is implemented on top of the storage layer,
 an external module for storing its data.  The storage layer could
@@ -335,28 +335,28 @@ Time and the current local time is 19:34:02 on 25 June 2000.
 <span class="output">&lt;Date 2000-06-07.00:34:02&gt;</span
 ></small></pre></blockquote>
 
-<h3>3.2. Nodes and Classes</h3>
+<h3>3.2. Items and Classes</h3>
 
-<p>Nodes contain data in <em>properties</em>.  To Python, these
+<p>Items contain data in <em>properties</em>.  To Python, these
 properties are presented as the key-value pairs of a dictionary.
-Each node belongs to a <em>class</em> which defines the names
+Each item belongs to a <em>class</em> which defines the names
 and types of its properties.  The database permits the creation
-and modification of classes as well as nodes.
+and modification of classes as well as items.
 
 <h3>3.3. Identifiers and Designators</h3>
 
-<p>Each node has a numeric identifier which is unique among
-nodes in its class.  The nodes are numbered sequentially
+<p>Each item has a numeric identifier which is unique among
+items in its class.  The items are numbered sequentially
 within each class in order of creation, starting from 1.
 The <em>designator</em>
-for a node is a way to identify a node in the database, and
-consists of the name of the node's class concatenated with
-the node's numeric identifier.
+for an item is a way to identify an item in the database, and
+consists of the name of the item's class concatenated with
+the item's numeric identifier.
 
 <p>For example, if "spam" and "eggs" are classes, the first
-node created in class "spam" has id 1 and designator "spam1".
-The first node created in class "eggs" also has id 1 but has
-the distinct designator "eggs1".  Node designators are
+item created in class "spam" has id 1 and designator "spam1".
+The first item created in class "eggs" also has id 1 but has
+the distinct designator "eggs1".  Item designators are
 conventionally enclosed in square brackets when mentioned
 in plain text.  This permits a casual mention of, say,
 "[patch37]" in an e-mail message to be turned into an active
@@ -375,11 +375,11 @@ strings.
 <li><em>Date</em> properties store date-and-time stamps.
 Their values are Timestamp objects.
 
-<li>A <em>Link</em> property refers to a single other node
+<li>A <em>Link</em> property refers to a single other item
 selected from a specified class.  The class is part of the property;
-the value is an integer, the id of the chosen node.
+the value is an integer, the id of the chosen item.
 
-<li>A <em>Multilink</em> property refers to possibly many nodes
+<li>A <em>Multilink</em> property refers to possibly many items
 in a specified class.  The value is a list of integers.
 </ul>
 
@@ -406,12 +406,12 @@ class <strong>Date</strong>:
 class <strong>Link</strong>:
     def <strong>__init__</strong>(self, classname):
         """An object designating a Link property that links to
-        nodes in a specified class."""
+        items in a specified class."""
 
 class <strong>Multilink</strong>:
     def <strong>__init__</strong>(self, classname):
         """An object designating a Multilink property that links
-        to nodes in a specified class."""
+        to items in a specified class."""
 </small></pre></blockquote>
 
 <p>Here is the interface provided by the hyperdatabase.
@@ -447,7 +447,7 @@ class <strong>Multilink</strong>:
         """
 
 class <strong>Class</strong>:
-    """The handle to a particular class of nodes in a hyperdatabase."""
+    """The handle to a particular class of items in a hyperdatabase."""
 
     def <strong>__init__</strong>(self, db, classname, **properties):
         """Create a new class with a given name and property specification.
@@ -457,10 +457,10 @@ class <strong>Class</strong>:
         must map names to property objects, or a TypeError is raised.
         """
 
-    # Editing nodes:
+    # Editing items:
 
     def <strong>create</strong>(self, **propvalues):
-        """Create a new node of this class and return its id.
+        """Create a new item of this class and return its id.
 
         The keyword arguments in 'propvalues' map property names to values.
         The values of arguments must be acceptable for the types of their
@@ -469,43 +469,43 @@ class <strong>Class</strong>:
         collide with other key strings or a ValueError is raised.  Any other
         properties on this class that are missing from the 'propvalues'
         dictionary are set to None.  If an id in a link or multilink
-        property does not refer to a valid node, an IndexError is raised.
+        property does not refer to a valid item, an IndexError is raised.
         """
 
-    def <strong>get</strong>(self, nodeid, propname):
-        """Get the value of a property on an existing node of this class.
+    def <strong>get</strong>(self, itemid, propname):
+        """Get the value of a property on an existing item of this class.
 
-        'nodeid' must be the id of an existing node of this class or an
+        'itemid' must be the id of an existing item of this class or an
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
         """
 
-    def <strong>set</strong>(self, nodeid, **propvalues):
-        """Modify a property on an existing node of this class.
+    def <strong>set</strong>(self, itemid, **propvalues):
+        """Modify a property on an existing item of this class.
         
-        'nodeid' must be the id of an existing node of this class or an
+        'itemid' must be the id of an existing item of this class or an
         IndexError is raised.  Each key in 'propvalues' must be the name
         of a property of this class or a KeyError is raised.  All values
         in 'propvalues' must be acceptable types for their corresponding
         properties or a TypeError is raised.  If the value of the key
         property is set, it must not collide with other key strings or a
         ValueError is raised.  If the value of a Link or Multilink
-        property contains an invalid node id, a ValueError is raised.
+        property contains an invalid item id, a ValueError is raised.
         """
 
-    def <strong>retire</strong>(self, nodeid):
-        """Retire a node.
+    def <strong>retire</strong>(self, itemid):
+        """Retire an item.
         
-        The properties on the node remain available from the get() method,
-        and the node's id is never reused.  Retired nodes are not returned
-        by the find(), list(), or lookup() methods, and other nodes may
+        The properties on the item remain available from the get() method,
+        and the item's id is never reused.  Retired items are not returned
+        by the find(), list(), or lookup() methods, and other items may
         reuse the values of their key properties.
         """
 
-    def <strong>history</strong>(self, nodeid):
-        """Retrieve the journal of edits on a particular node.
+    def <strong>history</strong>(self, itemid):
+        """Retrieve the journal of edits on a particular item.
 
-        'nodeid' must be the id of an existing node of this class or an
+        'itemid' must be the id of an existing item of this class or an
         IndexError is raised.
 
         The returned list contains tuples of the form
@@ -517,51 +517,51 @@ class <strong>Class</strong>:
         'action' may be:
 
             'create' or 'set' -- 'params' is a dictionary of property values
-            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
+            'link' or 'unlink' -- 'params' is (classname, itemid, propname)
             'retire' -- 'params' is None
         """
 
-    # Locating nodes:
+    # Locating items:
 
     def <strong>setkey</strong>(self, propname):
         """Select a String property of this class to be the key property.
 
         'propname' must be the name of a String property of this class or
         None, or a TypeError is raised.  The values of the key property on
-        all existing nodes must be unique or a ValueError is raised.
+        all existing items must be unique or a ValueError is raised.
         """
 
     def <strong>getkey</strong>(self):
         """Return the name of the key property for this class or None."""
 
     def <strong>lookup</strong>(self, keyvalue):
-        """Locate a particular node by its key property and return its id.
+        """Locate a particular item by its key property and return its id.
 
         If this class has no key property, a TypeError is raised.  If the
         'keyvalue' matches one of the values for the key property among
-        the nodes in this class, the matching node's id is returned;
+        the items in this class, the matching item's id is returned;
         otherwise a KeyError is raised.
         """
 
-    def <strong>find</strong>(self, propname, nodeid):
-        """Get the ids of nodes in this class which link to a given node.
+    def <strong>find</strong>(self, propname, itemid):
+        """Get the ids of items in this class which link to a given item.
         
         'propname' must be the name of a property in this class, or a
         KeyError is raised.  That property must be a Link or Multilink
-        property, or a TypeError is raised.  'nodeid' must be the id of
-        an existing node in the class linked to by the given property,
+        property, or a TypeError is raised.  'itemid' must be the id of
+        an existing item in the class linked to by the given property,
         or an IndexError is raised.
         """
 
     def <strong>list</strong>(self):
-        """Return a list of the ids of the active nodes in this class."""
+        """Return a list of the ids of the active items in this class."""
 
     def <strong>count</strong>(self):
-        """Get the number of nodes in this class.
+        """Get the number of items in this class.
 
-        If the returned integer is 'numnodes', the ids of all the nodes
-        in this class run from 1 to numnodes, and numnodes+1 will be the
-        id of the next node to be created in this class.
+        If the returned integer is 'numitems', the ids of all the items
+        in this class run from 1 to numitems, and numitems+1 will be the
+        id of the next item to be created in this class.
         """
 
     # Manipulating properties:
@@ -649,12 +649,12 @@ class <strong>Class</strong>:
 </small></pre></blockquote>
 
 <p>For the purposes of journalling, when a Multilink property is
-set to a new list of nodes, the hyperdatabase compares the old
+set to a new list of items, the hyperdatabase compares the old
 list to the new list.
-The journal records "unlink" events for all the nodes that appear
+The journal records "unlink" events for all the items that appear
 in the old list but not the new list,
 and "link" events for
-all the nodes that appear in the new list but not in the old list.
+all the items that appear in the new list but not in the old list.
 
 <p><hr>
 <h2>4. Roundup Database</h2>
@@ -663,17 +663,17 @@ all the nodes that appear in the new list but not in the old list.
 hyperdatabase and mediates calls to the database.
 Some of the classes in the Roundup database are considered
 <em>item classes</em>.
-The Roundup database layer adds detectors and user nodes,
+The Roundup database layer adds detectors and user items,
 and on items it provides mail spools, nosy lists, and superseders.
 
 <h3>4.1. Reserved Classes</h3>
 
 <p>Internal to this layer we reserve three special classes
-of nodes that are not items.
+of items that are not items.
 
 <h4>4.1.1. Users</h4>
 
-<p>Users are stored in the hyperdatabase as nodes of
+<p>Users are stored in the hyperdatabase as items of
 class "user".  The "user" class has the definition:
 
 <blockquote><pre><small
@@ -684,14 +684,14 @@ db.user.setkey("username")</small></pre></blockquote>
 
 <h4>4.1.2. Messages</h4>
 
-<p>E-mail messages are represented by hyperdatabase nodes of class "msg".
+<p>E-mail messages are represented by hyperdatabase items of class "msg".
 The actual text content of the messages is stored in separate files.
 (There's no advantage to be gained by stuffing them into the
 hyperdatabase, and if messages are stored in ordinary text files,
 they can be grepped from the command line.)  The text of a message is
-saved in a file named after the message node designator (e.g. "msg23")
+saved in a file named after the message item designator (e.g. "msg23")
 for the sake of the command interface (see below).  Attachments are
-stored separately and associated with "file" nodes.
+stored separately and associated with "file" items.
 The "msg" class has the definition:
 
 <blockquote><pre><small
@@ -703,7 +703,7 @@ The "msg" class has the definition:
 ></pre></blockquote>
 
 <p>The "author" property indicates the author of the message
-(a "user" node must exist in the hyperdatabase for any messages
+(a "user" item must exist in the hyperdatabase for any messages
 that are stored in the system).
 The "summary" property contains a summary of the message for display
 in a message index.
@@ -711,9 +711,9 @@ in a message index.
 <h4>4.1.3. Files</h4>
 
 <p>Submitted files are represented by hyperdatabase
-nodes of class "file".  Like e-mail messages, the file content
+items of class "file".  Like e-mail messages, the file content
 is stored in files outside the database,
-named after the file node designator (e.g. "file17").
+named after the file item designator (e.g. "file17").
 The "file" class has the definition:
 
 <blockquote><pre><small
@@ -758,7 +758,7 @@ changes and additional methods.
 
     def <strong>__init__</strong>(self, storagelocator, journaltag):
         """When the Roundup database is opened by a particular user,
-        the 'journaltag' is the id of the user's "user" node."""
+        the 'journaltag' is the id of the user's "user" item."""
 
     def <strong>getclass</strong>(self, classname):
         """This method now returns an instance of either Class or
@@ -767,7 +767,7 @@ changes and additional methods.
     # New methods:
 
     def <strong>getuid</strong>(self):
-        """Return the id of the "user" node associated with the user
+        """Return the id of the "user" item associated with the user
         that owns this connection to the hyperdatabase."""
 
 class <strong>Class</strong>:
@@ -775,7 +775,7 @@ class <strong>Class</strong>:
 
     def <strong>create</strong>(self, **propvalues):
     def <strong>set</strong>(self, **propvalues):
-    def <strong>retire</strong>(self, nodeid):
+    def <strong>retire</strong>(self, itemid):
         """These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
         """
@@ -795,25 +795,25 @@ class <strong>ItemClass</strong>(Class):
         dictionary attempts to specify any of these properties or a
         "creation" or "activity" property, a ValueError is raised."""
 
-    def <strong>get</strong>(self, nodeid, propname):
+    def <strong>get</strong>(self, itemid, propname):
     def <strong>getprops</strong>(self):
-        """In addition to the actual properties on the node, these
+        """In addition to the actual properties on the item, these
         methods provide the "creation" and "activity" properties."""
 
     # New methods:
 
-    def <strong>addmessage</strong>(self, nodeid, summary, text):
+    def <strong>addmessage</strong>(self, itemid, summary, text):
         """Add a message to an item's mail spool.
 
-        A new "msg" node is constructed using the current date, the
+        A new "msg" item is constructed using the current date, the
         user that owns the database connection as the author, and
         the specified summary text.  The "files" and "recipients"
         fields are left empty.  The given text is saved as the body
-        of the message and the node is appended to the "messages"
+        of the message and the item is appended to the "messages"
         field of the specified item.
         """
 
-    def <strong>sendmessage</strong>(self, nodeid, msgid):
+    def <strong>sendmessage</strong>(self, itemid, msgid):
         """Send a message to the members of an item's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -885,8 +885,8 @@ provide it a chance to register its detectors.
 <p>There are two kinds of detectors:
 
 <ul>
-<li>an <em>auditor</em> is triggered just before modifying an node
-<li>a <em>reactor</em> is triggered just after an node has been modified
+<li>an <em>auditor</em> is triggered just before modifying an item
+<li>a <em>reactor</em> is triggered just after an item has been modified
 </ul>
 
 <p>When the Roundup database is about to perform a
@@ -904,7 +904,7 @@ for the operation.
 <h3>5.1. Interface Specification</h3>
 
 <p>The <tt>audit()</tt> and <tt>react()</tt> methods
-register detectors on a given class of nodes.
+register detectors on a given class of items.
 
 <blockquote><pre><small
 >class Class:
@@ -926,15 +926,15 @@ register detectors on a given class of nodes.
 <p>Auditors are called with the arguments:
 
 <blockquote><pre><small
->audit(db, cl, nodeid, newdata)</small></pre></blockquote>
+>audit(db, cl, itemid, newdata)</small></pre></blockquote>
 
 where <tt>db</tt> is the database, <tt>cl</tt> is an
 instance of Class or ItemClass within the database, and <tt>newdata</tt>
 is a dictionary mapping property names to values.
 
 For a <tt>create()</tt>
-operation, the <tt>nodeid</tt> argument is <tt>None</tt> and <tt>newdata</tt>
-contains all of the initial property values with which the node
+operation, the <tt>itemid</tt> argument is <tt>None</tt> and <tt>newdata</tt>
+contains all of the initial property values with which the item
 is about to be created.
 
 For a <tt>set()</tt> operation, <tt>newdata</tt>
@@ -946,21 +946,21 @@ For a <tt>retire()</tt> operation, <tt>newdata</tt> is <tt>None</tt>.
 <p>Reactors are called with the arguments:
 
 <blockquote><pre><small
->react(db, cl, nodeid, olddata)</small></pre></blockquote>
+>react(db, cl, itemid, olddata)</small></pre></blockquote>
 
 where <tt>db</tt> is the database, <tt>cl</tt> is an
 instance of Class or ItemClass within the database, and <tt>olddata</tt>
 is a dictionary mapping property names to values.
 
 For a <tt>create()</tt>
-operation, the <tt>nodeid</tt> argument is the id of the
-newly-created node and <tt>olddata</tt> is None.
+operation, the <tt>itemid</tt> argument is the id of the
+newly-created item and <tt>olddata</tt> is None.
 
 For a <tt>set()</tt> operation, <tt>olddata</tt>
 contains the names and previous values of properties that were changed.
 
-For a <tt>retire()</tt> operation, <tt>nodeid</tt> is the
-id of the retired node and <tt>olddata</tt> is <tt>None</tt>.
+For a <tt>retire()</tt> operation, <tt>itemid</tt> is the
+id of the retired item and <tt>olddata</tt> is <tt>None</tt>.
 
 <h3>5.2. Detector Example</h3>
 
@@ -1002,7 +1002,7 @@ def init(db):
 ></pre></blockquote>    
 
 <p>Here is another example of a detector that can allow or prevent
-the creation of new nodes.  In this scenario, patches for a software
+the creation of new items.  In this scenario, patches for a software
 project are submitted by sending in e-mail with an attached file,
 and we want to ensure that there are <tt>text/plain</tt> attachments on
 the message.  The maintainer of the package can then apply the
@@ -1065,19 +1065,19 @@ and in the printed results:
 time zone, and accepted in the full format or any of the partial
 formats explained above.
 
-<li>Link values are printed as node designators.  When given as
-an argument, node designators and key strings are both accepted.
+<li>Link values are printed as item designators.  When given as
+an argument, item designators and key strings are both accepted.
 
-<li>Multilink values are printed as lists of node designators
-joined by commas.  When given as an argument, node designators
-and key strings are both accepted; an empty string, a single node,
-or a list of nodes joined by commas is accepted.
+<li>Multilink values are printed as lists of item designators
+joined by commas.  When given as an argument, item designators
+and key strings are both accepted; an empty string, a single item,
+or a list of items joined by commas is accepted.
 </ul>
 
-<p>When multiple nodes are specified to the
+<p>When multiple items are specified to the
 <tt>roundup&nbsp;get</tt> or <tt>roundup&nbsp;set</tt>
 commands, the specified properties are retrieved or set
-on all the listed nodes.
+on all the listed items.
 
 <p>When multiple results are returned by the <tt>roundup&nbsp;get</tt>
 or <tt>roundup&nbsp;find</tt> commands, they are printed one per
@@ -1127,12 +1127,12 @@ extracted and examined.  In a <tt>multipart/alternative</tt>
 message or part, we look for a <tt>text/plain</tt> subpart and
 ignore the other parts.  The <tt>text/plain</tt> subparts are
 assembled to form the textual body of the message, to
-be stored in the file associated with a "msg" class node.
+be stored in the file associated with a "msg" class item.
 Any parts of other types are each stored in separate
-files and given "file" class nodes that are linked to
-the "msg" node.
+files and given "file" class items that are linked to
+the "msg" item.
 
-<p>The "summary" property on message nodes is taken from
+<p>The "summary" property on message items is taken from
 the first non-quoting section in the message body.
 The message body is divided into sections by blank lines.
 Sections where the second and all subsequent lines begin
@@ -1141,18 +1141,18 @@ sections".  The first line of the first non-quoting
 section becomes the summary of the message.
 
 <p>All of the addresses in the To: and Cc: headers of the
-incoming message are looked up among the user nodes, and
+incoming message are looked up among the user items, and
 the corresponding users are placed in the "recipients"
-property on the new "msg" node.  The address in the From:
+property on the new "msg" item.  The address in the From:
 header similarly determines the "author" property of the
-new "msg" node.
+new "msg" item.
 The default handling for
 addresses that don't have corresponding users is to create
 new users with no passwords and a username equal to the
 address.  (The web interface does not permit logins for
 users with no passwords.)  If we prefer to reject mail from
 outside sources, we can simply register an auditor on the
-"user" class that prevents the creation of user nodes with
+"user" class that prevents the creation of user items with
 no passwords.
 
 <p>The subject line of the incoming message is examined to
@@ -1162,19 +1162,19 @@ in square brackets is sought as the first thing on the
 subject line (after skipping any "Fwd:" or "Re:" prefixes).
 
 <p>If an item designator (class name and id number) is found
-there, the newly created "msg" node is added to the "messages"
-property for that item, and any new "file" nodes are added to
+there, the newly created "msg" item is added to the "messages"
+property for that item, and any new "file" items are added to
 the "files" property for the item.
 
 <p>If just an item class name is found there, we attempt to
 create a new item of that class with its "messages" property
-initialized to contain the new "msg" node and its "files"
-property initialized to contain any new "file" nodes.
+initialized to contain the new "msg" item and its "files"
+property initialized to contain any new "file" items.
 
 <p>Both cases may trigger detectors (in the first case we
 are calling the <tt>set()</tt> method to add the message to the
 item's spool; in the second case we are calling the
-<tt>create()</tt> method to create a new node).  If an auditor
+<tt>create()</tt> method to create a new item).  If an auditor
 raises an exception, the original message is bounced back to
 the sender with the explanatory message given in the exception.
 
@@ -1241,7 +1241,7 @@ be displayed in an editable field.
 <p>The display of a property is handled by functions in
 a <tt>displayers</tt> module.  Each function accepts at
 least three standard arguments -- the database, class name,
-and node id -- and returns a chunk of HTML.
+and item id -- and returns a chunk of HTML.
 
 <p>Displayer functions are triggered by <tt>&lt;display&gt;</tt>
 tags in templates.  The <tt>call</tt> attribute of the tag
@@ -1270,7 +1270,7 @@ displayer functions, the user interface can be highly customized.
 <li><strong>plain</strong>: display a String property directly;
 display a Date property in a specified time zone with an option
 to omit the time from the date stamp; for a Link or Multilink
-property, display the key strings of the linked nodes (or the
+property, display the key strings of the linked items (or the
 ids if the linked class has no key property)
 
 <li><strong>field</strong>: display a property like the
@@ -1281,8 +1281,8 @@ to be edited
 a menu of the available choices
 
 <li><strong>link</strong>: for a Link or Multilink property,
-display the names of the linked nodes, hyperlinked to the
-item views on those nodes
+display the names of the linked items, hyperlinked to the
+item views on those items
 
 <li><strong>count</strong>: for a Multilink property, display
 a count of the number of links in the list
@@ -1323,9 +1323,9 @@ has been added for clarity):
 specifier: the layout part and the filter part.
 The layout part consists of the query parameters that
 begin with colons, and it determines the way that the
-properties of selected nodes are displayed.
+properties of selected items are displayed.
 The filter part consists of all the other query parameters,
-and it determines the criteria by which nodes 
+and it determines the criteria by which items 
 are selected for display.
 
 <p>The filter part is interactively manipulated with
@@ -1339,7 +1339,7 @@ properties and the <em>intersection</em> of the sets
 of items with values matching any specified Multilink
 properties.
 
-<p>The example specifies an index of "issue" nodes.
+<p>The example specifies an index of "issue" items.
 Only items with a "status" of <em>either</em>
 "unread" or "in-progres" or "resolved" are displayed,
 and only items with "topic" values including <em>both</em>
@@ -1409,9 +1409,9 @@ to display the values of the item's properties.
 
 <p>String and Date values are sorted in the natural way.
 Link properties are sorted according to the value of the
-"order" property on the linked nodes if it is present; or
-otherwise on the key string of the linked nodes; or
-finally on the node ids.  Multilink properties are
+"order" property on the linked items if it is present; or
+otherwise on the key string of the linked items; or
+finally on the item ids.  Multilink properties are
 sorted according to how many links are present.
 
 <h3>8.4. Item Views</h3>
@@ -1494,7 +1494,7 @@ detector to react by sending out this message to the nosy list).
 
 <p>The spool section lists messages in the item's "messages"
 property.  The index of messages displays the "date", "author",
-and "summary" properties on the message nodes, and selecting a
+and "summary" properties on the message items, and selecting a
 message takes you to its content.
 
 <p><hr>
@@ -1503,7 +1503,7 @@ message takes you to its content.
 <p>The design described above should be general enough
 to permit the use of Roundup for bug tracking, managing
 projects, managing patches, or holding discussions.  By
-using nodes of multiple types, one could deploy a system
+using items of multiple types, one could deploy a system
 that maintains requirement specifications, catalogs bugs,
 and manages submitted patches, where patches could be
 linked to the bugs and requirements they address.
