@@ -2020,9 +2020,13 @@ env: %(env)s
         if filter and self.filter:
             l.append(s%(sc+'filter', ','.join(self.filter)))
         if filterspec:
+            props = self.client.db.getclass(self.classname).getprops()
             for k,v in self.filterspec.items():
                 if type(v) == type([]):
-                    l.append(s%(k, ','.join(v)))
+                    if isinstance(props[k], hyperdb.String):
+                        l.append(s%(k, ' '.join(v)))
+                    else:
+                        l.append(s%(k, ','.join(v)))
                 else:
                     l.append(s%(k, v))
         if self.search_text:
@@ -2068,10 +2072,14 @@ env: %(env)s
             l.append(sc+'startwith=%s'%self.startwith)
 
         # finally, the remainder of the filter args in the request
+        props = self.client.db.getclass(self.classname).getprops()
         for k,v in self.filterspec.items():
             if not args.has_key(k):
                 if type(v) == type([]):
-                    l.append('%s=%s'%(k, ','.join(v)))
+                    if isinstance(props[k], hyperdb.String):
+                        l.append(s%(k, ' '.join(v)))
+                    else:
+                        l.append(s%(k, ','.join(v)))
                 else:
                     l.append('%s=%s'%(k, v))
         return '%s?%s'%(url, '&'.join(l))
