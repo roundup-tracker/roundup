@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: hyperdb.py,v 1.105 2004-11-12 04:07:03 richard Exp $
+#
+# $Id: hyperdb.py,v 1.106 2004-11-13 07:11:14 a1s Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -163,7 +163,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         raise NotImplementedError
 
     def post_init(self):
-        """Called once the schema initialisation has finished. 
+        """Called once the schema initialisation has finished.
            If 'refresh' is true, we want to rebuild the backend
            structures.
         """
@@ -245,7 +245,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
 
     def storefile(self, classname, nodeid, property, content):
         '''Store the content of the file in the database.
-        
+
            The property may be None, in which case the filename does not
            indicate which property is being saved.
         '''
@@ -292,12 +292,19 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         '''
         raise NotImplementedError
 
+    def close(self):
+        """Close the database.
+
+        This method must be called at the end of processing.
+
+        """
+
 #
 # The base Class class
 #
 class Class:
     """ The handle to a particular class of nodes in a hyperdatabase.
-        
+
         All methods except __repr__ and getnode must be implemented by a
         concrete backend Class.
     """
@@ -325,13 +332,13 @@ class Class:
 
         The values of arguments must be acceptable for the types of their
         corresponding properties or a TypeError is raised.
-        
+
         If this class has a key property, it must be present and its value
         must not collide with other key strings or a ValueError is raised.
-        
+
         Any other properties on this class that are missing from the
         'propvalues' dictionary are set to None.
-        
+
         If an id in a link or multilink property does not refer to a valid
         node, an IndexError is raised.
         """
@@ -367,7 +374,7 @@ class Class:
 
     def set(self, nodeid, **propvalues):
         """Modify a property on an existing node of this class.
-        
+
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
 
@@ -387,10 +394,10 @@ class Class:
 
     def retire(self, nodeid):
         """Retire a node.
-        
+
         The properties on the node remain available from the get() method,
         and the node's id is never reused.
-        
+
         Retired nodes are not returned by the find(), list(), or lookup()
         methods, and other nodes may reuse the values of their key properties.
         """
@@ -402,7 +409,7 @@ class Class:
         Make node available for all operations like it was before retirement.
         '''
         raise NotImplementedError
-    
+
     def is_retired(self, nodeid):
         '''Return true if the node is rerired
         '''
@@ -410,7 +417,7 @@ class Class:
 
     def destroy(self, nodeid):
         """Destroy a node.
-        
+
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
                  deleted
@@ -489,7 +496,7 @@ class Class:
     def find(self, **propspec):
         """Get the ids of nodes in this class which link to the given nodes.
 
-        'propspec' consists of keyword args propname={nodeid:1,}   
+        'propspec' consists of keyword args propname={nodeid:1,}
         'propname' must be the name of a property in this class, or a
         KeyError is raised.  That property must be a Link or Multilink
         property, or a TypeError is raised.
@@ -782,7 +789,7 @@ class Node:
         return l
     def has_key(self, name):
         return self.cl.getprops().has_key(name)
-    def get(self, name, default=None): 
+    def get(self, name, default=None):
         if self.has_key(name):
             return self[name]
         else:
@@ -821,4 +828,4 @@ def Choice(name, db, *options):
         cl.create(name=options[i], order=i)
     return hyperdb.Link(name)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
