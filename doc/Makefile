@@ -10,5 +10,5 @@ COMPILED := $(SOURCE:.txt=.html)
 all: ${COMPILED}
 
 %.html: %.txt
-	${PYTHON} ${STXTOHTML} -d $< $@
+	${PYTHON} ${STXTOHTML} --report=warning -d $< $@
 

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.14 $
+:Version: $Revision: 1.15 $
 
 .. contents::
 
@@ -124,12 +124,14 @@ Python -- see `testing your python`_.
 
       You will now be directed to edit the instance configuration and
       initial schema. See `Customising Roundup`_ for details on configuration
-      and schema changes.
+      and schema changes. Note that you may change any of the configuration
+      after you've initialised the instance - it's just better to have valid
+      values for this stuff now.
 
    d.  ``roundup-admin initialise``
 
       This step initialises the instance database. You will need to supply
-      an admin password at this step. You will be prompted:
+      an admin password at this step. You will be prompted::
 
           Admin Password:
                  Confirm:
