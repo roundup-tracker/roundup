@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.7 2002-09-26 13:38:35 gmcm Exp $
+# $Id: password.py,v 1.8 2002-12-18 23:57:09 richard Exp $
 
 __doc__ = """
 Password handling (encoding, decoding).
@@ -31,6 +31,8 @@ except:
 def encodePassword(plaintext, scheme, other=None):
     '''Encrypt the plaintext password.
     '''
+    if plaintext is None:
+        plaintext = ""
     if scheme == 'SHA':
         s = sha.sha(plaintext).hexdigest()
     elif scheme == 'crypt' and crypt is not None:

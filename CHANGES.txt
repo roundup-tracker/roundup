@@ -7,6 +7,7 @@ are given with the most recent entry first.
 - hyperlinking of special text (url, email, item designator) in messages
 - fixed time default in date.py
 - fixed error in cgi/templates.py (sf bug 652089)
+- fixed handling of missing password (sf bug 655632)
 
 
 2002-12-11 0.5.3
