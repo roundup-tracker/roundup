@@ -7,10 +7,6 @@ a[href]:hover { color:blue; text-decoration: underline; }
 a[href]:link { color:blue; text-decoration: none; }
 a[href] { color:blue; text-decoration: none; }
 
-a.classhelp:hover { font-weight: bold; }
-a.classhelp:link { font-weight: bold; }
-a.classhelp { font-weight: bold; }
-
 table.body {
   border: 0;
   padding: 0;

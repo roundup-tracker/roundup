@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.33 2003-01-27 16:40:37 kedder Exp $
+# $Id: dbinit.py,v 1.34 2003-04-10 05:12:42 richard Exp $
 
 import os
 
@@ -96,20 +96,23 @@ def open(name=None):
     #
     # SECURITY SETTINGS
     #
-    # new permissions for this schema
+    # See the configuration and customisation document for information
+    # about security setup.
+    # Add new Permissions for this schema
     for cl in 'issue', 'file', 'msg', 'user', 'query', 'keyword':
         db.security.addPermission(name="Edit", klass=cl,
             description="User is allowed to edit "+cl)
         db.security.addPermission(name="View", klass=cl,
             description="User is allowed to access "+cl)
 
-    # Assign the access and edit permissions for issue, file and message
+    # Assign the access and edit Permissions for issue, file and message
     # to regular users now
     for cl in 'issue', 'file', 'msg', 'query', 'keyword':
         p = db.security.getPermission('View', cl)
         db.security.addPermissionToRole('User', p)
         p = db.security.getPermission('Edit', cl)
         db.security.addPermissionToRole('User', p)
+
     # and give the regular users access to the web and email interface
     p = db.security.getPermission('Web Access')
     db.security.addPermissionToRole('User', p)

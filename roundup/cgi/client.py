@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.112 2003-04-10 04:32:46 richard Exp $
+# $Id: client.py,v 1.113 2003-04-10 05:12:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -31,6 +31,8 @@ class  NotModified(HTTPException):
 # this var must contain a file to write the mail to
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
+# used by a couple of routines
+chars = string.letters+string.digits
 
 # XXX actually _use_ FormError
 class FormError(ValueError):
@@ -694,7 +696,6 @@ class Client:
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
 
-    chars = string.letters+string.digits
     def registerAction(self):
         '''Attempt to create a new user based on the contents of the form
         and then set the cookie.
@@ -721,7 +722,7 @@ class Client:
             pass
 
         # generate the one-time-key and store the props for later
-        otk = ''.join([random.choice(self.chars) for x in range(32)])
+        otk = ''.join([random.choice(chars) for x in range(32)])
         for propname, proptype in self.db.user.getprops().items():
             value = props.get(propname, None)
             if value is None:
@@ -885,7 +886,7 @@ please visit the following URL:
                 self.opendb('admin')
 
             # change the password
-            newpw = ''.join([random.choice(self.chars) for x in range(8)])
+            newpw = password.generatePassword()
 
             cl = self.db.user
 # XXX we need to make the "default" page be able to display errors!
@@ -939,7 +940,7 @@ Your password is now: %(password)s
             return
 
         # generate the one-time-key and store the props for later
-        otk = ''.join([random.choice(self.chars) for x in range(32)])
+        otk = ''.join([random.choice(chars) for x in range(32)])
         self.db.otks.set(otk, uid=uid, __time=time.time())
 
         # send the email

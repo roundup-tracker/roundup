@@ -73,15 +73,14 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.113 2003-03-24 02:54:35 richard Exp $
+$Id: mailgw.py,v 1.114 2003-04-10 05:12:41 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys
 import traceback, MimeWriter, rfc822
-import hyperdb, date, password
 
-import rfc2822
+from roundup import hyperdb, date, password, rfc2822
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -1026,6 +1025,7 @@ def uidFromAddress(db, address, create=1, **user_props):
     if create:
         return db.user.create(username=address, address=address,
             realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
+            password=password.Password(password.generatePassword()),
             **user_props)
     else:
         return 0
