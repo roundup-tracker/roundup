@@ -13,6 +13,7 @@ Fixed:
 - roundup-server -g option not recognised (sf bug 952310)
 - HTML templating isset() inverted (sf bug 951779)
 - otks manager missing (sf bug 952931)
+- mention DEFAULT_TIMEZONE requirement in upgrading doc (sf bug 952932)
 
 
 2004-05-10 0.7.1
