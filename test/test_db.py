@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.64 2003-01-12 00:43:43 richard Exp $ 
+# $Id: test_db.py,v 1.65 2003-01-12 23:53:20 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -570,6 +570,10 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
 
+    def testFilteringID(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
+
     def testFilteringString(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'title': 'issue one'}, ('+','id'), (None,None)), ['1'])
@@ -698,6 +702,32 @@ class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, gadfly)
 
 
+class mysqlDBTestCase(anydbmDBTestCase):
+    def setUp(self):
+        from roundup.backends import mysql
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        config.MYSQL_DATABASE='mysql@localhost root rootpasswd'.split()
+        os.makedirs(config.DATABASE + '/files')
+        self.db = mysql.Database(config, 'admin')
+        setupSchema(self.db, 1, mysql)
+
+class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import mysql
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        config.MYSQL_DATABASE='mysql@localhost root rootpasswd'.split()
+        os.makedirs(config.DATABASE + '/files')
+        db = mysql.Database(config, 'admin')
+        setupSchema(db, 1, mysql)
+        db.close()
+        self.db = sqlite.Database(config)
+        setupSchema(self.db, 0, mysql)
+
+
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import sqlite
@@ -707,9 +737,6 @@ class sqliteDBTestCase(anydbmDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = sqlite.Database(config, 'admin')
         setupSchema(self.db, 1, sqlite)
-
-    def testIDGeneration(self):
-        pass
 
 class sqliteReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -791,6 +818,11 @@ def suite():
 #    return unittest.TestSuite(l)
 
     from roundup import backends
+#    if hasattr(backends, 'mysql'):
+#        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+#        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+#    return unittest.TestSuite(l)
+
     if hasattr(backends, 'gadfly'):
         l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
         l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))

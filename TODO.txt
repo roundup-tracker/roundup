@@ -58,5 +58,7 @@ pending web       multilink item removal action with retirement
 pending web       implement a python dict version of the form values
 pending web       implement the request.url attribute?
 pending web       UNIX init.d script for roundup-server
+
+bug     hyperdb   need unit tests for firing of auditors and reactors
 ======= ========= =============================================================
 

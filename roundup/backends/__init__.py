@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.20 2002-10-07 00:52:51 richard Exp $
+# $Id: __init__.py,v 1.21 2003-01-12 23:53:19 richard Exp $
 
 ''' Container for the hyperdb storage backend implementations.
 
@@ -55,6 +55,15 @@ else:
     import back_gadfly
     gadfly = back_gadfly
     __all__.append('gadfly')
+
+try:
+    import MySQLdb
+except ImportError, message:
+    if str(message) != 'No module named MySQLdb': raise
+else:
+    import back_mysql
+    mysql = back_mysql
+    __all__.append('mysql')
 
 try:
     import sqlite

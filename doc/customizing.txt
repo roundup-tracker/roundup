@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.69 $
+:Version: $Revision: 1.70 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -999,7 +999,7 @@ forms:
    in place if the "foo" form variable doesn't exist.
 
 **String Expressions** - eg. ``string:hello ${user/name}``
-   These expressions are simple string interpolations (though they can be just
+   These expressions are simple string interpolations - though they can be just
    plain strings with no interpolation if you want. The expression in the
    ``${ ... }`` is just a path expression as above.
 

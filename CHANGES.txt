@@ -11,6 +11,11 @@ are given with the most recent entry first.
 - applied patch for nicer history display (sf feature 638280)
 
 
+2003-??-?? 0.5.5
+- fixed rdbms searching by ID (sf bug 666615)
+- detect corrupted index and raise semi-useful exception (sf bug 666767)
+
+
 2003-01-10 0.5.4
 - key the templates cache off full path, not filename
 - implemented whole-database locking
