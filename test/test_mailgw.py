@@ -8,14 +8,45 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.14 2002-03-18 18:32:00 rochecompaan Exp $
+# $Id: test_mailgw.py,v 1.15 2002-03-19 06:37:00 richard Exp $
 
-import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
+import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
 from roundup.mailgw import MailGW
 from roundup import init, instance
 
-class MailgwTestCase(unittest.TestCase):
+# TODO: make this output only enough equal lines for context, not all of
+# them
+class DiffHelper:
+    def compareStrings(self, s2, s1):
+        '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
+           the first to be the "original" but in the calls in this file,
+           the second arg is the original. Ho hum.
+        '''
+        if s1 == s2:
+            return
+        l1=s1.split('\n')
+        l2=s2.split('\n')
+        s = difflib.SequenceMatcher(None, l1, l2)
+        res = ['Generated message not correct (diff follows):']
+        for value, s1s, s1e, s2s, s2e in s.get_opcodes():
+            if value == 'equal':
+                for i in range(s1s, s1e):
+                    res.append('  %s'%l1[i])
+            elif value == 'delete':
+                for i in range(s1s, s1e):
+                    res.append('- %s'%l1[i])
+            elif value == 'insert':
+                for i in range(s2s, s2e):
+                    res.append('+ %s'%l2[i])
+            elif value == 'replace':
+                for i, j in zip(range(s1s, s1e), range(s2s, s2e)):
+                    res.append('- %s'%l1[i])
+                    res.append('+ %s'%l2[j])
+
+        raise AssertionError, '\n'.join(res)
+
+class MailgwTestCase(unittest.TestCase, DiffHelper):
     count = 0
     schema = 'classic'
     def setUp(self):
@@ -113,7 +144,7 @@ This is a test submission of a new issue.
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         handler.main(message)
 
-        self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain
@@ -142,7 +173,7 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''', 'Generated message not correct')
+''')
 
     # BUG
     # def testMultipart(self):
@@ -168,7 +199,7 @@ This is a followup
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
 
-        self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, mary@test, john@test
 Content-Type: text/plain
@@ -196,7 +227,7 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''', 'Generated message not correct')
+''')
 
     def testFollowup2(self):
         self.testNewIssue()
@@ -212,7 +243,7 @@ This is a second followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
-        self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
@@ -238,7 +269,7 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''', 'Generated message not correct')
+''')
 
     def testFollowupTitleMatch(self):
         self.testNewIssue()
@@ -255,7 +286,7 @@ This is a followup
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
 
-        self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, mary@test, john@test
 Content-Type: text/plain
@@ -283,7 +314,7 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''') #, 'Generated message not correct')
+''')
 
     def testEnc01(self):
         self.testNewIssue()
@@ -303,8 +334,7 @@ A message with encoding (encoded oe =F6)
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
-        message_data = open(os.environ['SENDMAILDEBUG']).read()
-        self.assertEqual(message_data,
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
@@ -329,7 +359,7 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''', 'Generated message not correct')
+''')
 
 
     def testMultipartEnc01(self):
@@ -357,8 +387,7 @@ A message with first part encoded (encoded oe =F6)
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
-        message_data = open(os.environ['SENDMAILDEBUG']).read()
-        self.assertEqual(message_data,
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
@@ -383,20 +412,23 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''', 'Generated message not correct')
+''')
 
 class ExtMailgwTestCase(MailgwTestCase):
     schema = 'extended'
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase, 'test'),
-         unittest.makeSuite(ExtMailgwTestCase, 'test')
+#         unittest.makeSuite(ExtMailgwTestCase, 'test')
     ]
     return unittest.TestSuite(l)
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/03/18 18:32:00  rochecompaan
+# All messages sent to the nosy list are now encoded as quoted-printable.
+#
 # Revision 1.13  2002/02/15 07:08:45  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.
