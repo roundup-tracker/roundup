@@ -15,18 +15,19 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.1 2003-10-25 22:53:26 richard Exp $ 
+# $Id: test_mysql.py,v 1.2 2003-10-26 14:13:04 jlgijsbers Exp $ 
 
 import unittest, os, shutil, time, imp
 
 from roundup.hyperdb import DatabaseError
-from roundup import init
+from roundup import init, backends
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, nodbconfig, \
     ClassicInitTest
 
 class mysqlOpener:
-    from roundup.backends import mysql as module
+    if hasattr(backends, 'mysql'):
+        from roundup.backends import mysql as module
 
     def tearDown(self):
         self.db.close()
@@ -92,8 +93,6 @@ MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
 
 def test_suite():
     suite = unittest.TestSuite()
-
-    from roundup import backends
     if not hasattr(backends, 'mysql'):
         return suite
 
