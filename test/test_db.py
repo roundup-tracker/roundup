@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.63.2.1 2003-02-27 11:21:04 richard Exp $ 
+# $Id: test_db.py,v 1.63.2.2 2003-03-18 00:43:29 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -494,12 +494,13 @@ class anydbmDBTestCase(MyTestCase):
         self.db.issue.set(id, status='2')
         self.db.commit()
 
-        # sleep for at least a second, then get a date to pack at
-        time.sleep(1)
+        # sleep for at least a second (packing granularity), then get a
+        # date to pack at
+        time.sleep(2)
         pack_before = date.Date('.')
 
-        # wait another second and add one more entry
-        time.sleep(1)
+        # wait for at least another second and add one more entry
+        time.sleep(2)
         self.db.issue.set(id, status='3')
         self.db.commit()
         jlen = len(self.db.getjournal('issue', id))
@@ -817,12 +818,18 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 
 def suite():
     l = [
-         unittest.makeSuite(anydbmDBTestCase, 'test'),
-         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
+#         unittest.makeSuite(anydbmDBTestCase, 'test'),
+#         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
 #    return unittest.TestSuite(l)
 
     from roundup import backends
+
+    if hasattr(backends, 'bsddb3'):
+        l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
+        l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
+    return unittest.TestSuite(l)
+
     if hasattr(backends, 'gadfly'):
         l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
         l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
@@ -834,10 +841,6 @@ def suite():
     if hasattr(backends, 'bsddb'):
         l.append(unittest.makeSuite(bsddbDBTestCase, 'test'))
         l.append(unittest.makeSuite(bsddbReadOnlyDBTestCase, 'test'))
-
-    if hasattr(backends, 'bsddb3'):
-        l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
-        l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
 
     if hasattr(backends, 'metakit'):
         l.append(unittest.makeSuite(metakitDBTestCase, 'test'))
