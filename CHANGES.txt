@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2004-??-?? 0.7.0
+2004-05-06 0.7.0
 Fixed:
 - sqlite migration drops some journal information (thanks David Linke)
 - user editing Role entry help text always appears
@@ -16,6 +16,7 @@ Fixed:
 - fixed static file serving
 - fixed rego from email address (sf bug 947414)
 - fixed sqlite journal ordering issue
+- fixed mysql date range filtering
 
 
 2004-04-18 0.7.0b3
