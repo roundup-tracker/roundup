@@ -9,6 +9,9 @@ Feature:
 - remove "manual" locking of sqlite database
 - create a new RDBMS cursor after committing
 - added basic logging, and configuration of it and python's logging module
+- add a default argument to the DateHTMLProperty.field method, and an
+  optional Interval (string or object) to the DateHTMLProperty.now (patch
+  from Vickenty Fesunov)
 
 
 2004-??-?? 0.7.5

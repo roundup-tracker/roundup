@@ -1399,7 +1399,7 @@ class DateHTMLProperty(HTMLProperty):
             offset = self._offset
         return str(self._value.local(offset))
 
-    def now(self):
+    def now(self, str_interval = None):
         ''' Return the current time.
 
             This is useful for defaulting a new value. Returns a
@@ -1407,10 +1407,23 @@ class DateHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-        return DateHTMLProperty(self._client, self._classname, self._nodeid,
-            self._prop, self._formname, date.Date('.'))
+	ret = date.Date('.')
 
-    def field(self, size = 30):
+	if isinstance(str_interval, basestring):
+		sign = 1
+		if str_interval[0] == '-':
+			sign = -1
+			str_interval = str_interval[1:]
+		interval = date.Interval(str_interval)
+		if sign > 0:
+			ret = ret + interval
+		else:
+			ret = ret - interval
+		
+        return DateHTMLProperty(self._client, self._classname, self._nodeid,
+            self._prop, self._formname, ret)
+
+    def field(self, size = 30, default = None):
         ''' Render a form edit field for the property
 
             If not editable, just display the value via plain().
@@ -1418,10 +1431,27 @@ class DateHTMLProperty(HTMLProperty):
         self.view_check()
 
         if self._value is None:
+            if default is None:
+                raw_value = None
+            else:
+                if isinstance(default, basestring):
+                    raw_value = Date(default)
+                elif isinstance(default, date.Date):
+                    raw_value = default
+		elif isinstance(default, DateHTMLProperty):
+		    raw_value = default._value
+                else:
+                    raise ValueError, _('default value for ' + \
+                        'DateHTMLProperty must be either DateHTMLProperty ' + \
+			'or string date representation.')
+        else:
+            raw_value = self._value
+
+        if raw_value is None:
             value = ''
         else:
             tz = self._db.getUserTimezone()
-            value = cgi.escape(str(self._value.local(tz)))
+            value = cgi.escape(str(raw_value.local(tz)))
 
         if self.is_edit_ok():
             value = '&quot;'.join(value.split('"'))
