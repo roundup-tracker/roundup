@@ -287,7 +287,7 @@ class HTMLClass(HTMLPermissions):
             if form.has_key(item):
                 if isinstance(prop, hyperdb.Multilink):
                     value = lookupIds(self._db, prop,
-                        handleListCGIValue(None, form[item]))
+                        handleListCGIValue(form[item]))
                 elif isinstance(prop, hyperdb.Link):
                     value = form[item].value.strip()
                     if value:
@@ -1174,30 +1174,17 @@ def make_sort_function(db, classname):
         return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
     return sortfunc
 
-def handleListCGIValue(klass, value, num_re=re.compile('\d+')):
+def handleListCGIValue(value):
     ''' Value is either a single item or a list of items. Each item has a
         .value that we're actually interested in.
     '''
     if isinstance(value, type([])):
-        l = [value.value for value in value]
+        return [value.value for value in value]
     else:
         value = value.value.strip()
         if not value:
             return []
-        l = value.split(',')
-
-    if klass is None:
-        return l
-
-    # otherwise, try to make sure the values are itemids of the given class
-    r = []
-    for itemid in l:
-        # make sure we're looking at an itemid
-        if not num_re.match(itemid):
-            itemid = self._klass.lookup(itemid)
-        else:
-            r.append(itemid)
-    return r
+        return value.split(',')
 
 class ShowDict:
     ''' A convenience access to the :columns index parameters
@@ -1251,7 +1238,7 @@ class HTMLRequest:
         # extract the index display information from the form
         self.columns = []
         if self.form.has_key(':columns'):
-            self.columns = handleListCGIValue(None, self.form[':columns'])
+            self.columns = handleListCGIValue(self.form[':columns'])
         self.show = ShowDict(self.columns)
 
         # sorting
@@ -1279,7 +1266,7 @@ class HTMLRequest:
         # filtering
         self.filter = []
         if self.form.has_key(':filter'):
-            self.filter = handleListCGIValue(None, self.form[':filter'])
+            self.filter = handleListCGIValue(self.form[':filter'])
         self.filterspec = {}
         db = self.client.db
         if self.classname is not None:
@@ -1290,8 +1277,8 @@ class HTMLRequest:
                     fv = self.form[name]
                     if (isinstance(prop, hyperdb.Link) or
                             isinstance(prop, hyperdb.Multilink)):
-                        cl = db.getclass(prop.classname)
-                        self.filterspec[name] = handleListCGIValue(cl, fv)
+                        self.filterspec[name] = lookupIds(db, prop,
+                            handleListCGIValue(fv))
                     else:
                         self.filterspec[name] = fv.value
 
@@ -1357,7 +1344,7 @@ class HTMLRequest:
         d.update(self.__dict__)
         f = ''
         for k in self.form.keys():
-            f += '\n      %r=%r'%(k,handleListCGIValue(None, self.form[k]))
+            f += '\n      %r=%r'%(k,handleListCGIValue(self.form[k]))
         d['form'] = f
         e = ''
         for k,v in self.env.items():
