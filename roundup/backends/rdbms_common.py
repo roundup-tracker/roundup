@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.124 2004-07-20 05:58:07 richard Exp $
+# $Id: rdbms_common.py,v 1.125 2004-07-27 01:18:25 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -58,6 +58,18 @@ def _bool_cvt(value):
         return {'TRUE': 1, 'FALSE': 0}[value]
     # assume it's a number returned from the db API
     return int(value)
+
+def connection_dict(config, dbnamestr=None):
+    ''' Used by Postgresql and MySQL to detemine the keyword args for
+    opening the database connection.'''
+    d = { }
+    if dbnamestr:
+        d[dbnamestr] = config.RDBMS_NAME
+    for name in 'host', 'port', 'password', 'user':
+        cvar = 'RDBMS_'+name.upper()
+        if config[cvar] is not None:
+            d[name] = config[cvar]
+    return d
 
 class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     ''' Wrapper around an SQL database that presents a hyperdb interface.

@@ -39,14 +39,13 @@ import MySQLdb
 import os, shutil
 from MySQLdb.constants import ER
 
-
 def db_nuke(config):
     """Clear all database contents and drop database itself"""
     if db_exists(config):
-        conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-            config.MYSQL_DBPASSWORD)
+        kwargs = rdbms_common.connection_dict(config)
+        conn = MySQLdb.connect(**kwargs)
         try:
-            conn.select_db(config.MYSQL_DBNAME)
+            conn.select_db(config.RDBMS_NAME)
         except:
             # no, it doesn't exist
             pass
@@ -54,12 +53,13 @@ def db_nuke(config):
             cursor = conn.cursor()
             cursor.execute("SHOW TABLES")
             tables = cursor.fetchall()
+            # stupid MySQL bug requires us to drop all the tables first
             for table in tables:
                 command = 'DROP TABLE %s'%table[0]
                 if __debug__:
                     config.logging.getLogger('hyperdb').debug(command)
                 cursor.execute(command)
-            command = "DROP DATABASE %s"%config.MYSQL_DBNAME
+            command = "DROP DATABASE %s"%config.RDBMS_NAME
             config.logging.getLogger('hyperdb').info(command)
             cursor.execute(command)
             conn.commit()
@@ -70,10 +70,10 @@ def db_nuke(config):
 
 def db_create(config):
     """Create the database."""
-    conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-        config.MYSQL_DBPASSWORD)
+    kwargs = rdbms_common.connection_dict(config)
+    conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
-    command = "CREATE DATABASE %s"%config.MYSQL_DBNAME
+    command = "CREATE DATABASE %s"%config.RDBMS_NAME
     config.logging.getLogger('hyperdb').info(command)
     cursor.execute(command)
     conn.commit()
@@ -81,17 +81,11 @@ def db_create(config):
 
 def db_exists(config):
     """Check if database already exists."""
-    conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-        config.MYSQL_DBPASSWORD)
-#    tables = None
+    kwargs = rdbms_common.connection_dict(config)
+    conn = MySQLdb.connect(**kwargs)
     try:
         try:
-            conn.select_db(config.MYSQL_DBNAME)
-#            cursor = conn.cursor()
-#            cursor.execute("SHOW TABLES")
-#            tables = cursor.fetchall()
-#            if __debug__:
-#                print >>hyperdb.DEBUG, "tables %s"%(tables,)
+            conn.select_db(config.RDBMS_NAME)
         except MySQLdb.OperationalError:
             return 0
     finally:
@@ -131,10 +125,11 @@ class Database(Database):
     }
 
     def sql_open_connection(self):
-        db = getattr(self.config, 'MYSQL_DATABASE')
-        self.config.logging.getLogger('hyperdb').info('open database %r'%(db,))
+        kwargs = rdbms_common.connection_dict(config, 'db')
+        self.config.logging.getLogger('hyperdb').info('open database %r'%(
+            kwargs['db'],))
         try:
-            conn = MySQLdb.connect(*db)
+            conn = MySQLdb.connect(**kwargs)
         except MySQLdb.OperationalError, message:
             raise DatabaseError, message
         cursor = conn.cursor()

@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.10 2004-07-26 09:13:17 a1s Exp $
+# $Id: configuration.py,v 1.11 2004-07-27 01:18:25 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -443,6 +443,18 @@ SETTINGS = (
             "You MUST include a trailing '/' in the URL."),
         (MailAddressOption, "email", "issue_tracker",
             "Email address that mail to roundup should go to."),
+    )),
+    ("rdbms", (
+        (Option, 'name', 'roundup',
+            "Name of the Postgresql or MySQL database to use."),
+        (NullableOption, 'host', 'localhost'
+            "Hostname that the Postgresql or MySQL database resides on."),
+        (NullableOption, 'port', '5432'
+            "Port number that the Postgresql or MySQL database resides on."),
+        (NullableOption, 'user', 'roundup'
+            "Postgresql or MySQL database user that Roundup should use."),
+        (NullableOption, 'password', 'roundup',
+            "Password for the Postgresql or MySQL database user."),
     )),
     ("logging", (
         (FilePathOption, "config", "",
