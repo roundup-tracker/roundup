@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.26.2.5 2004-02-15 22:22:20 richard Exp $
+$Id: roundup_server.py,v 1.26.2.6 2004-04-09 01:28:24 richard Exp $
 """
 
 # python version check
@@ -87,9 +87,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         except:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and exc == socket.timeout:
-                s = StringIO.StringIO()
-                traceback.print_exc(None, s)
-                self.log_message(str(s.getvalue()))
+                self.log_error('timeout')
             else:
                 # it'd be nice to be able to detect if these are going to have
                 # any effect...
