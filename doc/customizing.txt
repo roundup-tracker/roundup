@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.145 $
+:Version: $Revision: 1.146 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3874,7 +3874,8 @@ Editing multiple items in an index view
 To edit the status of all items in the item index view, edit the
 ``issue.item.html``:
 
-1. add a form around the listing table, so at the top it reads::
+1. add a form around the listing table (separate from the existing
+   index-page form), so at the top it reads::
 
     <form method="POST" tal:attributes="action request/classname">
      <table class="list">
