@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.7 $
+:Version: $Revision: 1.8 $
 
 .. contents::
 
@@ -118,7 +118,7 @@ Set aside 15-30 minutes.
           Select backend [anydbm]: anydbm
 
       You will now be directed to edit the instance configuration and
-      initial schema. See `Customizing Roundup`_ for details on configuration
+      initial schema. See `Customising Roundup`_ for details on configuration
       and schema changes.
 
    d.  ``roundup-admin initialise``
