@@ -662,7 +662,9 @@ class HTMLItem(HTMLPermissions):
         # create a new request and override the specified args
         req = HTMLRequest(self._client)
         req.classname = self._klass.get(self._nodeid, 'klass')
-        req.updateFromURL(self._klass.get(self._nodeid, 'url'))
+        name = self._klass.get(self._nodeid, 'name')
+        req.updateFromURL(self._klass.get(self._nodeid, 'url') +
+            '&:queryname=%s'%urllib.quote(name))
 
         # new template, using the specified classname and request
         pt = Templates(self._db.config.TEMPLATES).get(req.classname, 'search')
