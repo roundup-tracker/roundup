@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.23 2001-08-29 04:47:18 richard Exp $
+# $Id: cgi_client.py,v 1.24 2001-08-29 04:49:39 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -328,7 +328,7 @@ class Client:
 
             # now create the message
             content = '\n'.join(m)
-            message_id = self.db.msg.create(author='admin', #self.getuid(),
+            message_id = self.db.msg.create(author=self.getuid(),
                 recipients=[], date=date.Date('.'), summary=summary,
                 content=content)
             messages = cl.get(nid, 'messages')
@@ -513,6 +513,10 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/08/29 04:47:18  richard
+# Fixed CGI client change messages so they actually include the properties
+# changed (again).
+#
 # Revision 1.22  2001/08/17 00:08:10  richard
 # reverted back to sending messages always regardless of who is doing the web
 # edit. change notes weren't being saved. bleah. hackish.
