@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.5 2004-11-29 02:55:47 richard Exp $
+# $Id: test_indexer.py,v 1.6 2005-01-05 22:28:32 jlgijsbers Exp $
 
 import os, unittest, shutil
 
@@ -39,10 +39,10 @@ class IndexerTest(unittest.TestCase):
         self.dex.add_text('testing2', 'blah blah the world')
         self.assertEqual(self.dex.words, {'BLAH': {2: 2}, 'HELLO': {1: 1},
             'WORLD': {2: 1, 1: 1}})
-        self.assertEqual(self.dex.find(['world']), {2: 'testing2',
-            1: 'testing1'})
-        self.assertEqual(self.dex.find(['blah']), {2: 'testing2'})
-        self.assertEqual(self.dex.find(['blah', 'hello']), {})
+        self.assertEqual(self.dex.find(['world']), ['testing1',
+                                                    'testing2'])
+        self.assertEqual(self.dex.find(['blah']), ['testing2'])
+        self.assertEqual(self.dex.find(['blah', 'hello']), [])
         self.dex.save_index()
 
     def tearDown(self):
