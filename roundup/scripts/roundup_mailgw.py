@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.6 2002-09-13 00:08:44 richard Exp $
+# $Id: roundup_mailgw.py,v 1.6.2.1 2003-04-24 04:28:33 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -104,6 +104,10 @@ def main(args):
         db.close()
 
 def run():
+    # time out after a minute if we can
+    import socket
+    if hasattr(socket, 'setdefaulttimeout'):
+        socket.setdefaulttimeout(60)
     sys.exit(main(sys.argv))
 
 # call main

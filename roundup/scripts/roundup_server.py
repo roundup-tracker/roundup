@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.16.2.2 2003-02-06 05:44:49 richard Exp $
+$Id: roundup_server.py,v 1.16.2.3 2003-04-24 04:28:33 richard Exp $
 """
 
 # python version check
@@ -240,6 +240,10 @@ def abspath(path):
 def run():
     ''' Script entry point - handle args and figure out what to to.
     '''
+    # time out after a minute if we can
+    import socket
+    if hasattr(socket, 'setdefaulttimeout'):
+        socket.setdefaulttimeout(60)
     hostname = ''
     port = 8080
     pidfile = None
