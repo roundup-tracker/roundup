@@ -13,6 +13,37 @@ steps.
 
 .. contents::
 
+Migrating from 0.7.1 to 0.8.0
+=============================
+
+0.8.0 8-bit character set support
+---------------------------------
+
+Added support for custom encodings in http data.
+
+Inside Roundup, all strings are stored and processed in utf-8.
+Unfortunately, some older browsers do not work properly with
+utf8-encoded pages (e.g. Netscape Navigator 4 displays wrong
+characters in form fields).  This version allows to change
+the character set for http transfers.  To do so, you may add
+the following code to your ``page.html`` template::
+
+ <div tal:define="uri string:${request/base}${request/env/PATH_INFO}"
+  tal:omit-tag="python:1"
+ >
+  <a tal:attributes="href python:request.indexargs_href(uri,
+   {'@charset':'utf-8'})">utf-8</a>
+  <a tal:attributes="href python:request.indexargs_href(uri,
+   {'@charset':'koi8-r'})">koi8-r</a>
+ </div>
+
+(substitute ``koi8-r`` with appropriate charset for your language).
+Charset preference is kept in the browser cookie ``roundup_charset``.
+
+Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
+are misleading and should be removed.  Actual charset is sent in the
+true http header.
+
 Migrating from 0.7.0 to 0.7.1
 =============================
 
