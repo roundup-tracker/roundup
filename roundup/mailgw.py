@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.22 2001-10-21 03:35:13 richard Exp $
+$Id: mailgw.py,v 1.23 2001-10-21 04:00:20 richard Exp $
 '''
 
 
@@ -364,6 +364,19 @@ Subject was: "%s"
 '''%(nodeid, subject)
             messages.append(message_id)
             props['messages'] = messages
+
+            # if the message is currently 'unread', then set it to 'chatting'
+            if properties.has_key('status'):
+                try:
+                    # determine the id of 'unread' and 'chatting'
+                    unread_id = self.db.status.lookup('unread')
+                    chatting_id = self.db.status.lookup('chatting')
+                except KeyError:
+                    pass
+                else:
+                    if not props['status'] or props['status'] == unread_id:
+                        props['status'] = chatting_id
+
             cl.set(nodeid, **props)
         else:
             # If just an item class name is found there, we attempt to create a
@@ -418,6 +431,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/10/21 03:35:13  richard
+# bug #473125: Paragraph in e-mails
+#
 # Revision 1.21  2001/10/21 00:53:42  richard
 # bug #473130: Nosy list not set correctly
 #
