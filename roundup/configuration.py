@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.6 2004-07-25 15:09:07 a1s Exp $
+# $Id: configuration.py,v 1.7 2004-07-25 15:22:54 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -483,6 +483,11 @@ SETTINGS = (
             " from the message.\n"
             "Signatures are also stripped.",
             ["EMAIL_KEEP_QUOTED_TEXT"]),
+        (FilePathOption, "debug", "",
+            "Setting this option makes Roundup to write all outgoing email\n"
+            "messages to this file *instead* of sending them.\n"
+            "This option has the same effect as environment variable"
+            " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
         (BooleanOption, "leave_body_unchanged", "no",
             "Preserve the email body as is - that is,\n"
             "keep the citations _and_ signatures.",
