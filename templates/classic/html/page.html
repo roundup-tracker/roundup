@@ -114,7 +114,7 @@
    <a tal:attributes="href string:issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}" i18n:translate="">Your Issues</a><br>
    <a tal:attributes="href string:user${request/user/id}"
     i18n:translate="">Your Details</a><br>
-   <a tal:attributes="href python:request.indexargs_href('',
+   <a tal:attributes="href python:request.indexargs_url('',
        {'@action':'logout'})" i18n:translate="">Logout</a>
   </p>
   <p class="userblock">

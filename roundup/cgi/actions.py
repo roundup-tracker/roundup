@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.40.2.2 2005-01-05 22:13:28 richard Exp $
+#$Id: actions.py,v 1.40.2.3 2005-02-12 00:54:36 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -151,7 +151,7 @@ class SearchAction(Action):
 
             # The [1:] strips off the '?' character, it isn't part of the
             # query string.
-            url = req.indexargs_href('', {})[1:]
+            url = req.indexargs_url('', {})[1:]
 
             key = self.db.query.getkey()
             if key:
@@ -556,7 +556,7 @@ class EditItemAction(EditCommon):
             urllib.quote(self.template))
         if self.nodeid is None:
             req = templating.HTMLRequest(self.client)
-            url += '&' + req.indexargs_href('', {})[1:]
+            url += '&' + req.indexargs_url('', {})[1:]
         raise exceptions.Redirect, url
 
 class NewItemAction(EditCommon):
