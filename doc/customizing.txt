@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.109 $
+:Version: $Revision: 1.110 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -169,12 +169,14 @@ The configuration variables available are:
 
 **EMAIL_KEEP_QUOTED_TEXT** - ``'yes'`` or ``'no'``
  Keep email citations. Citations are the part of e-mail which the sender has
- quoted in their reply to previous e-mail.
+ quoted in their reply to previous e-mail with ``>`` or ``|`` characters at
+ the start of the line.
 
 **EMAIL_LEAVE_BODY_UNCHANGED** - ``'no'``
  Preserve the email body as is. Enabiling this will cause the entire message
- body to be stored, including all citations and signatures. It should be
- either ``'yes'`` or ``'no'``.
+ body to be stored, including all citations, signatures and Outlook-quoted
+ sections (ie. "Original Message" blocks). It should be either ``'yes'``
+ or ``'no'``.
 
 **MAIL_DEFAULT_CLASS** - ``'issue'`` or ``''``
  Default class to use in the mailgw if one isn't supplied in email
