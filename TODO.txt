@@ -4,6 +4,11 @@ Required:
 - Security review:
   - write up security model used in classic tracker
   - ensure classic template actually implements the model detailed
+- "Web Access" revocation needs work - the context should not be rendered
+- should redefinitions of a permission keyed off (name, classname) generate
+  an error or a warning? Something needs to be generated, as such
+  occurrances are an error in the schema...
+- check that the Provisional User example actually works as advertised
 
 Optionally:
 - clean up roundup.cgi (switch to config file, use proper logging, remove

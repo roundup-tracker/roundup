@@ -114,8 +114,7 @@ at so you may start playing. Three users will be set up:
 Installation
 ============
 
-Set aside 15-30 minutes. Please make sure you're using a supported version of
-Python -- see `testing your python`_. There's several steps to follow in your
+Set aside 15-30 minutes. There's several steps to follow in your
 installation:
 
 1. `basic installation steps`_ if Roundup is not installed on your system

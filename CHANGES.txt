@@ -37,6 +37,8 @@ Feature:
 - unless in debug mode, keep a single persistent connection through a
   single web or mailgw request.
 - HTTP Basic Authentication (sf patch 1067690)
+- extended security.addPermissionToRole to allow skipping the separate
+  getPermission call
 
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
@@ -49,6 +51,7 @@ Fixed:
 Fixed:
 - reset ID counters if the database is cleared (thanks William)
 - apply IE caching "fix" to automatically serve up all pages expired
+- fix typo (sf patch 1076629)
 
 
 2004-10-26 0.7.9

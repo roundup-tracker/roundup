@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.160 $
+:Version: $Revision: 1.161 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1133,18 +1133,14 @@ web actions`_).
 
 Each action class also has a ``*permission*`` method which determines whether
 the action is permissible given the current user. The base permission checks
-are:
-
-XXX REVIEW for Permissions changes
+for each action are:
 
 **login**
- Determine whether the user has permission to log in. Base behaviour is
- to check the user has "Web Access".
+ Determine whether the user has the "Web Access" Permission.
 **logout**
  No permission checks are made.
 **register**
- Determine whether the user has permission to register. Base behaviour
- is to check the user has the "Web Registration" Permission.
+ Determine whether the user has the "Web Registration" Permission.
 **edit**
  Determine whether the user has permission to edit this item. If we're
  editing the "user" class, users are allowed to edit their own details -
@@ -1155,11 +1151,9 @@ XXX REVIEW for Permissions changes
  additional property checks are made. Additionally, new user items may
  be created if the user has the "Web Registration" Permission.
 **editCSV**
- Determine whether the user has permission to edit this class. Base
- behaviour is to check whether the user may edit this class.
+ Determine whether the user has permission to edit this class.
 **search**
- Determine whether the user has permission to search this class. Base
- behaviour is to check whether the user may view this class.
+ Determine whether the user has permission to view this class.
 
 
 Special form variables
@@ -1764,7 +1758,12 @@ history         render the journal of the current item as HTML
 renderQueryForm specific to the "query" class - render the search form
                 for the query
 hasPermission   specific to the "user" class - determine whether the
-                user has a Permission
+                user has a Permission. The signature is::
+
+                    hasPermission(self, permission, [classname=],
+                        [property=], [itemid=])
+
+                where the classname defaults to the current context.
 is_edit_ok      is the user allowed to Edit the current item?
 is_view_ok      is the user allowed to View the current item?
 is_retired      is the item retired?
@@ -2674,9 +2673,9 @@ them to various roles. Simply add the new "category" to both lists::
     # to regular users now
     for cl in 'issue', 'file', 'msg', 'category':
         p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Edit', cl)
-        db.security.addPermissionToRole('User', p)
+        db.security.addPermissionToRole('User', 'View', cl)
+        db.security.addPermissionToRole('User', 'Edit', cl)
+        db.security.addPermissionToRole('User', 'Create', cl)
 
 These lines assign the View and Edit Permissions to the "User" role, so
 that normal users can view and edit "category" objects.
@@ -3115,10 +3114,9 @@ Optionally, you might want to restrict the users able to access this new
 class to just the users with a new "SysAdmin" Role. To do this, we add
 some security declarations::
 
-    p = db.security.getPermission('View', 'support')
-    db.security.addPermissionToRole('SysAdmin', p)
-    p = db.security.getPermission('Edit', 'support')
-    db.security.addPermissionToRole('SysAdmin', p)
+    db.security.addPermissionToRole('SysAdmin', 'View', 'support')
+    db.security.addPermissionToRole('SysAdmin', 'Create', 'support')
+    db.security.addPermissionToRole('SysAdmin', 'Edit', 'support')
 
 You would then (as an "admin" user) edit the details of the appropriate
 users, and add "SysAdmin" to their Roles list.
@@ -3908,21 +3906,31 @@ First up, we create the new Role and Permission structure in
     # New users not approved by the admin
     db.security.addRole(name='Provisional User',
         description='New user registered via web or email')
-    p = db.security.addPermission(name='Edit Own', klass='issue',
-        description='Can only edit own issues')
+
+    # These users need to be able to view and create issues but only edit
+    # and view their own
+    db.security.addPermissionToRole('Provisional User', 'Create', 'issue')
+    def own_issue(db, userid, itemid):
+        '''Determine whether the userid matches the creator of the issue.'''
+        return userid == db.issue.get(itemid, 'creator')
+    p = db.security.addPermission(name='Edit Own Issues', klass='issue',
+        code=own_issue, description='Can only edit own issues')
+    db.security.addPermissionToRole('Provisional User', p)
+    p = db.security.addPermission(name='View Own Issues', klass='issue',
+        code=own_issue, description='Can only view own issues')
     db.security.addPermissionToRole('Provisional User', p)
 
-    # Assign the access and edit Permissions for issue to new users now
-    p = db.security.getPermission('View', 'issue')
-    db.security.addPermissionToRole('Provisional User', p)
-    p = db.security.getPermission('Edit', 'issue')
-    db.security.addPermissionToRole('Provisional User', p)
+    # Assign the Permissions for issue-related classes
+    for cl in 'file', 'msg', 'query', 'keyword':
+        db.security.addPermissionToRole('User', 'View', cl)
+        db.security.addPermissionToRole('User', 'Edit', cl)
+        db.security.addPermissionToRole('User', 'Create', cl)
+    for cl in 'priority', 'status':
+        db.security.addPermissionToRole('User', 'View', cl)
 
     # and give the new users access to the web and email interface
-    p = db.security.getPermission('Web Access')
-    db.security.addPermissionToRole('Provisional User', p)
-    p = db.security.getPermission('Email Access')
-    db.security.addPermissionToRole('Provisional User', p)
+    db.security.addPermissionToRole('Provisional User', 'Web Access')
+    db.security.addPermissionToRole('Provisional User', 'Email Access')
 
 
 Then in the ``config.ini`` we change the Role assigned to newly-registered
@@ -3932,23 +3940,6 @@ users, replacing the existing ``'User'`` values::
     ...
     new_web_user_roles = 'Provisional User'
     new_email_user_roles = 'Provisional User'
-
-Finally we add a new *auditor* to the ``detectors`` directory called
-``provisional_user_auditor.py``::
-
- def audit_provisionaluser(db, cl, nodeid, newvalues):
-     ''' New users are only allowed to modify their own issues.
-     '''
-     if (db.getuid() != cl.get(nodeid, 'creator')
-         and db.security.hasPermission('Edit Own', db.getuid(), cl.classname)):
-         raise ValueError, ('You are only allowed to edit your own %s'
-                            % cl.classname)
-
- def init(db):
-     # fire before changes are made
-     db.issue.audit('set', audit_provisionaluser)
-     db.issue.audit('retire', audit_provisionaluser)
-     db.issue.audit('restore', audit_provisionaluser)
 
 Note that some older trackers might also want to change the ``page.html``
 template as follows::
@@ -4198,7 +4189,6 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
 4. Use the usual "new" action as the ``@action`` on the final page, and
    you're done (the standard context/submit method can do this for you).
-
 
 
 -------------------

@@ -1023,7 +1023,8 @@ class _HTMLUser(_HTMLItem):
     '''Add ability to check for permissions on users.
     '''
     _marker = []
-    def hasPermission(self, permission, classname=_marker):
+    def hasPermission(self, permission, classname=_marker,
+            property=None, itemid=None):
         '''Determine if the user has the Permission.
 
         The class being tested defaults to the template's class, but may

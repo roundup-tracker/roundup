@@ -195,11 +195,18 @@ class Security:
         self.role[role.name] = role
         return role
 
-    def addPermissionToRole(self, rolename, permission):
+    def addPermissionToRole(self, rolename, permission, classname=None):
         ''' Add the permission to the role's permission list.
 
             'rolename' is the name of the role to add the permission to.
+
+            'permission' is either a Permission *or* a permission name
+            accompanied by 'classname' (thus in the second case a Permission 
+            is obtained by passing 'permission' and 'classname' to
+            self.getPermission)
         '''
+        if not isinstance(permission, Permission):
+            permission = self.getPermission(permission, classname)
         role = self.role[rolename.lower()]
         role.permissions.append(permission)
 
