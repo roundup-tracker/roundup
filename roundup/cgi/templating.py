@@ -2019,7 +2019,7 @@ env: %(env)s
             l.append(s%(sc+'group', val))
         if filter and self.filter:
             l.append(s%(sc+'filter', ','.join(self.filter)))
-        if filterspec:
+        if self.classname and filterspec:
             props = self.client.db.getclass(self.classname).getprops()
             for k,v in self.filterspec.items():
                 if type(v) == type([]):
