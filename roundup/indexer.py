@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.13 2002-09-10 00:18:20 richard Exp $
+#$Id: indexer.py,v 1.14 2002-09-25 05:06:14 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -167,6 +167,10 @@ class Indexer:
             if classname == klass.classname:
                 if not nodeids.has_key(nodeid):
                     nodeids[nodeid] = {}
+                continue
+
+            # make sure the class is a linked one, otherwise ignore
+            if not designator_propname.has_key(classname):
                 continue
 
             # it's a linked class - set up to do the klass.find
