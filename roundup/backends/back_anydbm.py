@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-#$Id: back_anydbm.py,v 1.171 2004-07-28 05:00:31 richard Exp $
+#
+#$Id: back_anydbm.py,v 1.172 2004-09-29 07:09:13 a1s Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -60,7 +60,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     '''A database for storing records containing flexible data types.
 
     Transaction stuff TODO:
-    
+
     - check the timestamp of the class file and nuke the cache if it's
       modified. Do some sort of conflict checking on the dirty stuff.
     - perhaps detect write collisions (related to above)?
@@ -78,8 +78,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         entries for any edits done on the database.  If 'journaltag' is
         None, the database is opened in read-only mode: the Class.create(),
         Class.set(), Class.retire(), and Class.restore() methods are
-        disabled.  
-        '''        
+        disabled.
+        '''
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}
@@ -130,7 +130,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.indexer.save_index()
 
     def __repr__(self):
-        return '<back_anydbm instance at %x>'%id(self) 
+        return '<back_anydbm instance at %x>'%id(self)
 
     #
     # Classes
@@ -553,7 +553,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 last_set_entry = None
                 for entry in journal:
                     # unpack the entry
-                    (nodeid, date_stamp, self.journaltag, action, 
+                    (nodeid, date_stamp, self.journaltag, action,
                         params) = entry
                     # if the entry is after the pack date, _or_ the initial
                     # create entry, then it stays
@@ -569,7 +569,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if db_type == 'gdbm':
                 db.reorganize()
             db.close()
-            
+
 
     #
     # Basic transaction support
@@ -771,13 +771,13 @@ class Class(hyperdb.Class):
 
         The values of arguments must be acceptable for the types of their
         corresponding properties or a TypeError is raised.
-        
+
         If this class has a key property, it must be present and its value
         must not collide with other key strings or a ValueError is raised.
-        
+
         Any other properties on this class that are missing from the
         'propvalues' dictionary are set to None.
-        
+
         If an id in a link or multilink property does not refer to a valid
         node, an IndexError is raised.
 
@@ -1022,7 +1022,7 @@ class Class(hyperdb.Class):
 
     def set(self, nodeid, **propvalues):
         '''Modify a property on an existing node of this class.
-        
+
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
 
@@ -1052,7 +1052,7 @@ class Class(hyperdb.Class):
                 oldvalues[name] = None
         propvalues = self.set_inner(nodeid, **propvalues)
         self.fireReactors('set', nodeid, oldvalues)
-        return propvalues        
+        return propvalues
 
     def set_inner(self, nodeid, **propvalues):
         ''' Called by set, in-between the audit and react calls.
@@ -1246,10 +1246,10 @@ class Class(hyperdb.Class):
 
     def retire(self, nodeid):
         '''Retire a node.
-        
+
         The properties on the node remain available from the get() method,
         and the node's id is never reused.
-        
+
         Retired nodes are not returned by the find(), list(), or lookup()
         methods, and other nodes may reuse the values of their key properties.
 
@@ -1482,7 +1482,7 @@ class Class(hyperdb.Class):
         properties in a caseless search.
 
         If the property is not a String property, a TypeError is raised.
-        
+
         The return is a list of the id of all nodes that match.
         '''
         for propname in requirements.keys():
@@ -1577,7 +1577,7 @@ class Class(hyperdb.Class):
         DATE = 'spec:date'
         INTERVAL = 'spec:interval'
         OTHER = 'spec:other'
-        
+
         timezone = self.db.getUserTimezone()
         for k, v in filterspec.items():
             propclass = props[k]
@@ -1624,7 +1624,7 @@ class Class(hyperdb.Class):
                 except ValueError:
                     # If range creation fails - ignore that search parameter
                     pass
-                
+
             elif isinstance(propclass, Boolean):
                 if type(v) != type([]):
                     v = v.split(',')
@@ -2023,7 +2023,7 @@ class Class(hyperdb.Class):
 
     def import_journals(self, entries):
         '''Import a class's journal.
-        
+
         Uses setjournal() to set the journal for each item.'''
         properties = self.getprops()
         d = {}
@@ -2193,4 +2193,4 @@ class IssueClass(Class, roundupdb.IssueClass):
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
 
-#
+# vim: set et sts=4 sw=4 :
