@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.47 2001-11-26 22:55:56 richard Exp $
+# $Id: htmltemplate.py,v 1.48 2001-12-20 06:13:24 rochecompaan Exp $
 
 __doc__ = """
 Template engine.
@@ -112,6 +112,16 @@ class TemplateFunctions:
         if not self.nodeid and self.form is None and self.filterspec is None:
             return _('[Field: not called from item]')
         propclass = self.properties[property]
+        if (isinstance(propclass, hyperdb.Link) or
+            isinstance(propclass, hyperdb.Multilink)):
+            linkcl = self.db.classes[propclass.classname]
+            def sortfunc(a, b, cl=linkcl):
+                if cl.getprops().has_key('order'):
+                    sort_on = 'order'
+                else:
+                    sort_on = cl.labelprop()
+                r = cmp(cl.get(a, sort_on), cl.get(b, sort_on))
+                return r
         if self.nodeid:
             value = self.cl.get(self.nodeid, property, None)
             # TODO: remove this from the code ... it's only here for
@@ -142,7 +152,6 @@ class TemplateFunctions:
             size = size or 30
             s = '<input type="password" name="%s" size="%s">'%(property, size)
         elif isinstance(propclass, hyperdb.Link):
-            linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
             if value is None:
@@ -150,7 +159,9 @@ class TemplateFunctions:
             else:
                 s = ''
             l.append('<option %svalue="-1">- no selection -</option>'%s)
-            for optionid in linkcl.list():
+            options = linkcl.list()
+            options.sort(sortfunc)
+            for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
                 if optionid == value:
@@ -165,8 +176,8 @@ class TemplateFunctions:
             l.append('</select>')
             s = '\n'.join(l)
         elif isinstance(propclass, hyperdb.Multilink):
-            linkcl = self.db.classes[propclass.classname]
             list = linkcl.list()
+            list.sort(sortfunc)
             height = height or min(len(list), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
             k = linkcl.labelprop()
@@ -873,6 +884,18 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.47  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.46  2001/11/24 00:53:12  jhermann
 # "except:" is bad, bad , bad!
 #
