@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2004-05-19 20:15+0300\n"
+"POT-Creation-Date: 2004-05-21 17:54+1000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,28 +17,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-# ../roundup/admin.py:83 :949 :998 :1020
 #: ../roundup/admin.py:83 ../roundup/admin.py:949 ../roundup/admin.py:998
 #: ../roundup/admin.py:1020
-#, possible-python-format
+#, python-format
 msgid "no such class \"%(classname)s\""
 msgstr ""
 
-# ../roundup/admin.py:93 :97
 #: ../roundup/admin.py:93 ../roundup/admin.py:97
-#, possible-python-format
+#, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr ""
 
 #: ../roundup/admin.py:110
-#, possible-python-format
+#, python-format
 msgid ""
 "Problem: %(message)s\n"
 "\n"
 msgstr ""
 
 #: ../roundup/admin.py:111
-#, possible-python-format
+#, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
 "\n"
@@ -73,7 +71,7 @@ msgid ""
 msgstr ""
 
 #: ../roundup/admin.py:159
-#, possible-python-format
+#, python-format
 msgid ""
 "\n"
 "<tr><td valign=top><strong>%(name)s</strong></td>\n"
@@ -151,7 +149,7 @@ msgid ""
 msgstr ""
 
 #: ../roundup/admin.py:236
-#, possible-python-format
+#, python-format
 msgid "%s:"
 msgstr ""
 
@@ -172,16 +170,14 @@ msgid ""
 msgstr ""
 
 #: ../roundup/admin.py:264
-#, possible-python-format
+#, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr ""
 
-# ../roundup/admin.py:336 :382
 #: ../roundup/admin.py:336 ../roundup/admin.py:382
 msgid "Templates:"
 msgstr ""
 
-# ../roundup/admin.py:339 :393
 #: ../roundup/admin.py:339 ../roundup/admin.py:393
 msgid "Back ends:"
 msgstr ""
@@ -197,16 +193,9 @@ msgid ""
 "        on the command-line as arguments, in that order.\n"
 "\n"
 "        The initialise command must be called after this command in order\n"
-"        to initialise the tracker's database. You may edit the tracker's\n"
-"        initial database contents before running that command by editing\n"
-"        the tracker's dbinit.py module init() function.\n"
-"\n"
-"        See also initopts help.\n"
-"        "
+"        to initialise the tracker"
 msgstr ""
 
-# ../roundup/admin.py:358 :483 :562 :612 :682 :703 :731 :802 :869 :940 :988
-# :1010 :1037 :1098 :1156
 #: ../roundup/admin.py:358 ../roundup/admin.py:483 ../roundup/admin.py:562
 #: ../roundup/admin.py:612 ../roundup/admin.py:682 ../roundup/admin.py:703
 #: ../roundup/admin.py:731 ../roundup/admin.py:802 ../roundup/admin.py:869
@@ -216,12 +205,12 @@ msgid "Not enough arguments supplied"
 msgstr ""
 
 #: ../roundup/admin.py:364
-#, possible-python-format
+#, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr ""
 
 #: ../roundup/admin.py:369
-#, possible-python-format
+#, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
 "If you re-install it, you will lose all the data!\n"
@@ -237,7 +226,7 @@ msgid "Select backend [anydbm]: "
 msgstr ""
 
 #: ../roundup/admin.py:404
-#, possible-python-format
+#, python-format
 msgid ""
 "\n"
 " You should now edit the tracker configuration file:\n"
@@ -249,18 +238,6 @@ msgid ""
 " the database initialisation file:\n"
 "   %(database_config_file)s\n"
 " ... see the documentation on customizing for more information.\n"
-msgstr ""
-
-#. password
-#: ../roundup/admin.py:422
-msgid ""
-"Usage: initialise [adminpw]\n"
-"        Initialise a new Roundup tracker.\n"
-"\n"
-"        The administrator details will be set at this step.\n"
-"\n"
-"        Execute the tracker's initialisation function dbinit.init()\n"
-"        "
 msgstr ""
 
 #: ../roundup/admin.py:436
@@ -296,21 +273,19 @@ msgid ""
 "        "
 msgstr ""
 
-# ../roundup/admin.py:516 :531
 #: ../roundup/admin.py:516 ../roundup/admin.py:531
-#, possible-python-format
+#, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr ""
 
-# ../roundup/admin.py:539 :951 :1000 :1022
 #: ../roundup/admin.py:539 ../roundup/admin.py:951 ../roundup/admin.py:1000
 #: ../roundup/admin.py:1022
-#, possible-python-format
+#, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr ""
 
 #: ../roundup/admin.py:541
-#, possible-python-format
+#, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr ""
 
@@ -340,10 +315,9 @@ msgid ""
 "        "
 msgstr ""
 
-# ../roundup/admin.py:631 :669 :822 :834 :888
 #: ../roundup/admin.py:631 ../roundup/admin.py:669 ../roundup/admin.py:822
 #: ../roundup/admin.py:834 ../roundup/admin.py:888
-#, possible-python-format
+#, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr ""
 
@@ -352,7 +326,7 @@ msgid "You may only \"find\" link properties"
 msgstr ""
 
 #: ../roundup/admin.py:644
-#, possible-python-format
+#, python-format
 msgid "%(classname)s has no key property"
 msgstr ""
 
@@ -366,13 +340,12 @@ msgid ""
 msgstr ""
 
 #: ../roundup/admin.py:691
-#, possible-python-format
+#, python-format
 msgid "%(key)s: %(value)s (key property)"
 msgstr ""
 
-# ../roundup/admin.py:693 :720
 #: ../roundup/admin.py:693 ../roundup/admin.py:720
-#, possible-python-format
+#, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
 
@@ -399,12 +372,12 @@ msgid ""
 msgstr ""
 
 #: ../roundup/admin.py:750
-#, possible-python-format
+#, python-format
 msgid "%(propname)s (Password): "
 msgstr ""
 
 #: ../roundup/admin.py:752
-#, possible-python-format
+#, python-format
 msgid "   %(propname)s (Again): "
 msgstr ""
 
@@ -413,12 +386,12 @@ msgid "Sorry, try again..."
 msgstr ""
 
 #: ../roundup/admin.py:758
-#, possible-python-format
+#, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr ""
 
 #: ../roundup/admin.py:776
-#, possible-python-format
+#, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr ""
 
@@ -432,10 +405,7 @@ msgid ""
 "        tried in order: the key, \"name\", \"title\" and then the first\n"
 "        property, alphabetically.\n"
 "\n"
-"        With -c, -S or -s print a list of item id's if no property\n"
-"        specified.  If property specified, print list of that property\n"
-"        for every class instance.\n"
-"        "
+"        With -c, -S or -s print a list of item id"
 msgstr ""
 
 #: ../roundup/admin.py:800
@@ -443,228 +413,66 @@ msgid "Too many arguments supplied"
 msgstr ""
 
 #: ../roundup/admin.py:836
-#, possible-python-format
+#, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr ""
 
-#: ../roundup/admin.py:840
-msgid ""
-"Usage: table classname [property[,property]*]\n"
-"        List the instances of a class in tabular form.\n"
-"\n"
-"        Lists all instances of the given class. If the properties are not\n"
-"        specified, all properties are displayed. By default, the column\n"
-"        widths are the width of the largest value. The width may be\n"
-"        explicitly defined by defining the property as \"name:width\".\n"
-"        For example::\n"
-"\n"
-"          roundup> table priority id,name:10\n"
-"          Id Name\n"
-"          1  fatal-bug\n"
-"          2  bug\n"
-"          3  usability\n"
-"          4  feature\n"
-"\n"
-"        Also to make the width of the column the width of the label,\n"
-"        leave a trailing : without a width on the property. For example::\n"
-"\n"
-"          roundup> table priority id,name:\n"
-"          Id Name\n"
-"          1  fata\n"
-"          2  bug\n"
-"          3  usab\n"
-"          4  feat\n"
-"\n"
-"        will result in a the 4 character wide \"Name\" column.\n"
-"        "
-msgstr ""
-
 #: ../roundup/admin.py:884
-#, possible-python-format
+#, python-format
 msgid "\"%(spec)s\" not name:width"
-msgstr ""
-
-#: ../roundup/admin.py:934
-msgid ""
-"Usage: history designator\n"
-"        Show the history entries of a designator.\n"
-"\n"
-"        Lists the journal entries for the node identified by the designator.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:955
-msgid ""
-"Usage: commit\n"
-"        Commit changes made to the database during an interactive session.\n"
-"\n"
-"        The changes made during an interactive session are not\n"
-"        automatically written to the database - they must be committed\n"
-"        using this command.\n"
-"\n"
-"        One-off commands on the command-line are automatically committed if\n"
-"        they are successful.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:969
-msgid ""
-"Usage: rollback\n"
-"        Undo all changes that are pending commit to the database.\n"
-"\n"
-"        The changes made during an interactive session are not\n"
-"        automatically written to the database - they must be committed\n"
-"        manually. This command undoes all those changes, so a commit\n"
-"        immediately after would make no changes to the database.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:981
-msgid ""
-"Usage: retire designator[,designator]*\n"
-"        Retire the node specified by designator.\n"
-"\n"
-"        This action indicates that a particular node is not to be retrieved\n"
-"        by the list or find commands, and its key value may be re-used.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1004
-msgid ""
-"Usage: restore designator[,designator]*\n"
-"        Restore the retired node specified by designator.\n"
-"\n"
-"        The given nodes will become available for users again.\n"
-"        "
-msgstr ""
-
-#. grab the directory to export to
-#: ../roundup/admin.py:1026
-msgid ""
-"Usage: export [class[,class]] export_dir\n"
-"        Export the database to colon-separated-value files.\n"
-"\n"
-"        Optionally limit the export to just the names classes.\n"
-"\n"
-"        This action exports the current data from the database into\n"
-"        colon-separated-value files that are placed in the nominated\n"
-"        destination directory.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1078
-msgid ""
-"Usage: import import_dir\n"
-"        Import a database from the directory containing CSV files,\n"
-"        two per class to import.\n"
-"\n"
-"        The files used in the import are:\n"
-"\n"
-"        <class>.csv\n"
-"          This must define the same properties as the class (including\n"
-"          having a \"header\" line with those property names.)\n"
-"        <class>-journals.csv\n"
-"          This defines the journals for the items being imported.\n"
-"\n"
-"        The imported nodes will have the same nodeid as defined in the\n"
-"        import file, thus replacing any existing content.\n"
-"\n"
-"        The new nodes are added to the existing database - if you want to\n"
-"        create a new database using the imported data, then create a new\n"
-"        database (or, tediously, retire all the old data.)\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1138
-msgid ""
-"Usage: pack period | date\n"
-"\n"
-"        Remove journal entries older than a period of time specified or\n"
-"        before a certain date.\n"
-"\n"
-"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
-"The\n"
-"        suffix \"w\" (for \"week\") means 7 days.\n"
-"\n"
-"              \"3y\" means three years\n"
-"              \"2y 1m\" means two years and one month\n"
-"              \"1m 25d\" means one month and 25 days\n"
-"              \"2w 3d\" means two weeks and three days\n"
-"\n"
-"        Date format is \"YYYY-MM-DD\" eg:\n"
-"            2001-01-01\n"
-"\n"
-"        "
 msgstr ""
 
 #: ../roundup/admin.py:1166
 msgid "Invalid format"
 msgstr ""
 
-#: ../roundup/admin.py:1176
-msgid ""
-"Usage: reindex\n"
-"        Re-generate a tracker's search indexes.\n"
-"\n"
-"        This will re-generate the search indexes for a tracker.\n"
-"        This will typically happen automatically.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1187
-msgid ""
-"Usage: security [Role name]\n"
-"        Display the Permissions available to one or all Roles.\n"
-"        "
-msgstr ""
-
 #: ../roundup/admin.py:1195
-#, possible-python-format
+#, python-format
 msgid "No such Role \"%(role)s\""
 msgstr ""
 
 #: ../roundup/admin.py:1201
-#, possible-python-format
+#, python-format
 msgid "New Web users get the Roles \"%(role)s\""
 msgstr ""
 
 #: ../roundup/admin.py:1203
-#, possible-python-format
+#, python-format
 msgid "New Web users get the Role \"%(role)s\""
 msgstr ""
 
 #: ../roundup/admin.py:1206
-#, possible-python-format
+#, python-format
 msgid "New Email users get the Roles \"%(role)s\""
 msgstr ""
 
 #: ../roundup/admin.py:1208
-#, possible-python-format
+#, python-format
 msgid "New Email users get the Role \"%(role)s\""
 msgstr ""
 
 #: ../roundup/admin.py:1211
-#, possible-python-format
+#, python-format
 msgid "Role \"%(name)s\":"
 msgstr ""
 
 #: ../roundup/admin.py:1214
-#, possible-python-format
+#, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)"
 msgstr ""
 
 #: ../roundup/admin.py:1217
-#, possible-python-format
+#, python-format
 msgid " %(description)s (%(name)s)"
 msgstr ""
 
 #: ../roundup/admin.py:1243
-#, possible-python-format
+#, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 
 #: ../roundup/admin.py:1249
-#, possible-python-format
+#, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr ""
 
@@ -672,19 +480,18 @@ msgstr ""
 msgid "Enter tracker home: "
 msgstr ""
 
-# ../roundup/admin.py:1263 :1269 :1289
 #: ../roundup/admin.py:1263 ../roundup/admin.py:1269 ../roundup/admin.py:1289
-#, possible-python-format
+#, python-format
 msgid "Error: %(message)s"
 msgstr ""
 
 #: ../roundup/admin.py:1277
-#, possible-python-format
+#, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr ""
 
 #: ../roundup/admin.py:1302
-#, possible-python-format
+#, python-format
 msgid ""
 "Roundup %s ready for input.\n"
 "Type \"help\" for help."
@@ -707,7 +514,7 @@ msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr ""
 
 #: ../roundup/cgi/actions.py:52
-#, possible-python-format
+#, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
 msgstr ""
 
@@ -716,7 +523,7 @@ msgid "No ID entered"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:79
-#, possible-python-format
+#, python-format
 msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
 msgstr ""
 
@@ -725,12 +532,12 @@ msgid "You may not retire the admin or anonymous user"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:105
-#, possible-python-format
+#, python-format
 msgid "%(classname)s %(itemid)s has been retired"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:258
-#, possible-python-format
+#, python-format
 msgid "Not enough values on line %(line)s"
 msgstr ""
 
@@ -746,7 +553,6 @@ msgstr ""
 msgid "Edit Error: "
 msgstr ""
 
-# ../roundup/cgi/actions.py:533 :542
 #: ../roundup/cgi/actions.py:533 ../roundup/cgi/actions.py:542
 msgid "Error: "
 msgstr ""
@@ -760,7 +566,7 @@ msgid "It is not permitted to supply roles at registration."
 msgstr ""
 
 #: ../roundup/cgi/actions.py:712
-#, possible-python-format
+#, python-format
 msgid "Error: A user with the username \"%(username)s\" already exists"
 msgstr ""
 
@@ -773,7 +579,7 @@ msgid "Username required"
 msgstr ""
 
 #: ../roundup/cgi/actions.py:801
-#, possible-python-format
+#, python-format
 msgid "No such user \"%(name)s\""
 msgstr ""
 
@@ -792,7 +598,6 @@ msgid ""
 "first. The exception attributes are:"
 msgstr ""
 
-# ../roundup/cgi/cgitb.py:142 :148
 #: ../roundup/cgi/cgitb.py:142 ../roundup/cgi/cgitb.py:148
 msgid "<em>undefined</em>"
 msgstr ""
@@ -802,12 +607,12 @@ msgid "Form Error: "
 msgstr ""
 
 #: ../roundup/cgi/client.py:310
-#, possible-python-format
+#, python-format
 msgid "Unrecognized charset: %r"
 msgstr ""
 
 #: ../roundup/cgi/form_parser.py:386
-#, possible-python-format
+#, python-format
 msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
 msgstr ""
 
@@ -840,11 +645,10 @@ msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
 #: ../roundup/cgi/templating.py:770
-#, possible-python-format
+#, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-# ../roundup/cgi/templating.py:803 :824
 #: ../roundup/cgi/templating.py:803 ../roundup/cgi/templating.py:824
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
@@ -858,22 +662,22 @@ msgstr ""
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1172
+#: ../roundup/cgi/templating.py:1175
 msgid "*encrypted*"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1485
-#, possible-python-format
+#: ../roundup/cgi/templating.py:1488
+#, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
 
 #: ../roundup/date.py:168
-#, possible-python-format
+#, python-format
 msgid "Not a date spec: %s"
 msgstr ""
 
 #: ../roundup/date.py:219
-#, possible-python-format
+#, python-format
 msgid "%r not a date spec (%s)"
 msgstr ""
 
@@ -887,28 +691,28 @@ msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
 msgstr ""
 
 #: ../roundup/date.py:640
-#, possible-python-format
+#, python-format
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
 msgstr[0] ""
 msgstr[1] ""
 
 #: ../roundup/date.py:644
-#, possible-python-format
+#, python-format
 msgid "%(number)s month"
 msgid_plural "%(number)s months"
 msgstr[0] ""
 msgstr[1] ""
 
 #: ../roundup/date.py:648
-#, possible-python-format
+#, python-format
 msgid "%(number)s week"
 msgid_plural "%(number)s weeks"
 msgstr[0] ""
 msgstr[1] ""
 
 #: ../roundup/date.py:652
-#, possible-python-format
+#, python-format
 msgid "%(number)s day"
 msgid_plural "%(number)s days"
 msgstr[0] ""
@@ -923,7 +727,7 @@ msgid "yesterday"
 msgstr ""
 
 #: ../roundup/date.py:661
-#, possible-python-format
+#, python-format
 msgid "%(number)s hour"
 msgid_plural "%(number)s hours"
 msgstr[0] ""
@@ -938,7 +742,7 @@ msgid "1 1/2 hours"
 msgstr ""
 
 #: ../roundup/date.py:669
-#, possible-python-format
+#, python-format
 msgid "1 %(number)s/4 hours"
 msgid_plural "1 %(number)s/4 hours"
 msgstr[0] ""
@@ -957,7 +761,7 @@ msgid "1 minute"
 msgstr ""
 
 #: ../roundup/date.py:681
-#, possible-python-format
+#, python-format
 msgid "%(number)s minute"
 msgid_plural "%(number)s minutes"
 msgstr[0] ""
@@ -968,24 +772,24 @@ msgid "1/2 an hour"
 msgstr ""
 
 #: ../roundup/date.py:686
-#, possible-python-format
+#, python-format
 msgid "%(number)s/4 hours"
 msgid_plural "%(number)s/4 hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #: ../roundup/date.py:690
-#, possible-python-format
+#, python-format
 msgid "%s ago"
 msgstr ""
 
 #: ../roundup/date.py:692
-#, possible-python-format
+#, python-format
 msgid "in %s"
 msgstr ""
 
 #: ../roundup/scripts/roundup_mailgw.py:36
-#, possible-python-format
+#, python-format
 msgid ""
 "Usage: %(program)s [-v] [[-C class] -S field=value]* <instance home> "
 "[method]\n"
@@ -1076,7 +880,7 @@ msgid ""
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:135
-#, possible-python-format
+#, python-format
 msgid "<li><a href=\"%(tracker_url)s/index\">%(tracker_name)s</a>\n"
 msgstr ""
 
@@ -1085,7 +889,7 @@ msgid "</ol></body></html>"
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:239
-#, possible-python-format
+#, python-format
 msgid "Error: %s: %s"
 msgstr ""
 
@@ -1100,7 +904,7 @@ msgid ""
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:356
-#, possible-python-format
+#, python-format
 msgid ""
 "%(message)s\n"
 "Usage:\n"
@@ -1140,7 +944,7 @@ msgid "logfile *must* be specified if pidfile is"
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:478
-#, possible-python-format
+#, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr ""
 
@@ -1149,7 +953,7 @@ msgid "Can't change groups - no pwd module"
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:491
-#, possible-python-format
+#, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr ""
 
@@ -1162,7 +966,7 @@ msgid "Can't change users - no pwd module"
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:506
-#, possible-python-format
+#, python-format
 msgid "User %(user)s doesn't exist"
 msgstr ""
 
@@ -1183,6 +987,6 @@ msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 
 #: ../roundup/scripts/roundup_server.py:556
-#, possible-python-format
+#, python-format
 msgid "Roundup server started on %(address)s"
 msgstr ""

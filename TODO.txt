@@ -1,5 +1,10 @@
 This file contains items that need doing before the next release:
 
+Required:
+- documentation of i18n: TAL tags for translation
+- translation databases in trackers
+
+
 Optionally:
 - have rdbms backends look up the journal for actor if it's not set
 - migrate to numeric ID values (fixes bug 817217)
