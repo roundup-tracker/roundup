@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.7 $
+:Version: $Revision: 1.8 $
 
 .. contents::
 
@@ -100,7 +100,10 @@ Software Upgrade
 Always make a backup of your tracker before upgrading software. Steps you may
 take:
 
-1. Ensure that the unit tests run on your system.
+1. Ensure that the unit tests run on your system:
+
+    python run_tests.py
+
 2. If you're using an RDBMS backend, make a backup of its contents now.
 3. Copy your tracker home to a new directory.
 
@@ -121,8 +124,16 @@ should upgrade the live version:
 
 1. Stop the production web and email frontends.
 2. Perform the upgrade steps on the existing tracker directory.
-3. Upgrade the software.
+3. Upgrade the software::
+
+    python setup.py install
+
 4. Restart your tracker.
+
+If something bad happens, you may reinstate your backup of the tracker and
+reinstall the older version of the sofware using the same install command::
+
+    python setup.py install
 
 
 Migrating Backends
