@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.18 2002-05-15 03:27:16 richard Exp $
+# $Id: test_mailgw.py,v 1.19 2002-05-23 04:26:05 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -66,7 +66,8 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        init.init(self.dirname, self.schema, 'anydbm', 'sekrit')
+        init.install(self.dirname, 'classic', 'anydbm')
+        init.initialise(self.dirname, 'sekrit')
         # check we can load the package
         self.instance = instance.open(self.dirname)
         # and open the database
@@ -89,7 +90,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
@@ -110,7 +111,7 @@ This is a test submission of a new issue.
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
@@ -130,7 +131,7 @@ This is a test submission of a new issue.
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: John Doe <john.doe@test>
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
 
@@ -149,7 +150,7 @@ This is a test submission of a new issue.
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
 Subject: Testing...
@@ -166,7 +167,7 @@ This is a test submission of a new issue.
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing... [nosy=mary; assignedto=richard]
 
@@ -178,13 +179,13 @@ This is a test submission of a new issue.
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, mary@test, richard@test
-From: Chef <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: Chef <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
@@ -202,10 +203,10 @@ messages: 1
 nosy: Chef, mary, richard
 status: unread
 title: Testing...
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 ''')
 
     # BUG
@@ -222,7 +223,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing... [assignedto=mary; nosy=john]
@@ -233,13 +234,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
-From: richard <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -256,10 +257,10 @@ This is a followup
 assignedto:  -> mary
 nosy: +mary, john
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 ''')
 
     def testFollowup2(self):
@@ -267,7 +268,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
@@ -277,13 +278,13 @@ This is a second followup
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: mary <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: mary <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -298,10 +299,10 @@ This is a second followup
 
 ----------
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 ''')
 
     def testFollowupTitleMatch(self):
@@ -309,7 +310,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: Re: Testing... [assignedto=mary; nosy=john]
@@ -320,13 +321,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
-From: richard <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -343,10 +344,10 @@ This is a followup
 assignedto:  -> mary
 nosy: +mary, john
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 ''')
 
     def testFollowupNosyAuthor(self):
@@ -355,7 +356,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
@@ -366,13 +367,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: john <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: john <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -388,10 +389,10 @@ This is a followup
 ----------
 nosy: +john
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 
 ''')
 
@@ -401,7 +402,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Cc: john@test
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -413,13 +414,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: richard <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -435,10 +436,10 @@ This is a followup
 ----------
 nosy: +john
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 
 ''')
 
@@ -449,7 +450,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
@@ -460,13 +461,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, richard@test
-From: john <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: john <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -482,10 +483,10 @@ This is a followup
 ----------
 nosy: +john
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 
 ''')
 
@@ -495,7 +496,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
@@ -506,13 +507,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: john <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: john <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -527,10 +528,10 @@ This is a followup
 
 ----------
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 
 ''')
 
@@ -540,7 +541,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Cc: john@test
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -552,13 +553,13 @@ This is a followup
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: richard <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -573,10 +574,10 @@ This is a followup
 
 ----------
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 
 ''')
 
@@ -585,7 +586,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
@@ -599,13 +600,13 @@ A message with encoding (encoded oe =F6)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: mary <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: mary <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -619,10 +620,10 @@ A message with encoding (encoded oe =F6)
 
 ----------
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 ''')
 
 
@@ -631,7 +632,7 @@ ___________________________________________________
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
-To: issue_tracker@fill.me.in.
+To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
@@ -652,13 +653,13 @@ A message with first part encoded (encoded oe =F6)
         handler = self.instance.MailGW(self.instance, self.db)
         handler.main(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@fill.me.in.
+'''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: mary <issue_tracker@fill.me.in.>
-Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+From: mary <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -672,10 +673,10 @@ A message with first part encoded (encoded oe =F6)
 
 ----------
 status: unread -> chatting
-___________________________________________________
-"Roundup issue tracker" <issue_tracker@fill.me.in.>
-http://some.useful.url/issue1
-___________________________________________________
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
 ''')
 
 class ExtMailgwTestCase(MailgwTestCase):
@@ -690,6 +691,15 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/05/15 03:27:16  richard
+#  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
+#    (thanks dman)
+#  . fixed some sorting issues that were breaking some unit tests under py2.2
+#  . mailgw test output dir was confusing the init test (but only on 2.2 *shrug*)
+#
+# fixed bug in the init unit test that meant only the bsddb test ran if it
+# could (it clobbered the anydbm test)
+#
 # Revision 1.17  2002/05/02 07:56:34  richard
 # . added option to automatically add the authors and recipients of messages
 #   to the nosy lists with the options ADD_AUTHOR_TO_NOSY (default 'new') and

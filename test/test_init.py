@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.8 2002-05-15 03:27:16 richard Exp $
+# $Id: test_init.py,v 1.9 2002-05-23 04:26:05 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
-from roundup.init import init
+from roundup import init
 
 class MyTestCase(unittest.TestCase):
     count = 0
@@ -43,7 +43,8 @@ class ClassicTestCase(MyTestCase):
         ae = self.assertEqual
 
         # create the instance
-        init(self.dirname, 'classic', self.backend, 'sekrit')
+        init.install(self.dirname, 'classic', self.backend)
+        init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
         instance = imp.load_package(self.dirname, self.dirname)
@@ -73,7 +74,8 @@ class ExtendedTestCase(MyTestCase):
         ae = self.assertEqual
 
         # create the instance
-        init(self.dirname, 'extended', self.backend, 'sekrit')
+        init.install(self.dirname, 'extended', self.backend)
+        init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
         instance = imp.load_package(self.dirname, self.dirname)
@@ -138,6 +140,15 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/05/15 03:27:16  richard
+#  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
+#    (thanks dman)
+#  . fixed some sorting issues that were breaking some unit tests under py2.2
+#  . mailgw test output dir was confusing the init test (but only on 2.2 *shrug*)
+#
+# fixed bug in the init unit test that meant only the bsddb test ran if it
+# could (it clobbered the anydbm test)
+#
 # Revision 1.7  2001/10/28 22:51:38  richard
 # Fixed ENOENT/WindowsError thing, thanks Juergen Hermann
 #

@@ -18,6 +18,8 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - installation takes about 10 minutes for a basic installation
  - two "template" schemas included in the distribution for you to base your
    tracker on
+ - doesn't need any additional support software - python (2.1+) is enough to
+   get you going
 
 *web interface*
  - fully editable interfaces for indexing and display of items
