@@ -15,23 +15,23 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.6 2002-09-11 21:39:17 richard Exp $
+#$Id: __init__.py,v 1.7 2003-02-20 07:04:55 richard Exp $
+
+import sys, os, imp
 
 def init(db):
     ''' execute the init functions of all the modules in this directory
     '''
-    import os, sys
     this_dir = os.path.split(__file__)[0]
-    try:
-        sys.path.insert(0, this_dir)
-        for file in os.listdir(this_dir):
-            file, ext = os.path.splitext(file)
-            if file == '__init__':
-                continue
-            if ext == '.py':
-                module = __import__(file)
-                module.init(db)
-    finally:
-        del sys.path[0]
+    for file in os.listdir(this_dir):
+        path = os.path.join(this_dir, file)
+        name, ext = os.path.splitext(file)
+        if name == '__init__':
+            continue
+        if ext == '.py':
+            module = imp.load_module(name, open(path), file,
+                ('.py', 'r', imp.PY_SOURCE))
+            print (name, open(path), file, module)
+            module.init(db)
 
 # vim: set filetype=python ts=4 sw=4 et si
