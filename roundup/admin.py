@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.1 2002-01-05 02:11:22 richard Exp $
+# $Id: admin.py,v 1.2 2002-01-07 10:41:44 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -67,7 +67,7 @@ class AdminTool:
         '''Get the class - raise an exception if it doesn't exist.
         '''
         try:
-            cl = self.db.getclass(classname)
+            return self.db.getclass(classname)
         except KeyError:
             raise UsageError, _('no such class "%(classname)s"')%locals()
 
@@ -995,6 +995,12 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/01/05 02:11:22  richard
+# I18N'ed roundup admin - and split the code off into a module so it can be used
+# elsewhere.
+# Big issue with this is the doc strings - that's the help. We're probably going to
+# have to switch to not use docstrings, which will suck a little :(
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
