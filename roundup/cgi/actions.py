@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.36 2004-07-28 02:29:45 richard Exp $
+#$Id: actions.py,v 1.37 2004-08-07 22:17:11 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -843,15 +843,14 @@ class LoginAction(Action):
             self.client.userid = self.db.user.lookup(self.client.user)
         except KeyError:
             name = self.client.user
-            self.client.error_message.append(self._('No such user "%(name)s"')
-                %locals())
+            self.client.error_message.append(self._('Ivalid login'))
             self.client.make_user_anonymous()
             return
 
         # verify the password
         if not self.verifyPassword(self.client.userid, password):
             self.client.make_user_anonymous()
-            self.client.error_message.append(self._('Incorrect password'))
+            self.client.error_message.append(self._('Invalid login'))
             return
 
         # Determine whether the user has permission to log in.
