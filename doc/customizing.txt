@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.153 $
+:Version: $Revision: 1.155 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -55,7 +55,7 @@ Tracker Configuration
 The ``config.ini`` located in your tracker home contains the basic
 configuration for the web and e-mail components of roundup's interfaces.
 
-The followin taken from the `Python Library Reference`__ (May 20, 2004)
+The following is taken from the `Python Library Reference`__ (May 20, 2004)
 section "ConfigParser -- Configuration file parser":
 
  The configuration file consists of sections, led by a "[section]" header
@@ -68,10 +68,11 @@ section "ConfigParser -- Configuration file parser":
  For example::
 
    [My Section]
-   foodir: %(dir)s/whatever
-   dir=frob
+   foodir = %(dir)s/whatever
+   dir = frob
 
- would resolve the "%(dir)s" to the value of "dir" ("frob" in this case).
+ would resolve the "%(dir)s" to the value of "dir" ("frob" in this case)
+ resulting in "foodir" being "frob/whatever".
 
 __ http://docs.python.org/lib/module-ConfigParser.html
 
