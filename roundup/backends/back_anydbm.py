@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.7 2004-06-10 06:58:03 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.8 2004-06-13 00:40:55 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1471,11 +1471,15 @@ class Class(hyperdb.Class):
                 if item.has_key(self.db.RETIRED_FLAG):
                     continue
                 for propname, itemids in propspec:
-                    # can't test if the item doesn't have this property
-                    if not item.has_key(propname):
-                        continue
                     if type(itemids) is not type({}):
                         itemids = {itemids:1}
+
+                    # special case if the item doesn't have this property
+                    if not item.has_key(propname):
+                        if itemids.has_key(None):
+                            l.append(id)
+                            break
+                        continue
 
                     # grab the property definition and its value on this item
                     prop = self.properties[propname]
