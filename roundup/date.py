@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.70 2004-05-23 10:23:28 richard Exp $
+# $Id: date.py,v 1.71 2004-06-05 12:04:02 a1s Exp $
 
 """Date, time and time interval handling.
 """
 __docformat__ = 'restructuredtext'
 
-import time, re, calendar, types
+import time, re, calendar
 from types import *
 import i18n
 
@@ -122,8 +122,7 @@ class Date:
            It must have attributes 'gettext' and 'ngettext',
            serving as translation functions.
         """
-        self._ = translator.gettext
-        self.ngettext = translator.ngettext
+        self.setTranslator(translator)
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
@@ -284,7 +283,7 @@ class Date:
     def __add__(self, interval):
         """Add an interval to this date to produce another date.
         """
-        return Date(self.addInterval(interval))
+        return Date(self.addInterval(interval), translator=self.translator)
 
     # deviates from spec to allow subtraction of dates as well
     def __sub__(self, other):
@@ -322,7 +321,8 @@ class Date:
         M = (diff/60)%60
         H = (diff/(60*60))%24
         d = diff/(24*60*60)
-        return Interval((0, 0, d, H, M, S), sign=sign)
+        return Interval((0, 0, d, H, M, S), sign=sign,
+            translator=self.translator)
 
     def __cmp__(self, other, int_seconds=0):
         """Compare this date to another date."""
@@ -368,11 +368,11 @@ class Date:
         """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.
         """
         return Date((self.year, self.month, self.day, self.hour + offset,
-            self.minute, self.second, 0, 0, 0))
+            self.minute, self.second, 0, 0, 0), translator=self.translator)
 
     def __deepcopy__(self, memo):
         return Date((self.year, self.month, self.day, self.hour,
-            self.minute, self.second, 0, 0, 0))
+            self.minute, self.second, 0, 0, 0), translator=self.translator)
 
     def get_tuple(self):
         return (self.year, self.month, self.day, self.hour, self.minute,
@@ -389,6 +389,18 @@ class Date:
             self.minute, self.second, 0, 0, 0))
         # we lose the fractional part
         return ts + frac
+
+    def setTranslator(self, translator):
+        """Replace the translation engine
+
+        'translator'
+           is i18n module or one of gettext translation classes.
+           It must have attributes 'gettext' and 'ngettext',
+           serving as translation functions.
+        """
+        self.translator = translator
+        self._ = translator.gettext
+        self.ngettext = translator.ngettext
 
 class Interval:
     '''
@@ -446,8 +458,7 @@ class Interval:
         translator=i18n
     ):
         """Construct an interval given a specification."""
-        self._ = translator.gettext
-        self.ngettext = translator.ngettext
+        self.setTranslator(translator)
         if type(spec) in (IntType, FloatType, LongType):
             self.from_seconds(spec)
         elif type(spec) in (StringType, UnicodeType):
@@ -466,7 +477,7 @@ class Interval:
 
     def __deepcopy__(self, memo):
         return Interval((self.sign, self.year, self.month, self.day,
-            self.hour, self.minute, self.second))
+            self.hour, self.minute, self.second), translator=self.translator)
 
     def set(self, spec, allowdate=1, interval_re=re.compile('''
             \s*(?P<s>[-+])?         # + or -
@@ -561,7 +572,7 @@ class Interval:
     def __add__(self, other):
         if isinstance(other, Date):
             # the other is a Date - produce a Date
-            return Date(other.addInterval(self))
+            return Date(other.addInterval(self), translator=self.translator)
         elif isinstance(other, Interval):
             # add the other Interval to this one
             a = self.get_tuple()
@@ -571,7 +582,7 @@ class Interval:
             i = [as*x + bs*y for x,y in zip(a[1:],b[1:])]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
-            return Interval(i)
+            return Interval(i, translator=self.translator)
         # nope, no idea what to do with this other...
         raise TypeError, "Can't add %r"%other
 
@@ -580,7 +591,8 @@ class Interval:
             # the other is a Date - produce a Date
             interval = Interval(self.get_tuple())
             interval.sign *= -1
-            return Date(other.addInterval(interval))
+            return Date(other.addInterval(interval),
+                translator=self.translator)
         elif isinstance(other, Interval):
             # add the other Interval to this one
             a = self.get_tuple()
@@ -590,7 +602,7 @@ class Interval:
             i = [as*x - bs*y for x,y in zip(a[1:],b[1:])]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
-            return Interval(i)
+            return Interval(i, translator=self.translator)
         # nope, no idea what to do with this other...
         raise TypeError, "Can't add %r"%other
 
@@ -618,7 +630,8 @@ class Interval:
             sign = months<0 and -1 or 1
             m = months%12
             y = months / 12
-            return Interval((sign, y, m, 0, 0, 0, 0))
+            return Interval((sign, y, m, 0, 0, 0, 0),
+                translator=self.translator)
 
         else:
             # handle a day/time division
@@ -635,7 +648,8 @@ class Interval:
             seconds /= 60
             H = seconds%24
             d = seconds / 24
-            return Interval((sign, 0, 0, d, H, M, S))
+            return Interval((sign, 0, 0, d, H, M, S),
+                translator=self.translator)
 
     def __repr__(self):
         return '<Interval %s>'%self.__str__()
@@ -743,6 +757,18 @@ class Interval:
         val = val / 24
         self.day = val
         self.month = self.year = 0
+
+    def setTranslator(self, translator):
+        """Replace the translation engine
+
+        'translator'
+           is i18n module or one of gettext translation classes.
+           It must have attributes 'gettext' and 'ngettext',
+           serving as translation functions.
+        """
+        self.translator = translator
+        self._ = translator.gettext
+        self.ngettext = translator.ngettext
 
 
 def fixTimeOverflow(time):
