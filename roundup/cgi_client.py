@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.79 2001-12-10 22:20:01 richard Exp $
+# $Id: cgi_client.py,v 1.80 2001-12-12 23:27:14 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -60,14 +60,17 @@ class Client:
     ANONYMOUS_ACCESS = 'deny'        # one of 'deny', 'allow'
     ANONYMOUS_REGISTER = 'deny'      # one of 'deny', 'allow'
 
-    def __init__(self, instance, request, env):
+    def __init__(self, instance, request, env, form=None):
         self.instance = instance
         self.request = request
         self.env = env
         self.path = env['PATH_INFO']
         self.split_path = self.path.split('/')
 
-        self.form = cgi.FieldStorage(environ=env)
+        if form is None:
+            self.form = cgi.FieldStorage(environ=env)
+        else:
+            self.form = form
         self.headers_done = 0
         try:
             self.debug = int(env.get("ROUNDUP_DEBUG", 0))
@@ -1087,6 +1090,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.79  2001/12/10 22:20:01  richard
+# Enabled transaction support in the bsddb backend. It uses the anydbm code
+# where possible, only replacing methods where the db is opened (it uses the
+# btree opener specifically.)
+# Also cleaned up some change note generation.
+# Made the backends package work with pydoc too.
+#
 # Revision 1.78  2001/12/07 05:59:27  rochecompaan
 # Fixed small bug that prevented adding issues through the web.
 #

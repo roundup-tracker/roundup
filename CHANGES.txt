@@ -22,6 +22,7 @@ Feature:
  . Added the "display" command to the admin tool - displays a node's values
  . Message author's name appears in From: instead of roundup instance name
    (which still appears in the Reply-To:)
+ . Added a Zope frontend for roundup.
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!

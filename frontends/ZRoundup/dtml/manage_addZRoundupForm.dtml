@@ -1,0 +1,5 @@
+<form action="manage_addZRoundup">
+ID: <input type="text" name="id"><br>
+Instance Home: <input type="text" name="instance_home"><br>
+<input type="submit">
+</form>
