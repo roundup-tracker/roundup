@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.186 2004-07-28 02:29:45 richard Exp $
+# $Id: client.py,v 1.187 2004-08-02 22:41:12 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -540,6 +540,9 @@ class Client:
         # outside of the static files dir
         prefix = getattr(self.instance.config, 'STATIC_FILES',
             self.instance.config.TEMPLATES)
+
+        # normalise the prefix and filename for the startswith comparison
+        prefix = os.path.normpath(prefix)
         filename = os.path.normpath(os.path.join(prefix, file))
         if not filename.startswith(prefix):
             raise NotFound, file

@@ -11,6 +11,7 @@ Required:
 - fix admin_guide referring to structure of trackers
 - add config.ini section descriptions
 - review use of hasPermission etc. in classic template
+- how to override Client class methods like determine_user?
 
 
 Optionally:
@@ -18,3 +19,6 @@ Optionally:
 - migrate to numeric ID values (fixes bug 817217)
 - configuration editing in Web User Interface: core config,
   standalone server config, detectors and extensions configurations
+- refactor backends to have a common Database class that manages them all,
+  allowing different Class implementations from differen backends in the
+  one tracker
