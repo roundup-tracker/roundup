@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.5 2002-07-09 04:19:09 richard Exp $
+#$Id: indexer.py,v 1.6 2002-07-09 04:26:44 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -202,7 +202,7 @@ class Indexer:
             return {}
         return hits
 
-    segments = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#-!"
+    segments = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_-!"
     def load_index(self, reload=0, wordlist=None):
         # Unless reload is indicated, do not load twice
         if self.index_loaded() and not reload:
@@ -263,7 +263,7 @@ class Indexer:
         open(self.indexdb+'-','wb').write(zlib.compress(marshal.dumps(dbfil)))
 
         # The hard part is splitting the word dictionary up, of course
-        letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#"
+        letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_"
         segdicts = {}                           # Need batch of empty dicts
         for segment in letters:
             segdicts[segment] = {}
@@ -301,6 +301,11 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.5  2002/07/09 04:19:09  richard
+#Added reindex command to roundup-admin.
+#Fixed reindex on first access.
+#Also fixed reindexing of entries that change.
+#
 #Revision 1.4  2002/07/09 03:02:52  richard
 #More indexer work:
 #- all String properties may now be indexed too. Currently there's a bit of
