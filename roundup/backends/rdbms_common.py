@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.130 2004-09-26 14:16:06 a1s Exp $
+# $Id: rdbms_common.py,v 1.131 2004-09-26 14:38:54 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -45,6 +45,9 @@ from roundup.date import Range
 
 # number of rows to keep in memory
 ROW_CACHE_SIZE = 100
+
+# dummy value meaning "argument not passed"
+_marker = []
 
 def _num_cvt(num):
     num = str(num)
@@ -1394,7 +1397,6 @@ class Class(hyperdb.Class):
         # XXX numeric ids
         return str(newid)
 
-    _marker = []
     def get(self, nodeid, propname, default=_marker, cache=1):
         '''Get the value of a property on an existing node of this class.
 
@@ -1437,7 +1439,7 @@ class Class(hyperdb.Class):
         # XXX may it be that propname is valid property name
         #    (above error is not raised) and not d.has_key(propname)???
         if (not d.has_key(propname)) or (d[propname] is None):
-            if default is self._marker:
+            if default is _marker:
                 if isinstance(prop, Multilink):
                     return []
                 else:
@@ -2523,7 +2525,6 @@ class FileClass(hyperdb.FileClass, Class):
         self.db.storefile(self.classname, newid, None, content)
         return newid
 
-    _marker = []
     def get(self, nodeid, propname, default=_marker, cache=1):
         ''' Trap the content propname and get it from the file
 
@@ -2537,7 +2538,7 @@ class FileClass(hyperdb.FileClass, Class):
                 # BUG: by catching this we donot see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
-        if default is not self._marker:
+        if default is not _marker:
             return Class.get(self, nodeid, propname, default)
         else:
             return Class.get(self, nodeid, propname)
@@ -2624,3 +2625,4 @@ class IssueClass(Class, roundupdb.IssueClass):
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
 
+# vim: set et sts=4 sw=4 :
