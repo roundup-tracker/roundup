@@ -2,34 +2,39 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 200?-??-?? 0.7.0
-Feature:
+Major new features:
+- added postgresql backend (originally from sf patch 761740, many changes
+  since)
 - added new "actor" automatic property (indicates user who cause the last
-  "activity"
-- simple support for collision detection (sf rfe 648763)
+  "activity")
+- RDBMS backends implement their session and one-time-key stores and
+  full-text indexers; thus they are now performing their own locking
+  internally
+- all RDBMS backends now have indexes on several columns
 - support confirming registration by replying to the email (sf bug 763668)
+- all HTML templating methods now automatically check for permissions
+  (either view or edit as appropriate), greatly simplifying templates
+
+Other new features:
+- simple support for collision detection (sf rfe 648763)
 - support setgid and running on port < 1024 (sf patch 777528)
 - using Zope3's test runner now, allowing GC checks, nicer controls and
   coverage analysis
-- added postgresql backend (originally from sf patch 761740, many changes
-  since)
-- all RDBMS backends now have indexes on several columns
-- RDBMS backends implement their session and one-time-key stores
-- change nosymessage and send_message to accept msgid=None (RFE #707235).
+- change nosymessage and send_message to accept msgid=None (RFE #707235)
 - handle Resent-From: headers (sf bug 841151)
 - always sort MultilinkHTMLProperty in the correct order, usually
-  alphabetically (sf feature 790512).
-- added script for copying user(s) from tracker to tracker (sf patch
-  828963)
+  alphabetically (sf feature 790512)
+- added script for copying user(s) ("scripts/copy-user.py") from tracker
+  to tracker (sf patch 828963)
 - ignore incoming email with "Precedence: bulk" (sf patch 843489)
 - use HTTP 'Content-Length' header (modified sf patch 844577)
 - HTML generated is now HTML4 (or optionally XHTML) compliant (sf feature
   814314 and sf patch 834620)
 - default stylesheet turns off sidebar when printing
-- allow direct supply of filter() arguments (thanks Godefroid Chapelle)
+- allow direct supply of filter() arguments in templating (thanks Godefroid
+  Chapelle)
 - improved body_title slot in HTML templating (sf patch 873502)
 - HTMLLinkProperty field() method renders as a field now (thanks darryl)
-- all HTML templating methods now automatically check for permissions
-  (either view or edit as appropriate), greatly simplifying templates
 - cgi Action handlers may now return the actual content to be sent back to
   the user (rather than using some template)
 
@@ -47,8 +52,8 @@ Fixed:
   (sf bug 798659).
 - remove empty lines before sending strings off to the csv parser 
   (sf bug 821364).
-- centralised conversion of user-input data to hyperdb values (sf bug 802405,
-  sf bug 817217, sf rfe 816994)
+- centralised conversion of user-input data to hyperdb values (sf bug
+  802405, sf bug 817217, sf rfe 816994)
 - recalculate SHA on template files when installed tracker used as
   template (sf bug 827510)
 - fixed ZRoundup (sf bug 624380)
@@ -58,7 +63,7 @@ Fixed:
 - fixed ability to edit "content" property (sf bug 914062)
 
 Cleanup:
-- replace curuserid attribute on Database with the extended getuid() method.
+- replace curuserid attribute on Database with the extended getuid() method
 - extract a new 'mailer' module for sending mail
 - extract a '_send_mail' method for testing mail sending
 - simplify backend importing
@@ -72,7 +77,8 @@ Cleanup:
   * actions.py - the xxxAction and xxxPermission functions refactored into 
     Action classes
   * exceptions.py - all exceptions
-  * form_parser.py - parsePropsFromForm & extractFormList in a FormParser class
+  * form_parser.py - parsePropsFromForm & extractFormList in a FormParser
+    class
 
 
 2004-??-?? 0.6.8
