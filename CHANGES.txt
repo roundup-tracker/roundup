@@ -6,6 +6,7 @@ Fixed:
  . Had another 2.1-ism in the unit tests
  . Made the mail parser a little more robust w.r.t missing Subject:
    (both thanks Mikhail Sobolev)
+ . Missed some isFooType usages (thanks Mikhail Sobolev for spotting them)
 
 
 2001-08-08 - 0.2.6
