@@ -637,10 +637,16 @@ class ConfRegoAction(Action):
 
         # nice message
         message = _('You are now registered, welcome!')
+        url = '%suser%s?@ok_message=%s'%(self.base, self.userid,
+            urllib.quote(message))
 
-        # redirect to the user's page
-        raise Redirect, '%suser%s?@ok_message=%s'%(self.base,
-            self.userid, urllib.quote(message))
+        # redirect to the user's page (but not 302, as some email clients seem
+        # to want to reload the page, or something)
+        return '''<html><head><title>%s</title></head>
+            <body><p><a href="%s">%s</a></p>
+            <script type="text/javascript">
+            window.setTimeout('window.location = "%s"', 1000);
+            </script>'''%(message, url, message, url)
 
 class RegisterAction(Action):
     name = 'register'

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.162 2004-02-20 03:48:16 richard Exp $
+# $Id: client.py,v 1.163 2004-02-25 03:24:43 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -190,7 +190,11 @@ class Client:
 
             # possibly handle a form submit action (may change self.classname
             # and self.template, and may also append error/ok_messages)
-            self.handle_action()
+            html = self.handle_action()
+
+            if html:
+                self.write(html)
+                return
 
             # now render the page
             # we don't want clients caching our dynamic pages
@@ -538,6 +542,9 @@ class Client:
             The action is defined by the form variable :action which
             identifies the method on this object to call. The actions
             are defined in the "actions" sequence on this class.
+
+            Actions may return a page (by default HTML) to return to the
+            user, bypassing the usual template rendering.
         '''
         if self.form.has_key(':action'):
             action = self.form[':action'].value.lower()
@@ -556,9 +563,9 @@ class Client:
             # call the mapped action
             if isinstance(action_klass, type('')):
                 # old way of specifying actions
-                getattr(self, action_klass)()
+                return getattr(self, action_klass)()
             else:
-                action_klass(self).execute()
+                return action_klass(self).execute()
 
         except ValueError, err:
             self.error_message.append(str(err))
