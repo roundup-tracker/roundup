@@ -2,31 +2,22 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.9 is a bug fix release (with one feature cleaning up an API
-inconsistency):
+0.7.10 is a bug fix release:
 
-- DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
-- popup listing uses filter args (thanks Marlon van den Berg)
-- fixed editing of message contents
-- loosened the detection of issue cross-references in messages
-- open CSV files in "universal newline" mode
-- s/Modifed/Modified (thanks donfu)
-- applied patch fixing some form handling issues in ZRoundup (thanks Chris
-  Withers)
-- enforce View Permission when serving file content (sf bug 1050470)
-- don't index common words (sf bug 1046612)
-- set the current username correctly after rego (sf bug 1048398)
-- don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
-- TAL expressions like 'request/show/whatever' return True
-  if the request does not contain explicit @columns list
-- NumberHTMLProperty should return '' not "None" if not set (thanks
-  William)
-- ensure multilink ordering in RDBMS backends (thanks Marcus Priesch, sf
-  bug 950963)
-- always honor indexme property on Strings (sf patch 1063711)
-- make hyperdb value parsing errors readable in mailgw errors
-- make anydbm journal export handle removed properties
-- allow use of XML templates again
+- reset ID counters if the database is cleared (thanks William)
+- apply IE caching "fix" to automatically serve up all pages expired
+- fix typo (sf patch 1076629)
+- fix hyperlinking of items (sf bug 1080251)
+- fix roundup-admin find command handling of Multilinks
+- fix some security assertions (sf bug 1085481) (see doc/upgrading.txt for
+  notes)
+- don't set the title to nothing from incoming mail (thanks Bruce Guenter)
+- fix py2.4 strftime() API change bug (sf bug 1087746)
+- fix indexer searching with no valid words (sf bug 1086787)
+- updated searching / indexing docs
+- fix "(list)" popup when list is one item long (sf bug 1064716)
+- have RDBMS full-text indexer do AND searching (sf bug 1055435)
+- handle spaces in String index params in batching (sf bug 1054224)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
