@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.2 2002-02-27 03:40:59 richard Exp $
+#$Id: blobfiles.py,v 1.3 2002-02-27 07:33:34 grubert Exp $
 '''
 This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
@@ -106,3 +106,6 @@ class FileStorage:
         '''
     	raise NotImplementedError
 
+# $Log: not supported by cvs2svn $
+#
+# vim: set filetype=python ts=4 sw=4 et si
