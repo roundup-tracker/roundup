@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.39 2002-07-31 23:57:37 richard Exp $ 
+# $Id: test_db.py,v 1.40 2002-08-23 04:48:36 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -144,6 +144,8 @@ class anydbmDBTestCase(MyTestCase):
     def testNewProperty(self):
         self.db.issue.create(title="spam", status='1')
         self.db.issue.addprop(fixer=Link("user"))
+        # force any post-init stuff to happen
+        self.db.post_init()
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
@@ -327,7 +329,6 @@ class anydbmDBTestCase(MyTestCase):
         ar(TypeError, self.db.user.set, '3', username='foo', assignable='true')
 
     def testJournals(self):
-        self.db.issue.addprop(fixer=Link("user", do_journal='yes'))
         self.db.user.create(username="mary")
         self.db.user.create(username="pete")
         self.db.issue.create(title="spam", status='1')
@@ -342,10 +343,9 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(action, 'create')
         keys = params.keys()
         keys.sort()
-        self.assertEqual(keys, ['assignedto', 'deadline', 'files', 'fixer',
+        self.assertEqual(keys, ['assignedto', 'deadline', 'files',
             'foo', 'messages', 'nosy', 'status', 'superseder', 'title'])
         self.assertEqual(None,params['deadline'])
-        self.assertEqual(None,params['fixer'])
         self.assertEqual(None,params['foo'])
         self.assertEqual([],params['nosy'])
         self.assertEqual('1',params['status'])
@@ -354,7 +354,7 @@ class anydbmDBTestCase(MyTestCase):
         # journal entry for link
         journal = self.db.getjournal('user', '1')
         self.assertEqual(1, len(journal))
-        self.db.issue.set('1', fixer='1')
+        self.db.issue.set('1', assignedto='1')
         self.db.commit()
         journal = self.db.getjournal('user', '1')
         self.assertEqual(2, len(journal))
@@ -362,10 +362,10 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual('1', nodeid)
         self.assertEqual('test', journaltag)
         self.assertEqual('link', action)
-        self.assertEqual(('issue', '1', 'fixer'), params)
+        self.assertEqual(('issue', '1', 'assignedto'), params)
 
         # journal entry for unlink
-        self.db.issue.set('1', fixer='2')
+        self.db.issue.set('1', assignedto='2')
         self.db.commit()
         journal = self.db.getjournal('user', '1')
         self.assertEqual(3, len(journal))
@@ -373,7 +373,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual('1', nodeid)
         self.assertEqual('test', journaltag)
         self.assertEqual('unlink', action)
-        self.assertEqual(('issue', '1', 'fixer'), params)
+        self.assertEqual(('issue', '1', 'assignedto'), params)
 
         # test disabling journalling
         # ... get the last entry
@@ -400,12 +400,21 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
         self.db.issue.set('1', status='2')
         self.db.commit()
+
+        # sleep for at least a second, then get a date to pack at
+        time.sleep(1)
+        pack_before = date.Date('.')
+
+        # one more entry
         self.db.issue.set('1', status='3')
         self.db.commit()
-        pack_before = date.Date(". + 1d")
+
+        # pack
         self.db.pack(pack_before)
         journal = self.db.getjournal('issue', '1')
-        self.assertEqual(2, len(journal))
+
+        # we should have one entry now
+        self.assertEqual(1, len(journal))
 
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
@@ -528,6 +537,43 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db2, 0, bsddb3)
 
 
+class gadflyDBTestCase(anydbmDBTestCase):
+    ''' Gadfly doesn't support multiple connections to the one local
+        database
+    '''
+    def setUp(self):
+        from roundup.backends import gadfly
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        config.GADFLY_DATABASE = ('test', config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = gadfly.Database(config, 'test')
+        setupSchema(self.db, 1, gadfly)
+
+    def testIDGeneration(self):
+        id1 = self.db.issue.create(title="spam", status='1')
+        id2 = self.db.issue.create(title="eggs", status='2')
+        self.assertNotEqual(id1, id2)
+
+    def testNewProperty(self):
+        # gadfly doesn't have an ALTER TABLE command :(
+        pass
+
+class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import gadfly
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        config.GADFLY_DATABASE = ('test', config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        db = gadfly.Database(config, 'test')
+        setupSchema(db, 1, gadfly)
+        self.db = gadfly.Database(config)
+        setupSchema(self.db, 0, gadfly)
+
+
 class metakitDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import metakit
@@ -605,6 +651,13 @@ def suite():
         print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
 
     try:
+        import gadfly
+        l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
+        l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
+    except:
+        print 'gadfly module not found, skipping gadfly DBTestCase'
+
+    try:
         import metakit
         l.append(unittest.makeSuite(metakitDBTestCase, 'test'))
         l.append(unittest.makeSuite(metakitReadOnlyDBTestCase, 'test'))
@@ -615,6 +668,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2002/07/31 23:57:37  richard
+#  . web forms may now unset Link values (like assignedto)
+#
 # Revision 1.38  2002/07/26 08:27:00  richard
 # Very close now. The cgi and mailgw now use the new security API. The two
 # templates have been migrated to that setup. Lots of unit tests. Still some
