@@ -589,8 +589,10 @@ class HTMLItem(HTMLPermissions):
                             isinstance(self._props[prop_n], hyperdb.Link)):
                         classname = self._props[prop_n].classname
                         try:
-                            find_template(self._db.config.TEMPLATES,
+                            template = find_template(self._db.config.TEMPLATES,
                                 classname, 'item')
+                            if template[1].startswith('_generic'):
+                                raise NoTemplate, 'not really...'
                         except NoTemplate:
                             pass
                         else:
@@ -626,116 +628,123 @@ class HTMLItem(HTMLPermissions):
                         prop = self._props[k]
                     except KeyError:
                         prop = None
-                    if prop is not None:
-                        if args[k] and (isinstance(prop, hyperdb.Multilink) or
-                                isinstance(prop, hyperdb.Link)):
-                            # figure what the link class is
-                            classname = prop.classname
-                            try:
-                                linkcl = self._db.getclass(classname)
-                            except KeyError:
-                                labelprop = None
-                                comments[classname] = _('''The linked class
-                                    %(classname)s no longer exists''')%locals()
-                            labelprop = linkcl.labelprop(1)
-                            hrefable = os.path.exists(
-                                os.path.join(self._db.config.TEMPLATES,
-                                classname+'.item'))
-
-                        if isinstance(prop, hyperdb.Multilink) and args[k]:
-                            ml = []
-                            for linkid in args[k]:
-                                if isinstance(linkid, type(())):
-                                    sublabel = linkid[0] + ' '
-                                    linkids = linkid[1]
-                                else:
-                                    sublabel = ''
-                                    linkids = [linkid]
-                                subml = []
-                                for linkid in linkids:
-                                    label = classname + linkid
-                                    # if we have a label property, try to use it
-                                    # TODO: test for node existence even when
-                                    # there's no labelprop!
-                                    try:
-                                        if labelprop is not None and \
-                                                labelprop != 'id':
-                                            label = linkcl.get(linkid, labelprop)
-                                    except IndexError:
-                                        comments['no_link'] = _('''<strike>The
-                                            linked node no longer
-                                            exists</strike>''')
-                                        subml.append('<strike>%s</strike>'%label)
-                                    else:
-                                        if hrefable:
-                                            subml.append('<a href="%s%s">%s</a>'%(
-                                                classname, linkid, label))
-                                        else:
-                                            subml.append(label)
-                                ml.append(sublabel + ', '.join(subml))
-                            cell.append('%s:\n  %s'%(k, ', '.join(ml)))
-                        elif isinstance(prop, hyperdb.Link) and args[k]:
-                            label = classname + args[k]
-                            # if we have a label property, try to use it
-                            # TODO: test for node existence even when
-                            # there's no labelprop!
-                            if labelprop is not None and labelprop != 'id':
-                                try:
-                                    label = linkcl.get(args[k], labelprop)
-                                except IndexError:
-                                    comments['no_link'] = _('''<strike>The
-                                        linked node no longer
-                                        exists</strike>''')
-                                    cell.append(' <strike>%s</strike>,\n'%label)
-                                    # "flag" this is done .... euwww
-                                    label = None
-                            if label is not None:
-                                if hrefable:
-                                    old = '<a href="%s%s">%s</a>'%(classname, args[k], label)
-                                else:
-                                    old = label;
-                                cell.append('%s: %s' % (k,old))
-                                if current.has_key(k):
-                                    cell[-1] += ' -> %s'%current[k]
-                                    current[k] = old
-
-                        elif isinstance(prop, hyperdb.Date) and args[k]:
-                            d = date.Date(args[k]).local(timezone)
-                            cell.append('%s: %s'%(k, str(d)))
-                            if current.has_key(k):
-                                cell[-1] += ' -> %s' % current[k]
-                                current[k] = str(d)
-
-                        elif isinstance(prop, hyperdb.Interval) and args[k]:
-                            d = date.Interval(args[k])
-                            cell.append('%s: %s'%(k, str(d)))
-                            if current.has_key(k):
-                                cell[-1] += ' -> %s'%current[k]
-                                current[k] = str(d)
-
-                        elif isinstance(prop, hyperdb.String) and args[k]:
-                            cell.append('%s: %s'%(k, cgi.escape(args[k])))
-                            if current.has_key(k):
-                                cell[-1] += ' -> %s'%current[k]
-                                current[k] = cgi.escape(args[k])
-
-                        elif not args[k]:
-                            if current.has_key(k):
-                                cell.append('%s: %s'%(k, current[k]))
-                                current[k] = '(no value)'
-                            else:
-                                cell.append('%s: (no value)'%k)
-
-                        else:
-                            cell.append('%s: %s'%(k, str(args[k])))
-                            if current.has_key(k):
-                                cell[-1] += ' -> %s'%current[k]
-                                current[k] = str(args[k])
-                    else:
+                    if prop is None:
                         # property no longer exists
                         comments['no_exist'] = _('''<em>The indicated property
                             no longer exists</em>''')
                         cell.append('<em>%s: %s</em>\n'%(k, str(args[k])))
+                        continue
+
+                    if args[k] and (isinstance(prop, hyperdb.Multilink) or
+                            isinstance(prop, hyperdb.Link)):
+                        # figure what the link class is
+                        classname = prop.classname
+                        try:
+                            linkcl = self._db.getclass(classname)
+                        except KeyError:
+                            labelprop = None
+                            comments[classname] = _('''The linked class
+                                %(classname)s no longer exists''')%locals()
+                        labelprop = linkcl.labelprop(1)
+                        try:
+                            template = find_template(self._db.config.TEMPLATES,
+                                classname, 'item')
+                            if template[1].startswith('_generic'):
+                                raise NoTemplate, 'not really...'
+                            hrefable = 1
+                        except NoTemplate:
+                            hrefable = 0
+
+                    if isinstance(prop, hyperdb.Multilink) and args[k]:
+                        ml = []
+                        for linkid in args[k]:
+                            if isinstance(linkid, type(())):
+                                sublabel = linkid[0] + ' '
+                                linkids = linkid[1]
+                            else:
+                                sublabel = ''
+                                linkids = [linkid]
+                            subml = []
+                            for linkid in linkids:
+                                label = classname + linkid
+                                # if we have a label property, try to use it
+                                # TODO: test for node existence even when
+                                # there's no labelprop!
+                                try:
+                                    if labelprop is not None and \
+                                            labelprop != 'id':
+                                        label = linkcl.get(linkid, labelprop)
+                                except IndexError:
+                                    comments['no_link'] = _('''<strike>The
+                                        linked node no longer
+                                        exists</strike>''')
+                                    subml.append('<strike>%s</strike>'%label)
+                                else:
+                                    if hrefable:
+                                        subml.append('<a href="%s%s">%s</a>'%(
+                                            classname, linkid, label))
+                                    else:
+                                        subml.append(label)
+                            ml.append(sublabel + ', '.join(subml))
+                        cell.append('%s:\n  %s'%(k, ', '.join(ml)))
+                    elif isinstance(prop, hyperdb.Link) and args[k]:
+                        label = classname + args[k]
+                        # if we have a label property, try to use it
+                        # TODO: test for node existence even when
+                        # there's no labelprop!
+                        if labelprop is not None and labelprop != 'id':
+                            try:
+                                label = linkcl.get(args[k], labelprop)
+                            except IndexError:
+                                comments['no_link'] = _('''<strike>The
+                                    linked node no longer
+                                    exists</strike>''')
+                                cell.append(' <strike>%s</strike>,\n'%label)
+                                # "flag" this is done .... euwww
+                                label = None
+                        if label is not None:
+                            if hrefable:
+                                old = '<a href="%s%s">%s</a>'%(classname, args[k], label)
+                            else:
+                                old = label;
+                            cell.append('%s: %s' % (k,old))
+                            if current.has_key(k):
+                                cell[-1] += ' -> %s'%current[k]
+                                current[k] = old
+
+                    elif isinstance(prop, hyperdb.Date) and args[k]:
+                        d = date.Date(args[k]).local(timezone)
+                        cell.append('%s: %s'%(k, str(d)))
+                        if current.has_key(k):
+                            cell[-1] += ' -> %s' % current[k]
+                            current[k] = str(d)
+
+                    elif isinstance(prop, hyperdb.Interval) and args[k]:
+                        d = date.Interval(args[k])
+                        cell.append('%s: %s'%(k, str(d)))
+                        if current.has_key(k):
+                            cell[-1] += ' -> %s'%current[k]
+                            current[k] = str(d)
+
+                    elif isinstance(prop, hyperdb.String) and args[k]:
+                        cell.append('%s: %s'%(k, cgi.escape(args[k])))
+                        if current.has_key(k):
+                            cell[-1] += ' -> %s'%current[k]
+                            current[k] = cgi.escape(args[k])
+
+                    elif not args[k]:
+                        if current.has_key(k):
+                            cell.append('%s: %s'%(k, current[k]))
+                            current[k] = '(no value)'
+                        else:
+                            cell.append('%s: (no value)'%k)
+
+                    else:
+                        cell.append('%s: %s'%(k, str(args[k])))
+                        if current.has_key(k):
+                            cell[-1] += ' -> %s'%current[k]
+                            current[k] = str(args[k])
+
                 arg_s = '<br />'.join(cell)
             else:
                 # unkown event!!
@@ -863,6 +872,10 @@ class StringHTMLProperty(HTMLProperty):
             except KeyError:
                 return '%s%s'%(s1, s2)
 
+    def hyperlinked(self):
+        ''' Render a "hyperlinked" version of the text '''
+        return self.plain(hyperlink=1)
+
     def plain(self, escape=0, hyperlink=0):
         ''' Render a "plain" representation of the property
             
@@ -877,6 +890,7 @@ class StringHTMLProperty(HTMLProperty):
         else:
             s = str(self._value)
         if hyperlink:
+            # no, we *must* escape this text
             if not escape:
                 s = cgi.escape(s)
             s = self.hyper_re.sub(self._hyper_repl, s)
