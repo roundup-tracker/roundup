@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.106 2003-03-17 04:46:20 richard Exp $
+# $Id: client.py,v 1.107 2003-03-18 00:24:35 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -26,6 +26,11 @@ class  Redirect(HTTPException):
        pass
 class  NotModified(HTTPException):
        pass
+
+# set to indicate to roundup not to actually _send_ email
+# this var must contain a file to write the mail to
+SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
+
 
 # XXX actually _use_ FormError
 class FormError(ValueError):
@@ -280,9 +285,9 @@ class Client:
             # remove aged otks
             otks = self.db.otks
             for sessid in otks.list():
-                interval = now - okts.get(sessid, '__time')
+                interval = now - otks.get(sessid, '__time')
                 if interval > week:
-                    otk.destroy(sessid)
+                    otks.destroy(sessid)
             sessions.set('last_clean', last_use=time.time())
 
     def determine_user(self):
@@ -763,18 +768,25 @@ please visit the following URL:
         content = StringIO.StringIO(content)
         quopri.encode(content, body, 0)
 
-        # now try to send the message
-        try:
-            # send the message as admin so bounces are sent there
-            # instead of to roundup
-            smtp = smtplib.SMTP(self.db.config.MAILHOST)
-            smtp.sendmail(self.db.config.ADMIN_EMAIL, [to], message.getvalue())
-        except socket.error, value:
-            self.error_message.append("Error: couldn't send email: "
-                "mailhost %s"%value)
-            return 0
-        except smtplib.SMTPException, value:
-            self.error_message.append("Error: couldn't send email: %s"%value)
+        if SENDMAILDEBUG:
+            # don't send - just write to a file
+            open(SENDMAILDEBUG, 'a').write('FROM: %s\nTO: %s\n%s\n'%(
+                self.db.config.ADMIN_EMAIL,
+                ', '.join(to),message.getvalue()))
+        else:
+            # now try to send the message
+            try:
+                # send the message as admin so bounces are sent there
+                # instead of to roundup
+                smtp = smtplib.SMTP(self.db.config.MAILHOST)
+                smtp.sendmail(self.db.config.ADMIN_EMAIL, [to],
+                    message.getvalue())
+            except socket.error, value:
+                self.error_message.append("Error: couldn't send email: "
+                    "mailhost %s"%value)
+                return 0
+            except smtplib.SMTPException, msg:
+                self.error_message.append("Error: couldn't send email: %s"%msg)
             return 0
         return 1
 
