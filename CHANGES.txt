@@ -8,7 +8,8 @@ Feature:
      better configuration system.
  . Alternate email addresses are now available for users. See the MIGRATION
    file for info on how to activate the feature.
- . Added simple editing for classes that don't define a templated interface.
+ . #511168 ] Web interface: Adding new products
+   Classes that don't provide template html get a default edit interface now:
    - access using the admin "class list" interface
    - limited to admin-only
    - requires the csv module from object-craft (url given if it's missing)
