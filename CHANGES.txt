@@ -1,7 +1,22 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-03-?? - 0.4.1
+0.4.2
+Feature:
+ . link() htmltemplate function now has a "showid" option for links and
+   multilinks. When true, it only displays the linked node id as the anchor
+   text. The link value is displayed as a tooltip using the title anchor
+   attribute.
+   To use in eg. the superseder field, have something like this:
+   <td>
+    <display call="field('superseder', showid=1)">
+    <display call="classhelp('issue', 'id,title', label='list', width=500)">
+    <property name="superseder">
+     <br>View: <display call="link('superseder', showid=1)">
+    </property>
+   </td>
+
+2002-03-25 - 0.4.1
 Feature:
  . use blobfiles in back_anydbm which is used in back_bsddb.
    change test_db as dirlist does not work for subdirectories.

@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.84 2002-03-29 19:41:48 rochecompaan Exp $
+# $Id: htmltemplate.py,v 1.85 2002-04-02 01:40:58 richard Exp $
 
 __doc__ = """
 Template engine.
 """
 
-import os, re, StringIO, urllib, cgi, errno, types
+import os, re, StringIO, urllib, cgi, errno, types, urllib
 
 import hyperdb, date
 from i18n import _
@@ -331,7 +331,7 @@ class TemplateFunctions:
         return _('[Menu: not a link]')
 
     #XXX deviates from spec
-    def do_link(self, property=None, is_download=0):
+    def do_link(self, property=None, is_download=0, showid=0):
         '''For a Link or Multilink property, display the names of the linked
            nodes, hyperlinked to the item views on those nodes.
            For other properties, link to this node with the property as the
@@ -355,11 +355,17 @@ class TemplateFunctions:
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
             linkvalue = cgi.escape(linkcl.get(value, k))
-            if is_download:
-                return '<a href="%s%s/%s">%s</a>'%(linkname, value,
-                    linkvalue, linkvalue)
+            if showid:
+                label = value
+		title = ' title="%s"'%linkvalue
+		# note ... this should be urllib.quote(linkcl.get(value, k))
             else:
-                return '<a href="%s%s">%s</a>'%(linkname, value, linkvalue)
+                label = linkvalue
+            if is_download:
+                return '<a href="%s%s/%s"%s>%s</a>'%(linkname, value,
+                    linkvalue, title, label)
+            else:
+                return '<a href="%s%s"%s>%s</a>'%(linkname, value, title, label)
         if isinstance(propclass, hyperdb.Multilink):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
@@ -367,12 +373,18 @@ class TemplateFunctions:
             l = []
             for value in value:
                 linkvalue = cgi.escape(linkcl.get(value, k))
-                if is_download:
-                    l.append('<a href="%s%s/%s">%s</a>'%(linkname, value,
-                        linkvalue, linkvalue))
+                if showid:
+                    label = value
+                    title = ' title="%s"'%linkvalue
+		    # note ... this should be urllib.quote(linkcl.get(value, k))
                 else:
-                    l.append('<a href="%s%s">%s</a>'%(linkname, value,
-                        linkvalue))
+                    label = linkvalue
+                if is_download:
+                    l.append('<a href="%s%s/%s"%s>%s</a>'%(linkname, value,
+                        linkvalue, title, label))
+                else:
+                    l.append('<a href="%s%s"%s>%s</a>'%(linkname, value,
+                        title, label))
             return ', '.join(l)
         if is_download:
             return '<a href="%s%s/%s">%s</a>'%(self.classname, self.nodeid,
@@ -1114,6 +1126,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.84  2002/03/29 19:41:48  rochecompaan
+#  . Fixed display of mutlilink properties when using the template
+#    functions, menu and plain.
+#
 # Revision 1.83  2002/02/27 04:14:31  richard
 # Ran it through pychecker, made fixes
 #

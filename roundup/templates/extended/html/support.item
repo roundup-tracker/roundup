@@ -1,4 +1,4 @@
-<!-- $Id: support.item,v 1.4 2002-01-22 00:21:32 richard Exp $-->
+<!-- $Id: support.item,v 1.5 2002-04-02 01:40:59 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -49,7 +49,13 @@
 
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Superseder</span></td>
-    <td class="form-text"><display call="field('superseder', size=40, showid=1)"></td>
+    <td class="form-text">
+     <display call="field('superseder', size=40, showid=1)">
+     <display call="classhelp('issue', 'id,title', label='list', width=500)">
+     <property name="superseder">
+      <br>View: <display call="link('superseder', showid=1)">
+     </property>
+    </td>
     <td width=1% nowrap align=right><span class="form-label">Nosy List</span></td>
     <td class="form-text"><display call="field('nosy')"></td>
 </tr>

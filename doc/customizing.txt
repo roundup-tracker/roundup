@@ -321,6 +321,8 @@ highly customized.
 |         |text.                                                              |
 |         |Options:                                                           |
 |         |property (property name) - the property to use in the second case. |
+|         |showid - use the linked node id as the link text (linked node      |
+|         |         "value" will be set as a tooltip)                         |
 +---------+-------------------------------------------------------------------+
 |count    |For a Multilink property, display a count of the number of links in|
 |         |the list.                                                          |
@@ -515,6 +517,21 @@ As shown in the example, the editor template can also request the display of a
 "note" field, which is a text area for entering a note to go along with a
 change.
 
+The <property> tag used in the index may also be used here - it checks to see
+if the nominated Multilink property has any entries. This can be used to
+eliminate sections of the editor section if the property has no entries::
+
+  <td class="form-text">
+    <display call="field('superseder', size=40, showid=1)">
+    <display call="classhelp('issue', 'id,title', label='list', width=500)">
+    <property name="superseder">
+      <br>View: <display call="link('superseder', showid=1)">
+    </property>
+  </td>
+
+The "View: " part with the links will only display if the superseder property
+has values.
+
 When a change is submitted, the system automatically generates a message
 describing the changed properties.
 
@@ -543,7 +560,7 @@ message nodes, and selecting a message takes you to its content.
 
 The <property> tag used in the index may also be used here - it checks to see
 if the nominated Multilink property has any entries. This can be used to
-eliminate sections of the spool section if the property has no entries.::
+eliminate sections of the spool section if the property has no entries::
 
      <property name="files">
       <tr class="strong-header">
