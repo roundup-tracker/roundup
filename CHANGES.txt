@@ -31,6 +31,7 @@ Fixed:
  . bug #477892 ] Password edit doesn't fix login cookie
  . newuser_action now presents error messages rather than tracebacks.
  . bug #479511 ] mailgw to pop
+ . bug #479508 ] roundup-admin crash on wrong class
  . bad error report in hyperdb
 
 2001-10-23 - 0.3.0 pre 3
