@@ -1,14 +1,16 @@
-# $Id: __init__.py,v 1.4 2001-08-03 07:18:22 richard Exp $
+# $Id: __init__.py,v 1.5 2001-08-05 07:45:27 richard Exp $
 
 import unittest
 
 import test_dates, test_schema, test_db, test_multipart, test_mailsplit
+import test_init
 
 def go():
     suite = unittest.TestSuite((
         test_dates.suite(),
         test_schema.suite(),
         test_db.suite(),
+        test_init.suite(),
         test_multipart.suite(),
         test_mailsplit.suite(),
     ))
@@ -17,6 +19,10 @@ def go():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/08/03 07:18:22  richard
+# Implemented correct mail splitting (was taking a shortcut). Added unit
+# tests. Also snips signatures now too.
+#
 # Revision 1.3  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #

@@ -1,15 +1,24 @@
-# $Id: test_init.py,v 1.1 2001-08-05 07:07:58 richard Exp $
+# $Id: test_init.py,v 1.2 2001-08-05 07:45:27 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
 from roundup.init import init
 
 class MyTestCase(unittest.TestCase):
+    count = 0
+    def setUp(self):
+        MyTestCase.count = MyTestCase.count + 1
+        self.dirname = '_test_%s'%self.count
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError, error:
+            if error.errno != errno.ENOENT: raise
+
     def tearDown(self):
         try:
-            shutil.rmtree('_test_dir')
+            shutil.rmtree(self.dirname)
         except OSError, error:
-            if error.errno == errno.ENOENT: raise
+            if error.errno != errno.ENOENT: raise
 
 class ClassicTestCase(MyTestCase):
     backend = 'anydbm'
@@ -17,10 +26,10 @@ class ClassicTestCase(MyTestCase):
         ae = self.assertEqual
 
         # create the instance
-        init('_test_dir', 'classic', self.backend, 'sekrit')
+        init(self.dirname, 'classic', self.backend, 'sekrit')
 
         # check we can load the package
-        instance = imp.load_package('_test_dir', '_test_dir')
+        instance = imp.load_package(self.dirname, self.dirname)
 
         # and open the database
         db = instance.open()
@@ -47,18 +56,17 @@ class ExtendedTestCase(MyTestCase):
         ae = self.assertEqual
 
         # create the instance
-        init('_test_dir', 'extended', self.backend, 'sekrit')
+        init(self.dirname, 'extended', self.backend, 'sekrit')
 
         # check we can load the package
-        del sys.modules['_test_dir']
-        instance = imp.load_package('_test_dir', '_test_dir')
+        instance = imp.load_package(self.dirname, self.dirname)
 
         # and open the database
         db = instance.open()
 
         # check the basics of the schema and initial data set
         l = db.priority.list()
-        ae(l, ['1', '2', '3', '4', '5'])
+        ae(l, ['1', '2', '3', '4'])
         l = db.status.list()
         ae(l, ['1', '2', '3', '4', '5', '6', '7', '8'])
         l = db.keyword.list()
@@ -111,6 +119,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/08/05 07:07:58  richard
+# added tests for roundup.init - but they're disabled until I can figure _if_
+# we can run them (import problems).
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
