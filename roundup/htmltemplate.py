@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.62 2002-01-18 08:36:12 grubert Exp $
+# $Id: htmltemplate.py,v 1.63 2002-01-21 02:59:10 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -535,9 +535,11 @@ class TemplateFunctions:
                                         linked node no longer
                                         exists</strike>''')
                                     cell.append(' <strike>%s</strike>,\n'%label)
-                            else:
-                                cell.append('  <a href="%s%s">%s</a>,\n'%(
-                                    classname, linkid, label))
+                                    # "flag" this is done .... euwww
+                                    label = None
+                            if label is not None:
+                                cell.append('%s: <a href="%s%s">%s</a>\n'%(
+                                    classname, classname, args[k], label))
 
                         elif isinstance(prop, hyperdb.Date) and args[k]:
                             d = date.Date(args[k])
@@ -1000,6 +1002,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.62  2002/01/18 08:36:12  grubert
+#  . add nowrap to history table date cell i.e. <td nowrap ...
+#
 # Revision 1.61  2002/01/17 23:04:53  richard
 #  . much nicer history display (actualy real handling of property types etc)
 #
