@@ -1,4 +1,4 @@
-# $Id: test_db.py,v 1.5 2001-07-27 06:23:09 richard Exp $ 
+# $Id: test_db.py,v 1.6 2001-07-27 06:23:59 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -137,9 +137,12 @@ class ReadOnlyDBTestCase(unittest.TestCase):
 
     def testExceptions(self):
         # this tests the exceptions that should be raised
-        self.assertRaises(DatabaseError, self.db.status.create, name="foo")
-        self.assertRaises(DatabaseError, self.db.status.set, '1', name="foo")
-        self.assertRaises(DatabaseError, self.db.status.retire, '1')
+        ar = self.assertRaises
+
+        # this tests the exceptions that should be raised
+        ar(DatabaseError, self.db.status.create, name="foo")
+        ar(DatabaseError, self.db.status.set, '1', name="foo")
+        ar(DatabaseError, self.db.status.retire, '1')
 
 
 def suite():
@@ -150,6 +153,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/27 06:23:09  richard
+# Added some new hyperdb tests to make sure we raise the right exceptions.
+#
 # Revision 1.4  2001/07/25 04:34:31  richard
 # Added id and log to tests files...
 #
