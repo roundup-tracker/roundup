@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.10 $
+:Version: $Revision: 1.11 $
 
 Current situation
 =================
@@ -136,7 +136,7 @@ logical permissions associated with all nodes of a particular class (or all
 classes). The Node level permissions define logical permissions associated
 with specific nodes by way of their user-linked properties.
 
-A permission module defines::
+A security module defines::
 
     class InMemoryImmutableClass(hyperdb.Class):
         ''' Don't allow changes to this class's nodes.
@@ -201,6 +201,11 @@ A permission module defines::
                 description="User may be assigned to anything")
             self.addPermissionToRole('Admin', ae)
 
+            # initialise the permissions and roles needed for the UIs
+            from roundup import cgi_client, mailgw
+            cgi_client.initialiseSecurity(self)
+            mailgw.initialiseSecurity(self)
+
         def hasClassPermission(self, db, classname, permission, userid):
             ''' Look through all the Roles, and hence Permissions, and see if
                 "permission" is there for the specified classname.
@@ -240,24 +245,24 @@ A permission module defines::
 Modules such as ``cgi_client.py`` and ``mailgw.py`` define their own
 permissions like so (this example is ``cgi_client.py``)::
 
-    # XXX GAH. If the permissions are instance-db-specific then this can't
-    # work!
-    from roundup import permission
+    def initialiseSecurity(security):
+        ''' Create some Permissions and Roles on the security object
 
-    # create some Permissions
-    newid = permission.addPermission(name="Web Access",
-        description="User may use the web interface")
-    permission.addToRole('User', newid)
-    permission.addToRole('No Rego', newid)
-    newid = permission.addPermission(name="Web Registration",
-        description="User may register through the web")
-    permission.addToRole('User', newid)
-    # XXX GAH!
+            This function is directly invoked by security.Security.__init__()
+            as a part of the Security object instantiation.
+        '''
+        newid = security.addPermission(name="Web Access",
+            description="User may use the web interface")
+        security.addToRole('User', newid)
+        security.addToRole('No Rego', newid)
+        newid = security.addPermission(name="Web Registration",
+            description="User may register through the web")
+        security.addToRole('User', newid)
 
 The instance dbinit module then has in ``open()``::
 
     # open the database - it must be modified to init the Security class
-    # from permissions.py as db.security
+    # from security.py as db.security
     db = Database(instance_config, name)
 
     # add some extra permissions and associate them with roles
