@@ -10,6 +10,7 @@ Feature:
 2004-05-?? 0.7.3
 Fixed:
 - add "checked" to truth values for Boolean input
+- fixed import in metakit backend
 
 
 2004-05-?? 0.7.2
