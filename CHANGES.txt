@@ -6,6 +6,8 @@ Fixed:
 - add "checked" to truth values for Boolean input
 - fixed import in metakit backend
 - fix SearchAction use of Class.filter(), and clarify API docs for same
+- ensure static files may only be served out of the tracker's "static
+  files" directory
 
 
 2004-05-17 0.7.2
@@ -193,7 +195,14 @@ Cleanup:
     class
 
 
-2004-??-?? 0.6.9
+2004-05-17 0.6.10
+Fixed:
+- mysql backend wasn't locking tracker
+- ensure static files may only be served out of the tracker's "static
+  files" directory
+
+
+2004-04-18 0.6.9
 Fixed:
 - paging in classhelp popup was broken
 - socket timeout error logging can fail

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176 2004-05-04 05:56:54 richard Exp $
+# $Id: client.py,v 1.176.2.1 2004-05-27 21:52:44 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -455,7 +455,13 @@ class Client:
     def serve_static_file(self, file):
         ''' Serve up the file named from the templates dir
         '''
-        filename = os.path.join(self.instance.config.TEMPLATES, file)
+        # figure the filename - ensure the load doesn't try to poke
+        # outside of the static files dir
+        prefix = getattr(self.instance.config, 'STATIC_FILES',
+            self.instance.config.TEMPLATES)
+        filename = os.path.normpath(os.path.join(prefix, file))
+        if not filename.startswith(prefix):
+            raise NotFound, file
 
         # last-modified time
         lmt = os.stat(filename)[stat.ST_MTIME]
