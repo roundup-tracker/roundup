@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.9 2001-07-30 01:25:07 richard Exp $
+# $Id: cgi_client.py,v 1.10 2001-07-30 02:37:34 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -235,7 +235,12 @@ class Client:
                     nid = self.nodeid
                     m = []
                     for name, prop in cl.getprops().items():
-                        value = cl.get(nid, name)
+                        # TODO: the None default is only here because we
+                        # don't have schema migration :(
+                        if prop.isMultilinkType:
+                            value = cl.get(nid, name, [])
+                        else:
+                            value = cl.get(nid, name, None)
                         if prop.isLinkType:
                             link = self.db.classes[prop.classname]
                             key = link.getkey()
@@ -494,6 +499,10 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/07/30 01:25:07  richard
+# Default implementation is now "classic" rather than "extended" as one would
+# expect.
+#
 # Revision 1.8  2001/07/29 08:27:40  richard
 # Fixed handling of passed-in values in form elements (ie. during a
 # drill-down)
