@@ -5,7 +5,7 @@ Roundup: an Issue-Tracking System for Knowledge Workers
 Contents
 ========
 
-- Overview_ and Features_
+- Features_
 - Installation_ and Upgrading_ existing installs
 - `Frequently Asked Questions`_
 - `User Guide`_
@@ -93,7 +93,6 @@ License
 See COPYING.txt in the software distribution for the licensing terms.
 
 
-.. _Overview: overview.html
 .. _Features: features.html
 .. _Installation: installation.html
 .. _Upgrading: upgrading.html
