@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.3 2001-07-23 03:56:30 richard Exp $
+# $Id: cgi_client.py,v 1.4 2001-07-28 00:34:34 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -278,7 +278,7 @@ class Client:
 
                     # now create the message
                     content = '\n'.join(m)
-                    message_id = self.db.msg.create(author=1, recipients=[],
+                    message_id = self.db.msg.create(author='1', recipients=[],
                         date=date.Date('.'), summary=summary, content=content)
                     messages = cl.get(nid, 'messages')
                     messages.append(message_id)
@@ -324,13 +324,13 @@ class Client:
                         continue
                     proptype = cl.properties[key]
                     if proptype.isStringType:
-                        value = str(self.form[key].value).strip()
+                        value = self.form[key].value.strip()
                     elif proptype.isDateType:
-                        value = date.Date(str(self.form[key].value))
+                        value = date.Date(self.form[key].value.strip())
                     elif proptype.isIntervalType:
-                        value = date.Interval(str(self.form[key].value))
+                        value = date.Interval(self.form[key].value.strip())
                     elif proptype.isLinkType:
-                        value = str(self.form[key].value).strip()
+                        value = self.form[key].value.strip()
                         # handle key values
                         link = cl.properties[key].classname
                         if not num_re.match(value):
@@ -342,9 +342,9 @@ class Client:
                     elif proptype.isMultilinkType:
                         value = self.form[key]
                         if type(value) != type([]):
-                            value = [i.strip() for i in str(value.value).split(',')]
+                            value = [i.strip() for i in value.value.split(',')]
                         else:
-                            value = [str(i.value).strip() for i in value]
+                            value = [i.value.strip() for i in value]
                         link = cl.properties[key].classname
                         l = []
                         for entry in map(str, value):
@@ -402,7 +402,7 @@ class Client:
 
                     # now create the message
                     content = '\n'.join(m)
-                    message_id = self.db.msg.create(author=1, recipients=[],
+                    message_id = self.db.msg.create(author='1', recipients=[],
                         date=date.Date('.'), summary=summary, content=content)
                     messages = cl.get(nid, 'messages')
                     messages.append(message_id)
@@ -489,6 +489,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/23 03:56:30  richard
+# oops, missed a config removal
+#
 # Revision 1.2  2001/07/22 12:09:32  richard
 # Final commit of Grande Splite
 #

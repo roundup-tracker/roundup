@@ -44,7 +44,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+$Id: mailgw.py,v 1.3 2001-07-28 00:34:34 richard Exp $
 '''
 
 
@@ -252,11 +252,11 @@ class MailGW:
                 date=date.Date('.'), summary=summary, content=content,
                 files=files)
             if not props.has_key('assignedto'):
-                props['assignedto'] = 1             # "admin"
+                props['assignedto'] = '1'             # "admin"
             if not props.has_key('priority'):
-                props['priority'] = 1               # "bug-fatal"
+                props['priority'] = '1'               # "bug-fatal"
             if not props.has_key('status'):
-                props['status'] = 1                 # "unread"
+                props['status'] = '1'                 # "unread"
             if not props.has_key('title'):
                 props['title'] = title
             props['messages'] = [message_id]
@@ -267,4 +267,7 @@ class MailGW:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/22 12:09:32  richard
+# Final commit of Grande Splite
+#
 #
