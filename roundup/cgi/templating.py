@@ -2,8 +2,8 @@
 """
 
 todo = '''
-- Most methods should have a "default" arg to supply a value 
-  when none appears in the hyperdb or request. 
+- Most methods should have a "default" arg to supply a value
+  when none appears in the hyperdb or request.
 - Multilink property additions: change_note and new_upload
 - Add class.find() too
 - NumberHTMLProperty should support numeric operations
@@ -174,7 +174,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
 
        - the url
        - the current index information (``filterspec``, ``filter`` args,
-         ``properties``, etc) parsed out of the form. 
+         ``properties``, etc) parsed out of the form.
        - methods for easy filterspec link generation
        - *user*, the current user node as an HTMLItem instance
        - *form*, the current CGI form information as a FieldStorage
@@ -550,7 +550,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             height='400', property=''):
         ''' Pop up a javascript window with class help
 
-            This generates a link to a popup window which displays the 
+            This generates a link to a popup window which displays the
             properties indicated by "properties" of the class named by
             "classname". The "properties" should be a comma-separated list
             (eg. 'id,name,description'). Properties defaults to all the
@@ -665,7 +665,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
     def is_retired(self):
         """Is this item retired?"""
         return self._klass.is_retired(self._nodeid)
-    
+
     def submit(self, label="Submit Changes"):
         """Generate a submit button.
 
@@ -715,7 +715,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                     id = self._klass.get(self._nodeid, prop_n, None)
                     current[prop_n] = '<a href="%s%s">%s</a>'%(
                         classname, id, current[prop_n])
- 
+
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
             arg_s = ''
@@ -1078,7 +1078,7 @@ class StringHTMLProperty(HTMLProperty):
 
     def plain(self, escape=0, hyperlink=0):
         '''Render a "plain" representation of the property
-            
+
         - "escape" turns on/off HTML quoting
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
@@ -1190,7 +1190,7 @@ class PasswordHTMLProperty(HTMLProperty):
         return self.plain()
 
     def confirm(self, size = 30):
-        ''' Render a second form edit field for the property, used for 
+        ''' Render a second form edit field for the property, used for
             confirmation that the user typed the password correctly. Generates
             a field with name "@confirm@name".
 
@@ -1325,7 +1325,7 @@ class DateHTMLProperty(HTMLProperty):
         if self.is_edit_ok():
             value = '&quot;'.join(value.split('"'))
             return self.input(name=self._formname,value=value,size=size)
-        
+
         return self.plain()
 
     def reldate(self, pretty=1):
@@ -1491,9 +1491,9 @@ class LinkHTMLProperty(HTMLProperty):
         if value is None:
             s = 'selected="selected" '
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
-        if linkcl.getprops().has_key('order'):  
+        if linkcl.getprops().has_key('order'):
             sort_on = ('+', 'order')
-        else:  
+        else:
             if sort_on is None:
                 sort_on = ('+', linkcl.labelprop())
             else:
@@ -1548,7 +1548,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 fail_ok=1)
             sortfun = make_sort_function(self._db, self._prop.classname)
             self._value.sort(sortfun)
-    
+
     def __len__(self):
         ''' length of the multilink '''
         return len(self._value)
@@ -1727,9 +1727,13 @@ class ShowDict:
     ''' A convenience access to the :columns index parameters
     '''
     def __init__(self, columns):
-        self.columns = {}
-        for col in columns:
-            self.columns[col] = 1
+        if columns:
+            self.columns = {}
+            for col in columns:
+                self.columns[col] = 1
+        else:
+            self.__getitem__ = lambda name: 1
+
     def __getitem__(self, name):
         return self.columns.has_key(name)
 
@@ -1863,7 +1867,7 @@ class HTMLRequest(HTMLInputMixin):
     def updateFromURL(self, url):
         ''' Parse the URL for query args, and update my attributes using the
             values.
-        ''' 
+        '''
         env = {'QUERY_STRING': url}
         self.form = cgi.FieldStorage(environ=env)
 
@@ -2081,7 +2085,7 @@ class Batch(ZTUtils.Batch):
         if index < 0:
             if index + self.end < self.first: raise IndexError, index
             return self._sequence[index + self.end]
-        
+
         if index >= self.length:
             raise IndexError, index
 
@@ -2143,3 +2147,4 @@ class TemplatingUtils:
         '''HTML-quote the supplied text.'''
         return cgi.escape(url)
 
+# vim: set et sts=4 sw=4 :
