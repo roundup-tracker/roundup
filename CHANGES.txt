@@ -11,6 +11,7 @@ Fixed:
 - fixed content-type when templates are serving up xml (thanks Godefroid
   Chapelle)
 - fixed IE double-submit when it shouldn't (sf bug 842254)
+- fixed check for JS pop()/push() to make more general (sf bug 877504)
 
 
 2003-12-17 0.6.4

@@ -35,10 +35,11 @@ function push() {
   }
 }
 
-// add the pop() and push() method to Array prototype for old IE browser
-if (bName() == 1 && bVer() >= 5.5);
-else {
+// add the pop() and push() method to Array if they're not there
+if (!Array.prototype.pop) {
     Array.prototype.pop = pop;
+}
+if (!Array.prototype.push) {
     Array.prototype.push = push;
 }
 
