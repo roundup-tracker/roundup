@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.133 $
+:Version: $Revision: 1.134 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -584,6 +584,45 @@ See the detectors section in the `design document`__ for details of the
 interface for detectors.
 
 __ design.html
+
+
+Detector API
+------------
+
+Auditors are called with the arguments::
+
+    audit(db, cl, itemid, newdata)
+
+where ``db`` is the database, ``cl`` is an instance of Class or
+IssueClass within the database, and ``newdata`` is a dictionary mapping
+property names to values.
+
+For a ``create()`` operation, the ``itemid`` argument is None and
+newdata contains all of the initial property values with which the item
+is about to be created.
+
+For a ``set()`` operation, newdata contains only the names and values of
+properties that are about to be changed.
+
+For a ``retire()`` or ``restore()`` operation, newdata is None.
+
+Reactors are called with the arguments::
+
+    react(db, cl, itemid, olddata)
+
+where ``db`` is the database, ``cl`` is an instance of Class or
+IssueClass within the database, and ``olddata`` is a dictionary mapping
+property names to values.
+
+For a ``create()`` operation, the ``itemid`` argument is the id of the
+newly-created item and ``olddata`` is None.
+
+For a ``set()`` operation, ``olddata`` contains the names and previous
+values of properties that were changed.
+
+For a ``retire()`` or ``restore()`` operation, ``itemid`` is the id of
+the retired or restored item and ``olddata`` is None.
+
 
 Additional Detectors Ready For Use
 ----------------------------------
