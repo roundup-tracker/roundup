@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.69 2002-09-03 07:33:01 richard Exp $
+#$Id: back_anydbm.py,v 1.70 2002-09-04 04:29:36 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1606,7 +1606,7 @@ class Class(hyperdb.Class):
             b_id, bn = b
             # sort by group and then sort
             for dir, prop in group, sort:
-                if dir is None: continue
+                if dir is None or prop is None: continue
 
                 # sorting is class-specific
                 propclass = properties[prop]
@@ -1909,6 +1909,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.69  2002/09/03 07:33:01  richard
+#allow overiding of the index args roundup/cgi/templating.py
+#
 #Revision 1.68  2002/09/03 05:46:20  richard
 #handle disappearing users for journaltags
 #

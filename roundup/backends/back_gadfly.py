@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.11 2002-09-03 22:11:50 richard Exp $
+# $Id: back_gadfly.py,v 1.12 2002-09-04 04:30:18 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1519,7 +1519,7 @@ class Class(hyperdb.Class):
         # figure the order by clause
         orderby = []
         ordercols = []
-        if sort is not None:
+        if sort[0] is not None and sort[1] is not None:
             if sort[0] != '-':
                 orderby.append('_'+sort[1])
                 ordercols.append(sort[1])
@@ -1530,7 +1530,7 @@ class Class(hyperdb.Class):
         # figure the group by clause
         groupby = []
         groupcols = []
-        if group is not None:
+        if group[0] is not None and group[1] is not None:
             if group[0] != '-':
                 groupby.append('_'+group[1])
                 groupcols.append(group[1])
@@ -1758,6 +1758,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/09/03 22:11:50  richard
+# *** empty log message ***
+#
 # Revision 1.10  2002/09/03 06:08:50  richard
 # oops
 #
