@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27 2004-05-06 03:18:03 richard Exp $
+#$Id: actions.py,v 1.28 2004-05-13 00:19:35 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -558,10 +558,10 @@ class PassResetAction(Action):
         "otk" performs the reset.
 
         """
+        otks = self.db.getOTKManager()
         if self.form.has_key('otk'):
             # pull the rego information out of the otk database
             otk = self.form['otk'].value
-            otks = self.db.getOTKManager()
             uid = otks.get(otk, 'uid')
             if uid is None:
                 self.client.error_message.append("""Invalid One Time Key!
