@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.15 2004-07-28 02:29:45 richard Exp $
+# $Id: configuration.py,v 1.16 2004-07-28 09:46:58 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -455,20 +455,25 @@ SETTINGS = (
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',
-            "Name of the Postgresql or MySQL database to use.",
+            "Name of the database to use.",
             ['MYSQL_DBNAME']),
         (NullableOption, 'host', 'localhost',
-            "Hostname that the Postgresql or MySQL database resides on.",
+            "Database server host.",
             ['MYSQL_DBHOST']),
         (NullableOption, 'port', '',
-            "Port number that the Postgresql or MySQL database resides on."),
+            "TCP port number of the database server.\n"
+            "Postgresql usually resides on port 5432 (if any),\n"
+            "for MySQL default port number is 3306.\n"
+            "Leave this option empty to use backend default"),
         (NullableOption, 'user', 'roundup',
-            "Postgresql or MySQL database user that Roundup should use.",
+            "Database user name that Roundup should use.",
             ['MYSQL_DBUSER']),
         (NullableOption, 'password', 'roundup',
-            "Password for the Postgresql or MySQL database user.",
+            "Database user password.",
             ['MYSQL_DBPASSWORD']),
-    )),
+    ), "Settings in this section are used"
+        " by Postgresql and MySQL backends only"
+    ),
     ("logging", (
         (FilePathOption, "config", "",
             "Path to configuration file for standard Python logging module.\n"
@@ -514,7 +519,7 @@ SETTINGS = (
             "messages to this file *instead* of sending them.\n"
             "This option has the same effect as environment variable"
             " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
-    )),
+    ), "Outgoing email options.\nUsed for nozy messages and approval requests"),
     ("mailgw", (
         (BooleanOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
@@ -531,7 +536,7 @@ SETTINGS = (
             "if one isn't supplied in email subjects.\n"
             "To disable, leave the value blank.",
             ["MAIL_DEFAULT_CLASS"]),
-    )),
+    ), "Roundup Mail Gateway options"),
     ("nosy", (
         (RunDetectorOption, "messages_to_author", "no",
             "Send nosy messages to the author of the message.",
@@ -554,7 +559,7 @@ SETTINGS = (
             "If 'yes', then the recipients will be added on followups too.\n"
             "If 'no', they're never added to the nosy.\n",
             ["ADD_RECIPIENTS_TO_NOSY"]),
-    )),
+    ), "Nosy messages sending"),
 )
 
 ### Configuration classes
@@ -760,13 +765,13 @@ class Config:
         config_defaults = {"HOME": home_dir}
         if defaults:
             config_defaults.update(defaults)
-        _config = ConfigParser.ConfigParser(defaults)
-        _config.read([os.path.join(home_dir, self.INI_FILE)])
+        config = ConfigParser.ConfigParser(config_defaults)
+        config.read([os.path.join(home_dir, self.INI_FILE)])
         # .ini file loaded ok.  set the options, starting from HOME
         self.reset()
         self.HOME = home_dir
-        for _option in self.items():
-            _option.load_ini(_config)
+        for option in self.items():
+            option.load_ini(config)
 
     def load(self, home_dir):
         """Load configuration settings from home_dir"""
@@ -796,10 +801,16 @@ class Config:
             _fp.write("\n# WARNING! Following options need adjustments:\n")
             for section, options in need_set.items():
                 _fp.write("#  [%s]: %s\n" % (section, ", ".join(options)))
-        for _section in self.sections:
-            _fp.write("\n[%s]\n" % _section)
-            for _option in self._get_section_options(_section):
-                _fp.write("\n" + self.options[(_section, _option)].format())
+        for section in self.sections:
+            comment = self.section_descriptions.get(section, None)
+            if comment:
+                _fp.write("\n# ".join([""] + comment.split("\n")) +"\n")
+            else:
+                # no section comment - just leave a blank line between sections
+                _fp.write("\n")
+            _fp.write("[%s]\n" % section)
+            for option in self._get_section_options(section):
+                _fp.write("\n" + self.options[(section, option)].format())
         _fp.close()
         if os.access(ini_file, os.F_OK):
             if os.access(_bak_file, os.F_OK):
@@ -920,7 +931,7 @@ class CoreConfig(Config):
     """Roundup instance configuration.
 
     Core config has a predefined layout (see the SETTINGS structure),
-    support loading of old-style pythonic configurations and hold
+    supports loading of old-style pythonic configurations and holds
     three additional attributes:
         logging:
             instance logging engine, from standard python logging module
@@ -946,8 +957,16 @@ class CoreConfig(Config):
         if home_dir is None:
             self.init_logging()
 
-    # TODO: remove MAIL_PASSWORD if MAIL_USER is empty
-    #def _get_unset_options(self):
+    def _get_unset_options(self):
+        need_set = Config._get_unset_options(self)
+        # remove MAIL_PASSWORD if MAIL_USER is empty
+        if "password" in need_set.get("mail", []):
+            if not self["MAIL_USERNAME"]:
+                settings = need_set["mail"]
+                settings.remove("password")
+                if not settings:
+                    del need_set["mail"]
+        return need_set
 
     def reset(self):
         Config.reset(self)
