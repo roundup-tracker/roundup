@@ -57,7 +57,7 @@ class Permission:
 
     def __repr__(self):
         return '<Permission 0x%x %r,%r,%r,%r>'%(id(self), self.name,
-            self.klass, self.property, self.check)
+            self.klass, self.properties, self.check)
 
 class Role:
     ''' Defines a Role with the attributes
@@ -201,7 +201,7 @@ class Security:
             'rolename' is the name of the role to add the permission to.
 
             'permission' is either a Permission *or* a permission name
-            accompanied by 'classname' (thus in the second case a Permission 
+            accompanied by 'classname' (thus in the second case a Permission
             is obtained by passing 'permission' and 'classname' to
             self.getPermission)
         '''
