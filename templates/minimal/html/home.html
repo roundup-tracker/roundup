@@ -14,7 +14,7 @@
 
 <tal:block tal:define="anon python:request.user.username == 'anonymous'">
 <p tal:condition="not:anon" class="help" i18n:translate="">
-Please select from one of the menu options on the right.
+Please select from one of the menu options on the left.
 </p>
 <p tal:condition="anon" class="help" i18n:translate="">
 Please log in or register.
