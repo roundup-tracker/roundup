@@ -2,7 +2,43 @@
 What's New in Roundup 0.7
 =========================
 
+For those completely new to Roundup, you might want to look over the very
+terse features__ page.
+
+__ features.html
+
 .. contents::
+
+Instant-Gratification script even more gratifying
+=================================================
+
+The immensely popular ``python demo.py`` instant-gratification script has
+been extended to allow you to choose the backend to use with the demo. To
+select the "sqlite" backend (assuming it is available) you use::
+
+  python demo.py sqlite nuke
+
+This will nuke any existing demo and reinitialise it with the sqlite
+backend. Remember folks, if you want to restart the demo at a later point,
+you just need to type::
+
+  python demo.py
+
+without the "sqlite nuke" part, or you'll clear out the demo again. The
+backend names are:
+
+  anydbm bsddb bsddb3 sqlite metakit mysql postgresql
+
+You will need support modules installed for all except the first two. If
+you're not sure whether you have support, run::
+
+  python run_tests.py
+
+and if you see a line saynig "Including XXXX tests" where XXXX is the
+backend you wish to try, then you're on your way. The mysql and postgresql
+require their test environments to be set up. Read their respective
+documents in the "doc" directory to do that.
+
 
 Web Interface
 =============
