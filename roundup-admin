@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.31 2001-10-17 06:17:26 richard Exp $
+# $Id: roundup-admin,v 1.32 2001-10-17 06:57:29 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -579,6 +579,8 @@ class AdminTool:
     def interactive(self, ws_re=re.compile(r'\s+')):
         '''Run in an interactive mode
         '''
+        print 'Roundup {version} ready for input.'
+        print 'Type "help" for help.'
         try:
             import readline
         except ImportError:
@@ -629,6 +631,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2001/10/17 06:17:26  richard
+# Now with readline support :)
+#
 # Revision 1.30  2001/10/17 06:04:00  richard
 # Beginnings of an interactive mode for roundup-admin
 #
