@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.106 $
+:Version: $Revision: 1.107 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3583,6 +3583,76 @@ Resolving the issue::
      string:issue${i/id}?:assignedto=${request/user/id}&:action=edit">take</a>
 
 ... and so on
+
+Users may only edit their issues
+--------------------------------
+
+Users registering themselves are granted Provisional access - meaning they
+have access to edit the issues they submit, but not others. We create a new
+Role called "Provisional User" which is granted to newly-registered users,
+and has limited access. One of the Permissions they have is the new "Edit
+Own" on issues (regular users have "Edit".) We back up the permissions with
+an auditor.
+
+First up, we create the new Role and Permission structure in
+``dbinit.py``::
+
+    # New users not approved by the admin
+    db.security.addRole(name='Provisional User',
+        description='New user registered via web or email')
+    p = db.security.addPermission(name='Edit Own', klass='issue',
+        description='Can only edit own issues')
+    db.security.addPermissionToRole('Provisional User', p)
+
+    # Assign the access and edit Permissions for issue to new users now
+    p = db.security.getPermission('View', 'issue')
+    db.security.addPermissionToRole('Provisional User', p)
+    p = db.security.getPermission('Edit', 'issue')
+    db.security.addPermissionToRole('Provisional User', p)
+
+    # and give the new users access to the web and email interface
+    p = db.security.getPermission('Web Access')
+    db.security.addPermissionToRole('Provisional User', p)
+    p = db.security.getPermission('Email Access')
+    db.security.addPermissionToRole('Provisional User', p)
+
+
+Then in the ``config.py`` we change the Role assigned to newly-registered
+users, replacing the existing ``'User'`` values::
+
+    NEW_WEB_USER_ROLES = 'Provisional User'
+    NEW_EMAIL_USER_ROLES = 'Provisional User'
+
+Finally we add a new *auditor* to the ``detectors`` directory called
+``provisional_user_auditor.py``::
+
+ def audit_provisionaluser(db, cl, nodeid, newvalues):
+     ''' New users are only allowed to modify their own issues.
+     '''
+     if (db.getuid() != cl.get(nodeid, 'creator')
+         and db.security.hasPermission('Edit Own', db.getuid(), cl.classname)):
+         raise ValueError, ('You are only allowed to edit your own %s'
+                            % cl.classname)
+
+ def init(db):
+     # fire before changes are made
+     db.issue.audit('set', audit_provisionaluser)
+     db.issue.audit('retire', audit_provisionaluser)
+     db.issue.audit('restore', audit_provisionaluser)
+
+Note that some older trackers might also want to change the ``page.html``
+template as follows::
+
+ <p class="classblock"
+ -       tal:condition="python:request.user.username != 'anonymous'">
+ +       tal:condition="python:request.user.hasPermission('View', 'user')">
+     <b>Administration</b><br>
+     <tal:block tal:condition="python:request.user.hasPermission('Edit', None)">
+      <a href="home?:template=classlist">Class List</a><br>
+
+(note that the "-" indicates a removed line, and the "+" indicates an added
+line).
+
 
 -------------------
 

@@ -57,7 +57,7 @@
   </p>
 
   <p class="classblock"
-       tal:condition="python:request.user.username != 'anonymous'">
+       tal:condition="python:request.user.hasPermission('View', 'user')">
    <b>Administration</b><br>
    <tal:block tal:condition="python:request.user.hasPermission('Edit', None)">
     <a href="home?@template=classlist">Class List</a><br>
