@@ -1,7 +1,7 @@
 # Extract translatable strings from Roundup sources,
 # update and compile all existing translations
 #
-# $Id: GNUmakefile,v 1.4 2004-05-29 02:22:13 a1s Exp $
+# $Id: GNUmakefile,v 1.5 2004-05-29 04:35:03 a1s Exp $
 
 # tool locations
 XPOT ?= xpot
@@ -11,7 +11,7 @@ XGETTEXT ?= xgettext
 
 TEMPLATE=roundup.pot
 
-PACKAGES=$(shell find ../roundup -name '*.py'|sed -e 's,/[^/]*$$,,'|uniq)
+PACKAGES=$(shell find ../roundup -name '*.py'|sed -e 's,/[^/]*$$,,'|sort|uniq)
 SOURCES=$(PACKAGES:=/*.py)
 PO_FILES=$(wildcard *.po)
 MO_FILES=$(PO_FILES:.po=.mo)
