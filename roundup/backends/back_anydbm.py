@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.15 2001-12-12 02:30:51 richard Exp $
+#$Id: back_anydbm.py,v 1.16 2001-12-12 03:23:14 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -102,18 +102,23 @@ class Database(hyperdb.Database):
         ''' grab a connection to the class db that will be used for
             multiple actions
         '''
-        # determine which DB wrote the class file
-        path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
-        db_type = whichdb.whichdb(path)
-        if not db_type:
-            # dbm appends ".db"
-            db_type = whichdb.whichdb(path+'.db')
-        db_type = whichdb.whichdb(path)
+        return self._opendb('nodes.%s'%classname, mode)
 
-        # if we can't identify it and it exists...
-        if not db_type and os.path.exists(path) or os.path.exists(path+'.db'):
-            raise hyperdb.DatabaseError, \
-                "Couldn't identify the database type"
+    def _opendb(self, name, mode):
+        '''Low-level database opener that gets around anydbm/dbm
+           eccentricities.
+        '''
+        # determine which DB wrote the class file
+        db_type = ''
+        path = os.path.join(os.getcwd(), self.dir, name)
+        if os.path.exists(path):
+            db_type = whichdb.whichdb(path)
+            if not db_type:
+                raise hyperdb.DatabaseError, "Couldn't identify database type"
+        elif os.path.exists(path+'.db'):
+            # if the path ends in '.db', it's a dbm database, whether
+            # anydbm says it's dbhash or not!
+            db_type = 'dbm'
 
         # new database? let anydbm pick the best dbm
         if not db_type:
@@ -122,7 +127,7 @@ class Database(hyperdb.Database):
         # open the database with the correct module
         try:
             dbm = __import__(db_type)
-        except:
+        except ImportError:
             raise hyperdb.DatabaseError, \
                 "Couldn't open database - the required module '%s'"\
                 "is not available"%db_type
@@ -217,10 +222,10 @@ class Database(hyperdb.Database):
         # attempt to open the journal - in some rare cases, the journal may
         # not exist
         try:
-            db = anydbm.open(os.path.join(self.dir, 'journals.%s'%classname),
-                'r')
-        except anydbm.open, error:
-            if error.args[0] != 2: raise
+            db = self._opendb('journals.%s'%classname, 'r')
+        except anydbm.error, error:
+            if str(error) == "need 'c' or 'n' flag to open new db": return []
+            elif error.args[0] != 2: raise
             return []
         journal = marshal.loads(db[nodeid])
         res = []
@@ -278,6 +283,15 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.15  2001/12/12 02:30:51  richard
+#I fixed the problems with people whose anydbm was using the dbm module at the
+#backend. It turns out the dbm module modifies the file name to append ".db"
+#and my check to determine if we're opening an existing or new db just
+#tested os.path.exists() on the filename. Well, no longer! We now perform a
+#much better check _and_ cope with the anydbm implementation module changing
+#too!
+#I also fixed the backends __init__ so only ImportError is squashed.
+#
 #Revision 1.14  2001/12/10 22:20:01  richard
 #Enabled transaction support in the bsddb backend. It uses the anydbm code
 #where possible, only replacing methods where the db is opened (it uses the
