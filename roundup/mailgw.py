@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.68 2002-05-02 07:56:34 richard Exp $
+$Id: mailgw.py,v 1.69 2002-05-06 23:37:21 richard Exp $
 '''
 
 
@@ -767,7 +767,8 @@ There was a problem with the message you sent:
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         eol=re.compile(r'[\r\n]+'), 
-        signature=re.compile(r'^[>|\s]*[-_]+\s*$')):
+        signature=re.compile(r'^[>|\s]*[-_]+\s*$'),
+        original_message=re.compile(r'^-----Original Message-----$')):
     ''' The message body is divided into sections by blank lines.
     Sections where the second and all subsequent lines begin with a ">" or "|"
     character are considered "quoting sections". The first line of the first
@@ -815,7 +816,11 @@ def parseContent(content, keep_citations, keep_body,
             # if we don't have our summary yet use the first line of this
             # section
             summary = lines[0]
-        elif signature.match(lines[0]):
+        elif signature.match(lines[0]) and 2 <= len(lines) <= 10:
+            # lose any signature
+            break
+        elif original_message.match(lines[0]):
+            # ditch the stupid Outlook quoting of the entire original message
             break
 
         # and add the section to the output
@@ -828,6 +833,14 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.68  2002/05/02 07:56:34  richard
+# . added option to automatically add the authors and recipients of messages
+#   to the nosy lists with the options ADD_AUTHOR_TO_NOSY (default 'new') and
+#   ADD_RECIPIENTS_TO_NOSY (default 'new'). These settings emulate the current
+#   behaviour. Setting them to 'yes' will add the author/recipients to the nosy
+#   on messages that create issues and followup messages.
+# . added missing documentation for a few of the config option values
+#
 # Revision 1.67  2002/04/23 15:46:49  rochecompaan
 #  . stripping of the email message body can now be controlled through
 #    the config variables EMAIL_KEEP_QUOTED_TEST and
