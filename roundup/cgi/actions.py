@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.19 2004-03-26 18:18:31 wc2so1 Exp $
+#$Id: actions.py,v 1.20 2004-03-29 21:56:56 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -833,7 +833,7 @@ class ExportCSVAction(Action):
     def handle(self):
         ''' Export the specified search query as CSV. '''
         # figure the request
-        request = HTMLRequest(self)
+        request = templating.HTMLRequest(self)
         filterspec = request.filterspec
         sort = request.sort
         group = request.group
