@@ -349,7 +349,7 @@ The admin user should get "Admin", the anonymous user "Anonymous"
 and all other users "User". The ``fixroles.py`` script in the tools directory
 will do this. Run it like so (where python is your python 2+ binary)::
 
-  python tools/fixroles.py -i <tracker home>
+  python tools/fixroles.py -i <tracker home> fixroles
 
 
 
