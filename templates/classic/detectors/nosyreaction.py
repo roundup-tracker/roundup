@@ -15,7 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.2 2003-09-04 00:47:01 richard Exp $
+#$Id: nosyreaction.py,v 1.3 2005-04-04 07:22:12 richard Exp $
+
+import sets
 
 from roundup import roundupdb, hyperdb
 
@@ -65,7 +67,7 @@ def updatenosy(db, cl, nodeid, newvalues):
     '''Update the nosy list for changes to the assignedto
     '''
     # nodeid will be None if this is a new node
-    current = {}
+    current_nosy = sets.Set()
     if nodeid is None:
         ok = ('new', 'yes')
     else:
@@ -75,8 +77,7 @@ def updatenosy(db, cl, nodeid, newvalues):
         if not newvalues.has_key('nosy'):
             nosy = cl.get(nodeid, 'nosy')
             for value in nosy:
-                if not current.has_key(value):
-                    current[value] = 1
+                current_nosy.add(value)
 
     # if the nosy list changed in this transaction, init from the new value
     if newvalues.has_key('nosy'):
@@ -84,8 +85,9 @@ def updatenosy(db, cl, nodeid, newvalues):
         for value in nosy:
             if not db.hasnode('user', value):
                 continue
-            if not current.has_key(value):
-                current[value] = 1
+            current_nosy.add(value)
+
+    new_nosy = sets.Set(current_nosy)
 
     # add assignedto(s) to the nosy list
     if newvalues.has_key('assignedto') and newvalues['assignedto'] is not None:
@@ -95,8 +97,7 @@ def updatenosy(db, cl, nodeid, newvalues):
         elif isinstance(propdef['assignedto'], hyperdb.Multilink):
             assignedto_ids = newvalues['assignedto']
         for assignedto_id in assignedto_ids:
-            if not current.has_key(assignedto_id):
-                current[assignedto_id] = 1
+            new_nosy.add(assignedto_id)
 
     # see if there's any new messages - if so, possibly add the author and
     # recipient to the nosy
@@ -107,7 +108,6 @@ def updatenosy(db, cl, nodeid, newvalues):
         else:
             ok = ('yes',)
             # figure which of the messages now on the issue weren't
-            # there before
             oldmessages = cl.get(nodeid, 'messages')
             messages = []
             for msgid in newvalues['messages']:
@@ -123,15 +123,16 @@ def updatenosy(db, cl, nodeid, newvalues):
         for msgid in messages:
             if add_author in ok:
                 authid = msg.get(msgid, 'author')
-                current[authid] = 1
+                new_nosy.add(authid)
 
             # add on the recipients of the message
             if add_recips in ok:
                 for recipient in msg.get(msgid, 'recipients'):
-                    current[recipient] = 1
+                    new_nosy.add(recipient)
 
-    # that's it, save off the new nosy list
-    newvalues['nosy'] = current.keys()
+    if current_nosy != new_nosy:
+        # that's it, save off the new nosy list
+        newvalues['nosy'] = list(new_nosy)
 
 def init(db):
     db.issue.react('create', nosyreaction)
@@ -140,3 +141,4 @@ def init(db):
     db.issue.audit('set', updatenosy)
 
 # vim: set filetype=python ts=4 sw=4 et si
+#SHA: 509a13c8501bbdf8d171ddab4e91c4ff0b9da957
