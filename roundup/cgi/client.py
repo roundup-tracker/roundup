@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.17 2002-09-06 03:21:30 richard Exp $
+# $Id: client.py,v 1.18 2002-09-06 05:53:02 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -350,7 +350,7 @@ class Client:
         'editCSV':  'editCSVAction',
         'new':      'newItemAction',
         'register': 'registerAction',
-        'login':    'login_action',
+        'login':    'loginAction',
         'logout':   'logout_action',
         'search':   'searchAction',
     }
@@ -363,7 +363,7 @@ class Client:
              "edit"      -> self.editItemAction
              "new"       -> self.newItemAction
              "register"  -> self.registerAction
-             "login"     -> self.login_action
+             "login"     -> self.loginAction
              "logout"    -> self.logout_action
              "search"    -> self.searchAction
 
@@ -379,6 +379,8 @@ class Client:
             # call the mapped action
             getattr(self, self.actions[action])()
         except Redirect:
+            raise
+        except Unauthorised:
             raise
         except:
             self.db.rollback()
@@ -465,8 +467,11 @@ class Client:
     #
     # Actions
     #
-    def login_action(self):
-        ''' Attempt to log a user in and set the cookie
+    def loginAction(self):
+        ''' Attempt to log a user in.
+
+            Sets up a session for the user which contains the login
+            credentials.
         '''
         # we need the username at a minimum
         if not self.form.has_key('__login_name'):
@@ -496,10 +501,22 @@ class Client:
             self.error_message.append(_('Incorrect password'))
             return
 
-        # XXX check for web access permission!!!!
+        # make sure we're allowed to be here
+        if not self.loginPermission():
+            self.make_user_anonymous()
+            raise Unauthorised, _("You do not have permission to login")
 
         # set the session cookie
         self.set_cookie(self.user, password)
+
+    def loginPermission(self):
+        ''' Determine whether the user has permission to log in.
+
+            Base behaviour is to check the user has "Web Access".
+        ''' 
+        if not self.db.security.hasPermission('Web Access', self.userid):
+            return 0
+        return 1
 
     def logout_action(self):
         ''' Make us really anonymous - nuke the cookie too
@@ -876,7 +893,6 @@ class Client:
                 # commit the query change to the database
                 self.db.commit()
 
-
     def searchPermission(self):
         ''' Determine whether the user has permission to search this class.
 
@@ -1052,6 +1068,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         must be supplied or a ValueError will be raised.
     '''
     required = []
+    print form.keys()
     if form.has_key(':required'):
         value = form[':required']
         print 'required', value
@@ -1139,6 +1156,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         elif isinstance(proptype, hyperdb.Number):
             props[key] = value = int(value)
 
+        # register this as received if required
+        if key in required:
+            required.remove(key)
+
         # get the old value
         if nodeid:
             try:
@@ -1155,12 +1176,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             props[key] = value
 
     # see if all the required properties have been supplied
-    l = []
-    for property in required:
-        if not props.has_key(property):
-            l.append(property)
-    if l:
-        raise ValueError, 'Required properties %s not supplied'%(', '.join(l))
+    if required:
+        raise ValueError, 'Required properties %s not supplied'%(
+            ', '.join(required))
 
     return props
 
