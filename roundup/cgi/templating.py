@@ -1387,7 +1387,7 @@ class IntervalHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
 
-        if is_edit_ok():
+        if self.is_edit_ok():
             value = '&quot;'.join(value.split('"'))
             return self.input(name=self._formname,value=value,size=size)
 

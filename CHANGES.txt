@@ -18,6 +18,7 @@ Fixed:
   953678)
 - fix anydbm sort/group direction handling, and make RDBMS sort/group use
   Link'ed "order" properties (sf bug 953148)
+- fix Interval editing (sf bug 954891)
 
 
 2004-05-10 0.7.1
