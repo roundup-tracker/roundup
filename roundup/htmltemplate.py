@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.83 2002-02-27 04:14:31 richard Exp $
+# $Id: htmltemplate.py,v 1.84 2002-03-29 19:41:48 rochecompaan Exp $
 
 __doc__ = """
 Template engine.
@@ -110,7 +110,10 @@ class TemplateFunctions:
         elif isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
-            value = ', '.join(value)
+            labels = []
+            for v in value:
+                labels.append(linkcl.get(v, k))
+            value = ', '.join(labels)
         else:
             value = _('Plain: bad propclass "%(propclass)s"')%locals()
         if escape:
@@ -284,7 +287,7 @@ class TemplateFunctions:
             for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
-                if optionid in value:
+                if optionid in value or option in value:
                     s = 'selected '
                 if showid:
                     lab = '%s%s: %s'%(propclass.classname, optionid, option)
@@ -313,7 +316,7 @@ class TemplateFunctions:
             for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
-                if optionid == value:
+                if value in [optionid, option]:
                     s = 'selected '
                 if showid:
                     lab = '%s%s: %s'%(propclass.classname, optionid, option)
@@ -1111,6 +1114,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.83  2002/02/27 04:14:31  richard
+# Ran it through pychecker, made fixes
+#
 # Revision 1.82  2002/02/21 23:11:45  richard
 #  . fixed some problems in date calculations (calendar.py doesn't handle over-
 #    and under-flow). Also, hour/minute/second intervals may now be more than

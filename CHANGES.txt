@@ -28,6 +28,8 @@ Feature:
  . #517734 ] web header customisation is obscure
  . All messages sent to the nosy list are now encoded as
    quoted-printable before they are sent.
+ . Fixed display of mutlilink properties when using the template
+   functions, menu and plain.
 
 Fixed:
  . Clean up mail handling, multipart handling.

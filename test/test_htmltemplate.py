@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.11 2002-02-21 23:11:45 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.12 2002-03-29 19:41:48 rochecompaan Exp $ 
 
 import unittest, cgi, time
 
@@ -97,7 +97,7 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_plain('link'), 'the key1')
 
     def testPlain_multilink(self):
-        self.assertEqual(self.tf.do_plain('multilink'), '1, 2')
+        self.assertEqual(self.tf.do_plain('multilink'), 'the key1, the key2')
 
 
 #    def do_field(self, property, size=None, showid=0):
@@ -344,6 +344,11 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/02/21 23:11:45  richard
+#  . fixed some problems in date calculations (calendar.py doesn't handle over-
+#    and under-flow). Also, hour/minute/second intervals may now be more than
+#    99 each.
+#
 # Revision 1.10  2002/02/21 06:57:39  richard
 #  . Added popup help for classes using the classhelp html template function.
 #    - add <display call="classhelp('priority', 'id,name,description')">
