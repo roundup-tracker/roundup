@@ -1,14 +1,15 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">User editing</title>
+<title metal:fill-slot="head_title" i18n:translate="">User editing</title>
 <span metal:fill-slot="body_title" tal:omit-tag="python:1">
-  User<span tal:replace="context/id" />
-   <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
+ <tal:x tal:condition="context/is_edit_ok" i18n:translate="">User<span
+  tal:replace="context/id" i18n:name="id"/> Editing</tal:x>
+ <tal:x tal:condition="not:context/is_edit_ok" i18n:translate="">User<span
+  tal:replace="context/id" i18n:name="id"/></tal:x>
 </span>
 <td class="content" metal:fill-slot="content">
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
-You are not allowed to view this page.
-</span>
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
+ i18n:translate="">You are not allowed to view this page.</span>
 
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok">
@@ -16,19 +17,19 @@ You are not allowed to view this page.
 
 <table class="form">
  <tr>
-  <th>Login Name</th>
+  <th i18n:translate="">Login Name</th>
   <td tal:content="structure context/username/field">username</td>
  </tr>
  <tr>
-  <th>Login Password</th>
+  <th i18n:translate="">Login Password</th>
   <td tal:content="structure context/password/field">password</td>
  </tr>
  <tr>
-  <th>Confirm Password</th>
+  <th i18n:translate="">Confirm Password</th>
   <td tal:content="structure context/password/confirm">password</td>
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
-  <th>Roles</th>
+  <th i18n:translate="">Roles</th>
   <td tal:condition="context/id"
       tal:content="structure context/roles/field">roles</td>
   <td tal:condition="not:context/id">
@@ -36,11 +37,11 @@ You are not allowed to view this page.
   </td>
  </tr>
  <tr>
-  <th>E-mail address</th>
+  <th i18n:translate="">E-mail address</th>
   <td tal:content="structure context/address/field">address</td>
  </tr>
  <tr>
-  <th>Alternate E-mail addresses<br>One address per line</th>
+  <th i18n:translate="">Alternate E-mail addresses<br>One address per line</th>
   <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
  </tr>
 
@@ -56,11 +57,11 @@ You are not allowed to view this page.
 
 <table class="form" tal:condition="context/is_only_view_ok">
  <tr>
-  <th>Login Name</th>
+  <th i18n:translate="">Login Name</th>
   <td tal:content="context/username">username</td>
  </tr>
  <tr>
-  <th>E-mail address</th>
+  <th i18n:translate="">E-mail address</th>
   <td tal:content="context/address/email">address</td>
  </tr>
 </table>

@@ -30,26 +30,28 @@
     <span tal:replace="structure request/indexargs_form" />
    </form>
    <a tal:condition="python:request.user.hasPermission('Web Registration')"
-      href="user?@template=register">Register</a>
+      href="user?@template=register" i18n:translate="">Register</a>
   </p>
 
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
-   <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
-   <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
+   <b i18n:translate="">Hello,<br><span i18n:name="user"
+    tal:content="request/user/username">username</span></b><br>
+   <a tal:attributes="href string:user${request/user/id}"
+    i18n:translate="">My Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',
-       {'@action':'logout'})">Logout</a>
+       {'@action':'logout'})" i18n:translate="">Logout</a>
   </p>
 
   <p class="classblock"
        tal:condition="python:request.user.username != 'anonymous'">
-   <b>Administration</b><br>
+   <b i18n:translate="">Administration</b><br>
    <a tal:condition="python:request.user.hasPermission('Edit', None)"
-      href="home?@template=classlist">Class List</a><br>
+      href="home?@template=classlist" i18n:translate="">Class List</a><br>
    <a tal:condition="python:request.user.hasPermission('View', 'user')
                             or request.user.hasPermission('Edit', 'user')"
-      href="user" >User List</a><br>
+      href="user" i18n:translate="">User List</a><br>
    <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
-      href="user?@template=item">Add User</a>
+      href="user?@template=item" i18n:translate="">Add User</a>
   </p>
  </td>
  <td>

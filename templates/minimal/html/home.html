@@ -1,6 +1,7 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">Tracker home</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">Tracker home</span>
+<title metal:fill-slot="head_title" i18n:translate="">Tracker home</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Tracker home</span>
 <td class="content" metal:fill-slot="content">
 
 <!--
@@ -11,10 +12,10 @@
 -->
 
 <tal:block tal:define="anon python:request.user.username == 'anonymous'">
-<p tal:condition="not:anon" class="help">
+<p tal:condition="not:anon" class="help" i18n:translate="">
 Please select from one of the menu options on the right.
 </p>
-<p tal:condition="anon" class="help">
+<p tal:condition="anon" class="help" i18n:translate="">
 Please log in or register.
 </p>
 </tal:block>

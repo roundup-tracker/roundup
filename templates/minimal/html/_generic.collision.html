@@ -3,9 +3,10 @@
          tal:content="python:context._classname.capitalize()+' Edit Collision'"></title>
   <span metal:fill-slot="body_title" tal:omit-tag="python:1"
         tal:content="python:context._classname.capitalize()+' Edit Collision'"></span>
-  <td class="content" metal:fill-slot="content">
-    There has been a collision. Another user updated this node while you were
-    editing. Please <a tal:attributes="href context/designator">reload</a>
+  <td class="content" metal:fill-slot="content" i18n:translate="
+    There has been a collision. Another user updated this node
+    while you were editing. Please <a href='${context}'>reload</a>
     the node and review your edits.
+  "><span tal:replace="context/designator" i18n:name="context" />
   </td>
 </tal:block>

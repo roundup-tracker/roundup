@@ -5,9 +5,9 @@
       tal:content="python:context._classname.capitalize()+' editing'"></span>
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
-You are not allowed to view this page.
-</span>
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
+ tal:omit-tag="python:1" i18n:translate=""
+>You are not allowed to view this page.</span>
 
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok">
