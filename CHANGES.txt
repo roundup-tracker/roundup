@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2002-02-?? - 0.4.1
 Feature:
+ . roundup db catches retrieving not existing files.
  . #503204 ] mailgw needs a default class
    - partially done - the setting of additional properties can wait for a
      better configuration system.

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.44 2002-02-15 07:08:44 richard Exp $
+# $Id: roundupdb.py,v 1.45 2002-02-20 15:48:45 grubert Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -227,8 +227,15 @@ class FileClass(Class):
     def get(self, nodeid, propname, default=_marker, cache=1):
         ''' trap the content propname and get it from the file
         '''
+
+        poss_msg = 'Possibly a access right configuration problem.'
         if propname == 'content':
-            return self.db.getfile(self.classname, nodeid, None)
+            try:
+                return self.db.getfile(self.classname, nodeid, None)
+            except:
+                # BUG: by catching this we donot see an error in the log.
+                return 'ERROR reading file: %s%s\n%s'%(
+                        self.classname, nodeid, poss_msg)
         if default is not _marker:
             return Class.get(self, nodeid, propname, default, cache=cache)
         else:
@@ -587,6 +594,10 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2002/02/15 07:08:44  richard
+#  . Alternate email addresses are now available for users. See the MIGRATION
+#    file for info on how to activate the feature.
+#
 # Revision 1.43  2002/02/14 22:33:15  richard
 #  . Added a uniquely Roundup header to email, "X-Roundup-Name"
 #
