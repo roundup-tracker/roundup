@@ -1,8 +1,5 @@
 This file contains items that need doing before the next release:
 
-- ensure index creation is triggered by the version 1->2 update
-  (and other upgrade tests)
-
 Optionally:
 - have rdbms backends look up the journal for actor if it's not set
 - migrate to numeric ID values (fixes bug 817217)

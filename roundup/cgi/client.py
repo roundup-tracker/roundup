@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.168 2004-03-25 00:44:28 richard Exp $
+# $Id: client.py,v 1.169 2004-03-26 05:16:03 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -283,7 +283,7 @@ class Client:
             pass
 
         # look up the user session cookie (may override the REMOTE_USER)
-        cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
+        cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
         if (cookie.has_key(self.cookie_name) and
                 cookie[self.cookie_name].value != 'deleted'):

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.20 2004-03-22 07:45:39 richard Exp $
+# $Id: back_sqlite.py,v 1.21 2004-03-26 05:16:03 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -87,6 +87,8 @@ class Database(rdbms_common.Database):
             if tables.has_key(classname):
                 dbspec = tables[classname]
                 self.update_class(spec, dbspec, force=1, adding_actor=1)
+                # we've updated - don't try again
+                tables[classname] = spec.schema()
 
     def update_class(self, spec, old_spec, force=0, adding_actor=0):
         ''' Determine the differences between the current spec and the
@@ -106,11 +108,12 @@ class Database(rdbms_common.Database):
             return 0
 
         if __debug__:
-            print >>hyperdb.DEBUG, 'update_class FIRING'
+            print >>hyperdb.DEBUG, 'update_class FIRING for', spec.classname
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}
-        for name,prop in old_spec[1]:
+        for name, prop in old_spec[1]:
+            print (name, prop)
             old_has[name] = 1
             if new_has(name) or not isinstance(prop, hyperdb.Multilink):
                 continue
@@ -132,9 +135,31 @@ class Database(rdbms_common.Database):
         for propname,x in new_spec[1]:
             prop = properties[propname]
             if isinstance(prop, hyperdb.Multilink):
-                if force or not old_has(propname):
+                if not old_has(propname):
                     # we need to create the new table
                     self.create_multilink_table(spec, propname)
+                elif force:
+                    tn = '%s_%s'%(spec.classname, propname)
+                    # grabe the current values
+                    sql = 'select linkid, nodeid from %s'%tn
+                    if __debug__:
+                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                    self.cursor.execute(sql)
+                    rows = self.cursor.fetchall()
+
+                    # drop the old table
+                    self.drop_multilink_table_indexes(spec.classname, propname)
+                    sql = 'drop table %s'%tn
+                    if __debug__:
+                        print >>hyperdb.DEBUG, 'migration', (self, sql)
+                    self.cursor.execute(sql)
+
+                    # re-create and populate the new table
+                    self.create_multilink_table(spec, propname)
+                    sql = '''insert into %s (linkid, nodeid) values 
+                        (%s, %s)'''%(tn, self.arg, self.arg)
+                    for linkid, nodeid in rows:
+                        self.cursor.execute(sql, (int(linkid), int(nodeid)))
             elif old_has(propname):
                 # we copy this col over from the old table
                 fetch.append('_'+propname)
@@ -154,6 +179,8 @@ class Database(rdbms_common.Database):
         self.drop_class_table_indexes(cn, old_spec[0])
 
         # drop the old table
+        if __debug__:
+            print >>hyperdb.DEBUG, 'update_class "drop table _%s"'%cn
         self.cursor.execute('drop table _%s'%cn)
 
         # create the new table
