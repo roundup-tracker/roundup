@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.49 2004-05-14 20:02:44 a1s Exp $
+$Id: roundup_server.py,v 1.50 2004-05-18 19:25:24 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -127,8 +127,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
         w = self.wfile.write
-        w(_('<html><head><title>Roundup trackers index</title></head>\n'))
-        w(_('<body><h1>Roundup trackers index</h1><ol>\n'))
+        w(_('<html><head><title>Roundup trackers index</title></head>\n'
+            '<body><h1>Roundup trackers index</h1><ol>\n'))
         keys = self.TRACKER_HOMES.keys()
         keys.sort()
         for tracker in keys:
@@ -343,7 +343,8 @@ else:
 
 def usage(message=''):
     if RoundupService:
-        win = ''' -c: Windows Service options.  If you want to run the server as a Windows
+        win = \
+""''' -c: Windows Service options.  If you want to run the server as a Windows
      Service, you must configure the rest of the options by changing the
      constants of this program.  You will at least configure one tracker
      in the TRACKER_HOMES variable.  This option is mutually exclusive

@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.16 2004-05-12 17:50:58 a1s Exp $
+# $Id: roundup_mailgw.py,v 1.17 2004-05-18 19:26:32 a1s Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -32,17 +32,17 @@ from roundup.i18n import _
 def usage(args, message=None):
     if message is not None:
         print message
-    print _('Usage: %(program)s [-v] [[-C class] -S field=value]* <instance '
-        'home> [method]')%{'program': args[0]}
-    print _('''
+    print _(
+"""Usage: %(program)s [-v] [[-C class] -S field=value]* <instance home> [method]
+
 Options:
  -v: print version and exit
  -C / -S: see below
 
 The roundup mail gateway may be called in one of four ways:
  . with an instance home as the only argument,
- . with both an instance home and a mail spool file, or
- . with both an instance home and a POP/APOP server account.
+ . with both an instance home and a mail spool file,
+ . with both an instance home and a POP/APOP server account, or
  . with both an instance home and a IMAP/IMAPS server account.
 
 It also supports optional -C and -S arguments that allows you to set a
@@ -94,7 +94,7 @@ IMAPS:
  This supports the same notation as IMAP.
     imaps username:password@server [mailbox]
 
-''')
+""")%{'program': args[0]}
     return 1
 
 def main(argv):
