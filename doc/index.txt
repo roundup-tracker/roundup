@@ -64,6 +64,7 @@ Detlef Lannert,
 Andrey Lebedev,
 Gordon McMillan,
 Patrick Ohly,
+Luke Opperman,
 Will Partain,
 Bernhard Reiter,
 John P. Rouillard,
@@ -72,6 +73,7 @@ Stefan Seefeld,
 Jeffrey P Shell,
 Joel Shprentz,
 Terrel Shumway,
+Nathaniel Smith,
 Mike Thompson.
 
 

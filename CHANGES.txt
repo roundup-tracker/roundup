@@ -21,8 +21,8 @@ are given with the most recent entry first.
 - applied unicode patch. All data is stored in utf-8. Incoming messages
   converted from any encoding to utf-8, outgoing messages are encoded 
   according to rfc2822 (sf bug 568873)
-- fixed cookie path to use TRACKER_WEB (sf bug 667020) (thanks Luke Opperman
-  for confirming fix)
+- fixed cookie path to use TRACKER_WEB (sf bug 667020) (thanks Nathaniel Smith
+  for helping chase it down and Luke Opperman for confirming fix)
 
 
 2003-??-?? 0.5.5
