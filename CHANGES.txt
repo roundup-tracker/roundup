@@ -21,6 +21,7 @@ Fixed:
 - edit collision detection was broken for index-page edits
 - sqlite backend wasn't migrating multilink tables correctly
 - use SimpleCookie instead of Cookie (is an alias for the evil SmartCookie)
+- handle older sessions in session dbm
 
 
 2004-03-24 0.7.0b1

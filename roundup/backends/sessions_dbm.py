@@ -1,4 +1,4 @@
-#$Id: sessions_dbm.py,v 1.2 2004-03-19 04:47:59 richard Exp $
+#$Id: sessions_dbm.py,v 1.3 2004-03-26 23:54:40 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -131,7 +131,8 @@ class BasicDatabase:
         """
         week = 60*60*24*7
         for sessid in self.list():
-            interval = now - self.get(sessid, '__timestamp')
+            interval = now - self.get(sessid, '__timestamp',
+                default=time.time())
             if interval > week:
                 self.destroy(sessid)
 
