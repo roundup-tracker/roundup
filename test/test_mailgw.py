@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.61 2003-11-11 00:35:14 richard Exp $
+# $Id: test_mailgw.py,v 1.62 2003-11-13 03:41:38 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -99,13 +99,13 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
 
         # and open the database
         self.db = self.instance.open('admin')
-        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
-            realname='Bork, Chef', roles='User')
-        self.db.user.create(username='richard', address='richard@test',
-            roles='User')
-        self.db.user.create(username='mary', address='mary@test',
+        self.chef_id = self.db.user.create(username='Chef',
+            address='chef@bork.bork.bork', realname='Bork, Chef', roles='User')
+        self.richard_id = self.db.user.create(username='richard',
+            address='richard@test', roles='User')
+        self.mary_id = self.db.user.create(username='mary', address='mary@test',
             roles='User', realname='Contrary, Mary')
-        self.db.user.create(username='john', address='john@test',
+        self.john_id = self.db.user.create(username='john', address='john@test',
             alternate_addresses='jondoe@test\njohn.doe@test', roles='User',
             realname='John Doe')
 
@@ -157,7 +157,7 @@ This is a test submission of a new issue.
         assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
-        self.assertEqual(l, ['3', '4'])
+        self.assertEqual(l, [self.chef_id, self.richard_id])
         return nodeid
 
     def testNewIssue(self):
@@ -178,7 +178,7 @@ This is a test submission of a new issue.
         assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
-        self.assertEqual(l, ['3', '4'])
+        self.assertEqual(l, [self.chef_id, self.richard_id])
 
     def testAlternateAddress(self):
         self._send_mail('''Content-Type: text/plain;
@@ -315,7 +315,8 @@ This is a followup
 ''')
         l = self.db.issue.get('1', 'nosy')
         l.sort()
-        self.assertEqual(l, ['3', '4', '5', '6'])
+        self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
+            self.john_id])
 
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -620,7 +621,8 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
 ''')
         l = self.db.issue.get('1', 'nosy')
         l.sort()
-        self.assertEqual(l, ['3', '4', '5', '6'])
+        self.assertEqual(l, [self.chef_id, self.richard_id, self.mary_id,
+            self.john_id])
 
         # should be no file created (ie. no message)
         assert not os.path.exists(SENDMAILDEBUG)
@@ -639,7 +641,7 @@ Subject: [issue1] Testing... [nosy=-richard]
 ''')
         l = self.db.issue.get('1', 'nosy')
         l.sort()
-        self.assertEqual(l, ['3'])
+        self.assertEqual(l, [self.chef_id])
 
         # NO NOSY MESSAGE SHOULD BE SENT!
         assert not os.path.exists(SENDMAILDEBUG)
@@ -941,6 +943,24 @@ Subject: [keyword1] Testing... [name=Bar]
 
 ''')        
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
+    def testResentFrom(self):
+        nodeid = self._send_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+Resent-From: mary <mary@test>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+This is a test submission of a new issue.
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        l = self.db.issue.get(nodeid, 'nosy')
+        l.sort()
+        self.assertEqual(l, [self.richard_id, self.mary_id])
+        return nodeid
     
 def test_suite():
     suite = unittest.TestSuite()

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.137 2003-11-11 00:35:13 richard Exp $
+$Id: mailgw.py,v 1.138 2003-11-13 03:41:38 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -297,7 +297,9 @@ class MailGW:
         """
         # in some rare cases, a particularly stuffed-up e-mail will make
         # its way into here... try to handle it gracefully
-        sendto = message.getaddrlist('from')
+        sendto = message.getaddrlist('resent-from')
+        if not sendto:
+            sendto = message.getaddrlist('from')
         if sendto:
             if not self.trapExceptions:
                 return self.handle_message(message)
@@ -414,6 +416,11 @@ class MailGW:
 #                    nodeid = issue.group('nodeid')
 #                    break
 
+        # determine the sender's address
+        from_list = message.getaddrlist('resent-from')
+        if not from_list:
+            from_list = message.getaddrlist('from')
+
         # handle the subject line
         subject = message.getheader('subject', '')
 
@@ -440,7 +447,7 @@ Emails to Roundup trackers must include a Subject: line!
                     self.db.confirm_registration(otk.group('otk'))
                     subject = 'Your registration to %s is complete' % \
                               self.instance.config.TRACKER_NAME
-                    sendto = [message.getheader('from')]
+                    sendto = [from_list[0][1]]
                     self.mailer.standard_message(sendto, subject, '') 
                     return
                 elif hasattr(self.instance.config, 'MAIL_DEFAULT_CLASS') and \
@@ -574,8 +581,7 @@ The mail gateway is not properly set up. Please contact
 
         # ok, now figure out who the author is - create a new user if the
         # "create" flag is true
-        author = uidFromAddress(self.db, message.getaddrlist('from')[0],
-            create=create)
+        author = uidFromAddress(self.db, from_list[0], create=create)
 
         # if we're not recognised, and we don't get added as a user, then we
         # must be anonymous
@@ -590,7 +596,7 @@ The mail gateway is not properly set up. Please contact
 You are not a registered user.
 
 Unknown address: %s
-'''%message.getaddrlist('from')[0][1]
+'''%from_list[0][1]
             else:
                 # we're registered and we're _still_ not allowed access
                 raise Unauthorized, 'You are not permitted to access '\
