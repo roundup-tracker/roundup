@@ -28,8 +28,6 @@ To write extension code for Roundup you place a file in the tracker home
 information about how this is done.
 
 
-XXX Client.actions is now a dictionary.
-
 Added support for HTTP charset selection
 ========================================
 
