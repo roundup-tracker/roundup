@@ -1,7 +1,7 @@
-#$Id: bsddb.py,v 1.1 2001-07-23 06:23:41 richard Exp $
+#$Id: _bsddb.py,v 1.1 2001-07-23 07:15:57 richard Exp $
 
 import bsddb, os, cPickle
-import hyperdb, date
+from roundup import hyperdb, date
 
 #
 # Now the database
@@ -131,7 +131,14 @@ class Database(hyperdb.Database):
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
-        db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'r')
+        # attempt to open the journal - in some rare cases, the journal may
+        # not exist
+        try:
+            db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname),
+                'r')
+        except bsddb.error, error:
+            if error.args[0] != 2: raise
+            return []
         res = cPickle.loads(db[nodeid])
         db.close()
         return res
@@ -162,6 +169,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.1  2001/07/23 06:23:41  richard
+#moved hyper_bsddb.py to the new backends package as bsddb.py
+#
 #Revision 1.2  2001/07/22 12:09:32  richard
 #Final commit of Grande Splite
 #
