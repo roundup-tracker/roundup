@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.2 2002-09-10 03:01:19 richard Exp $
+# $Id: config.py,v 1.3 2002-09-11 01:18:42 richard Exp $
 
 import os
 
@@ -75,10 +75,12 @@ ADD_RECIPIENTS_TO_NOSY = 'new'      # either 'yes', 'no', 'new'
 # Where to place the email signature
 EMAIL_SIGNATURE_POSITION = 'bottom' # one of 'top', 'bottom', 'none'
 
-# Keep email citations
-EMAIL_KEEP_QUOTED_TEXT = 'no'       # either 'yes' or 'no'
+# Keep email citations when accepting messages. Setting this to "no" strips
+# out "quoted" text from the message. Signatures are also stripped.
+EMAIL_KEEP_QUOTED_TEXT = 'yes'      # either 'yes' or 'no'
 
-# Preserve the email body as is
+# Preserve the email body as is - that is, keep the citations _and_
+# signatures.
 EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 
 # Default class to use in the mailgw if one isn't supplied in email
