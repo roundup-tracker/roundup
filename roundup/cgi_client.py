@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.109 2002-02-21 07:08:19 richard Exp $
+# $Id: cgi_client.py,v 1.110 2002-02-21 07:19:08 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -100,7 +100,7 @@ function submit_once() {
 }
 
 function help_window(helpurl) {
-    HelpWin = window.open('%(base)s%(instance_path_name)s/' + helpurl, 'HelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height=400,width=400');
+    HelpWin = window.open('%(base)s%(instance_path_name)s/' + helpurl, 'HelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
 }
 
 </script>
@@ -1325,6 +1325,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.109  2002/02/21 07:08:19  richard
+# oops
+#
 # Revision 1.108  2002/02/21 07:02:54  richard
 # The correct var is "HTTP_HOST"
 #
