@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.36 2003-09-04 23:28:50 richard Exp $
+# $Id: roundup.cgi,v 1.37 2003-11-03 23:37:06 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -56,6 +56,8 @@ class DevNull:
     def write(self, info):
         pass
     def close(self):
+        pass
+    def flush(self):
         pass
 #LOG = open('/var/log/roundup.cgi.log', 'a')
 LOG = DevNull()

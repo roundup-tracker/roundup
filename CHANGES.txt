@@ -24,6 +24,7 @@ Fixed:
   (bug #798659).
 - Remove empty lines before sending strings off to the csv parser 
   (bug #821364).
+- added flush() to DevNull (sf bug #835365)
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.
