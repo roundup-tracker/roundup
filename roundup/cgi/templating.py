@@ -1419,7 +1419,7 @@ class DateHTMLProperty(HTMLProperty):
 			ret = ret + interval
 		else:
 			ret = ret - interval
-		
+
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, ret)
 
@@ -1441,8 +1441,8 @@ class DateHTMLProperty(HTMLProperty):
 		elif isinstance(default, DateHTMLProperty):
 		    raw_value = default._value
                 else:
-                    raise ValueError, _('default value for ' + \
-                        'DateHTMLProperty must be either DateHTMLProperty ' + \
+                    raise ValueError, _('default value for '
+                        'DateHTMLProperty must be either DateHTMLProperty '
 			'or string date representation.')
         else:
             raw_value = self._value
