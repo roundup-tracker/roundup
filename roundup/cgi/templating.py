@@ -119,9 +119,17 @@ class Templates:
         ''' Go through a directory and precompile all the templates therein
         '''
         for filename in os.listdir(self.dir):
-            if os.path.isdir(filename): continue
+            # skip files without ".html" extension - .css, .js etc.
+            if not filename.endswith(".html"):
+                continue
+            # skip subdirs
+            if os.path.isdir(filename):
+                continue
+            # remove "html" extension
+            filename = filename[:-len(".html")]
+            # load the template
             if '.' in filename:
-                name, extension = filename.split('.')
+                name, extension = filename.split('.', 1)
                 self.get(name, extension)
             else:
                 self.get(filename, None)
@@ -255,7 +263,7 @@ def context(client, template=None, classname=None, request=None):
          'config': client.instance.config,
          'tracker': client.instance,
          'utils': utils(client),
-         'templates': Templates(client.instance.config.TEMPLATES),
+         'templates': client.instance.templates,
          'template': template,
          'true': 1,
          'false': 0,
@@ -650,7 +658,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         req.update(kwargs)
 
         # new template, using the specified classname and request
-        pt = Templates(self._db.config.TEMPLATES).get(self.classname, name)
+        pt = self._client.instance.templates.get(self.classname, name)
 
         # use our fabricated request
         args = {
@@ -992,7 +1000,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             '&@queryname=%s'%urllib.quote(name))
 
         # new template, using the specified classname and request
-        pt = Templates(self._db.config.TEMPLATES).get(req.classname, 'search')
+        pt = self._client.instance.templates.get(req.classname, 'search')
 
         # use our fabricated request
         return pt.render(self._client, req.classname, req)
