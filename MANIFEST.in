@@ -2,6 +2,7 @@ recursive-include roundup *.* home* page*
 recursive-include frontends *.*
 recursive-include scripts *.* *-*
 recursive-include tools *.*
+recursive-include detectors *.py
 recursive-include cgi-bin *.cgi
 recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt *.css
