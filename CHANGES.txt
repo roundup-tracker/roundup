@@ -24,6 +24,7 @@ Fixed:
 - fixed class "help" listing paging (sf bug 1106329)
 - nicer error looking up values of None (response to sf bug 1108697)
 - fallback for (list) popups if javascript disabled (sf patch 1101626)
+- added "imapServer.py" script (sf patch 934567)
 
 
 2005-01-13 0.8.0b2

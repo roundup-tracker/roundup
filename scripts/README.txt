@@ -23,3 +23,7 @@ roundup.rc-debian
  Offers start, stop and restart commands and integrates with the Debian
  init process.
 
+imapServer.py
+ This IMAP server script that runs in the background and checks for new
+ email from a variety of mailboxes.
+
