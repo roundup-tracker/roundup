@@ -6,6 +6,7 @@ are given with the most recent entry first.
 - fixed rdbms searching by ID (sf bug 666615)
 - detect corrupted index and raise semi-useful exception (sf bug 666767)
 - open server logfile unbuffered
+- revert StringHTMLProperty to not hyperlink text by default
 
 
 2003-01-10 0.5.4
