@@ -60,8 +60,8 @@ Acknowledgements
 Go Ping, you rock! Also, go Bizar Software and ekit.com for letting me
 implement this system on their time.
 
-Thanks also to the many people on the mailing list and in the sourceforge
-project:
+Thanks also to the many people on the mailing list, in the sourceforge
+project and those who just report bugs:
 Anthony Baxter,
 Jeff Blaine,
 Duncan Booth,
@@ -69,10 +69,17 @@ Titus Brown,
 Roch'e Compaan,
 Engelbert Gruber,
 Juergen Hermann,
+Tobias Hunger,
+James Kew,
+Detlef Lannert,
 Gordon McMillan,
 Patrick Ohly,
+Bernhard Reiter,
 Dougal Scott,
-Stefan Seefeld.
+Stefan Seefeld,
+Jeffrey P Shell,
+Joel Shprentz.
+
 
 
 License
