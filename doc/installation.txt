@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.56 $
+:Version: $Revision: 1.57 $
 
 .. contents::
 
@@ -279,6 +279,9 @@ Web Server cgi-bin
 A benefit of using the cgi-bin approach is that it's the easiest way to
 restrict access to your tracker to only use HTTPS. Access will be slower
 than through the `stand-alone web server`_ though.
+
+Note that if your Python isn't install as "python" then you'll need to edit
+the ``roundup.cgi`` script to fix the first line.
 
 If you're using IIS on a Windows platform, you'll need to run this command
 for the cgi to work (it turns on the PATH_INFO cgi variable)::

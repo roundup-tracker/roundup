@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55 2003-06-22 00:28:56 richard Exp $
+# $Id: setup.py,v 1.56 2003-08-18 06:31:59 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -186,9 +186,6 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-This release has a couple of bufixes mostly important to Windows users,
-making it possible for them to install new trackers!
-
 The 0.6 release has lots of new goodies including:
 
 - new instant-gratification Demo Mode ("python demo.py" :)
@@ -201,20 +198,19 @@ The 0.6 release has lots of new goodies including:
 - more documentation including revamped design document, unix manual pages
   and some FAQ entries
 - significantly more powerful form handling allowing editing of multiple
-  items
-  and creation of multiple items
+  items and creation of multiple items
 - tracker templates can contain subdirectories and static files (e.g.
-  images)
-  and we may now distribute templates separately from Roundup. Template
-  HTML files now have a .html extension too.
-- user registration is now a two-step process, with confirmation from the email
-  address supplied in the registration form, and we also have a password reset
-  feature for forgotten password / login
-- Windows Service mode for roundup-server when daemonification is attempted
-  on Windows.
+  images) and we may now distribute templates separately from Roundup.
+  Template HTML files now have a .html extension too.
+- user registration is now a two-step process, with confirmation from the
+  email address supplied in the registration form, and we also have a
+  password reset feature for forgotten password / login
+- Windows Service mode for roundup-server when daemonification is
+  attempted on Windows
+- lots of speed enhancements, making the web interface much more responsive
 - fixed issues with dumb email or web clients
-- lots more little tweaks and back-end work...
 - email system handles more SMTP and POP features (TLS, APOP, ...)
+- lots more little tweaks and back-end work...
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
@@ -222,7 +218,7 @@ The 0.6 release has lots of new goodies including:
         download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         packages = packagelist,
         classifiers = [
-            'Development Status :: 4 - Beta',
+            'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
             'Environment :: Web Environment',
             'Intended Audience :: End Users/Desktop',
