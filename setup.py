@@ -1,3 +1,7 @@
+#! /usr/bin/env python
+
+# $Id: setup.py,v 1.2 2001-07-26 07:14:27 richard Exp $
+
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 
@@ -25,3 +29,7 @@ setup ( name = "roundup",
 
 # now install the bin programs, and the cgi-bin programs
 # not sure how, yet.
+
+#
+# $Log: not supported by cvs2svn $
+#
