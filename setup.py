@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.3 2003-11-14 02:55:05 richard Exp $
+# $Id: setup.py,v 1.55.2.4 2003-11-14 06:14:48 jlgijsbers Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -186,7 +186,7 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.6 release fixes some bugs:
+The 0.6.3 release fixes some bugs:
 - added script to help migrating queries from pre-0.6 trackers
 - fixed javascript for help window for only one checkbox case
 - Date +/- Interval now works, and Date - Date also works
