@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.3 2002-01-14 02:20:15 richard Exp $
+# $Id: test_mailgw.py,v 1.4 2002-01-14 07:12:15 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -152,8 +152,6 @@ This is a second followup
         handler = self.instance.MailGW(self.instance, self.db)
         # TODO: fix the damn config - this is apalling
         handler.main(message)
-        fname = 'fw2_%s.output'%self.count
-        open(fname,"w").write(open(os.environ['SENDMAILDEBUG']).read())
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
 TO: chef@bork.bork.bork, richard@test
@@ -188,6 +186,15 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/01/14 02:20:15  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.2  2002/01/11 23:22:29  richard
 #  . #502437 ] rogue reactor and unittest
 #    in short, the nosy reactor was modifying the nosy list. That code had
