@@ -1,14 +1,15 @@
 #! /usr/bin/env python
-# Originally written by Barry Warsaw <bwarsaw@python.org>
+# Originally written by Barry Warsaw <barry@zope.com>
 #
-# minimally patched to make it even more xgettext compatible 
+# Minimally patched to make it even more xgettext compatible 
 # by Peter Funk <pf@artcom-gmbh.de>
 #
-# 2001-11-21 Jürgen Hermann <jh@web.de>
-# Checks that _() only contains string literals added, and
+# 2001-12-18 Jürgen Hermann <jh@web.de>
+# Added checks that _() only contains string literals, and
 # command line args are resolved to module lists, i.e. you
 # can now pass a filename, a module or package name, or a
 # directory (including globbing chars, important for Win32).
+# Made docstring fit in 80 chars wide displays using pydoc.
 #
 
 # for selftesting
@@ -18,29 +19,30 @@ try:
 except ImportError:
     _ = lambda s: s
 
-
 __doc__ = _("""pygettext -- Python equivalent of xgettext(1)
 
 Many systems (Solaris, Linux, Gnu) provide extensive tools that ease the
-internationalization of C programs.  Most of these tools are independent of
-the programming language and can be used from within Python programs.  Martin
-von Loewis' work[1] helps considerably in this regard.
+internationalization of C programs. Most of these tools are independent of
+the programming language and can be used from within Python programs.
+Martin von Loewis' work[1] helps considerably in this regard. 
 
 There's one problem though; xgettext is the program that scans source code
-looking for message strings, but it groks only C (or C++).  Python introduces
-a few wrinkles, such as dual quoting characters, triple quoted strings, and
-raw strings.  xgettext understands none of this.
+looking for message strings, but it groks only C (or C++). Python
+introduces a few wrinkles, such as dual quoting characters, triple quoted
+strings, and raw strings. xgettext understands none of this. 
 
-Enter pygettext, which uses Python's standard tokenize module to scan Python
-source code, generating .pot files identical to what GNU xgettext[2] generates
-for C and C++ code.  From there, the standard GNU tools can be used.
+Enter pygettext, which uses Python's standard tokenize module to scan
+Python source code, generating .pot files identical to what GNU xgettext[2]
+generates for C and C++ code. From there, the standard GNU tools can be
+used. 
 
-A word about marking Python strings as candidates for translation.  GNU
-xgettext recognizes the following keywords: gettext, dgettext, dcgettext, and
-gettext_noop.  But those can be a lot of text to include all over your code.
-C and C++ have a trick: they use the C preprocessor.  Most internationalized C
-source includes a #define for gettext() to _() so that what has to be written
-in the source is much less.  Thus these are both translatable strings:
+A word about marking Python strings as candidates for translation. GNU
+xgettext recognizes the following keywords: gettext, dgettext, dcgettext,
+and gettext_noop. But those can be a lot of text to include all over your
+code. C and C++ have a trick: they use the C preprocessor. Most
+internationalized C source includes a #define for gettext() to _() so that
+what has to be written in the source is much less. Thus these are both
+translatable strings: 
 
     gettext("Translatable String")
     _("Translatable String")
@@ -52,11 +54,11 @@ below for how to augment this.
  [1] http://www.python.org/workshops/1997-10/proceedings/loewis.html
  [2] http://www.gnu.org/software/gettext/gettext.html
 
-NOTE: pygettext attempts to be option and feature compatible with GNU xgettext
-where ever possible.  However some options are still missing or are not fully
-implemented.  Also, xgettext's use of command line switches with option
-arguments is broken, and in these cases, pygettext just defines additional
-switches.
+NOTE: pygettext attempts to be option and feature compatible with GNU
+xgettext where ever possible. However some options are still missing or are
+not fully implemented. Also, xgettext's use of command line switches with
+option arguments is broken, and in these cases, pygettext just defines
+additional switches. 
 
 Usage: pygettext [options] inputfile ...
 
@@ -64,19 +66,25 @@ Options:
 
     -a
     --extract-all
-        Extract all strings
+        Extract all strings.
 
     -d name
     --default-domain=name
-        Rename the default output file from messages.pot to name.pot 
+        Rename the default output file from messages.pot to name.pot.
 
     -E
     --escape
-        replace non-ASCII characters with octal escape sequences.
+        Replace non-ASCII characters with octal escape sequences.
+
+    -D
+    --docstrings
+        Extract module, class, method, and function docstrings.  These do
+        not need to be wrapped in _() markers, and in fact cannot be for
+        Python to consider them docstrings. (See also the -X option).
 
     -h
     --help
-        print this help message and exit
+        Print this help message and exit.
 
     -k word
     --keyword=word
@@ -100,6 +108,15 @@ Options:
         each msgid.  The style of comments is controlled by the -S/--style
         option.  This is the default.
 
+    -o filename
+    --output=filename
+        Rename the default output file from messages.pot to filename.  If
+        filename is `-' then the output is sent to standard out.
+
+    -p dir
+    --output-dir=dir
+        Output files will be placed in directory dir.
+
     -S stylename
     --style stylename
         Specify which style to use for location comments.  Two styles are
@@ -109,15 +126,6 @@ Options:
         GNU      #: filename:line
 
         The style name is case insensitive.  GNU style is the default.
-
-    -o filename
-    --output=filename
-        Rename the default output file from messages.pot to filename.  If
-        filename is `-' then the output is sent to standard out.
-
-    -p dir
-    --output-dir=dir
-        Output files will be placed in directory dir.
 
     -v
     --verbose
@@ -137,8 +145,13 @@ Options:
         extracted from the input files.  Each string to be excluded must
         appear on a line by itself in the file.
 
-If `inputfile' is -, standard input is read.
+    -X filename
+    --no-docstrings=filename
+        Specify a file that contains a list of files (one per line) that
+        should not have their docstrings extracted.  This is only useful in
+        conjunction with the -D option above.
 
+If `inputfile' is -, standard input is read.
 """)
 
 import os
@@ -147,8 +160,9 @@ import time
 import getopt
 import token
 import tokenize
+import operator
 
-__version__ = '1.1'
+__version__ = '1.5'
 
 default_keywords = ['_']
 DEFAULTKEYWORDS = ', '.join(default_keywords)
@@ -157,8 +171,8 @@ EMPTYSTRING = ''
 
 
 
-# The normal pot-file header. msgmerge and EMACS' po-mode work better if
-# it's there.
+# The normal pot-file header. msgmerge and Emacs's po-mode work better if it's
+# there.
 pot_header = _('''\
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR ORGANIZATION
@@ -167,7 +181,8 @@ pot_header = _('''\
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\\n"
-"PO-Revision-Date: %(time)s\\n"
+"POT-Creation-Date: %(time)s\\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
 "Language-Team: LANGUAGE <LL@li.org>\\n"
 "MIME-Version: 1.0\\n"
@@ -179,9 +194,9 @@ msgstr ""
 
 
 def usage(code, msg=''):
-    print __doc__ % globals()
+    print >> sys.stderr, __doc__ % globals()
     if msg:
-        print msg
+        print >> sys.stderr, msg
     sys.exit(code)
 
 
@@ -239,7 +254,6 @@ def normalize(s):
     return s
 
 
-
 def containsAny(str, set):
     """ Check whether 'str' contains ANY of the chars in 'set'
     """
@@ -345,14 +359,49 @@ class TokenEater:
         self.__state = self.__waiting
         self.__data = []
         self.__lineno = -1
+        self.__freshmodule = 1
+        self.__curfile = None
 
     def __call__(self, ttype, tstring, stup, etup, line):
         # dispatch
+##        import token
+##        print >> sys.stderr, 'ttype:', token.tok_name[ttype], \
+##              'tstring:', tstring
         self.__state(ttype, tstring, stup[0])
 
     def __waiting(self, ttype, tstring, lineno):
-        if ttype == tokenize.NAME and tstring in self.__options.keywords:
+        opts = self.__options
+        # Do docstring extractions, if enabled
+        if opts.docstrings and not opts.nodocstrings.get(self.__curfile):
+            # module docstring?
+            if self.__freshmodule:
+                if ttype == tokenize.STRING:
+                    self.__addentry(safe_eval(tstring), lineno, isdocstring=1)
+                    self.__freshmodule = 0
+                elif ttype not in (tokenize.COMMENT, tokenize.NL):
+                    self.__freshmodule = 0
+                return
+            # class docstring?
+            if ttype == tokenize.NAME and tstring in ('class', 'def'):
+                self.__state = self.__suiteseen
+                return
+        if ttype == tokenize.NAME and tstring in opts.keywords:
             self.__state = self.__keywordseen
+
+    def __suiteseen(self, ttype, tstring, lineno):
+        # ignore anything until we see the colon
+        if ttype == tokenize.OP and tstring == ':':
+            self.__state = self.__suitedocstring
+
+    def __suitedocstring(self, ttype, tstring, lineno):
+        # ignore any intervening noise
+        if ttype == tokenize.STRING:
+            self.__addentry(safe_eval(tstring), lineno, isdocstring=1)
+            self.__state = self.__waiting
+        elif ttype not in (tokenize.NEWLINE, tokenize.INDENT,
+                           tokenize.COMMENT):
+            # there was no class docstring
+            self.__state = self.__waiting
 
     def __keywordseen(self, ttype, tstring, lineno):
         if ttype == tokenize.OP and tstring == '(':
@@ -369,14 +418,7 @@ class TokenEater:
             # of messages seen.  Reset state for the next batch.  If there
             # were no strings inside _(), then just ignore this entry.
             if self.__data:
-                msg = EMPTYSTRING.join(self.__data)
-                if not msg in self.__options.toexclude:
-                    entry = (self.__curfile, self.__lineno)
-                    linenos = self.__messages.get(msg)
-                    if linenos is None:
-                        self.__messages[msg] = [entry]
-                    else:
-                        linenos.append(entry)
+                self.__addentry(EMPTYSTRING.join(self.__data))
             self.__state = self.__waiting
         elif ttype == tokenize.STRING:
             self.__data.append(safe_eval(tstring))
@@ -387,26 +429,55 @@ class TokenEater:
                 'token': tstring, 'file': self.__curfile, 'lineno': self.__lineno}
             self.__state = self.__waiting
 
+    def __addentry(self, msg, lineno=None, isdocstring=0):
+        if lineno is None:
+            lineno = self.__lineno
+        if not msg in self.__options.toexclude:
+            entry = (self.__curfile, lineno)
+            self.__messages.setdefault(msg, {})[entry] = isdocstring
+
     def set_filename(self, filename):
         self.__curfile = filename
+        self.__freshmodule = 1
 
     def write(self, fp):
         options = self.__options
         timestamp = time.ctime(time.time())
-        # common header
-        try:
-            sys.stdout = fp
-            # The time stamp in the header doesn't have the same format
-            # as that generated by xgettext...
-            print pot_header % {'time': timestamp, 'version': __version__}
-            for k, v in self.__messages.items():
+        # The time stamp in the header doesn't have the same format as that
+        # generated by xgettext...
+        print >> fp, pot_header % {'time': timestamp, 'version': __version__}
+        # Sort the entries.  First sort each particular entry's keys, then
+        # sort all the entries by their first item.
+        reverse = {}
+        for k, v in self.__messages.items():
+            keys = v.keys()
+            keys.sort()
+            reverse.setdefault(tuple(keys), []).append((k, v))
+        rkeys = reverse.keys()
+        rkeys.sort()
+        for rkey in rkeys:
+            rentries = reverse[rkey]
+            rentries.sort()
+            for k, v in rentries:
+                isdocstring = 0
+                # If the entry was gleaned out of a docstring, then add a
+                # comment stating so.  This is to aid translators who may wish
+                # to skip translating some unimportant docstrings.
+                if reduce(operator.__add__, v.values()):
+                    isdocstring = 1
+                # k is the message string, v is a dictionary-set of (filename,
+                # lineno) tuples.  We want to sort the entries in v first by
+                # file name and then by line number.
+                v = v.keys()
+                v.sort()
                 if not options.writelocations:
                     pass
                 # location comments are different b/w Solaris and GNU:
                 elif options.locationstyle == options.SOLARIS:
                     for filename, lineno in v:
                         d = {'filename': filename, 'lineno': lineno}
-                        print _('# File: %(filename)s, line: %(lineno)d') % d
+                        print >>fp, _(
+                            '# File: %(filename)s, line: %(lineno)d') % d
                 elif options.locationstyle == options.GNU:
                     # fit as many locations on one line, as long as the
                     # resulting line length doesn't exceeds 'options.width'
@@ -417,15 +488,15 @@ class TokenEater:
                         if len(locline) + len(s) <= options.width:
                             locline = locline + s
                         else:
-                            print locline
+                            print >> fp, locline
                             locline = "#:" + s
                     if len(locline) > 2:
-                        print locline
-                # TBD: sorting, normalizing
-                print 'msgid', normalize(k)
-                print 'msgstr ""\n'
-        finally:
-            sys.stdout = sys.__stdout__
+                        print >> fp, locline
+                if isdocstring:
+                    print >> fp, '#, docstring'
+                print >> fp, 'msgid', normalize(k)
+                print >> fp, 'msgstr ""\n'
+
 
 
 def main():
@@ -433,11 +504,12 @@ def main():
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            'ad:Ehk:Kno:p:S:Vvw:x:',
-            ['extract-all', 'default-domain', 'escape', 'help',
+            'ad:DEhk:Kno:p:S:Vvw:x:X:',
+            ['extract-all', 'default-domain=', 'escape', 'help',
              'keyword=', 'no-default-keywords',
              'add-location', 'no-location', 'output=', 'output-dir=',
              'style=', 'verbose', 'version', 'width=', 'exclude-file=',
+             'docstrings', 'no-docstrings',
              ])
     except getopt.error, msg:
         usage(1, msg)
@@ -458,6 +530,8 @@ def main():
         verbose = 0
         width = 78
         excludefilename = ''
+        docstrings = 0
+        nodocstrings = {}
 
     options = Options()
     locations = {'gnu' : options.GNU,
@@ -474,6 +548,8 @@ def main():
             options.outfile = arg + '.pot'
         elif opt in ('-E', '--escape'):
             options.escape = 1
+        elif opt in ('-D', '--docstrings'):
+            options.docstrings = 1
         elif opt in ('-k', '--keyword'):
             options.keywords.append(arg)
         elif opt in ('-K', '--no-default-keywords'):
@@ -502,6 +578,16 @@ def main():
                 usage(1, _('--width argument must be an integer: %s') % arg)
         elif opt in ('-x', '--exclude-file'):
             options.excludefilename = arg
+        elif opt in ('-X', '--no-docstrings'):
+            fp = open(arg)
+            try:
+                while 1:
+                    line = fp.readline()
+                    if not line:
+                        break
+                    options.nodocstrings[line[:-1]] = 1
+            finally:
+                fp.close()
 
     # calculate escapes
     make_escapes(options.escape)
@@ -516,8 +602,8 @@ def main():
             options.toexclude = fp.readlines()
             fp.close()
         except IOError:
-            sys.stderr.write(_("Can't read --exclude-file: %s") %
-                             options.excludefilename)
+            print >> sys.stderr, _(
+                "Can't read --exclude-file: %s") % options.excludefilename
             sys.exit(1)
     else:
         options.toexclude = []
@@ -525,7 +611,10 @@ def main():
     # resolve args to module lists
     expanded = []
     for arg in args:
-        expanded.extend(getFilesForName(arg))
+        if arg == '-':
+            expanded.append(arg)
+        else:
+            expanded.extend(getFilesForName(arg))
     args = expanded
 
     # slurp through all the files
@@ -543,7 +632,11 @@ def main():
             closep = 1
         try:
             eater.set_filename(filename)
-            tokenize.tokenize(fp.readline, eater)
+            try:
+                tokenize.tokenize(fp.readline, eater)
+            except tokenize.TokenError, e:
+                print >> sys.stderr, '%s: %s, line %d, column %d' % (
+                    e[0], filename, e[1][0], e[1][1])
         finally:
             if closep:
                 fp.close()
