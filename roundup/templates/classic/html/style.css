@@ -65,6 +65,12 @@ th {
   border: none;
 }
 
+.section-bar {
+  background-color: #707070;
+  color: #ffffff;
+  border: 1px solid #404040;
+}
+
 .row-normal {
   background-color: #ffffff;
   border: none;
