@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.111 $
+:Version: $Revision: 1.112 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1587,7 +1587,11 @@ now         only on Date properties - return the current date as a new
 reldate     only on Date properties - render the interval between the date
             and now
 local       only on Date properties - return this date as a new property
-            with some timezone offset
+            with some timezone offset, for example::
+            
+                python:context.creation.local(10)
+
+            will render the date with a +10 hour offset.
 pretty      only on Interval properties - render the interval in a pretty
             format (eg. "yesterday")
 menu        only on Link and Multilink properties - render a form select
