@@ -1,0 +1,34 @@
+#! /usr/bin/python
+
+# $ID: $
+
+import sys
+if int(sys.version[0]) < 2:
+    print "Roundup requires Python 2.0 or newer."
+    sys.exit(1)
+
+# figure the instance home
+import os
+if len(sys.argv) > 1:
+    instance_home = sys.argv[1]
+else:
+    instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+if not instance_home:
+    print 'No instance home specified'
+    sys.exit(1)
+
+# get the instance
+path, instance = os.path.split(instance_home)
+sys.path.insert(0, path)
+instance = __import__(instance)
+sys.path[0]
+
+# invokde the mail handler
+db = instance.open('admin')
+handler = instance.MailGW(db)
+handler.main(sys.stdin)
+
+#
+# $Log: not supported by cvs2svn $
+#
+

@@ -1,0 +1,223 @@
+#!/usr/bin/python
+""" HTTP Server that serves roundup.
+
+Stolen from CGIHTTPServer
+
+$Id: roundup-server,v 1.1 2001-07-22 11:15:45 richard Exp $
+
+"""
+import sys
+if int(sys.version[0]) < 2:
+    print "Content-Type: text/plain\n"
+    print "Roundup requires Python 2.0 or newer."
+
+__version__ = "0.1"
+
+__all__ = ["RoundupRequestHandler"]
+
+import os, urllib, StringIO, traceback, cgi, binascii, string
+import BaseHTTPServer
+import SimpleHTTPServer
+
+# Roundup modules of use here
+from roundup import cgitb, cgi_client
+
+# These are here temporarily until I get a real reload system in place
+from roundup import date, hyperdb, hyper_bsddb, roundupdb, htmltemplate
+
+#
+##  Configuration
+#
+
+# This indicates where the Roundup instance lives
+ROUNDUPS = {
+    'test': '/tmp/roundup_test',
+}
+
+# Where to log debugging information to. Use an instance of DevNull if you
+# don't want to log anywhere.
+# TODO: actually use this stuff
+#class DevNull:
+#    def write(self, info):
+#        pass
+#LOG = open('/var/log/roundup.cgi.log', 'a')
+#LOG = DevNull()
+
+#
+##  end configuration
+#
+
+
+class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def send_head(self):
+        """Version of send_head that support CGI scripts"""
+        # TODO: actually do the HEAD ...
+        return self.run_cgi()
+
+    def run_cgi(self):
+        """ Execute the CGI command. Wrap an innner call in an error
+            handler so all errors can be caught.
+        """
+        save_stdin = sys.stdin
+        sys.stdin = self.rfile
+        try:
+            self.inner_run_cgi()
+        except cgi_client.Unauthorised:
+            self.wfile.write('Content-Type: text/html\n')
+            self.wfile.write('Status: 403\n')
+            self.wfile.write('Unauthorised')
+        except:
+            try:
+                reload(cgitb)
+                self.wfile.write("Content-Type: text/html\n\n")
+                self.wfile.write(cgitb.breaker())
+                self.wfile.write(cgitb.html())
+            except:
+                self.wfile.write("Content-Type: text/html\n\n")
+                self.wfile.write("<pre>")
+                s = StringIO.StringIO()
+                traceback.print_exc(None, s)
+                self.wfile.write(cgi.escape(s.getvalue()))
+                self.wfile.write("</pre>\n")
+        sys.stdin = save_stdin
+
+    def inner_run_cgi(self):
+        ''' This is the inner part of the CGI handling
+        '''
+
+        rest = self.path
+        i = rest.rfind('?')
+        if i >= 0:
+            rest, query = rest[:i], rest[i+1:]
+        else:
+            query = ''
+
+        # figure the instance
+        if rest == '/':
+            raise ValueError, 'No instance specified'
+        l_path = string.split(rest, '/')
+        instance = urllib.unquote(l_path[1])
+        if ROUNDUPS.has_key(instance):
+            instance_home = ROUNDUPS[instance]
+            module_path, instance = os.path.split(instance_home)
+            sys.path.insert(0, module_path)
+            try:
+                instance = __import__(instance)
+            finally:
+                del sys.path[0]
+        else:
+            raise ValueError, 'No such instance "%s"'%instance
+
+        # figure out what the rest of the path is
+        if len(l_path) > 2:
+            rest = '/'.join(l_path[2:])
+        else:
+            rest = '/'
+
+        # Set up the CGI environment
+        env = {}
+        env['REQUEST_METHOD'] = self.command
+        env['PATH_INFO'] = urllib.unquote(rest)
+        if query:
+            env['QUERY_STRING'] = query
+        host = self.address_string()
+        if self.headers.typeheader is None:
+            env['CONTENT_TYPE'] = self.headers.type
+        else:
+            env['CONTENT_TYPE'] = self.headers.typeheader
+        length = self.headers.getheader('content-length')
+        if length:
+            env['CONTENT_LENGTH'] = length
+        co = filter(None, self.headers.getheaders('cookie'))
+        if co:
+            env['HTTP_COOKIE'] = ', '.join(co)
+        env['SCRIPT_NAME'] = ''
+        env['SERVER_NAME'] = self.server.server_name
+        env['SERVER_PORT'] = str(self.server.server_port)
+
+        decoded_query = query.replace('+', ' ')
+
+        # if root, setuid to nobody
+        # TODO why isn't this done much earlier? - say, in main()?
+        if not os.getuid():
+            nobody = nobody_uid()
+            os.setuid(nobody)
+
+        # reload all modules
+        # TODO check for file timestamp changes and dependencies
+        reload(date)
+        reload(hyperdb)
+        reload(roundupdb)
+        reload(htmltemplate)
+        reload(cgi_client)
+        sys.path.insert(0, module_path)
+        try:
+            reload(instance)
+        finally:
+            del sys.path[0]
+
+        # initialise the roundupdb, check for auth
+        db = instance.open('admin')
+        message = 'Unauthorised'
+        auth = self.headers.getheader('authorization')
+        if auth:
+            l = binascii.a2b_base64(auth.split(' ')[1]).split(':')
+            user = l[0]
+            password = None
+            if len(l) > 1:
+                password = l[1]
+            try:
+                uid = db.user.lookup(user)
+            except KeyError:
+                auth = None
+                message = 'Username not recognised'
+            else:
+                if password != db.user.get(uid, 'password'):
+                    message = 'Incorrect password'
+                    auth = None
+        db.close()
+        del db
+        if not auth:
+            self.send_response(401)
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('WWW-Authenticate', 'basic realm="Roundup"')
+            self.end_headers()
+            self.wfile.write(message)
+            return
+
+        self.send_response(200, "Script output follows")
+
+        # do the roundup thang
+        db = instance.open(user)
+        client = instance.Client(self.wfile, db, env, user)
+        client.main()
+    do_POST = run_cgi
+
+nobody = None
+
+def nobody_uid():
+    """Internal routine to get nobody's uid"""
+    global nobody
+    if nobody:
+        return nobody
+    try:
+        import pwd
+    except ImportError:
+        return -1
+    try:
+        nobody = pwd.getpwnam('nobody')[2]
+    except KeyError:
+        nobody = 1 + max(map(lambda x: x[2], pwd.getpwall()))
+    return nobody
+
+if __name__ == '__main__':
+    # TODO make this configurable again? command-line seems ok to me...
+    address = ('', 8080)
+    httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
+    print 'Roundup server started on', address
+    httpd.serve_forever()
+
+#
+# $Log: not supported by cvs2svn $
+#
+

@@ -1,0 +1,271 @@
+#! /usr/bin/python
+
+# $Id: roundup,v 1.1 2001-07-22 11:15:45 richard Exp $
+
+import sys
+if int(sys.version[0]) < 2:
+    print 'Roundup requires python 2.0 or later.'
+    sys.exit(1)
+
+import string, os, getpass
+from roundup import date, roundupdb, init
+
+def determineLogin(instance, argv, n = 2):
+    name = password = ''
+    if argv[2] == '-u':
+        l = argv[3].split(':')
+        name = l[0]
+        if len(l) > 1:
+            password = l[1]
+        n = 4
+    elif os.environ.has_key('ROUNDUP_LOGIN'):
+        l = os.environ['ROUNDUP_LOGIN'].split(':')
+        name = l[0]
+        if len(l) > 1:
+            password = l[1]
+    while not name:
+        name = raw_input('Login name: ')
+    while not password:
+        password = getpass.getpass('  password: ')
+    # TODO use the password...
+    return n, instance.open(name)
+
+def usage(message=''):
+    if message: message = 'Problem: '+message+'\n'
+    print '''%sUsage:
+
+ roundup [-i instance] init template
+   -- initialise the database
+ roundup [-i instance] spec classname
+   -- show the properties for a classname
+ roundup [-i instance] create [-u login] classname propname=value ...
+   -- create a new entry of a given class
+ roundup [-i instance] list [-c] classname
+   -- list the instances of a class
+ roundup [-i instance] history [-c] designator
+   -- show the history entries of a designator
+ roundup [-i instance] get [-c] designator[,designator,...] propname
+   -- get the given property of one or more designator(s)
+ roundup [-i instance] set [-u login] designator[,designator,...] propname=value ...
+   -- set the given property of one or more designator(s)
+ roundup [-i instance] find [-c] classname propname=value ...
+   -- find the class instances with a given property
+ roundup [-i instance] retire designator[,designator,...]
+   -- "retire" a designator
+ roundup help    
+   -- this help
+ roundup morehelp
+   -- even more detailed help
+'''%message
+
+def moreusage(message=''):
+    usage(message)
+    print '''
+All commands (except help) require an instance specifier. This is just the path
+to the roundup instance you're working with. It may be specified in the environment
+variable ROUNDUP_INSTANCE or on the command line as "-i instance".
+
+A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
+
+Property values are represented as strings in command arguments and in the
+printed results:
+ . Strings are, well, strings.
+ . Date values are printed in the full date format in the local time zone, and
+   accepted in the full format or any of the partial formats explained below.
+ . Link values are printed as node designators. When given as an argument,
+   node designators and key strings are both accepted.
+ . Multilink values are printed as lists of node designators joined by commas.
+   When given as an argument, node designators and key strings are both
+   accepted; an empty string, a single node, or a list of nodes joined by
+   commas is accepted.
+
+When multiple nodes are specified to the roundup get or roundup set
+commands, the specified properties are retrieved or set on all the listed
+nodes. 
+
+When multiple results are returned by the roundup get or roundup find
+commands, they are printed one per line (default) or joined by commas (with
+the -c) option. 
+
+Where the command changes data, a login name/password is required. The
+login may be specified as either "name" or "name:password".
+ . ROUNDUP_LOGIN environment variable
+ . the -u command-line option
+If either the name or password is not supplied, they are obtained from the
+command-line. 
+
+Date format examples:
+  "2000-04-17.03:45" means <Date 2000-04-17.08:45:00>
+  "2000-04-17" means <Date 2000-04-17.00:00:00>
+  "01-25" means <Date yyyy-01-25.00:00:00>
+  "08-13.22:13" means <Date yyyy-08-14.03:13:00>
+  "11-07.09:32:43" means <Date yyyy-11-07.14:32:43>
+  "14:25" means <Date yyyy-mm-dd.19:25:00>
+  "8:47:11" means <Date yyyy-mm-dd.13:47:11>
+  "." means "right now"
+'''
+
+def main():
+    argv = sys.argv
+
+    if len(argv) == 1:
+        usage('No command specified')
+        return 1
+
+    # handle help now
+    if argv[1] == 'help':
+        usage()
+        return 0
+    if argv[1] == 'morehelp':
+        moreusage()
+        return 0
+
+    # figure the instance home
+    n = 1
+    if argv[1] == '-i':
+        if len(argv) == 2:
+            usage()
+            return 1
+        instance_home = argv[2]
+        n = 3
+    else:
+        instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+    if not instance_home:
+        usage('No instance home specified')
+        return 1
+
+    # now figure the command
+    command = argv[n]
+    n = n + 1
+
+    if command == 'init':
+        adminpw = ''
+        confirm = 'x'
+        while adminpw != confirm:
+            adminpw = getpass.getpass('Admin Password:')
+            confirm = getpass.getpass('       Confirm:')
+        init.init(instance_home, argv[n],  adminpw)
+        return 0
+
+    # get the instance
+    path, instance = os.path.split(instance_home)
+    sys.path.insert(0, path)
+    try:
+        instance = __import__(instance)
+    finally:
+        del sys.path[0]
+
+    if command == 'get':
+        db = instance.open()
+        designators = string.split(argv[n], ',')
+        propname = argv[n+1]
+        # TODO: handle the -c option
+        for designator in designators:
+            classname, nodeid = roundupdb.splitDesignator(designator)
+            print db.getclass(classname).get(nodeid, propname)
+
+    elif command == 'set':
+        n, db = determineLogin(instance, argv, n)
+        designators = string.split(argv[n], ',')
+        props = {}
+        for prop in argv[n+1:]:
+            key, value = prop.split('=')
+            props[key] = value
+        for designator in designators:
+            classname, nodeid = roundupdb.splitDesignator(designator)
+            cl = db.getclass(classname)
+            properties = cl.getprops()
+            for key, value in props.items():
+                type =  properties[key]
+                if type.isStringType:
+                    continue
+                elif type.isDateType:
+                    props[key] = date.Date(value)
+                elif type.isIntervalType:
+                    props[key] = date.Interval(value)
+                elif type.isLinkType:
+                    props[key] = value
+                elif type.isMultilinkType:
+                    props[key] = value.split(',')
+            apply(cl.set, (nodeid, ), props)
+
+    elif command == 'find':
+        db = instance.open()
+        classname = argv[n]
+        cl = db.getclass(classname)
+
+        # look up the linked-to class and get the nodeid that has the value
+        propname, value = argv[n+1:].split('=')
+        propcl = cl[propname].classname
+        nodeid = propcl.lookup(value)
+
+        # now do the find
+        # TODO: handle the -c option
+        print cl.find(propname, nodeid)
+
+    elif command == 'spec':
+        db = instance.open()
+        classname = argv[n]
+        cl = db.getclass(classname)
+        for key, value in cl.properties.items():
+            print '%s: %s'%(key, value)
+
+    elif command == 'create':
+        n, db = determineLogin(instance, argv, n)
+        classname = argv[n]
+        cl = db.getclass(classname)
+        props = {}
+        properties = cl.getprops()
+        for prop in argv[n+1:]:
+            key, value = prop.split('=')
+            type =  properties[key]
+            if type.isStringType:
+                props[key] = value 
+            elif type.isDateType:
+                props[key] = date.Date(value)
+            elif type.isIntervalType:
+                props[key] = date.Interval(value)
+            elif type.isLinkType:
+                props[key] = value
+            elif type.isMultilinkType:
+                props[key] = value.split(',')
+        print apply(cl.create, (), props)
+
+    elif command == 'list':
+        db = instance.open()
+        classname = argv[n]
+        cl = db.getclass(classname)
+        key = cl.getkey() or cl.properties.keys()[0]
+        # TODO: handle the -c option
+        for nodeid in cl.list():
+            value = cl.get(nodeid, key)
+            print "%4s: %s"%(nodeid, value)
+
+    elif command == 'history':
+        db = instance.open()
+        classname, nodeid = roundupdb.splitDesignator(argv[n])
+        # TODO: handle the -c option
+        print db.getclass(classname).history(nodeid)
+
+    elif command == 'retire':
+        n, db = determineLogin(instance, argv, n)
+        designators = string.split(argv[n], ',')
+        for designator in designators:
+            classname, nodeid = roundupdb.splitDesignator(designator)
+            db.getclass(classname).retire(nodeid)
+
+    else:
+        print "Unknown command '%s'"%command
+        usage()
+        return 1
+
+    db.close()
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())
+
+#
+# $Log: not supported by cvs2svn $
+#
+
