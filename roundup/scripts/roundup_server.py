@@ -17,13 +17,12 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.67 2004-10-29 13:41:25 a1s Exp $
+$Id: roundup_server.py,v 1.68 2004-10-29 17:57:17 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
-import socket
-import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
-import SocketServer, BaseHTTPServer, socket, errno, ConfigParser
+import errno, cgi, getopt, os, socket, sys, traceback, urllib
+import ConfigParser, BaseHTTPServer, SocketServer, StringIO
 
 # python version check
 from roundup import configuration, version_check
@@ -33,11 +32,6 @@ from roundup import __version__ as roundup_version
 from roundup.cgi import cgitb, client
 import roundup.instance
 from roundup.i18n import _
-
-try:
-    import signal
-except:
-    signal = None
 
 # "default" favicon.ico
 # generate by using "icotool" and tools/base64
@@ -146,7 +140,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         # no tracker - spit out the index
         if rest == '/':
-            return self.index()
+            self.index()
+            return
 
         # figure the tracker
         l_path = rest.split('/')
@@ -182,7 +177,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['PATH_INFO'] = urllib.unquote(rest)
         if query:
             env['QUERY_STRING'] = query
-        host = self.address_string()
         if self.headers.typeheader is None:
             env['CONTENT_TYPE'] = self.headers.type
         else:
@@ -199,14 +193,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['SERVER_PORT'] = str(self.server.server_port)
         env['HTTP_HOST'] = self.headers['host']
 
-        decoded_query = query.replace('+', ' ')
-
         # do the roundup thang
-        if hasattr(tracker, 'Client'):
-            c = tracker.Client(tracker, self, env)
-        else:
-            c = client.Client(tracker, self, env)
-        c.main()
+        tracker.Client(tracker, self, env).main()
 
     def address_string(self):
         if self.LOG_IPADDRESS:
@@ -366,7 +354,7 @@ class ServerConfig(configuration.Config):
     ):
         options.update(self.OPTIONS)
         return configuration.Config.getopt(self, args,
-            short_options, long_options, **options)
+            short_options, long_options, config_load_options, **options)
 
     def _get_name(self):
         return "Roundup server"
@@ -383,44 +371,46 @@ class ServerConfig(configuration.Config):
         """Return HTTP server object to run"""
         # redirect stdout/stderr to our logfile
         # this is done early to have following messages go to this logfile
-        if self.LOGFILE:
+        if self["LOGFILE"]:
             # appending, unbuffered
             sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 0)
         # we don't want the cgi module interpreting the command-line args ;)
         sys.argv = sys.argv[:1]
         # build customized request handler class
         class RequestHandler(RoundupRequestHandler):
-            LOG_IPADDRESS = not self.LOG_HOSTNAMES
+            LOG_IPADDRESS = not self["LOG_HOSTNAMES"]
             TRACKER_HOMES = dict(self.trackers())
         # obtain request server class
-        if self.MULTIPROCESS not in MULTIPROCESS_TYPES:
+        if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
             print _("Multiprocess mode \"%s\" is not available, "
-                "switching to single-process") % self.MULTIPROCESS
-            self.MULTIPROCESS = "none"
+                "switching to single-process") % self["MULTIPROCESS"]
+            self["MULTIPROCESS"] = "none"
             server_class = BaseHTTPServer.HTTPServer
-        elif self.MULTIPROCESS == "fork":
-            class server_class(SocketServer.ForkingMixIn,
+        elif self["MULTIPROCESS"] == "fork":
+            class ForkingServer(SocketServer.ForkingMixIn,
                 BaseHTTPServer.HTTPServer):
                     pass
-        elif self.MULTIPROCESS == "thread":
-            class server_class(SocketServer.ThreadingMixIn,
+            server_class = ForkingServer
+        elif self["MULTIPROCESS"] == "thread":
+            class ThreadingServer(SocketServer.ThreadingMixIn,
                 BaseHTTPServer.HTTPServer):
                     pass
+            server_class = ThreadingServer
         else:
             server_class = BaseHTTPServer.HTTPServer
         # obtain server before changing user id - allows to
         # use port < 1024 if started as root
         try:
-            httpd = server_class((self.HOST, self.PORT), RequestHandler)
+            httpd = server_class((self["HOST"], self["PORT"]), RequestHandler)
         except socket.error, e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \
                     _("Unable to bind to port %s, port already in use.") \
-                    % self.PORT
+                    % self["PORT"]
             raise
         # change user and/or group
-        setgid(self.GROUP)
-        setuid(self.USER)
+        setgid(self["GROUP"])
+        setuid(self["USER"])
         # return the server
         return httpd
 
@@ -435,7 +425,8 @@ else:
     import win32event
     import win32file
 
-    SvcShutdown = "ServiceShutdown"
+    class SvcShutdown(Exception):
+        pass
 
     class RoundupService(win32serviceutil.ServiceFramework,
             BaseHTTPServer.HTTPServer):
@@ -630,8 +621,9 @@ def run(port=undefined, success_message=None):
 
     # if running in windows service mode, don't do any other stuff
     if ("-c", "") in optlist:
-        return win32serviceutil.HandleCommandLine(RoundupService,
+        win32serviceutil.HandleCommandLine(RoundupService,
             argv=sys.argv[:1] + args)
+        return
 
     # add tracker names from command line.
     # this is done early to let '--save-config' handle the trackers.
@@ -663,13 +655,13 @@ def run(port=undefined, success_message=None):
         config.PORT = port
 
     # fork the server from our parent if a pidfile is specified
-    if config.PIDFILE:
+    if config["PIDFILE"]:
         if not hasattr(os, 'fork'):
             print _("Sorry, you can't run the server as a daemon"
                 " on this Operating System")
             sys.exit(0)
         else:
-            daemonize(config.PIDFILE)
+            daemonize(config["PIDFILE"])
 
     # create the server
     httpd = config.get_server()
