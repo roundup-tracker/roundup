@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.6 2002-06-12 00:59:44 dman13 Exp $
+# $Id: ZRoundup.py,v 1.7 2002-06-14 01:25:46 dman13 Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -32,6 +32,9 @@ _must_ be done using a GET, so that this interface can re-parse the
 QUERY_STRING. Zope interprets the ':' as a special character, and the special
 args are lost to it.
 '''
+
+import urlparse
+
 from Globals import InitializeClass, HTMLFile
 from OFS.SimpleItem import Item
 from OFS.PropertyManager import PropertyManager
@@ -125,9 +128,8 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         env = self.REQUEST.environ
 
         # figure out the path components to set
-        import urlparse
-        path = urlparse.urlparse( self.absolute_url() )[2]
-        path_components = path.split( '/' )
+        url = urlparse.urlparse( self.absolute_url() )
+        path_components = url[2].split( '/' )
                                                 
         # special case when roundup is '/' in this virtual host,
         if path == "/" :
@@ -138,7 +140,6 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             env['SCRIPT_NAME'] = '/'.join( path_components[:-1] )
             # the last element is the name
             env['INSTANCE_NAME'] = path_components[-1]
-        del path_components , path
 
         if env['REQUEST_METHOD'] == 'GET':
             # force roundup to re-parse the request because Zope fiddles
@@ -148,10 +149,26 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             form = FormWrapper(self.REQUEST.form)
         return instance.Client(instance, request, env, form)
 
+
     security.declareProtected('View', 'index_html')
     def index_html(self):
         '''Alias index_html to roundup's index
         '''
+
+        # Redirect misdirected requests -- bugs 558867 , 565992
+       
+        # PATH_INFO, as defined by the CGI spec, has the *real* request path
+        orig_path = self.REQUEST.environ[ 'PATH_INFO' ]
+        if orig_path[-1] != '/' : 
+            url = urlparse.urlparse( self.absolute_url() )
+            url = list( url ) # make mutable
+            url[2] = url[2]+'/' # patch
+            url = urlparse.urlunparse( url ) # reassemble
+            RESPONSE = self.REQUEST.RESPONSE
+            RESPONSE.setStatus( "MovedPermanently" ) # 301
+            RESPONSE.setHeader( "Location" , url )
+            return RESPONSE
+
         client = self._opendb()
         # fake the path that roundup should use
         client.split_path = ['index']
@@ -184,6 +201,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2002/06/12 00:59:44  dman13
+# Fixed the logic for determing the cookie path.  (Closes #562130.)
+#
 # Revision 1.5  2002/05/14 23:36:25  richard
 #  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
 #    (thanks dman)
