@@ -2,7 +2,7 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.9 $
+:version: $Revision: 1.10 $
 
 This notes detail the MySQL backend for the Roundup issue tracker.
 
@@ -53,8 +53,8 @@ Additional configuration
 ========================
 
 To initialise and use the MySQL database backend, roundup's configuration 
-file (config.py in the tracker's home directory) should have the following
-entries::
+file (``config.py`` in the tracker's home directory) should have the following
+entries (substituting real values of course)::
 
     MYSQL_DBHOST = 'localhost'
     MYSQL_DBUSER = 'rounduptest'
@@ -64,9 +64,9 @@ entries::
         MYSQL_DBNAME )
 
 Fill in the first four entries with values for your local MySQL installation 
-before running "roundup-admin initialise".  Use the commands in the `Running the
-MySQL tests` to set up a database if you have privilege, or ask your local
-administrator if not.
+before running "roundup-admin initialise". Use the commands in the
+`Running the MySQL tests`_ to set up a database if you have privilege, or
+ask your local administrator if not.
 
 
 Showing MySQL who's boss
@@ -82,3 +82,4 @@ just::
 
 and all will be better (note that on some systems, ``mysql`` is spelt
 ``mysqld``).
+

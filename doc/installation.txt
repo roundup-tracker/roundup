@@ -576,6 +576,12 @@ The tracker "db" directory should be chmod'ed g+sw so that the group can
 write to the database, and any new files created in the database will be owned
 by the group.
 
+If you're using the mysql or postgresql backend then you'll need to ensure
+that the tracker user has appropriate permissions to create/modify the
+database. If you're using roundup.cgi, the apache user needs permissions
+to modify the database.  Alternatively, explicitly specify a database login
+in ``POSTRGRESQL_DATABASE`` or ``MYSQL_DATABASE`` in ``config.py``.
+
 An alternative to the above is to create a new user who has the sole
 responsibility of running roundup. This user:
 
