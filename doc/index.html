@@ -3,9 +3,9 @@
 </head><body>
 
 <h1 align=center>Roundup</h1>
-<h3 align=center>An Issue-Tracking System for Knowledge Workers</h3>
+<h3 align=center>An Issue-Tracking System for Knowledge Workers</h2>
 
-<h2>Contents</h2>
+<h1>Contents</h1>
 
 <ul>
     <li><a href="overview.html">Overview</a> (Initial submission to SC Track)
@@ -40,10 +40,10 @@
 </ul>
 
 <p><hr>
-<h2><a name="installation">Installation</a></h2>
+<h1><a name="installation">Installation</a></h1>
 
 
-<h3><a name="requires">Prerequisites</a></h3>
+<h2><a name="requires">Prerequisites</a></h2>
 
 <dl>
     <dt>Either:
@@ -57,13 +57,13 @@ Download the latest version from
 
 
 
-<h3><a name="getting">Getting Roundup</a></h3>
+<h2><a name="getting">Getting Roundup</a></h2>
 
 Download the latest version from
 <a href="http://roundup.sf.net/">http://roundup.sf.net/</a>.
 
 
-<h3><a name="installing">Installing Roundup</a></h3>
+<h2><a name="installing">Installing Roundup</a></h2>
 
 <ol>
     <li>Run:
@@ -79,14 +79,14 @@ Download the latest version from
 
 
 <p><hr>
-<h2><a name="starting">Getting Started</a></h2>
+<h1><a name="starting">Getting Started</a></h1>
 
 The following instructions assume that you have installed roundup. If you
 haven't, you may still proceed - just preface all commands with "./"
 ie. "./roundup-admin init".
 
 
-<h3><a name="instance">The Instance</a></h3>
+<h2><a name="instance">The Instance</a></h2>
 
 We'll be referring to the term <em>instance</em> a lot from now on. An
 instance is
@@ -113,7 +113,7 @@ all reside there:
 
 Instances are created using the <tt>roundup-admin</tt> tool.
 
-<h3><a name="startcmd">Command Line Tool</a></h3>
+<h2><a name="startcmd">Command Line Tool</a></h2>
 
 To initiliase a new instance, run <tt>roundup-admin init</tt>. You will be
 asked a series of questions:
@@ -153,7 +153,7 @@ We run the instance as group "issue_tracker" and add the mail and web user
 any admin people.
 
 
-<h3><a name="startweb">E-Mail Interface</a></h3>
+<h2><a name="startweb">E-Mail Interface</a></h2>
 Set up a mail alias called "issue_tracker" as:
 <blockquote>
     <tt>|/usr/bin/python /usr/local/bin/roundup-mailgw
@@ -176,7 +176,7 @@ To test the mail gateway on unix systems, try:
 
 
 
-<h3><a name="startweb">Web Interface</a></h3>
+<h2><a name="startweb">Web Interface</a></h2>
 This software will work through apache or stand-alone.
 <p>
 <strong>Stand-alone:</strong>
@@ -212,7 +212,7 @@ RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=
 </ol>
 
 
-<h3><a name="users">Users</a></h3>
+<h2><a name="users">Users</a></h2>
 To add users, use one of the following interfaces:
 
 <ol>
@@ -230,7 +230,7 @@ To add users, use one of the following interfaces:
 
 
 
-<h3><a name="issues">Issues</a></h3>
+<h2><a name="issues">Issues</a></h2>
 To add issues, use one of the following interfaces:
 
 <ol>
@@ -247,8 +247,8 @@ To add issues, use one of the following interfaces:
 </ol>
 
 <p><hr>
-<h2><a name="guide">User Guide</a></h2>
-<h3><a name="cmd">Command Line Tool</a></h3>
+<h1><a name="guide">User Guide</a></h1>
+<h2><a name="cmd">Command Line Tool</a></h2>
 
 Usage:
 <tt>roundup-admin [-i instance home] [-u login] [-c] &lt;command&gt;
@@ -397,10 +397,10 @@ login may be specified as either "name" or "name:password".
 If either the name or password is not supplied, they are obtained from the
 command-line. 
 
-<h3><a name="web">Web Interface</a></h3>
+<h2><a name="web">Web Interface</a></h2>
 T.B.D.
 
-<h3><a name="mail">E-Mail Gateway</a></h3>
+<h2><a name="mail">E-Mail Gateway</a></h2>
 
 Incoming messages are examined for multiple parts:
 <ul>
@@ -413,14 +413,14 @@ Incoming messages are examined for multiple parts:
    subpart and ignore the other parts.
 </ul>
 
-<h4>Summary</h4>
+<h3>Summary</h3>
 The "summary" property on message nodes is taken from the first non-quoting
 section in the message body. The message body is divided into sections by
 blank lines. Sections where the second and all subsequent lines begin with
 a "&gt;" or "|" character are considered "quoting sections". The first line of
 the first non-quoting section becomes the summary of the message. 
 
-<h4>Addresses</h4>
+<h3>Addresses</h3>
 All of the addresses in the To: and Cc: headers of the incoming message are
 looked up among the user nodes, and the corresponding users are placed in
 the "recipients" property on the new "msg" node. The address in the From:
@@ -432,7 +432,7 @@ passwords.) If we prefer to reject mail from outside sources, we can simply
 register an auditor on the "user" class that prevents the creation of user
 nodes with no passwords. 
 
-<h4>Actions</h4>
+<h3>Actions</h3>
 The subject line of the incoming message is examined to determine whether
 the message is an attempt to create a new item or to discuss an existing
 item. A designator enclosed in square brackets is sought as the first thing
@@ -447,7 +447,7 @@ of that class with its "messages" property initialized to contain the new
 "msg" node and its "files" property initialized to contain any new "file"
 nodes. 
 
-<h4>Triggers</h4>
+<h3>Triggers</h3>
 Both cases may trigger detectors (in the first case we are calling the
 set() method to add the message to the item's spool; in the second case we
 are calling the create() method to create a new node). If an auditor raises
@@ -455,7 +455,7 @@ an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
 <p><hr>
-<h2><a name="custom">Customising Roundup</a></h2>
+<h1><a name="custom">Customising Roundup</a></h1>
 
 Instances have the following structure:
 <table>
@@ -477,7 +477,7 @@ Instances have the following structure:
         <td>Web interface templates, images and style sheets</td></tr>
 </table>
 
-<h3><a name="custinst">Instance Schema</a></h3>
+<h2><a name="custinst">Instance Schema</a></h2>
 An instance schema defines what data is stored in the instance's database.
 The two schemas shipped with Roundup turn it into a typical software bug
 tracker (the extended schema allowing for support issues as well as bugs).
@@ -522,7 +522,7 @@ this:
     issue.setkey('title')
 </pre>
 
-<h4>Class, FileClass, IssueClass - creating a new information store</h4>
+<h3>Class, FileClass, IssueClass - creating a new information store</h3>
 A <em>Class</em> defines a particular class (or type) of data that will be
 stored in the database. In the instance above, we've defined 7 classes of
 information:
@@ -589,7 +589,7 @@ the item was last edited (equivalently, these are the dates on the first
 and last records in the item's journal). The "creator" property holds a
 link to the user that created the issue.
 
-<h4>setkey(property)</h4>
+<h3>setkey(property)</h3>
 Select a String property of the class to be the key property. The key
 property muse be unique, and allows references to the items in the class by
 the content of the key property. That is, we can refer to users by their
@@ -606,21 +606,306 @@ or
 <p>
 Note, the same thing can be done in the web and e-mail interfaces.
 
-<h4>create(information)</h4>
+<h3>create(information)</h3>
 Create an item in the database. This is generally used to create items in
 the "definitional" classes like "priority" and "status".
 
-<h3><a name="custweb">Web Interface</a></h3>
+<h2><a name="custweb">Web Interface</a></h2>
+
+The web interface works behind the cgi-bin/roundup.cgi or roundup-server
+scripts. In both cases, the scripts determine which instance is being
+accessed (the first part of the URL path inside the scope of the CGI
+handler) and pass control on to the instance interfaces.Client class which
+handles the rest of the access through its main() method. This means that
+you can do pretty much anything you want as a web interface to your
+instance.
+<p>
+Most customisation of the web view can be done by modifying the templates
+in the instance html directory. These are divided into index, item and
+newitem views. The newitem view is optional - the item view will be used if
+the newitem view doesn't exist.
+
+<p>
+<em>Next bit cut straight from the implementation guide</em>
+
+<p>
+<h3>8.2. Displaying Properties</h3>
+
+<p>Properties appear in the user interface in three contexts:
+in indices, in editors, and as filters.  For each type of
+property, there are several display possibilities.  For example,
+in an index view, a string property may just be printed as
+a plain string, but in an editor view, that property should
+be displayed in an editable field.
+
+<p>The display of a property is handled by functions in
+a <tt>displayers</tt> module.  Each function accepts at
+least three standard arguments -- the database, class name,
+and node id -- and returns a chunk of HTML.
+
+<p>Displayer functions are triggered by <tt>&lt;display&gt;</tt>
+tags in templates.  The <tt>call</tt> attribute of the tag
+provides a Python expression for calling the displayer
+function.  The three standard arguments are inserted in
+front of the arguments given.  For example, the occurrence of
+
+<blockquote><pre><small
+>    &lt;display call="plain('status', max=30)"&gt;
+</small></pre></blockquote>
+
+in a template triggers a call to
+    
+<blockquote><pre><small
+>    plain(db, "issue", 13, "status", max=30)
+</small></pre></blockquote>
+
+when displaying item 13 in the "issue" class.  The displayer
+functions can accept extra arguments to further specify
+details about the widgets that should be generated.  By defining new
+displayer functions, the user interface can be highly customized.
+
+<p>Some of the standard displayer functions include:
+
+<ul>
+<li><strong>plain</strong>: display a String property directly;
+display a Date property in a specified time zone with an option
+to omit the time from the date stamp; for a Link or Multilink
+property, display the key strings of the linked nodes (or the
+ids if the linked class has no key property)
+
+<li><strong>field</strong>: display a property like the
+<strong>plain</strong> displayer above, but in a text field
+to be edited
+
+<li><strong>menu</strong>: for a Link property, display
+a menu of the available choices
+
+<li><strong>link</strong>: for a Link or Multilink property,
+display the names of the linked nodes, hyperlinked to the
+item views on those nodes
+
+<li><strong>count</strong>: for a Multilink property, display
+a count of the number of links in the list
+
+<li><strong>reldate</strong>: display a Date property in terms
+of an interval relative to the current date (e.g. "+ 3w", "- 2d").
+
+<li><strong>download</strong>: show a Link("file") or Multilink("file")
+property using links that allow you to download files
+
+<li><strong>checklist</strong>: for a Link or Multilink property,
+display checkboxes for the available choices to permit filtering
+</ul>
+
+<h3>8.3. Index Views</h3>
+
+<p>An index view contains two sections: a filter section
+and an index section.
+The filter section provides some widgets for selecting
+which items appear in the index.  The index section is
+a table of items.
+
+<h4>8.3.1. Index View Specifiers</h4>
+
+<p>An index view specifier looks like this (whitespace
+has been added for clarity):
+
+<blockquote><pre><small
+>/issue?status=unread,in-progress,resolved&amp;
+        topic=security,ui&amp;
+        :group=+priority&amp;
+        :sort=-activity&amp;
+        :filters=status,topic&amp;
+        :columns=title,status,fixer
+</small></pre></blockquote>
+
+<p>The index view is determined by two parts of the
+specifier: the layout part and the filter part.
+The layout part consists of the query parameters that
+begin with colons, and it determines the way that the
+properties of selected nodes are displayed.
+The filter part consists of all the other query parameters,
+and it determines the criteria by which nodes 
+are selected for display.
+
+<p>The filter part is interactively manipulated with
+the form widgets displayed in the filter section.  The
+layout part is interactively manipulated by clicking
+on the column headings in the table.
+
+<p>The filter part selects the <em>union</em> of the
+sets of items with values matching any specified Link
+properties and the <em>intersection</em> of the sets
+of items with values matching any specified Multilink
+properties.
+
+<p>The example specifies an index of "issue" nodes.
+Only items with a "status" of <em>either</em>
+"unread" or "in-progres" or "resolved" are displayed,
+and only items with "topic" values including <em>both</em>
+"security" <em>and</em> "ui" are displayed.  The items
+are grouped by priority, arranged in ascending order;
+and within groups, sorted by activity, arranged in
+descending order.  The filter section shows filters
+for the "status" and "topic" properties, and the
+table includes columns for the "title", "status", and
+"fixer" properties.
+
+<p>Associated with each item class is a default
+layout specifier.  The layout specifier in the above
+example is the default layout to be provided with
+the default bug-tracker schema described above in
+section 4.4.
+
+<h4>8.3.2. Filter Section</h4>
+
+<p>The template for a filter section provides the
+filtering widgets at the top of the index view.
+Fragments enclosed in <tt>&lt;property&gt;</tt>...<tt>&lt;/property&gt;</tt>
+tags are included or omitted depending on whether the
+view specifier requests a filter for a particular property.
+
+<p>Here's a simple example of a filter template.
+
+<blockquote><pre><small
+>&lt;property name=status&gt;
+    &lt;display call="checklist('status')"&gt;
+&lt;/property&gt;
+&lt;br&gt;
+&lt;property name=priority&gt;
+    &lt;display call="checklist('priority')"&gt;
+&lt;/property&gt;
+&lt;br&gt;
+&lt;property name=fixer&gt;
+    &lt;display call="menu('fixer')"&gt;
+&lt;/property&gt;</small></pre></blockquote>
+
+<h4>8.3.3. Index Section</h4>
+
+<p>The template for an index section describes one row of
+the index table.
+Fragments enclosed in <tt>&lt;property&gt;</tt>...<tt>&lt;/property&gt;</tt>
+tags are included or omitted depending on whether the
+view specifier requests a column for a particular property.
+The table cells should contain <tt>&lt;display&gt;</tt> tags
+to display the values of the item's properties.
+
+<p>Here's a simple example of an index template.
+
+<blockquote><pre><small
+>&lt;tr&gt;
+    &lt;property name=title&gt;
+        &lt;td&gt;&lt;display call="plain('title', max=50)"&gt;&lt;/td&gt;
+    &lt;/property&gt;
+    &lt;property name=status&gt;
+        &lt;td&gt;&lt;display call="plain('status')"&gt;&lt;/td&gt;
+    &lt;/property&gt;
+    &lt;property name=fixer&gt;
+        &lt;td&gt;&lt;display call="plain('fixer')"&gt;&lt;/td&gt;
+    &lt;/property&gt;
+&lt;/tr&gt;</small></pre></blockquote>
+
+<h4>8.3.4. Sorting</h4>
+
+<p>String and Date values are sorted in the natural way.
+Link properties are sorted according to the value of the
+"order" property on the linked nodes if it is present; or
+otherwise on the key string of the linked nodes; or
+finally on the node ids.  Multilink properties are
+sorted according to how many links are present.
+
+<h3>8.4. Item Views</h3>
+
+<p>An item view contains an editor section and a spool section.
+At the top of an item view, links to superseding and superseded
+items are always displayed.
+
+<h4>8.4.1. Item View Specifiers</h4>
+
+<p>An item view specifier is simply the item's designator:
+
+<blockquote><pre><small
+>/patch23
+</small></pre></blockquote>
+
+<h4>8.4.2. Editor Section</h4>
+
+<p>The editor section is generated from a template
+containing <tt>&lt;display&gt;</tt> tags to insert
+the appropriate widgets for editing properties.
+
+<p>Here's an example of a basic editor template.
+
+<blockquote><pre><small
+>&lt;table&gt;
+&lt;tr&gt;
+    &lt;td colspan=2&gt;
+        &lt;display call="field('title', size=60)"&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+    &lt;td&gt;
+        &lt;display call="field('fixer', size=30)"&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;display call="menu('status')&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+    &lt;td&gt;
+        &lt;display call="field('nosy', size=30)"&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;display call="menu('priority')&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+    &lt;td colspan=2&gt;
+        &lt;display call="note()"&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+</small></pre></blockquote>
+
+<p>As shown in the example, the editor template can also
+request the display of a "note" field, which is a
+text area for entering a note to go along with a change.
+
+<p>When a change is submitted, the system automatically
+generates a message describing the changed properties.
+The message displays all of the property values on the
+item and indicates which ones have changed.
+An example of such a message might be this:
+
+<blockquote><pre><small
+>title: Polly Parrot is dead
+priority: critical
+status: unread -&gt; in-progress
+fixer: (none)
+keywords: parrot,plumage,perch,nailed,dead
+</small></pre></blockquote>
+
+<p>If a note is given in the "note" field, the note is
+appended to the description.  The message is then added
+to the item's message spool (thus triggering the standard
+detector to react by sending out this message to the nosy list).
+
+<h4>8.4.3. Spool Section</h4>
+
+<p>The spool section lists messages in the item's "messages"
+property.  The index of messages displays the "date", "author",
+and "summary" properties on the message nodes, and selecting a
+message takes you to its content.
 
 <p><hr>
-<h2><a name="ack">Acknowledgements</a></h2>
+<h1><a name="ack">Acknowledgements</a></h1>
 
 Go Ping, you rock! Also, go Bizar Software for letting me implement this
 system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.4 2001-09-29 23:48:06 richard Exp $
+$Id: index.html,v 1.5 2001-09-30 01:19:22 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
