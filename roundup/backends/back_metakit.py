@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.86 2004-09-30 09:48:12 a1s Exp $
+# $Id: back_metakit.py,v 1.87 2004-09-30 10:12:24 a1s Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -789,7 +789,7 @@ class Class(hyperdb.Class):
                     v = 0
                 else:
                     try:
-                        v = int(value)
+                        v = float(value)
                     except ValueError:
                         raise TypeError, "%s (%s) is not numeric"%(key, repr(value))
                     if not BACKWARDS_COMPATIBLE:
@@ -1312,7 +1312,10 @@ class Class(hyperdb.Class):
                     # If range creation fails - ignore that search parameter
                     pass
             elif isinstance(prop, hyperdb.Number):
-                where[propname] = int(value)
+                if type(value) is _LISTTYPE:
+                    orcriteria[propname] = [float(v) for v in value]
+                else:
+                    where[propname] = float(value)
             else:
                 where[propname] = str(value)
         v = self.getview()
@@ -1648,7 +1651,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value).serialise()
             elif isinstance(prop, hyperdb.Number):
-                value = int(value)
+                value = float(value)
             elif isinstance(prop, hyperdb.Boolean):
                 value = int(value)
             elif isinstance(prop, hyperdb.Link) and value:
@@ -1825,7 +1828,7 @@ _typmap = {
     hyperdb.Interval  : 'S',
     hyperdb.Password  : 'S',
     hyperdb.Boolean   : 'I',
-    hyperdb.Number    : 'I',
+    hyperdb.Number    : 'D',
 }
 class FileClass(hyperdb.FileClass, Class):
     ''' like Class but with a content property
