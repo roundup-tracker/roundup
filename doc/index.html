@@ -362,12 +362,25 @@ Usage:
     <td><tt>set designator[,designator]* propname=value ...</tt><p>
     Sets the property to the value for all designators given.
 </td></tr>
-    
+
 <tr><td valign=top><strong>init</strong></td>
     <td><tt>init [template [backend [admin password]]]</tt><p>
     The command will prompt for the instance home directory (if not supplied
     through INSTANCE_HOME or the -i option. The template, backend and admin
     password may be specified on the command-line as arguments, in that order.
+</td></tr>
+
+<tr><td valign=top><strong>export</strong></td>
+    <td><tt>export class[,class] destination_dir</tt><p>
+    This action exports the current data from the database into
+    comma-separated files that are placed in the nominated destination
+    directory. The journals are not exported.
+</td></tr>
+
+<tr><td valign=top><strong>import</strong></td>
+    <td><tt>import class file</tt><p>
+    The file must define the same properties as the class (including having
+    a "header" line with those property names.)
 </td></tr>
     
 <tr><td valign=top><strong>freshen</strong></td>
@@ -1139,7 +1152,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.13 2001-10-10 01:47:55 richard Exp $
+$Id: index.html,v 1.14 2001-10-10 03:58:40 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
