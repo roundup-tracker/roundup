@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.24 2002-01-05 02:21:22 richard Exp $
+# $Id: roundup.cgi,v 1.25 2002-08-22 00:14:18 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -69,11 +69,11 @@ try:
     import traceback, StringIO, cgi
     from roundup import cgitb
 except:
-    print "Content-Type: text/html\n"
-    print _("Failed to import cgitb.<pre>")
+    print "Content-Type: text/plain\n"
+    print _("Failed to import cgitb!\n\n")
     s = StringIO.StringIO()
     traceback.print_exc(None, s)
-    print cgi.escape(s.getvalue()), "</pre>"
+    print s.getvalue()
 
 
 #
@@ -198,6 +198,9 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/01/05 02:21:22  richard
+# fixes
+#
 # Revision 1.23  2002/01/05 02:19:03  richard
 # i18n'ification
 #
