@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.32 2002-09-23 12:09:29 richard Exp $
+# $Id: date.py,v 1.33 2002-10-10 07:18:02 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -446,7 +446,8 @@ class Interval:
             self.minute, self.second)
 
     def serialise(self):
-        return '%s%4d%02d%02d%02d%02d%02d'%(self.sign, self.year, self.month,
+        sign = self.sign > 0 and '+' or '-'
+        return '%s%04d%02d%02d%02d%02d%02d'%(sign, self.year, self.month,
             self.day, self.hour, self.minute, self.second)
 
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.59 2002-10-08 07:28:34 richard Exp $ 
+# $Id: test_db.py,v 1.60 2002-10-10 07:18:03 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -135,12 +135,22 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.issue.get('1', "deadline"), None)
 
     def testIntervalChange(self):
-        self.db.issue.create(title="spam", status='1')
-        a = self.db.issue.get('1', "foo")
-        self.db.issue.set('1', foo=date.Interval('-1d'))
-        self.assertNotEqual(self.db.issue.get('1', "foo"), a)
-        self.db.issue.set('1', foo=None)
-        self.assertEqual(self.db.issue.get('1', "foo"), None)
+        nid = self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+        a = self.db.issue.get(nid, "foo")
+        i = date.Interval('-1d')
+        self.db.issue.set(nid, foo=i)
+        self.db.commit()
+        self.assertNotEqual(self.db.issue.get(nid, "foo"), a)
+        self.assertEqual(i, self.db.issue.get(nid, "foo"))
+        j = date.Interval('1y')
+        self.db.issue.set(nid, foo=j)
+        self.db.commit()
+        self.assertNotEqual(self.db.issue.get(nid, "foo"), i)
+        self.assertEqual(j, self.db.issue.get(nid, "foo"))
+        self.db.issue.set(nid, foo=None)
+        self.db.commit()
+        self.assertEqual(self.db.issue.get(nid, "foo"), None)
 
     def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
