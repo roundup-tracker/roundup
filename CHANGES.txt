@@ -94,6 +94,7 @@ Fixed:
 - fixed problem migrating mysql databases
 - fix search_checkboxes macro (sf patch 1113828)
 - fix bug in date editing in Metakit
+- allow suppression of search_text in indexargs_form (sf bug 1101548)
 
 
 2005-01-06 0.7.11
