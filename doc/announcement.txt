@@ -1,21 +1,25 @@
-=================================================
-SC-Track Roundup 0.4.1 - an issue tracking system
-=================================================
+====================================================
+SC-Track Roundup 0.4.2pr1 - an issue tracking system
+====================================================
 
-If you are upgrading please read MIGRATION.txt.
+NOTE: This is the first (and hopefully only) pre-release of 0.4.2. If you
+have an existing roundup installation and wish to test it, make a backup
+of your database. Make sure you read MIGRATION.txt!
 
 Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
-requires python 2.1.2 or 2.2.
+requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
 
 Big stuff in this release:
 
-- Users may register alternate addresses they might send e-mail from
-- Splitting of file storage in the backend into multiple directories
-- Better handling of 8-bit e-mail messages
-- Nicer configuration of web headers
-- Popup help for multilink classes
-- Cleanups in the date classes
-- Much, much more: see the CHANGES file for details.
+- fast full-text searching of messages
+- other speedups
+- bsddb3 backend is re-enabled
+- instance initialisation is a two-step process now, making mods easier
+- optionally auto-add the author and recipients of messages to the nosy
+- enhancements to make multilink editing through the web and email easier
+- cleaner use of auditors and reactors in the default schemas
+- demo scripts supplied in the scripts/ and detectors/ directories
+- Much, much more: see the CHANGES file for details
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
