@@ -14,7 +14,7 @@ __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-class Action:
+class Action:    
     def __init__(self, client):
         self.client = client
         self.form = client.form
@@ -26,16 +26,34 @@ class Action:
         self.base = client.base
         self.user = client.user
         
-    def handle(self):
+    def execute(self):
         """Execute the action specified by this object."""
-        raise NotImplementedError
+        self.permission()
+        self.handle()
 
+    name = ''
+    permissionType = None
     def permission(self):
         """Check whether the user has permission to execute this action.
 
-        True by default.
+        True by default. If the permissionType attribute is a string containing
+        a simple permission, check whether the user has that permission.
+        Subclasses must also define the name attribute if they define
+        permissionType.
+        
+        Despite having this permission, users may still be unauthorised to
+        perform parts of actions. It is up to the subclasses to detect this.        
         """
-        return 1
+        if (self.permissionType and
+            not self.hasPermission(self.permissionType)):
+
+            raise Unauthorised, _('You do not have permission to %s the %s class.' %
+                                  (self.name, self.classname))
+
+    def hasPermission(self, permission):
+        """Check whether the user has 'permission' on the current class."""
+        return self.db.security.hasPermission(permission, self.client.userid,
+                                              self.client.classname)
 
 class ShowAction(Action):
     def handle(self, typere=re.compile('[@:]type'),
@@ -53,18 +71,16 @@ class ShowAction(Action):
         raise Redirect, url
 
 class RetireAction(Action):
+    name = 'retire'
+    permissionType = 'Edit'
+
     def handle(self):
-        """Retire the context item."""
+        """Retire the context item."""        
         # if we want to view the index template now, then unset the nodeid
         # context info (a special-case for retire actions on the index page)
         nodeid = self.nodeid
         if self.template == 'index':
             self.client.nodeid = None
-
-        # generic edit is per-class only
-        if not self.permission():
-            raise Unauthorised, _('You do not have permission to retire %s' %
-                                  self.classname)
 
         # make sure we don't try to retire admin or anonymous
         if self.classname == 'user' and \
@@ -79,15 +95,10 @@ class RetireAction(Action):
             _('%(classname)s %(itemid)s has been retired')%{
                 'classname': self.classname.capitalize(), 'itemid': nodeid})
 
-    def permission(self):
-        """Determine whether the user has permission to retire this class.
-
-        Base behaviour is to check the user can edit this class.
-        """ 
-        return self.db.security.hasPermission('Edit', self.client.userid,
-                                              self.client.classname)
-
 class SearchAction(Action):
+    name = 'search'
+    permissionType = 'View'
+    
     def handle(self, wcre=re.compile(r'[\s,]+')):
         """Mangle some of the form variables.
 
@@ -101,11 +112,6 @@ class SearchAction(Action):
         Split any String query values on whitespace and comma.
 
         """
-        # generic edit is per-class only
-        if not self.permission():
-            raise Unauthorised, _('You do not have permission to search %s' %
-                                  self.classname)
-
         self.fakeFilterVars()
         queryname = self.getQueryName()        
 
@@ -168,12 +174,11 @@ class SearchAction(Action):
             if self.FV_QUERYNAME.match(key):
                 return self.form[key].value.strip()
         return ''
-        
-    def permission(self):
-        return self.db.security.hasPermission('View', self.client.userid,
-                                              self.client.classname)
 
 class EditCSVAction(Action):
+    name = 'edit'
+    permissionType = 'Edit'
+    
     def handle(self):
         """Performs an edit of all of a class' items in one go.
 
@@ -182,12 +187,6 @@ class EditCSVAction(Action):
         removed lines are retired.
 
         """
-        # this is per-class only
-        if not self.permission():
-            self.client.error_message.append(
-                 _('You do not have permission to edit %s' %self.classname))
-            return
-
         # get the CSV module
         if rcsv.error:
             self.client.error_message.append(_(rcsv.error))
@@ -271,34 +270,27 @@ class EditCSVAction(Action):
         self.db.commit()
 
         self.client.ok_message.append(_('Items edited OK'))
-
-    def permission(self):
-        return self.db.security.hasPermission('Edit', self.client.userid,
-                                              self.client.classname)
-
+    
 class _EditAction(Action):
+    def isEditingSelf(self):
+        """Check whether a user is editing his/her own details."""
+        return (self.nodeid == self.userid
+                and self.db.user.get(self.nodeid, 'username') != 'anonymous')
+    
     def editItemPermission(self, props):
         """Determine whether the user has permission to edit this item.
 
         Base behaviour is to check the user can edit this class. If we're
-        editing the"user" class, users are allowed to edit their own details.
+        editing the "user" class, users are allowed to edit their own details.
         Unless it's the "roles" property, which requires the special Permission
         "Web Roles".
         """
-        # if this is a user node and the user is editing their own node, then
-        # we're OK
-        has = self.db.security.hasPermission
         if self.classname == 'user':
-            # reject if someone's trying to edit "roles" and doesn't have the
-            # right permission.
-            if props.has_key('roles') and not has('Web Roles', self.userid,
-                    'user'):
-                return 0
-            # if the item being edited is the current user, we're ok
-            if (self.nodeid == self.userid
-                and self.db.user.get(self.nodeid, 'username') != 'anonymous'):
+            if props.has_key('roles') and not self.hasPermission('Web Roles'):
+                raise Unauthorised, _("You do not have permission to edit user roles")
+            if self.isEditingSelf():
                 return 1
-        if self.db.security.hasPermission('Edit', self.userid, self.classname):
+        if self.hasPermission('Edit'):
             return 1
         return 0
 
@@ -310,11 +302,8 @@ class _EditAction(Action):
         if the user has the "Web Registration" Permission.
 
         """
-        has = self.db.security.hasPermission
-        if self.classname == 'user' and has('Web Registration', self.userid,
-                'user'):
-            return 1
-        if has('Edit', self.userid, self.classname):
+        if (self.classname == 'user' and self.hasPermission('Web Registration')
+            or self.hasPermission('Edit')):
             return 1
         return 0
 
@@ -503,7 +492,7 @@ class NewItemAction(_EditAction):
         try:
             props, links = self.client.parsePropsFromForm(create=True)
         except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
+            self.client.error_message.append(_('Error: ') + str(message))
             return
 
         # handle the props - edit or create
@@ -513,7 +502,7 @@ class NewItemAction(_EditAction):
 
         except (ValueError, KeyError, IndexError), message:
             # these errors might just be indicative of user dumbness
-            self.error_message.append(_('Error: ') + str(message))
+            self.client.error_message.append(_('Error: ') + str(message))
             return
 
         # commit now that all the tricky stuff is done
@@ -656,17 +645,20 @@ class ConfRegoAction(Action):
                                                    self.userid, urllib.quote(message))
 
 class RegisterAction(Action):
+    name = 'register'
+    permissionType = 'Web Registration'
+    
     def handle(self):
         """Attempt to create a new user based on the contents of the form
         and then set the cookie.
 
         Return 1 on successful login.
-        """
+        """        
         props = self.client.parsePropsFromForm()[0][('user', None)]
 
-        # make sure we're allowed to register
-        if not self.permission(props):
-            raise Unauthorised, _("You do not have permission to register")
+        # registration isn't allowed to supply roles
+        if props.has_key('roles'):
+            raise Unauthorised, _("It is not permitted to supply roles at registration.")            
 
         try:
             self.db.user.lookup(props['username'])
@@ -717,19 +709,6 @@ reply's additional "Re:" is ok),
         # redirect to the "you're almost there" page
         raise Redirect, '%suser?@template=rego_progress'%self.base
 
-    def permission(self, props):
-        """Determine whether the user has permission to register
-        
-        Base behaviour is to check the user has "Web Registration".
-        
-        """
-        # registration isn't allowed to supply roles
-        if props.has_key('roles'):
-            return 0
-        if self.db.security.hasPermission('Web Registration', self.userid):
-            return 1
-        return 0
-
 class LogoutAction(Action):
     def handle(self):
         """Make us really anonymous - nuke the cookie too."""
@@ -779,8 +758,9 @@ class LoginAction(Action):
             self.client.error_message.append(_('Incorrect password'))
             return
 
-        # make sure we're allowed to be here
-        if not self.permission():
+        # Determine whether the user has permission to log in.
+        # Base behaviour is to check the user has "Web Access".
+        if not self.hasPermission("Web Access"):
             self.client.make_user_anonymous()
             self.client.error_message.append(_("You do not have permission to login"))
             return
@@ -800,13 +780,3 @@ class LoginAction(Action):
         if not password and not stored:
             return 1
         return 0
-
-    def permission(self):
-        """Determine whether the user has permission to log in.
-
-        Base behaviour is to check the user has "Web Access".
-
-        """    
-        if not self.db.security.hasPermission('Web Access', self.client.userid):
-            return 0
-        return 1
