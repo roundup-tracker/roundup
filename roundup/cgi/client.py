@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.56 2002-11-06 05:39:50 richard Exp $
+# $Id: client.py,v 1.57 2002-11-28 07:02:48 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1218,12 +1218,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             value = password.Password(value)
         elif isinstance(proptype, hyperdb.Date):
             if value:
-                value = date.Date(value.value.strip())
+                value = date.Date(value)
             else:
                 continue
         elif isinstance(proptype, hyperdb.Interval):
             if value:
-                value = date.Interval(value.value.strip())
+                value = date.Interval(value)
             else:
                 continue
         elif isinstance(proptype, hyperdb.Link):
