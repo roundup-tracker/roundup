@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.147 $
+:Version: $Revision: 1.148 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1369,7 +1369,10 @@ The basic TAL commands are:
      </tr>
 
    The example would iterate over the sequence of users returned by
-   "user/list" and define the local variable "u" for each entry.
+   "user/list" and define the local variable "u" for each entry. Using
+   the repeat command creates a new variable called "repeat" which you
+   may access to gather information about the iteration. See the section
+   below on `the repeat variable`_.
 
 **tal:replace="expression"**
    Replace this tag with the result of the expression. For example::
@@ -1974,6 +1977,34 @@ macro (called "macro_name"), use the path expression::
 or the python expression::
 
    templates[name].macros[macro_name]
+
+The repeat variable
+~~~~~~~~~~~~~~~~~~~
+
+The repeat variable holds an entry for each active iteration. That is, if
+you have a ``tal:repeat="user db/users"`` command, then there will be a
+repeat variable entry called "user". This may be accessed as either::
+
+    repeat/user
+    python:repeat['user']
+
+The "user" entry has a number of methods available for information:
+
+=============== =========================================================
+Method          Description
+=============== =========================================================
+first           True if the current item is the first in the sequence.
+last            True if the current item is the last in the sequence.
+even            True if the current item is an even item in the sequence.
+odd             True if the current item is an odd item in the sequence.
+number          Current position in the sequence, starting from 1.
+letter          Current position in the sequence as a letter, a through
+                z, then aa through zz, and so on.
+Letter          Same as letter(), except uppercase.
+roman           Current position in the sequence as lowercase roman
+                numerals.
+Roman           Same as roman(), except uppercase.
+=============== =========================================================
 
 
 The utils variable
