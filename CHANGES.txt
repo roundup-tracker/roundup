@@ -27,6 +27,8 @@ Fixed:
   (bug #821364).
 - Centralised conversion of user-input data to hyperdb values (bug #802405,
   bug #817217, rfe #816994)
+- recalculate SHA on template files when installed tracker used as
+  template (sf bug 827510)
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.

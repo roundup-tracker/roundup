@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.8 2002-09-10 00:18:20 richard Exp $
+# $Id: install_util.py,v 1.9 2003-11-11 22:37:25 richard Exp $
 
 __doc__ = """
 Support module to generate and check fingerprints of installed files.
@@ -30,6 +30,22 @@ slast_file_types = [".css"]
 
 digested_file_types = sgml_file_types + hash_file_types + slast_file_types
 
+def extractFingerprint(lines):
+    # get fingerprint from last line
+    if lines[-1].startswith("#SHA: "):
+        # handle .py/.sh comment
+        return lines[-1][6:].strip()
+    elif lines[-1].startswith("<!-- SHA: "):
+        # handle xml/html files
+        fingerprint = lines[-1][10:]
+        fingerprint = fingerprint.replace('-->', '')
+        return fingerprint.strip()
+    elif lines[-1].startswith("/* SHA: "):
+        # handle css files
+        fingerprint = lines[-1][8:]
+        fingerprint = fingerprint.replace('*/', '')
+        return fingerprint.strip()
+    return None
 
 def checkDigest(filename):
     """Read file, check for valid fingerprint, return TRUE if ok"""
@@ -38,21 +54,8 @@ def checkDigest(filename):
     lines = inp.readlines()
     inp.close()
 
-    # get fingerprint from last line
-    if lines[-1][:6] == "#SHA: ":
-        # handle .py/.sh comment
-        fingerprint = lines[-1][6:].strip()
-    elif lines[-1][:10] == "<!-- SHA: ":
-        # handle xml/html files
-        fingerprint = lines[-1][10:]
-        fingerprint = fingerprint.replace('-->', '')
-        fingerprint = fingerprint.strip()
-    elif lines[-1][:8] == "/* SHA: ":
-        # handle css files
-        fingerprint = lines[-1][8:]
-        fingerprint = fingerprint.replace('*/', '')
-        fingerprint = fingerprint.strip()
-    else:
+    fingerprint = extractFingerprint(lines)
+    if fingerprint is None:
         return 0
     del lines[-1]
 
@@ -76,6 +79,12 @@ class DigestFile:
         self.file = open(self.filename, "w")
 
     def write(self, data):
+        lines = data.splitlines()
+        # if the file is coming from an installed tracker being used as a
+        # template, then we will want to re-calculate the SHA
+        fingerprint = extractFingerprint(lines)
+        if fingerprint is not None:
+            data = '\n'.join(lines[:-1]) + '\n'
         self.file.write(data)
         self.digest.update(data)
 
