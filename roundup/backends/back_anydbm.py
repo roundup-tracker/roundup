@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.149 2004-05-23 23:24:47 richard Exp $
+#$Id: back_anydbm.py,v 1.150 2004-06-08 05:30:32 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2009,6 +2009,7 @@ class Class(hyperdb.Class):
         r = []
         for nodeid in self.getnodeids():
             for nodeid, date, user, action, params in self.history(nodeid):
+                print (nodeid, date, user, action, params)
                 date = date.get_tuple()
                 if action == 'set':
                     for propname, value in params.items():
@@ -2035,7 +2036,7 @@ class Class(hyperdb.Class):
         d = {}
         for l in entries:
             l = map(eval, l)
-            nodeid, date, user, action, params = l
+            nodeid, jdate, user, action, params = l
             r = d.setdefault(nodeid, [])
             if action == 'set':
                 for propname, value in params.items():
@@ -2051,7 +2052,7 @@ class Class(hyperdb.Class):
                         pwd.unpack(value)
                         value = pwd
                     params[propname] = value
-            r.append((nodeid, date.Date(date), user, action, params))
+            r.append((nodeid, date.Date(jdate), user, action, params))
 
         for nodeid, l in d.items():
             self.db.setjournal(self.classname, nodeid, l)
