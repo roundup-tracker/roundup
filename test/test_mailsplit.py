@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.6 2001-10-21 03:35:13 richard Exp $
+# $Id: test_mailsplit.py,v 1.7 2001-10-23 00:57:32 richard Exp $
 
 import unittest, cStringIO
 
@@ -86,7 +86,6 @@ userfoo@foo.com
     def testParagraphs(self):
         s = '''testing\n\ntesting\n\ntesting'''
         summary, content = parseContent(s)
-        print `summary`, `content`
         self.assertEqual(summary, 'testing')
         self.assertEqual(content, 'testing\n\ntesting\n\ntesting')
 
@@ -102,6 +101,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/10/21 03:35:13  richard
+# bug #473125: Paragraph in e-mails
+#
 # Revision 1.5  2001/08/07 00:24:43  richard
 # stupid typo
 #
