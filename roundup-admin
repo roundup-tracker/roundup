@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.16 2001-08-12 06:32:36 richard Exp $
+# $Id: roundup-admin,v 1.17 2001-08-28 05:58:33 anthonybaxter Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -163,6 +163,8 @@ def do_set(db, args):
 
     Sets the property to the value for all designators given.
     '''
+    from roundup import hyperdb
+
     designators = string.split(args[0], ',')
     props = {}
     for prop in args[1:]:
@@ -231,6 +233,8 @@ def do_create(db, args):
     name=value arguments provided on the command line after the "create"
     command.
     '''
+    from roundup import hyperdb
+
     classname = args[0]
     cl = db.getclass(classname)
     props = {}
@@ -422,6 +426,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/08/12 06:32:36  richard
+# using isinstance(blah, Foo) now instead of isFooType
+#
 # Revision 1.15  2001/08/07 00:24:42  richard
 # stupid typo
 #
