@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.18 2004-03-21 23:39:08 richard Exp $
+# $Id: back_sqlite.py,v 1.19 2004-03-21 23:45:44 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -9,7 +9,6 @@ import os, base64, marshal
 
 from roundup import hyperdb
 from roundup.backends import rdbms_common
-from roundup.backends import locking
 import sqlite
 
 class Database(rdbms_common.Database):
@@ -26,13 +25,6 @@ class Database(rdbms_common.Database):
         # ensure files are group readable and writable
         os.umask(0002)
 
-        # lock the database
-        db = os.path.join(self.config.DATABASE, 'db')
-        lockfilenm = db[:-3] + 'lck'
-        self.lockfile = locking.acquire_lock(lockfilenm)
-        self.lockfile.write(str(os.getpid()))
-        self.lockfile.flush()
-
         (self.conn, self.cursor) = self.sql_open_connection()
 
         try:
@@ -45,16 +37,6 @@ class Database(rdbms_common.Database):
             self.cursor.execute('create table ids (name varchar, num integer)')
             self.cursor.execute('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
-
-    def close(self):
-        ''' Close off the connection.
-        '''
-        self.sql_close()
-        if self.lockfile is not None:
-            locking.release_lock(self.lockfile)
-        if self.lockfile is not None:
-            self.lockfile.close()
-            self.lockfile = None
 
     def create_version_2_tables(self):
         self.cursor.execute('create table otks (otk_key varchar, '
