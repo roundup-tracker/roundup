@@ -47,8 +47,9 @@ Feature:
 - added Node.get() method
 - nicer page titles (sf feature 65197)
 - relaxed CVS importing (sf feature 693277)
-- added support for searching on ranges of dates (see doc/user_guide.txt in
-  chapter "Searching Page" for details) (closes sf feature 700178)
+- added support for searching on ranges of dates and intervals (see
+  doc/user_guide.txt in chapter "Searching Page" for details) (closes sf
+  feature 700178)
 - role names made case insensitive
 - added ability to restore retired nodes
 - more lenient date input and addition Interval input support (sf bug 677764)
@@ -56,7 +57,7 @@ Feature:
 - implemented ability to search for multilink properties with no value
 - Class.find() may now find unset Links (sf bug 700620)
 - more flexibility in classhelp link labelling (sf feature 608204)
-- added command-line functionality for roundup-adming (sf feature 687664)
+- added command-line functionality for roundup-admin (sf feature 687664)
 - added nicer popup windows for topic, nosy, etc (has add/remove buttons)
   thanks Gus Gollings
 - HTML templating files now have a .html extension

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.84 2003-03-26 11:19:28 richard Exp $ 
+# $Id: test_db.py,v 1.85 2003-04-20 11:58:45 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -691,6 +691,7 @@ class anydbmDBTestCase(MyTestCase):
 
     def testFilteringRange(self):
         ae, filt = self.filteringSetup()
+        # Date ranges
         ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['2'])
         ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['2'])
         ae(filt(None, {'deadline': '; 2003-02-16'}), ['1'])
@@ -698,6 +699,11 @@ class anydbmDBTestCase(MyTestCase):
         # may fail :)
         ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3'])
         ae(filt(None, {'deadline': '2003-02-16'}), ['2', '3'])
+        # Interval ranges
+        ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
+        ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
+        ae(filt(None, {'foo': 'from 5:50'}), ['2'])
+        ae(filt(None, {'foo': 'to 0:50'}), [])
 
     def testFilteringIntervalSort(self):
         ae, filt = self.filteringSetup()

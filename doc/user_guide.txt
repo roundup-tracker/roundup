@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.19 $
+:Version: $Revision: 1.20 $
 
 .. contents::
 
@@ -140,6 +140,8 @@ Interval properties
 ~~~~~~~~~~~~~~~~~~~
 
 XXX explain...
+
+When searching on interval properties use the same syntax as for dates.
 
 
 Web Interface

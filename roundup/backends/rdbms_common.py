@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.53 2003-04-08 06:41:48 richard Exp $
+# $Id: rdbms_common.py,v 1.54 2003-04-20 11:58:45 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1866,8 +1866,20 @@ class Class(hyperdb.Class):
                     where.append('_%s in (%s)'%(k, s))
                     args = args + [date.Interval(x).serialise() for x in v]
                 else:
-                    where.append('_%s=%s'%(k, a))
-                    args.append(date.Interval(v).serialise())
+                    try:
+                        # Try to filter on range of intervals
+                        date_rng = Range(v, date.Interval)
+                        if (date_rng.from_value):
+                            where.append('_%s > %s'%(k, a))                            
+                            args.append(date_rng.from_value.serialise())
+                        if (date_rng.to_value):
+                            where.append('_%s < %s'%(k, a))
+                            args.append(date_rng.to_value.serialise())
+                    except ValueError:
+                        # If range creation fails - ignore that search parameter
+                        pass                        
+                    #where.append('_%s=%s'%(k, a))
+                    #args.append(date.Interval(v).serialise())
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.45 2003-03-26 10:44:00 richard Exp $
+# $Id: back_metakit.py,v 1.46 2003-04-20 11:58:45 kedder Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -603,10 +603,11 @@ class Class:
                 if value is None:
                     setattr(row, key, '')
                 else:
-                    setattr(row, key, str(value))
+                    # kedder: we should store interval values serialized
+                    setattr(row, key, value.serialise())
                 changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
-                
+ 
             elif isinstance(prop, hyperdb.Number):
                 if value is None:
                     value = 0
@@ -963,6 +964,10 @@ class Class:
                     if date_rng.from_value:
                         t = date_rng.from_value.get_tuple()
                         where[propname] = int(calendar.timegm(t))
+                    else:
+                        # use minimum possible value to exclude items without
+                        # 'prop' property
+                        where[propname] = 0
                     if date_rng.to_value:
                         t = date_rng.to_value.get_tuple()
                         wherehigh[propname] = int(calendar.timegm(t))
@@ -972,7 +977,24 @@ class Class:
                     # If range creation fails - ignore that search parameter
                     pass                        
             elif isinstance(prop, hyperdb.Interval):
-                where[propname] = str(date.Interval(value))
+                try:
+                    # Try to filter on range of intervals
+                    date_rng = Range(value, date.Interval)
+                    if date_rng.from_value:
+                        #t = date_rng.from_value.get_tuple()
+                        where[propname] = date_rng.from_value.serialise()
+                    else:
+                        # use minimum possible value to exclude items without
+                        # 'prop' property
+                        where[propname] = '-99999999999999'
+                    if date_rng.to_value:
+                        #t = date_rng.to_value.get_tuple()
+                        wherehigh[propname] = date_rng.to_value.serialise()
+                    else:
+                        wherehigh[propname] = None
+                except ValueError:
+                    # If range creation fails - ignore that search parameter
+                    pass                        
             elif isinstance(prop, hyperdb.Number):
                 where[propname] = int(value)
             else:
@@ -1187,7 +1209,7 @@ class Class:
             if isinstance(prop, hyperdb.Date):
                 value = int(calendar.timegm(value))
             elif isinstance(prop, hyperdb.Interval):
-                value = str(date.Interval(value))
+                value = date.Interval(value).serialise()
             elif isinstance(prop, hyperdb.Number):
                 value = int(value)
             elif isinstance(prop, hyperdb.Boolean):

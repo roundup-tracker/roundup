@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.118 2003-03-26 11:19:28 richard Exp $
+#$Id: back_anydbm.py,v 1.119 2003-04-20 11:58:45 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1639,6 +1639,7 @@ class Class(hyperdb.Class):
         MULTILINK = 1
         STRING = 2
         DATE = 3
+        INTERVAL = 4
         OTHER = 6
         
         timezone = self.db.getUserTimezone()
@@ -1695,18 +1696,21 @@ class Class(hyperdb.Class):
                     l.append((DATE, k, date_rng))
                 except ValueError:
                     # If range creation fails - ignore that search parameter
-                    pass                            
+                    pass
+            elif isinstance(propclass, Interval):
+                try:
+                    intv_rng = Range(v, date.Interval)
+                    l.append((INTERVAL, k, intv_rng))
+                except ValueError:
+                    # If range creation fails - ignore that search parameter
+                    pass
+                
             elif isinstance(propclass, Boolean):
                 if type(v) is type(''):
                     bv = v.lower() in ('yes', 'true', 'on', '1')
                 else:
                     bv = v
                 l.append((OTHER, k, bv))
-            # kedder: dates are filtered by ranges
-            #elif isinstance(propclass, Date):
-            #    l.append((OTHER, k, date.Date(v)))
-            elif isinstance(propclass, Interval):
-                l.append((OTHER, k, date.Interval(v)))
             elif isinstance(propclass, Number):
                 l.append((OTHER, k, int(v)))
             else:
@@ -1760,7 +1764,7 @@ class Class(hyperdb.Class):
                         # RE search
                         if node[k] is None or not v.search(node[k]):
                             break
-                    elif t == DATE:
+                    elif t == DATE or t == INTERVAL:
                         if node[k] is None: break
                         if v.to_value:
                             if not (v.from_value < node[k] and v.to_value > node[k]):

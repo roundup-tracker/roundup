@@ -70,7 +70,7 @@ name:confirm -> :confirm:name
   timezone if he/she has provided timezone information. To make it possible
   some modification to tracker's schema and HTML templates are required.
   First you should add string property 'timezone' to user class in dbinit.py
-  like this:
+  like this::
   
     user = Class(db, "user", 
                     username=String(),   password=Password(),
@@ -97,6 +97,25 @@ name:confirm -> :confirm:name
 
   However you are not forced to make these modifications. By default roundup
   will assume timezone=0 and will work as previous versions did.
+
+
+0.6.0 Notes for metakit backend users
+-------------------------------------
+
+- Roundup 0.6.0 introduced searching on ranges of dates and intervals. To
+  support it, some modifications to interval storing routine were made. So if
+  your tracker uses metakit backend and your db schema contains intervals
+  property, searches on that property will not be accurate for db items that
+  was stored before roundup' upgrade. However all new records should be
+  searchable on intervals.
+
+  It is possible to convert your database to new format: you can export and
+  import back all your data (consult "Migrating backends" in "Maintenance"
+  documentation). After this operation all your interval properties should
+  become searchable.
+
+  Users of backends others than metakit should not worry about this issue.
+
 
 Migrating from 0.4.x to 0.5.0
 =============================
