@@ -16,11 +16,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.60 2004-04-16 10:43:51 richard Exp $
+# $Id: setup.py,v 1.61 2004-04-17 01:47:15 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.command.build_scripts import build_scripts
+from distutils.command.build import build
 
 import sys, os, string
 from glob import glob
@@ -149,6 +150,11 @@ def check_manifest():
         sys.exit(1)
 
 
+class build_roundup(build):
+    def run(self):
+        check_manifest()
+        build.run(self)
+
 #############################################################################
 ### Main setup stuff
 #############################################################################
@@ -260,6 +266,7 @@ highlights:
         # Override certain command classes with our own ones
         cmdclass = {
             'build_scripts': build_scripts_roundup,
+            'build': build_roundup,
         },
         scripts = roundup_scripts,
 
