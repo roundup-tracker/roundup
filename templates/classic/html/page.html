@@ -76,8 +76,8 @@
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
     <input type="submit" name=":action" value="Login"><br>
-    <span tal:replace="structure request/indexargs_form" />
-    <a href="user?:template=register">Register</a><br>
+    <a href="user?:template=register"
+       tal:condition="python:request.user.hasPermission('Web Registration')">Register<br></a>
     <a href="user?:template=forgotten">Lost&nbsp;your&nbsp;login?</a><br>
    </p>
   </form>
