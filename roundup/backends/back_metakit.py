@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.59 2004-02-23 16:57:30 wc2so1 Exp $
+# $Id: back_metakit.py,v 1.60 2004-02-23 17:19:09 wc2so1 Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -883,12 +883,18 @@ class Class(hyperdb.Class):
         'propname' must be the name of a String property of this class or
         None, or a TypeError is raised.  The values of the key property on
         all existing nodes must be unique or a ValueError is raised.
-        '''        
+        '''
         if self.key:
             if propname == self.key:
                 return
-            raise ValueError, "%s already indexed on %s"%(self.classname,
-                self.key)
+            else:
+                # drop the old key table
+                tablename = "_%s.%s"%(self.classname, self.key)
+                self.db._db.getas(tablename)
+                
+            #raise ValueError, "%s already indexed on %s"%(self.classname,
+            #    self.key)
+
         prop = self.properties.get(propname, None)
         if prop is None:
             prop = self.privateprops.get(propname, None)
@@ -897,20 +903,23 @@ class Class(hyperdb.Class):
         if not isinstance(prop, hyperdb.String):
             raise TypeError, "%s is not a String" % propname
 
-        # TODO: metakit needs to be able to cope with the key property
-        # *changing*, which it can't do at present. At the moment, it
-        # creates the key prop index once, with no record of the name of
-        # the property for the index.
-
-        # first setkey for this run
+        # the way he index on properties is by creating a
+        # table named _%(classname)s.%(key)s, if this table
+        # exists then everything is okay.  If this table
+        # doesn't exist, then generate a new table on the
+        # key value.
+        
+        # first setkey for this run or key has been changed
         self.key = propname
-        iv = self.db._db.view('_%s' % self.classname)
+        tablename = "_%s.%s"%(self.classname, self.key)
+        
+        iv = self.db._db.view(tablename)
         if self.db.fastopen and iv.structure():
             return
 
-        # very first setkey ever
+        # very first setkey ever or the key has changed
         self.db.dirty = 1
-        iv = self.db._db.getas('_%s[k:S,i:I]' % self.classname)
+        iv = self.db._db.getas('_%s[k:S,i:I]' % tablename)
         iv = iv.ordered(1)
         for row in self.getview():
             iv.append(k=getattr(row, propname), i=row.id)
@@ -1596,7 +1605,8 @@ class Class(hyperdb.Class):
         return self.db._db.view(self.classname).ordered(1)
     def getindexview(self, RW=0):
         # XXX FIX ME -> The RW flag doesn't do anything.
-        return self.db._db.view("_%s" % self.classname).ordered(1)
+        tablename = "_%s.%s"%(self.classname, self.key)
+        return self.db._db.view("_%s" % tablename).ordered(1)
 
 def _fetchML(sv):
     l = []
