@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.14 $
+:Version: $Revision: 1.15 $
 
 .. contents::
 
@@ -168,5 +168,5 @@ to the URL of the tracker.
 Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
-.. _`customisation`: customisation.html
+.. _`customisation`: customizing.html
 
