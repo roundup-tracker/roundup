@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.2 $
+:Version: $Revision: 1.3 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -35,15 +35,29 @@ CVS Access
 
 To get CVS access, contact richard@users.sourceforge.net.
 
-Developers with CVS access should follow these simple guidelines:
 
+Project Rules
+-------------
+
+Mostly the project follows Guido's Style (though naming tends to be a little
+relaxed sometimes). In short:
+
+- 80 column width code
+- 4-space indentations
+- All modules must have a CVS Id line near the top, and a CVS Log at the end
+
+Other project rules:
+
+- New functionality must be documented, even briefly (so at least we know
+  where there's missing documentation) and changes to instance configuration
+  must be logged in the upgrading document.
 - subscribe to roundup-checkins to receive checkin notifications from the
   other developers with CVS access
 - discuss any changes with the other developers on roundup-dev. If nothing
   else, this makes sure there's no rude shocks
-- run pychecker over changed code
 - write unit tests for changes you make (where possible), and ensure that
   all unit tests run before committing changes
+- run pychecker over changed code
 
 The administrators of the project reserve the right to boot developers who
 consistently check in code which is either broken or takes the codebase in

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.14 $
+:Version: $Revision: 1.15 $
 
 .. contents::
 
@@ -10,12 +10,13 @@ Customising Roundup
 What You Can Do
 ---------------
 
-Customisation of Roundup can take one of four forms:
+Customisation of Roundup can take one of five forms:
 
 1. `instance configuration`_ file changes
 2. database, or `instance schema`_ changes
 3. "definition" class `database content`_ changes
 4. behavioural changes, through detectors_
+5. `access controls`_
 
 The third case is special because it takes two distinctly different forms
 depending upon whether the instance has been initialised or not. The other two
@@ -913,8 +914,8 @@ eliminate sections of the spool section if the property has no entries::
      </property>
 
 
-Security
---------
+Access Controls
+---------------
 
 A set of Permissions are built in to the security module by default:
 
@@ -924,12 +925,14 @@ A set of Permissions are built in to the security module by default:
 The default interfaces define:
 
 - Web Registration
+- Web Access
 - Email Registration
+- Email Access
 
 These are hooked into the default Roles:
 
 - Admin (Edit everything, View everything)
-- User ()
+- User (Web Access, Email Access)
 - Anonymous (Web Registration, Email Registration)
 
 And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
@@ -950,6 +953,9 @@ Roles defined in the config file as:
 You may alter the configuration variables to change the Role that new web or
 email users get, for example to not give them access to the web interface if
 they register through email.
+
+You may use the ``roundup-admin`` "``security``" command to display the
+current Role and Permission configuration in your instance.
 
 
 -----------------

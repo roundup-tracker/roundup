@@ -20,6 +20,7 @@ TODO: dbinit now imports classes from selct_db
 TODO: select_db needs fixing to include Class, FileClass and IssueClass
 TODO: migration of security settings
 TODO: nosy reactor has been updated
+TODO: user.item template html needs updating for new security
 
 
 Migrating from 0.4.1 to 0.4.2
