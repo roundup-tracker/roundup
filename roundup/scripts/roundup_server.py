@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.20 2003-02-26 05:05:56 richard Exp $
+$Id: roundup_server.py,v 1.21 2003-03-26 04:54:59 richard Exp $
 """
 
 # python version check
@@ -93,7 +93,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.wfile.write("</pre>\n")
         sys.stdin = save_stdin
 
-    do_GET = do_POST = do_HEAD = send_head = run_cgi
+    do_GET = do_POST = run_cgi
 
     def index(self):
         ''' Print up an index of the available trackers
