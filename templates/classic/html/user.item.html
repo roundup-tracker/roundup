@@ -39,10 +39,11 @@ You are not allowed to view this page.
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th>Roles</th>
-  <td tal:condition="context/id"
-      tal:content="structure context/roles/field">roles</td>
-  <td tal:condition="not:context/id">
-   <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+  <td>
+   <input tal:condition="context/id"
+          tal:replace="structure context/roles/field">
+   <input name="roles" tal:condition="not:context/id"
+          tal:attributes="value db/config/NEW_WEB_USER_ROLES">
    (to give the user more than one role, enter a comma,separated,list)
   </td>
  </tr>
