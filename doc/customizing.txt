@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.80 $
+:Version: $Revision: 1.81 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3017,7 +3017,7 @@ is resolved. To achieve this:
    modify it to add the "blockers" info to the URL (note, both the
    ":filter" *and* "blockers" values must be specified)::
 
-     <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers@blockers=-1&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
+     <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers&blockers=-1&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
 That's it. You should now be able to se blockers on your issues. Note that
 if you want to know whether an issue has any other issues dependent on it
