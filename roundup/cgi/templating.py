@@ -1459,7 +1459,10 @@ env: %(env)s
             l.append(s%(':filter', ','.join(self.filter)))
         if filterspec:
             for k,v in self.filterspec.items():
-                l.append(s%(k, ','.join(v)))
+                if type(v) == type([]):
+                    l.append(s%(k, ','.join(v)))
+                else:
+                    l.append(s%(k, v))
         if self.search_text:
             l.append(s%(':search_text', self.search_text))
         l.append(s%(':pagesize', self.pagesize))
@@ -1487,7 +1490,10 @@ env: %(env)s
             l.append(':filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():
             if not args.has_key(k):
-                l.append('%s=%s'%(k, ','.join(v)))
+                if type(v) == type([]):
+                    l.append('%s=%s'%(k, ','.join(v)))
+                else:
+                    l.append('%s=%s'%(k, v))
         if self.search_text and not args.has_key(':search_text'):
             l.append(':search_text=%s'%self.search_text)
         if not args.has_key(':pagesize'):
