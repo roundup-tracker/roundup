@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.36 $
+:Version: $Revision: 1.37 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -652,7 +652,7 @@ the tracker **html** directory. There are several types of files in there:
 **style.css**
   a static file that is served up as-is
 
-Note: Remember tyhat you can create any template extension you want to, so 
+Note: Remember that you can create any template extension you want to, so 
 if you just want to play around with the templating for new issues, you can
 copy the current "issue.item" template to "issue.test", and then access the
 test template using the ":template" URL argument::
