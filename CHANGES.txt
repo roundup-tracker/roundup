@@ -21,6 +21,9 @@ Fixed:
  . bug #477107 ] HTTP header problem
  . bug #477687 ] conforming html
  . bug #474372 ] Netscape 4.77 do not render Support form
+ . bug #477685 ] base64.decodestring breaks
+ . bug #477837 ] lynx does not like the cookie
+ . bug #477892 ] Password edit doesn't fix login cookie
 
 2001-10-23 - 0.3.0 pre 3
 Feature:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.48 2001-11-03 01:30:18 richard Exp $
+# $Id: cgi_client.py,v 1.49 2001-11-04 03:07:12 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -312,12 +312,57 @@ class Client:
     showmsg = shownode
 
     def showuser(self, message=None):
-        ''' display an item
+        '''Display a user page for editing. Make sure the user is allowed
+            to edit this node, and also check for password changes.
         '''
-        if self.user in ('admin', self.db.user.get(self.nodeid, 'username')):
-            self.shownode(message)
-        else:
+        if self.user == 'anonymous':
             raise Unauthorised
+
+        user = self.db.user
+
+        # get the username of the node being edited
+        node_user = user.get(self.nodeid, 'username')
+
+        if self.user not in ('admin', node_user):
+            raise Unauthorised
+
+        #
+        # perform any editing
+        #
+        keys = self.form.keys()
+        num_re = re.compile('^\d+$')
+        if keys:
+            try:
+                props, changed = parsePropsFromForm(self.db, user, self.form,
+                    self.nodeid)
+                if self.nodeid == self.getuid() and 'password' in changed:
+                    set_cookie = self.form['password'].value.strip()
+                else:
+                    set_cookie = 0
+                user.set(self.nodeid, **props)
+                self._post_editnode(self.nodeid, changed)
+                # and some feedback for the user
+                message = '%s edited ok'%', '.join(changed)
+            except:
+                s = StringIO.StringIO()
+                traceback.print_exc(None, s)
+                message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
+        else:
+            set_cookie = 0
+
+        # fix the cookie if the password has changed
+        if set_cookie:
+            self.set_cookie(self.user, set_cookie)
+
+        #
+        # now the display
+        #
+        self.pagehead('User: %s'%node_user, message)
+
+        # use the template to display the item
+        item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 'user')
+        item.render(self.nodeid)
+        self.pagefoot()
 
     def showfile(self):
         ''' display a file
@@ -578,7 +623,6 @@ class Client:
             password = self.form['__login_password'].value
         else:
             password = ''
-        print self.user, password
         # make sure the user exists
         try:
             uid = self.db.user.lookup(self.user)
@@ -593,13 +637,15 @@ class Client:
             self.make_user_anonymous()
             return self.login(message='Incorrect password')
 
-        # construct the cookie
-        uid = self.db.user.lookup(self.user)
-        user = binascii.b2a_base64('%s:%s'%(self.user, password)).strip()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
-            ''))
-        self.header({'Set-Cookie': 'roundup_user=%s; Path=%s;'%(user, path)})
+        self.set_cookie(self.user, password)
         return self.index()
+
+    def set_cookie(self, user, password):
+        # construct the cookie
+        user = binascii.b2a_base64('%s:%s'%(user, password)).strip()
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
+        self.header({'Set-Cookie': 'roundup_user="%s"; Path="%s";'%(user,
+            path)})
 
     def make_user_anonymous(self):
         # make us anonymous if we can
@@ -612,11 +658,11 @@ class Client:
     def logout(self, message=None):
         self.make_user_anonymous()
         # construct the logout cookie
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
-            ''))
         now = Cookie._getdate()
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
         self.header({'Set-Cookie':
-            'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
+            'roundup_user=deleted; Max-Age=0; expires="%s"; Path="%s";'%(now,
+            path)})
         return self.login()
 
     def newuser_action(self, message=None):
@@ -633,12 +679,7 @@ class Client:
         uid = cl.create(**props)
         self.user = self.db.user.get(uid, 'username')
         password = self.db.user.get(uid, 'password')
-        # construct the cookie
-        uid = self.db.user.lookup(self.user)
-        user = binascii.b2a_base64('%s:%s'%(self.user, password)).strip()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
-            ''))
-        self.header({'Set-Cookie': 'roundup_user=%s; Path=%s;'%(user, path)})
+        self.set_cookie(self.user, password)
         return self.index()
 
     def main(self, dre=re.compile(r'([^\d]+)(\d+)'),
@@ -878,6 +919,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.48  2001/11/03 01:30:18  richard
+# Oops. uses pagefoot now.
+#
 # Revision 1.47  2001/11/03 01:29:28  richard
 # Login page didn't have all close tags.
 #
