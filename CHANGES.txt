@@ -9,6 +9,7 @@ Feature:
 - database export now exports full journals too
 - tracker name at end of page title (sf rfe 926840)
 - roundup-server now uses the ForkingMixin
+- added another sample detector "creator_resolution"
 
 Fixed:
 - web CSV export was busted (as was any action returning a result)

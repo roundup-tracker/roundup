@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.132 $
+:Version: $Revision: 1.133 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -585,6 +585,9 @@ interface for detectors.
 
 __ design.html
 
+Additional Detectors Ready For Use
+----------------------------------
+
 Sample additional detectors that have been found useful will appear in
 the ``'detectors'`` directory of the Roundup distribution. If you want
 to use one, copy it to the ``'detectors'`` of your tracker instance:
@@ -594,28 +597,18 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   created. The address is hard-coded into the detector, so edit it
   before you use it (look for the text 'team@team.host') or you'll get
   email errors!
-
-  The detector code::
-
-    from roundup import roundupdb
-
-    def newissuecopy(db, cl, nodeid, oldvalues):
-        ''' Copy a message about new issues to a team address.
-        '''
-        # so use all the messages in the create
-        change_note = cl.generateCreateNote(nodeid)
-
-        # send a copy to the nosy list
-        for msgid in cl.get(nodeid, 'messages'):
-            try:
-                # note: last arg must be a list
-                cl.send_message(nodeid, msgid, change_note,
-                    ['team@team.host'])
-            except roundupdb.MessageSendError, message:
-                raise roundupdb.DetectorError, message
-
-    def init(db):
-        db.issue.react('create', newissuecopy)
+**creator_resolution.py**
+  Catch attempts to set the status to "resolved" - if the assignedto
+  user isn't the creator, then set the status to "confirm-done". Note that
+  "classic" Roundup doesn't have that status, so you'll have to add it. If
+  you don't want to though, it'll just use "in-progress" instead.
+**email_auditor.py**
+  If a file added to an issue is of type message/rfc822, we tack on the
+  extension .eml.
+  The reason for this is that Microsoft Internet Explorer will not open
+  things with a .eml attachment, as they deem it 'unsafe'. Worse yet,
+  they'll just give you an incomprehensible error message. For more 
+  information, see the detector code - it has a length explanation.
 
 
 Auditor or Reactor?
