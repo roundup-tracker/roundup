@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.97 2004-02-11 23:55:08 richard Exp $
+# $Id: roundupdb.py,v 1.98 2004-02-23 05:29:05 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -268,14 +268,17 @@ class IssueClass:
         if from_tag:
             from_tag = ' ' + from_tag
 
-        subject = '[%s%s] %s' % (cn, nodeid, encode_header(title))
-        author = straddr((encode_header(authname) + from_tag, from_address))
+        subject = '[%s%s] %s' % (cn, nodeid, encode_header(title,
+            self.db.config.EMAIL_CHARSET))
+        author = straddr((encode_header(authname, self.db.config.EMAIL_CHARSET)
+            + from_tag, from_address))
 
         # create the message
         mailer = Mailer(self.db.config)
         message, writer = mailer.get_standard_message(sendto, subject, author)
 
-        tracker_name = encode_header(self.db.config.TRACKER_NAME)
+        tracker_name = encode_header(self.db.config.TRACKER_NAME,
+            self.db.config.EMAIL_CHARSET)
         writer.addheader('Reply-To', straddr((tracker_name, from_address)))
         if messageid:
             writer.addheader('Message-Id', messageid)

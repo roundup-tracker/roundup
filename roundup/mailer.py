@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.5 2004-02-11 23:55:08 richard Exp $
+# $Id: mailer.py,v 1.6 2004-02-23 05:29:05 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -29,7 +29,8 @@ class Mailer:
                               self.config.ADMIN_EMAIL))
         message = StringIO()
         writer = MimeWriter(message)
-        writer.addheader('Subject', encode_header(subject))
+        writer.addheader('Subject', encode_header(subject,
+            self.config.EMAIL_CHARSET))
         writer.addheader('To', ', '.join(to))
         writer.addheader('From', author)
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",

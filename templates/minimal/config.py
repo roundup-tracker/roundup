@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.3 2003-12-06 00:00:54 richard Exp $
+# $Id: config.py,v 1.4 2004-02-23 05:29:06 richard Exp $
 
 import os
 
@@ -114,5 +114,12 @@ MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
 # wish to make them xhtml, then you'll need to change this var to 'xhtml'
 # too so all auto-generated HTML is compliant.
 HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
+
+# Character set to encode email headers with. We use utf-8 by default, as
+# it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+# that, so you might need to specify a more limited character set (eg.
+# 'iso-8859-1'.
+EMAIL_CHARSET = 'utf-8'
+#EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
 
 # vim: set filetype=python ts=4 sw=4 et si

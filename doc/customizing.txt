@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.115 $
+:Version: $Revision: 1.116 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -187,6 +187,12 @@ The configuration variables available are:
  wish to make them xhtml, then you'll need to change this var to 'xhtml'
  too so all auto-generated HTML is compliant.
 
+**EMAIL_CHARSET** - ``utf-8`` (or ``iso-8859-1`` for Eudora users)
+ Character set to encode email headers with. We use utf-8 by default, as
+ it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+ that, so you might need to specify a more limited character set (eg.
+ 'iso-8859-1'.
+
 The default config.py is given below - as you
 can see, the MAIL_DOMAIN must be edited before any interaction with the
 tracker is attempted.::
@@ -266,6 +272,13 @@ tracker is attempted.::
     # wish to make them xhtml, then you'll need to change this var to 'xhtml'
     # too so all auto-generated HTML is compliant.
     HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
+
+    # Character set to encode email headers with. We use utf-8 by default, as
+    # it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+    # that, so you might need to specify a more limited character set (eg.
+    # 'iso-8859-1'.
+    EMAIL_CHARSET = 'utf-8'
+    #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
 
     # 
     # SECURITY DEFINITIONS
