@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.141 2003-10-04 11:21:47 jlgijsbers Exp $
+# $Id: client.py,v 1.142 2003-10-22 16:47:55 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -844,7 +844,9 @@ reply's additional "Re:" is ok),
             otk = self.form['otk'].value
             uid = self.db.otks.get(otk, 'uid')
             if uid is None:
-                self.error_message.append('Invalid One Time Key!')
+                self.error_message.append("""Invalid One Time Key!
+(a Mozilla bug may cause this message to show up erroneously,
+ please check your email)""")
                 return
 
             # re-open the database as "admin"
