@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.13 2004-07-27 01:59:28 richard Exp $
+# $Id: configuration.py,v 1.14 2004-07-27 11:26:20 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -23,7 +23,7 @@ class NoConfigError(ConfigurationError):
 
     """Raised when configuration loading fails
 
-    Constructor parameters: path to the directory that was used as TRACKER_HOME
+    Constructor parameters: path to the directory that was used as HOME
 
     """
 
@@ -158,8 +158,14 @@ class Option:
         """
         return str(value)
 
-    def value2str(self, value):
-        """Return 'value' argument converted to external representation"""
+    def value2str(self, value=NODEFAULT, current=0):
+        """Return 'value' argument converted to external representation
+
+        If 'current' is True, use current option value.
+
+        """
+        if current:
+            value = self._value
         if value is NODEFAULT:
             return str(value)
         else:
@@ -292,17 +298,17 @@ class FilePathOption(Option):
 
     """File or directory path name
 
-    Paths may be either absolute or relative to the TRACKER_HOME.
+    Paths may be either absolute or relative to the HOME.
 
     """
 
-    class_description = "The path may be either absolute" \
-        " or relative to the tracker home."
+    class_description = "The path may be either absolute or relative\n" \
+        " to the directory containig this config file."
 
     def get(self):
         _val = Option.get(self)
         if _val and not os.path.isabs(_val):
-            _val = os.path.join(self.config["TRACKER_HOME"], _val)
+            _val = os.path.join(self.config["HOME"], _val)
         return _val
 
 class FloatNumberOption(Option):
@@ -451,7 +457,7 @@ SETTINGS = (
         (NullableOption, 'host', 'localhost',
             "Hostname that the Postgresql or MySQL database resides on.",
             ['MYSQL_DBHOST']),
-        (NullableOption, 'port', '5432',
+        (NullableOption, 'port', '',
             "Port number that the Postgresql or MySQL database resides on."),
         (NullableOption, 'user', 'roundup',
             "Postgresql or MySQL database user that Roundup should use.",
@@ -548,51 +554,82 @@ SETTINGS = (
     )),
 )
 
-### Main class
+### Configuration classes
 
 class Config:
 
-    """Roundup instance configuration.
+    """Base class for configuration objects.
 
     Configuration options may be accessed as attributes or items
     of instances of this class.  All option names are uppercased.
 
     """
 
-    # Config file names (in the TRACKER_HOME directory):
-    INI_FILE = "config.ini" # new style config file name
-    PYCONFIG = "config"     # module name for old style configuration
+    # Config file name
+    INI_FILE = "config.ini"
 
     # Object attributes that should not be taken as common configuration
     # options in __setattr__ (most of them are initialized in constructor):
-    #   builtin pseudo-option - tracker home directory
-    TRACKER_HOME = "."
+    # builtin pseudo-option - package home directory
+    HOME = "."
     # names of .ini file sections, in order
     sections = None
+    # section comments
+    section_descriptions = None
     # lists of option names for each section, in order
     section_options = None
     # mapping from option names and aliases to Option instances
     options = None
-    # logging engine
-    logging = rlog.BasicLogging()
 
-    def __init__(self, tracker_home=None):
+    def __init__(self, home_dir=None, layout=None):
+        """Initialize confing instance
+
+        Parameters:
+            home_dir:
+                optional configuration directory.
+                If passed, load the config from that directory
+                after processing config layout (if any).
+            layout:
+                optional configuration layout, a sequence of
+                section definitions suitable for .add_section()
+
+        """
         # initialize option containers:
         self.sections = []
+        self.section_descriptions = {}
         self.section_options = {}
         self.options = {}
-        # add options from the SETTINGS structure
-        for (_section, _options) in SETTINGS:
-            for _option_def in _options:
-                _class = _option_def[0]
-                _args = _option_def[1:]
-                _option = _class(self, _section, *_args)
-                self.add_option(_option)
-        # load the config if tracker_home given
-        if tracker_home is None:
-            self.init_logging()
-        else:
-            self.load(tracker_home)
+        # add options from the layout structure
+        if layout:
+            for section in layout:
+                self.add_section(*section)
+        if home_dir is not None:
+            self.load(home_dir)
+
+    def add_section(self, section, options, description=None):
+        """Define new config section
+
+        Parameters:
+            section - name of the config.ini section
+            options - a sequence of Option definitions.
+                Each Option definition is a sequence
+                containing class object and constructor
+                parameters, starting from the setting name:
+                setting, default, [description, [aliases]]
+            description - optional section comment
+
+        Note: aliases should only exist in historical options
+        for backwards compatibility - new options should
+        *not* have aliases!
+
+        """
+        if description or not self.section_descriptions.has_key(section):
+            self.section_descriptions[section] = description
+        for option_def in options:
+            klass = option_def[0]
+            args = option_def[1:]
+            option = klass(self, section, *args)
+            self.add_option(option)
 
     def add_option(self, option):
         """Adopt a new Option object"""
@@ -609,10 +646,312 @@ class Config:
         for _name in option.aliases:
             self.options[_name] = option
 
+    def update_option(self, name, klass,
+        default=NODEFAULT, description=None
+    ):
+        """Override behaviour of early created option.
+
+        Parameters:
+            name:
+                option name
+            klass:
+                one of the Option classes
+            default:
+                optional default value for the option
+            description:
+                optional new description for the option
+
+        Conversion from current option value to new class value
+        is done via string representation.
+
+        This method may be used to attach some brains
+        to options autocreated by UserConfig.
+
+        """
+        # fetch current option
+        option = self._get_option(name)
+        # compute constructor parameters
+        if default is NODEFAULT:
+            default = option.default
+        if description is None:
+            description = option.description
+        value = option.value2str(current=1)
+        # resurrect the option
+        option = klass(self, option.section, option.setting,
+            default=default, description=description)
+        # apply the value
+        option.set(value)
+        # incorporate new option
+        del self[name]
+        self.add_option(option)
+
     def reset(self):
         """Set all options to their default values"""
         for _option in self.items():
             _option.reset()
+
+    # This is a placeholder.  TBD.
+    # Meant for commandline tools.
+    # Allows automatic creation of configuration files like this:
+    #  roundup-server -p 8017 -u roundup --save-config
+    def getopt(self, args, **options):
+        """Apply options specified in command line arguments.
+
+        Parameters:
+            args:
+                command line to parse (sys.argv[1:])
+            options:
+                mapping from option names to command line option specs.
+                e.g. server_port="p:", server_user="u:"
+                Names are forced to lower case for commandline parsing
+                (long options) and to upper case to find config options.
+                Command line options accepting no value are assumed
+                to be binary and receive value 'yes'.
+
+        Return value: same as for python standard getopt(), except that
+        processed options are removed from returned option list.
+
+        """
+
+    # option and section locators (used in option access methods)
+
+    def _get_option(self, name):
+        try:
+            return self.options[name]
+        except KeyError:
+            raise InvalidOptionError(name)
+
+    def _get_section_options(self, name):
+        return self.section_options.setdefault(name, [])
+
+    def _get_unset_options(self):
+        """Return options that need manual adjustments
+
+        Return value is a dictionary where keys are section
+        names and values are lists of option names as they
+        appear in the config file.
+
+        """
+        need_set = {}
+        for option in self.items():
+            if not option.isset():
+                need_set.setdefault(option.section, []).append(option.setting)
+        return need_set
+
+    # file operations
+
+    def load_ini(self, home_dir, defaults=None):
+        """Set options from config.ini file in given home_dir
+
+        Parameters:
+            home_dir:
+                config home directory
+            defaults:
+                optional dictionary of defaults for ConfigParser
+
+        Note: if home_dir does not contain config.ini file,
+        no error is raised.  Config will be reset to defaults.
+
+        """
+        # parse the file
+        config_defaults = {"HOME": home_dir}
+        if defaults:
+            config_defaults.update(defaults)
+        _config = ConfigParser.ConfigParser(defaults)
+        _config.read([os.path.join(home_dir, self.INI_FILE)])
+        # .ini file loaded ok.  set the options, starting from HOME
+        self.reset()
+        self.HOME = home_dir
+        for _option in self.items():
+            _option.load_ini(_config)
+
+    def load(self, home_dir):
+        """Load configuration settings from home_dir"""
+        self.load_ini(home_dir)
+
+    def save(self, ini_file=None):
+        """Write current configuration to .ini file
+
+        'ini_file' argument, if passed, must be valid full path
+        to the file to write.  If omitted, default file in current
+        HOME is created.
+
+        If the file to write already exists, it is saved with '.bak'
+        extension.
+
+        """
+        if ini_file is None:
+            ini_file = os.path.join(self.HOME, self.INI_FILE)
+        _tmp_file = os.path.splitext(ini_file)[0]
+        _bak_file = _tmp_file + ".bak"
+        _tmp_file = _tmp_file + ".tmp"
+        _fp = file(_tmp_file, "wt")
+        _fp.write("# %s configuration file\n" % self["TRACKER_NAME"])
+        _fp.write("# Autogenerated at %s\n" % time.asctime())
+        need_set = self._get_unset_options()
+        if need_set:
+            _fp.write("\n# WARNING! Following options need adjustments:\n")
+            for section, options in need_set.items():
+                _fp.write("#  [%s]: %s\n" % (section, ", ".join(options)))
+        for _section in self.sections:
+            _fp.write("\n[%s]\n" % _section)
+            for _option in self._get_section_options(_section):
+                _fp.write("\n" + self.options[(_section, _option)].format())
+        _fp.close()
+        if os.access(ini_file, os.F_OK):
+            if os.access(_bak_file, os.F_OK):
+                os.remove(_bak_file)
+            os.rename(ini_file, _bak_file)
+        os.rename(_tmp_file, ini_file)
+
+    # container emulation
+
+    def __len__(self):
+        return len(self.items())
+
+    def __getitem__(self, name):
+        if name == "HOME":
+            return self.HOME
+        else:
+            return self._get_option(name).get()
+
+    def __setitem__(self, name, value):
+        if name == "HOME":
+            self.HOME = value
+        else:
+            self._get_option(name).set(value)
+
+    def __delitem__(self, name):
+        _option = self._get_option(name)
+        _section = _option.section
+        _name = _option.setting
+        self._get_section_options(_section).remove(_name)
+        del self.options[(_section, _name)]
+        for _alias in _option.aliases:
+            del self.options[_alias]
+
+    def items(self):
+        """Return the list of Option objects, in .ini file order
+
+        Note that HOME is not included in this list
+        because it is builtin pseudo-option, not a real Option
+        object loaded from or saved to .ini file.
+
+        """
+        return [self.options[(_section, _name)]
+            for _section in self.sections
+            for _name in self._get_section_options(_section)
+        ]
+
+    def keys(self):
+        """Return the list of "canonical" names of the options
+
+        Unlike .items(), this list also includes HOME
+
+        """
+        return ["HOME"] + [_option.name for _option in self.items()]
+
+    # .values() is not implemented because i am not sure what should be
+    # the values returned from this method: Option instances or config values?
+
+    # attribute emulation
+
+    def __setattr__(self, name, value):
+        if self.__dict__.has_key(name) or hasattr(self.__class__, name):
+            self.__dict__[name] = value
+        else:
+            self._get_option(name).set(value)
+
+    # Note: __getattr__ is not symmetric to __setattr__:
+    #   self.__dict__ lookup is done before calling this method
+    def __getattr__(self, name):
+        return self[name]
+
+class UserConfig(Config):
+
+    """Configuration for user extensions.
+
+    Instances of this class have no predefined configuration layout.
+    Options are created on the fly for each setting present in the
+    config file.
+
+    """
+
+    def load_ini(self, home_dir, defaults=None):
+        """Load options from config.ini file in given home_dir
+
+        Parameters:
+            home_dir:
+                config home directory
+            defaults:
+                optional dictionary of defaults for ConfigParser
+
+        Options are automatically created as they are read
+        from the config file.
+
+        Note: if home_dir does not contain config.ini file,
+        no error is raised.  Config will be reset to defaults.
+
+        """
+        # parse the file
+        config_defaults = {"HOME": home_dir}
+        if defaults:
+            config_defaults.update(defaults)
+        config = ConfigParser.ConfigParser(defaults)
+        config.read([os.path.join(home_dir, self.INI_FILE)])
+        # .ini file loaded ok.
+        self.HOME = home_dir
+        # see what options are already defined and add missing ones
+        preset = [(option.section, option.setting) for option in self.items()]
+        for section in config.sections():
+            for name in config.options(section):
+                if (section, name) not in preset:
+                    self.add_option(Option(self, section, name))
+        # set the options
+        self.reset()
+        for option in self.items():
+            option.load_ini(config)
+
+class CoreConfig(Config):
+
+    """Roundup instance configuration.
+
+    Core config has a predefined layout (see the SETTINGS structure),
+    support loading of old-style pythonic configurations and hold
+    three additional attributes:
+        logging:
+            instance logging engine, from standard python logging module
+            or minimalistic logger implemented in Roundup
+        detectors:
+            user-defined configuration for detectors
+        ext:
+            user-defined configuration for extensions
+
+    """
+
+    # module name for old style configuration
+    PYCONFIG = "config"
+    # logging engine
+    logging = rlog.BasicLogging()
+    # user configs
+    ext = None
+    detectors = None
+
+    def __init__(self, home_dir=None):
+        Config.__init__(self, home_dir, SETTINGS)
+        # load the config if home_dir given
+        if home_dir is None:
+            self.init_logging()
+
+    # TODO: remove MAIL_PASSWORD if MAIL_USER is empty
+    #def _get_unset_options(self):
+
+    def reset(self):
+        Config.reset(self)
+        if self.ext:
+            self.ext.reset()
+        if self.detectors:
+            self.detectors.reset()
         self.init_logging()
 
     def init_logging(self):
@@ -634,58 +973,42 @@ class Config:
             _logging.setLevel(self["LOGGING_LEVEL"] or "ERROR")
         self.logging = _logging
 
-    # option and section locators (used in option access methods)
-
-    def _get_option(self, name):
-        try:
-            return self.options[name]
-        except KeyError:
-            raise InvalidOptionError(name)
-
-    def _get_section_options(self, name):
-        return self.section_options.setdefault(name, [])
-
-    # file operations
-
-    def load(self, tracker_home):
-        """Load configuration from path designated by tracker_home argument"""
-        if os.path.isfile(os.path.join(tracker_home, self.INI_FILE)):
-            self.load_ini(tracker_home)
+    def load(self, home_dir):
+        """Load configuration from path designated by home_dir argument"""
+        if os.path.isfile(os.path.join(home_dir, self.INI_FILE)):
+            self.load_ini(home_dir)
         else:
-            self.load_pyconfig(tracker_home)
-
-    def load_ini(self, tracker_home):
-        """Set options from config.ini file in given tracker_home directory"""
-        # parse the file
-        _config = ConfigParser.ConfigParser({"TRACKER_HOME": tracker_home})
-        _config.read([os.path.join(tracker_home, self.INI_FILE)])
-        # .ini file loaded ok.  set the options, starting from TRACKER_HOME
-        self.reset()
-        self.TRACKER_HOME = tracker_home
-        for _option in self.items():
-            _option.load_ini(_config)
+            self.load_pyconfig(home_dir)
         self.init_logging()
+        self.ext = UserConfig(os.path.join(home_dir, "extensions"))
+        self.detectors = UserConfig(os.path.join(home_dir, "detectors"))
 
-    def load_pyconfig(self, tracker_home):
-        """Set options from config.py file in given tracker_home directory"""
+    def load_ini(self, home_dir, defaults=None):
+        """Set options from config.ini file in given home_dir directory"""
+        config_defaults = {"TRACKER_HOME": home_dir}
+        if defaults:
+            config_defaults.update(defaults)
+        Config.load_ini(self, home_dir, config_defaults)
+
+    def load_pyconfig(self, home_dir):
+        """Set options from config.py file in given home_dir directory"""
         # try to locate and import the module
         _mod_fp = None
         try:
             try:
-                _module = imp.find_module(self.PYCONFIG, [tracker_home])
+                _module = imp.find_module(self.PYCONFIG, [home_dir])
                 _mod_fp = _module[0]
                 _config = imp.load_module(self.PYCONFIG, *_module)
             except ImportError:
-                raise NoConfigError(tracker_home)
+                raise NoConfigError(home_dir)
         finally:
             if _mod_fp is not None:
                 _mod_fp.close()
-        # module loaded ok.  set the options, starting from TRACKER_HOME
+        # module loaded ok.  set the options, starting from HOME
         self.reset()
-        self.TRACKER_HOME = tracker_home
+        self.HOME = home_dir
         for _option in self.items():
             _option.load_pyconfig(_config)
-        self.init_logging()
         # backward compatibility:
         # SMTP login parameters were specified as a tuple in old style configs
         # convert them to new plain string options
@@ -695,97 +1018,23 @@ class Config:
         if len(_mailuser) > 1:
             self.MAIL_PASSWORD = _mailuser[1]
 
-    def save(self, ini_file=None):
-        """Write current configuration to .ini file
-
-        'ini_file' argument, if passed, must be valid full path
-        to the file to write.  If omitted, default file in current
-        TRACKER_HOME is created.
-
-        If the file to write already exists, it is saved with '.bak'
-        extension.
-
-        """
-        if ini_file is None:
-            ini_file = os.path.join(self.TRACKER_HOME, self.INI_FILE)
-        _tmp_file = os.path.splitext(ini_file)[0]
-        _bak_file = _tmp_file + ".bak"
-        _tmp_file = _tmp_file + ".tmp"
-        _fp = file(_tmp_file, "wt")
-        _fp.write("# %s configuration file\n" % self["TRACKER_NAME"])
-        _fp.write("# Autogenerated at %s\n" % time.asctime())
-        for _section in self.sections:
-            _fp.write("\n[%s]\n" % _section)
-            for _option in self._get_section_options(_section):
-                _fp.write("\n" + self.options[(_section, _option)].format())
-        _fp.close()
-        if os.access(ini_file, os.F_OK):
-            if os.access(_bak_file, os.F_OK):
-                os.remove(_bak_file)
-            os.rename(ini_file, _bak_file)
-        os.rename(_tmp_file, ini_file)
-
-    # container emulation
-
-    def __len__(self):
-        return len(self.items())
-
+    # in this config, HOME is also known as TRACKER_HOME
     def __getitem__(self, name):
         if name == "TRACKER_HOME":
-            return self.TRACKER_HOME
+            return self.HOME
         else:
-            return self._get_option(name).get()
+            return Config.__getitem__(self, name)
 
     def __setitem__(self, name, value):
         if name == "TRACKER_HOME":
-            self.TRACKER_HOME = value
+            self.HOME = value
         else:
             self._get_option(name).set(value)
-
-    def __delitem__(self, name):
-        _option = self._get_option(name)
-        _section = _option.section
-        _name = _option.setting
-        self._get_section_options(_section).remove(_name)
-        del self.options[(_section, _name)]
-        for _alias in _option.aliases:
-            del self.options[_alias]
-
-    def items(self):
-        """Return the list of Option objects, in .ini file order
-
-        Note that TRACKER_HOME is not included in this list
-        because it is builtin pseudo-option, not a real Option
-        object loaded from or saved to .ini file.
-
-        """
-        return [self.options[(_section, _name)]
-            for _section in self.sections
-            for _name in self._get_section_options(_section)
-        ]
-
-    def keys(self):
-        """Return the list of "canonical" names of the options
-
-        Unlike .items(), this list also includes TRACKER_HOME
-
-        """
-        return ["TRACKER_HOME"] + [_option.name for _option in self.items()]
-
-    # .values() is not implemented because i am not sure what should be
-    # the values returned from this method: Option instances or config values?
-
-    # attribute emulation
 
     def __setattr__(self, name, value):
-        if self.__dict__.has_key(name) \
-        or self.__class__.__dict__.has_key(name):
-            self.__dict__[name] = value
+        if name == "TRACKER_HOME":
+            self.__dict__["HOME"] = value
         else:
-            self._get_option(name).set(value)
-
-    # Note: __getattr__ is not symmetric to __setattr__:
-    #   self.__dict__ lookup is done before calling this method
-    __getattr__ = __getitem__
+            Config.__setattr__(self, name, value)
 
 # vim: set et sts=4 sw=4 :
