@@ -1,3 +1,33 @@
+'''
+   Metakit backend for Roundup, originally by Gordon McMillan.
+
+   Notes by Richard:
+
+   This backend has some behaviour specific to metakit:
+
+    - there's no concept of an explicit "unset" in metakit, so all types
+      have some "unset" value:
+
+      ========= ===== ====================================================
+      Type      Value Action when fetching from mk
+      ========= ===== ====================================================
+      Strings   ''    convert to None
+      Date      0     (seconds since 1970-01-01.00:00:00) convert to None
+      Interval  ''    convert to None
+      Number    0     ambiguious :( - do nothing
+      Boolean   0     ambiguious :( - do nothing
+      Link      ''    convert to None
+      Multilink []    actually, mk can handle this one ;)
+      Passowrd  ''    convert to None
+      ========= ===== ====================================================
+
+      The get/set routines handle these values accordingly by converting
+      to/from None where they can. The Number/Boolean types are not able
+      to handle an "unset" at all, so they default the "unset" to 0.
+
+    - probably a bunch of stuff that I'm not aware of yet because I haven't
+      fully read through the source. One of these days....
+'''
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit
 from sessions import Sessions
@@ -422,7 +452,7 @@ class Class:
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if oldvalue:
-                        self.db.addjournal(link_class, value, _UNLINK,
+                        self.db.addjournal(link_class, oldvalue, _UNLINK,
                             (self.classname, str(row.id), key))
 
                     # register the link with the newly linked node
@@ -869,7 +899,7 @@ class Class:
         if regexes:
             def ff(row, r=regexes):
                 for propname, regex in r.items():
-                    val = getattr(row, propname)
+                    val = str(getattr(row, propname))
                     if not regex.search(val):
                         return 0
                 return 1
@@ -1109,25 +1139,45 @@ def _fetchML(sv):
     return l
 
 def _fetchPW(s):
+    ''' Convert to a password.Password unless the password is '' which is
+        our sentinel for "unset".
+    '''
+    if s == '':
+        return None
     p = password.Password()
     p.unpack(s)
     return p
 
 def _fetchLink(n):
+    ''' Return None if the string is empty ?otherwise ensure it's a string?
+    '''
     return n and str(n) or None
 
 def _fetchDate(n):
+    ''' Convert the timestamp to a date.Date instance - unless it's 0 which
+        is our sentinel for "unset".
+    '''
+    if n == 0:
+        return None
     return date.Date(time.gmtime(n))
+
+def _fetchInterval(n):
+    ''' Convert to a date.Interval unless the interval is '' which is our
+        sentinel for "unset".
+    '''
+    if n == '':
+        return None
+    return date.Interval(n)
 
 _converters = {
     hyperdb.Date   : _fetchDate,
     hyperdb.Link   : _fetchLink,
     hyperdb.Multilink : _fetchML,
-    hyperdb.Interval  : date.Interval,
+    hyperdb.Interval  : _fetchInterval,
     hyperdb.Password  : _fetchPW,
     hyperdb.Boolean   : lambda n: n,
     hyperdb.Number    : lambda n: n,
-    hyperdb.String    : str,
+    hyperdb.String    : lambda s: s and str(s) or None,
 }                
 
 class FileName(hyperdb.String):

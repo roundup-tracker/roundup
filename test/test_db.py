@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.67 2003-01-14 10:52:05 richard Exp $ 
+# $Id: test_db.py,v 1.68 2003-01-20 23:03:41 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -185,17 +185,23 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(1, self.db.user.get(userid, 'assignable'))
         self.db.user.set(userid, assignable=0)
         self.assertEqual(self.db.user.get(userid, 'assignable'), 0)
-        self.db.user.set(userid, assignable=None)
-        self.assertEqual(self.db.user.get('1', "assignable"), None)
+
+    def testBooleanUnset(self):
+        nid = self.db.user.create(username='foo', assignable=1)
+        self.db.user.set(nid, assignable=None)
+        self.assertEqual(self.db.user.get(nid, "assignable"), None)
 
     def testNumberChange(self):
         nid = self.db.user.create(username='foo', age=1)
         self.assertEqual(1, self.db.user.get(nid, 'age'))
-        self.db.user.set('1', age=3)
-        self.assertNotEqual(self.db.user.get('1', 'age'), 1)
-        self.db.user.set('1', age=1.0)
-        self.db.user.set('1', age=None)
-        self.assertEqual(self.db.user.get('1', "age"), None)
+        self.db.user.set(nid, age=3)
+        self.assertNotEqual(self.db.user.get(nid, 'age'), 1)
+        self.db.user.set(nid, age=1.0)
+
+    def testNumberUnset(self):
+        nid = self.db.user.create(username='foo', age=1)
+        self.db.user.set(nid, age=None)
+        self.assertEqual(self.db.user.get(nid, "age"), None)
 
     def testKeyValue(self):
         newid = self.db.user.create(username="spam")
@@ -386,15 +392,19 @@ class anydbmDBTestCase(MyTestCase):
         # invalid multilink index
         ar(IndexError, self.db.issue.set, id, title='foo', status='1',
             nosy=['10'])
+        # NOTE: the following increment the username to avoid problems
+        # within metakit's backend (it creates the node, and then sets the
+        # info, so the create (and by a fluke the username set) go through
+        # before the age/assignable/etc. set, which raises the exception)
         # invalid number value
         ar(TypeError, self.db.user.create, username='foo', age='a')
         # invalid boolean value
-        ar(TypeError, self.db.user.create, username='foo', assignable='true')
-        nid = self.db.user.create(username='foo')
+        ar(TypeError, self.db.user.create, username='foo2', assignable='true')
+        nid = self.db.user.create(username='foo3')
         # invalid number value
-        ar(TypeError, self.db.user.set, nid, username='foo', age='a')
+        ar(TypeError, self.db.user.set, nid, age='a')
         # invalid boolean value
-        ar(TypeError, self.db.user.set, nid, username='foo', assignable='true')
+        ar(TypeError, self.db.user.set, nid, assignable='true')
 
     def testJournals(self):
         self.db.user.create(username="mary")
@@ -807,6 +817,18 @@ class metakitDBTestCase(anydbmDBTestCase):
         num_rfiles2 = len(os.listdir(self.db.config.DATABASE + '/files/file/0'))
         self.assertEqual(num_files2, len(self.db.file.list()))
         self.assertEqual(num_rfiles2, num_rfiles-1)
+
+    def testBooleanUnset(self):
+        # XXX: metakit can't unset Booleans :(
+        nid = self.db.user.create(username='foo', assignable=1)
+        self.db.user.set(nid, assignable=None)
+        self.assertEqual(self.db.user.get(nid, "assignable"), 0)
+
+    def testNumberUnset(self):
+        # XXX: metakit can't unset Numbers :(
+        nid = self.db.user.create(username='foo', age=1)
+        self.db.user.set(nid, age=None)
+        self.assertEqual(self.db.user.get(nid, "age"), 0)
 
 class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
