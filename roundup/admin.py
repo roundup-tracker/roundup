@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.19 2002-07-25 07:14:05 richard Exp $
+# $Id: admin.py,v 1.20 2002-08-01 00:56:22 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -248,7 +248,6 @@ Command help:
         import roundup.backends
         backends = roundup.backends.__all__
         print _('Back ends:'), ', '.join(backends)
-
 
     def do_install(self, instance_home, args):
         '''Usage: install [template [backend [admin password]]]
@@ -981,6 +980,30 @@ Date format is "YYYY-MM-DD" eg:
         self.db.reindex()
         return 0
 
+    def do_security(self, args):
+        '''Usage: security [Role name]
+        Display the Permissions available to one or all Roles.
+        '''
+        if len(args) == 1:
+            role = args[0]
+            try:
+                roles = [(args[0], self.db.security.role[args[0]])]
+            except KeyError:
+                print _('No such Role "%(role)s"')%locals()
+                return 1
+        else:
+            roles = self.db.security.role.items()
+        roles.sort()
+        for rolename, role in roles:
+            print _('Role "%(name)s":')%role.__dict__
+            for permission in role.permissions:
+                if permission.klass:
+                    print _(' %(description)s (%(name)s for "%(klass)s" '
+                        'only)')%permission.__dict__
+                else:
+                    print _(' %(description)s (%(name)s)')%permission.__dict__
+        return 0
+
     def run_command(self, args):
         '''Run a single command
         '''
@@ -1131,6 +1154,14 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/07/25 07:14:05  richard
+# Bugger it. Here's the current shape of the new security implementation.
+# Still to do:
+#  . call the security funcs from cgi and mailgw
+#  . change shipped templates to include correct initialisation and remove
+#    the old config vars
+# ... that seems like a lot. The bulk of the work has been done though. Honest :)
+#
 # Revision 1.18  2002/07/18 11:17:30  gmcm
 # Add Number and Boolean types to hyperdb.
 # Add conversion cases to web, mail & admin interfaces.

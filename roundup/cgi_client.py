@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.154 2002-07-31 23:57:36 richard Exp $
+# $Id: cgi_client.py,v 1.155 2002-08-01 00:56:22 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -41,6 +41,8 @@ def initialiseSecurity(security):
     '''
     security.addPermission(name="Web Registration",
         description="User may register through the web")
+    security.addPermission(name="Web Access",
+        description="User may access the web interface")
 
     # doing Role stuff through the web - make sure Admin can
     p = security.addPermission(name="Web Roles",
@@ -1407,8 +1409,9 @@ function help_window(helpurl, width, height) {
     def opendb(self, user):
         ''' Open the database - but include the definition of the sessions db.
         '''
-        # open the db
-        self.db = self.instance.open(user)
+        # open the db if the user has changed
+        if not hasattr(self, 'db') or user != self.db.journaltag:
+            self.db = self.instance.open(user)
 
     def main(self):
         ''' Wrap the request and handle unauthorised requests
@@ -1489,29 +1492,39 @@ function help_window(helpurl, width, height) {
                 return
             # figure the resulting page
             action = self.form['__destination_url'].value
-            if not action:
-                action = 'index'
-            self.do_action(action)
-            return
 
         # allow anonymous people to register
-        if action == 'newuser_action':
+        elif action == 'newuser_action':
             # try to add the user
             if not self.newuser_action():
                 return
             # figure the resulting page
             action = self.form['__destination_url'].value
-            if not action:
-                action = 'index'
+
+        # ok, now we have figured out who the user is, make sure the user
+        # has permission to use this interface
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Web Access', userid):
+            raise Unauthorised, \
+                _("You do not have permission to access this interface.")
 
         # re-open the database for real, using the user
         self.opendb(self.user)
 
-        # just a regular action
-        self.do_action(action)
+        # make sure we have a sane action
+        if not action:
+            action = 'index'
 
-        # commit all changes to the database
-        self.db.commit()
+        # just a regular action
+        try:
+            self.do_action(action)
+        except Unauthorised, message:
+            # if unauth is raised here, then a page header will have 
+            # been displayed
+            self.write('<p class="system-msg">%s</p>'%message)
+        else:
+            # commit all changes to the database
+            self.db.commit()
 
     def do_action(self, action, dre=re.compile(r'([^\d]+)(\d+)'),
             nre=re.compile(r'new(\w+)'), sre=re.compile(r'search(\w+)')):
@@ -1690,6 +1703,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.154  2002/07/31 23:57:36  richard
+#  . web forms may now unset Link values (like assignedto)
+#
 # Revision 1.153  2002/07/31 22:40:50  gmcm
 # Fixes to the search form and saving queries.
 # Fixes to  sorting in back_metakit.py.

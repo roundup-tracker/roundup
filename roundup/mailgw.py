@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.79 2002-07-26 08:26:59 richard Exp $
+$Id: mailgw.py,v 1.80 2002-08-01 00:56:22 richard Exp $
 '''
 
 
@@ -104,6 +104,8 @@ def initialiseSecurity(security):
     '''
     newid = security.addPermission(name="Email Registration",
         description="Anonymous may register through e-mail")
+    security.addPermission(name="Email Access",
+        description="User may use the email interface")
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -527,14 +529,22 @@ Subject was: "%s"
         if not self.db.security.hasPermission('Email Registration', anonid):
             create = 0
 
+        # ok, now figure out who the author is - create a new user if the
+        # "create" flag is true
         author = uidFromAddress(self.db, message.getaddrlist('from')[0],
             create=create)
+
+        # no author? means we're not author
         if not author:
             raise Unauthorized, '''
 You are not a registered user.
 
 Unknown address: %s
 '''%message.getaddrlist('from')[0][1]
+
+        # make sure the author has permission to use the email interface
+        if not self.db.security.hasPermission('Email Access', author):
+            raise Unauthorized, 'You are not permitted to access this tracker.'
 
         # the author may have been created - make sure the change is
         # committed before we reopen the database
@@ -843,6 +853,11 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.79  2002/07/26 08:26:59  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.78  2002/07/25 07:14:06  richard
 # Bugger it. Here's the current shape of the new security implementation.
 # Still to do:

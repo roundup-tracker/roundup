@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.24 2002-07-26 08:27:00 richard Exp $
+# $Id: dbinit.py,v 1.25 2002-08-01 00:56:22 richard Exp $
 
 import os
 
@@ -122,6 +122,19 @@ def open(name=None):
         db.security.addPermission(name="View", klass=cl,
             description="User is allowed to access "+cl)
 
+    # Assign the access and edit permissions for issue, file and message
+    # to regular users now
+    for cl in 'issue', 'support', 'file', 'msg':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Edit', cl)
+        db.security.addPermissionToRole('User', p)
+    # and give the regular users access to the web and email interface
+    p = db.security.getPermission('Web Access')
+    db.security.addPermissionToRole('User', p)
+    p = db.security.getPermission('Email Access')
+    db.security.addPermissionToRole('User', p)
+
     # Assign the appropriate permissions to the anonymous user's Anonymous
     # Role. Choices here are:
     # - Allow anonymous users to register through the web
@@ -141,13 +154,9 @@ def open(name=None):
     #p = db.security.getPermission('Edit', 'issue')
     #db.security.addPermissionToRole('Anonymous', p)
 
-    # Assign the access and edit permissions for issue, file and message
-    # to regular users now
-    for cl in 'issue', 'support', 'file', 'msg':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Edit', cl)
-        db.security.addPermissionToRole('User', p)
+    # oh, g'wan, let anonymous access the web interface too
+    p = db.security.getPermission('Web Access')
+    db.security.addPermissionToRole('Anonymous', p)
 
     import detectors
     detectors.init(db)
@@ -217,6 +226,11 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/07/26 08:27:00  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.23  2002/07/14 02:05:54  richard
 # . all storage-specific code (ie. backend) is now implemented by the backends
 #
