@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.66 2002-03-14 23:59:24 richard Exp $
+$Id: mailgw.py,v 1.67 2002-04-23 15:46:49 rochecompaan Exp $
 '''
 
 
@@ -597,7 +597,10 @@ not find a text/plain part to use.
         else:
             content = self.get_part_data_decoded(message) 
  
-        summary, content = parseContent(content)
+        keep_citations = self.instance.EMAIL_KEEP_QUOTED_TEXT == 'yes'
+        keep_body = self.instance.EMAIL_LEAVE_BODY_UNCHANGED == 'yes'
+        summary, content = parseContent(content, keep_citations, 
+            keep_body)
 
         # 
         # handle the attachments
@@ -745,8 +748,10 @@ There was a problem with the message you sent:
             # commit the new node(s) to the DB
             self.db.commit()
 
-def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
-        eol=re.compile(r'[\r\n]+'), signature=re.compile(r'^[>|\s]*[-_]+\s*$')):
+def parseContent(content, keep_citations, keep_body,
+        blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
+        eol=re.compile(r'[\r\n]+'), 
+        signature=re.compile(r'^[>|\s]*[-_]+\s*$')):
     ''' The message body is divided into sections by blank lines.
     Sections where the second and all subsequent lines begin with a ">" or "|"
     character are considered "quoting sections". The first line of the first
@@ -778,9 +783,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
                 if line[0] not in '>|':
                     break
             else:
-                # TODO: people who want to keep quoted bits will want the
-                # next line...
-                # l.append(section)
+                # we keep quoted bits if specified in the config
+                if keep_citations:
+                    l.append(section)
                 continue
             # keep this section - it has reponse stuff in it
             if not summary:
@@ -799,10 +804,17 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
         # and add the section to the output
         l.append(section)
-    return summary, '\n\n'.join(l)
+    # we only set content for those who want to delete cruft from the
+    # message body, otherwise the body is left untouched.
+    if not keep_body:
+        content = '\n\n'.join(l)
+    return summary, content
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.66  2002/03/14 23:59:24  richard
+#  . #517734 ] web header customisation is obscure
+#
 # Revision 1.65  2002/02/15 00:13:38  richard
 #  . #503204 ] mailgw needs a default class
 #     - partially done - the setting of additional properties can wait for a

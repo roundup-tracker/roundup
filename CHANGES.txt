@@ -19,6 +19,8 @@ Feature:
      <br>View: <display call="link('superseder', showid=1)">
     </property>
    </td>
+ . stripping of the email message body can now be controlled through the
+   config variables EMAIL_KEEP_QUOTED_TEXT and EMAIL_LEAVE_BODY_UNCHANGED.
 
 Fixed:
  . stop sending blank (whitespace-only) notes
