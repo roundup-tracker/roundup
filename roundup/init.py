@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: init.py,v 1.31 2004-09-29 07:13:44 richard Exp $
+#
+# $Id: init.py,v 1.32 2004-10-16 14:45:12 a1s Exp $
 
 """Init (create) a roundup instance.
 """
@@ -23,8 +23,9 @@ __docformat__ = 'restructuredtext'
 
 import os, sys, errno, rfc822
 
-import roundup.instance, password
-from roundup import install_util
+import roundup.instance
+from roundup import install_util, password
+from roundup.configuration import CoreConfig
 
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copyDigestedFile().
@@ -93,6 +94,15 @@ def install(instance_home, template):
     ti = loadTemplateInfo(instance_home)
     ti['name'] = ti['name'] + '-' + os.path.split(instance_home)[1]
     saveTemplateInfo(instance_home, ti)
+
+    # if there is no config.ini or old-style config.py
+    # installed from the template, write default config text
+    config_ini_file = os.path.join(instance_home, CoreConfig.INI_FILE)
+    if not (os.path.isfile(config_ini_file)
+        or os.path.isfile(os.path.join(instance_home, 'config.py'))
+    ):
+        config = CoreConfig()
+        config.save(config_ini_file)
 
 
 def listTemplates(dir):
@@ -170,4 +180,4 @@ def write_select_db(instance_home, backend):
 
 
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
