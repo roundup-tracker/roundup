@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.97 2004-05-04 05:56:48 richard Exp $
+# $Id: rdbms_common.py,v 1.98 2004-05-06 01:12:22 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2002,12 +2002,12 @@ class Class(hyperdb.Class):
         where = []
         args = []
         a = self.db.arg
-        mlfilt = False      # are we joining with Multilink tables?
+        mlfilt = 0      # are we joining with Multilink tables?
         for k, v in filterspec.items():
             propclass = props[k]
             # now do other where clause stuff
             if isinstance(propclass, Multilink):
-                mlfilt = True
+                mlfilt = 1
                 tn = '%s_%s'%(cn, k)
                 if v in ('-1', ['-1']):
                     # only match rows that have count(linkid)=0 in the

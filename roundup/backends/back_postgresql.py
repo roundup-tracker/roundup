@@ -28,6 +28,9 @@ def db_nuke(config, fail_ok=0):
     command = 'DROP DATABASE %s'% config.POSTGRESQL_DATABASE['database']
     db_command(config, command)
 
+    if os.path.exists(config.DATABASE):
+        shutil.rmtree(config.DATABASE)
+
 def db_command(config, command):
     '''Perform some sort of database-level command. Retry 10 times if we
     fail by conflicting with another user.

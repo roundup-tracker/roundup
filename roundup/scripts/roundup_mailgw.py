@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.14 2004-04-13 04:14:03 richard Exp $
+# $Id: roundup_mailgw.py,v 1.15 2004-05-06 01:12:24 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -162,9 +162,9 @@ def main(argv):
             m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
                 specification)
             if m:
-                ssl = False
+                ssl = 0
                 if source == 'imaps':
-                    ssl = True
+                    ssl = 1
                 mailbox = ''
                 if len(args) > 3:
                     mailbox = args[3]

@@ -522,12 +522,12 @@ class MysqlClass:
         where = []
         args = []
         a = self.db.arg
-        mlfilt = False
+        mlfilt = 0
         for k, v in filterspec.items():
             propclass = props[k]
             # now do other where clause stuff
             if isinstance(propclass, Multilink):
-                mlfilt = True
+                mlfilt = 1
                 tn = '%s_%s'%(cn, k)
                 if v in ('-1', ['-1']):
                     # only match rows that have count(linkid)=0 in the
@@ -591,20 +591,21 @@ class MysqlClass:
                         where.append('_%s=%s'%(k, a))
                         args.append(v)
             elif isinstance(propclass, Date):
+                dc = self.db.hyperdb_to_sql_value[hyperdb.Date]
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
                     where.append('_%s in (%s)'%(k, s))
-                    args = args + [date.Date(x).serialise() for x in v]
+                    args = args + [dc(date.Date(x)) for x in v]
                 else:
                     try:
                         # Try to filter on range of dates
                         date_rng = Range(v, date.Date, offset=timezone)
-                        if (date_rng.from_value):
+                        if date_rng.from_value:
                             where.append('_%s >= %s'%(k, a))                            
-                            args.append(date_rng.from_value.serialise())
-                        if (date_rng.to_value):
+                            args.append(dc(date_rng.from_value))
+                        if date_rng.to_value:
                             where.append('_%s <= %s'%(k, a))
-                            args.append(date_rng.to_value.serialise())
+                            args.append(dc(date_rng.to_value))
                     except ValueError:
                         # If range creation fails - ignore that search parameter
                         pass                        
