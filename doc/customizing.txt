@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.139 $
+:Version: $Revision: 1.140 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1595,6 +1595,9 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
+**true**, **false**
+  Boolean constants that may be used in `templating expressions`_
+  instead of ``python:1`` and ``python:0``.
 
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
