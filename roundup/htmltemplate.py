@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.91 2002-05-31 00:08:02 richard Exp $
+# $Id: htmltemplate.py,v 1.92 2002-06-11 04:57:04 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -262,8 +262,13 @@ class TemplateFunctions:
         return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
             property, rows, cols, value)
 
-    def do_menu(self, property, size=None, height=None, showid=0):
-        ''' for a Link property, display a menu of the available choices
+    def do_menu(self, property, size=None, height=None, showid=0,
+            additional=[]):
+        ''' For a Link/Multilink property, display a menu of the available
+            choices
+
+            If the additional properties are specified, they will be
+            included in the text of each option in (brackets, with, commas).
         '''
         if not self.nodeid and self.form is None and self.filterspec is None:
             return _('[Field: not called from item]')
@@ -300,6 +305,11 @@ class TemplateFunctions:
                     lab = option
                 if size is not None and len(lab) > size:
                     lab = lab[:size-3] + '...'
+                if additional:
+                    m = []
+                    for propname in additional:
+                        m.append(linkcl.get(optionid, propname))
+                    lab = lab + ' (%s)'%', '.join(m)
                 lab = cgi.escape(lab)
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid,
                     lab))
@@ -329,6 +339,11 @@ class TemplateFunctions:
                     lab = option
                 if size is not None and len(lab) > size:
                     lab = lab[:size-3] + '...'
+                if additional:
+                    m = []
+                    for propname in additional:
+                        m.append(linkcl.get(optionid, propname))
+                    lab = lab + ' (%s)'%', '.join(m)
                 lab = cgi.escape(lab)
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
             l.append('</select>')
@@ -1176,6 +1191,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.91  2002/05/31 00:08:02  richard
+# can now just display a link/multilink id - useful for stylesheet stuff
+#
 # Revision 1.90  2002/05/25 07:16:24  rochecompaan
 # Merged search_indexing-branch with HEAD
 #
