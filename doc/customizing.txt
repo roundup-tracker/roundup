@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.121 $
+:Version: $Revision: 1.122 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -135,11 +135,6 @@ The configuration variables available are:
 **ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
  The email address that roundup will complain to if it runs into trouble.
 
-**DISPATCHER_EMAIL** - ``ADMIN_EMAIL``
-  The email address that roundup will issue all error messages to. This is
-  also useful, if you want to switch your 'new message' notification to
-  a central user. 
-
 **EMAIL_FROM_TAG** - ``''``
  Additional text to include in the "name" part of the ``From:`` address used
  in nosy messages. If the sending user is "Foo Bar", the ``From:`` line is
@@ -152,7 +147,14 @@ The configuration variables available are:
     "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
 **ERROR_MESSAGES_TO** - ``'user'``, ``'dispatcher'`` or ``'both'``
- Sends error messages to the dispatcher, user, or both.
+ Sends error messages to the dispatcher, user, or both. It will use the
+ ``DISPATCHER_EMAIL`` address if set, otherwise it'll use the
+ ``ADMIN_EMAIL`` address.
+
+**DISPATCHER_EMAIL** - ``''``
+  The email address that Roundup will issue all error messages to. This is
+  also useful if you want to switch your 'new message' notification to
+  a central user. 
 
 **MESSAGES_TO_AUTHOR** - ``'new'``, ``'yes'`` or``'no'``
  Send nosy messages to the author of the message?
