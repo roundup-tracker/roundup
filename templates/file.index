@@ -1,8 +1,0 @@
-<tr>
-    <property name="name">
-        <td><display call="link('name')"></td>
-    </property>
-    <property name="type">
-        <td><display call="plain('type')"></td>
-    </property>
-</tr>
