@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.119 2003-04-20 11:58:45 kedder Exp $
+#$Id: back_anydbm.py,v 1.120 2003-04-22 20:53:54 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1767,10 +1767,10 @@ class Class(hyperdb.Class):
                     elif t == DATE or t == INTERVAL:
                         if node[k] is None: break
                         if v.to_value:
-                            if not (v.from_value < node[k] and v.to_value > node[k]):
+                            if not (v.from_value <= node[k] and v.to_value >= node[k]):
                                 break
                         else:
-                            if not (v.from_value < node[k]):
+                            if not (v.from_value <= node[k]):
                                 break
                     elif t == OTHER:
                         # straight value comparison for the other types

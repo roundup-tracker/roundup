@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.54 2003-04-20 11:58:45 kedder Exp $
+# $Id: rdbms_common.py,v 1.55 2003-04-22 20:53:54 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1852,10 +1852,10 @@ class Class(hyperdb.Class):
                         # Try to filter on range of dates
                         date_rng = Range(v, date.Date, offset=timezone)
                         if (date_rng.from_value):
-                            where.append('_%s > %s'%(k, a))                            
+                            where.append('_%s >= %s'%(k, a))                            
                             args.append(date_rng.from_value.serialise())
                         if (date_rng.to_value):
-                            where.append('_%s < %s'%(k, a))
+                            where.append('_%s <= %s'%(k, a))
                             args.append(date_rng.to_value.serialise())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
@@ -1870,10 +1870,10 @@ class Class(hyperdb.Class):
                         # Try to filter on range of intervals
                         date_rng = Range(v, date.Interval)
                         if (date_rng.from_value):
-                            where.append('_%s > %s'%(k, a))                            
+                            where.append('_%s >= %s'%(k, a))
                             args.append(date_rng.from_value.serialise())
                         if (date_rng.to_value):
-                            where.append('_%s < %s'%(k, a))
+                            where.append('_%s <= %s'%(k, a))
                             args.append(date_rng.to_value.serialise())
                     except ValueError:
                         # If range creation fails - ignore that search parameter

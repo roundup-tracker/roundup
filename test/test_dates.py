@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.23 2003-04-21 14:29:40 kedder Exp $ 
+# $Id: test_dates.py,v 1.24 2003-04-22 20:53:54 kedder Exp $ 
 
 import unittest, time
 
@@ -56,6 +56,8 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '%s-%02d-%02d.14:25:00'%(y, m, d))
         date = Date("8:47:11")
         ae(str(date), '%s-%02d-%02d.08:47:11'%(y, m, d))
+        ae(str(Date('2003')), '2003-01-01.00:00:00')
+        ae(str(Date('2004-06')), '2004-06-01.00:00:00')
 
     def testDateError(self):
         self.assertRaises(ValueError, Date, "12")
@@ -249,6 +251,8 @@ class DateTestCase(unittest.TestCase):
         ae = self.assertEqual
         ae(str(Date('2003-2-12', add_granularity=1)), '2003-02-12.23:59:59')
         ae(str(Date('2003-1-1.23:00', add_granularity=1)), '2003-01-01.23:00:59')
+        ae(str(Date('2003', add_granularity=1)), '2003-12-31.23:59:59')
+        ae(str(Date('2003-5', add_granularity=1)), '2003-05-31.23:59:59')
         ae(str(Interval('+1w', add_granularity=1)), '+ 14d')
         ae(str(Interval('-2m 3w', add_granularity=1)), '- 2m 14d')
 

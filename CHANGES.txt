@@ -63,6 +63,7 @@ Feature:
 - HTML templating files now have a .html extension
 - Roundup templates are now distributed much more sanely, allowing for
   3rd-party templates.
+- extended date syntax to make range searches even more useful
 
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages

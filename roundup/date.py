@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.52 2003-04-21 14:29:39 kedder Exp $
+# $Id: date.py,v 1.53 2003-04-22 20:53:54 kedder Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -59,6 +59,8 @@ class Date:
       "11-07.09:32:43" means <Date yyyy-11-07.14:32:43>
       "14:25" means <Date yyyy-mm-dd.19:25:00>
       "8:47:11" means <Date yyyy-mm-dd.13:47:11>
+      "2003" means <Date 2003-01-01.00:00:00>
+      "2003-06" means <Date 2003-06-01.00:00:00>
       "." means "right now"
 
     The Date class should understand simple date expressions of the form
@@ -89,6 +91,7 @@ class Date:
     minute, second) is the serialisation format returned by the serialise()
     method, and is accepted as an argument on instatiation.
     '''
+    
     def __init__(self, spec='.', offset=0, add_granularity=0):
         """Construct a date given a specification and a time zone offset.
 
@@ -104,8 +107,10 @@ class Date:
             self.year, self.month, self.day, self.hour, self.minute, \
                 self.second, x, x, x = time.gmtime(ts)
 
+    usagespec='[yyyy]-[mm]-[dd].[H]H:MM[:SS][offset]'
     def set(self, spec, offset=0, date_re=re.compile(r'''
-            (((?P<y>\d\d\d\d)[/-])?(?P<m>\d\d?)?[/-](?P<d>\d\d?))? # [yyyy-]mm-dd
+            ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
+            |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
             (?P<n>\.)?                                     # .
             (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
             (?P<o>.+)?                                     # offset
@@ -125,24 +130,27 @@ class Date:
         # not serialised data, try usual format
         m = date_re.match(spec)
         if m is None:
-            raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
-                '[[h]h:mm[:ss]][offset]')
+            raise ValueError, _('Not a date spec: %s' % self.usagespec)
 
         info = m.groupdict()
 
         if add_granularity:
-            _add_granularity(info, 'SMHdmy')
+            _add_granularity(info, 'SMHdmyab')
 
         # get the current date as our default
         y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
 
-        # override year, month, day parts
-        if info['m'] is not None and info['d'] is not None:
-            m = int(info['m'])
-            d = int(info['d'])
+        if info['y'] is not None or info['a'] is not None:
             if info['y'] is not None:
                 y = int(info['y'])
-            # time defaults to 00:00:00 GMT - offset (local midnight)
+                m,d = (1,1)
+                if info['m'] is not None:
+                    m = int(info['m'])
+                    if info['d'] is not None:
+                        d = int(info['d'])
+            if info['a'] is not None:
+                m = int(info['a'])
+                d = int(info['b'])
             H = -offset
             M = S = 0
 
@@ -165,8 +173,7 @@ class Date:
             try:
                 self.applyInterval(Interval(info['o'], allowdate=0))
             except ValueError:
-                raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
-                    '[[h]h:mm[:ss]][offset]')
+                raise ValueError, _('Not a date spec: %s' % self.usagespec)
 
     def addInterval(self, interval):
         ''' Add the interval to this date, returning the date tuple

@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.20 $
+:Version: $Revision: 1.21 $
 
 .. contents::
 
@@ -99,13 +99,13 @@ of dates in one of two formats:
 
 1. English syntax::
 
-    [[From] <value>][ To <value>]
+    [From <value>][To <value>]
 
    Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
 
 2. "Geek" syntax::
 
-    [<value>][; <value>]
+    [<value>];[<value>]
 
 Either first or second ``<value>`` can be omitted in both syntaxes.
 
@@ -117,24 +117,30 @@ active between period of time since 2 months up-till month ago.
 
 Other possible examples (consider local time is Sat Mar  8 22:07:48 2003)::
 
-	>>> Range("from 2-12 to 4-2")
-	<Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
-	
-	>>> Range("18:00 TO +2m")
-	<Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
-	
-	>>> Range("12:00")
-	<Range from 2003-03-08.12:00:00 to None>
-	
-	>>> Range("tO +3d")
-	<Range from None to 2003-03-11.20:07:48>
-	
-	>>> Range("2002-11-10; 2002-12-12")
-	<Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
+    >>> Range("from 2-12 to 4-2")
+    <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
+    
+    >>> Range("FROM 18:00 TO +2m")
+    <Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
+    
+    >>> Range("12:00;")
+    <Range from 2003-03-08.12:00:00 to None>
+    
+    >>> Range("tO +3d")
+    <Range from None to 2003-03-11.20:07:48>
+    
+    >>> Range("2002-11-10; 2002-12-12")
+    <Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
 
-	>>> Range("; 20:00 +1d")
-	<Range from None to 2003-03-09.20:00:00>
+    >>> Range("; 20:00 +1d")
+    <Range from None to 2003-03-09.20:00:00>
 
+    >>> Range("2003")
+    <Range from 2003-01-01.00:00:00 to 2003-12-31.23:59:59>
+
+    >>> Range("2003-04")
+    <Range from 2003-04-01.00:00:00 to 2003-04-30.23:59:59>
+    
 
 Interval properties
 ~~~~~~~~~~~~~~~~~~~
@@ -486,10 +492,10 @@ The basic usage is::
   -u                -- the user[:password] to use for commands
   -d                -- print full designators not just class id numbers
   -c                -- when outputting lists of data, comma-separate them.
-		       Same as '-S ","'.
+               Same as '-S ","'.
   -S <string>       -- when outputting lists of data, string-separate them
   -s                -- when outputting lists of data, space-separate them.
-		       Same as '-S " "'.
+               Same as '-S " "'.
 
   Only one of -s, -c or -S can be specified.
 
@@ -549,6 +555,8 @@ printed results:
     "11-07.09:32:43"   yyyy-11-07.14:32:43
     "14:25"            yyyy-mm-dd.19:25:00
     "8:47:11"          yyyy-mm-dd.13:47:11
+    "2003"             2003-01-01.00:00:00
+    "2003-04"          2003-04-01.00:00:00
     "."                "right now"
     
 - Link values are printed as item designators. When given as an argument,
@@ -625,7 +633,7 @@ You can also display issue contents::
 or status::
 
     shell% roundup-admin get name `/tools/roundup/bin/roundup-admin \
-	      -dc -i /var/roundup/sysadmin get status issue3,issue1`
+          -dc -i /var/roundup/sysadmin get status issue3,issue1`
     unread
     deferred
 
@@ -644,7 +652,7 @@ which is the same as::
 Also the tautological::
 
    shell% roundup-admin get name \
-	  `roundup-admin -dc get status \`roundup-admin -dc find issue \
+      `roundup-admin -dc get status \`roundup-admin -dc find issue \
           status=chatting\``
    chatting
    chatting
