@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.63 2004-03-21 23:39:08 richard Exp $
+# $Id: admin.py,v 1.64 2004-04-02 05:58:43 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1029,8 +1029,10 @@ Command help:
         # do all the classes specified
         for classname in classes:
             cl = self.get_class(classname)
+
             f = open(os.path.join(dir, classname+'.csv'), 'w')
             writer = rcsv.writer(f, rcsv.colon_separated)
+
             properties = cl.getprops()
             propnames = properties.keys()
             propnames.sort()
@@ -1038,15 +1040,18 @@ Command help:
             fields.append('is retired')
             writer.writerow(fields)
 
-            # all nodes for this class (not using list() 'cos it doesn't
-            # include retired nodes)
-
-            for nodeid in self.db.getclass(classname).getnodeids():
-                # get the regular props
-                writer.writerow (cl.export_list(propnames, nodeid))
+            # all nodes for this class
+            for nodeid in cl.getnodeids():
+                writer.writerow(cl.export_list(propnames, nodeid))
 
             # close this file
             f.close()
+
+            # export the journals
+            jf = open(os.path.join(dir, classname+'-journals.csv'), 'w')
+            journals = rcsv.writer(jf, rcsv.colon_separated)
+            map(journals.writerow, cl.export_journals())
+            jf.close()
         return 0
 
     def do_import(self, args):
@@ -1054,8 +1059,8 @@ Command help:
         Import a database from the directory containing CSV files, one per
         class to import.
 
-        The files must define the same properties as the class (including having
-        a "header" line with those property names.)
+        The files must define the same properties as the class (including
+        having a "header" line with those property names.)
 
         The imported nodes will have the same nodeid as defined in the
         import file, thus replacing any existing content.
@@ -1071,33 +1076,37 @@ Command help:
         from roundup import hyperdb
 
         for file in os.listdir(args[0]):
+            classname, ext = os.path.splitext(file)
             # we only care about CSV files
-            if not file.endswith('.csv'):
+            if ext != '.csv' or classname.endswith('-journals'):
                 continue
 
-            f = open(os.path.join(args[0], file))
-
-            # get the classname
-            classname = os.path.splitext(file)[0]
+            cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            cl = self.get_class(classname)
+            f = open(os.path.join(args[0], file))
             reader = rcsv.reader(f, rcsv.colon_separated)
             file_props = None
             maxid = 1
-
             # loop through the file and create a node for each entry
             for r in reader:
                 if file_props is None:
                     file_props = r
                     continue
-
                 # do the import and figure the current highest nodeid
                 maxid = max(maxid, int(cl.import_list(file_props, r)))
+            f.close()
+
+            # import the journals
+            f = open(os.path.join(args[0], classname + '-journals.csv'))
+            reader = rcsv.reader(f, rcsv.colon_separated)
+            cl.import_journals(reader)
+            f.close()
 
             # set the id counter
             print 'setting', classname, maxid+1
             self.db.setid(classname, str(maxid+1))
+
         return 0
 
     def do_pack(self, args):

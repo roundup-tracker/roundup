@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.87 2004-03-31 07:25:14 richard Exp $
+# $Id: rdbms_common.py,v 1.88 2004-04-02 05:58:45 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -679,10 +679,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     self.arg, self.arg)
                 self.sql(sql, (entry, nodeid))
 
-        # make sure we do the commit-time extra stuff for this node
-        self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
-
-    def setnode(self, classname, nodeid, values, multilink_changes):
+    def setnode(self, classname, nodeid, values, multilink_changes={}):
         ''' Change the specified node.
         '''
         if __debug__:
@@ -736,7 +733,27 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 print >>hyperdb.DEBUG, 'setnode', (self, sql, vals)
             self.cursor.execute(sql, vals)
 
-        # now the fun bit, updating the multilinks ;)
+        # we're probably coming from an import, not a change
+        if not multilink_changes:
+            for name in mls:
+                prop = props[name]
+                value = values[name]
+
+                t = '%s_%s'%(classname, name)
+
+                # clear out previous values for this node
+                # XXX numeric ids
+                self.sql('delete from %s where nodeid=%s'%(t, self.arg),
+                        (nodeid,))
+
+                # insert the values for this node
+                for entry in values[name]:
+                    sql = 'insert into %s (linkid, nodeid) values (%s,%s)'%(t,
+                        self.arg, self.arg)
+                    # XXX numeric ids
+                    self.sql(sql, (entry, nodeid))
+
+        # we have multilink changes to apply
         for col, (add, remove) in multilink_changes.items():
             tn = '%s_%s'%(classname, col)
             if add:
@@ -751,9 +768,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 for removeid in remove:
                     # XXX numeric ids
                     self.sql(sql, (int(nodeid), int(removeid)))
-
-        # make sure we do the commit-time extra stuff for this node
-        self.transactions.append((self.doSaveNode, (classname, nodeid, values)))
 
     sql_to_hyperdb_value = {
         hyperdb.String : str,
@@ -887,11 +901,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        # serialise the parameters now if necessary
-        if isinstance(params, type({})):
-            if action in ('set', 'create'):
-                params = self.serialise(classname, params)
-
         # handle supply of the special journalling parameters (usually
         # supplied on importing an existing database)
         if creator:
@@ -904,7 +913,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             journaldate = date.Date()
 
         # create the journal entry
-        cols = ','.join('nodeid date tag action params'.split())
+        cols = 'nodeid,date,tag,action,params'
 
         if __debug__:
             print >>hyperdb.DEBUG, 'addjournal', (nodeid, journaldate,
@@ -912,6 +921,22 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         self.save_journal(classname, cols, nodeid, journaldate,
             journaltag, action, params)
+
+    def setjournal(self, classname, nodeid, journal):
+        '''Set the journal to the "journal" list.'''
+        # clear out any existing entries
+        self.sql('delete from %s__journal where nodeid=%s'%(classname,
+            self.arg), (nodeid,))
+
+        # create the journal entry
+        cols = 'nodeid,date,tag,action,params'
+
+        for nodeid, journaldate, journaltag, action, params in journal:
+            if __debug__:
+                print >>hyperdb.DEBUG, 'setjournal', (nodeid, journaldate,
+                    journaltag, action, params)
+            self.save_journal(classname, cols, nodeid, journaldate,
+                journaltag, action, params)
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
@@ -1023,12 +1048,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # clear the cache
         self.clearCache()
-
-    def doSaveNode(self, classname, nodeid, node):
-        ''' dummy that just generates a reindex event
-        '''
-        # return the classname, nodeid so we reindex this content
-        return (classname, nodeid)
 
     def sql_close(self):
         if __debug__:
@@ -1252,114 +1271,6 @@ class Class(hyperdb.Class):
 
         # XXX numeric ids
         return str(newid)
-
-    def export_list(self, propnames, nodeid):
-        ''' Export a node - generate a list of CSV-able data in the order
-            specified by propnames for the given node.
-        '''
-        properties = self.getprops()
-        l = []
-        for prop in propnames:
-            proptype = properties[prop]
-            value = self.get(nodeid, prop)
-            # "marshal" data where needed
-            if value is None:
-                pass
-            elif isinstance(proptype, hyperdb.Date):
-                value = value.get_tuple()
-            elif isinstance(proptype, hyperdb.Interval):
-                value = value.get_tuple()
-            elif isinstance(proptype, hyperdb.Password):
-                value = str(value)
-            l.append(repr(value))
-        l.append(repr(self.is_retired(nodeid)))
-        return l
-
-    def import_list(self, propnames, proplist):
-        ''' Import a node - all information including "id" is present and
-            should not be sanity checked. Triggers are not triggered. The
-            journal should be initialised using the "creator" and "created"
-            information.
-
-            Return the nodeid of the node imported.
-        '''
-        if self.db.journaltag is None:
-            raise DatabaseError, 'Database open read-only'
-        properties = self.getprops()
-
-        # make the new node's property map
-        d = {}
-        retire = 0
-        newid = None
-        for i in range(len(propnames)):
-            # Use eval to reverse the repr() used to output the CSV
-            value = eval(proplist[i])
-
-            # Figure the property for this column
-            propname = propnames[i]
-
-            # "unmarshal" where necessary
-            if propname == 'id':
-                newid = value
-                continue
-            elif propname == 'is retired':
-                # is the item retired?
-                if int(value):
-                    retire = 1
-                continue
-            elif value is None:
-                d[propname] = None
-                continue
-
-            prop = properties[propname]
-            if value is None:
-                # don't set Nones
-                continue
-            elif isinstance(prop, hyperdb.Date):
-                value = date.Date(value)
-            elif isinstance(prop, hyperdb.Interval):
-                value = date.Interval(value)
-            elif isinstance(prop, hyperdb.Password):
-                pwd = password.Password()
-                pwd.unpack(value)
-                value = pwd
-            d[propname] = value
-
-        # get a new id if necessary
-        if newid is None:
-            newid = self.db.newid(self.classname)
-
-        # add the node and journal
-        self.db.addnode(self.classname, newid, d)
-
-        # retire?
-        if retire:
-            # use the arg for __retired__ to cope with any odd database type
-            # conversion (hello, sqlite)
-            sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
-                self.db.arg, self.db.arg)
-            if __debug__:
-                print >>hyperdb.DEBUG, 'retire', (self, sql, newid)
-            self.db.cursor.execute(sql, (1, newid))
-
-        # extract the extraneous journalling gumpf and nuke it
-        if d.has_key('creator'):
-            creator = d['creator']
-            del d['creator']
-        else:
-            creator = None
-        if d.has_key('creation'):
-            creation = d['creation']
-            del d['creation']
-        else:
-            creation = None
-        if d.has_key('activity'):
-            del d['activity']
-        if d.has_key('actor'):
-            del d['actor']
-        self.db.addjournal(self.classname, newid, 'create', {}, creator,
-            creation)
-        return newid
 
     _marker = []
     def get(self, nodeid, propname, default=_marker, cache=1):
@@ -2245,6 +2156,159 @@ class Class(hyperdb.Class):
         '''
         for react in self.reactors[action]:
             react(self.db, self, nodeid, oldvalues)
+
+    #
+    # import / export support
+    #
+    def export_list(self, propnames, nodeid):
+        ''' Export a node - generate a list of CSV-able data in the order
+            specified by propnames for the given node.
+        '''
+        properties = self.getprops()
+        l = []
+        for prop in propnames:
+            proptype = properties[prop]
+            value = self.get(nodeid, prop)
+            # "marshal" data where needed
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Interval):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Password):
+                value = str(value)
+            l.append(repr(value))
+        l.append(repr(self.is_retired(nodeid)))
+        return l
+
+    def import_list(self, propnames, proplist):
+        ''' Import a node - all information including "id" is present and
+            should not be sanity checked. Triggers are not triggered. The
+            journal should be initialised using the "creator" and "created"
+            information.
+
+            Return the nodeid of the node imported.
+        '''
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+        properties = self.getprops()
+
+        # make the new node's property map
+        d = {}
+        retire = 0
+        newid = None
+        for i in range(len(propnames)):
+            # Use eval to reverse the repr() used to output the CSV
+            value = eval(proplist[i])
+
+            # Figure the property for this column
+            propname = propnames[i]
+
+            # "unmarshal" where necessary
+            if propname == 'id':
+                newid = value
+                continue
+            elif propname == 'is retired':
+                # is the item retired?
+                if int(value):
+                    retire = 1
+                continue
+            elif value is None:
+                d[propname] = None
+                continue
+
+            prop = properties[propname]
+            if value is None:
+                # don't set Nones
+                continue
+            elif isinstance(prop, hyperdb.Date):
+                value = date.Date(value)
+            elif isinstance(prop, hyperdb.Interval):
+                value = date.Interval(value)
+            elif isinstance(prop, hyperdb.Password):
+                pwd = password.Password()
+                pwd.unpack(value)
+                value = pwd
+            d[propname] = value
+
+        # get a new id if necessary
+        if newid is None or not self.hasnode(newid):
+            newid = self.db.newid(self.classname)
+            self.db.addnode(self.classname, newid, d)
+        else:
+            # update
+            self.db.setnode(self.classname, newid, d)
+
+        # retire?
+        if retire:
+            # use the arg for __retired__ to cope with any odd database type
+            # conversion (hello, sqlite)
+            sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
+                self.db.arg, self.db.arg)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'retire', (self, sql, newid)
+            self.db.cursor.execute(sql, (1, newid))
+        return newid
+
+    def export_journals(self):
+        '''Export a class's journal - generate a list of lists of
+        CSV-able data:
+
+            nodeid, date, user, action, params
+
+        No heading here - the columns are fixed.
+        '''
+        properties = self.getprops()
+        r = []
+        for nodeid in self.getnodeids():
+            for nodeid, date, user, action, params in self.history(nodeid):
+                date = date.get_tuple()
+                if action == 'set':
+                    for propname, value in params.items():
+                        prop = properties[propname]
+                        # make sure the params are eval()'able
+                        if value is None:
+                            pass
+                        elif isinstance(prop, Date):
+                            value = value.get_tuple()
+                        elif isinstance(prop, Interval):
+                            value = value.get_tuple()
+                        elif isinstance(prop, Password):
+                            value = str(value)
+                        params[propname] = value
+                l = [nodeid, date, user, action, params]
+                r.append(map(repr, l))
+        return r
+
+    def import_journals(self, entries):
+        '''Import a class's journal.
+        
+        Uses setjournal() to set the journal for each item.'''
+        properties = self.getprops()
+        d = {}
+        for l in entries:
+            l = map(eval, l)
+            nodeid, jdate, user, action, params = l
+            r = d.setdefault(nodeid, [])
+            if action == 'set':
+                for propname, value in params.items():
+                    prop = properties[propname]
+                    if value is None:
+                        pass
+                    elif isinstance(prop, Date):
+                        value = date.Date(value)
+                    elif isinstance(prop, Interval):
+                        value = date.Interval(value)
+                    elif isinstance(prop, Password):
+                        pwd = password.Password()
+                        pwd.unpack(value)
+                        value = pwd
+                    params[propname] = value
+            r.append((nodeid, date.Date(jdate), user, action, params))
+
+        for nodeid, l in d.items():
+            self.db.setjournal(self.classname, nodeid, l)
 
 class FileClass(Class, hyperdb.FileClass):
     '''This class defines a large chunk of data. To support this, it has a

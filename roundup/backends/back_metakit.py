@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.69 2004-03-24 05:39:47 richard Exp $
+# $Id: back_metakit.py,v 1.70 2004-04-02 05:58:45 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -211,6 +211,21 @@ class _Database(hyperdb.Database, roundupdb.Database):
                          action=action,
                          user = creator,
                          params = marshal.dumps(params))
+
+    def setjournal(self, tablenm, nodeid, journal):
+        '''Set the journal to the "journal" list.'''
+        tblid = self.tables.find(name=tablenm)
+        if tblid == -1:
+            tblid = self.tables.append(name=tablenm)
+        for nodeid, date, user, action, params in journal:
+            # tableid:I,nodeid:I,date:I,user:I,action:I,params:B
+            self.hist.append(tableid=tblid,
+                             nodeid=int(nodeid),
+                             date=date,
+                             action=action,
+                             user=user,
+                             params=marshal.dumps(params))
+
     def getjournal(self, tablenm, nodeid):
         ''' get the journal for id
         '''
@@ -1434,108 +1449,6 @@ class Class(hyperdb.Class):
                 self.db.indexer.add_text((self.classname, nodeid, prop),
                                 str(self.get(nodeid, prop)))
 
-    def export_list(self, propnames, nodeid):
-        ''' Export a node - generate a list of CSV-able data in the order
-            specified by propnames for the given node.
-        '''
-        properties = self.getprops()
-        l = []
-        for prop in propnames:
-            proptype = properties[prop]
-            value = self.get(nodeid, prop)
-            # "marshal" data where needed
-            if value is None:
-                pass
-            elif isinstance(proptype, hyperdb.Date):
-                value = value.get_tuple()
-            elif isinstance(proptype, hyperdb.Interval):
-                value = value.get_tuple()
-            elif isinstance(proptype, hyperdb.Password):
-                value = str(value)
-            l.append(repr(value))
-
-        # append retired flag
-        l.append(repr(self.is_retired(nodeid)))
-
-        return l
-        
-    def import_list(self, propnames, proplist):
-        ''' Import a node - all information including "id" is present and
-            should not be sanity checked. Triggers are not triggered. The
-            journal should be initialised using the "creator" and "creation"
-            information.
-
-            Return the nodeid of the node imported.
-        '''
-        if self.db.journaltag is None:
-            raise hyperdb.DatabaseError, 'Database open read-only'
-        properties = self.getprops()
-
-        d = {}
-        view = self.getview(READWRITE)
-        for i in range(len(propnames)):
-            value = eval(proplist[i])
-            if not value:
-                continue
-
-            propname = propnames[i]
-            if propname == 'id':
-                newid = value = int(value)
-            elif propname == 'is retired':
-                # is the item retired?
-                if int(value):
-                    d['_isdel'] = 1
-                continue
-            elif value is None:
-                d[propname] = None
-                continue
-
-            prop = properties[propname]
-            if isinstance(prop, hyperdb.Date):
-                value = int(calendar.timegm(value))
-            elif isinstance(prop, hyperdb.Interval):
-                value = date.Interval(value).serialise()
-            elif isinstance(prop, hyperdb.Number):
-                value = int(value)
-            elif isinstance(prop, hyperdb.Boolean):
-                value = int(value)
-            elif isinstance(prop, hyperdb.Link) and value:
-                value = int(value)
-            elif isinstance(prop, hyperdb.Multilink):
-                # we handle multilinks separately
-                continue
-            d[propname] = value
-
-        # possibly make a new node
-        if not d.has_key('id'):
-            d['id'] = newid = self.maxid
-            self.maxid += 1
-
-        # save off the node
-        view.append(d)
-
-        # fix up multilinks
-        ndx = view.find(id=newid)
-        row = view[ndx]
-        for i in range(len(propnames)):
-            value = eval(proplist[i])
-            propname = propnames[i]
-            if propname == 'is retired':
-                continue
-            prop = properties[propname]
-            if not isinstance(prop, hyperdb.Multilink):
-                continue
-            sv = getattr(row, propname)
-            for entry in value:
-                sv.append((int(entry),))
-
-        self.db.dirty = 1
-        creator = d.get('creator', 0)
-        creation = d.get('creation', 0)
-        self.db.addjournal(self.classname, str(newid), _CREATE, {}, creator,
-            creation)
-        return newid
-
     # --- used by Database
     def _commit(self):
         ''' called post commit of the DB.
@@ -1643,6 +1556,166 @@ class Class(hyperdb.Class):
         # XXX FIX ME -> The RW flag doesn't do anything.
         tablename = "_%s.%s"%(self.classname, self.key)
         return self.db._db.view("_%s" % tablename).ordered(1)
+
+    #
+    # import / export
+    #
+    def export_list(self, propnames, nodeid):
+        ''' Export a node - generate a list of CSV-able data in the order
+            specified by propnames for the given node.
+        '''
+        properties = self.getprops()
+        l = []
+        for prop in propnames:
+            proptype = properties[prop]
+            value = self.get(nodeid, prop)
+            # "marshal" data where needed
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Interval):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Password):
+                value = str(value)
+            l.append(repr(value))
+
+        # append retired flag
+        l.append(repr(self.is_retired(nodeid)))
+
+        return l
+        
+    def import_list(self, propnames, proplist):
+        ''' Import a node - all information including "id" is present and
+            should not be sanity checked. Triggers are not triggered. The
+            journal should be initialised using the "creator" and "creation"
+            information.
+
+            Return the nodeid of the node imported.
+        '''
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError, 'Database open read-only'
+        properties = self.getprops()
+
+        d = {}
+        view = self.getview(READWRITE)
+        for i in range(len(propnames)):
+            value = eval(proplist[i])
+            if not value:
+                continue
+
+            propname = propnames[i]
+            if propname == 'id':
+                newid = value = int(value)
+            elif propname == 'is retired':
+                # is the item retired?
+                if int(value):
+                    d['_isdel'] = 1
+                continue
+            elif value is None:
+                d[propname] = None
+                continue
+
+            prop = properties[propname]
+            if isinstance(prop, hyperdb.Date):
+                value = int(calendar.timegm(value))
+            elif isinstance(prop, hyperdb.Interval):
+                value = date.Interval(value).serialise()
+            elif isinstance(prop, hyperdb.Number):
+                value = int(value)
+            elif isinstance(prop, hyperdb.Boolean):
+                value = int(value)
+            elif isinstance(prop, hyperdb.Link) and value:
+                value = int(value)
+            elif isinstance(prop, hyperdb.Multilink):
+                # we handle multilinks separately
+                continue
+            d[propname] = value
+
+        # possibly make a new node
+        if not d.has_key('id'):
+            d['id'] = newid = self.maxid
+            self.maxid += 1
+
+        # save off the node
+        view.append(d)
+
+        # fix up multilinks
+        ndx = view.find(id=newid)
+        row = view[ndx]
+        for i in range(len(propnames)):
+            value = eval(proplist[i])
+            propname = propnames[i]
+            if propname == 'is retired':
+                continue
+            prop = properties[propname]
+            if not isinstance(prop, hyperdb.Multilink):
+                continue
+            sv = getattr(row, propname)
+            for entry in value:
+                sv.append((int(entry),))
+
+        self.db.dirty = 1
+        return newid
+
+    def export_journals(self):
+        '''Export a class's journal - generate a list of lists of
+        CSV-able data:
+
+            nodeid, date, user, action, params
+
+        No heading here - the columns are fixed.
+        '''
+        properties = self.getprops()
+        r = []
+        for nodeid in self.getnodeids():
+            for nodeid, date, user, action, params in self.history(nodeid):
+                date = date.get_tuple()
+                if action == 'set':
+                    for propname, value in params.items():
+                        prop = properties[propname]
+                        # make sure the params are eval()'able
+                        if value is None:
+                            pass
+                        elif isinstance(prop, Date):
+                            value = value.get_tuple()
+                        elif isinstance(prop, Interval):
+                            value = value.get_tuple()
+                        elif isinstance(prop, Password):
+                            value = str(value)
+                        params[propname] = value
+                l = [nodeid, date, user, action, params]
+                r.append(map(repr, l))
+        return r
+
+    def import_journals(self, entries):
+        '''Import a class's journal.
+        
+        Uses setjournal() to set the journal for each item.'''
+        properties = self.getprops()
+        d = {}
+        for l in entries:
+            l = map(eval, l)
+            nodeid, date, user, action, params = l
+            r = d.setdefault(nodeid, [])
+            if action == 'set':
+                for propname, value in params.items():
+                    prop = properties[propname]
+                    if value is None:
+                        pass
+                    elif isinstance(prop, Date):
+                        value = date.Date(value)
+                    elif isinstance(prop, Interval):
+                        value = date.Interval(value)
+                    elif isinstance(prop, Password):
+                        pwd = password.Password()
+                        pwd.unpack(value)
+                        value = pwd
+                    params[propname] = value
+            r.append((nodeid, date.Date(date), user, action, params))
+
+        for nodeid, l in d.items():
+            self.db.setjournal(self.classname, nodeid, l)
 
 def _fetchML(sv):
     l = []
