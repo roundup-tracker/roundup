@@ -15,6 +15,7 @@
 # Modifications for Roundup:
 # 1. commented out ITALES references
 # 2. escape quotes and line feeds in msgids
+# 3. don't collect empty msgids
 
 """Program to extract internationalization markup from Page Templates.
 
@@ -43,7 +44,7 @@ from roundup.cgi.TAL.DummyEngine import DummyEngine
 #from ITALES import ITALESEngine
 from roundup.cgi.TAL.TALDefs import TALESError
 
-__version__ = '$Revision: 1.5 $'
+__version__ = '$Revision: 1.6 $'
 
 pot_header = '''\
 # SOME DESCRIPTIVE TITLE.
@@ -118,6 +119,8 @@ class POEngine(DummyEngine):
                   # XXX position is not part of the ITALESEngine
                   #     interface
                   position=None):
+
+        if not msgid: return 'x'
 
         if domain not in self.catalog:
             self.catalog[domain] = {}
