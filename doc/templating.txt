@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 Current Situation and Issues
 ============================
@@ -52,7 +52,7 @@ Arguments for switching templating systems:
 Templates
 ---------
 
-We should also take this opportunity to open up the fexibility of the
+We should also take this opportunity to open up the flexibility of the
 templates through:
 
 1. allowing the instance to define a "page" template, which holds the overall
