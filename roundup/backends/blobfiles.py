@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.12.2.3 2004-11-11 06:09:43 richard Exp $
+#$Id: blobfiles.py,v 1.12.2.4 2004-11-22 02:38:24 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -37,7 +37,7 @@ def files_in_dir(dir):
 
 class FileStorage:
     """Store files in some directory structure"""
-    def filename(self, classname, nodeid, property=None):
+    def filename(self, classname, nodeid, property=None, create=False):
         '''Determine what the filename for the given node and optionally 
         property is.
 
@@ -55,7 +55,7 @@ class FileStorage:
         # have a separate subdir for every thousand messages
         subdir = str(int(nodeid) / 1000)
         filename  = os.path.join(self.dir, 'files', classname, subdir, name)
-        if os.path.exists(filename):
+        if create or os.path.exists(filename):
             return filename
 
         # try .tmp
@@ -82,7 +82,7 @@ class FileStorage:
            is being saved.
         '''
         # determine the name of the file to write to
-        name = self.filename(classname, nodeid, property)
+        name = self.filename(classname, nodeid, property, create=True)
 
         # make sure the file storage dir exists
         if not os.path.exists(os.path.dirname(name)):
@@ -91,10 +91,11 @@ class FileStorage:
         # save to a temp file
         name = name + '.tmp'
 
-        # save off the rename action
-        self.transactions.append((self.doStoreFile, (classname, nodeid,
-            property)))
-
+        # make sure we don't register the rename action more than once
+        if not os.path.exists(name):
+            # save off the rename action
+            self.transactions.append((self.doStoreFile, (classname, nodeid,
+                property)))
         open(name, 'wb').write(content)
 
     def getfile(self, classname, nodeid, property):
@@ -121,16 +122,21 @@ class FileStorage:
         # determine the name of the file to write to
         name = self.filename(classname, nodeid, property)
 
-        if not os.path.exists(name+".tmp"):
-            return
+        # the file is currently ".tmp" - move it to its real name to commit
+        if name.endswith('.tmp'):
+            # creation
+            dstname = os.path.splitext(name)[0]
+        else:
+            # edit operation
+            dstname = name
+            name = name + '.tmp'
 
         # content is being updated (and some platforms, eg. win32, won't
         # let us rename over the top of the old file)
-        if os.path.exists(name):
-            os.remove(name)
+        if os.path.exists(dstname):
+            os.remove(dstname)
 
-        # the file is currently ".tmp" - move it to its real name to commit
-        os.rename(name+".tmp", name)
+        os.rename(name, dstname)
 
         # return the classname, nodeid so we reindex this content
         return (classname, nodeid)
