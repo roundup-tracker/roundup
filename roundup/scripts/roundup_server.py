@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.51 2004-06-21 04:33:52 richard Exp $
+$Id: roundup_server.py,v 1.52 2004-06-21 04:42:11 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -343,38 +343,43 @@ else:
 
 def usage(message=''):
     if RoundupService:
-        win = \
-""''' -c: Windows Service options.  If you want to run the server as a Windows
-     Service, you must configure the rest of the options by changing the
-     constants of this program.  You will at least configure one tracker
-     in the TRACKER_HOMES variable.  This option is mutually exclusive
-     from the rest.  Typing "roundup-server -c help" shows Windows
-     Services specifics.'''
+        os_part = \
+""''' -c <Command>  Windows Service options.
+               If you want to run the server as a Windows Service, you must
+               configure the rest of the options by changing the constants
+               of this program.  You will at least configure one tracker in
+               the TRACKER_HOMES variable.  This option is mutually exclusive
+               from the rest.  Typing "roundup-server -c help" shows Windows
+               Services specifics.'''
     else:
-        win = ''
+        os_part = ''' -u <UID>      runs the Roundup web server as this UID
+ -g <GID>      runs the Roundup web server as this GID
+ -d <PIDfile>  run the server in the background and write the server's PID
+               to the file indicated by PIDfile. The -l option *must* be
+               specified if -d is used.'''
     port=PORT
-    print _('''%(message)s
-Usage:
-roundup-server [options] [name=tracker home]*
+    if message:
+        message += '\n'
+    print _('''%(message)sUsage: roundup-server [options] [name=tracker home]*
 
-options:
- -v: print version and exit
- -n: sets the host name
- -p: sets the port to listen on (default: %(port)s)
- -u: sets the uid to this user after listening on the port
- -g: sets the gid to this group after listening on the port
- -l: sets a filename to log to (instead of stderr / stdout)
- -d: run the server in the background and on UN*X write the server's PID
-     to the nominated file. The -l option *must* be specified if this
-     option is.
- -N: log client machine names in access log instead of IP addresses (much
-     slower)
-%(win)s
+Options:
+ -v            prints the Roundup version number and exits
+ -n <name>     sets the host name of the Roundup web server instance
+ -p <port>     sets the port to listen on (default: %(port)s)
+ -l <fname>    log to the file indicated by fname instead of stderr/stdout
+ -N            log client machine names instead of IP addresses (much slower)
+%(os_part)s
 
-name=tracker home:
-   Sets the tracker home(s) to use. The name is how the tracker is
-   identified in the URL (it's the first part of the URL path). The
-   tracker home is the directory that was identified when you did
+Examples:
+ roundup-server support=/var/spool/roundup-trackers/support
+
+ roundup-server -d /var/run/roundup.pid -l /var/log/roundup.log \\
+     support=/var/spool/roundup-trackers/support
+
+How to use "name=tracker home":
+   These arguments set the tracker home(s) to use. The name is how the
+   tracker is identified in the URL (it's the first part of the URL path).
+   The tracker home is the directory that was identified when you did
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. For convenience, you may edit the
    TRACKER_HOMES variable in the roundup-server file instead.
