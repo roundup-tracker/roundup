@@ -15,10 +15,6 @@ This maintenance release fixes some bugs in the 0.7 release of Roundup:
   Link'ed "order" properties (sf bug 953148)
 - fix Interval editing (sf bug 954891)
 
-Known issues:
-
-- the metakit import feature currently has a bug and should not be used
-
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
