@@ -23,6 +23,14 @@ Migrating from 0.5 to 0.6
 
      "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
+I've altered the mechanism in the detectors __init__.py module so that it
+doesn't cross-import detectors from other trackers (if you run more than one
+in a single roundup-server). This change means that you'll need to copy the
+__init__.py from roundup/templates/classic/detectors/__init__.py to your
+<tracker home>/detectors/__init__.py. Don't worry, the "classic" __init__ is a
+one-size-fits-all, so it'll work even if you've added/removed detectors.
+
+
 0.6.0 Form handling changes
 ---------------------------
 

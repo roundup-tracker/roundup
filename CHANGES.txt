@@ -56,6 +56,7 @@ are given with the most recent entry first.
   (e.g. images). They are accessible naturally: _file/images/img.gif
 - altered Class.create() and FileClass.create() methods to make "content"
   property available in auditors
+- re-worked detectors initialisation - woohoo, no more cross-importing!
 
 
 2003-??-?? 0.5.6
