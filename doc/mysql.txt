@@ -2,7 +2,7 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.11 $
+:version: $Revision: 1.12 $
 
 This notes detail the MySQL backend for the Roundup issue tracker.
 
@@ -24,6 +24,7 @@ to install:
    The InnoDB implementation has a bug__ that Roundup tickles. See
 
 __ http://bugs.mysql.com/bug.php?id=1810
+
 
 Running the MySQL tests
 =======================
@@ -62,3 +63,4 @@ just::
 
 and all will be better (note that on some systems, ``mysql`` is spelt
 ``mysqld``).
+

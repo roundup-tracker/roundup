@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.157 $
+:Version: $Revision: 1.158 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -39,13 +39,15 @@ Trackers have the following structure:
 =================== ========================================================
 Tracker File        Description
 =================== ========================================================
-config.py           Holds the basic `tracker configuration`_                 
-dbinit.py           Holds the `tracker schema`_                              
-interfaces.py       Defines the Web and E-Mail interfaces for the tracker    
-select_db.py        Selects the database back-end for the tracker            
+config.ini          Holds the basic `tracker configuration`_                 
+schema.py           Holds the `tracker schema`_                              
+initial_data.py     Holds any data to be entered into the database when the
+                    tracker is initialised.
 db/                 Holds the tracker's database                             
 db/files/           Holds the tracker's upload files and messages            
+db/backend_name     Names the database back-end for the tracker            
 detectors/          Auditors and reactors for this tracker                   
+extensions/         Additional web actions and templating utilities.
 html/               Web interface templates, images and style sheets         
 =================== ======================================================== 
 
@@ -1222,8 +1224,8 @@ Default templates
 -----------------
 
 The default templates are html4 compliant. If you wish to change them to be
-xhtml compliant, you'll need to change the ``HTML_VERSION`` configuration
-variable in ``config.py`` to ``'xhtml'`` instead of ``'html4'``.
+xhtml compliant, you'll need to change the ``html_version`` configuration
+variable in ``config.ini`` to ``'xhtml'`` instead of ``'html4'``.
 
 Most customisation of the web view can be done by modifying the
 templates in the tracker ``'html'`` directory. There are several types
@@ -1534,7 +1536,7 @@ The following variables are available to templates.
      The current CGI form information as a mapping of form argument name
      to value
 **config**
-  This variable holds all the values defined in the tracker config.py
+  This variable holds all the values defined in the tracker config.ini
   file (eg. TRACKER_NAME, etc.)
 **db**
   The current database, used to access arbitrary database items.
@@ -3834,11 +3836,13 @@ First up, we create the new Role and Permission structure in
     db.security.addPermissionToRole('Provisional User', p)
 
 
-Then in the ``config.py`` we change the Role assigned to newly-registered
+Then in the ``config.ini`` we change the Role assigned to newly-registered
 users, replacing the existing ``'User'`` values::
 
-    NEW_WEB_USER_ROLES = 'Provisional User'
-    NEW_EMAIL_USER_ROLES = 'Provisional User'
+    [main]
+    ...
+    new_web_user_roles = 'Provisional User'
+    new_email_user_roles = 'Provisional User'
 
 Finally we add a new *auditor* to the ``detectors`` directory called
 ``provisional_user_auditor.py``::

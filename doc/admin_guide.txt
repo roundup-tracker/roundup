@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 .. contents::
 
@@ -36,28 +36,28 @@ There's two "installations" that we talk about when using Roundup:
    "inst" (and "init") commands, you're creating a new Roundup tracker. This
    installs configuration files, HTML templates, detector code and a new
    database. You have complete control over where this stuff goes through
-   both choosing your "tracker home" and the DATABASE variable in
-   config.py.
+   both choosing your "tracker home" and the ``main`` -> ``database`` variable
+   in the tracker's config.ini. 
 
 
 Configuring Roundup's Logging of Messages For Sysadmins
 =======================================================
 
-You may configure where Roundup logs messages in your tracker's config.py
-file. Roundup will use the standard Python logging implementation when
-available. If not, then a very basic logging implementation will be used
+You may configure where Roundup logs messages in your tracker's config.ini
+file. Roundup will use the standard Python (2.3+) logging implementation
+when available. If not, then a very basic logging implementation will be used
 (see BasicLogging in the roundup.rlog module for details).
 
-Configuration for "logging" module:
+Configuration for standard "logging" module:
  - tracker configuration file specifies the location of a logging
-   configration file as ``LOGGING_CONFIG``
+   configration file as ``logging`` -> ``config``
  - ``roundup-server`` specifies the location of a logging configuration
    file on the command line
 Configuration for "BasicLogging" implementation:
  - tracker configuration file specifies the location of a log file
-   ``LOGGING_FILENAME``
+   ``logging`` -> ``filename``
  - tracker configuration file specifies the level to log to as
-   ``LOGGING_LEVEL``
+   ``logging`` -> ``level``
  - ``roundup-server`` specifies the location of a log file on the command
    line
  - ``roundup-server`` specifies the level to log to on the command line

@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 .. note::
    The intended audience of this document is the developers of the core
@@ -122,7 +122,7 @@ of ways, depending on what it is you're testing:
    This variable replaces the older HYPERDBDEBUG environment var.
 
 2. If you're testing a particular tracker, then set the logging level in
-   your tracker's ``config.py``.
+   your tracker's ``config.ini``.
 
 
 Internationalization Notes

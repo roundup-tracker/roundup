@@ -2,10 +2,6 @@ This file contains items that need doing before the next release:
 
 Required:
 - implementing logging for roundup-server, including command-line switches
-- fix documentation referring to configuration (config.ini)
-- fix documentation referring to customisation using interfaces.py
-- fix admin_guide referring to structure of trackers
-- add config.ini section descriptions - DONE?
 - Security review:
   - write up security model used in classic tracker
   - ensure classic template actually implements the model detailed

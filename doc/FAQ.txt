@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.19 $
+:Version: $Revision: 1.20 $
 
 .. contents::
 
@@ -34,9 +34,11 @@ How do I put Roundup behind Apache
 
 We have a project (foo) running on ``tracker.example:8080``.
 We want ``http://tracker.example/issues`` to use the roundup server, so we 
-set that up on port 8080 on ``tracker.example`` with the ``config.py`` line::
+set that up on port 8080 on ``tracker.example`` with the ``config.ini`` line::
 
-  TRACKER_WEB = 'http://tracker.example/issues/'
+  [tracker]
+  ...
+  web = 'http://tracker.example/issues/'
 
 We have a "foo_issues" tracker and we run the server with::
 
@@ -172,8 +174,8 @@ If you're using IE then install Mozilla and try again ;^)
 I keep getting logged out
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Make sure that the TRACKER_WEB setting in your tracker's config.py is set
-to the URL of the tracker.
+Make sure that the ``tracker`` -> ``web`` setting in your tracker's
+config.ini is set to the URL of the tracker.
 
 
 How is sorting performed, and why does it seem to fail sometimes?
