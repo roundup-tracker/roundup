@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.119 2003-06-10 22:55:30 richard Exp $
+# $Id: client.py,v 1.120 2003-06-24 03:30:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -68,10 +68,16 @@ def initialiseSecurity(security):
         description="User may manipulate user Roles through the web")
     security.addPermissionToRole('Admin', p)
 
-def clean_message(match, ok={'a':1,'i':1,'b':1,'br':1}):
+# used to clean messages passed through CGI variables - HTML-escape any tag
+# that isn't <a href="">, <i>, <b> and <br> (including XHTML variants) so
+# that people can't pass through nasties like <script>, <iframe>, ...
+CLEAN_MESSAGE_RE = r'(<(/?(.*?)(\s*href="[^"]")?\s*/?)>)'
+def clean_message(message, mc=re.compile(CLEAN_MESSAGE_RE, re.I)):
+    return mc.sub(clean_message_callback, message)
+def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
     ''' Strip all non <a>,<i>,<b> and <br> tags from a string
     '''
-    if ok.has_key(match.group(2)):
+    if ok.has_key(match.group(3).lower()):
         return match.group(1)
     return '&lt;%s&gt;'%match.group(2)
 
@@ -348,8 +354,7 @@ class Client:
         # reopen the database as the correct user
         self.opendb(self.user)
 
-    def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)'),
-            mc=re.compile(r'(</?(.*?)>)')):
+    def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Determine the context of this page from the URL:
 
             The URL path after the instance identifier is examined. The path
@@ -397,10 +402,10 @@ class Client:
                 template_override = self.form[key].value
             elif self.FV_OK_MESSAGE.match(key):
                 ok_message = self.form[key].value
-                ok_message = mc.sub(clean_message, ok_message)
+                ok_message = clean_message(ok_message)
             elif self.FV_ERROR_MESSAGE.match(key):
                 error_message = self.form[key].value
-                error_message = mc.sub(clean_message, error_message)
+                error_message = clean_message(error_message)
 
         # determine the classname and possibly nodeid
         path = self.path.split('/')
