@@ -13,6 +13,8 @@ Fixed:
 - fixed file leak in detector initialisation (patch 800715)
 - commented out example tracker homes (patch 800720)
 - added note about hidden :template var in user.item (bug 799842)
+- fixed Apply Error that was raised, when property was deleted from class and
+  we are trying to edit an instance
 
 
 2003-08-31 0.6.1
