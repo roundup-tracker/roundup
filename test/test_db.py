@@ -1,8 +1,7 @@
-# $Id: test_db.py,v 1.3 2001-07-29 07:01:39 richard Exp $ 
+# $Id: test_db.py,v 1.4 2001-07-30 03:45:56 richard Exp $ 
 
 import unittest, os, shutil
 
-from roundup.backends import anydbm
 from roundup.hyperdb import String, Link, Multilink, Date, Interval, Class, \
     DatabaseError
 
@@ -18,20 +17,34 @@ def setupSchema(db, create):
     Class(db, "issue", title=String(), status=Link("status"),
         nosy=Multilink("user"))
 
-class DBTestCase(unittest.TestCase):
+#class MyTestResult(unittest._TestResult):
+#    def addError(self, test, err):
+#        print `err`
+#        TestResult.addError(self, test, err)
+#        if self.showAll:
+#            self.stream.writeln("ERROR")
+#        elif self.dots:
+#            self.stream.write('E')
+#        if err[0] is KeyboardInterrupt:
+#            self.shouldStop = 1
+
+class MyTestCase(unittest.TestCase):
+#    def defaultTestResult(self):
+#        return MyTestResult()
+    def tearDown(self):
+        if self.db is not None:
+            self.db.close()
+            shutil.rmtree('_test_dir')
+    
+class DBTestCase(MyTestCase):
     def setUp(self):
-        class Database(anydbm.Database):
-            pass
+        from roundup.backends import anydbm
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
         os.mkdir('_test_dir')
-        self.db = Database('_test_dir', 'test')
+        self.db = anydbm.Database('_test_dir', 'test')
         setupSchema(self.db, 1)
-
-    def tearDown(self):
-        self.db.close()
-        shutil.rmtree('_test_dir')
 
     def testChanges(self):
         self.db.issue.create(title="spam", status='1')
@@ -116,28 +129,21 @@ class DBTestCase(unittest.TestCase):
             nosy=['10'])
 
     def testRetire(self):
-        ''' test retiring a node
-        '''
         pass
 
 
-class ReadOnlyDBTestCase(unittest.TestCase):
+class ReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
-        class Database(anydbm.Database):
-            pass
+        from roundup.backends import anydbm
         # remove previous test, ignore errors
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
         os.mkdir('_test_dir')
-        db = Database('_test_dir', 'test')
+        db = anydbm.Database('_test_dir', 'test')
         setupSchema(db, 1)
         db.close()
-        self.db = Database('_test_dir')
+        self.db = anydbm.Database('_test_dir')
         setupSchema(self.db, 0)
-
-    def tearDown(self):
-        self.db.close()
-        shutil.rmtree('_test_dir')
 
     def testExceptions(self):
         # this tests the exceptions that should be raised
@@ -149,14 +155,79 @@ class ReadOnlyDBTestCase(unittest.TestCase):
         ar(DatabaseError, self.db.status.retire, '1')
 
 
-def suite():
-   db = unittest.makeSuite(DBTestCase, 'test')
-   readonlydb = unittest.makeSuite(ReadOnlyDBTestCase, 'test')
-   return unittest.TestSuite((db, readonlydb))
+class bsddbDBTestCase(DBTestCase):
+    def setUp(self):
+        from roundup.backends import bsddb
+        # remove previous test, ignore errors
+        if os.path.exists('_test_dir'):
+            shutil.rmtree('_test_dir')
+        os.mkdir('_test_dir')
+        self.db = bsddb.Database('_test_dir', 'test')
+        setupSchema(self.db, 1)
 
+class bsddbReadOnlyDBTestCase(ReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import bsddb
+        # remove previous test, ignore errors
+        if os.path.exists('_test_dir'):
+            shutil.rmtree('_test_dir')
+        os.mkdir('_test_dir')
+        db = bsddb.Database('_test_dir', 'test')
+        setupSchema(db, 1)
+        db.close()
+        self.db = bsddb.Database('_test_dir')
+        setupSchema(self.db, 0)
+
+
+class bsddb3DBTestCase(DBTestCase):
+    def setUp(self):
+        from roundup.backends import bsddb3
+        # remove previous test, ignore errors
+        if os.path.exists('_test_dir'):
+            shutil.rmtree('_test_dir')
+        os.mkdir('_test_dir')
+        self.db = bsddb3.Database('_test_dir', 'test')
+        setupSchema(self.db, 1)
+
+class bsddb3ReadOnlyDBTestCase(ReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import bsddb3
+        # remove previous test, ignore errors
+        if os.path.exists('_test_dir'):
+            shutil.rmtree('_test_dir')
+        os.mkdir('_test_dir')
+        db = bsddb3.Database('_test_dir', 'test')
+        setupSchema(db, 1)
+        db.close()
+        self.db = bsddb3.Database('_test_dir')
+        setupSchema(self.db, 0)
+
+
+def suite():
+    l = [unittest.makeSuite(DBTestCase, 'test'),
+         unittest.makeSuite(ReadOnlyDBTestCase, 'test')]
+
+    try:
+        import bsddb
+        l.append(unittest.makeSuite(bsddbDBTestCase, 'test'))
+        l.append(unittest.makeSuite(bsddbReadOnlyDBTestCase, 'test'))
+    except:
+        print 'bsddb module not found, skipping bsddb DBTestCase'
+
+    try:
+        import bsddb3
+        l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
+        l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
+    except:
+        print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
+
+    return unittest.TestSuite(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.2  2001/07/29 04:09:20  richard
 # Added the fabricated property "id" to all hyperdb classes.
 #
