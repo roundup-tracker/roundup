@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.208 2004-11-22 10:46:18 a1s Exp $
+# $Id: client.py,v 1.209 2004-11-23 22:44:43 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -158,6 +158,9 @@ class Client:
 
         self.user = None
         self.userid = None
+        self.nodeid = None
+        self.classname = None
+        self.template = None
 
     def setTranslator(self, translator=None):
         """Replace the translation engine
@@ -401,7 +404,7 @@ class Client:
                     pass
                 username, password = decoded.split(':')
                 try:
-                    LoginAction(self).verifyLogin(username, password)
+                    self.get_action_class('login')(self).verifyLogin(username, password)
                 except LoginError, err:
                     self.make_user_anonymous()
                     self.response_code = 403
@@ -732,17 +735,7 @@ class Client:
             return None
 
         try:
-            if (hasattr(self.instance, 'cgi_actions') and
-                    self.instance.cgi_actions.has_key(action)):
-                # tracker-defined action
-                action_klass = self.instance.cgi_actions[action]
-            else:
-                # go with a default
-                for name, action_klass in self.actions:
-                    if name == action:
-                        break
-                else:
-                    raise ValueError, 'No such action "%s"'%action
+            action_klass = self.get_action_class(action)
 
             # call the mapped action
             if isinstance(action_klass, type('')):
@@ -753,6 +746,20 @@ class Client:
 
         except ValueError, err:
             self.error_message.append(str(err))
+
+    def get_action_class(self, action_name):
+        if (hasattr(self.instance, 'cgi_actions') and
+                self.instance.cgi_actions.has_key(action_name)):
+            # tracker-defined action
+            action_klass = self.instance.cgi_actions[action_name]
+        else:
+            # go with a default
+            for name, action_klass in self.actions:
+                if name == action_name:
+                    break
+            else:
+                raise ValueError, 'No such action "%s"'%action_name
+        return action_klass
 
     def write(self, content):
         if not self.headers_done:
