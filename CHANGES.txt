@@ -35,6 +35,9 @@ Fixed:
 - recalculate SHA on template files when installed tracker used as
   template (sf bug 827510)
 - fixed ZRoundup (sf bug 624380)
+- allowed negative ids (ie. new item markers) in HTMLClass.getItem,
+  allowing "db/file_with_status/-1/status/menu" to generate a useful
+  widget
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.
