@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.58 2002-11-28 07:08:39 richard Exp $
+# $Id: client.py,v 1.59 2002-12-10 00:11:15 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -691,7 +691,7 @@ class Client:
             props = self._changenode(props)
             # handle linked nodes 
             self._post_editnode(self.nodeid)
-        except (ValueError, KeyError), message:
+        except (ValueError, KeyError, IndexError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
 
@@ -771,7 +771,19 @@ class Client:
         try:
             # do the create
             nid = self._createnode(props)
+        except (ValueError, KeyError, IndexError), message:
+            # these errors might just be indicative of user dumbness
+            self.error_message.append(_('Error: ') + str(message))
+            return
+        except:
+            # oops
+            self.db.rollback()
+            s = StringIO.StringIO()
+            traceback.print_exc(None, s)
+            self.error_message.append('<pre>%s</pre>'%cgi.escape(s.getvalue()))
+            return
 
+        try:
             # handle linked nodes 
             self._post_editnode(nid)
 
@@ -783,9 +795,6 @@ class Client:
 
             # and some nice feedback for the user
             message = _('%(classname)s created ok')%self.__dict__ + xtra
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
         except:
             # oops
             self.db.rollback()

@@ -128,7 +128,7 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
 
  <table class="messages" tal:condition="context/messages">
   <tr><th colspan="4" class="header">Messages</th></tr>
-  <tal:block tal:repeat="msg context/messages">
+  <tal:block tal:repeat="msg context/messages/reverse">
    <tr>
     <th><a tal:attributes="href string:msg${msg/id}"
            tal:content="string:msg${msg/id}"></a></th>

@@ -891,6 +891,12 @@ class DateHTMLProperty(HTMLProperty):
         '''
         return self._value.pretty()
 
+    def local(self, offset):
+        ''' Return the date/time as a local (timezone offset) date/time.
+        '''
+        return DateHTMLProperty(self._client, self._nodeid, self._prop,
+            self._name, self._value.local())
+
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
@@ -965,6 +971,7 @@ class LinkHTMLProperty(HTMLProperty):
         else:
             s = ''
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
+        # XXX if the current value is retired, then list it explicitly
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -1011,6 +1018,7 @@ class LinkHTMLProperty(HTMLProperty):
         else:  
             sort_on = ('+', linkcl.labelprop())
         options = linkcl.filter(None, conditions, sort_on, (None, None))
+        # XXX if the current value is retired, then list it explicitly
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -1131,6 +1139,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self._name, height)]
         k = linkcl.labelprop(1)
+        # XXX if any of the current values are retired, then list them
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''

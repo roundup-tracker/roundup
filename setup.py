@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.40 2002-10-17 00:22:16 richard Exp $
+# $Id: setup.py,v 1.41 2002-12-10 00:11:13 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -24,6 +24,11 @@ from distutils.command.build_scripts import build_scripts
 
 import sys, os, string
 from glob import glob
+
+# patch distutils if it can't cope with the "classifiers" keyword
+if sys.version < '2.2.3':
+    from distutils.dist import DistributionMetadata
+    DistributionMetadata.classifiers = None
 
 from roundup.templates.builder import makeHtmlBase
 
@@ -180,6 +185,22 @@ if __name__ == '__main__':
         author_email = "richard@users.sourceforge.net",
         url = 'http://sourceforge.net/projects/roundup/',
         packages = packagelist,
+        classifiers = [
+            'Development Status :: 4 - Beta',
+            'Environment :: Console',
+            'Environment :: Web Environment',
+            'Intended Audience :: End Users/Desktop',
+            'Intended Audience :: Developers',
+            'Intended Audience :: System Administrators',
+            'License :: OSI Approved :: Python Software Foundation License',
+            'Operating System :: MacOS :: MacOS X',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Programming Language :: Python',
+            'Topic :: Communications :: Email',
+            'Topic :: Office/Business',
+            'Topic :: Software Development :: Bug Tracking',
+        ],
 
         # Override certain command classes with our own ones
         cmdclass = {

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.2 2002-11-07 21:17:44 richard Exp $
+# $Id: config.py,v 1.3 2002-12-10 00:11:16 richard Exp $
 
 import os
 
@@ -46,9 +46,6 @@ TRACKER_WEB = 'http://your.tracker.url.example/'
 
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-
-# Where to place the web filtering HTML on the index page
-FILTER_POSITION = 'bottom'          # one of 'top', 'bottom', 'top and bottom'
 
 # 
 # SECURITY DEFINITIONS

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.33 2002-11-05 22:59:46 richard Exp $
+# $Id: test_mailgw.py,v 1.34 2002-12-10 00:11:16 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -119,6 +119,7 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4'])
+        return nodeid
 
     def testNewIssue(self):
         self.doNewIssue()
@@ -818,6 +819,53 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
 _______________________________________________________________________
 ''')
+
+    def testEmailQuoting(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'no'
+        self.innerTestQuoting('''This is a followup
+''')
+
+    def testEmailQuotingRemove(self):
+        self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
+        self.innerTestQuoting('''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup
+''')
+
+    def innerTestQuoting(self, expect):
+        nodeid = self.doNewIssue()
+
+        messages = self.db.issue.get(nodeid, 'messages')
+
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: [issue1] Testing...
+
+Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        handler.main(message)
+
+        # figure the new message id
+        newmessages = self.db.issue.get(nodeid, 'messages')
+        for msg in messages:
+            newmessages.remove(msg)
+        messageid = newmessages[0]
+
+        self.compareStrings(self.db.msg.get(messageid, 'content'), expect)
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),

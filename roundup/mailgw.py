@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.99 2002-11-05 22:59:46 richard Exp $
+$Id: mailgw.py,v 1.100 2002-12-10 00:11:15 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -723,7 +723,11 @@ Subject was: "%s"
                     attachments.append((name, 'message/rfc822', part.fp.read()))
                 else:
                     # try name on Content-Type
-                    name = part.getparam('name')
+                    name = part.getparam('name').strip()
+                    if not name:
+                        disp = part.getheader('content-disposition', None)
+                        if disp:
+                            name = disp.getparam('filename').strip()
                     # this is just an attachment
                     data = self.get_part_data_decoded(part) 
                     attachments.append((name, part.gettype(), data))
@@ -761,9 +765,9 @@ not find a text/plain part to use.
             content = self.get_part_data_decoded(message) 
  
         # figure how much we should muck around with the email body
-        keep_citations = getattr(self.instance, 'EMAIL_KEEP_QUOTED_TEXT',
+        keep_citations = getattr(self.instance.config, 'EMAIL_KEEP_QUOTED_TEXT',
             'no') == 'yes'
-        keep_body = getattr(self.instance, 'EMAIL_LEAVE_BODY_UNCHANGED',
+        keep_body = getattr(self.instance.config, 'EMAIL_LEAVE_BODY_UNCHANGED',
             'no') == 'yes'
 
         # parse the body of the message, stripping out bits as appropriate

@@ -9,6 +9,13 @@ are given with the most recent entry first.
 - removed use of string/strop from TAL/TALInterpreter
 - handle KeyboardInterrupt nicely
 - fixed Date and Interval form value handling
+- fixed Date.local()
+- email quoted text stripping is controllable again (sf bug 650742)
+- extract attachment name from content-disposition if name is missing (sf
+  bug 637278)
+- removed FILTER_POSITION from bundled configs
+- reverse message listing in issue display (reversion of recent change)
+- bad entries for multilink editing in cgi don't traceback now (sf bug 640310)
 
 
 2002-11-07 0.5.2
