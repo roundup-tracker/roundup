@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.24 2001-10-10 03:54:57 richard Exp $
+# $Id: roundup-admin,v 1.25 2001-10-10 04:12:32 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -384,7 +384,10 @@ def do_import(db, args):
     Import the contents of the CSV file as new nodes for the given class.
 
     The file must define the same properties as the class (including having
-    a "header" line with those property names.)
+    a "header" line with those property names.) The new nodes are added to
+    the existing database - if you want to create a new database using the
+    imported data, then create a new database (or, tediously, retire all
+    the old data.)
     '''
     if len(args) < 2:
         print do_export.__doc__
@@ -562,6 +565,11 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/10/10 03:54:57  richard
+# Added database importing and exporting through CSV files.
+# Uses the csv module from object-craft for exporting if it's available.
+# Requires the csv module for importing.
+#
 # Revision 1.23  2001/10/09 23:36:25  richard
 # Spit out command help if roundup-admin command doesn't get an argument.
 #
