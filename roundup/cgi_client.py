@@ -15,10 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.45 2001-11-01 22:04:37 richard Exp $
+# $Id: cgi_client.py,v 1.46 2001-11-03 01:26:55 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
-import base64, Cookie, time
+import binascii, Cookie, time
 
 import roundupdb, htmltemplate, date, hyperdb, password
 
@@ -593,7 +593,7 @@ class Client:
 
         # construct the cookie
         uid = self.db.user.lookup(self.user)
-        user = base64.encodestring('%s:%s'%(self.user, password))[:-1]
+        user = binascii.b2a_base64('%s:%s'%(self.user, password)).strip()
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
         self.header({'Set-Cookie': 'roundup_user=%s; Path=%s;'%(user, path)})
@@ -633,7 +633,7 @@ class Client:
         password = self.db.user.get(uid, 'password')
         # construct the cookie
         uid = self.db.user.lookup(self.user)
-        user = base64.encodestring('%s:%s'%(self.user, password))[:-1]
+        user = binascii.b2a_base64('%s:%s'%(self.user, password)).strip()
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
         self.header({'Set-Cookie': 'roundup_user=%s; Path=%s;'%(user, path)})
@@ -649,7 +649,7 @@ class Client:
         if (cookie.has_key('roundup_user') and
                 cookie['roundup_user'].value != 'deleted'):
             cookie = cookie['roundup_user'].value
-            user, password = base64.decodestring(cookie).split(':')
+            user, password = binascii.a2b_base64(cookie).split(':')
             # make sure the user exists
             try:
                 uid = self.db.user.lookup(user)
@@ -876,6 +876,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.45  2001/11/01 22:04:37  richard
+# Started work on supporting a pop3-fetching server
+# Fixed bugs:
+#  . bug #477104 ] HTML tag error in roundup-server
+#  . bug #477107 ] HTTP header problem
+#
 # Revision 1.44  2001/10/28 23:03:08  richard
 # Added more useful header to the classic schema.
 #
