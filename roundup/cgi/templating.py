@@ -1280,6 +1280,9 @@ class BooleanHTMLProperty(HTMLProperty):
         return s
 
 class DateHTMLProperty(HTMLProperty):
+
+    _marker = []
+
     def __init__(self, client, classname, nodeid, prop, name, value,
             anonymous=0, offset=None):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
@@ -1310,26 +1313,35 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, date.Date('.'))
 
-    def field(self, size=30):
-        ''' Render a form edit field for the property
+    def field(self, size=30, format=_marker):
+        '''Render a form edit field for the property
 
-            If not editable, just display the value via plain().
+        If not editable, just display the value via plain().
+
+        The format string is a standard python strftime format string.
         '''
         self.view_check()
+        if not self.is_edit_ok():
+            if format is self._marker:
+                return self.plain()
+            else:
+                return self.pretty(format)
 
         if self._value is None:
             value = ''
         elif type(self._value) is type(''):
-            value = self._value
+            if format is self._marker:
+                value = self._value
+            else:
+                value = date.Date(self._value).pretty(format)
         else:
             tz = self._db.getUserTimezone()
-            value = cgi.escape(str(self._value.local(tz)))
+            value = self._value.local(tz)
+            if format is not self._marker:
+                value = value.pretty(format)
 
-        if self.is_edit_ok():
-            value = '&quot;'.join(value.split('"'))
-            return self.input(name=self._formname,value=value,size=size)
-
-        return self.plain()
+        value = cgi.escape(str(value), True)
+        return self.input(name=self._formname, value=value, size=size)
 
     def reldate(self, pretty=1):
         ''' Render the interval between the date and now.
@@ -1347,7 +1359,6 @@ class DateHTMLProperty(HTMLProperty):
             return interval.pretty()
         return str(interval)
 
-    _marker = []
     def pretty(self, format=_marker):
         ''' Render the date in a pretty format (eg. month names, spaces).
 
@@ -1358,7 +1369,9 @@ class DateHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-        if format is not self._marker:
+        if not self._value:
+            return ''
+        elif format is not self._marker:
             return self._value.pretty(format)
         else:
             return self._value.pretty()

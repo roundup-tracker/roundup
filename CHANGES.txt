@@ -24,6 +24,8 @@ Fixed:
 - make hyperdb value parsing errors readable in mailgw errors
 - make anydbm journal export handle removed properties
 
+Feature:
+- DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
 
 2004-10-15 0.7.8
 Fixed:
