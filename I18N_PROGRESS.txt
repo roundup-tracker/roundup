@@ -1,22 +1,131 @@
+==================================
+Roundup Internationalization Notes
+==================================
+
+:Version: $Revision: 1.7 $
+
+FIXME: add introduction - what's l10n, i18n, po, mo, pot, gettext...
+
+Used Tools
+----------
+
+We use ``xpot`` utility from Francois Pinard free `PO utilities`_
+to build message template file.  ``pygettext`` utility included
+with Python distribution is not used because it has several limitations:
+
+ - no way to mark strings translated elsewhere
+ - does not detect translation done by an object method
+ - source references put in the comments are not recognized
+   by translation software.
+
+Message translation can be done with `emacs`_ "po mode" provided
+by `PO utilities`_.  (als: i didn't try that personally.)
+
+Another tool for message translation (als: one that i use) is `poEdit`_
+by Vaclav Slavik.
+
+.. _PO utilities: http://po-utils.progiciels-bpi.ca/
+.. _emacs: http://www.gnu.org/software/emacs/
+.. _poEdit: http://poedit.sourceforge.net/
+
+Marking Strings for Translation
+-------------------------------
+
+Strings that need translation must be marked in the source code.
+
+Command Line Interfaces
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Scripts and routines run from the command line use "static" language
+defined by environment variables recognized by ``gettext`` module
+from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
+``LANG``).  Primarilly, these are ``roundup-admin`` script and
+``admin.py`` module, but also help texts and startup error messages
+in other scripts and their supporting modules.
+
+For these interfaces, Python ``gettext`` engine must be initialized
+to use Roundup message catalogs.  This is normally done by including
+the following line in the module imports::
+
+  from i18n import _
+
+Simple translations are automatically marked by calls to builtin
+message translation function ``_()``::
+
+  print _("This message is translated")
+
+*(not tested)* Translations for messages whose grammatical depends
+on a number must be done by ``ngettext()`` function::
+
+  print ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked)
+
+*Discussion:* make ``i18n._()`` with the same interface as in ``config._()``?
+
+User Interfaces
+~~~~~~~~~~~~~~~
+
+*(not yet)*
+
+This includes Mail Gateway and Web User Interfaces, where translation
+depends on the language of current Roundup User.  These translations
+will be done by the tracker configuration object.  Translatable strings
+will be automatically marked by calls to the ``_()`` method of that
+object::
+
+  self.config._("This message is translated")
+  self.config._("Nuked %i file", "Nuked %i files", number_of_files_nuked)
+
+Deferred Translations
+~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes translatable strings appear in the source code in untranslated
+form and must be translated elsewhere.  Example::
+
+  for meal in ("spam", "egg", "beacon"):
+      print _(meal)
+
+In such cases, strings must be marked for translation without actual
+call to the translating function.  To mark these strings, we use Python
+feature of automatical concatenation of adjacent strings and different
+types of string quotes::
+
+  strings_to_translate = (
+      ''"This string will be translated",
+      ""'me too',
+      ''r"\raw string",
+      ''"""
+      multiline string"""
+  )
+
+Building Message Catalog Template
+---------------------------------
+
+Message catalog template ``roundup.pot`` is kept in `Roundup CVS`_
+and distributed with `Roundup Source`_.  If you wish to rebuild
+the template yourself, you will need ``xpot`` utility by Francois
+Pinard, included in `PO utilities`_ distribution.
+
+To rebuild the template file, just run ``gmake`` (or ``make``, if you
+are on a `GNU`_ system like `linux`_ or `cygwin`_) in the 'locale'
+directory.
+
+.. Roundup CVS: http://sourceforge.net/cvs/?group_id=31577
+.. Roundup Source: http://sourceforge.net/project/showfiles.php?group_id=31577
+.. GNU: http://www.gnu.org/
+.. linux: http://www.linux.org/
+.. cygwin: http://www.cygwin.com/
+
+I18 Status
+----------
+
 This list has been generated using the MANIFEST file. We should be able to
 write a simple script to compare the two and make sure that all MANIFEST
 files appear in here.
 
-To generate a messages.pot file, use this command:
-
-    python tools/pygettext.py roundup roundup-* cgi-bin/roundup.cgi
-
-"messages.pot" then contains a positive list of files using _(), which can
-be extracted by;
-
-    grep "#: " messages.pot | tr ":#0123456789 " "\012" | sort | uniq
-
-Of course, this does not check whether a file is fully translated, only
-whether there is at least one use of "_()".
-
+This list was last updated Sat Jan 5 02:35:10 2002 UTC.
 
 THESE FILES DO NOT USE _()
-==========================
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 roundup/hyperdb.py
 roundup/i18n.py
 roundup/init.py
@@ -41,7 +150,7 @@ roundup/templates/classic/detectors/nosyreaction.py
 
 
 THESE FILES DO USE _()
-======================
+~~~~~~~~~~~~~~~~~~~~~~
 roundup-admin
 roundup-mailgw
 roundup-server
@@ -53,7 +162,7 @@ roundup/cgi/cgitb.py
 
 
 WE DON'T CARE ABOUT THESE FILES
-===============================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 BUILD.txt
 CHANGES.txt
 INSTALL.txt
