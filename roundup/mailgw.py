@@ -15,8 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# vim: ts=4 sw=4 expandtab
-#
 
 """An e-mail gateway for Roundup.
 
@@ -74,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.155 2004-09-14 22:09:48 richard Exp $
+$Id: mailgw.py,v 1.156 2004-09-29 07:05:57 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -769,7 +767,7 @@ The mail gateway is not properly set up. Please contact
         # Don't create users if anonymous isn't allowed to register
         create = 1
         anonid = self.db.user.lookup('anonymous')
-        if not self.db.security.hasPermission('Create', 'user', anonid):
+        if not self.db.security.hasPermission('Create', anonid, 'user'):
             create = 0
 
         # ok, now figure out who the author is - create a new user if the
