@@ -717,6 +717,7 @@ reply's additional "Re:" is ok),
 - or visit the following URL:
 
 %(url)s?@action=confrego&otk=%(otk)s
+
 """ % {'name': props['username'], 'tracker': tracker_name, 'url': self.base,
         'otk': otk, 'tracker_email': tracker_email}
         if not self.client.standard_message([props['address']], subject, body,
