@@ -1051,7 +1051,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
                           r'(?P<email>[-+=%/\w\.]+@[\w\.\-]+)|'
-                          r'(?P<item>(?P<class>[a-z_]+)(?P<id>\d+)))')
+                          r'(?P<item>(?P<class>[A-Za-z_]+)(\s*)?(?P<id>\d+)))')
     def _hyper_repl(self, match):
         if match.group('url'):
             s = match.group('url')
@@ -1065,7 +1065,7 @@ class StringHTMLProperty(HTMLProperty):
             s2 = match.group('id')
             try:
                 # make sure s1 is a valid tracker classname
-                cl = self._db.getclass(s1)
+                cl = self._db.getclass(s1.lower())
                 if not cl.hasnode(s2):
                     raise KeyError, 'oops'
                 return '<a href="%s">%s%s</a>'%(s, s1, s2)

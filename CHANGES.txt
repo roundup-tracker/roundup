@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - popup listing uses filter args (thanks Marlon van den Berg)
 - fixed editing of message contents
+- loosened the detection of issue cross-references in messages
 
 
 2004-10-15 0.7.8
