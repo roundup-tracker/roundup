@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.142 2004-12-03 22:11:06 richard Exp $
+# $Id: rdbms_common.py,v 1.143 2004-12-16 22:22:55 jlgijsbers Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -454,14 +454,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         return 1
 
-    def create_class_table(self, spec):
-        '''Create the class table for the given Class "spec". Creates the
-        indexes too.'''
-        cols, mls = self.determine_columns(spec.properties.items())
+    def determine_all_columns(self, spec):
+        """Figure out the columns from the spec and also add internal columns
 
+        """
+        cols, mls = self.determine_columns(spec.properties.items())
+        
         # add on our special columns
         cols.append(('id', 'INTEGER PRIMARY KEY'))
         cols.append(('__retired__', 'INTEGER DEFAULT 0'))
+        return cols, mls
+
+    def create_class_table(self, spec):
+        '''Create the class table for the given Class "spec". Creates the
+        indexes too.'''
+        cols, mls = self.determine_all_columns(spec)
 
         # create the base table
         scols = ','.join(['%s %s'%x for x in cols])

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.55 2004-11-26 00:01:04 richard Exp $
+# $Id: db_test_base.py,v 1.56 2004-12-16 22:22:55 jlgijsbers Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -78,6 +78,8 @@ def setupSchema(db, create, module):
         priority=Link('priority'))
     stuff = module.Class(db, "stuff", stuff=String())
     session = module.Class(db, 'session', title=String())
+    msg = module.FileClass(db, "msg",
+                           author=Link("user", do_journal='no'))
     session.disableJournalling()
     db.post_init()
     if create:
