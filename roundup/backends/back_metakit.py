@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.67 2004-03-22 07:45:39 richard Exp $
+# $Id: back_metakit.py,v 1.68 2004-03-24 05:33:13 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -48,6 +48,7 @@ import re, marshal, os, sys, time, calendar
 from indexer_dbm import Indexer
 import locking
 from roundup.date import Range
+from blobfiles import files_in_dir
 
 # view modes for opening
 # XXX FIXME BPK -> these don't do anything, they are ignored
@@ -324,6 +325,12 @@ class _Database(hyperdb.Database, roundupdb.Database):
         ''' No-op in metakit
         '''
         pass
+
+    def numfiles(self):
+        '''Get number of files in storage, even across subdirectories.
+        '''
+        files_dir = os.path.join(self.config.DATABASE, 'files')
+        return files_in_dir(files_dir)
         
 _STRINGTYPE = type('')
 _LISTTYPE = type([])
@@ -377,6 +384,7 @@ class Class(hyperdb.Class):
         if view:
             self.maxid = view[-1].id + 1
         self.uncommitted = {}
+        self.comactions = []
         self.rbactions = []
 
         # people reach inside!!
@@ -1533,11 +1541,15 @@ class Class(hyperdb.Class):
         ''' called post commit of the DB.
             interested subclasses may override '''
         self.uncommitted = {}
+        for action in self.comactions:
+            action()
+        self.comactions = []
         self.rbactions = []
         self.idcache = {}
     def _rollback(self):  
         ''' called pre rollback of the DB.
             interested subclasses may override '''
+        self.comactions = []
         for action in self.rbactions:
             action()
         self.rbactions = []
@@ -1551,6 +1563,10 @@ class Class(hyperdb.Class):
         iv = self.getindexview(READWRITE)
         if iv:
             iv[:] = []
+    def commitaction(self, action):
+        ''' call this to register a callback called on commit
+            callback is removed on end of transaction '''
+        self.comactions.append(action)
     def rollbackaction(self, action):
         ''' call this to register a callback called on rollback
             callback is removed on end of transaction '''
@@ -1732,6 +1748,8 @@ class FileClass(Class, hyperdb.FileClass):
         if propname == 'content':
             poss_msg = 'Possibly an access right configuration problem.'
             fnm = self.gen_filename(nodeid)
+            if not os.path.exists(fnm):
+                fnm = fnm + '.tmp'
             try:
                 f = open(fnm, 'rb')
             except IOError, (strerror):
@@ -1758,15 +1776,55 @@ class FileClass(Class, hyperdb.FileClass):
 
         # figure a filename
         nm = self.gen_filename(newid)
-        open(nm, 'wb').write(content)
+        f = open(nm + '.tmp', 'wb')
+        f.write(content)
+        f.close()
 
         mimetype = propvalues.get('type', self.default_mime_type)
         self.db.indexer.add_text((self.classname, newid, 'content'), content,
             mimetype)
+
+        # register commit and rollback actions
+        def commit(fnm=nm):
+            os.rename(fnm + '.tmp', fnm)
+        self.commitaction(commit)
         def undo(fnm=nm):
-            os.remove(fnm)
+            os.remove(fnm + '.tmp')
         self.rollbackaction(undo)
         return newid
+
+    def set(self, itemid, **propvalues):
+        if not propvalues:
+            return
+        self.fireAuditors('set', None, propvalues)
+
+        content = propvalues.get('content', None)
+        if content is not None:
+            del propvalues['content']
+
+        propvalues, oldnode = Class.set_inner(self, itemid, **propvalues)
+
+        # figure a filename
+        if content is not None:
+            nm = self.gen_filename(itemid)
+            f = open(nm + '.tmp', 'wb')
+            f.write(content)
+            f.close()
+            mimetype = propvalues.get('type', self.default_mime_type)
+            self.db.indexer.add_text((self.classname, itemid, 'content'),
+                content, mimetype)
+
+            # register commit and rollback actions
+            def commit(fnm=nm):
+                if os.path.exists(fnm):
+                    os.remove(fnm)
+                os.rename(fnm + '.tmp', fnm)
+            self.commitaction(commit)
+            def undo(fnm=nm):
+                os.remove(fnm + '.tmp')
+            self.rollbackaction(undo)
+
+        self.fireReactors('set', oldnode, propvalues)
 
     def index(self, nodeid):
         Class.index(self, nodeid)

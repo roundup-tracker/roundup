@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_metakit.py,v 1.4 2004-03-18 01:58:46 richard Exp $ 
+# $Id: test_metakit.py,v 1.5 2004-03-24 05:33:13 richard Exp $ 
 import unittest, os, shutil, time, weakref
 
 from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config, password
@@ -31,37 +31,6 @@ class metakitOpener:
         shutil.rmtree(config.DATABASE)
 
 class metakitDBTest(metakitOpener, DBTest):
-    def testTransactions(self):
-        # remember the number of items we started
-        num_issues = len(self.db.issue.list())
-        self.db.issue.create(title="don't commit me!", status='1')
-        self.assertNotEqual(num_issues, len(self.db.issue.list()))
-        self.db.rollback()
-        self.assertEqual(num_issues, len(self.db.issue.list()))
-        self.db.issue.create(title="please commit me!", status='1')
-        self.assertNotEqual(num_issues, len(self.db.issue.list()))
-        self.db.commit()
-        self.assertNotEqual(num_issues, len(self.db.issue.list()))
-        self.db.rollback()
-        self.assertNotEqual(num_issues, len(self.db.issue.list()))
-        self.db.file.create(name="test", type="text/plain", content="hi")
-        self.db.rollback()
-        num_files = len(self.db.file.list())
-        for i in range(10):
-            self.db.file.create(name="test", type="text/plain", 
-                    content="hi %d"%(i))
-            self.db.commit()
-        # TODO: would be good to be able to ensure the file is not on disk after
-        # a rollback...
-        num_files2 = len(self.db.file.list())
-        self.assertNotEqual(num_files, num_files2)
-        self.db.file.create(name="test", type="text/plain", content="hi")
-        num_rfiles = len(os.listdir(self.db.config.DATABASE + '/files/file/0'))
-        self.db.rollback()
-        num_rfiles2 = len(os.listdir(self.db.config.DATABASE + '/files/file/0'))
-        self.assertEqual(num_files2, len(self.db.file.list()))
-        self.assertEqual(num_rfiles2, num_rfiles-1)
-
     def testBooleanUnset(self):
         # XXX: metakit can't unset Booleans :(
         nid = self.db.user.create(username='foo', assignable=1)
