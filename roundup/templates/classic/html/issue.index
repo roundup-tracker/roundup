@@ -59,9 +59,10 @@
    <td>
     <select name=":sort">
      <option value="">- nothing -</option>
-     <option tal:repeat="col request/columns"
-             tal:attributes="value col; selected python:col == request.sort[1]"
-             tal:content="col">column</option>
+     <option tal:repeat="col klass/properties"
+             tal:attributes="value col/name;
+                             selected python:col.name == request.sort[1]"
+             tal:content="col/name">column</option>
     </select>
    </td>
    <th>Descending:</th>
@@ -74,9 +75,10 @@
    <td>
     <select name=":group">
      <option value="">- nothing -</option>
-     <option tal:repeat="col request/columns"
-             tal:attributes="value col; selected python:col == request.group[1]"
-             tal:content="col">column</option>
+     <option tal:repeat="col klass/properties"
+             tal:attributes="value col/name;
+                             selected python:col.name == request.group[1]"
+             tal:content="col/name">column</option>
     </select>
    </td>
    <th>Descending:</th>

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.20 2002-07-19 03:36:34 richard Exp $
+#$Id: back_bsddb.py,v 1.21 2002-09-03 07:33:01 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
@@ -61,8 +61,8 @@ class Database(Database):
         path = os.path.join(os.getcwd(), self.dir, name)
         if not os.path.exists(path):
             if __debug__:
-                print >>hyperdb.DEBUG, "opendb bsddb.open(%r, 'n')"%path
-            return bsddb.btopen(path, 'n')
+                print >>hyperdb.DEBUG, "opendb bsddb.open(%r, 'c')"%path
+            return bsddb.btopen(path, 'c')
 
         # open the database with the correct module
         if __debug__:
@@ -131,6 +131,15 @@ class Database(Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.20  2002/07/19 03:36:34  richard
+#Implemented the destroy() method needed by the session database (and possibly
+#others). At the same time, I removed the leading underscores from the hyperdb
+#methods that Really Didn't Need Them.
+#The journal also raises IndexError now for all situations where there is a
+#request for the journal of a node that doesn't have one. It used to return
+#[] in _some_ situations, but not all. This _may_ break code, but the tests
+#pass...
+#
 #Revision 1.19  2002/07/14 02:05:53  richard
 #. all storage-specific code (ie. backend) is now implemented by the backends
 #

@@ -1096,28 +1096,31 @@ env: %(env)s
     def indexargs_href(self, url, args):
         ''' embed the current index args in a URL '''
         l = ['%s=%s'%(k,v) for k,v in args.items()]
-        if self.columns:
+        if self.columns and not args.has_key(':columns'):
             l.append(':columns=%s'%(','.join(self.columns)))
-        if self.sort[1] is not None:
+        if self.sort[1] is not None and not args.has_key(':sort'):
             if self.sort[0] == '-':
                 val = '-'+self.sort[1]
             else:
                 val = self.sort[1]
             l.append(':sort=%s'%val)
-        if self.group[1] is not None:
+        if self.group[1] is not None and not args.has_key(':group'):
             if self.group[0] == '-':
                 val = '-'+self.group[1]
             else:
                 val = self.group[1]
             l.append(':group=%s'%val)
-        if self.filter:
+        if self.filter and not args.has_key(':columns'):
             l.append(':filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():
-            l.append('%s=%s'%(k, ','.join(v)))
-        if self.search_text:
+            if not args.has_key(k):
+                l.append('%s=%s'%(k, ','.join(v)))
+        if self.search_text and not args.has_key(':search_text'):
             l.append(':search_text=%s'%self.search_text)
-        l.append(':pagesize=%s'%self.pagesize)
-        l.append(':startwith=%s'%self.startwith)
+        if not args.has_key(':pagesize'):
+            l.append(':pagesize=%s'%self.pagesize)
+        if not args.has_key(':startwith'):
+            l.append(':startwith=%s'%self.startwith)
         return '%s?%s'%(url, '&'.join(l))
 
     def base_javascript(self):
