@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.4 2002-09-19 03:39:48 richard Exp $
+# $Id: rdbms_common.py,v 1.5 2002-09-19 03:56:20 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1724,10 +1724,8 @@ class Class(hyperdb.Class):
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
         cursor = self.db.conn.cursor()
-        print (sql, args)
         cursor.execute(sql, args)
         l = cursor.fetchall()
-        print l
 
         # return the IDs (the first column)
         # XXX The filter(None, l) bit is sqlite-specific... if there's _NO_
