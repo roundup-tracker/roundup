@@ -7,7 +7,8 @@ Fixed:
 - fix initialisation of roundup-server in daemon mode so initialisation
   errors are visible
 - have Permissions only test the check function if itemid is suppled
-- modify index templates to check for row-level Permission
+- modify cgi templating system to check item-level permissions in listings
+- enable batching in message and file listings
 - more documentation of security mechanisms
 - better unit tests for security mechanisms
 

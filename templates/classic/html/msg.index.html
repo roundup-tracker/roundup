@@ -5,10 +5,9 @@
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
  i18n:translate="">Message listing</span>
 <td class="content" metal:fill-slot="content">
-<table class="messages" tal:condition="request/filter">
+<table tal:define="batch request/batch" class="messages">
  <tr><th colspan=2 class="header" i18n:translate="">Messages</th></tr>
- <tal:block tal:repeat="msg context/list">
- <tal:block tal:condition="msg/is_view_ok">
+ <tal:block tal:repeat="msg batch">
   <tr>
    <th tal:content="string:Author: ${msg/author}">author</th>
    <th tal:content="string:Date: ${msg/date}">date</th>
@@ -17,7 +16,9 @@
    <td colspan="2"><pre tal:content="msg/content">content</pre></td>
   </tr>
  </tal:block>
- </tal:block>
+
+ <metal:block use-macro="templates/issue.index/macros/batch-footer" />
+
 </table>
 </td>
 

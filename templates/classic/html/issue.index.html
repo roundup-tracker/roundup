@@ -32,7 +32,7 @@
    </th>
   </tr>
 
-  <tr tal:condition="i/is_view_ok">
+  <tr>
    <td tal:condition="request/show/priority"
        tal:content="python:i.priority.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/id" tal:content="i/id">&nbsp;</td>
@@ -58,6 +58,7 @@
 
  </tal:block>
 
+ <metal:index define-macro="batch-footer">
  <tr tal:condition="batch">
   <th tal:attributes="colspan python:len(request.columns)">
    <table width="100%">
@@ -84,6 +85,7 @@
    </table>
   </th>
  </tr>
+ </metal:index>
 </table>
 
 <a tal:attributes="href python:request.indexargs_url('issue',

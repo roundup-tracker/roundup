@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.169 $
+:Version: $Revision: 1.170 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -932,6 +932,8 @@ The ``addPermission`` method takes a couple of optional parameters:
 
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
+
+See the `examples`_ section for longer examples of customisation.
 
 **automatic registration of users in the e-mail gateway**
  By giving the "anonymous" user the "Email Registration" Role, any
@@ -4035,6 +4037,26 @@ users, replacing the existing ``'User'`` values::
     ...
     new_web_user_roles = 'Provisional User'
     new_email_user_roles = 'Provisional User'
+
+
+All users may only view and edit issues, files and messages they create
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Replace the standard "classic" tracker View and Edit Permission assignments
+for the "issue", "file" and "msg" classes with the following::
+
+    def checker(klass):
+        def check(db, userid, itemid, klass=klass):
+            return db.getclass(klass).get(itemid, 'creator') == userid
+    for cl in 'issue', 'file', 'msg':
+        p = db.security.addPermission(name='View', klass=cl,
+            check=checker(cl))
+        db.security.addPermissionToRole('User', p)
+        p = db.security.addPermission(name='Edit', klass=cl,
+            check=checker(cl))
+        db.security.addPermissionToRole('User', p)
+        db.security.addPermissionToRole('User', 'Create', cl)
+
 
 
 Changes to the Web User Interface
