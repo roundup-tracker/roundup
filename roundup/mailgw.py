@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.42 2001-12-15 19:24:39 rochecompaan Exp $
+$Id: mailgw.py,v 1.43 2001-12-15 19:39:01 rochecompaan Exp $
 '''
 
 
@@ -623,24 +623,27 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         if not section:
             continue
         lines = eol.split(section)
+        if lines[0] and lines[0][0] in '>|':
+            continue
+        if len(lines) > 1 and lines[1] and lines[1][0] in '>|':
+            continue
         if not summary:
             summary = lines[0]
             l.append(section)
             continue
-        # TODO: write better pattern for matching signature - it
-        # currently truncates messages with dashes in
-        #if signature.match(lines[0]):
-        #    break
+        if signature.match(lines[0]):
+            break
         l.append(section)
     return summary, '\n\n'.join(l)
 
 #
 # $Log: not supported by cvs2svn $
-# Revision 1.27  2001/12/15 06:51:04  roche
-# Merge with CVS
-#
-# Revision 1.1.1.11  2001/12/13 07:05:43  roche
-# update from cvs
+# Revision 1.42  2001/12/15 19:24:39  rochecompaan
+#  . Modified cgi interface to change properties only once all changes are
+#    collected, files created and messages generated.
+#  . Moved generation of change note to nosyreactors.
+#  . We now check for changes to "assignedto" to ensure it's added to the
+#    nosy list.
 #
 # Revision 1.41  2001/12/10 00:57:38  richard
 # From CHANGES:
