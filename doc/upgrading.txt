@@ -360,10 +360,10 @@ The CGI interface code was completely reorganised and largely rewritten. The
 end result is that this section of your tracker interfaces module will need
 changing from::
 
- from roundup import mailgw
- from roundup.cgi import client
+ from roundup import cgi_client, mailgw
+ from roundup.i18n import _
  
- class Client(client.Client): 
+ class Client(cgi_client.Client):
      ''' derives basic CGI implementation from the standard module,
          with any specific extensions
      '''
@@ -371,10 +371,10 @@ changing from::
 
 to::
 
- from roundup import cgi_client, mailgw
- from roundup.i18n import _
+ from roundup import mailgw
+ from roundup.cgi import client
  
- class Client(cgi_client.Client):
+ class Client(client.Client): 
      ''' derives basic CGI implementation from the standard module,
          with any specific extensions
      '''

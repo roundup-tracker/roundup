@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2002-11-?? 0.5.3
 - added mention of how to give users multiple Roles
 - mention needed trailing "/" in TRACKER_WEB
+- fixed upgrading doc to have CGI changes in the correct order
 
 
 2002-11-07 0.5.2
