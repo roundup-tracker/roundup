@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.27.2.6 2003-03-09 21:44:15 richard Exp $
+# $Id: rdbms_common.py,v 1.27.2.7 2003-03-14 02:52:03 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -185,6 +185,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         new_has = new_spec.properties.has_key
 
         new_spec = new_spec.schema()
+        new_spec[1].sort()
+        old_spec[1].sort()
         if new_spec == old_spec:
             # no changes
             return 0
