@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.23 2004-11-18 14:02:25 a1s Exp $
+# $Id: configuration.py,v 1.24 2005-01-13 05:02:18 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -484,6 +484,12 @@ SETTINGS = (
         (NullableOption, 'password', 'roundup',
             "Database user password.",
             ['MYSQL_DBPASSWORD']),
+        (NullableOption, 'read_default_file', '~/.my.cnf',
+            "Name of the MySQL defaults file.\n"
+            "Only used in MySQL connections."),
+        (NullableOption, 'read_default_group', 'roundup',
+            "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
+            "Only used in MySQL connections."),
     ), "Settings in this section are used"
         " by Postgresql and MySQL backends only"
     ),

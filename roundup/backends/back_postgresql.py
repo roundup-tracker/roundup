@@ -1,4 +1,4 @@
-#$Id: back_postgresql.py,v 1.27 2005-01-08 11:25:23 jlgijsbers Exp $
+#$Id: back_postgresql.py,v 1.28 2005-01-13 05:02:18 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -14,6 +14,15 @@ import psycopg
 
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common
+
+def connection_dict(config, dbnamestr=None):
+    ''' read_default_group is MySQL-specific, ignore it '''
+    d = rdbms_common.connection_dict(config, dbnamestr)
+    if d.has_key('read_default_group'):
+        del d['read_default_group']
+    if d.has_key('read_default_file'):
+        del d['read_default_file']
+    return d
 
 def db_create(config):
     """Clear all database contents and drop database itself"""
@@ -34,7 +43,7 @@ def db_command(config, command):
     '''Perform some sort of database-level command. Retry 10 times if we
     fail by conflicting with another user.
     '''
-    template1 = rdbms_common.connection_dict(config)
+    template1 = connection_dict(config)
     template1['database'] = 'template1'
     
     try:
@@ -71,7 +80,7 @@ def pg_command(cursor, command):
 
 def db_exists(config):
     """Check if database already exists"""
-    db = rdbms_common.connection_dict(config, 'database')
+    db = connection_dict(config, 'database')
     try:
         conn = psycopg.connect(**db)
         conn.close()
@@ -86,7 +95,7 @@ class Database(rdbms_common.Database):
     implements_intersect = 1
 
     def sql_open_connection(self):
-        db = rdbms_common.connection_dict(self.config, 'database')
+        db = connection_dict(self.config, 'database')
         self.config.logging.getLogger('hyperdb').info('open database %r'%(
             db['database'],))
         try:
