@@ -54,9 +54,10 @@ hyperdatabase is intended to be a flexible data store that can hold
 configurable data in records which we call items.
 
 The hyperdatabase is implemented on top of the storage layer, an
-external module for storing its data.  The storage layer could be a
-third-party RDBMS; for a "batteries-included" distribution, implementing
-the hyperdatabase on the standard bsddb module is suggested.
+external module for storing its data.  "Batteries-includes" distribution
+implements the hyperdatabase on a standard anydbm module.  The storage
+layer could be a third-party RDBMS; for a low-maintenance solution,
+implementing the hyperdatabase on the SQLite RDBMS is suggested.
 
 Dates and Date Arithmetic
 ~~~~~~~~~~~~~~~~~~~~~~~~~
