@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.66 $
+:Version: $Revision: 1.67 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -109,7 +109,9 @@ The configuration variables available are:
 
 **TRACKER_WEB** - ``'http://your.tracker.url.example/'``
  The web address that the tracker is viewable at. This will be included in
- information sent to users of the tracker.
+ information sent to users of the tracker. The URL must include the cgi-bin
+ part or anything else that is required to get to the home page of the
+ tracker. You must include a trailing '/' in the URL.
 
 **ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
  The email address that roundup will complain to if it runs into trouble.

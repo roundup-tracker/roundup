@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.5 2002-12-10 00:11:16 richard Exp $
+# $Id: config.py,v 1.6 2002-12-13 22:20:10 richard Exp $
 
 import os
 
@@ -40,9 +40,11 @@ TRACKER_NAME = 'Roundup issue tracker'
 # The email address that mail to roundup should go to
 TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
-# The web address that the instance is viewable at. This URL MUST end
-# in a trailing forward slash "/" or your web interface will break!
-TRACKER_WEB = 'http://your.tracker.url.example/'
+# The web address that the tracker is viewable at. This will be included in
+# information sent to users of the tracker. The URL MUST include the cgi-bin
+# part or anything else that is required to get to the home page of the
+# tracker. You MUST include a trailing '/' in the URL.
+TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
