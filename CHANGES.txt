@@ -5,6 +5,7 @@ are given with the most recent entry first.
 - key the templates cache off full path, not filename
 - implemented whole-database locking
 - hyperlinking of special text (url, email, item designator) in messages
+- fixed time default in date.py
 
 
 2002-12-11 0.5.3
