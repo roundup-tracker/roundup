@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.63 2004-03-19 04:47:59 richard Exp $
+# $Id: back_metakit.py,v 1.64 2004-03-19 04:58:52 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -352,7 +352,7 @@ class Class(hyperdb.Class):
     privateprops = None
     def __init__(self, db, classname, **properties):
         if (properties.has_key('creation') or properties.has_key('activity')
-            or properties.has_key('creator')):
+            or properties.has_key('creator') or properties.has_key('actor')):
             raise ValueError, '"creation", "activity" and "creator" are '\
                   'reserved'
         if hasattr(db, classname):
@@ -364,6 +364,7 @@ class Class(hyperdb.Class):
         self.ruprops = properties
         self.privateprops = { 'id' : hyperdb.String(),
                               'activity' : hyperdb.Date(),
+                              'actor' : hyperdb.Link('user'),
                               'creation' : hyperdb.Date(),
                               'creator'  : hyperdb.Link('user') }
 
@@ -765,6 +766,8 @@ class Class(hyperdb.Class):
             return propvalues
         if not propvalues.has_key('activity'):
             row.activity = int(time.time())
+        if not propvalues.has_key('actor'):
+            row.actor = int(self.db.getuid())
         if isnew:
             if not row.creation:
                 row.creation = int(time.time())
@@ -1583,8 +1586,11 @@ class Class(hyperdb.Class):
             if _typmap[rutyp.__class__] != mkprop.type:
                 break
         else:
-            
-            return view.ordered(1)
+            # make sure we have the 'actor' property too
+            for mkprop in mkprops:
+                if mkprop.name == 'actor':
+                    return view.ordered(1)
+
         # The schema has changed.  We need to create or restructure the mk view
         # id comes first, so we can use view.ordered(1) so that
         # MK will order it for us to allow binary-search quick lookups on
@@ -1593,7 +1599,8 @@ class Class(hyperdb.Class):
         s = ["%s[id:I" % self.classname]
 
         # these columns will always be added, we can't trample them :)
-        _columns = {"id":"I", "_isdel":"I", "activity":"I", "creation":"I", "creator":"I"}
+        _columns = {"id":"I", "_isdel":"I", "activity":"I", "actor": "I",
+            "creation":"I", "creator":"I"}
 
         for nm, rutyp in self.ruprops.items():
             mktyp = _typmap[rutyp.__class__].upper()
@@ -1607,7 +1614,7 @@ class Class(hyperdb.Class):
 
         # XXX FIX ME -> in some tests, creation:I becomes creation:S is this
         # okay?  Does this need to be supported?
-        s.append('_isdel:I,activity:I,creation:I,creator:I]')
+        s.append('_isdel:I,activity:I,actor:I,creation:I,creator:I]')
         view = self.db._db.getas(','.join(s))
         self.db.commit()
         return view.ordered(1)
