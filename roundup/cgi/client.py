@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.123 2003-06-24 04:16:35 richard Exp $
+# $Id: client.py,v 1.124 2003-06-24 05:00:43 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -232,10 +232,15 @@ class Client:
         self.ok_message = []
         self.error_message = []
         try:
+            # figure out the context and desired content template
+            # do this first so we don't authenticate for static files
+            # Note: this method opens the database as "admin" in order to
+            # perform context checks
+            self.determine_context()
+
             # make sure we're identified (even anonymously)
             self.determine_user()
-            # figure out the context and desired content template
-            self.determine_context()
+
             # possibly handle a form submit action (may change self.classname
             # and self.template, and may also append error/ok_messages)
             self.handle_action()
@@ -312,8 +317,6 @@ class Client:
     def determine_user(self):
         ''' Determine who the user is
         '''
-        # determine the uid to use
-        self.opendb('admin')
         # clean age sessions
         self.clean_sessions()
         # make sure we have the session Class
@@ -422,6 +425,9 @@ class Client:
             if len(path) > 1:
                 # send the file identified by the designator in path[0]
                 raise SendFile, path[0]
+
+        # we need the db for further context stuff - open it as admin
+        self.opendb('admin')
 
         # see if we got a designator
         m = dre.match(self.classname)
