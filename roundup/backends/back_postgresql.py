@@ -113,13 +113,25 @@ class Database(rdbms_common.Database):
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
+        # OTK store
         self.cursor.execute('CREATE TABLE otks (otk_key VARCHAR(255), '
             'otk_value VARCHAR(255), otk_time FLOAT(20))')
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
+
+        # Sessions store
         self.cursor.execute('CREATE TABLE sessions (session_key VARCHAR(255), '
             'session_time FLOAT(20), session_value VARCHAR(255))')
         self.cursor.execute('CREATE INDEX sessions_key_idx ON '
             'sessions(session_key)')
+
+        # full-text indexing store
+        self.cursor.execute('CREATE TABLE _textids (_class VARCHAR(255), '
+            '_itemid VARCHAR(255), _prop VARCHAR(255), _textid INT4) ')
+        self.cursor.execute('CREATE TABLE _words (_word VARCHAR(30), '
+            '_textid INT4)')
+        self.cursor.execute('CREATE INDEX words_word_ids ON _words(_word)')
+        sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
+        self.cursor.execute(sql, ('_textids', 1))
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

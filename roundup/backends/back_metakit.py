@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.65 2004-03-19 05:27:55 richard Exp $
+# $Id: back_metakit.py,v 1.66 2004-03-21 23:39:08 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1873,12 +1873,12 @@ class Indexer(Indexer):
             ids[oldpos].ignore = 1
             self.changed = 1
         pos = ids.append(tblid=tblid,nodeid=nodeid,propid=propid)
-        
+
         wordlist = re.findall(r'\b\w{2,25}\b', text.upper())
         words = {}
         for word in wordlist:
-	    if not self.disallows.has_key(word):
-            	words[word] = 1
+            if not self.disallows.has_key(word):
+                words[word] = 1
         words = words.keys()
         
         index = self.db.view('index').ordered(1)

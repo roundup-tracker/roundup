@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.62 2004-02-11 23:55:08 richard Exp $
+# $Id: admin.py,v 1.63 2004-03-21 23:39:08 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -748,7 +748,7 @@ Command help:
         # convert types
         for propname, value in props.items():
             try:
-                props[key] = hyperdb.rawToHyperdb(self.db, cl, None,
+                props[propname] = hyperdb.rawToHyperdb(self.db, cl, None,
                     propname, value)
             except hyperdb.HyperdbValueError, message:
                 raise UsageError, message

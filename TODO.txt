@@ -1,10 +1,9 @@
 This file has been re-purposed to contain specifically the items that need
 doing before the next release:
 
-- indexing in RDBMSes
-- add tests for group-by-multilink so I finally implement it for the RDBMSes
-- s/getnode/getitem in backends (and s/Node/Item)
 - have rdbms backends look up the journal for actor if it's not set
-- ensure index creation is triggered by the version 1->2 update
-
+- migrate rdbms backends to use typed columns
 - migrate to numeric ID values (fixes bug 817217)
+
+- ensure index creation is triggered by the version 1->2 update
+  (and other upgrade tests)

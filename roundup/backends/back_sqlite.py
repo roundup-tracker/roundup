@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.17 2004-03-18 01:58:45 richard Exp $
+# $Id: back_sqlite.py,v 1.18 2004-03-21 23:39:08 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -64,6 +64,15 @@ class Database(rdbms_common.Database):
             'session_time integer, session_value varchar)')
         self.cursor.execute('create index sessions_key_idx on '
                 'sessions(session_key)')
+
+        # full-text indexing store
+        self.cursor.execute('CREATE TABLE _textids (_class varchar, '
+            '_itemid varchar, _prop varchar, _textid integer) ')
+        self.cursor.execute('CREATE TABLE _words (_word varchar, '
+            '_textid integer)')
+        self.cursor.execute('CREATE INDEX words_word_ids ON _words(_word)')
+        sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
+        self.cursor.execute(sql, ('_textids', 1))
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

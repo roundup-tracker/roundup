@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.82 2004-03-19 04:47:59 richard Exp $
+# $Id: rdbms_common.py,v 1.83 2004-03-21 23:39:08 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -39,7 +39,7 @@ from roundup.backends import locking
 
 # support
 from blobfiles import FileStorage
-from indexer_dbm import Indexer
+from indexer_rdbms import Indexer
 from sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
@@ -59,7 +59,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.config, self.journaltag = config, journaltag
         self.dir = config.DATABASE
         self.classes = {}
-        self.indexer = Indexer(self.dir)
+        self.indexer = Indexer(self)
         self.security = security.Security(self)
 
         # additional transaction support for external files and the like
@@ -177,7 +177,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.reindex()
 
         # commit
-        self.conn.commit()
+        self.sql_commit()
 
     # update this number when we need to make changes to the SQL structure
     # of the backen database
@@ -591,7 +591,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'newid', (self, sql, classname)
         self.cursor.execute(sql, (classname, ))
-        newid = self.cursor.fetchone()[0]
+        newid = int(self.cursor.fetchone()[0])
 
         # update the counter
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
@@ -1066,6 +1066,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def close(self):
         ''' Close off the connection.
         '''
+        self.indexer.close()
         self.sql_close()
 
 #
