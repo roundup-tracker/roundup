@@ -2,9 +2,17 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-10-?? - 0.3.0
+Added:
+ Admin Tool (roundup-admin):
+  . Interactive mode for running multiple (independant at present) commands.
+  . Tabular display of nodes.
+  . Import and export via colon-separated files.
+
 Fixed:
  . Stand-alone server now has a configurable setuid user.
  . CGI interface wasn't handling checkboxes at all.
+ . Fixed quopri usage in mailgw from bug reports on mailing list.
+ . Remove the "freshen" command from the roundup-admin tool.
 
 2001-10-11 - 0.3.0 pre 2
 Fixed:
