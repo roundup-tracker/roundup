@@ -391,6 +391,10 @@ class HTMLClass(HTMLPermissions):
             filterspec = request.filterspec
             sort = request.sort
             group = request.group
+        else:
+            filterspec = {}
+            sort = (None,None)
+            group = (None,None)
         if self.classname == 'user':
             klass = HTMLUser
         else:

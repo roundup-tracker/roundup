@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.96 2003-01-08 05:39:40 richard Exp $
+#$Id: back_anydbm.py,v 1.96.2.1 2003-02-06 05:44:49 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1349,7 +1349,7 @@ class Class(hyperdb.Class):
 
         The returned list contains tuples of the form
 
-            (date, tag, action, params)
+            (nodeid, date, tag, action, params)
 
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.

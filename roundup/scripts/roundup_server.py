@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.16.2.1 2003-01-13 02:45:09 richard Exp $
+$Id: roundup_server.py,v 1.16.2.2 2003-02-06 05:44:49 richard Exp $
 """
 
 # python version check
@@ -247,7 +247,7 @@ def run():
     try:
         # handle the command-line args
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:')
+            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:h')
         except getopt.GetoptError, e:
             usage(str(e))
 

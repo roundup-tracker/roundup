@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.27.2.1 2003-01-12 23:57:16 richard Exp $
+# $Id: rdbms_common.py,v 1.27.2.2 2003-02-06 05:44:49 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1540,7 +1540,7 @@ class Class(hyperdb.Class):
 
         The returned list contains tuples of the form
 
-            (date, tag, action, params)
+            (nodeid, date, tag, action, params)
 
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.
