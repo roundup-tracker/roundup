@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.155 2004-06-13 01:05:46 richard Exp $
+#$Id: back_anydbm.py,v 1.156 2004-06-21 05:44:16 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1599,12 +1599,12 @@ class Class(hyperdb.Class):
         # optimise filterspec
         l = []
         props = self.getprops()
-        LINK = 0
-        MULTILINK = 1
-        STRING = 2
-        DATE = 3
-        INTERVAL = 4
-        OTHER = 6
+        LINK = 'spec:link'
+        MULTILINK = 'spec:multilink'
+        STRING = 'spec:string'
+        DATE = 'spec:date'
+        INTERVAL = 'spec:interval'
+        OTHER = 'spec:other'
         
         timezone = self.db.getUserTimezone()
         for k, v in filterspec.items():
@@ -1689,56 +1689,58 @@ class Class(hyperdb.Class):
                 # apply filter
                 for t, k, v in filterspec:
                     # handle the id prop
-                    if k == 'id' and nodeid in v:
+                    if k == 'id':
+                        if nodeid not in v:
+                            break
                         continue
 
-                    # make sure the node has the property
-                    if not node.has_key(k):
-                        # this node doesn't have this property, so reject it
-                        break
+                    # get the node value
+                    nv = node.get(k, None)
+
+                    match = False
 
                     # now apply the property filter
                     if t == LINK:
                         # link - if this node's property doesn't appear in the
                         # filterspec's nodeid list, skip it
-                        if node[k] not in v:
-                            break
+                        match = nv in v
                     elif t == MULTILINK:
                         # multilink - if any of the nodeids required by the
                         # filterspec aren't in this node's property, then skip
                         # it
-                        have = node[k]
-                        # check for matching the absence of multilink values
-                        if not v and have:
-                            break
+                        nv = node.get(k, [])
 
-                        # othewise, make sure this node has each of the
-                        # required values
-                        for want in v:
-                            if want not in have:
-                                break
+                        # check for matching the absence of multilink values
+                        if not v:
+                            match = not nv
                         else:
-                            continue
-                        break
+                            # othewise, make sure this node has each of the
+                            # required values
+                            for want in v:
+                                if want not in nv:
+                                    break
+                            else:
+                                match = True
                     elif t == STRING:
-                        if node[k] is None:
-                            break
+                        if nv is None:
+                            nv = ''
                         # RE search
-                        if not v.search(node[k]):
-                            break
+                        match = v.search(nv)
                     elif t == DATE or t == INTERVAL:
-                        if node[k] is None:
-                            break
-                        if v.to_value:
-                            if not (v.from_value <= node[k] and v.to_value >= node[k]):
-                                break
+                        if nv is None:
+                            match = v is None
                         else:
-                            if not (v.from_value <= node[k]):
-                                break
+                            if v.to_value:
+                                if v.from_value <= nv and v.to_value >= nv:
+                                    match = True
+                            else:
+                                if v.from_value <= nv:
+                                    match = True
                     elif t == OTHER:
                         # straight value comparison for the other types
-                        if node[k] not in v:
-                            break
+                        match = nv in v
+                    if not match:
+                        break
                 else:
                     matches.append([nodeid, node])
 
