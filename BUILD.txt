@@ -2,10 +2,11 @@ Building Releases
 =================
 
 Roundup is currently a source-only release - it has no binary components. I
-want it to stay that way, too.
+want it to stay that way, too. This document describes how to build a
+source release. Users of Roundup should read the doc/installation.txt file
+to find out how to install this software.
 
-This means that we only need to ever build source releases. This is done by
-running:
+Building a release of Roundup is done by running:
 
 1.  Make sure the unit tests run! "./run_tests.py"
 2.  Edit roundup/__init__.py and doc/announcement.txt to reflect the new
