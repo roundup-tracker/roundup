@@ -1,34 +1,13 @@
-=================================================
-SC-Track Roundup 0.6.1 - an issue tracking system
-=================================================
-
 I'm pleased to announce this maintenance release of Roundup. This fix
 introduces Python2.3 compatibility. My thanks to Paul Dubois for
 contributing the csv module compatibility layer.
 
 If you're upgrading from an older version of Roundup you *must* follow
-the "Software Upgrade" guidelines given in the maintenance documentation. 
-
-Unfortunately, the Zope frontend for Roundup is currently broken. I hope to
-revive it in a future 0.6 maintenance release.
+the "Software Upgrade" guidelines given in the maintenance documentation.
 
 Roundup requires python 2.1.3 or later for correct operation.
 
 This release fixes some bugs:
-
-- Add note about installing cgi-bin with a different interpreter
-- Importing wasn't setting None values explicitly when it should have been
-- Fixed import warning regarding 0xffff0000 literal, finally, really this
-  time. Checked on win2k. (sf bug 786711)
-- Fix CGI editCSV action to handle metakit's integer itemids
-- Apply fix for "remove" links from Klamer Schutte
-- Added permission check on "remove" link while I was there..
-- Applied CSV fix for python2.3 (sf bug 790363)
-- Fixed form padding in LHS menu (sf bug 790502)
-- Fixed upgrading docs for timezones (sf bug 790498)
-- Set the content type on page templates (can have XML templates now)
-- Various cosmetic fixes (thanks James Kew for being persistent :)
-- Applied patch 739314 (sorry John!)
 
 To give Roundup a try, just download (see below), unpack and run::
 
@@ -45,14 +24,14 @@ Mailing lists - the place to ask questions:
 About Roundup
 =============
 
-Roundup is a simple-to-use and -install issue-tracking system with 
-command-line, web and e-mail interfaces. It is based on the winning design 
+Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-Note: Ping is not responsible for this project. The contact for this project 
-is richard@users.sourceforge.net.
+Note: Ping is not responsible for this project. The contact for this
+project is richard@users.sourceforge.net.
 
-Roundup manages a number of issues (with flexible properties such as 
+Roundup manages a number of issues (with flexible properties such as
 "description", "priority", and so on) and provides the ability to:
 
 (a) submit new issues,
@@ -67,6 +46,6 @@ doesn't even need to be "installed" to be operational, though a
 disutils-based install script is provided.
 
 It comes with two issue tracker templates (a classic bug/feature tracker and
-a minimal skeleton) and six database back-ends (anydbm, bsddb, bsddb3, sqlite,
-metakit and mysql). 
+a minimal skeleton) and seven database back-ends (anydbm, bsddb, bsddb3,
+sqlite, metakit, mysql and postgresql). 
 
