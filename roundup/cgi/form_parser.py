@@ -1,8 +1,8 @@
 import re, mimetypes
 
 from roundup import hyperdb, date, password
+from roundup.cgi import templating
 from roundup.cgi.exceptions import FormError
-from roundup.i18n import _
 
 class FormParser:
     # edit form variable handling (see unit tests)
@@ -26,14 +26,21 @@ class FormParser:
           )
          )
         )$'''
-    
+
     def __init__(self, client):
         self.client = client
         self.db = client.db
         self.form = client.form
         self.classname = client.classname
         self.nodeid = client.nodeid
-      
+        try:
+            self._ = self.gettext = client.gettext
+            self.ngettext = client.ngettext
+        except AttributeError:
+            _translator = templating.translationService
+            self._ = self.gettext = _translator.gettext
+            self.ngettext = _translator.ngettext
+
     def parse(self, create=0, num_re=re.compile('^\d+$')):
         """ Item properties and their values are edited with html FORM
             variables and their values. You can:
@@ -79,7 +86,7 @@ class FormParser:
             @required
                 The associated form value is a comma-separated list of
                 property names that must be specified when the form is
-                submitted for the edit operation to succeed.  
+                submitted for the edit operation to succeed.
 
                 When the <designator> is missing, the properties are
                 for the current context item.  When <designator> is
@@ -112,11 +119,11 @@ class FormParser:
 
                 For a Link('klass') property, the form value is a
                 single key for 'klass', where the key field is
-                specified in dbinit.py.  
+                specified in dbinit.py.
 
                 For a Multilink('klass') property, the form value is a
                 comma-separated list of keys for 'klass', where the
-                key field is specified in dbinit.py.  
+                key field is specified in dbinit.py.
 
                 Note that for simple-form-variables specifiying Link
                 and Multilink properties, the linked-to class must
@@ -168,7 +175,7 @@ class FormParser:
             actual content, otherwise we remove them from all_props before
             returning.
 
-            The return from this method is a dict of 
+            The return from this method is a dict of
                 (classname, id): properties
             ... this dict _always_ has an entry for the current context,
             even if it's empty (ie. a submission for an existing issue that
@@ -273,15 +280,16 @@ class FormParser:
                 for entry in self.extractFormList(form[key]):
                     m = self.FV_DESIGNATOR.match(entry)
                     if not m:
-                        raise FormError, \
-                            'link "%s" value "%s" not a designator'%(key, entry)
+                        raise FormError, self._('link "%(key)s" '
+                            'value "%(value)s" not a designator') % locals()
                     value.append((m.group(1), m.group(2)))
 
                 # make sure the link property is valid
                 if (not isinstance(propdef[propname], hyperdb.Multilink) and
                         not isinstance(propdef[propname], hyperdb.Link)):
-                    raise FormError, '%s %s is not a link or '\
-                        'multilink property'%(cn, propname)
+                    raise FormError, self._('%(class)s %(property)s '
+                        'is not a link or multilink property') % {
+                        'class':cn, 'property':propname}
 
                 all_links.append((cn, nodeid, propname, value))
                 continue
@@ -301,9 +309,10 @@ class FormParser:
             # does the property exist?
             if not propdef.has_key(propname):
                 if mlaction != 'set':
-                    raise FormError, 'You have submitted a %s action for'\
-                        ' the property "%s" which doesn\'t exist'%(mlaction,
-                        propname)
+                    raise FormError, self._('You have submitted a %(action)s '
+                        'action for the property "%(property)s" '
+                        'which doesn\'t exist') % {
+                        'action': mlaction, 'property':propname}
                 # the form element is probably just something we don't care
                 # about - ignore it
                 continue
@@ -319,8 +328,8 @@ class FormParser:
             else:
                 # multiple values are not OK
                 if isinstance(value, type([])):
-                    raise FormError, 'You have submitted more than one value'\
-                        ' for the %s property'%propname
+                    raise FormError, self._('You have submitted more than one '
+                        'value for the %s property') % propname
                 # value might be a file upload...
                 if not hasattr(value, 'filename') or value.filename is None:
                     # nope, pull out the value and strip it
@@ -342,14 +351,14 @@ class FormParser:
                         confirm = form[key]
                         break
                 else:
-                    raise FormError, 'Password and confirmation text do '\
-                        'not match'
+                    raise FormError, self._('Password and confirmation text '
+                        'do not match')
                 if isinstance(confirm, type([])):
-                    raise FormError, 'You have submitted more than one value'\
-                        ' for the %s property'%propname
+                    raise FormError, self._('You have submitted more than one '
+                        'value for the %s property') % propname
                 if value != confirm.value:
-                    raise FormError, 'Password and confirmation text do '\
-                        'not match'
+                    raise FormError, self._('Password and confirmation text '
+                        'do not match')
                 try:
                     value = password.Password(value)
                 except hyperdb.HyperdbValueError, msg:
@@ -383,8 +392,9 @@ class FormParser:
                             try:
                                 existing.remove(entry)
                             except ValueError:
-                                raise FormError, _('property "%(propname)s": '
-                                    '"%(value)s" not currently in list')%{
+                                raise FormError, self._('property '
+                                    '"%(propname)s": "%(value)s" '
+                                    'not currently in list') % {
                                     'propname': propname, 'value': entry}
                     else:
                         # add - easy, just don't dupe
@@ -495,12 +505,11 @@ class FormParser:
                 continue
 
             # tell the user to entry the values required
-            if len(required) > 1:
-                p = 'properties'
-            else:
-                p = 'property'
-            s.append('Required %s %s %s not supplied'%(thing[0], p,
-                ', '.join(required)))
+            s.append(self.ngettext(
+                'Required %(class)s property %(property)s not supplied',
+                'Required %(class)s properties %(property)s not supplied',
+                len(required)
+            ) % {'class': thing[0], 'property': ', '.join(required)})
         if s:
             raise FormError, '\n'.join(s)
 
@@ -514,7 +523,7 @@ class FormParser:
                     if not props.get('content', ''):
                         del all_props[(cn, id)]
                 elif props.has_key('content') and not props['content']:
-                    raise FormError, _('File is empty')
+                    raise FormError, self._('File is empty')
         return all_props, all_links
 
     def extractFormList(self, value):
