@@ -61,7 +61,7 @@
 </tr>
 </table>
 
-<span tal:content="structure string:Created on <b>${issue/creation}</b> by <b>${issue/creator/username}</b>, last changed <b>${issue/activity}</b>.">activity info</span>
+<span tal:condition="exists:item" tal:content="structure string:Created on <b>${issue/creation}</b> by <b>${issue/creator/username}</b>, last changed <b>${issue/activity}</b>.">activity info</span>
 
 <tal:block tal:condition="exists:item">
  <table class="messages" tal:condition="issue/messages">
