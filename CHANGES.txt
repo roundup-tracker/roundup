@@ -5,6 +5,7 @@ are given with the most recent entry first.
 - plugged cross-site-scripting hole (thanks Jeff Epler)
 - handle deprecation of FCNTL in python2.2+ (sf bug 756756)
 - handle missing Subject: line (sf bug 755331)
+- handle New User creation (sf bug 754510)
 
 
 2003-06-10 0.6.0b3
