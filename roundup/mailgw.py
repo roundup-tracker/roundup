@@ -74,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.154 2004-09-07 10:40:15 richard Exp $
+$Id: mailgw.py,v 1.155 2004-09-14 22:09:48 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -311,10 +311,15 @@ class MailGW:
         (\[(?P<args>.+?)\])?                          # [prop=value]
         ''', re.IGNORECASE|re.VERBOSE)
 
-    def __init__(self, instance, db, arguments={}):
+    def __init__(self, instance, db, arguments=()):
         self.instance = instance
         self.db = db
         self.arguments = arguments
+        self.default_class = None
+        for option, value in self.arguments:
+            if option == '-c':
+                self.default_class = value.strip()
+
         self.mailer = Mailer(instance.config)
         self.logger = instance.config.logging.getLogger('mailgw')
 
@@ -634,6 +639,8 @@ Emails to Roundup trackers must include a Subject: line!
                     sendto = [from_list[0][1]]
                     self.mailer.standard_message(sendto, subject, '')
                     return
+                elif self.default_class:
+                    classname = self.default_class
                 else:
                     classname = config['MAILGW_DEFAULT_CLASS']
                     if not classname:
