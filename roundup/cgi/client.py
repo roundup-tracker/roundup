@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.73 2003-01-24 06:21:17 richard Exp $
+# $Id: client.py,v 1.74 2003-01-27 16:32:48 kedder Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1209,6 +1209,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     props = {}
     keys = form.keys()
     properties = cl.getprops()
+    timezone = db.getUserTimezone()
+
     for key in keys:
         # see if we're performing a special multilink action
         mlaction = 'set'
@@ -1351,7 +1353,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 # fix the CRLF/CR -> LF stuff
                 value = fixNewlines(value)
             elif isinstance(proptype, hyperdb.Date):
-                value = date.Date(value)
+                value = date.Date(value, offset=timezone)
             elif isinstance(proptype, hyperdb.Interval):
                 value = date.Interval(value)
             elif isinstance(proptype, hyperdb.Boolean):

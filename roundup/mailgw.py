@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.107 2003-01-15 22:17:19 kedder Exp $
+$Id: mailgw.py,v 1.108 2003-01-27 16:32:46 kedder Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -869,7 +869,7 @@ def setPropArrayFromString(self, cl, propString, nodeid = None):
             props[propname] = password.Password(value.strip())
         elif isinstance(proptype, hyperdb.Date):
             try:
-                props[propname] = date.Date(value.strip())
+                props[propname] = date.Date(value.strip()).local(self.db.getUserTimezone())
             except ValueError, message:
                 errors.append('contains an invalid date for %s.'%propname)
         elif isinstance(proptype, hyperdb.Interval):

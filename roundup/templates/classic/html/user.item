@@ -49,6 +49,10 @@ You are not allowed to view this page.
   <td tal:content="structure context/organisation/field">organisation</td>
  </tr>
  <tr>
+  <th>Timezone</th>
+  <td tal:content="structure context/timezone/field">timezone</td>
+ </tr>
+ <tr>
   <th>E-mail address</th>
   <td tal:content="structure context/address/field">address</td>
  </tr>
@@ -94,6 +98,10 @@ You are not allowed to view this page.
  <tr>
   <th>Organisation</th>
   <td tal:content="context/organisation">organisation</td>
+ </tr>
+ <tr>
+  <th>Timezone</th>
+  <td tal:content="context/timezone">timezone</td>
  </tr>
  <tr>
   <th>E-mail address</th>

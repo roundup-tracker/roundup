@@ -515,6 +515,7 @@ class HTMLItem(HTMLPermissions):
         comments = {}
         history = self._klass.history(self._nodeid)
         history.sort()
+        timezone = self._db.getUserTimezone()
         if direction == 'descending':
             history.reverse()
             for prop_n in self._props.keys():
@@ -530,7 +531,7 @@ class HTMLItem(HTMLPermissions):
                                 self._klass.get(self._nodeid, prop_n, None), current[prop_n])
  
         for id, evt_date, user, action, args in history:
-            date_s = str(evt_date).replace("."," ")
+            date_s = str(evt_date.local(timezone)).replace("."," ")
             arg_s = ''
             if action == 'link' and type(args) == type(()):
                 if len(args) == 3:
@@ -632,10 +633,10 @@ class HTMLItem(HTMLPermissions):
                                     current[k] = old
 
                         elif isinstance(prop, hyperdb.Date) and args[k]:
-                            d = date.Date(args[k])
+                            d = date.Date(args[k]).local(timezone)
                             cell.append('%s: %s'%(k, str(d)))
                             if current.has_key(k):
-                                cell[-1] += ' -> %s'%current[k]
+                                cell[-1] += ' -> %s' % date.Date(current[k]).local(timezone)
                                 current[k] = str(d)
 
                         elif isinstance(prop, hyperdb.Interval) and args[k]:
@@ -918,7 +919,7 @@ class DateHTMLProperty(HTMLProperty):
         '''
         if self._value is None:
             return ''
-        return str(self._value)
+        return str(self._value.local(self._db.getUserTimezone()))
 
     def field(self, size = 30):
         ''' Render a form edit field for the property
@@ -926,7 +927,7 @@ class DateHTMLProperty(HTMLProperty):
         if self._value is None:
             value = ''
         else:
-            value = cgi.escape(str(self._value))
+            value = cgi.escape(str(self._value.local(self._db.getUserTimezone())))
             value = '&quot;'.join(value.split('"'))
         return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
