@@ -11,6 +11,8 @@ Fixed:
  . Fixed the agument handling for the roundup-admin find command.
  . Fixed handling of summary when no note supplied for newblah. Again.
  . Fixed detection of no form in htmltemplate Field display.
+ . Fixed the 2.1-specific gmtime() (no arg) call in roundup.date.
+   (thanks Paul Wright)
 
 
 2001-07-30 - 0.2.3
