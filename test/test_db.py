@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.40 2002-08-23 04:48:36 richard Exp $ 
+# $Id: test_db.py,v 1.41 2002-08-23 04:58:00 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -413,8 +413,8 @@ class anydbmDBTestCase(MyTestCase):
         self.db.pack(pack_before)
         journal = self.db.getjournal('issue', '1')
 
-        # we should have one entry now
-        self.assertEqual(1, len(journal))
+        # we should have the create and last set entries now
+        self.assertEqual(2, len(journal))
 
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
@@ -668,6 +668,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.40  2002/08/23 04:48:36  richard
+# oops, forgot
+#
 # Revision 1.39  2002/07/31 23:57:37  richard
 #  . web forms may now unset Link values (like assignedto)
 #
