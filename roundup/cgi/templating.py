@@ -84,13 +84,13 @@ class Templates:
                     extension, filename, generic)
             filename = generic
 
-        if self.templates.has_key(filename) and \
-                stime < self.templates[filename].mtime:
+        if self.templates.has_key(src) and \
+                stime < self.templates[src].mtime:
             # compiled template is up to date
-            return self.templates[filename]
+            return self.templates[src]
 
         # compile the template
-        self.templates[filename] = pt = RoundupPageTemplate()
+        self.templates[src] = pt = RoundupPageTemplate()
         pt.write(open(src).read())
         pt.id = filename
         pt.mtime = time.time()
