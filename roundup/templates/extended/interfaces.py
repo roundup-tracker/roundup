@@ -1,4 +1,4 @@
-# $Id: interfaces.py,v 1.5 2001-08-01 05:15:09 richard Exp $
+# $Id: interfaces.py,v 1.6 2001-08-02 00:36:42 richard Exp $
 
 import instance_config, urlparse, os
 from roundup import cgi_client, mailgw 
@@ -56,7 +56,7 @@ class Client(cgi_client.Client):
 <td align=right>
 <a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
 <a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">My Support</a> |
-<a href="user%s">Your Details</a></td>
+<a href="user%s">My Details</a></td>
 </table>
 '''%(title, style, message, title, self.user, extras, userid, userid, userid))
  
@@ -70,6 +70,9 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/08/01 05:15:09  richard
+# Added "My Issues" and "My Support" to extended template.
+#
 # Revision 1.4  2001/07/30 08:12:17  richard
 # Added time logging and file uploading to the templates.
 #
