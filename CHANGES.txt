@@ -45,6 +45,11 @@ Fixed:
 - demo tracker is always set up on localhost (sf bug 1049101)
 
 
+2004-10-?? 0.7.10
+Fixed:
+- reset ID counters if the database is cleared (thanks William)
+
+
 2004-10-?? 0.7.9
 Feature:
 - DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
