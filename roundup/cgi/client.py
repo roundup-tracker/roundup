@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.102 2003-03-07 21:51:31 richard Exp $
+# $Id: client.py,v 1.103 2003-03-07 22:46:59 kedder Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -442,6 +442,7 @@ class Client:
         self.write(file.get(nodeid, 'content'))
 
     def serve_static_file(self, file):
+        ims = None
         # see if there's an if-modified-since...
         if hasattr(self.request, 'headers'):
             ims = self.request.headers.getheader('if-modified-since')
