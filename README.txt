@@ -82,10 +82,6 @@ roundup-server:
   . check the source file timestamps before reloading
 cgi_client
   . keep form fields in form on bad submission - only clear it if all ok
-  . e-mail messages should have the roundup CGI URL in them
-roundup.cgi
-  . make it detect that it is in an instance_home and just use that
-    instance by default?
 
 
 5. Known Bugs
