@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2001-10-?? - 0.3.0
+Fixed:
+ . Stand-alone server now has a configurable setuid user.
+
+
 2001-10-11 - 0.3.0 pre 2
 Fixed:
  . Hyperdatabase was inserting empty strings instead of None for missing
