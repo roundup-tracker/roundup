@@ -341,6 +341,10 @@ class HTMLClass(HTMLPermissions):
         except KeyError:
             raise AttributeError, attr
 
+    def designator(self):
+        ''' Return this class' designator (classname) '''
+        return self._classname
+
     def getItem(self, itemid, num_re=re.compile('\d+')):
         ''' Get an item of this class by its item id.
         '''
@@ -544,6 +548,10 @@ class HTMLItem(HTMLPermissions):
             return self[attr]
         except KeyError:
             raise AttributeError, attr
+
+    def designator(self):
+        ''' Return this item's designator (classname + id) '''
+        return '%s%s'%(self._classname, self._nodeid)
     
     def submit(self, label="Submit Changes"):
         ''' Generate a submit button (and action hidden element)
