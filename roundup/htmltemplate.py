@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.96 2002-07-09 04:19:09 richard Exp $
+# $Id: htmltemplate.py,v 1.97 2002-07-09 05:20:09 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -726,7 +726,7 @@ class TemplateFunctions:
             return _('<input type="submit" name="submit" value="Submit New Entry">')
         else:
             return _('[Submit: not called from item]')
-        
+
     def do_classhelp(self, classname, properties, label='?', width='400',
             height='400'):
         '''pop up a javascript window with class help
@@ -744,6 +744,35 @@ class TemplateFunctions:
             properties, width, height, label)
         #return '<a href="classhelp?classname=%s&properties=%s" target="classhelp"><b>(%s)</b></a>'%(classname,
         #    properties, label)
+
+    def do_email(self, property, escape=0):
+        '''display the property as one or more "fudged" email addrs
+        '''
+        if not self.nodeid and self.form is None:
+            return _('[Email: not called from item]')
+        propclass = self.properties[property]
+        if self.nodeid:
+            # get the value for this property
+            try:
+                value = self.cl.get(self.nodeid, property)
+            except KeyError:
+                # a KeyError here means that the node doesn't have a value
+                # for the specified property
+                value = ''
+        else:
+            value = ''
+        if isinstance(propclass, hyperdb.String):
+            if value is None: value = ''
+            else: value = str(value)
+            value = value.replace('@', ' at ')
+            value = value.replace('.', ' ')
+        else:
+            value = _('[Email: not a string]')%locals()
+        if escape:
+            value = cgi.escape(value)
+        return value
+
+
 #
 #   INDEX TEMPLATES
 #
@@ -1237,6 +1266,11 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.96  2002/07/09 04:19:09  richard
+# Added reindex command to roundup-admin.
+# Fixed reindex on first access.
+# Also fixed reindexing of entries that change.
+#
 # Revision 1.95  2002/07/08 15:32:06  gmcm
 # Pagination of index pages.
 # New search form.

@@ -28,6 +28,8 @@ Fixed:
    - new "reindex" command in roundup-admin used to force regeneration of the 
      index
  . made the unit tests run again - they were quite b0rken
+ . added email display function - mangles email addrs so they're not so easily
+   scraped from the web
 
 
 2002-06-24 0.4.2

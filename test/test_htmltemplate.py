@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.15 2002-07-08 06:39:00 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.16 2002-07-09 05:20:09 richard Exp $ 
 
 import unittest, cgi, time
 
@@ -41,6 +41,8 @@ class Class:
             return '<html>hello, I am HTML</html>'
         elif attribute == 'multiline':
             return 'hello\nworld'
+        elif attribute == 'email':
+            return 'test@foo.domain.example'
     def list(self):
         return ['1', '2']
     def filter(self, search_matches, filterspec, sort, group):
@@ -50,7 +52,7 @@ class Class:
             'link': Link('other'), 'multilink': Multilink('other'),
             'password': Password(), 'html': String(), 'key': String(),
             'novalue': String(), 'filename': String(), 'multiline': String(),
-            'reldate': Date()}
+            'reldate': Date(), 'email': String()}
     def labelprop(self, default_to_id=0):
         return 'key'
 
@@ -349,12 +351,27 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
             '<a href="javascript:help_window(\'classhelp?classname=theclass'
             '&properties=prop1,prop2\', \'400\', \'400\')"><b>(?)</b></a>')
 
+#    def do_multiline(self, property, rows=5, cols=40)
+    def testEmail_string(self):
+        self.assertEqual(self.tf.do_email('email'), 'test at foo domain example')
+
+    def testEmail_nonstring(self):
+        s = _('[Email: not a string]')
+        self.assertEqual(self.tf.do_email('date'), s)
+        self.assertEqual(self.tf.do_email('interval'), s)
+        self.assertEqual(self.tf.do_email('password'), s)
+        self.assertEqual(self.tf.do_email('link'), s)
+        self.assertEqual(self.tf.do_email('multilink'), s)
+
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/07/08 06:39:00  richard
+# Fixed unit test support class so the tests ran again.
+#
 # Revision 1.14  2002/05/15 06:37:31  richard
 # ehem and the unit test
 #
