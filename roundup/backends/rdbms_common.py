@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.24 2004-10-14 22:28:02 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.25 2004-10-15 01:10:22 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2655,18 +2655,22 @@ class FileClass(hyperdb.FileClass, Class):
             content = propvalues['content']
             del propvalues['content']
 
-        # do the database create
+        # do the database set
         propvalues = self.set_inner(itemid, **propvalues)
 
         # do content?
         if content:
             # store and index
             self.db.storefile(self.classname, itemid, None, content)
-            mime_type = propvalues.get('type', self.get(itemid, 'type'))
-            if not mime_type:
+            if self.getprops().has_key('type'):
+                mime_type = propvalues.get('type', self.get(itemid, 'type',
+                    self.default_mime_type))
+            else:
                 mime_type = self.default_mime_type
             self.db.indexer.add_text((self.classname, itemid, 'content'),
                 content, mime_type)
+
+        propvalues['content'] = content
 
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.12.2.1 2004-06-24 07:14:48 richard Exp $
+#$Id: blobfiles.py,v 1.12.2.2 2004-10-15 01:10:22 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -79,11 +79,11 @@ class FileStorage:
 
         # save to a temp file
         name = name + '.tmp'
-        # make sure we don't register the rename action more than once
-        if not os.path.exists(name):
-            # save off the rename action
-            self.transactions.append((self.doStoreFile, (classname, nodeid,
-                property)))
+
+        # save off the rename action
+        self.transactions.append((self.doStoreFile, (classname, nodeid,
+            property)))
+
         open(name, 'wb').write(content)
 
     def getfile(self, classname, nodeid, property):
@@ -116,6 +116,9 @@ class FileStorage:
         '''
         # determine the name of the file to write to
         name = self.filename(classname, nodeid, property)
+
+        if not os.path.exists(name+".tmp"):
+            return
 
         # content is being updated (and some platforms, eg. win32, won't
         # let us rename over the top of the old file)
