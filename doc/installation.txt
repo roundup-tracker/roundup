@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 .. contents::
 
@@ -54,9 +54,11 @@ class as soon as the instance is created.
 Prerequisites
 =============
 
-Python 2.1.1 or newer with a functioning anydbm or bsddb module.
+Python 2.1.1 or newer with a functioning anydbm or bsddb module. Download the
+latest version from http://www.python.org/.
 
-Download the latest version from http://www.python.org/.
+If you want to use Berkeley DB bsddb3 with Roundup, use version 3.3.0 or
+later. Download the latest version from http://pybsddb.sourceforge.net/.
 
 
 Testing your Python
