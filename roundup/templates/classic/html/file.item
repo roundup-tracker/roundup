@@ -1,0 +1,52 @@
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
+You are not allowed to view this page.
+</span>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
+
+<input type="hidden" name=":template" value="item">
+<input type="hidden" name=":required" value="name,type">
+
+<input type="hidden" name="multilink"
+       tal:condition="python:request.form.has_key(':multilink')"
+       tal:attributes="value request/form/:multilink/value">
+
+<table class="form">
+ <tr>
+  <th>Name</th>
+  <td tal:content="structure context/name/field"></td>
+ </tr>
+ <tr>
+  <th>Content Type</th>
+  <td tal:content="structure context/type/field"></td>
+ </tr>
+ <tr>
+  <th>Content</th>
+  <td><input type="file" name="content" size="40"></td>
+ </tr>
+
+ <tr>
+  <td>&nbsp;</td>
+  <td tal:content="structure context/submit">submit button here</td>
+ </tr>
+</table>
+</form>
+
+<a tal:condition="python:context.id and context.is_view_ok()"
+   tal:attributes="href string:file${context/id}/${context/name}">download</a>
+
+<table class="form" tal:condition="context/is_only_view_ok">
+ <tr>
+  <th>Name</th>
+  <td tal:content="context/name"></td>
+ </tr>
+ <tr>
+  <th>Content Type</th>
+  <td tal:content="context/type"></td>
+ </tr>
+</table>
+
+<tal:block tal:condition="python:context.id and context.is_view_ok()"
+           tal:replace="structure context/history" />
+
