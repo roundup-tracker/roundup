@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.20 2004-03-29 21:56:56 richard Exp $
+#$Id: actions.py,v 1.21 2004-03-30 06:43:08 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -31,7 +31,7 @@ class Action:
     def execute(self):
         """Execute the action specified by this object."""
         self.permission()
-        self.handle()
+        return self.handle()
 
     name = ''
     permissionType = None
@@ -833,7 +833,7 @@ class ExportCSVAction(Action):
     def handle(self):
         ''' Export the specified search query as CSV. '''
         # figure the request
-        request = templating.HTMLRequest(self)
+        request = templating.HTMLRequest(self.client)
         filterspec = request.filterspec
         sort = request.sort
         group = request.group
@@ -847,12 +847,12 @@ class ExportCSVAction(Action):
         else:
             matches = None
 
-        h = self.additional_headers
+        h = self.client.additional_headers
         h['Content-Type'] = 'text/csv'
         # some browsers will honor the filename here...
         h['Content-Disposition'] = 'inline; filename=query.csv'
-        self.header()
-        writer = rcsv.writer(self.request.wfile)
+        self.client.header()
+        writer = rcsv.writer(self.client.request.wfile)
         writer.writerow(columns)
 
         # and search
