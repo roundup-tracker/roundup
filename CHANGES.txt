@@ -7,7 +7,7 @@ Feature:
 - support setgid and running on port < 1024 (sf patch 777528)
 - using Zope3's test runner now, allowing GC checks, nicer controls and
   coverage analysis
-- added postgresql backend
+- added postgresql backend (originally from patch #761740, many changes since)
 - all RDBMS backends now have indexes on several columns
 - Change nosymessage and send_message to accept msgid=None (RFE #707235).
 
@@ -49,6 +49,7 @@ Fixed:
 - Fixed "documentation" of getnodeids in roundup.hyperdb
 - added flush() to DevNull (sf bug #835365)
 - fixed javascript for help window for only one checkbox case
+- handle socket timeout exception (thanks Marcus Priesch)
 
 
 2003-09-29 0.6.2
