@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.12 2004-10-23 14:20:57 a1s Exp $
+# $Id: i18n.py,v 1.13 2004-11-17 06:56:00 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -77,7 +77,8 @@ else:
 def find_locales(language=None):
     """Return normalized list of locale names to try for given language
 
-    If language is None, use OS environment variables as a starting point
+    Argument 'language' may be a single language code or a list of codes.
+    If 'language' is omitted or None, use locale settings in OS environment.
 
     """
     # body of this function is borrowed from gettext_module.find()
@@ -88,8 +89,11 @@ def find_locales(language=None):
             if val:
                 languages = val.split(':')
                 break
-    else:
+    elif isinstance(language, (str, unicode)):
         languages = [language]
+    else:
+        # 'language' must be iterable
+        languages = language
     # now normalize and expand the languages
     nelangs = []
     for lang in languages:
@@ -155,6 +159,9 @@ def get_translation(language=None, tracker_home=None,
     null_translation_class=RoundupNullTranslations
 ):
     """Return Translation object for given language and domain
+
+    Argument 'language' may be a single language code or a list of codes.
+    If 'language' is omitted or None, use locale settings in OS environment.
 
     Arguments 'translation_class' and 'null_translation_class'
     specify the classes that are instantiated for existing
