@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.88 2004-10-24 10:44:49 a1s Exp $
+# $Id: back_metakit.py,v 1.89 2005-01-09 19:01:09 jlgijsbers Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -45,7 +45,7 @@ from roundup import hyperdb, date, password, roundupdb, security
 import metakit
 from sessions_dbm import Sessions, OneTimeKeys
 import re, marshal, os, sys, time, calendar, shutil
-from indexer_dbm import Indexer
+from indexer_common import Indexer, is_stopword
 import locking
 from roundup.date import Range
 from blobfiles import files_in_dir
@@ -2001,7 +2001,6 @@ class IssueClass(Class, roundupdb.IssueClass):
 CURVERSION = 2
 
 class Indexer(Indexer):
-    disallows = {'THE':1, 'THIS':1, 'ZZZ':1, 'THAT':1, 'WITH':1}
     def __init__(self, path, datadb):
         self.path = os.path.join(path, 'index.mk4')
         self.db = metakit.storage(self.path, 1)
@@ -2078,7 +2077,7 @@ class Indexer(Indexer):
         wordlist = re.findall(r'\b\w{2,25}\b', text.upper())
         words = {}
         for word in wordlist:
-            if not self.disallows.has_key(word):
+            if not is_stopword(word):
                 words[word] = 1
         words = words.keys()
 
@@ -2112,8 +2111,8 @@ class Indexer(Indexer):
             if len(hits) == 0:
                 return {}
         if hits is None:
-            return {}
-        rslt = {}
+            return []
+        rslt = []
         ids = self.db.view('ids').remapwith(hits)
         tbls = self.datadb.view('tables')
         for i in range(len(ids)):
@@ -2122,7 +2121,7 @@ class Indexer(Indexer):
                 classname = tbls[hit.tblid].name
                 nodeid = str(hit.nodeid)
                 property = self._getpropname(classname, hit.propid)
-                rslt[i] = (classname, nodeid, property)
+                rslt.append((classname, nodeid, property))
         return rslt
 
     def save_index(self):
