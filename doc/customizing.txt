@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.93.2.6 $
+:Version: $Revision: 1.93.2.7 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -180,6 +180,12 @@ The configuration variables available are:
  Default class to use in the mailgw if one isn't supplied in email
  subjects. To disable, comment out the variable below or leave it blank.
 
+**EMAIL_CHARSET** - ``utf-8`` (or ``iso-8859-1`` for Eudora users)
+ Character set to encode email headers with. We use utf-8 by default, as
+ it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+ that, so you might need to specify a more limited character set (eg.
+ 'iso-8859-1'.
+
 The default config.py is given below - as you
 can see, the MAIL_DOMAIN must be edited before any interaction with the
 tracker is attempted.::
@@ -254,6 +260,13 @@ tracker is attempted.::
     # blank. Examples:
     MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
+    # Character set to encode email headers with. We use utf-8 by default, as
+    # it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+    # that, so you might need to specify a more limited character set (eg.
+    # 'iso-8859-1'.
+    EMAIL_CHARSET = 'utf-8'
+    #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
 
     # 
     # SECURITY DEFINITIONS

@@ -114,7 +114,7 @@ def decode_header(hdr):
         outs += unicode(section[0], charset or 'iso-8859-1', 'replace')
     return outs.encode('utf-8')
 
-def encode_header(header):
+def encode_header(header, charset='utf-8'):
     """ Will encode in quoted-printable encoding only if header 
     contains non latin characters
     """
@@ -127,7 +127,6 @@ def encode_header(header):
     if hqre.match(header):
         return header
     
-    charset = 'utf-8'
     quoted = ''
     #max_encoded = 76 - len(charset) - 7
     for c in header:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.2 2003-04-24 07:20:00 richard Exp $
+# $Id: config.py,v 1.2.2.1 2004-02-23 05:37:11 richard Exp $
 
 import os
 
@@ -109,5 +109,12 @@ EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 # Examples:
 MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
 #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
+# Character set to encode email headers with. We use utf-8 by default, as
+# it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+# that, so you might need to specify a more limited character set (eg.
+# 'iso-8859-1'.
+EMAIL_CHARSET = 'utf-8'
+#EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
 
 # vim: set filetype=python ts=4 sw=4 et si

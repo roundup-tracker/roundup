@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.86.2.1 2003-09-18 07:29:56 kedder Exp $
+# $Id: roundupdb.py,v 1.86.2.2 2004-02-23 05:37:11 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -273,11 +273,12 @@ class IssueClass:
         message = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid,
-            encode_header(title)))
+            encode_header(title, self.db.config.EMAIL_CHARSET)))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', straddr((encode_header(authname) + 
-            from_tag, from_address)))
-        tracker_name = encode_header(self.db.config.TRACKER_NAME)
+        writer.addheader('From', straddr((encode_header(authname,
+            self.db.config.EMAIL_CHARSET) + from_tag, from_address)))
+        tracker_name = encode_header(self.db.config.TRACKER_NAME,
+            self.db.config.EMAIL_CHARSET)
         writer.addheader('Reply-To', straddr((tracker_name, from_address)))
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
             time.gmtime()))
