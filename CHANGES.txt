@@ -21,6 +21,7 @@ Fixed:
 - rdbms backends not filtering correctly on link=None
 - fix anydbm journal import (sf bug 983166)
 - handle postgresql bug in SQL generation (sf bug 984591)
+- fix dates-from-Dates (sf bug 984604)
 
 
 2004-06-24 0.7.5
