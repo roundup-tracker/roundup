@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 .. contents::
 
@@ -180,6 +180,17 @@ On windows, use::
    roundup-server -c stop
 
 to stop the running server.
+
+Running the Mail Gateway Script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The mail gateway script should be scheduled to run regularly on your
+Windows server. Normally this will result in a window popping up. The
+solution to this is to:
+
+1. Create a new local account on the Roundup server
+2. Set the scheduled task to run in the context of this user instead
+   of your normal login
 
 
 -------------------
