@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.77 2002-09-12 07:23:23 richard Exp $
+#$Id: back_anydbm.py,v 1.78 2002-09-13 08:20:07 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -154,7 +154,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if os.path.exists(path):
             db_type = whichdb.whichdb(path)
             if not db_type:
-                raise hyperdb.DatabaseError, "Couldn't identify database type"
+                raise DatabaseError, "Couldn't identify database type"
         elif os.path.exists(path+'.db'):
             # if the path ends in '.db', it's a dbm database, whether
             # anydbm says it's dbhash or not!
@@ -182,7 +182,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         try:
             dbm = __import__(db_type)
         except ImportError:
-            raise hyperdb.DatabaseError, \
+            raise DatabaseError, \
                 "Couldn't open database - the required module '%s'"\
                 " is not available"%db_type
         if __debug__:
@@ -447,7 +447,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
     # Journal
     #
-    def addjournal(self, classname, nodeid, action, params):
+    def addjournal(self, classname, nodeid, action, params, creator=None,
+            creation=None):
         ''' Journal the Action
         'action' may be:
 
@@ -457,9 +458,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'addjournal', (self, classname, nodeid,
-                action, params)
+                action, params, creator, creation)
         self.transactions.append((self.doSaveJournal, (classname, nodeid,
-            action, params)))
+            action, params, creator, creation)))
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
@@ -603,28 +604,22 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.databases[db_name] = self.opendb(db_name, 'c')
         return self.databases[db_name]
 
-    def doSaveJournal(self, classname, nodeid, action, params):
-        # handle supply of the special journalling parameters (usually
-        # supplied on importing an existing database)
+    def doSaveJournal(self, classname, nodeid, action, params, creator,
+            creation):
+        # serialise the parameters now if necessary
         if isinstance(params, type({})):
-            if params.has_key('creator'):
-                journaltag = self.user.get(params['creator'], 'username')
-                del params['creator']
-            else:
-                journaltag = self.journaltag
-            if params.has_key('created'):
-                journaldate = params['created'].serialise()
-                del params['created']
-            else:
-                journaldate = date.Date().serialise()
-            if params.has_key('activity'):
-                del params['activity']
-
-            # serialise the parameters now
             if action in ('set', 'create'):
                 params = self.serialise(classname, params)
+
+        # handle supply of the special journalling parameters (usually
+        # supplied on importing an existing database)
+        if creator:
+            journaltag = creator
         else:
             journaltag = self.journaltag
+        if creation:
+            journaldate = creation.serialise()
+        else:
             journaldate = date.Date().serialise()
 
         # create the journal entry
@@ -889,7 +884,9 @@ class Class(hyperdb.Class):
             proptype = properties[prop]
             value = self.get(nodeid, prop)
             # "marshal" data where needed
-            if isinstance(proptype, hyperdb.Date):
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
                 value = value.get_tuple()
             elif isinstance(proptype, hyperdb.Interval):
                 value = value.get_tuple()
@@ -924,6 +921,9 @@ class Class(hyperdb.Class):
             if propname == 'id':
                 newid = value
                 continue
+            elif value is None:
+                # don't set Nones
+                continue
             elif isinstance(prop, hyperdb.Date):
                 value = date.Date(value)
             elif isinstance(prop, hyperdb.Interval):
@@ -932,12 +932,26 @@ class Class(hyperdb.Class):
                 pwd = password.Password()
                 pwd.unpack(value)
                 value = pwd
-            if value is not None:
-                d[propname] = value
+            d[propname] = value
 
-        # add
+        # extract the extraneous journalling gumpf and nuke it
+        if d.has_key('creator'):
+            creator = d['creator']
+            del d['creator']
+        else:
+            creator = None
+        if d.has_key('creation'):
+            creation = d['creation']
+            del d['creation']
+        else:
+            creation = None
+        if d.has_key('activity'):
+            del d['activity']
+
+        # add the node and journal
         self.db.addnode(self.classname, newid, d)
-        self.db.addjournal(self.classname, newid, 'create', d)
+        self.db.addjournal(self.classname, newid, 'create', d, creator,
+            creation)
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):
@@ -1825,7 +1839,7 @@ class FileClass(Class):
 
         # extract the "content" property from the proplist
         i = propnames.index('content')
-        content = proplist[i]
+        content = eval(proplist[i])
         del propnames[i]
         del proplist[i]
 

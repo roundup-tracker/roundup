@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.18 2002-09-12 07:23:23 richard Exp $
+# $Id: back_gadfly.py,v 1.19 2002-09-13 08:20:13 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -659,7 +659,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cursor.execute(sql, (retired,))
         return [x[0] for x in cursor.fetchall()]
 
-    def addjournal(self, classname, nodeid, action, params):
+    def addjournal(self, classname, nodeid, action, params, creator=None,
+            creation=None):
         ''' Journal the Action
         'action' may be:
 
@@ -667,25 +668,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
+        # serialise the parameters now if necessary
         if isinstance(params, type({})):
-            if params.has_key('creator'):
-                journaltag = self.user.get(params['creator'], 'username')
-                del params['creator']
-            else:
-                journaltag = self.journaltag
-            if params.has_key('created'):
-                journaldate = params['created'].serialise()
-                del params['created']
-            else:
-                journaldate = date.Date().serialise()
-            if params.has_key('activity'):
-                del params['activity']
-
-            # serialise the parameters now
             if action in ('set', 'create'):
                 params = self.serialise(classname, params)
+
+        # handle supply of the special journalling parameters (usually
+        # supplied on importing an existing database)
+        if creator:
+            journaltag = creator
         else:
             journaltag = self.journaltag
+        if creation:
+            journaldate = creation.serialise()
+        else:
             journaldate = date.Date().serialise()
 
         # create the journal entry
@@ -693,7 +689,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         entry = (nodeid, journaldate, journaltag, action, params)
 
         if __debug__:
-            print >>hyperdb.DEBUG, 'doSaveJournal', entry
+            print >>hyperdb.DEBUG, 'addjournal', entry
 
         # do the insert
         cursor = self.conn.cursor()
@@ -997,6 +993,82 @@ class Class(hyperdb.Class):
 
         self.fireReactors('create', newid, None)
 
+        return newid
+
+    def export_list(self, propnames, nodeid):
+        ''' Export a node - generate a list of CSV-able data in the order
+            specified by propnames for the given node.
+        '''
+        properties = self.getprops()
+        l = []
+        for prop in propnames:
+            proptype = properties[prop]
+            value = self.get(nodeid, prop)
+            # "marshal" data where needed
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Interval):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Password):
+                value = str(value)
+            l.append(repr(value))
+        return l
+
+    def import_list(self, propnames, proplist):
+        ''' Import a node - all information including "id" is present and
+            should not be sanity checked. Triggers are not triggered. The
+            journal should be initialised using the "creator" and "created"
+            information.
+
+            Return the nodeid of the node imported.
+        '''
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+        properties = self.getprops()
+
+        # make the new node's property map
+        d = {}
+        for i in range(len(propnames)):
+            # Use eval to reverse the repr() used to output the CSV
+            value = eval(proplist[i])
+
+            # Figure the property for this column
+            propname = propnames[i]
+            prop = properties[propname]
+
+            # "unmarshal" where necessary
+            if propname == 'id':
+                newid = value
+                continue
+            elif value is None:
+                # don't set Nones
+                continue
+            elif isinstance(prop, hyperdb.Date):
+                value = date.Date(value)
+            elif isinstance(prop, hyperdb.Interval):
+                value = date.Interval(value)
+            elif isinstance(prop, hyperdb.Password):
+                pwd = password.Password()
+                pwd.unpack(value)
+                value = pwd
+            d[propname] = value
+
+        # extract the extraneous journalling gumpf and nuke it
+        if d.has_key('creator'):
+            creator = d['creator']
+            del d['creator']
+        if d.has_key('creation'):
+            creation = d['creation']
+            del d['creation']
+        if d.has_key('activity'):
+            del d['activity']
+
+        # add the node and journal
+        self.db.addnode(self.classname, newid, d)
+        self.db.addjournal(self.classname, newid, 'create', d, creator,
+            creation)
         return newid
 
     _marker = []
@@ -1676,7 +1748,7 @@ class FileClass(Class):
 
         # extract the "content" property from the proplist
         i = propnames.index('content')
-        content = proplist[i]
+        content = eval(proplist[i])
         del propnames[i]
         del proplist[i]
 

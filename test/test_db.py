@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.45 2002-09-12 04:21:20 richard Exp $ 
+# $Id: test_db.py,v 1.46 2002-09-13 08:20:13 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -80,10 +80,15 @@ class anydbmDBTestCase(MyTestCase):
         setupSchema(self.db2, 0, anydbm)
 
     def testStringChange(self):
+        # test set & retrieve
         self.db.issue.create(title="spam", status='1')
         self.assertEqual(self.db.issue.get('1', 'title'), 'spam')
+
+        # change and make sure we retrieve the correct value
         self.db.issue.set('1', title='eggs')
         self.assertEqual(self.db.issue.get('1', 'title'), 'eggs')
+
+        # do some commit stuff
         self.db.commit()
         self.assertEqual(self.db.issue.get('1', 'title'), 'eggs')
         self.db.issue.create(title="spam", status='1')
@@ -93,6 +98,8 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
         self.db.commit()
         self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
+
+        # make sure we can unset
         self.db.issue.set('1', title=None)
         self.assertEqual(self.db.issue.get('1', "title"), None)
 
@@ -598,8 +605,13 @@ class metakitDBTestCase(anydbmDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = metakit.Database(config, 'test')
         setupSchema(self.db, 1, metakit)
-        self.db2 = metakit.Database(config, 'test')
-        setupSchema(self.db2, 0, metakit)
+        #self.db2 = metakit.Database(config, 'test')
+        #setupSchema(self.db2, 0, metakit)
+
+    def testIDGeneration(self):
+        id1 = self.db.issue.create(title="spam", status='1')
+        id2 = self.db.issue.create(title="eggs", status='2')
+        self.assertNotEqual(id1, id2)
 
     def testTransactions(self):
         # remember the number of items we started
@@ -639,8 +651,8 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(db, 1, metakit)
         self.db = metakit.Database(config)
         setupSchema(self.db, 0, metakit)
-        self.db2 = metakit.Database(config, 'test')
-        setupSchema(self.db2, 0, metakit)
+#        self.db2 = metakit.Database(config, 'test')
+#        setupSchema(self.db2, 0, metakit)
 
 def suite():
     l = [

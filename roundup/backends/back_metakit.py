@@ -121,9 +121,13 @@ class _Database(hyperdb.Database):
         for cl in self.classes.values():
             cl.db = None
         self._db = None
-        locking.release_lock(self.lockfile)
-        del _dbs[self.config.DATABASE]
-        self.lockfile.close()
+        if self.lockfile is not None:
+            locking.release_lock(self.lockfile)
+        if _dbs.has_key(self.config.DATABASE):
+            del _dbs[self.config.DATABASE]
+        if self.lockfile is not None:
+            self.lockfile.close()
+            self.lockfile = None
         self.classes = {}
         self.indexer = None
 
@@ -296,7 +300,7 @@ class Class:
             raise IndexError, "%s has no node %s" % (self.classname, nodeid)
         oldnode = self.uncommitted.setdefault(id, {})
         changes = {}
-        
+
         for key, value in propvalues.items():
             # this will raise the KeyError if the property isn't valid
             # ... we don't use getprops() here because we only care about
@@ -394,7 +398,8 @@ class Class:
                         rmvd.append(id)
                         # register the unlink with the old linked node
                         if self.do_journal and prop.do_journal:
-                            self.db.addjournal(link_class, id, _UNLINK, (self.classname, str(row.id), key))
+                            self.db.addjournal(link_class, id, _UNLINK,
+                                (self.classname, str(row.id), key))
 
                 # handle additions
                 adds = []
@@ -406,7 +411,8 @@ class Class:
                         adds.append(id)
                         # register the link with the newly linked node
                         if self.do_journal and prop.do_journal:
-                            self.db.addjournal(link_class, id, _LINK, (self.classname, str(row.id), key))
+                            self.db.addjournal(link_class, id, _LINK,
+                                (self.classname, str(row.id), key))
                             
                 sv = getattr(row, key)
                 i = 0
@@ -421,7 +427,6 @@ class Class:
                 if not rmvd and not adds:
                     del propvalues[key]
                     
-
             elif isinstance(prop, hyperdb.String):
                 if value is not None and type(value) != _STRINGTYPE:
                     raise TypeError, 'new property "%s" not a string'%key
@@ -429,8 +434,9 @@ class Class:
                 changes[key] = oldvalue
                 if hasattr(prop, 'isfilename') and prop.isfilename:
                     propvalues[key] = os.path.basename(value)
-                if prop.indexme:
-                    self.db.indexer.add_text((self.classname, nodeid, key), value, 'text/plain')
+                if prop.indexme and value is not None:
+                    self.db.indexer.add_text((self.classname, nodeid, key),
+                        value, 'text/plain')
 
             elif isinstance(prop, hyperdb.Password):
                 if not isinstance(value, password.Password):
@@ -1067,6 +1073,7 @@ class Indexer(indexer.Indexer):
         return self._getprops(classname).index(propname)
     def _getpropname(self, classname, propid):
         return self._getprops(classname)[propid]
+
     def add_text(self, identifier, text, mime_type='text/plain'):
         if mime_type != 'text/plain':
             return
@@ -1096,6 +1103,7 @@ class Indexer(indexer.Indexer):
             if len(hits)==0 or hits.find(pos=pos) < 0:
                 hits.append(pos=pos)
                 self.changed = 1
+
     def find(self, wordlist):
         hits = None
         index = self.db.view('index').ordered(1)

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.16 2002-09-10 00:11:50 richard Exp $
+#$Id: back_bsddb3.py,v 1.17 2002-09-13 08:20:12 richard Exp $
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date
@@ -103,24 +103,3 @@ class Database(Database):
             self.databases[db_name] = db
             return db
 
-    def doSaveJournal(self, classname, nodeid, action, params):
-        # serialise first
-        if action in ('set', 'create'):
-            params = self.serialise(classname, params)
-
-        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
-            params)
-
-        if __debug__:
-            print >>hyperdb.DEBUG, 'doSaveJournal', entry
-
-        db = self.getCachedJournalDB(classname)
-
-        if db.has_key(nodeid):
-            s = db[nodeid]
-            l = marshal.loads(s)
-            l.append(entry)
-        else:
-            l = [entry]
-
-        db[nodeid] = marshal.dumps(l)
