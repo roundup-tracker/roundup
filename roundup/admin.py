@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.12 2002-05-26 09:04:42 richard Exp $
+# $Id: admin.py,v 1.13 2002-05-30 23:58:14 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -324,7 +324,6 @@ Command help:
         Execute the instance's initialisation function dbinit.init()
         '''
         # password
-        print args
         if len(args) > 1:
             adminpw = args[1]
         else:
@@ -1122,6 +1121,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/05/26 09:04:42  richard
+# out by one in the init args
+#
 # Revision 1.11  2002/05/23 01:14:20  richard
 #  . split instance initialisation into two steps, allowing config changes
 #    before the database is initialised.
