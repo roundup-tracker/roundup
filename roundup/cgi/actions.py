@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.40 2004-11-23 22:45:13 richard Exp $
+#$Id: actions.py,v 1.41 2004-12-15 00:00:52 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -59,12 +59,12 @@ class Action:
                 '%(action)s the %(classname)s class.')%info
 
     _marker = []
-    def hasPermission(self, permission, classname=_marker):
+    def hasPermission(self, permission, classname=_marker, itemid=None):
         """Check whether the user has 'permission' on the current class."""
         if classname is self._marker:
             classname = self.client.classname
         return self.db.security.hasPermission(permission, self.client.userid,
-            classname)
+            classname=classname, itemid=itemid)
 
     def gettext(self, msgid):
         """Return the localized translation of msgid"""
@@ -158,9 +158,16 @@ class SearchAction(Action):
                 # edit the old way, only one query per name
                 try:
                     qid = self.db.query.lookup(queryname)
+                    if not self.hasPermission('Edit', self.classname,
+                            itemid=qid):
+                        raise exceptions.Unauthorised, self._(
+                            "You do not have permission to edit queries")
                     self.db.query.set(qid, klass=self.classname, url=url)
                 except KeyError:
                     # create a query
+                    if not self.hasPermission('Create', self.classname):
+                        raise exceptions.Unauthorised, self._(
+                            "You do not have permission to store queries")
                     qid = self.db.query.create(name=queryname,
                         klass=self.classname, url=url)
             else:
@@ -180,9 +187,16 @@ class SearchAction(Action):
                     for qid in qids:
                         if queryname != self.db.query.get(qid, 'name'):
                             continue
+                        if not self.hasPermission('Edit', self.classname,
+                                itemid=qid):
+                            raise exceptions.Unauthorised, self._(
+                            "You do not have permission to edit queries")
                         self.db.query.set(qid, klass=self.classname, url=url)
                 else:
                     # create a query
+                    if not self.hasPermission('Create', self.classname):
+                        raise exceptions.Unauthorised, self._(
+                            "You do not have permission to store queries")
                     qid = self.db.query.create(name=queryname,
                         klass=self.classname, url=url, private_for=uid)
 
@@ -468,7 +482,7 @@ class EditCommon(Action):
                     "You do not have permission to edit user roles")
             if self.isEditingSelf():
                 return 1
-        if self.hasPermission('Edit'):
+        if self.hasPermission('Edit', itemid=self.nodeid):
             return 1
         return 0
 
