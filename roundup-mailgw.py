@@ -44,6 +44,8 @@ set() method to add the message to the item's spool; in the second case we
 are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
+
+$Id: roundup-mailgw.py,v 1.2 2001-07-19 05:52:22 anthonybaxter Exp $
 '''
 
 import sys
@@ -270,4 +272,8 @@ if __name__ == '__main__':
     db = roundupdb.openDB(config.DATABASE, 'admin', '1')
     roundup_mail(db, sys.stdin)
     db.close()
+
+#
+# $Log: not supported by cvs2svn $
+#
 

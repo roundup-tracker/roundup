@@ -1,3 +1,5 @@
+# $Id: date.py,v 1.2 2001-07-19 05:52:22 anthonybaxter Exp $
+
 import time, re, calendar
 
 class Date:
@@ -339,4 +341,8 @@ def test():
 
 if __name__ == '__main__':
     test()
+
+#
+# $Log: not supported by cvs2svn $
+#
 

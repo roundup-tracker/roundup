@@ -1,3 +1,5 @@
+# $Id: config.py,v 1.4 2001-07-19 05:52:22 anthonybaxter Exp $
+
 ROUNDUP_HOME=MAIL_DOMAIN=MAILHOST=None
 
 try:
@@ -32,3 +34,8 @@ ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 LOG = os.path.join(ROUNDUP_HOME, 'roundup.log')
 
 del os
+
+#
+# $Log: not supported by cvs2svn $
+#
+

@@ -1,3 +1,5 @@
+# $Id: template.py,v 1.3 2001-07-19 05:52:22 anthonybaxter Exp $
+
 import os, re, StringIO, urllib
 
 import hyperdb, date
@@ -692,4 +694,8 @@ def newitem(fp, db, classname, form, replace=re.compile(
     replace = ItemTemplateReplace(globals, locals(), None, None)
     w(replace.go(s))
     w('</form>')
+
+#
+# $Log: not supported by cvs2svn $
+#
 
