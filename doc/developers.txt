@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.6 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -55,6 +55,9 @@ CVS stuff:
    directory containing the HEAD checkout::
 
     cvs up -j maint-0-5
+
+   though this is highly discouraged, as it generally creates a whole swag
+   of conflicts :(
 
 Standard tag names:
 
