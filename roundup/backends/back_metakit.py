@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.55 2004-01-20 22:45:36 richard Exp $
+# $Id: back_metakit.py,v 1.56 2004-01-26 17:07:56 wc2so1 Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -15,27 +15,125 @@
       Strings   ''    convert to None
       Date      0     (seconds since 1970-01-01.00:00:00) convert to None
       Interval  ''    convert to None
-      Number    0     ambiguious :( - do nothing
-      Boolean   0     ambiguious :( - do nothing
+      Number    0     ambiguious :( - do nothing (see BACKWARDS_COMPATIBLE)
+      Boolean   0     ambiguious :( - do nothing (see BACKWARDS_COMPATABILE)
       Link      0     convert to None
       Multilink []    actually, mk can handle this one ;)
-      Passowrd  ''    convert to None
+      Password  ''    convert to None
       ========= ===== ====================================================
 
       The get/set routines handle these values accordingly by converting
       to/from None where they can. The Number/Boolean types are not able
       to handle an "unset" at all, so they default the "unset" to 0.
 
+    Metakit relies in reference counting to close the database, there is
+    no explicit close call.  This can cause issues if a metakit
+    database is referenced multiple times, one might not actually be
+    closing the db.                                    
+    
     - probably a bunch of stuff that I'm not aware of yet because I haven't
       fully read through the source. One of these days....
 '''
+# Enable this flag to break backwards compatibility (i.e. can't read old databases)
+#  but comply with more roundup features, like adding NULL support.
+BACKWARDS_COMPATIBLE = True
+
+# Changes to version 1.55:
+# 1 Added an explicit close to the Indexer class.  This was handled
+#   by garbage collection before.
+#
+# 2  Added an MKBackendError exception that gets thrown on some metakit errors.
+#   Should there be a general rdbms exception?
+#      
+# 3 Added a sanity check when creating metakit tables in __getview
+#   There are some test cases that create columns of the same name
+#   with different metakit types.  This can cause crashing issues with
+#   older version of metakit.  We catch these before hand and raise
+#   an exception.
+#
+# 4 metakit db's cannot be weakref'd so this was removed
+#
+# 5 fixed a metakit.append, metakit must append lists, objects or
+#   dictionaries, it can't handle scalars.
+#   sv.append(int(entry))
+#    became
+#   sv.append((int(entry),))
+#
+# 6 To make it easier to compare to the other backends
+#  Class.keyname is changed to Class.key
+#
+# 7 Fixed Class.lookup, sometimes it would claim that a valid
+#  row was not valid (an _isdel row _property of 0 would
+#  be reported as 1) This is because metakit's view.find
+#  operation was returning bad results.  This should be
+#  view.select or view.find on a single property.
+#
+# 8 calling create with no parameters raises a value error
+#  I'm not sure if this is appropriate, but it fixes
+#  a regression test :)
+#
+# 9 The get method was only converting results for commited
+#   values.  uncommited values were not being converted
+#   using the metakit conversion table
+#
+# 10 Added a check to the Class.__init__ to raise a ValueError
+#    if the database already has a class of the same name.
+#
+# 11 Boolean and Number types can now have null values.  This
+#    is a backwards incompatible fix in that old databases
+#    won't work correctly.
+#
+#    The fix is simple.  For a boolean column, 0 is now None
+#                                              1 is False (returns 0)
+#                                              2 is True (returns 1)
+#                        For a numeric column, 0 is now None
+#                                              values 0 get returned as value-1
+#                                              values < 0 get returned as value
+#   Set the BACKWARDS_COMPATIBLE flag to False to enable this fix.
+#
+# 12 Enumerated READ and READWRITE for the getview and getindexedview
+#    These will probably be removed because they are not used
+#
+# Known Current Bugs:
+#       It is currently is not possible to retire an id with name X
+#       and add a new unretired property with name X.
+#       Confused?  Here is the regression test:
+#
+#        self.assertRaises(ValueError, self.db.user.create)
+#
+#        newid = self.db.user.create(username="spam")
+#        self.assertEqual(self.db.user.lookup('spam'), newid)
+#        self.db.commit()
+#        self.assertEqual(self.db.user.lookup('spam'), newid)
+#        self.db.user.retire(newid)
+#        self.assertRaises(KeyError, self.db.user.lookup, 'spam')
+#
+#        # use the key again now that the old is retired (metakit FAILS!!)
+#        newid2 = self.db.user.create(username="spam")
+#        self.assertNotEqual(newid, newid2)
+#        # try to restore old node. this shouldn't succeed!
+#        self.assertRaises(KeyError, self.db.user.restore, newid)
+#
+#        self.assertRaises(TypeError, self.db.issue.lookup, 'fubar')
+#
+
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit
 from sessions import Sessions, OneTimeKeys
-import re, marshal, os, sys, weakref, time, calendar
+import re, marshal, os, sys, time, calendar
 from roundup import indexer
 import locking
 from roundup.date import Range
+
+# view modes for opening
+# XXX FIXME BPK -> these don't do anything, they are ignored
+#  should we just get rid of them for simplicities sake?
+READ = 0
+READWRITE = 1
+
+# general metakit error
+class MKBackendError(Exception):
+    pass
 
 _dbs = {}
 
@@ -210,6 +308,9 @@ class _Database(hyperdb.Database, roundupdb.Database):
             self.lockfile.close()
             self.lockfile = None
         self.classes = {}
+
+        # force the indexer to close
+        self.indexer.close()
         self.indexer = None
 
     # --- internal
@@ -287,10 +388,16 @@ _ALLOWSETTINGPRIVATEPROPS = 0
 class Class(hyperdb.Class):
     privateprops = None
     def __init__(self, db, classname, **properties):
-        #self.db = weakref.proxy(db)
+        if (properties.has_key('creation') or properties.has_key('activity')
+            or properties.has_key('creator')):
+            raise ValueError, '"creation", "activity" and "creator" are '\
+                  'reserved'
+        if hasattr(db, classname):
+            raise ValueError, "Class %s already exists"%classname
+
         self.db = db
         self.classname = classname
-        self.keyname = None
+        self.key = None
         self.ruprops = properties
         self.privateprops = { 'id' : hyperdb.String(),
                               'activity' : hyperdb.Date(),
@@ -344,6 +451,8 @@ class Class(hyperdb.Class):
 
     # --- the hyperdb.Class methods
     def create(self, **propvalues):
+        if not propvalues:
+            raise ValueError, "Need something to create!"
         self.fireAuditors('create', None, propvalues)
         newid = self.create_inner(**propvalues)
         # self.set() (called in self.create_inner()) does reactors)
@@ -353,7 +462,7 @@ class Class(hyperdb.Class):
         rowdict = {}
         rowdict['id'] = newid = self.maxid
         self.maxid += 1
-        ndx = self.getview(1).append(rowdict)
+        ndx = self.getview(READWRITE).append(rowdict)
         propvalues['#ISNEW'] = 1
         try:
             self.set(str(newid), **propvalues)
@@ -366,14 +475,18 @@ class Class(hyperdb.Class):
         '''
             'cache' exists for backwards compatibility, and is not used.
         '''
-
         view = self.getview()        
         id = int(nodeid)
         if cache == 0:
             oldnode = self.uncommitted.get(id, None)
             if oldnode and oldnode.has_key(propname):
-                return oldnode[propname]
+                raw = oldnode[propname]
+                converter = _converters.get(rutyp.__class__, None)
+                if converter:
+                    return converter(raw)
+                return raw
         ndx = self.idcache.get(id, None)
+
         if ndx is None:
             ndx = view.find(id=id)
             if ndx < 0:
@@ -384,8 +497,10 @@ class Class(hyperdb.Class):
         except AttributeError:
             raise KeyError, propname
         rutyp = self.ruprops.get(propname, None)
+
         if rutyp is None:
             rutyp = self.privateprops[propname]
+
         converter = _converters.get(rutyp.__class__, None)
         if converter:
             raw = converter(raw)
@@ -404,7 +519,7 @@ class Class(hyperdb.Class):
             raise KeyError, '"id" is reserved'
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
-        view = self.getview(1)
+        view = self.getview(READWRITE)
 
         # node must exist & not be retired
         id = int(nodeid)
@@ -436,8 +551,8 @@ class Class(hyperdb.Class):
                 continue
             
             # check to make sure we're not duplicating an existing key
-            if key == self.keyname:
-                iv = self.getindexview(1)
+            if key == self.key:
+                iv = self.getindexview(READWRITE)
                 ndx = iv.find(k=value)
                 if ndx == -1:
                     iv.append(k=value, i=row.id)
@@ -601,11 +716,15 @@ class Class(hyperdb.Class):
  
             elif isinstance(prop, hyperdb.Number):
                 if value is None:
-                    value = 0
-                try:
-                    v = int(value)
-                except ValueError:
-                    raise TypeError, "%s (%s) is not numeric"%(key, repr(value))
+                    v = 0
+                else:
+                    try:
+                        v = int(value)
+                    except ValueError:
+                        raise TypeError, "%s (%s) is not numeric"%(key, repr(value))
+                    if not BACKWARDS_COMPATIBLE:
+                        if v >=0:
+                            v = v + 1
                 setattr(row, key, v)
                 changes[key] = oldvalue
                 propvalues[key] = value
@@ -616,7 +735,9 @@ class Class(hyperdb.Class):
                 elif value not in (0,1):
                     raise TypeError, "%s (%s) is not boolean"%(key, repr(value))
                 else:
-                    bv = value 
+                    bv = value
+                    if not BACKWARDS_COMPATIBLE:
+                        bv += 1
                 setattr(row, key, bv)
                 changes[key] = oldvalue
                 propvalues[key] = value
@@ -649,7 +770,7 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
         self.fireAuditors('retire', nodeid, None)
-        view = self.getview(1)
+        view = self.getview(READWRITE)
         ndx = view.find(id=int(nodeid))
         if ndx < 0:
             raise KeyError, "nodeid %s not found" % nodeid
@@ -661,25 +782,26 @@ class Class(hyperdb.Class):
 
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, _RETIRE, {})
-        if self.keyname:
-            iv = self.getindexview(1)
-            ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
+        if self.key:
+            iv = self.getindexview(READWRITE)
+            ndx = iv.find(k=getattr(row, self.key),i=row.id)
             if ndx > -1:
                 iv.delete(ndx)
         self.db.dirty = 1
         self.fireReactors('retire', nodeid, None)
 
     def restore(self, nodeid):
-        '''Restpre a retired node.
+        """Restore a retired node.
 
         Make node available for all operations like it was before retirement.
-        '''
+        """
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
 
         # check if key property was overrided
         key = self.getkey()
         keyvalue = self.get(nodeid, key)
+        
         try:
             id = self.lookup(keyvalue)
         except KeyError:
@@ -689,7 +811,7 @@ class Class(hyperdb.Class):
                 existing one (%s)" % (key, keyvalue)
         # Now we can safely restore node
         self.fireAuditors('restore', nodeid, None)
-        view = self.getview(1)
+        view = self.getview(READWRITE)
         ndx = view.find(id=int(nodeid))
         if ndx < 0:
             raise KeyError, "nodeid %s not found" % nodeid
@@ -701,16 +823,16 @@ class Class(hyperdb.Class):
 
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, _RESTORE, {})
-        if self.keyname:
-            iv = self.getindexview(1)
-            ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
+        if self.key:
+            iv = self.getindexview(READWRITE)
+            ndx = iv.find(k=getattr(row, self.key),i=row.id)
             if ndx > -1:
                 iv.delete(ndx)
         self.db.dirty = 1
         self.fireReactors('restore', nodeid, None)
 
     def is_retired(self, nodeid):
-        view = self.getview(1)
+        view = self.getview(READWRITE)
         # node must exist & not be retired
         id = int(nodeid)
         ndx = view.find(id=id)
@@ -725,11 +847,11 @@ class Class(hyperdb.Class):
         return self.db.getjournal(self.classname, nodeid)
 
     def setkey(self, propname):
-        if self.keyname:
-            if propname == self.keyname:
+        if self.key:
+            if propname == self.key:
                 return
             raise ValueError, "%s already indexed on %s"%(self.classname,
-                self.keyname)
+                self.key)
         prop = self.properties.get(propname, None)
         if prop is None:
             prop = self.privateprops.get(propname, None)
@@ -744,7 +866,7 @@ class Class(hyperdb.Class):
         # the property for the index.
 
         # first setkey for this run
-        self.keyname = propname
+        self.key = propname
         iv = self.db._db.view('_%s' % self.classname)
         if self.db.fastopen and iv.structure():
             return
@@ -758,30 +880,62 @@ class Class(hyperdb.Class):
         self.db.commit()
 
     def getkey(self):
-        return self.keyname
+        return self.key
 
     def lookup(self, keyvalue):
+        """Locate a particular node by its key property and return its id.
+
+        If this class has no key property, a TypeError is raised.  If the
+        keyvalue matches one of the values for the key property among
+        the nodes in this class, the matching node's id is returned;
+        otherwise a KeyError is raised.
+        """
+        if not self.key:
+            raise TypeError, 'No key property set for class %s'%self.classname
+        
         if type(keyvalue) is not _STRINGTYPE:
-            raise TypeError, "%r is not a string" % keyvalue
+            raise TypeError, '%r is not a string'%keyvalue
+
+        # XXX FIX ME -> this is a bit convoluted
+        # First we search the index view to get the id
+        # which is a quicker look up.
+        # Then we lookup the row with id=id
+        # if the _isdel property of the row is 0, return the
+        # string version of the id. (Why string version???)
+        #
+        # Otherwise, just lookup the non-indexed key
+        # in the non-index table and check the _isdel property
         iv = self.getindexview()
         if iv:
+            # look up the index view for the id,
+            # then instead of looking up the keyvalue, lookup the
+            # quicker id
             ndx = iv.find(k=keyvalue)
             if ndx > -1:
-                return str(iv[ndx].i)
+                view = self.getview()
+                ndx = view.find(id=iv[ndx].i)
+                if ndx > -1:
+                    row = view[ndx]
+                    if not row._isdel:
+                        return str(row.id)
         else:
+            # perform the slower query
             view = self.getview()
-            ndx = view.find({self.keyname:keyvalue, '_isdel':0})
+            ndx = view.find({self.key:keyvalue})
             if ndx > -1:
-                return str(view[ndx].id)
+                row = view[ndx]
+                if not row._isdel:
+                    return str(row.id)
+
         raise KeyError, keyvalue
 
     def destroy(self, id):
-        view = self.getview(1)
+        view = self.getview(READWRITE)
         ndx = view.find(id=int(id))
         if ndx > -1:
-            if self.keyname:
-                keyvalue = getattr(view[ndx], self.keyname)
-                iv = self.getindexview(1)
+            if self.key:
+                keyvalue = getattr(view[ndx], self.key)
+                iv = self.getindexview(READWRITE)
                 if iv:
                     ivndx = iv.find(k=keyvalue)
                     if ivndx > -1:
@@ -832,14 +986,15 @@ class Class(hyperdb.Class):
             view = self.getview()
             if isinstance(prop, hyperdb.Multilink):
                 def ff(row, nm=propname, ids=ids):
-                    sv = getattr(row, nm)
-                    for sr in sv:
-                        if ids.has_key(sr.fid):
-                            return 1
+                    if not row._isdel:
+                        sv = getattr(row, nm)
+                        for sr in sv:
+                            if ids.has_key(sr.fid):
+                                return 1
                     return 0
             else:
                 def ff(row, nm=propname, ids=ids):
-                    return ids.has_key(getattr(row, nm))
+                    return not row._isdel and ids.has_key(getattr(row, nm))
             ndxview = view.filter(ff)
             vws.append(ndxview.unique())
 
@@ -1194,7 +1349,7 @@ class Class(hyperdb.Class):
         properties = self.getprops()
 
         d = {}
-        view = self.getview(1)
+        view = self.getview(READWRITE)
         for i in range(len(propnames)):
             value = eval(proplist[i])
             if not value:
@@ -1249,7 +1404,7 @@ class Class(hyperdb.Class):
                 continue
             sv = getattr(row, propname)
             for entry in value:
-                sv.append(int(entry))
+                sv.append((int(entry),))
 
         self.db.dirty = 1
         creator = d.get('creator', 0)
@@ -1274,11 +1429,11 @@ class Class(hyperdb.Class):
         self.uncommitted = {}
         self.idcache = {}
     def _clear(self):
-        view = self.getview(1)
+        view = self.getview(READWRITE)
         if len(view):
             view[:] = []
             self.db.dirty = 1
-        iv = self.getindexview(1)
+        iv = self.getindexview(READWRITE)
         if iv:
             iv[:] = []
     def rollbackaction(self, action):
@@ -1298,6 +1453,11 @@ class Class(hyperdb.Class):
 
         # if we have structure in the database, and the structure hasn't
         # changed
+        # note on view.ordered ->        
+        # return a metakit view ordered on the id column
+        # id is always the first column.  This speeds up
+        # look-ups on the id column.
+        
         if mkprops and self.db.fastopen:
             return view.ordered(1)
 
@@ -1313,23 +1473,39 @@ class Class(hyperdb.Class):
             if _typmap[rutyp.__class__] != mkprop.type:
                 break
         else:
+            
             return view.ordered(1)
-        # need to create or restructure the mk view
-        # id comes first, so MK will order it for us
+        # The schema has changed.  We need to create or restructure the mk view
+        # id comes first, so we can use view.ordered(1) so that
+        # MK will order it for us to allow binary-search quick lookups on
+        # the id column
         self.db.dirty = 1
         s = ["%s[id:I" % self.classname]
+
+        # these columns will always be added, we can't trample them :)
+        _columns = {"id":"I", "_isdel":"I", "activity":"I", "creation":"I", "creator":"I"}
+
         for nm, rutyp in self.ruprops.items():
-            mktyp = _typmap[rutyp.__class__]
+            mktyp = _typmap[rutyp.__class__].upper()
+            if nm in _columns and _columns[nm] != mktyp:
+                # oops, two columns with the same name and different properties
+               raise MKBackendError("column %s for table %sis defined with multiple types"%(nm, self.classname))
+            _columns[nm] = mktyp
             s.append('%s:%s' % (nm, mktyp))
             if mktyp == 'V':
                 s[-1] += ('[fid:I]')
+
+        # XXX FIX ME -> in some tests, creation:I becomes creation:S is this
+        # okay?  Does this need to be supported?
         s.append('_isdel:I,activity:I,creation:I,creator:I]')
-        v = self.db._db.getas(','.join(s))
+        view = self.db._db.getas(','.join(s))
         self.db.commit()
-        return v.ordered(1)
+        return view.ordered(1)
     def getview(self, RW=0):
+        # XXX FIX ME -> The RW flag doesn't do anything.
         return self.db._db.view(self.classname).ordered(1)
     def getindexview(self, RW=0):
+        # XXX FIX ME -> The RW flag doesn't do anything.
         return self.db._db.view("_%s" % self.classname).ordered(1)
 
 def _fetchML(sv):
@@ -1370,14 +1546,33 @@ def _fetchInterval(n):
         return None
     return date.Interval(n)
 
+# Converters for boolean and numbers to properly
+# return None values.
+# These are in conjunction with the setters above
+#  look for hyperdb.Boolean and hyperdb.Number
+if BACKWARDS_COMPATIBLE:
+    def getBoolean(bool): return bool
+    def getNumber(number): return number
+else:
+    def getBoolean(bool):
+        if not bool: res = None
+        else: res = bool - 1
+        return res
+    
+    def getNumber(number):
+        if number == 0: res = None
+        elif number < 0: res = number
+        else: res = number - 1
+        return res
+
 _converters = {
     hyperdb.Date   : _fetchDate,
     hyperdb.Link   : _fetchLink,
     hyperdb.Multilink : _fetchML,
     hyperdb.Interval  : _fetchInterval,
     hyperdb.Password  : _fetchPW,
-    hyperdb.Boolean   : lambda n: n,
-    hyperdb.Number    : lambda n: n,
+    hyperdb.Boolean   : getBoolean,
+    hyperdb.Number    : getNumber,
     hyperdb.String    : lambda s: s and str(s) or None,
 }                
 
@@ -1422,6 +1617,8 @@ class FileClass(Class, hyperdb.FileClass):
         return x
 
     def create(self, **propvalues):
+        if not propvalues:
+            raise ValueError, "Need something to create!"
         self.fireAuditors('create', None, propvalues)
         content = propvalues['content']
         del propvalues['content']
@@ -1499,7 +1696,15 @@ class Indexer(indexer.Indexer):
         self.changed = 0
         self.propcache = {}
 
+    def close(self):
+        """close the indexing database"""
+        del self.db
+        self.db = None
+  
     def force_reindex(self):
+        """Force a reindexing of the database.  This essentially
+        empties the tables ids and index and sets a flag so
+        that the databases are reindexed"""
         v = self.db.view('ids')
         v[:] = []
         v = self.db.view('index')
@@ -1508,6 +1713,7 @@ class Indexer(indexer.Indexer):
         self.reindex = 1
 
     def should_reindex(self):
+        """returns True if the indexes need to be rebuilt"""
         return self.reindex
 
     def _getprops(self, classname):
@@ -1558,6 +1764,10 @@ class Indexer(indexer.Indexer):
             self.changed = 1
 
     def find(self, wordlist):
+        """look up all the words in the wordlist.
+        If none are found return an empty dictionary
+        * more rules here
+        """        
         hits = None
         index = self.db.view('index').ordered(1)
         for word in wordlist:
