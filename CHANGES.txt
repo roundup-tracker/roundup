@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2002-10-?? 0.5.2
 - added quotes around python interpreter in windows bat (sf bug 623963)
 - fixed link at end of installation doc (sf bug 623957)
+- handle "classname" URL path errors cleaner (generate a 404)
 
 
 2002-10-16 0.5.1

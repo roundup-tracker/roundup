@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.53 2002-10-15 06:37:21 richard Exp $
+# $Id: client.py,v 1.54 2002-10-17 06:11:25 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -312,6 +312,12 @@ class Client:
         else:
             # with only a class, we default to index view
             self.template = 'index'
+
+        # make sure the classname is valid
+        try:
+            self.db.getclass(self.classname)
+        except KeyError:
+            raise NotFound, self.classname
 
         # see if we have a template override
         if self.form.has_key(':template'):
