@@ -10,8 +10,10 @@ def Database(config, journaltag=None):
         db = _instances[id(config)]
         old = db.journaltag
         db.journaltag = journaltag
-        if hasattr(db, 'curuserid'):
+        try:
             delattr(db, 'curuserid')
+        except AttributeError:
+            pass
         return db
     else:
         db = _Database(config, journaltag)
@@ -260,7 +262,10 @@ class Class:    # no, I'm not going to subclass the existing!
             if ndx < 0:
                 raise IndexError, "%s has no node %s" % (self.classname, nodeid)
             self.idcache[id] = ndx
-        raw = getattr(view[ndx], propname)
+        try:
+            raw = getattr(view[ndx], propname)
+        except AttributeError:
+            raise KeyError, propname
         rutyp = self.ruprops.get(propname, None)
         if rutyp is None:
             rutyp = self.privateprops[propname]
@@ -270,7 +275,6 @@ class Class:    # no, I'm not going to subclass the existing!
         return raw
         
     def set(self, nodeid, **propvalues):
-        
         isnew = 0
         if propvalues.has_key('#ISNEW'):
             isnew = 1
@@ -489,7 +493,7 @@ class Class:    # no, I'm not going to subclass the existing!
         iv = self.db._db.getas('_%s[k:S,i:I]' % self.classname)
         iv = iv.ordered(1)
         #XXX
-        print "setkey building index"
+#        print "setkey building index"
         for row in self.getview():
             iv.append(k=getattr(row, propname), i=row.id)
     def getkey(self):
@@ -512,19 +516,24 @@ class Class:    # no, I'm not going to subclass the existing!
         """Get the ids of nodes in this class which link to the given nodes.
 
         'propspec' consists of keyword args propname={nodeid:1,}   
-          'propname' must be the name of a property in this class, or a
-            KeyError is raised.  That property must be a Link or Multilink
-            property, or a TypeError is raised.
+        'propname' must be the name of a property in this class, or a
+                   KeyError is raised.  That property must be a Link or
+                   Multilink property, or a TypeError is raised.
+
         Any node in this class whose propname property links to any of the
         nodeids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7; so we have hits on these issues:
+        that "foo" occurs in msg1, msg3 and file7; so we have hits on these
+        issues:
+
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
+
         """
         propspec = propspec.items()
         for propname, nodeid in propspec:
             # check the prop is OK
             prop = self.ruprops[propname]
-            if not isinstance(prop, hyperdb.Link) and not isinstance(prop, hyperdb.Multilink):
+            if (not isinstance(prop, hyperdb.Link) and
+                    not isinstance(prop, hyperdb.Multilink)):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
 
         vws = []
@@ -542,6 +551,11 @@ class Class:    # no, I'm not going to subclass the existing!
                     return ids.has_key(str(getattr(row, nm)))
             ndxview = view.filter(ff)
             vws.append(ndxview.unique())
+
+        # handle the empty match case
+        if not vws:
+            return []
+
         ndxview = vws[0]
         for v in vws[1:]:
             ndxview = ndxview.union(v)

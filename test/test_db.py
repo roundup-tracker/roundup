@@ -15,17 +15,17 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.25 2002-07-09 04:19:09 richard Exp $ 
+# $Id: test_db.py,v 1.26 2002-07-11 01:11:03 richard Exp $ 
 
 import unittest, os, shutil
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
-    Interval, Class, DatabaseError
+    Interval, DatabaseError, Class
 from roundup.roundupdb import FileClass
 from roundup import date, password
 from roundup.indexer import Indexer
 
-def setupSchema(db, create):
+def setupSchema(db, create, Class, FileClass):
     status = Class(db, "status", name=String())
     status.setkey("name")
     user = Class(db, "user", username=String(), password=Password())
@@ -69,9 +69,9 @@ class anydbmDBTestCase(MyTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = anydbm.Database(config, 'test')
-        setupSchema(self.db, 1)
+        setupSchema(self.db, 1, Class, FileClass)
         self.db2 = anydbm.Database(config, 'test')
-        setupSchema(self.db2, 0)
+        setupSchema(self.db2, 0, Class, FileClass)
 
     def testStringChange(self):
         self.db.issue.create(title="spam", status='1')
@@ -111,6 +111,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(self.db.issue.get('1', "foo"), a)
 
     def testNewProperty(self):
+        ' make sure a new property is added ok '
         self.db.issue.create(title="spam", status='1')
         self.db.issue.addprop(fixer=Link("user"))
         props = self.db.issue.getprops()
@@ -203,7 +204,7 @@ class anydbmDBTestCase(MyTestCase):
         # class get
         #
         # invalid node id
-        ar(IndexError, self.db.status.get, '10', 'name')
+        ar(IndexError, self.db.issue.get, '1', 'title')
         # invalid property name
         ar(KeyError, self.db.status.get, '2', 'foo')
 
@@ -211,7 +212,7 @@ class anydbmDBTestCase(MyTestCase):
         # class set
         #
         # invalid node id
-        ar(IndexError, self.db.issue.set, '1', name='foo')
+        ar(IndexError, self.db.issue.set, '1', title='foo')
         # invalid property name
         ar(KeyError, self.db.status.set, '1', foo='foo')
         # string property
@@ -346,13 +347,14 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = anydbm.Database(config, 'test')
-        setupSchema(db, 1)
+        setupSchema(db, 1, Class, FileClass)
         self.db = anydbm.Database(config)
-        setupSchema(self.db, 0)
+        setupSchema(self.db, 0, Class, FileClass)
         self.db2 = anydbm.Database(config, 'test')
-        setupSchema(self.db2, 0)
+        setupSchema(self.db2, 0, Class, FileClass)
 
     def testExceptions(self):
+        ' make sure exceptions are raised on writes to a read-only db '
         # this tests the exceptions that should be raised
         ar = self.assertRaises
 
@@ -370,9 +372,9 @@ class bsddbDBTestCase(anydbmDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = bsddb.Database(config, 'test')
-        setupSchema(self.db, 1)
+        setupSchema(self.db, 1, Class, FileClass)
         self.db2 = bsddb.Database(config, 'test')
-        setupSchema(self.db2, 0)
+        setupSchema(self.db2, 0, Class, FileClass)
 
 class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -382,11 +384,11 @@ class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = bsddb.Database(config, 'test')
-        setupSchema(db, 1)
+        setupSchema(db, 1, Class, FileClass)
         self.db = bsddb.Database(config)
-        setupSchema(self.db, 0)
+        setupSchema(self.db, 0, Class, FileClass)
         self.db2 = bsddb.Database(config, 'test')
-        setupSchema(self.db2, 0)
+        setupSchema(self.db2, 0, Class, FileClass)
 
 
 class bsddb3DBTestCase(anydbmDBTestCase):
@@ -397,9 +399,9 @@ class bsddb3DBTestCase(anydbmDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = bsddb3.Database(config, 'test')
-        setupSchema(self.db, 1)
+        setupSchema(self.db, 1, Class, FileClass)
         self.db2 = bsddb3.Database(config, 'test')
-        setupSchema(self.db2, 0)
+        setupSchema(self.db2, 0, Class, FileClass)
 
 class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -409,12 +411,80 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = bsddb3.Database(config, 'test')
-        setupSchema(db, 1)
+        setupSchema(db, 1, Class, FileClass)
         self.db = bsddb3.Database(config)
-        setupSchema(self.db, 0)
+        setupSchema(self.db, 0, Class, FileClass)
         self.db2 = bsddb3.Database(config, 'test')
-        setupSchema(self.db2, 0)
+        setupSchema(self.db2, 0, Class, FileClass)
 
+
+class metakitDBTestCase(anydbmDBTestCase):
+    def setUp(self):
+        from roundup.backends import metakit
+        import weakref
+        metakit._instances = weakref.WeakValueDictionary()
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = metakit.Database(config, 'test')
+        setupSchema(self.db, 1, metakit.Class, metakit.FileClass)
+        self.db2 = metakit.Database(config, 'test')
+        setupSchema(self.db2, 0, metakit.Class, metakit.FileClass)
+
+    def testTransactions(self):
+        # remember the number of items we started
+        num_issues = len(self.db.issue.list())
+        self.db.issue.create(title="don't commit me!", status='1')
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.rollback()
+        self.assertEqual(num_issues, len(self.db.issue.list()))
+        self.db.issue.create(title="please commit me!", status='1')
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.commit()
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.rollback()
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.file.create(name="test", type="text/plain", content="hi")
+        self.db.rollback()
+        for i in range(10):
+            self.db.file.create(name="test", type="text/plain", 
+                    content="hi %d"%(i))
+            self.db.commit()
+        # TODO: would be good to be able to ensure the file is not on disk after
+        # a rollback...
+        self.assertNotEqual(num_files, num_files2)
+        self.db.file.create(name="test", type="text/plain", content="hi")
+        self.db.rollback()
+
+    def testNewProperty(self):
+        ' make sure a new property is added ok '
+        self.db.issue.create(title="spam", status='1')
+        self.db.issue.addprop(fixer=Link("user"))
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        # metakit _base_ Class has the activity, creation and creator too
+        self.assertEqual(keys, ['activity', 'creation', 'creator',
+            'deadline', 'files', 'fixer', 'foo', 'id', 'nosy', 'status',
+            'title'])
+        self.assertEqual(self.db.issue.get('1', "fixer"), None)
+
+class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import metakit
+        import weakref
+        metakit._instances = weakref.WeakValueDictionary()
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        db = metakit.Database(config, 'test')
+        setupSchema(db, 1, metakit.Class, metakit.FileClass)
+        self.db = metakit.Database(config)
+        setupSchema(self.db, 0, metakit.Class, metakit.FileClass)
+        self.db2 = metakit.Database(config, 'test')
+        setupSchema(self.db2, 0, metakit.Class, metakit.FileClass)
 
 def suite():
     l = [
@@ -436,10 +506,22 @@ def suite():
     except:
         print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
 
+    try:
+        import metakit
+        l.append(unittest.makeSuite(metakitDBTestCase, 'test'))
+        l.append(unittest.makeSuite(metakitReadOnlyDBTestCase, 'test'))
+    except:
+        print 'metakit module not found, skipping metakit DBTestCase'
+
     return unittest.TestSuite(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2002/07/09 04:19:09  richard
+# Added reindex command to roundup-admin.
+# Fixed reindex on first access.
+# Also fixed reindexing of entries that change.
+#
 # Revision 1.24  2002/07/09 03:02:53  richard
 # More indexer work:
 # - all String properties may now be indexed too. Currently there's a bit of

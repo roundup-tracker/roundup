@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.12 2002-05-22 00:32:33 richard Exp $
+# $Id: __init__.py,v 1.13 2002-07-11 01:11:03 richard Exp $
 
 __all__ = []
 
@@ -54,8 +54,26 @@ else:
     bsddb3 = back_bsddb3
     __all__.append('bsddb3')
 
+try:
+    import metakit
+except ImportError, message:
+    if str(message) != 'No module named metakit': raise
+else:
+    import back_metakit
+    metakit = back_metakit
+    __all__.append('metakit')
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/05/22 00:32:33  richard
+#  . changed the default message list in issues to display the message body
+#  . made backends.__init__ be more specific about which ImportErrors it really
+#    wants to ignore
+#  . fixed the example addresses in the templates to use correct example domains
+#  . cleaned out the template stylesheets, removing a bunch of junk that really
+#    wasn't necessary (font specs, styles never used) and added a style for
+#    message content
+#
 # Revision 1.11  2002/02/16 08:39:42  richard
 #  . #516854 ] "My Issues" and redisplay
 #
