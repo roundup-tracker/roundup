@@ -566,7 +566,8 @@ class HTMLItem(HTMLPermissions):
                                     # TODO: test for node existence even when
                                     # there's no labelprop!
                                     try:
-                                        if labelprop is not None:
+                                        if labelprop is not None and \
+                                                labelprop != 'id':
                                             label = linkcl.get(linkid, labelprop)
                                     except IndexError:
                                         comments['no_link'] = _('''<strike>The
@@ -577,6 +578,8 @@ class HTMLItem(HTMLPermissions):
                                         if hrefable:
                                             subml.append('<a href="%s%s">%s</a>'%(
                                                 classname, linkid, label))
+                                        else:
+                                            subml.append(label)
                                 ml.append(sublabel + ', '.join(subml))
                             cell.append('%s:\n  %s'%(k, ', '.join(ml)))
                         elif isinstance(prop, hyperdb.Link) and args[k]:
@@ -584,7 +587,7 @@ class HTMLItem(HTMLPermissions):
                             # if we have a label property, try to use it
                             # TODO: test for node existence even when
                             # there's no labelprop!
-                            if labelprop is not None:
+                            if labelprop is not None and labelprop != 'id':
                                 try:
                                     label = linkcl.get(args[k], labelprop)
                                 except IndexError:
