@@ -1,68 +1,43 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.5 2001-07-30 00:04:48 richard Exp $
+# $Id: roundup-admin,v 1.6 2001-07-30 00:57:51 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
     print 'Roundup requires python 2.0 or later.'
     sys.exit(1)
 
-import string, os, getpass
+import string, os, getpass, getopt
 from roundup import date, roundupdb, init
-
-def determineLogin(instance, argv, n = 2):
-    name = password = ''
-    if argv[2] == '-u':
-        l = argv[3].split(':')
-        name = l[0]
-        if len(l) > 1:
-            password = l[1]
-        n = 4
-    elif os.environ.has_key('ROUNDUP_LOGIN'):
-        l = os.environ['ROUNDUP_LOGIN'].split(':')
-        name = l[0]
-        if len(l) > 1:
-            password = l[1]
-    while not name:
-        name = raw_input('Login name: ')
-    while not password:
-        password = getpass.getpass('  password: ')
-    # TODO use the password...
-    return n, instance.open(name)
 
 def usage(message=''):
     if message: message = 'Problem: '+message+'\n'
-    print '''%sUsage:
+    commands = []
+    for command in figureCommands().values():
+        h = command.__doc__.split('\n')[0]
+        commands.append(h[7:])
+    commands.sort()
+    print '''%sUsage: roundup-admin [-i instance home] [-u login] [-c] <command> <arguments>
 
- roundup [-i instance] init [template backend]
-   -- initialise the database
- roundup [-i instance] spec classname
-   -- show the properties for a classname
- roundup [-i instance] create [-u login] classname propname=value ...
-   -- create a new entry of a given class
- roundup [-i instance] list [-c] classname
-   -- list the instances of a class
- roundup [-i instance] history [-c] designator
-   -- show the history entries of a designator
- roundup [-i instance] get [-c] designator[,designator,...] propname
-   -- get the given property of one or more designator(s)
- roundup [-i instance] set [-u login] designator[,designator,...] propname=value ...
-   -- set the given property of one or more designator(s)
- roundup [-i instance] find [-c] classname propname=value ...
-   -- find the class instances with a given property
- roundup [-i instance] retire designator[,designator,...]
-   -- "retire" a designator
- roundup help    
+Commands:
+ %s
+
+Help:
+ roundup-admin -h
+ roundup-admin help    
    -- this help
- roundup morehelp
+ roundup-admin help <command>
+   -- command-specific help
+ roundup-admin morehelp
    -- even more detailed help
-'''%message
+ 
+'''%(message, '\n '.join(commands))
 
 def moreusage(message=''):
     usage(message)
     print '''
 All commands (except help) require an instance specifier. This is just the path
-to the roundup instance you're working with. It may be specified in the environment
-variable ROUNDUP_INSTANCE or on the command line as "-i instance".
+to the roundup instance you're working with. It may be specified in the
+environment variable ROUNDUP_INSTANCE or on the command line as "-i instance".
 
 A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
 
@@ -102,76 +77,291 @@ Date format examples:
   "14:25" means <Date yyyy-mm-dd.19:25:00>
   "8:47:11" means <Date yyyy-mm-dd.13:47:11>
   "." means "right now"
+
+Command help:
 '''
+    for name, command in figureCommands().items():
+        print '%s:'%name
+        print '   ',command.__doc__
+
+def do_init(instance_home, args):
+    '''Usage: init [template [backend [admin password]]]
+    Initialise a new Roundup instance.
+
+    The command will prompt for the instance home directory (if not supplied
+    through INSTANCE_HOME or the -i option. The template, backend and admin
+    password may be specified on the command-line as arguments, in that order.
+    '''
+    if len(argv) > n:
+        template = argv[n]
+        backend = argv[n+1]
+    else:
+        template = backend = ''
+
+    # select template
+    import roundup.templates
+    templates = roundup.templates.listTemplates()
+    print 'Templates:', ', '.join(templates)
+    template = len(args) and args[0] or ''
+    while template not in templates:
+        template = raw_input('Select template [classic]: ').strip()
+        if not template:
+            template = 'classic'
+
+    import roundup.backends
+    backends = roundup.backends.__all__
+    backend = len(args) > 1 and args[1] or ''
+    while backend not in backends:
+        backend = raw_input('Select backend [anydbm]: ').strip()
+        if not backend:
+            backend = 'anydbm'
+    if len(args) > 2:
+        adminpw = confirm = args[2]
+    else:
+        adminpw = ''
+        confirm = 'x'
+    while adminpw != confirm:
+        adminpw = getpass.getpass('Admin Password: ')
+        confirm = getpass.getpass('       Confirm: ')
+    init.init(instance_home, template, backend, adminpw)
+    return 0
+
+
+def do_get(db, args):
+    '''Usage: get property designator[,designator]*
+    Get the given property of one or more designator(s).
+
+    Retrieves the property value of the nodes specified by the designators.
+    '''
+    designators = string.split(args[0], ',')
+    propname = args[1]
+    # TODO: handle the -c option
+    for designator in designators:
+        classname, nodeid = roundupdb.splitDesignator(designator)
+        print db.getclass(classname).get(nodeid, propname)
+    return 0
+
+
+def do_set(db, args):
+    '''Usage: set designator[,designator]* propname=value ...
+    Set the given property of one or more designator(s).
+
+    Sets the property to the value for all designators given.
+    '''
+    designators = string.split(args[0], ',')
+    props = {}
+    for prop in args[1:]:
+        key, value = prop.split('=')
+        props[key] = value
+    for designator in designators:
+        classname, nodeid = roundupdb.splitDesignator(designator)
+        cl = db.getclass(classname)
+        properties = cl.getprops()
+        for key, value in props.items():
+            type =  properties[key]
+            if type.isStringType:
+                continue
+            elif type.isDateType:
+                props[key] = date.Date(value)
+            elif type.isIntervalType:
+                props[key] = date.Interval(value)
+            elif type.isLinkType:
+                props[key] = value
+            elif type.isMultilinkType:
+                props[key] = value.split(',')
+        apply(cl.set, (nodeid, ), props)
+    return 0
+
+def do_find(db, args):
+    '''Usage: find classname propname=value ...
+    Find the nodes of the given class with a given property value.
+
+    Find the nodes of the given class with a given property value.
+    '''
+    classname = args[0]
+    cl = db.getclass(classname)
+
+    # look up the linked-to class and get the nodeid that has the value
+    propname, value = args[1:].split('=')
+    propcl = cl[propname].classname
+    nodeid = propcl.lookup(value)
+
+    # now do the find
+    # TODO: handle the -c option
+    print cl.find(propname, nodeid)
+    return 0
+
+def do_spec(db, args):
+    '''Usage: spec classname
+    Show the properties for a classname.
+
+    This lists the properties for a given class.
+    '''
+    classname = args[0]
+    cl = db.getclass(classname)
+    for key, value in cl.properties.items():
+        print '%s: %s'%(key, value)
+
+def do_create(db, args):
+    '''Usage: create classname property=value ...
+    Create a new entry of a given class.
+
+    This creates a new entry of the given class using the property
+    name=value arguments provided on the command line after the "create"
+    command.
+    '''
+    classname = args[0]
+    cl = db.getclass(classname)
+    props = {}
+    properties = cl.getprops()
+    for prop in args[1:]:
+        key, value = prop.split('=')
+        type =  properties[key]
+        if type.isStringType:
+            props[key] = value 
+        elif type.isDateType:
+            props[key] = date.Date(value)
+        elif type.isIntervalType:
+            props[key] = date.Interval(value)
+        elif type.isLinkType:
+            props[key] = value
+        elif type.isMultilinkType:
+            props[key] = value.split(',')
+    print apply(cl.create, (), props)
+    return 0
+
+def do_list(db, args):
+    '''Usage: list classname [property]
+    List the instances of a class.
+
+    Lists all instances of the given class along. If the property is not
+    specified, the  "label" property is used. The label property is tried
+    in order: the key, "name", "title" and then the first property,
+    alphabetically.
+    '''
+    db = instance.open()
+    classname = args[0]
+    cl = db.getclass(classname)
+    if len(args) > 1:
+        key = args[1]
+    else:
+        key = cl.labelprop()
+    # TODO: handle the -c option
+    for nodeid in cl.list():
+        value = cl.get(nodeid, key)
+        print "%4s: %s"%(nodeid, value)
+    return 0
+
+def do_history(db, args):
+    '''Usage: history designator
+    Show the history entries of a designator.
+
+    Lists the journal entries for the node identified by the designator.
+    '''
+    classname, nodeid = roundupdb.splitDesignator(args[0])
+    # TODO: handle the -c option
+    print db.getclass(classname).history(nodeid)
+    return 0
+
+def do_retire(db, args):
+    '''Usage: retire designator[,designator]*
+    Retire the node specified by designator.
+
+    This action indicates that a particular node is not to be retrieved by
+    the list or find commands, and its key value may be re-used.
+    '''
+    designators = string.split(args[0], ',')
+    for designator in designators:
+        classname, nodeid = roundupdb.splitDesignator(designator)
+        db.getclass(classname).retire(nodeid)
+    return 0
+
+def db_freshen(db, args):
+    '''Usage: freshen
+    Freshen an existing instance. **do not use
+
+    This action should generally not be used. It reads in an instance
+    database and writes it again. In the future, is may also update
+    instance code to account for changes in templates. It's probably wise
+    not to use it anyway. Until we're sure it won't break things...
+    '''
+    for classname, cl in db.classes.items():
+        properties = cl.properties.keys()
+        for nodeid in cl.list():
+            node = {}
+            for name in properties:
+                node[name] = cl.get(nodeid, name)
+                db.setnode(classname, nodeid, node)
+    return 0
+
+def figureCommands():
+    d = {}
+    for k, v in globals().items():
+        if k[:3] == 'do_':
+            d[k[3:]] = v
+    return d
 
 def main():
-    argv = sys.argv
+    opts, args = getopt.getopt(sys.argv[1:], 'i:u:hc')
 
-    if len(argv) == 1:
+    # handle command-line args
+    instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+    name = password = ''
+    if os.environ.has_key('ROUNDUP_LOGIN'):
+        l = os.environ['ROUNDUP_LOGIN'].split(':')
+        name = l[0]
+        if len(l) > 1:
+            password = l[1]
+    comma_sep = 0
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+            return 0
+        if opt == '-i':
+            instance_home = arg
+        if opt == '-u':
+            l = arg.split(':')
+            name = l[0]
+            if len(l) > 1:
+                password = l[1]
+        if opt == '-c':
+            comma_sep = 1
+
+    # figure the command
+    if not args:
         usage('No command specified')
         return 1
+    command = args[0]
 
     # handle help now
-    if argv[1] == 'help':
+    if command == 'help':
+        if len(args)>1:
+            command = figureCommands().get(args[1], None)
+            if not command:
+                usage('no such command "%s"'%args[1])
+                return 1
+            print command.__doc__
+            return 0
         usage()
         return 0
-    if argv[1] == 'morehelp':
+    if command == 'morehelp':
         moreusage()
         return 0
 
-    # figure the instance home
-    n = 1
-    if argv[1] == '-i':
-        if len(argv) == 2:
-            usage()
-            return 1
-        instance_home = argv[2]
-        n = 3
-    else:
-        instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+    # make sure we have an instance_home
+    while not instance_home:
+        instance_home = raw_input('Enter instance home: ').strip()
 
-    # now figure the command
-    command = argv[n]
-    n = n + 1
-
+    # before we open the db, we may be doing an init
     if command == 'init':
-        adminpw = ''
-        confirm = 'x'
-        if len(argv) > n:
-            template = argv[n]
-            backend = argv[n+1]
-        else:
-            template = backend = ''
-        while not instance_home:
-            instance_home = raw_input('Enter instance home: ').strip()
+        return do_init(instance_home, args)
 
-        # select template
-        import roundup.templates
-        templates = roundup.templates.listTemplates()
-        print 'Templates:', ', '.join(templates)
-        template = ''
-        while template not in templates:
-            template = raw_input('Select template [classic]: ').strip()
-            if not template:
-                template = 'classic'
-
-        import roundup.backends
-        backends = roundup.backends.__all__
-        backend = ''
-        while backend not in backends:
-            backend = raw_input('Select backend [anydbm]: ').strip()
-            if not backend:
-                backend = 'anydbm'
-        while adminpw != confirm:
-            adminpw = getpass.getpass('Admin Password: ')
-            confirm = getpass.getpass('       Confirm: ')
-        init.init(instance_home, template, backend, adminpw)
-        return 0
-
-    # from here on, we need an instance_home
-    if not instance_home:
-        usage('No instance home specified')
-        return 1
+    # open the database
+    if command in ('create', 'set', 'retire'):
+        while not name:
+            name = raw_input('Login name: ')
+        while not password:
+            password = getpass.getpass('  password: ')
 
     # get the instance
     path, instance = os.path.split(instance_home)
@@ -181,128 +371,30 @@ def main():
     finally:
         del sys.path[0]
 
-    if command == 'get':
-        db = instance.open()
-        designators = string.split(argv[n], ',')
-        propname = argv[n+1]
-        # TODO: handle the -c option
-        for designator in designators:
-            classname, nodeid = roundupdb.splitDesignator(designator)
-            print db.getclass(classname).get(nodeid, propname)
+    command = figureCommands().get(command, None)
 
-    elif command == 'set':
-        n, db = determineLogin(instance, argv, n)
-        designators = string.split(argv[n], ',')
-        props = {}
-        for prop in argv[n+1:]:
-            key, value = prop.split('=')
-            props[key] = value
-        for designator in designators:
-            classname, nodeid = roundupdb.splitDesignator(designator)
-            cl = db.getclass(classname)
-            properties = cl.getprops()
-            for key, value in props.items():
-                type =  properties[key]
-                if type.isStringType:
-                    continue
-                elif type.isDateType:
-                    props[key] = date.Date(value)
-                elif type.isIntervalType:
-                    props[key] = date.Interval(value)
-                elif type.isLinkType:
-                    props[key] = value
-                elif type.isMultilinkType:
-                    props[key] = value.split(',')
-            apply(cl.set, (nodeid, ), props)
-
-    elif command == 'find':
-        db = instance.open()
-        classname = argv[n]
-        cl = db.getclass(classname)
-
-        # look up the linked-to class and get the nodeid that has the value
-        propname, value = argv[n+1:].split('=')
-        propcl = cl[propname].classname
-        nodeid = propcl.lookup(value)
-
-        # now do the find
-        # TODO: handle the -c option
-        print cl.find(propname, nodeid)
-
-    elif command == 'spec':
-        db = instance.open()
-        classname = argv[n]
-        cl = db.getclass(classname)
-        for key, value in cl.properties.items():
-            print '%s: %s'%(key, value)
-
-    elif command == 'create':
-        n, db = determineLogin(instance, argv, n)
-        classname = argv[n]
-        cl = db.getclass(classname)
-        props = {}
-        properties = cl.getprops()
-        for prop in argv[n+1:]:
-            key, value = prop.split('=')
-            type =  properties[key]
-            if type.isStringType:
-                props[key] = value 
-            elif type.isDateType:
-                props[key] = date.Date(value)
-            elif type.isIntervalType:
-                props[key] = date.Interval(value)
-            elif type.isLinkType:
-                props[key] = value
-            elif type.isMultilinkType:
-                props[key] = value.split(',')
-        print apply(cl.create, (), props)
-
-    elif command == 'list':
-        db = instance.open()
-        classname = argv[n]
-        cl = db.getclass(classname)
-        key = cl.getkey() or cl.properties.keys()[0]
-        # TODO: handle the -c option
-        for nodeid in cl.list():
-            value = cl.get(nodeid, key)
-            print "%4s: %s"%(nodeid, value)
-
-    elif command == 'history':
-        db = instance.open()
-        classname, nodeid = roundupdb.splitDesignator(argv[n])
-        # TODO: handle the -c option
-        print db.getclass(classname).history(nodeid)
-
-    elif command == 'retire':
-        n, db = determineLogin(instance, argv, n)
-        designators = string.split(argv[n], ',')
-        for designator in designators:
-            classname, nodeid = roundupdb.splitDesignator(designator)
-            db.getclass(classname).retire(nodeid)
-
-    elif command == 'freshen':
-        n, db = determineLogin(instance, argv, n)
-        for classname, cl in db.classes.items():
-            properties = cl.properties.keys()
-            for nodeid in cl.list():
-                node = {}
-                for name in properties:
-                    node[name] = cl.get(nodeid, name)
-                db.setnode(classname, nodeid, node)
-
-    else:
-        print "Unknown command '%s'"%command
+    # not a valid command
+    if command is None:
         usage()
         return 1
 
-    db.close()
-    return 0
+    db = instance.open(name or 'admin')
+    try:
+        return command(db, args[1:])
+    finally:
+        db.close()
+
+    return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/30 00:04:48  richard
+# Made the "init" prompting more friendly.
+#
 # Revision 1.4  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #
