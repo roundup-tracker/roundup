@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.31.2.1 2003-01-12 23:57:15 richard Exp $
+# $Id: back_gadfly.py,v 1.31.2.2 2003-03-09 21:44:15 richard Exp $
 ''' Gadlfy relational database hypderb backend.
 
 About Gadfly
@@ -143,6 +143,95 @@ class Database(rdbms_common.Database):
         for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
             res.append((nodeid, date.Date(date_stamp), user, action, params))
         return res
+
+    def update_class(self, spec, old_spec):
+        ''' Determine the differences between the current spec and the
+            database version of the spec, and update where necessary
+
+            GADFLY requires a commit after the table drop!
+        '''
+        new_spec = spec
+        new_has = new_spec.properties.has_key
+
+        new_spec = new_spec.schema()
+        if new_spec == old_spec:
+            # no changes
+            return 0
+
+        if __debug__:
+            print >>hyperdb.DEBUG, 'update_class FIRING'
+
+        # key property changed?
+        if old_spec[0] != new_spec[0]:
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class setting keyprop', `spec[0]`
+            # XXX turn on indexing for the key property
+
+        # detect multilinks that have been removed, and drop their table
+        old_has = {}
+        for name,prop in old_spec[1]:
+            old_has[name] = 1
+            if not new_has(name) and isinstance(prop, Multilink):
+                # it's a multilink, and it's been removed - drop the old
+                # table
+                sql = 'drop table %s_%s'%(spec.classname, prop)
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                self.cursor.execute(sql)
+                continue
+        old_has = old_has.has_key
+
+        # now figure how we populate the new table
+        fetch = ['_activity', '_creation', '_creator']
+        properties = spec.getprops()
+        for propname,x in new_spec[1]:
+            prop = properties[propname]
+            if isinstance(prop, Multilink):
+                if not old_has(propname):
+                    # we need to create the new table
+                    self.create_multilink_table(spec, propname)
+            elif old_has(propname):
+                # we copy this col over from the old table
+                fetch.append('_'+propname)
+
+        # select the data out of the old table
+        fetch.append('id')
+        fetch.append('__retired__')
+        fetchcols = ','.join(fetch)
+        cn = spec.classname
+        sql = 'select %s from _%s'%(fetchcols, cn)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'update_class', (self, sql)
+        self.cursor.execute(sql)
+        olddata = self.cursor.fetchall()
+
+        # drop the old table
+        self.cursor.execute('drop table _%s'%cn)
+
+        # GADFLY requires a commit here, or the table spec screws up
+        self.conn.commit()
+
+        # create the new table
+        cols, mls = self.create_class_table(spec)
+
+        # figure the new columns
+        extra = 0
+        for col in cols:
+            if col not in fetch:
+                fetch.append(col)
+                extra += 1
+
+        if olddata:
+            # do the insert
+            fetchcols = ','.join(fetch)
+            args = ','.join([self.arg for x in fetch])
+            sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
+            for entry in olddata:
+                self.cursor.execute(sql, tuple(entry) + (None,)*extra)
+
+        return 1
 
 class GadflyClass:
     def filter(self, search_matches, filterspec, sort=(None,None),

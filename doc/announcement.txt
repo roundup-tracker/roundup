@@ -9,6 +9,9 @@ version.
 This is a bugfix release for version 0.5.x - if you're upgrading from before
 0.5, you *must* read doc/upgrading.txt!
 
+Unfortunately, the Zope frontend for Roundup is currently broken. If you'd
+like to volunteer to fix it, let me know.
+
 Roundup requires python 2.1.3 or later for correct operation. Users of the
 sqlite backend are encouraged to upgrade sqlite to version 2.7.3.
 
