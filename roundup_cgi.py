@@ -1,4 +1,4 @@
-# $Id: roundup_cgi.py,v 1.5 2001-07-20 00:17:16 richard Exp $
+# $Id: roundup_cgi.py,v 1.6 2001-07-20 00:53:20 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -54,7 +54,7 @@ class Client:
 <tr class="location-bar"><td><big><strong>%s</strong></big></td>
 <td align=right valign=bottom>%s</td></tr>
 <tr class="location-bar">
-<td align=left><a href="issue?:columns=activity,status,title&:group=priority">All issues</a> | 
+<td align=left><a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=activity,status,title&:group=priority">All issues</a> | 
 <a href="issue?priority=fatal-bug,bug">Bugs</a> | 
 <a href="issue?priority=usability">Support</a> | 
 <a href="issue?priority=feature">Wishlist</a> | 
@@ -102,6 +102,23 @@ class Client:
             return arg.value.split(',')
         return []
 
+    def index_filterspec(self):
+        ''' pull the index filter spec from the form
+        '''
+        # all the other form args are filters
+        filterspec = {}
+        for key in self.form.keys():
+            if key[0] == ':': continue
+            value = self.form[key]
+            if type(value) == type([]):
+                value = [arg.value for arg in value]
+            else:
+                value = value.value.split(',')
+            l = filterspec.get(key, [])
+            l = l + value
+            filterspec[key] = l
+        return filterspec
+
     def index(self):
         ''' put up an index
         '''
@@ -114,11 +131,16 @@ class Client:
         else: filter = []
         if self.form.has_key(':columns'): columns = self.index_arg(':columns')
         else: columns=['activity','status','title']
-        return self.list(columns=columns, filter=filter, group=group, sort=sort)
+        filterspec = self.index_filterspec()
+        if not filterspec:
+            filterspec['status'] = ['1', '2', '3', '4', '5', '6', '7']
+        return self.list(columns=columns, filter=filter, group=group,
+            sort=sort, filterspec=filterspec)
 
     # XXX deviates from spec - loses the '+' (that's a reserved character
     # in URLS
-    def list(self, sort=None, group=None, filter=None, columns=None):
+    def list(self, sort=None, group=None, filter=None, columns=None,
+            filterspec=None):
         ''' call the template index with the args
 
             :sort    - sort by prop name, optionally preceeded with '-'
@@ -137,19 +159,7 @@ class Client:
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
         if columns is None: columns = self.index_arg(':columns')
-
-        # all the other form args are filters
-        filterspec = {}
-        for key in self.form.keys():
-            if key[0] == ':': continue
-            value = self.form[key]
-            if type(value) == type([]):
-                value = [arg.value for arg in value]
-            else:
-                value = value.value.split(',')
-            l = filterspec.get(key, [])
-            l = l + value
-            filterspec[key] = l
+        if filterspec is None: filterspec = self.index_filterspec()
 
         template.index(self, self.db, cn, filterspec, filter, columns, sort,
             group)
@@ -478,6 +488,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/20 00:17:16  richard
+# Fixed adding a new issue when there is no __note
+#
 # Revision 1.4  2001/07/19 06:27:07  anthonybaxter
 # fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
 # my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
