@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.16 2002-11-28 06:55:57 richard Exp $
+$Id: roundup_server.py,v 1.17 2003-01-13 02:44:42 richard Exp $
 """
 
 # python version check
@@ -305,7 +305,8 @@ def run():
 
     # redirect stdout/stderr to our logfile
     if logfile:
-        sys.stdout = sys.stderr = open(logfile, 'a')
+        # appending, unbuffered
+        sys.stdout = sys.stderr = open(logfile, 'a', 0)
 
     httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
     print _('Roundup server started on %(address)s')%locals()
