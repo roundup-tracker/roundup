@@ -3,6 +3,15 @@
 roundup-mailgw \- mail gateway for roundup
 .SH SYNOPSIS
 \fBroundup-mailgw\fP \fI<instance home>\fP [\fImethod\fP]
+.SH OPTIONS
+.TP
+\fB-C\fP \fIhyperdb class\fP
+specify a tracker class - one of msg (the default), issue, file, user - to
+manipulate with -S options
+.TP
+\fB-S\fP \fIproperty=value[;property=value] pairs\fP
+specify the values to set on the class specified by -C using the same
+format as the Subject line property manipulations
 .SH DESCRIPTION
 The roundup mail gateway may be called in one of three ways:
 .IP \(bu
