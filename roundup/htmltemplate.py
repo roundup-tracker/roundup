@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.61 2002-01-17 23:04:53 richard Exp $
+# $Id: htmltemplate.py,v 1.62 2002-01-18 08:36:12 grubert Exp $
 
 __doc__ = """
 Template engine.
@@ -564,7 +564,7 @@ class TemplateFunctions:
                     handled by the history display!</em></strong>''')
                 arg_s = '<strong><em>' + str(args) + '</em></strong>'
             date_s = date_s.replace(' ', '&nbsp;')
-            l.append('<tr><td valign=top>%s</td><td valign=top>%s</td>'
+            l.append('<tr><td nowrap valign=top>%s</td><td valign=top>%s</td>'
                 '<td valign=top>%s</td><td valign=top>%s</td></tr>'%(date_s,
                 user, action, arg_s))
         if comments:
@@ -1000,6 +1000,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.61  2002/01/17 23:04:53  richard
+#  . much nicer history display (actualy real handling of property types etc)
+#
 # Revision 1.60  2002/01/17 08:48:19  grubert
 #  . display superseder as html link in history.
 #
