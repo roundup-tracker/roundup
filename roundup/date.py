@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.69 2004-05-19 17:12:18 a1s Exp $
+# $Id: date.py,v 1.70 2004-05-23 10:23:28 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -370,6 +370,10 @@ class Date:
         return Date((self.year, self.month, self.day, self.hour + offset,
             self.minute, self.second, 0, 0, 0))
 
+    def __deepcopy__(self, memo):
+        return Date((self.year, self.month, self.day, self.hour,
+            self.minute, self.second, 0, 0, 0))
+
     def get_tuple(self):
         return (self.year, self.month, self.day, self.hour, self.minute,
             self.second, 0, 0, 0)
@@ -459,6 +463,10 @@ class Interval:
                 self.year, self.month, self.day, self.hour, self.minute, \
                     self.second = spec
                 self.second = int(self.second)
+
+    def __deepcopy__(self, memo):
+        return Interval((self.sign, self.year, self.month, self.day,
+            self.hour, self.minute, self.second))
 
     def set(self, spec, allowdate=1, interval_re=re.compile('''
             \s*(?P<s>[-+])?         # + or -
