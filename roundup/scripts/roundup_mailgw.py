@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.15.2.1 2004-05-28 01:03:53 richard Exp $
+# $Id: roundup_mailgw.py,v 1.15.2.2 2004-09-14 22:03:43 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -32,11 +32,12 @@ from roundup.i18n import _
 def usage(args, message=None):
     if message is not None:
         print message
-    print _('Usage: %(program)s [-v] [[-C class] -S field=value]* <instance '
-        'home> [method]')%{'program': args[0]}
+    print _('Usage: %(program)s [-v] [-c] [[-C class] -S field=value]* '
+        '<instance home> [method]')%{'program': args[0]}
     print _('''
 Options:
  -v: print version and exit
+ -c: default class of item to create (else the tracker's MAIL_DEFAULT_CLASS)
  -C / -S: see below
 
 The roundup mail gateway may be called in one of four ways:
@@ -103,7 +104,7 @@ def main(argv):
     # take the argv array and parse it leaving the non-option
     # arguments in the args array.
     try:
-        optionsList, args = getopt.getopt(argv[1:], 'vC:S:', ['set=',
+        optionsList, args = getopt.getopt(argv[1:], 'vc:C:S:', ['set=',
             'class='])
     except getopt.GetoptError:
         # print help information and exit:

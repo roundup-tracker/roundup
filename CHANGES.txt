@@ -10,6 +10,7 @@ Fixed:
 - less specific messages for login failures (thanks Chris Withers)
 - Reject raised against email messages should result in email rejection, not
   discarding of the message
+- mailgw can override the MAIL_DEFUALT_CLASS
 
 
 2004-07-21 0.7.6
