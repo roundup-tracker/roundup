@@ -158,6 +158,8 @@ class CollisionDetectionTestCase(ActionTestCase):
         ActionTestCase.setUp(self)
         self.action = EditItemAction(self.client)
         self.now = Date('.')
+        # round off for testing
+        self.now.seconds = int(self.now.seconds)
 
     def testLastUserActivity(self):
         self.assertEqual(self.action.lastUserActivity(), None)

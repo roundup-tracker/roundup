@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.85 2004-03-24 03:07:52 richard Exp $
+# $Id: rdbms_common.py,v 1.86 2004-03-24 04:57:25 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -607,7 +607,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     hyperdb_to_sql_value = {
         hyperdb.String : str,
-        hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%f'),
+        hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%.3f'),
         hyperdb.Link   : int,
         hyperdb.Interval  : lambda x: x.serialise(),
         hyperdb.Password  : str,

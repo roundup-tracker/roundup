@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.62 2004-03-24 03:07:51 richard Exp $
+# $Id: date.py,v 1.63 2004-03-24 04:57:25 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -300,16 +300,20 @@ class Date:
         d = diff/(24*60*60)
         return Interval((0, 0, d, H, M, S), sign=sign)
 
-    def __cmp__(self, other):
+    def __cmp__(self, other, int_seconds=0):
         """Compare this date to another date."""
         if other is None:
             return 1
-        for attr in ('year', 'month', 'day', 'hour', 'minute', 'second'):
+        for attr in ('year', 'month', 'day', 'hour', 'minute'):
             if not hasattr(other, attr):
                 return 1
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r: return r
-        return 0
+        if not hasattr(other, 'second'):
+            return 1
+        if int_seconds:
+            return cmp(int(self.second), int(other.second))
+        return cmp(self.second, other.second)
 
     def __str__(self):
         """Return this date as a string in the yyyy-mm-dd.hh:mm:ss format."""
@@ -334,7 +338,7 @@ class Date:
         return str
 
     def __repr__(self):
-        return '<Date %s>'%self.__str__()
+        return '<Date %s>'%self.formal(sec='%f')
 
     def local(self, offset):
         """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.

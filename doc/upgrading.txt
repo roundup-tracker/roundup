@@ -11,6 +11,17 @@ accordingly. Note that there is information about upgrade procedures in the
 Migrating from 0.6 to 0.7
 =========================
 
+0.7.0 Typed columns in MySQL backend
+------------------------------------
+
+The MySQL (and Postgresql for that matter) backend now creates tables with
+appropriate column datatypes (not just varchar).
+
+Your database will be automatically migrated to use the new schemas, but
+it will take time. It's probably a good idea to make sure you do this as
+part of the upgrade when users are not expected to be using the system.
+
+
 0.7.0 Permission setup
 ----------------------
 
@@ -51,12 +62,15 @@ add::
         p = db.security.getPermission('View', cl)
         db.security.addPermissionToRole('User', p)
 
+
 0.7.0 New "actor" property
 --------------------------
 
 Roundup's database has a new per-item property "actor" which reflects the
 user performing the last "actvitiy". See the classic template for ways to
 integrate this new property into your interface.
+
+The property will be automatically added to your existing database.
 
 
 0.7.0 Extending the cgi interface

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.19 2004-03-22 07:45:40 richard Exp $ 
+# $Id: db_test_base.py,v 1.20 2004-03-24 04:57:25 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -939,6 +939,7 @@ class DBTest(MyTestCase):
         # compare with snapshot of the database
         for cn, items in orig.items():
             klass = self.db.classes[cn]
+            propdefs = klass.getprops(1)
             # ensure retired items are retired :)
             l = items.keys(); l.sort()
             m = klass.list(); m.sort()
@@ -949,7 +950,13 @@ class DBTest(MyTestCase):
                     if isinstance(value, type([])):
                         value.sort()
                         l.sort()
-                    ae(l, value)
+                    try:
+                        ae(l, value)
+                    except AssertionError:
+                        if not isinstance(propdefs[name], Date):
+                            raise
+                        # don't get hung up on rounding errors
+                        assert not l.__cmp__(value, int_seconds=1)
 
         # make sure the retired items are actually imported
         ae(self.db.user.get('4', 'username'), 'blop')
