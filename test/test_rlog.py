@@ -7,6 +7,7 @@ class LoggingTestCase(unittest.TestCase):
         self.logging = rlog.BasicLogging()
         self.file = StringIO.StringIO()
         self.logging.setFile(self.file)
+        self.logging.setLevel(self.logging.LVL_INFO)
     def testLevels(self):
         logger = self.logging.getLogger('test')
         v1 = self.file.getvalue()

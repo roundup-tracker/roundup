@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.76 2004-11-29 02:01:05 anthonybaxter Exp $
+# $Id: setup.py,v 1.77 2004-12-08 01:24:41 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -210,7 +210,7 @@ def check_manifest():
         f = open('MANIFEST')
     except:
         print '\n*** SOURCE ERROR: The MANIFEST file is missing!'
-        sys.exit(1)
+        return
     try:
         manifest = [l.strip() for l in f.readlines()]
     finally:

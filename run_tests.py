@@ -696,7 +696,7 @@ def process_args(argv=None):
 
     module_filter = None
     test_filter = None
-    VERBOSE = 1
+    VERBOSE = 2
     LOOP = 0
     GUI = 0
     TRACE = 0
