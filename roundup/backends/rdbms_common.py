@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.46 2003-03-18 00:50:24 richard Exp $
+# $Id: rdbms_common.py,v 1.47 2003-03-21 04:02:13 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1740,12 +1740,17 @@ class Class(hyperdb.Class):
         # flip the sense of the flag if we don't want all of them
         if retired is not None:
             retired = not retired
-        sql = 'select id from _%s where __retired__ <> %s'%(self.classname,
-            self.db.arg)
+            args = (retired, )
+            sql = 'select id from _%s where __retired__ <> %s'%(self.classname,
+                self.db.arg)
+        else:
+            args = ()
+            sql = 'select id from _%s'%self.classname
         if __debug__:
             print >>hyperdb.DEBUG, 'getnodeids', (self, sql, retired)
-        self.db.cursor.execute(sql, (retired,))
-        return [x[0] for x in self.db.cursor.fetchall()]
+        self.db.cursor.execute(sql, args)
+        ids = [x[0] for x in self.db.cursor.fetchall()]
+        return ids
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
