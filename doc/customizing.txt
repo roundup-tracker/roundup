@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.116 $
+:Version: $Revision: 1.117 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2147,6 +2147,23 @@ In your HTML form, add a hidden form element like so::
   <input type="hidden" name="@action" value="myaction">
 
 where "myaction" is the name you registered in the previous step.
+
+Actions may return content to the user
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Actions generally perform some database manipulation and then pass control
+on to the rendering of a template in the current context (see `Determining
+web context`_ for how that works.) Some actions will want to generate the
+actual content returned to the user. Action methods may return their own
+content string to be displayed to the user, overriding the templating step.
+In this situation, we assume that the content is HTML by default. You may
+override the content type indicated to the user by calling ``setHeader``::
+
+   self.client.setHeader('Content-Type', 'text/csv')
+
+This example indicates that the value sent back to the user is actually
+comma-separated value content (eg. something to be loaded into a
+spreadsheet or database).
 
 
 Examples

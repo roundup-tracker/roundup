@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.163 2004-02-25 03:24:43 richard Exp $
+# $Id: client.py,v 1.164 2004-02-25 03:39:53 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -249,24 +249,18 @@ class Client:
         Note: also cleans One Time Keys, and other "session" based stuff.
         """
         sessions = self.db.sessions
-        last_clean = sessions.get('last_clean', 'last_use') or 0
+        last_clean = self.db.sessions.get('last_clean', 'last_use') or 0
 
+        # time to clean?
         week = 60*60*24*7
         hour = 60*60
         now = time.time()
-        if now - last_clean > hour:
-            # remove aged sessions
-            for sessid in sessions.list():
-                interval = now - sessions.get(sessid, 'last_use')
-                if interval > week:
-                    sessions.destroy(sessid)
-            # remove aged otks
-            otks = self.db.otks
-            for sessid in otks.list():
-                interval = now - otks.get(sessid, '__time')
-                if interval > week:
-                    otks.destroy(sessid)
-            sessions.set('last_clean', last_use=time.time())
+        if now - last_clean < hour:
+            return
+
+        self.db.sessions.clean(now)
+        self.db.otks.clean(now)
+        self.db.sessions.set('last_clean', last_use=time.time())
 
     def determine_user(self):
         ''' Determine who the user is
@@ -296,7 +290,7 @@ class Client:
             # get the user from the session
             try:
                 # update the lifetime datestamp
-                sessions.set(self.session, last_use=time.time())
+                sessions.updateTimestamp(self.session)
                 sessions.commit()
                 user = sessions.get(self.session, 'user')
             except KeyError:
@@ -574,6 +568,11 @@ class Client:
         if not self.headers_done:
             self.header()
         self.request.wfile.write(content)
+
+    def setHeader(self, header, value):
+        '''Override a header to be returned to the user's browser.
+        '''
+        self.additional_headers[header] = value
 
     def header(self, headers=None, response=None):
         '''Put up the appropriate header.

@@ -30,6 +30,8 @@ Feature:
 - HTMLLinkProperty field() method renders as a field now (thanks darryl)
 - all HTML templating methods now automatically check for permissions
   (either view or edit as appropriate), greatly simplifying templates
+- cgi Action handlers may now return the actual content to be sent back to
+  the user (rather than using some template)
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
