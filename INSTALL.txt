@@ -75,12 +75,12 @@ The email addresses used by the system by default are:
 Mail
 ----
 Set up a mail alias called "issue_tracker" as:
-  "|/usr/bin/python /home/httpd/html/roundup/roundup-mailgw <instance_home>"
+  "|/usr/bin/python /usr/local/bin/roundup-mailgw <instance_home>"
 
 In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
 so sendmail will accept the pipe command. In that case, symlink
 /etc/smrsh/python to /usr/bin/python and change the command to:
-  "|python /home/httpd/html/roundup/roundup-mailgw <instance_home>"
+  "|python /usr/local/bin/roundup-mailgw <instance_home>"
 
 
 Web Interface
@@ -91,8 +91,8 @@ Stand-alone:
  1. Edit roundup-server at the top - ROUNDUP_INSTANCE_HOMES needs to know
     about your instance.
  2. "roundup-server [hostname port]"   (hostname may be "")
- 3. Load up the page "/<instance name>/" using the port number you set and
-    where instance name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
+ 3. Load up the page "/<instance name>/index" where instance name is the
+    name you nominated in ROUNDUP_INSTANCE_HOMES.
 
 Apache:
  1. Make sure roundup.cgi is executable. Edit it at the top -
@@ -108,7 +108,7 @@ RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=
 ------8<------- snip here ------8<-------
    note: the RewriteRule must be on one line - no breaks
  4. Re-start your apache to re-load the config
- 5. Load up the page "/roundup/roundup.cgi/<instance name>/" where instance
-    name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
+ 5. Load up the page "/roundup/roundup.cgi/<instance name>/index" where
+    instance name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
 
 
