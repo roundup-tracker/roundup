@@ -8,7 +8,7 @@
        tal:define="props python:request.form['properties'].value.split(',')">
 <tr><th tal:repeat="prop props" tal:content="prop"></th></tr>
 <tr tal:repeat="item context/list">
- <td tal:repeat="prop props" tal:content="python:item[prop]"></td>
+ <td tal:repeat="prop props" tal:content="structure python:item[prop]"></td>
 </tr>
 </table>
 

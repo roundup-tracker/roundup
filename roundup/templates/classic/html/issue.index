@@ -37,7 +37,7 @@ You are not allowed to view this page.
    <td tal:condition="request/show/topic" tal:content="i/topic"></td>
    <td tal:condition="request/show/title">
     <a tal:attributes="href string:issue${i/id}"
-       tal:content="python:str(i.title) or '[no title]'">title</a>
+		tal:content="python:str(i.title.plain(hyperlink=0)) or '[no title]'">title</a>
    </td>
    <td tal:condition="request/show/status" tal:content="i/status"></td>
    <td tal:condition="request/show/creator" tal:content="i/creator"></td>

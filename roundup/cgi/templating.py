@@ -735,7 +735,7 @@ class HTMLProperty:
 
 class StringHTMLProperty(HTMLProperty):
     url_re = re.compile(r'\w{3,6}://\S+')
-    email_re = re.compile(r'\w+@[\w\.\-]+')
+    email_re = re.compile(r'[\w\.]+@[\w\.\-]+')
     designator_re = re.compile(r'([a-z_]+)(\d+)')
     def _url_repl(self, match):
         s = match.group(0)
