@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.136 2004-10-08 01:28:32 richard Exp $
+# $Id: rdbms_common.py,v 1.137 2004-10-14 22:27:59 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -250,6 +250,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def fix_version_3_tables(self):
         # drop the shorter VARCHAR OTK column and add a new TEXT one
         for name in ('otk', 'session'):
+            self.sql('DELETE FROM %ss'%name)
             self.sql('ALTER TABLE %ss DROP %s_value'%(name, name))
             self.sql('ALTER TABLE %ss ADD %s_value TEXT'%(name, name))
 

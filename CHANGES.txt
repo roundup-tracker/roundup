@@ -35,7 +35,12 @@ Fixed:
 - removed safeget() from the API (sf bug 994750)
 
 
-2004-??-?? 0.7.7
+2004-10-15 0.7.8
+Fixed:
+- Clean out sessions / otks tables when migrating
+
+
+2004-10-11 0.7.7
 Fixed:
 - ZRoundup's search interface works now (sf bug 994957)
 - fixed history display when "ascending"
