@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.55 $
+:Version: $Revision: 1.56 $
 
 .. contents::
 
@@ -482,7 +482,7 @@ On Windows 2000 and later:
 6) Choose "Environmental Variables"
 7) Add: "<dir>\Scripts" to the "Path" environmental variable.
 
-Where <dir> in 7) is the root directory (e.g., C:\Python22\Scripts)
+Where <dir> in 7) is the root directory (e.g., ``C:\Python22\Scripts``)
 of your Python installation.
 
 I understand that in XP, 2) above is not needed as "Control
