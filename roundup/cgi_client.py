@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.11 2001-07-30 06:17:45 richard Exp $
+# $Id: cgi_client.py,v 1.12 2001-07-30 06:26:31 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -167,7 +167,7 @@ class Client:
             filter, columns, sort, group)
         self.pagefoot()
 
-    def showitem(self, message=None):
+    def shownode(self, message=None):
         ''' display an item
         '''
         cn = self.classname
@@ -309,11 +309,30 @@ class Client:
         # use the template to display the item
         htmltemplate.item(self, self.TEMPLATES, self.db, self.classname, nodeid)
         self.pagefoot()
-    showissue = showitem
-    showmsg = showitem
+    showissue = shownode
+    showmsg = shownode
 
-    def newissue(self, message=None):
-        ''' add an issue
+    def newnode(self, message=None):
+        ''' Add a new node to the database.
+        
+        The form works in two modes: blank form and submission (that is,
+        the submission goes to the same URL). **Eventually this means that
+        the form will have previously entered information in it if
+        submission fails.
+
+        The new node will be created with the properties specified in the
+        form submission. For multilinks, multiple form entries are handled,
+        as are prop=value,value,value. You can't mix them though.
+
+        If the new node is to be referenced from somewhere else immediately
+        (ie. the new node is a file that is to be attached to a support
+        issue) then supply one of these arguments in addition to the usual
+        form entries:
+            :link=designator:property
+            :multilink=designator:property
+        ... which means that once the new node is created, the "property"
+        on the node given by "designator" should now reference the new
+        node's id. The node id will be appended to the multilink.
         '''
         cn = self.classname
         cl = self.db.classes[cn]
@@ -454,13 +473,14 @@ class Client:
         htmltemplate.newitem(self, self.TEMPLATES, self.db, self.classname,
             self.form)
         self.pagefoot()
-    newuser = newissue
+    newissue = newnode
+    newuser = newnode
 
     def showuser(self, message=None):
         ''' display an item
         '''
         if self.user in ('admin', self.db.user.get(self.nodeid, 'username')):
-            self.showitem(message)
+            self.shownode(message)
         else:
             raise Unauthorised
 
@@ -525,6 +545,15 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/07/30 06:17:45  richard
+# Features:
+#  . Added ability for cgi newblah forms to indicate that the new node
+#    should be linked somewhere.
+# Fixed:
+#  . Fixed the agument handling for the roundup-admin find command.
+#  . Fixed handling of summary when no note supplied for newblah. Again.
+#  . Fixed detection of no form in htmltemplate Field display.
+#
 # Revision 1.10  2001/07/30 02:37:34  richard
 # Temporary measure until we have decent schema migration...
 #
