@@ -48,6 +48,8 @@ Fixed:
 - loosened the detection of issue cross-references in messages
 - open CSV files in "universal newline" mode
 - s/Modifed/Modified (thanks donfu)
+- applied patch fixing some form handling issues in ZRoundup (thanks Chris
+  Withers)
 
 
 2004-10-15 0.7.8
