@@ -12,6 +12,7 @@ are given with the most recent entry first.
 - email file attachments added to issue files list (sf bug 711501)
 - added socket timeout to attempt to prevent stuck processes (sf bug 665487)
 - email registered users shouldn't be able to log in (sf bug 714673)
+- handle missing addresses on users (sf bug 724537)
 
 
 2003-02-27 0.5.6

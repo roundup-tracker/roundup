@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.75 2002-12-11 01:52:20 richard Exp $
+# $Id: roundupdb.py,v 1.75.2.1 2003-04-27 02:29:07 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -110,9 +110,16 @@ class IssueClass:
 
         # possibly send the message to the author, as long as they aren't
         # anonymous
-        if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' and
-                users.get(authid, 'username') != 'anonymous'):
-            sendto.append(authid)
+        if (users.get(authid, 'username') != 'anonymous' and
+                not r.has_key(authid)):
+            if self.db.config.MESSAGES_TO_AUTHOR == 'yes':
+                # make sure they have an address
+                add = users.get(authid, 'address')
+                if add:
+                    # send it to them
+                    sendto.append(add)
+                    recipients.append(authid)
+
         r[authid] = 1
 
         # now figure the nosy people who weren't recipients
@@ -125,9 +132,12 @@ class IssueClass:
                 continue
             # make sure they haven't seen the message already
             if not r.has_key(nosyid):
-                # send it to them
-                sendto.append(nosyid)
-                recipients.append(nosyid)
+                # make sure they have an address
+                add = users.get(nosyid, 'address')
+                if add:
+                    # send it to them
+                    sendto.append(add)
+                    recipients.append(nosyid)
 
         # generate a change note
         if oldvalues:
@@ -137,9 +147,6 @@ class IssueClass:
 
         # we have new recipients
         if sendto:
-            # map userids to addresses
-            sendto = [users.get(i, 'address') for i in sendto]
-
             # update the message's recipients list
             messages.set(msgid, recipients=recipients)
 
