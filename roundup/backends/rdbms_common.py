@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.58.2.3 2003-11-14 02:47:56 richard Exp $
+# $Id: rdbms_common.py,v 1.58.2.4 2004-03-31 01:13:22 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -667,6 +667,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 d[k] = v.serialise()
             elif isinstance(prop, Interval) and v is not None:
                 d[k] = v.serialise()
+            elif isinstance(prop, Boolean) and v is not None:
+                d[k] = int(v)
             else:
                 d[k] = v
         return d
