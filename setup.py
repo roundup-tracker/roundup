@@ -15,8 +15,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: setup.py,v 1.64 2004-05-05 02:05:43 richard Exp $
+#
+# $Id: setup.py,v 1.65 2004-05-13 20:12:32 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -51,7 +51,7 @@ class build_scripts_create(build_scripts):
             <packagename>.scripts.<mangled_scriptname>
 
         The mangling of script names replaces '-' and '/' characters
-        with '-' and '.', so that they are valid module paths. 
+        with '-' and '.', so that they are valid module paths.
     """
     package_name = None
 
@@ -61,7 +61,7 @@ class build_scripts_create(build_scripts):
         if not self.package_name:
             raise Exception("You have to inherit build_scripts_create and"
                 " provide a package name")
-        
+
         to_module = string.maketrans('-/', '_.')
 
         self.mkpath(self.build_dir)
@@ -129,6 +129,27 @@ def scriptname(path):
         script = script + ".bat"
     return script
 
+### Build Roundup
+
+def list_po_files():
+    """Return list of all found message files"""
+    return glob("locale/*/LC_MESSAGES/*.po")
+
+def compile_po_files():
+    """Compile all .po files in locale directory"""
+    # locate the tools directory
+    if sys.platform == "win32":
+        _share = sys.prefix
+    else:
+        _share = os.path.join(sys.prefix, "share",
+            "python%i.%i" % sys.version_info[:2])
+    # import message formatter
+    sys.path.insert(0, os.path.join(_share, "Tools", "i18n"))
+    import msgfmt
+    # compile messages
+    for _file in list_po_files():
+        msgfmt.make(_file, None)
+
 def check_manifest():
     """Check that the files listed in the MANIFEST are present when the
     source is unpacked.
@@ -154,6 +175,7 @@ def check_manifest():
 class build_roundup(build):
     def run(self):
         check_manifest()
+        compile_po_files()
         build.run(self)
 
 #############################################################################
@@ -176,7 +198,7 @@ def main():
     ]
     installdatafiles = [
         ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
-    ] 
+    ]
 
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -201,15 +223,23 @@ def main():
                 (os.path.join('share', 'roundup', idir), tfiles)
             )
 
+    # add message files
+    _po_files = list_po_files()
+    for _file in _po_files:
+        # change .po to .mo - will be compiled by build
+        _file = os.path.splitext(_file)[0] + ".mo"
+        installdatafiles.append((os.path.join("share", os.path.dirname(_file)),
+            [_file]))
+
     # perform the setup action
     from roundup import __version__
     setup(
-        name = "roundup", 
+        name = "roundup",
         version = __version__,
         description = "A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-        long_description = 
+        long_description =
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
