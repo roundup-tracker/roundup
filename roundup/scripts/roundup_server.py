@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.39 2004-02-15 21:55:10 richard Exp $
+$Id: roundup_server.py,v 1.40 2004-04-02 06:38:42 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -60,14 +60,17 @@ LOGFILE = None
 
 import zlib, base64
 favico = zlib.decompress(base64.decodestring('''
-eJyVUk2IQVEUfn4yaRYjibdQZiVba/ZE2djIUmHWFjaKGVmIlY2iFMVG2ViQhXqFSP6iFFJvw4uF
-LGdWd743mpeMn+a88917Oue7955z3qEoET6FQkHx8iahKDV2A8B7XgERRf/EKMSUzyf8ypbbnnQy
-mWBdr9eVSkVw3tJGoxGNRpvNZigUyufzWPv9Pvwcx0UiERj7/V4g73Y7j8fTarWMRmO73U4kEkKI
-YZhardbr9eLxuOD0+/2ZTMZisYjFYpqmU6kU799uN5tNMBg8HA7ZbPY8GaTh8/mEipRKpclk0ul0
-NpvNarUmk0mWZS/yr9frcrmc+iMOh+NWydPp1Ov1SiSSc344HL7fKKfTiSN2u12tVqOcxWJxn6/V
-ag0GAwxkrlKp5vP5fT7ulMlk6XRar9dLpVIUXi6Xb5Hxa1wul0ajKZVKsVjM7XYXCoVOp3OVPJvN
-AoFAtVo1m825XO7hSODOYrH4kHbxxGAwwODBGI/H6DBs5LNara7yl8slGjIcDsHpdrunU6PRCAP2
-r3fPdUcIYeyEfLSAJ0LeAUZHCAt8Al/8/kLIEWDB5YDj0wm8fAP6fVfo
+eJztkTlM2lEcgD9aoEqL0FqFIhahKFIsPbWtLcUeWuxBCxZb6kLi0oE4GDcHj0Tj6mDiYDQmJg4m
+6uDGxCYhgsFIjFFjdNLBI94Rsf96dXNp0snv5R3f7/fe7yXvgUhoSiXCmMIvCWQC+UIXQuRwHD+P
+oaEhBgYG6O/vp7e3l56eHjo6Omhvb6elpYWmpiYaGhqor6+nuroar9eLx+PB5XKRTCZJJBLs7u6y
+vb3N5uYma2tr2Gw2VlZWWF5eZmFhgfn5eebm5rBYLMzMzGA2m5mensZkMjE1NUU8HicWi6HT6Rgf
+HycSiaBSqRgdHUWhUCCXy5FIJIyMjCASiRgeHmZwcJC+vj66u7vp6uqis7OTtrY2WltbaW5uprGx
+kbq6Ompra6mpqcHv9+Pz+XC73TidTg4PDzk4OGB/fx+Hw8He3h47OztsbW2xsbHB+vo6q6urLC0t
+sbi4iNVqZXZ2FqPRyOTkJAaDgYmJCaLRKFqtlrGxMTQaDeFwmFAoRDAYRCaTEQgEkEqliMXic//h
+ggv+N3bHldKK1Mp8u/Kt/Qh16v0i8WO10vO0LEvQm9ce2SSFwuKS4WGBMFmv2qruPn+n0xdlXb4u
+eHnKPfih/Zb5Ruo4On/LfVz4pfK4nj272PLHC+2nKJ+RY/6pO/OSV8ZyhenDmd/4XCX7aH7hPPXc
+L+aCtNtpotO03JtTnKE/2+56oq7MsP+l7EG25tOd3Iqvr08C6bl52ap09feTG0v079X6PKem9Mj+
+9f1+A74o1JM=
 '''.strip()))
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -135,7 +138,11 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         rest = self.path
 
         if rest == '/favicon.ico':
-            raise client.NotFound
+            self.send_response(200)
+            self.send_header('Content-Type', 'image/x-icon')
+            self.end_headers()
+            self.wfile.write(favico)
+            return
 
         i = rest.rfind('?')
         if i >= 0:
