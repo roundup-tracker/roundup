@@ -11,7 +11,6 @@ Required:
 - fix admin_guide referring to structure of trackers
 - add config.ini section descriptions - DONE?
 - review use of hasPermission etc. in classic template
-- how to override Client class methods like determine_user?
 - clean up roundup.cgi
 
 Optionally:
