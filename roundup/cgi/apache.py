@@ -20,8 +20,8 @@
 #                   instead of mod_python FieldStorage
 # 29-apr-2004 [als] created
 
-__version__ = "$Revision: 1.2 $"[11:-2]
-__date__ = "$Date: 2004-07-12 09:14:12 $"[7:-2]
+__version__ = "$Revision: 1.3 $"[11:-2]
+__date__ = "$Date: 2004-10-23 14:13:24 $"[7:-2]
 
 import cgi
 import os
@@ -93,7 +93,8 @@ def handler(req):
     _env["PATH_INFO"] = req.path_info[1:]
     _form = cgi.FieldStorage(req, environ=_env)
     _client = _tracker.Client(_tracker, Request(req), _env, _form,
-        translator=TranslationService.get_translation(_lang))
+        translator=TranslationService.get_translation(_lang,
+            tracker_home=_home))
     _client.main()
     return apache.OK
 
