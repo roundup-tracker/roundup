@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.49 2002-01-10 06:19:18 richard Exp $
+$Id: mailgw.py,v 1.50 2002-01-11 22:59:01 richard Exp $
 '''
 
 
@@ -228,8 +228,12 @@ class MailGW:
                 w.addheader(header_name, message.getheader(header_name))
         # now attach the message body
         body = w.startbody(content_type)
-        message.rewindbody()
-        body.write(message.fp.read())
+        try:
+            message.rewindbody()
+        except IOError:
+            body.write("*** couldn't include message body: read from pipe ***")
+        else:
+            body.write(message.fp.read())
 
         # attach the original message to the returned message
         part = writer.nextpart()
@@ -726,6 +730,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2002/01/10 06:19:18  richard
+# followup lines directly after a quoted section were being eaten.
+#
 # Revision 1.48  2002/01/08 04:12:05  richard
 # Changed message-id format to "<%s.%s.%s%s@%s>" so it complies with RFC822
 #
