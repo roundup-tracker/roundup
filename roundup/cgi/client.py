@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.127 2003-08-10 10:30:56 jlgijsbers Exp $
+# $Id: client.py,v 1.128 2003-08-10 13:38:43 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1953,15 +1953,17 @@ You should then receive another email with the new password.
         if s:
             raise ValueError, '\n'.join(s)
 
-        # check that FileClass entries have a "content" property with
-        # content, otherwise remove them
+        # When creating a FileClass node, it should have a non-empty content
+        # property to be created. When editing a FileClass node, it should
+        # either have a non-empty content property or no property at all. In
+        # the latter case, nothing will change.
         for (cn, id), props in all_props.items():
-            cl = self.db.classes[cn]
-            if not isinstance(cl, hyperdb.FileClass):
-                continue
-            # we also don't want to create FileClass items with no content
-            if not props.get('content', ''):
-                del all_props[(cn, id)]
+            if isinstance(self.db.classes[cn], hyperdb.FileClass):
+                if id == '-1':
+                      if not props.get('content', ''):
+                            del all_props[(cn, id)]
+                elif props.has_key('content') and not props['content']:
+                      raise ValueError, _('File is empty')
         return all_props, all_links
 
 def fixNewlines(text):
