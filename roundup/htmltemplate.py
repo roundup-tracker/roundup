@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.43 2001-11-21 04:04:43 richard Exp $
+# $Id: htmltemplate.py,v 1.44 2001-11-21 23:35:45 jhermann Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -87,7 +87,7 @@ class TemplateFunctions:
             k = linkcl.labelprop()
             value = ', '.join([linkcl.get(i, k) for i in value])
         else:
-            s = 'Plain: bad propclass "%s"'%propclass
+            s = _('Plain: bad propclass "%(propclass)s"')%locals()
         if escape:
             value = cgi.escape(value)
         return value
@@ -106,7 +106,7 @@ class TemplateFunctions:
             to be edited
         '''
         if not self.nodeid and self.form is None and self.filterspec is None:
-            return '[Field: not called from item]'
+            return _('[Field: not called from item]')
         propclass = self.properties[property]
         if self.nodeid:
             value = self.cl.get(self.nodeid, property, None)
@@ -861,6 +861,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.43  2001/11/21 04:04:43  richard
+# *sigh* more missing value handling
+#
 # Revision 1.42  2001/11/21 03:40:54  richard
 # more new property handling
 #

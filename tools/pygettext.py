@@ -411,6 +411,14 @@ def main():
     else:
         options.toexclude = []
 
+    # on win32, do internal globbing
+    if sys.platform == 'win32':
+        import glob
+        expanded = []
+        for arg in args:
+            expanded.extend(glob.glob(arg))
+        args = expanded
+
     # slurp through all the files
     eater = TokenEater(options)
     for filename in args:
