@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.24 $
+:Version: $Revision: 1.25 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -57,7 +57,7 @@ The config.py located in your tracker home contains the basic
 configuration for the web and e-mail components of roundup's interfaces. This
 file is a Python module. The configuration variables available are:
 
-**INSTANCE_HOME** - ``os.path.split(__file__)[0]``
+**TRACKER_HOME** - ``os.path.split(__file__)[0]``
  The tracker home directory. The above default code will automatically
  determine the tracker home for you.
 
@@ -67,23 +67,23 @@ file is a Python module. The configuration variables available are:
 **MAIL_DOMAIN** - ``'your.tracker.email.domain.example'``
  The domain name used for email addresses.
 
-**DATABASE** - ``os.path.join(INSTANCE_HOME, 'db')``
+**DATABASE** - ``os.path.join(TRACKER_HOME, 'db')``
  This is the directory that the database is going to be stored in. By default
  it is in the tracker home.
 
-**TEMPLATES** - ``os.path.join(INSTANCE_HOME, 'html')``
+**TEMPLATES** - ``os.path.join(TRACKER_HOME, 'html')``
  This is the directory that the HTML templates reside in. By default they are
  in the tracker home.
 
-**INSTANCE_NAME** - ``'Roundup issue tracker'``
+**TRACKER_NAME** - ``'Roundup issue tracker'``
  A descriptive name for your roundup tracker. This is sent out in e-mails and
  appears in the heading of CGI pages.
 
-**ISSUE_TRACKER_EMAIL** - ``'issue_tracker@%s'%MAIL_DOMAIN``
+**TRACKER_EMAIL** - ``'issue_tracker@%s'%MAIL_DOMAIN``
  The email address that e-mail sent to roundup should go to. Think of it as the
  tracker's personal e-mail address.
 
-**ISSUE_TRACKER_WEB** - ``'http://your.tracker.url.example/'``
+**TRACKER_WEB** - ``'http://your.tracker.url.example/'``
  The web address that the tracker is viewable at. This will be included in
  information sent to users of the tracker.
 
@@ -126,7 +126,7 @@ can see, the MAIL_DOMAIN must be edited before any interaction with the
 tracker is attempted.::
 
     # roundup home is this package's directory
-    INSTANCE_HOME=os.path.split(__file__)[0]
+    TRACKER_HOME=os.path.split(__file__)[0]
 
     # The SMTP mail host that roundup will use to send mail
     MAILHOST = 'localhost'
@@ -135,25 +135,22 @@ tracker is attempted.::
     MAIL_DOMAIN = 'your.tracker.email.domain.example'
 
     # This is the directory that the database is going to be stored in
-    DATABASE = os.path.join(INSTANCE_HOME, 'db')
+    DATABASE = os.path.join(TRACKER_HOME, 'db')
 
     # This is the directory that the HTML templates reside in
-    TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
+    TEMPLATES = os.path.join(TRACKER_HOME, 'html')
 
     # A descriptive name for your roundup tracker
-    INSTANCE_NAME = 'Roundup issue tracker'
+    TRACKER_NAME = 'Roundup issue tracker'
 
     # The email address that mail to roundup should go to
-    ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+    TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
     # The web address that the tracker is viewable at
-    ISSUE_TRACKER_WEB = 'http://your.tracker.url.example/'
+    TRACKER_WEB = 'http://your.tracker.url.example/'
 
     # The email address that roundup will complain to if it runs into trouble
     ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-
-    # Somewhere for roundup to log stuff internally sent to stdout or stderr
-    LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
     # Send nosy messages to the author of the message
     MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.84 2002-09-10 02:37:27 richard Exp $
+$Id: mailgw.py,v 1.85 2002-09-10 03:01:18 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -239,8 +239,8 @@ class MailGW:
         msg = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(msg)
         writer.addheader('Subject', subject)
-        writer.addheader('From', '%s <%s>'% (self.instance.config.INSTANCE_NAME,
-            self.instance.config.ISSUE_TRACKER_EMAIL))
+        writer.addheader('From', '%s <%s>'% (self.instance.config.TRACKER_NAME,
+            self.instance.config.TRACKER_EMAIL))
         writer.addheader('To', ','.join(sendto))
         writer.addheader('MIME-Version', '1.0')
         part = writer.startmultipartbody('mixed')
@@ -561,7 +561,7 @@ Unknown address: %s
 
         # now update the recipients list
         recipients = []
-        tracker_email = self.instance.config.ISSUE_TRACKER_EMAIL.lower()
+        tracker_email = self.instance.config.TRACKER_EMAIL.lower()
         for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
             r = recipient[1].strip().lower()
             if r == tracker_email or not r:

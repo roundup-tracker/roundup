@@ -89,6 +89,13 @@ Registration" and/or the "Email Registration" Permission from the "Anonymous"
 Role. See the section on customising security in the `customisation
 documentation`_ for more information.
 
+Finally, the following config variables have been renamed to make more sense:
+
+- INSTANCE_HOME -> TRACKER_HOME
+- INSTANCE_NAME -> TRACKER_NAME
+- ISSUE_TRACKER_WEB -> TRACKER_WEB
+- ISSUE_TRACKER_EMAIL -> TRACKER_EMAIL
+
 
 0.5.0 Schema Specification
 --------------------------
@@ -594,7 +601,7 @@ to::
 
 0.4.0 Configuration
 --------------------
-``INSTANCE_NAME`` and ``EMAIL_SIGNATURE_POSITION`` have been added to the
+``TRACKER_NAME`` and ``EMAIL_SIGNATURE_POSITION`` have been added to the
 instance_config.py. The simplest solution is to copy the default values
 from template in the core source.
 

@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.9 2002-09-10 01:07:06 richard Exp $
+$Id: roundup_server.py,v 1.10 2002-09-10 03:01:19 richard Exp $
 """
 
 # python version check
@@ -35,7 +35,7 @@ from roundup.i18n import _
 #
 
 # This indicates where the Roundup instance lives
-ROUNDUP_INSTANCE_HOMES = {
+TRACKER_HOMES = {
     'bar': '/tmp/bar',
 }
 
@@ -57,7 +57,7 @@ ROUNDUP_USER = None
 
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    ROUNDUP_INSTANCE_HOMES = ROUNDUP_INSTANCE_HOMES
+    TRACKER_HOMES = TRACKER_HOMES
     ROUNDUP_USER = ROUNDUP_USER
 
     def run_cgi(self):
@@ -101,7 +101,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         w = self.wfile.write
         w(_('<html><head><title>Roundup instances index</title></head>\n'))
         w(_('<body><h1>Roundup instances index</h1><ol>\n'))
-        for instance in self.ROUNDUP_INSTANCE_HOMES.keys():
+        for instance in self.TRACKER_HOMES.keys():
             w(_('<li><a href="%(instance_url)s/index">%(instance_name)s</a>\n')%{
                 'instance_url': urllib.quote(instance),
                 'instance_name': cgi.escape(instance)})
@@ -123,8 +123,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return self.index()
         l_path = rest.split('/')
         instance_name = urllib.unquote(l_path[1])
-        if self.ROUNDUP_INSTANCE_HOMES.has_key(instance_name):
-            instance_home = self.ROUNDUP_INSTANCE_HOMES[instance_name]
+        if self.TRACKER_HOMES.has_key(instance_name):
+            instance_home = self.TRACKER_HOMES[instance_name]
             instance = roundup.instance.open(instance_home)
         else:
             raise client.NotFound
@@ -137,7 +137,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         # Set up the CGI environment
         env = {}
-        env['INSTANCE_NAME'] = instance_name
+        env['TRACKER_NAME'] = instance_name
         env['REQUEST_METHOD'] = self.command
         env['PATH_INFO'] = urllib.unquote(rest)
         if query:
@@ -181,7 +181,7 @@ roundup-server [-n hostname] [-p port] [-l file] [-d file] [name=instance home]*
    instance home is the directory that was identified when you did
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. For convenience, you may edit the
-   ROUNDUP_INSTANCE_HOMES variable in the roundup-server file instead.
+   TRACKER_HOMES variable in the roundup-server file instead.
 ''')%locals()
     sys.exit(0)
 
@@ -269,7 +269,7 @@ def run():
                 except ValueError:
                     raise ValueError, _("Instances must be name=home")
                 d[name] = home
-            RoundupRequestHandler.ROUNDUP_INSTANCE_HOMES = d
+            RoundupRequestHandler.TRACKER_HOMES = d
     except SystemExit:
         raise
     except:

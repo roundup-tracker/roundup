@@ -8,8 +8,8 @@
   </th>
  </tr>
  <tr tal:repeat="prop cl/properties">
-  <th tal:content="prop/name">name</th>
-  <td tal:content="prop/prop">type</td>
+  <th tal:content="prop/_name">name</th>
+  <td tal:content="prop/_prop">type</td>
  </tr>
 </tal:block>
 

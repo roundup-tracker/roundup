@@ -15,12 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.1 2002-09-09 23:56:03 richard Exp $
+# $Id: config.py,v 1.2 2002-09-10 03:01:19 richard Exp $
 
 import os
 
 # roundup home is this package's directory
-INSTANCE_HOME=os.path.split(__file__)[0]
+TRACKER_HOME=os.path.split(__file__)[0]
 
 # The SMTP mail host that roundup will use to send mail
 MAILHOST = 'localhost'
@@ -29,19 +29,19 @@ MAILHOST = 'localhost'
 MAIL_DOMAIN = 'your.tracker.email.domain.example'
 
 # This is the directory that the database is going to be stored in
-DATABASE = os.path.join(INSTANCE_HOME, 'db')
+DATABASE = os.path.join(TRACKER_HOME, 'db')
 
 # This is the directory that the HTML templates reside in
-TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
+TEMPLATES = os.path.join(TRACKER_HOME, 'html')
 
 # A descriptive name for your roundup instance
-INSTANCE_NAME = 'Roundup issue tracker'
+TRACKER_NAME = 'Roundup issue tracker'
 
 # The email address that mail to roundup should go to
-ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
 # The web address that the instance is viewable at
-ISSUE_TRACKER_WEB = 'http://your.tracker.url.example/'
+TRACKER_WEB = 'http://your.tracker.url.example/'
 
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.65 2002-09-10 02:37:28 richard Exp $
+# $Id: roundupdb.py,v 1.66 2002-09-10 03:01:18 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -214,10 +214,10 @@ class IssueClass:
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
         writer.addheader('From', straddr(
-                              (authname, self.db.config.ISSUE_TRACKER_EMAIL) ) )
+                              (authname, self.db.config.TRACKER_EMAIL) ) )
         writer.addheader('Reply-To', straddr( 
-                                        (self.db.config.INSTANCE_NAME,
-                                         self.db.config.ISSUE_TRACKER_EMAIL) ) )
+                                        (self.db.config.TRACKER_NAME,
+                                         self.db.config.TRACKER_EMAIL) ) )
         writer.addheader('MIME-Version', '1.0')
         if messageid:
             writer.addheader('Message-Id', messageid)
@@ -225,7 +225,7 @@ class IssueClass:
             writer.addheader('In-Reply-To', inreplyto)
 
         # add a uniquely Roundup header to help filtering
-        writer.addheader('X-Roundup-Name', self.db.config.INSTANCE_NAME)
+        writer.addheader('X-Roundup-Name', self.db.config.TRACKER_NAME)
 
         # attach files
         if message_files:
@@ -288,17 +288,17 @@ class IssueClass:
 
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
-        base = self.db.config.ISSUE_TRACKER_WEB 
+        base = self.db.config.TRACKER_WEB 
         if not isinstance(base , type('')) or not base.startswith('http://'):
-            base = "Configuration Error: ISSUE_TRACKER_WEB isn't a " \
+            base = "Configuration Error: TRACKER_WEB isn't a " \
                 "fully-qualified URL"
         elif base[-1] != '/' :
             base += '/'
         web = base + 'issue'+ nodeid
 
         # ensure the email address is properly quoted
-        email = straddr((self.db.config.INSTANCE_NAME,
-            self.db.config.ISSUE_TRACKER_EMAIL))
+        email = straddr((self.db.config.TRACKER_NAME,
+            self.db.config.TRACKER_EMAIL))
 
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)

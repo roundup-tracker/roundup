@@ -2,7 +2,7 @@
 Getting Started
 ===============
 
-:Version: $Revision: 1.6 $
+:Version: $Revision: 1.7 $
 
 .. contents::
 
@@ -62,12 +62,12 @@ MAILHOST
    The SMTP mail host that roundup will use to send mail
 MAIL_DOMAIN
    The domain name used for email addresses
-ISSUE_TRACKER_WEB
+TRACKER_WEB
    The web address of the issue tracker's web interface
 
 The email addresses used by the system by default are:
 
-ISSUE_TRACKER_EMAIL: ``issue_tracker@MAIL_DOMAIN``
+TRACKER_EMAIL: ``issue_tracker@MAIL_DOMAIN``
    submissions of issues
 
 ADMIN_EMAIL: ``roundup-admin@MAIL_DOMAIN``
@@ -136,21 +136,21 @@ Web Interface
 This software will work through apache or stand-alone.
 
 Stand-alone:
-  1. Edit roundup-server at the top - ``ROUNDUP_INSTANCE_HOMES`` needs to know
+  1. Edit roundup-server at the top - ``TRACKER_HOMES`` needs to know
      about your tracker. You may also specify the values for
-     ``ROUNDUP_INSTANCE_HOMES`` on the command-line using "name=home" pairs.
+     ``TRACKER_HOMES`` on the command-line using "name=home" pairs.
     
   2. "``roundup-server [-p port] (name=tracker_home)*``" (hostname may be "")
   
   3. Load up the page "``/<tracker name>/index``" where tracker name is the name
-     you nominated in ``ROUNDUP_INSTANCE_HOMES``.
+     you nominated in ``TRACKER_HOMES``.
 
 Apache:
   1. The CGI script is found in the cgi-bin directory of the roundup
      distribution.
      
   2. Make sure roundup.cgi is executable. Edit it at the top -
-     ``ROUNDUP_INSTANCE_HOMES`` needs to know about your tracker.
+     ``TRACKER_HOMES`` needs to know about your tracker.
      
   3. Edit your "``/etc/httpd/conf/httpd.conf``" and make sure that the
      "``/home/httpd/html/roundup/roundup.cgi``" script will be treated as a CGI script.
@@ -158,13 +158,13 @@ Apache:
   4. Re-start your apache to re-load the config if necessary.
   
   5. Load up the page "``/roundup/roundup.cgi/index/``" where tracker name is the
-     name you nominated in ``ROUNDUP_INSTANCE_HOMES``.
+     name you nominated in ``TRACKER_HOMES``.
      
   6. To use the CGI script unchanged, which allows much easier updates, add
      these directives to your "httpd.conf"::
      
 	  SetEnv ROUNDUP_LOG "/var/log/roundup.log"
-	  SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/trackers/Default"
+	  SetEnv TRACKER_HOMES "Default=/usr/local/share/roundup/trackers/Default"
 	  SetEnv ROUNDUP_DEBUG "0"
 
   7. On Windows, write a batch file "roundup.bat" similar to the one below and
@@ -172,7 +172,7 @@ Apache:
       
 	  @echo off
 	  set ROUNDUP_LOG=c:\Python21\share\roundup\cgi.log
-	  set ROUNDUP_INSTANCE_HOMES=Default=c:\Python21\share\roundup\trackers\Default;
+	  set TRACKER_HOMES=Default=c:\Python21\share\roundup\trackers\Default;
 	  set ROUNDUP_DEBUG=0
 	  c:\Python21\python.exe c:\Python21\share\roundup\cgi-bin\roundup.cgi
 

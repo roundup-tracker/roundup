@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.12 2002-09-10 01:07:05 richard Exp $
+# $Id: ZRoundup.py,v 1.13 2002-09-10 03:01:18 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -135,12 +135,12 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         # special case when roundup is '/' in this virtual host,
         if path == "/" :
             env['SCRIPT_NAME'] = "/"
-            env['INSTANCE_NAME'] = ''
+            env['TRACKER_NAME'] = ''
         else :
             # all but the last element is the path
             env['SCRIPT_NAME'] = '/'.join( path_components[:-1] )
             # the last element is the name
-            env['INSTANCE_NAME'] = path_components[-1]
+            env['TRACKER_NAME'] = path_components[-1]
 
         if env['REQUEST_METHOD'] == 'GET':
             # force roundup to re-parse the request because Zope fiddles

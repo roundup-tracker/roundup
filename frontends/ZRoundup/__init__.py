@@ -14,15 +14,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.2 2002-09-10 01:07:05 richard Exp $
+# $Id: __init__.py,v 1.3 2002-09-10 03:01:18 richard Exp $
 #
 __version__='1.0'
 
 import os
 # figure where ZRoundup is installed
 here = None
-if os.environ.has_key('INSTANCE_HOME'):
-    here = os.environ['INSTANCE_HOME']
+if os.environ.has_key('TRACKER_HOME'):
+    here = os.environ['TRACKER_HOME']
     path = os.path.join(here, 'Products', 'ZRoundup')
     if not os.path.exists(path):
         path = os.path.join(here, 'lib', 'python', 'Products', 'ZRoundup')

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.22 $
+:Version: $Revision: 1.23 $
 
 .. contents::
 
@@ -240,7 +240,7 @@ ZRoundup
 Install roundup as usual (see installation_).
 
 ZRoundup installs as a regular Zope product. Copy the ZRoundup directory to
-your Products directory either in an INSTANCE_HOME/Products or the Zope
+your Products directory either in an TRACKER_HOME/Products or the Zope
 code tree lib/python/Products.
 
 You will need to create the tracker using the roundup-admin tool (step 2 in

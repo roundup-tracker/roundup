@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.25 2002-09-10 00:18:20 richard Exp $
+# $Id: admin.py,v 1.26 2002-09-10 03:01:18 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -140,7 +140,7 @@ All commands (except help) require an instance specifier. This is just the path
 to the roundup instance you're working with. A roundup instance is where 
 roundup keeps the database and configuration file that defines an issue
 tracker. It may be thought of as the issue tracker's "home directory". It may
-be specified in the environment variable ROUNDUP_INSTANCE or on the command
+be specified in the environment variable TRACKER_HOME or on the command
 line as "-i instance".
 
 A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
@@ -254,7 +254,7 @@ Command help:
         Install a new Roundup instance.
 
         The command will prompt for the instance home directory (if not supplied
-        through INSTANCE_HOME or the -i option). The template, backend and admin
+        through TRACKER_HOME or the -i option). The template, backend and admin
         password may be specified on the command-line as arguments, in that
         order.
 
@@ -1112,7 +1112,7 @@ Date format is "YYYY-MM-DD" eg:
             return 1
 
         # handle command-line args
-        self.instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+        self.instance_home = os.environ.get('TRACKER_HOME', '')
         # TODO: reinstate the user/password stuff (-u arg too)
         name = password = ''
         if os.environ.has_key('ROUNDUP_LOGIN'):

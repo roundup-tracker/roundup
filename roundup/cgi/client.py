@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.25 2002-09-09 23:55:19 richard Exp $
+# $Id: client.py,v 1.26 2002-09-10 03:01:18 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -76,7 +76,7 @@ class Client:
 
         self.path = env['PATH_INFO']
         self.split_path = self.path.split('/')
-        self.instance_path_name = env['INSTANCE_NAME']
+        self.instance_path_name = env['TRACKER_NAME']
 
         # this is the base URL for this instance
         url = self.env['SCRIPT_NAME'] + '/' + self.instance_path_name
@@ -431,7 +431,7 @@ class Client:
         expire = Cookie._getdate(86400*365)
 
         # generate the cookie path - make sure it has a trailing '/'
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
             ''))
         self.header({'Set-Cookie': 'roundup_user_2=%s; expires=%s; Path=%s;'%(
             self.session, expire, path)})
@@ -452,7 +452,7 @@ class Client:
 
         # construct the logout cookie
         now = Cookie._getdate()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
             ''))
         self.header({'Set-Cookie':
             'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
@@ -528,7 +528,7 @@ class Client:
 
         # construct the logout cookie
         now = Cookie._getdate()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
             ''))
         self.header(headers={'Set-Cookie':
           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})

@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.3 2002-09-10 01:07:06 richard Exp $
+# $Id: roundup-reminder,v 1.4 2002-09-10 03:01:19 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -73,14 +73,14 @@ for user_id in db.user.list():
     # generate the email message
     message = cStringIO.StringIO()
     writer = MimeWriter.MimeWriter(message)
-    writer.addheader('Subject', 'Your active %s issues'%db.config.INSTANCE_NAME)
+    writer.addheader('Subject', 'Your active %s issues'%db.config.TRACKER_NAME)
     writer.addheader('To', address)
-    writer.addheader('From', '%s <%s>'%(db.config.INSTANCE_NAME,
+    writer.addheader('From', '%s <%s>'%(db.config.TRACKER_NAME,
         db.config.ADMIN_EMAIL))
-    writer.addheader('Reply-To', '%s <%s>'%(db.config.INSTANCE_NAME,
+    writer.addheader('Reply-To', '%s <%s>'%(db.config.TRACKER_NAME,
         db.config.ADMIN_EMAIL))
     writer.addheader('MIME-Version', '1.0')
-    writer.addheader('X-Roundup-Name', db.config.INSTANCE_NAME)
+    writer.addheader('X-Roundup-Name', db.config.TRACKER_NAME)
 
     # start the multipart
     part = writer.startmultipartbody('alternative')
@@ -110,7 +110,7 @@ To view or respond to any of the issues listed above, visit the URL
    %s
 
 and click on "My Issues". Do NOT respond to this message.
-'''%db.config.ISSUE_TRACKER_WEB
+'''%db.config.TRACKER_WEB
 
 
     # now the HTML one

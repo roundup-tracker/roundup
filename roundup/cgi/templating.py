@@ -1104,7 +1104,7 @@ class HTMLRequest:
     def description(self):
         ''' Return a description of the request - handle for the page title.
         '''
-        s = [self.client.db.config.INSTANCE_NAME]
+        s = [self.client.db.config.TRACKER_NAME]
         if self.classname:
             if self.client.nodeid:
                 s.append('- %s%s'%(self.classname, self.client.nodeid))

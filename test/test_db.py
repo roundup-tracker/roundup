@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.43 2002-09-10 00:19:54 richard Exp $ 
+# $Id: test_db.py,v 1.44 2002-09-10 03:01:20 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -54,9 +54,9 @@ class config:
     DATABASE='_test_dir'
     MAILHOST = 'localhost'
     MAIL_DOMAIN = 'fill.me.in.'
-    INSTANCE_NAME = 'Roundup issue tracker'
-    ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
-    ISSUE_TRACKER_WEB = 'http://some.useful.url/'
+    TRACKER_NAME = 'Roundup issue tracker'
+    TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+    TRACKER_WEB = 'http://some.useful.url/'
     ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
     FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
     ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
