@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.36 2001-11-26 22:55:56 richard Exp $
+$Id: mailgw.py,v 1.37 2001-11-28 21:55:35 richard Exp $
 '''
 
 
@@ -354,6 +354,10 @@ Subject was: "%s"
         username = self.db.user.get(author, 'username')
         self.db.close()
         self.db = self.instance.open(username)
+
+        # re-get the class with the new database connection
+        cl = self.db.getclass(classname)
+
         # now update the recipients list
         recipients = []
         tracker_email = self.ISSUE_TRACKER_EMAIL.lower()
@@ -590,6 +594,18 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.35  2001/11/22 15:46:42  jhermann
 # Added module docstrings to all modules.
 #

@@ -13,6 +13,9 @@ Feature:
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
+ . login_action and newuser_action return values were being ignored
+ . Woohoo! Found that bloody re-login bug that was killing the mail
+   gateway.
 
 
 2001-11-23 - 0.3.0 

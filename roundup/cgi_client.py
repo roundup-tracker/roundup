@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.66 2001-11-27 03:00:50 richard Exp $
+# $Id: cgi_client.py,v 1.67 2001-11-28 21:55:35 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -711,6 +711,7 @@ class Client:
             return self.login(message=_('Incorrect password'))
 
         self.set_cookie(self.user, password)
+        return None     # make it explicit
 
     def set_cookie(self, user, password):
         # construct the cookie
@@ -761,7 +762,7 @@ class Client:
         self.user = cl.get(uid, 'username')
         password = cl.get(uid, 'password')
         self.set_cookie(self.user, self.form['password'].value)
-        return self.index()
+        return None    # make the None explicit
 
     def main(self):
         # determine the uid to use
@@ -815,7 +816,9 @@ class Client:
         # everyone is allowed to try to log in
         if action == 'login_action':
             # do the login
-            self.login_action()
+            ret = self.login_action()
+            if ret is not None:
+                return ret
             # figure the resulting page
             action = self.form['__destination_url'].value
             if not action:
@@ -832,7 +835,9 @@ class Client:
                 else:
                     return self.login(action=action)
             # add the user
-            self.newuser_action()
+            ret = self.newuser_action()
+            if ret is not None:
+                return ret
             # figure the resulting page
             action = self.form['__destination_url'].value
             if not action:
@@ -1041,6 +1046,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.66  2001/11/27 03:00:50  richard
+# couple of bugfixes from latest patch integration
+#
 # Revision 1.65  2001/11/26 23:00:53  richard
 # This config stuff is getting to be a real mess...
 #
