@@ -126,7 +126,7 @@ class Database(Database):
         # no fractional seconds for MySQL
         hyperdb.Date   : lambda x: x.formal(sep=' '),
         hyperdb.Link   : int,
-        hyperdb.Interval  : lambda x: x.serialise(),
+        hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
         hyperdb.Number    : lambda x: x,
@@ -190,7 +190,7 @@ class Database(Database):
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
         self.cursor.execute(sql, ('__textids', 1))
 
-    def add_actor_column(self):
+    def add_new_columns_v2(self):
         '''While we're adding the actor column, we need to update the
         tables to have the correct datatypes.'''
         for klass in self.classes.values():
@@ -274,8 +274,15 @@ class Database(Database):
                     # convert to new MySQL data type
                     prop = properties[name]
                     if v is not None:
-                        v = self.hyperdb_to_sql_value[prop.__class__](v)
-                    l.append(v)
+                        e = self.hyperdb_to_sql_value[prop.__class__](v)
+                    l.append(e)
+
+                    # Intervals store the seconds value too
+                    if isinstance(prop, Interval):
+                        if v is not None:
+                            l.append(v.as_seconds())
+                        else:
+                            l.append(e)
 
             self.drop_class_table_indexes(cn, old_spec[0])
 
@@ -595,25 +602,24 @@ class MysqlClass:
                         # If range creation fails - ignore that search parameter
                         pass                        
             elif isinstance(propclass, Interval):
+                # filter using the __<prop>_int__ column
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s in (%s)'%(k, s))
-                    args = args + [date.Interval(x).serialise() for x in v]
+                    where.append('__%s_int__ in (%s)'%(k, s))
+                    args = args + [date.Interval(x).as_seconds() for x in v]
                 else:
                     try:
                         # Try to filter on range of intervals
                         date_rng = Range(v, date.Interval)
-                        if (date_rng.from_value):
-                            where.append('_%s >= %s'%(k, a))
-                            args.append(date_rng.from_value.serialise())
-                        if (date_rng.to_value):
-                            where.append('_%s <= %s'%(k, a))
-                            args.append(date_rng.to_value.serialise())
+                        if date_rng.from_value:
+                            where.append('__%s_int__ >= %s'%(k, a))
+                            args.append(date_rng.from_value.as_seconds())
+                        if date_rng.to_value:
+                            where.append('__%s_int__ <= %s'%(k, a))
+                            args.append(date_rng.to_value.as_seconds())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
                         pass                        
-                    #where.append('_%s=%s'%(k, a))
-                    #args.append(date.Interval(v).serialise())
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -634,34 +640,27 @@ class MysqlClass:
             args = args + v
 
         # "grouping" is just the first-order sorting in the SQL fetch
-        # can modify it...)
         orderby = []
         ordercols = []
-        if group[0] is not None and group[1] is not None:
-            if group[0] != '-':
-                orderby.append('_'+group[1])
-                ordercols.append('_'+group[1])
-            else:
-                orderby.append('_'+group[1]+' desc')
-                ordercols.append('_'+group[1])
-
-        # now add in the sorting
-        group = ''
-        if sort[0] is not None and sort[1] is not None:
-            direction, colname = sort
-            if direction != '-':
-                if colname == 'id':
-                    orderby.append(colname)
+        mlsort = []
+        for sortby in group, sort:
+            sdir, prop = sortby
+            if sdir and prop:
+                if isinstance(props[prop], Multilink):
+                    mlsort.append(sortby)
+                    continue
+                elif isinstance(props[prop], Interval):
+                    # use the int column for sorting
+                    o = '__'+prop+'_int__'
+                    ordercols.append(o)
+                elif prop == 'id':
+                    o = 'id'
                 else:
-                    orderby.append('_'+colname)
-                    ordercols.append('_'+colname)
-            else:
-                if colname == 'id':
-                    orderby.append(colname+' desc')
-                    ordercols.append(colname)
-                else:
-                    orderby.append('_'+colname+' desc')
-                    ordercols.append('_'+colname)
+                    o = '_'+prop
+                    ordercols.append(o)
+                if sdir == '-':
+                    o += ' desc'
+                orderby.append(o)
 
         # construct the SQL
         frum = ','.join(frum)
@@ -669,14 +668,14 @@ class MysqlClass:
             where = ' where ' + (' and '.join(where))
         else:
             where = ''
-        cols = ['id']
+        cols = ['distinct(id)']
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))
         else:
             order = ''
         cols = ','.join(cols)
-        sql = 'select %s from %s %s%s%s'%(cols, frum, where, group, order)
+        sql = 'select %s from %s %s%s'%(cols, frum, where, order)
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
@@ -685,7 +684,28 @@ class MysqlClass:
 
         # return the IDs (the first column)
         # XXX numeric ids
-        return [str(row[0]) for row in l]
+        l = [str(row[0]) for row in l]
+
+        if not mlsort:
+            return l
+
+        # ergh. someone wants to sort by a multilink.
+        r = []
+        for id in l:
+            m = []
+            for ml in mlsort:
+                m.append(self.get(id, ml[1]))
+            r.append((id, m))
+        i = 0
+        for sortby in mlsort:
+            def sortfun(a, b, dir=sortby[i]):
+                if dir == '-':
+                    return cmp(b[1][i], a[1][i])
+                else:
+                    return cmp(a[1][i], b[1][i])
+            r.sort(sortfun)
+            i += 1
+        return [i[0] for i in r]
 
 class Class(MysqlClass, rdbms_common.Class):
     pass

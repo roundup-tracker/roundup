@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.24 2004-04-07 01:12:26 richard Exp $
+# $Id: back_sqlite.py,v 1.25 2004-04-18 05:31:02 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -32,7 +32,7 @@ class Database(rdbms_common.Database):
         hyperdb.String : str,
         hyperdb.Date   : lambda x: x.serialise(),
         hyperdb.Link   : int,
-        hyperdb.Interval  : lambda x: x.serialise(),
+        hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
         hyperdb.Number    : lambda x: x,
@@ -40,8 +40,7 @@ class Database(rdbms_common.Database):
     sql_to_hyperdb_value = {
         hyperdb.String : str,
         hyperdb.Date   : lambda x: date.Date(str(x)),
-#        hyperdb.Link   : int,      # XXX numeric ids
-        hyperdb.Link   : str,
+        hyperdb.Link   : str, # XXX numeric ids
         hyperdb.Interval  : date.Interval,
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : int,
@@ -95,17 +94,17 @@ class Database(rdbms_common.Database):
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
         self.cursor.execute(sql, ('__textids', 1))
 
-    def add_actor_column(self):
+    def add_new_columns_v2(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
         for classname, spec in self.classes.items():
             if tables.has_key(classname):
                 dbspec = tables[classname]
-                self.update_class(spec, dbspec, force=1, adding_actor=1)
+                self.update_class(spec, dbspec, force=1, adding_v2=1)
                 # we've updated - don't try again
                 tables[classname] = spec.schema()
 
-    def update_class(self, spec, old_spec, force=0, adding_actor=0):
+    def update_class(self, spec, old_spec, force=0, adding_v2=0):
         ''' Determine the differences between the current spec and the
             database version of the spec, and update where necessary.
 
@@ -141,7 +140,7 @@ class Database(rdbms_common.Database):
         old_has = old_has.has_key
 
         # now figure how we populate the new table
-        if adding_actor:
+        if adding_v2:
             fetch = ['_activity', '_creation', '_creator']
         else:
             fetch = ['_actor', '_activity', '_creation', '_creator']
@@ -201,14 +200,41 @@ class Database(rdbms_common.Database):
         self.create_class_table(spec)
 
         if olddata:
+            inscols = []
+            for propname,x in new_spec[1]:
+                prop = properties[propname]
+                if isinstance(prop, hyperdb.Multilink):
+                    continue
+                elif isinstance(prop, hyperdb.Interval):
+                    inscols.append('_'+propname)
+                    inscols.append('__'+propname+'_int__')
+                elif old_has(propname):
+                    # we copy this col over from the old table
+                    inscols.append('_'+propname)
+
             # do the insert of the old data - the new columns will have
             # NULL values
-            args = ','.join([self.arg for x in fetch])
-            sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
+            args = ','.join([self.arg for x in inscols])
+            cols = ','.join(inscols)
+            sql = 'insert into _%s (%s) values (%s)'%(cn, cols, args)
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
             for entry in olddata:
-                self.cursor.execute(sql, tuple(entry))
+                d = []
+                for name in inscols:
+                    # generate the new value for the Interval int column
+                    if name.endswith('_int__'):
+                        name = name[2:-6]
+                        if entry.has_key(name):
+                            v = hyperdb.Interval(entry[name]).as_seconds()
+                        else:
+                            v = None
+                    elif entry.has_key(name):
+                        v = entry[name]
+                    else:
+                        v = None
+                    d.append(v)
+                self.cursor.execute(sql, tuple(d))
 
         return 1
 

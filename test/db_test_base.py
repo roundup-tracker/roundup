@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.24 2004-04-08 00:43:23 richard Exp $ 
+# $Id: db_test_base.py,v 1.25 2004-04-18 05:31:02 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -948,7 +948,7 @@ class DBTest(MyTestCase):
             # ensure retired items are retired :)
             l = items.keys(); l.sort()
             m = klass.list(); m.sort()
-            ae(l, m)
+            ae(l, m, '%s id list wrong %r vs. %r'%(cn, l, m))
             for id, props in items.items():
                 for name, value in props.items():
                     l = klass.get(id, name)

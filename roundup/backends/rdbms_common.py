@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.90 2004-04-08 00:40:20 richard Exp $
+# $Id: rdbms_common.py,v 1.91 2004-04-18 05:31:02 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -205,7 +205,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             # version 1 didn't have the actor column (note that in
             # MySQL this will also transition the tables to typed columns)
-            self.add_actor_column()
+            self.add_new_columns_v2()
 
             # version 1 doesn't have the OTK, session and indexing in the
             # database
@@ -223,7 +223,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             for nodeid in klass.list():
                 klass.index(nodeid)
         self.indexer.save_index()
-
 
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'VARCHAR(255)',
@@ -260,6 +259,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
             datatype = self.hyperdb_to_sql_datatypes[prop.__class__]
             cols.append(('_'+col, datatype))
+
+            # Intervals stored as two columns
+            if isinstance(prop, Interval):
+                cols.append(('__'+col+'_int__', 'BIGINT'))
 
         cols.sort()
         return cols, mls
@@ -613,7 +616,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.String : str,
         hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%.3f'),
         hyperdb.Link   : int,
-        hyperdb.Interval  : lambda x: x.serialise(),
+        hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',
         hyperdb.Number    : lambda x: x,
@@ -657,6 +660,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # figure the values to insert
         vals = []
         for col,dt in cols:
+            # this is somewhat dodgy....
+            if col.endswith('_int__'):
+                # XXX eugh, this test suxxors
+                value = values[col[2:-6]]
+                # this is an Interval special "int" column
+                if value is not None:
+                    vals.append(value.as_seconds())
+                else:
+                    vals.append(value)
+                continue
+
             prop = props[col[1:]]
             value = values[col[1:]]
             if value:
@@ -710,6 +724,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             prop = props[col]
             if isinstance(prop, Multilink):
                 mls.append(col)
+            elif isinstance(prop, Interval):
+                # Intervals store the seconds value too
+                cols.append(col)
+                # extra leading '_' added by code below
+                cols.append('_' +col + '_int__')
             else:
                 cols.append(col)
         cols.sort()
@@ -717,11 +736,25 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # figure the values to insert
         vals = []
         for col in cols:
-            prop = props[col]
-            value = values[col]
-            if value is not None:
-                value = self.hyperdb_to_sql_value[prop.__class__](value)
-            vals.append(value)
+            if col.endswith('_int__'):
+                # XXX eugh, this test suxxors
+                # Intervals store the seconds value too
+                col = col[1:-6]
+                prop = props[col]
+                value = values[col]
+                if value is None:
+                    vals.append(None)
+                else:
+                    vals.append(value.as_seconds())
+            else:
+                prop = props[col]
+                value = values[col]
+                if value is None:
+                    e = None
+                else:
+                    e = self.hyperdb_to_sql_value[prop.__class__](value)
+                vals.append(e)
+
         vals.append(int(nodeid))
         vals = tuple(vals)
 
@@ -816,6 +849,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         props = cl.getprops(protected=1)
         for col in range(len(cols)):
             name = cols[col][0][1:]
+            if name.endswith('_int__'):
+                # XXX eugh, this test suxxors
+                # ignore the special Interval-as-seconds column
+                continue
             value = values[col]
             if value is not None:
                 value = self.sql_to_hyperdb_value[props[name].__class__](value)
@@ -1840,9 +1877,9 @@ class Class(hyperdb.Class):
 
         # generate the where clause
         s = ' and '.join(['lower(_%s)=%s'%(col, self.db.arg) for col in where])
-        sql = 'select id from _%s where %s and __retired__=%s'%(self.classname,
-            s, self.db.arg)
-        args.append(0)
+        sql = 'select id from _%s where %s and __retired__<>%s'%(
+            self.classname, s, self.db.arg)
+        args.append(1)
         self.db.sql(sql, tuple(args))
         # XXX numeric ids
         l = [str(x[0]) for x in self.db.sql_fetchall()]
@@ -1989,25 +2026,24 @@ class Class(hyperdb.Class):
                         # If range creation fails - ignore that search parameter
                         pass                        
             elif isinstance(propclass, Interval):
+                # filter using the __<prop>_int__ column
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s in (%s)'%(k, s))
-                    args = args + [date.Interval(x).serialise() for x in v]
+                    where.append('__%s_int__ in (%s)'%(k, s))
+                    args = args + [date.Interval(x).as_seconds() for x in v]
                 else:
                     try:
                         # Try to filter on range of intervals
                         date_rng = Range(v, date.Interval)
                         if date_rng.from_value:
-                            where.append('_%s >= %s'%(k, a))
-                            args.append(date_rng.from_value.serialise())
+                            where.append('__%s_int__ >= %s'%(k, a))
+                            args.append(date_rng.from_value.as_seconds())
                         if date_rng.to_value:
-                            where.append('_%s <= %s'%(k, a))
-                            args.append(date_rng.to_value.serialise())
+                            where.append('__%s_int__ <= %s'%(k, a))
+                            args.append(date_rng.to_value.as_seconds())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
                         pass                        
-                    #where.append('_%s=%s'%(k, a))
-                    #args.append(date.Interval(v).serialise())
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -2037,6 +2073,10 @@ class Class(hyperdb.Class):
                 if isinstance(props[prop], Multilink):
                     mlsort.append(sortby)
                     continue
+                elif isinstance(props[prop], Interval):
+                    # use the int column for sorting
+                    o = '__'+prop+'_int__'
+                    ordercols.append(o)
                 elif prop == 'id':
                     o = 'id'
                 else:
@@ -2072,7 +2112,7 @@ class Class(hyperdb.Class):
 
         # return the IDs (the first column)
         # XXX numeric ids
-        l =  [str(row[0]) for row in l]
+        l = [str(row[0]) for row in l]
 
         if not mlsort:
             return l
@@ -2247,12 +2287,14 @@ class Class(hyperdb.Class):
             d[propname] = value
 
         # get a new id if necessary
-        if newid is None or not self.hasnode(newid):
+        if newid is None:
             newid = self.db.newid(self.classname)
-            self.db.addnode(self.classname, newid, d)
+
+        # insert new node or update existing?
+        if not self.hasnode(newid):
+            self.db.addnode(self.classname, newid, d) # insert
         else:
-            # update
-            self.db.setnode(self.classname, newid, d)
+            self.db.setnode(self.classname, newid, d) # update 
 
         # retire?
         if retire:

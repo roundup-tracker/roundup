@@ -31,6 +31,7 @@ Fixed:
 - sqlite backend had stopped using the global lock
 - better check for anonymous viewing of user items (sf bug 933510)
 - stop Interval from displaying an empty string (sf bug 934022)
+- fixed storage of some datatypes in some RDBMS backends
 
 
 2004-03-27 0.7.0b2

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.31 2003-12-04 23:06:53 richard Exp $
+# $Id: test_dates.py,v 1.32 2004-04-18 05:31:03 richard Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -265,14 +265,14 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval('1y') + Interval('1y')), '+ 2y')
         ae(str(Interval('1y') + Interval('1m')), '+ 1y 1m')
         ae(str(Interval('1y') + Interval('2:40')), '+ 1y 2:40')
-        ae(str(Interval('1y') + Interval('- 1y')), '')
-        ae(str(Interval('- 1y') + Interval('1y')), '')
+        ae(str(Interval('1y') + Interval('- 1y')), '00:00')
+        ae(str(Interval('- 1y') + Interval('1y')), '00:00')
         ae(str(Interval('- 1y') + Interval('- 1y')), '- 2y')
         ae(str(Interval('1y') + Interval('- 1m')), '+ 11m')
         ae(str(Interval('1:00') + Interval('1:00')), '+ 2:00')
         ae(str(Interval('0:50') + Interval('0:50')), '+ 1:40')
-        ae(str(Interval('1:50') + Interval('- 1:50')), '')
-        ae(str(Interval('- 1:50') + Interval('1:50')), '')
+        ae(str(Interval('1:50') + Interval('- 1:50')), '00:00')
+        ae(str(Interval('- 1:50') + Interval('1:50')), '00:00')
         ae(str(Interval('- 1:50') + Interval('- 1:50')), '- 3:40')
         ae(str(Interval('1:59:59') + Interval('00:00:01')), '+ 2:00')
         ae(str(Interval('2:00') + Interval('- 00:00:01')), '+ 1:59:59')
@@ -282,11 +282,11 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval('1y') - Interval('- 1y')), '+ 2y')
         ae(str(Interval('1y') - Interval('- 1m')), '+ 1y 1m')
         ae(str(Interval('1y') - Interval('- 2:40')), '+ 1y 2:40')
-        ae(str(Interval('1y') - Interval('1y')), '')
+        ae(str(Interval('1y') - Interval('1y')), '00:00')
         ae(str(Interval('1y') - Interval('1m')), '+ 11m')
         ae(str(Interval('1:00') - Interval('- 1:00')), '+ 2:00')
         ae(str(Interval('0:50') - Interval('- 0:50')), '+ 1:40')
-        ae(str(Interval('1:50') - Interval('1:50')), '')
+        ae(str(Interval('1:50') - Interval('1:50')), '00:00')
         ae(str(Interval('1:59:59') - Interval('- 00:00:01')), '+ 2:00')
         ae(str(Interval('2:00') - Interval('00:00:01')), '+ 1:59:59')
 
