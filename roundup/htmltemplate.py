@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.27 2001-10-20 12:13:44 richard Exp $
+# $Id: htmltemplate.py,v 1.28 2001-10-21 00:00:16 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -305,27 +305,37 @@ class Checklist(Base):
     '''
     def __call__(self, property, **args):
         propclass = self.properties[property]
+        if (not isinstance(propclass, hyperdb.Link) and not
+                isinstance(propclass, hyperdb.Multilink)):
+            return '[Checklist: not a link]'
+
+        # get our current checkbox state
         if self.nodeid:
-            value = self.cl.get(self.nodeid, property)
+            # get the info from the node - make sure it's a list
+            if isinstance(propclass, hyperdb.Link:
+                value = [self.cl.get(self.nodeid, property)]
+            else:
+                value = self.cl.get(self.nodeid, property)
         elif self.filterspec is not None:
+            # get the state from the filter specification (always a list)
             value = self.filterspec.get(property, [])
         else:
+            # it's a new node, so there's no state
             value = []
-        if (isinstance(propclass, hyperdb.Link) or
-                isinstance(propclass, hyperdb.Multilink)):
-            linkcl = self.db.classes[propclass.classname]
-            l = []
-            k = linkcl.labelprop()
-            for optionid in linkcl.list():
-                option = linkcl.get(optionid, k)
-                if optionid in value or option in value:
-                    checked = 'checked'
-                else:
-                    checked = ''
-                l.append('%s:<input type="checkbox" %s name="%s" value="%s">'%(
-                    option, checked, property, option))
-            return '\n'.join(l)
-        return '[Checklist: not a link]'
+
+        # so we can map to the linked node's "lable" property
+        linkcl = self.db.classes[propclass.classname]
+        l = []
+        k = linkcl.labelprop()
+        for optionid in linkcl.list():
+            option = linkcl.get(optionid, k)
+            if optionid in value or option in value:
+                checked = 'checked'
+            else:
+                checked = ''
+            l.append('%s:<input type="checkbox" %s name="%s" value="%s">'%(
+                option, checked, property, option))
+        return '\n'.join(l)
 
 class Note(Base):
     ''' display a "note" field, which is a text area for entering a note to
@@ -758,6 +768,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/10/20 12:13:44  richard
+# Fixed grouping of non-str properties (thanks Roch'e Compaan)
+#
 # Revision 1.26  2001/10/14 10:55:00  richard
 # Handle empty strings in HTML template Link function
 #
