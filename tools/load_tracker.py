@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: load_tracker.py,v 1.4 2004-04-24 04:46:43 richard Exp $
+# $Id: load_tracker.py,v 1.5 2004-05-06 02:35:05 richard Exp $
 
 '''
 Usage: %s <tracker home> <N>
@@ -24,6 +24,8 @@ db = tracker.open('admin')
 
 priorities = db.priority.list()
 statuses = db.status.list()
+resolved_id = db.status.lookup('resolved')
+statuses.remove(resolved_id)
 
 names = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 
 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi',
@@ -59,7 +61,10 @@ try:
         for i in range(M):
             print '\ruser', i, '       ',
             sys.stdout.flush()
-            db.user.create(username=names[i%17]+str(i/17))
+            if i/17 == 0:
+                db.user.create(username=names[i%17])
+            else:
+                db.user.create(username=names[i%17]+str(i/17))
 
     # assignable user list
     users = db.user.list()
@@ -70,10 +75,15 @@ try:
     for i in range(N):
         print '\rissue', i, '       ',
         sys.stdout.flush()
+        # in practise, about 90% of issues are resolved
+        if random.random() > .9:
+            status = random.choice(statuses)
+        else:
+            status = resolved_id
         db.issue.create(
             title=random.choice(titles),
             priority=random.choice(priorities),
-            status=random.choice(statuses),
+            status=status,
             assignedto=random.choice(users))
         if not i%1000:
             db.commit()
