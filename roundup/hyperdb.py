@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.97.2.1 2004-05-18 21:50:30 richard Exp $
+# $Id: hyperdb.py,v 1.97.2.2 2004-06-24 07:14:23 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import sys, os, time, re
+import sys, os, time, re, shutil
 
 # roundup modules
 import date, password
@@ -588,6 +588,13 @@ class Class:
         except IndexError:
             return default            
 
+    def export_propnames(self):
+        '''List the property names for export from this Class.'''
+        propnames = self.getprops().keys()
+        propnames.sort()
+        return propnames
+
+
 class HyperdbValueError(ValueError):
     ''' Error converting a raw value into a Hyperdb value '''
     pass
@@ -758,7 +765,36 @@ class FileClass:
     ''' A class that requires the "content" property and stores it on
         disk.
     '''
-    pass
+    def export_propnames(self):
+        ''' Don't export the "content" property
+        '''
+        propnames = self.getprops().keys()
+        propnames.remove('content')
+        propnames.sort()
+        return propnames
+
+    def export_files(self, dirname, nodeid):
+        ''' Export the "content" property as a file, not csv column
+        '''
+        source = self.db.filename(self.classname, nodeid)
+        x, filename = os.path.split(source)
+        x, subdir = os.path.split(x)
+        dest = os.path.join(dirname, self.classname+'-files', subdir, filename)
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        shutil.copyfile(source, dest)
+
+    def import_files(self, dirname, nodeid):
+        ''' Import the "content" property as a file
+        '''
+        dest = self.db.filename(self.classname, nodeid)
+        x, filename = os.path.split(dest)
+        x, subdir = os.path.split(x)
+        source = os.path.join(dirname, self.classname+'-files', subdir,
+            filename)
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        shutil.copyfile(source, dest)
 
 class Node:
     ''' A convenience wrapper for the given node

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.27.2.6 2004-06-23 23:21:32 richard Exp $ 
+# $Id: db_test_base.py,v 1.27.2.7 2004-06-24 07:14:49 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -846,6 +846,8 @@ class DBTest(MyTestCase):
                     'foo': date.Interval('0:10'), 'priority': '1',
                     'nosy': ['1'], 'deadline': date.Date('2004-03-08')}):
             self.db.issue.create(**issue)
+        file_content = ''.join([chr(i) for i in range(255)])
+        self.db.file.create(content=file_content)
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
 
@@ -981,34 +983,43 @@ class DBTest(MyTestCase):
                 for name in klass.getprops().keys():
                     it[name] = klass.get(id, name)
 
-        # grab the export
-        export = {}
-        journals = {}
-        for cn,klass in self.db.classes.items():
-            names = klass.getprops().keys()
-            cl = export[cn] = [names+['is retired']]
-            for id in klass.getnodeids():
-                cl.append(klass.export_list(names, id))
-            journals[cn] = klass.export_journals()
+        os.mkdir('_test_export')
+        try:
+            # grab the export
+            export = {}
+            journals = {}
+            for cn,klass in self.db.classes.items():
+                names = klass.export_propnames()
+                cl = export[cn] = [names+['is retired']]
+                for id in klass.getnodeids():
+                    cl.append(klass.export_list(names, id))
+                    if hasattr(klass, 'export_files'):
+                        klass.export_files('_test_export', id)
+                journals[cn] = klass.export_journals()
 
-        # shut down this db and nuke it
-        self.db.close()
-        self.nuke_database()
+            # shut down this db and nuke it
+            self.db.close()
+            self.nuke_database()
 
-        # open a new, empty database
-        os.makedirs(config.DATABASE + '/files')
-        self.db = self.module.Database(config, 'admin')
-        setupSchema(self.db, 0, self.module)
+            # open a new, empty database
+            os.makedirs(config.DATABASE + '/files')
+            self.db = self.module.Database(config, 'admin')
+            setupSchema(self.db, 0, self.module)
 
-        # import
-        for cn, items in export.items():
-            klass = self.db.classes[cn]
-            names = items[0]
-            maxid = 1
-            for itemprops in items[1:]:
-                maxid = max(maxid, int(klass.import_list(names, itemprops)))
-            self.db.setid(cn, str(maxid+1))
-            klass.import_journals(journals[cn])
+            # import
+            for cn, items in export.items():
+                klass = self.db.classes[cn]
+                names = items[0]
+                maxid = 1
+                for itemprops in items[1:]:
+                    id = int(klass.import_list(names, itemprops))
+                    if hasattr(klass, 'import_files'):
+                        klass.import_files('_test_export', id)
+                    maxid = max(maxid, id)
+                self.db.setid(cn, str(maxid+1))
+                klass.import_journals(journals[cn])
+        finally:
+            shutil.rmtree('_test_export')
 
         # compare with snapshot of the database
         for cn, items in orig.items():

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.68.2.2 2004-06-23 22:59:17 richard Exp $
+# $Id: admin.py,v 1.68.2.3 2004-06-24 07:14:22 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1031,8 +1031,7 @@ Command help:
             writer = rcsv.writer(f, rcsv.colon_separated)
 
             properties = cl.getprops()
-            propnames = properties.keys()
-            propnames.sort()
+            propnames = cl.export_propnames()
             fields = propnames[:]
             fields.append('is retired')
             writer.writerow(fields)
@@ -1040,6 +1039,8 @@ Command help:
             # all nodes for this class
             for nodeid in cl.getnodeids():
                 writer.writerow(cl.export_list(propnames, nodeid))
+                if hasattr(cl, 'export_files'):
+                    cl.export_files(dir, nodeid)
 
             # close this file
             f.close()
@@ -1077,7 +1078,11 @@ Command help:
             raise UsageError, _(rcsv.error)
         from roundup import hyperdb
 
-        for file in os.listdir(args[0]):
+        # directory to import from
+        dir = args[0]
+
+        # import all the files
+        for file in os.listdir(dir):
             classname, ext = os.path.splitext(file)
             # we only care about CSV files
             if ext != '.csv' or classname.endswith('-journals'):
@@ -1086,7 +1091,7 @@ Command help:
             cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            f = open(os.path.join(args[0], file))
+            f = open(os.path.join(dir, file))
             reader = rcsv.reader(f, rcsv.colon_separated)
             file_props = None
             maxid = 1
@@ -1096,7 +1101,11 @@ Command help:
                     file_props = r
                     continue
                 # do the import and figure the current highest nodeid
-                maxid = max(maxid, int(cl.import_list(file_props, r)))
+                nodeid = int(cl.import_list(file_props, r))
+                if hasattr(cl, 'import_files'):
+                    cl.import_files(dir, nodeid)
+                maxid = max(maxid, nodeid)
+
             f.close()
 
             # import the journals

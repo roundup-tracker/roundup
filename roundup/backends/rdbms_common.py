@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.10 2004-06-23 23:21:32 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.11 2004-06-24 07:14:48 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2572,25 +2572,6 @@ class FileClass(Class, hyperdb.FileClass):
         self.fireReactors('create', newid, None)
 
         # store off the content as a file
-        self.db.storefile(self.classname, newid, None, content)
-        return newid
-
-    def import_list(self, propnames, proplist):
-        ''' Trap the "content" property...
-        '''
-        # dupe this list so we don't affect others
-        propnames = propnames[:]
-
-        # extract the "content" property from the proplist
-        i = propnames.index('content')
-        content = eval(proplist[i])
-        del propnames[i]
-        del proplist[i]
-
-        # do the normal import
-        newid = Class.import_list(self, propnames, proplist)
-
-        # save off the "content" file
         self.db.storefile(self.classname, newid, None, content)
         return newid
 

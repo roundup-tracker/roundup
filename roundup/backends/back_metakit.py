@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.3 2004-06-08 05:34:21 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.4 2004-06-24 07:14:47 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -44,7 +44,7 @@ BACKWARDS_COMPATIBLE = 1
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit
 from sessions_dbm import Sessions, OneTimeKeys
-import re, marshal, os, sys, time, calendar
+import re, marshal, os, sys, time, calendar, shutil
 from indexer_dbm import Indexer
 import locking
 from roundup.date import Range
@@ -496,7 +496,7 @@ class Class(hyperdb.Class):
        ndx = self.getview(READWRITE).append(rowdict)
        propvalues['#ISNEW'] = 1
        try:
-           self.set(str(newid), **propvalues)
+           self.set_inner(str(newid), **propvalues)
        except Exception:
            self.maxid -= 1
            raise
@@ -801,7 +801,7 @@ class Class(hyperdb.Class):
             oldnode[key] = oldvalue
 
         # nothing to do?
-        if not propvalues:
+        if not isnew and not propvalues:
             return propvalues, oldnode
         if not propvalues.has_key('activity'):
             row.activity = int(time.time())
@@ -1831,6 +1831,29 @@ class FileClass(Class, hyperdb.FileClass):
         if not os.path.exists(d):
             os.makedirs(d)
         return os.path.join(d, nm)
+
+    def export_files(self, dirname, nodeid):
+        ''' Export the "content" property as a file, not csv column
+        '''
+        source = self.gen_filename(nodeid)
+        x, filename = os.path.split(source)
+        x, subdir = os.path.split(x)
+        dest = os.path.join(dirname, self.classname+'-files', subdir, filename)
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        shutil.copyfile(source, dest)
+
+    def import_files(self, dirname, nodeid):
+        ''' Import the "content" property as a file
+        '''
+        dest = self.gen_filename(nodeid)
+        x, filename = os.path.split(dest)
+        x, subdir = os.path.split(x)
+        source = os.path.join(dirname, self.classname+'-files', subdir,
+            filename)
+        if not os.path.exists(os.path.dirname(dest)):
+            os.makedirs(os.path.dirname(dest))
+        shutil.copyfile(source, dest)
 
     def get(self, nodeid, propname, default=_marker, cache=1):
         if propname == 'content':
