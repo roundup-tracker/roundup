@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.65 2004-10-17 18:22:32 a1s Exp $
+$Id: roundup_server.py,v 1.66 2004-10-18 07:43:58 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -592,8 +592,12 @@ def run(port=undefined, success_message=None):
 
     RoundupRequestHandler.LOG_IPADDRESS = not config.LOG_HOSTNAMES
 
-    # obtain server before changing user id - allows to use port <
-    # 1024 if started as root
+    # port number in function arguments overrides config and command line
+    if port is not undefined:
+        config.PORT = port
+
+    # obtain server before changing user id - allows
+    # to use port < 1024 if started as root
     try:
         httpd = server_class((config.HOST, config.PORT), RoundupRequestHandler)
     except socket.error, e:
