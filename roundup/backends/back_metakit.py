@@ -83,6 +83,11 @@ class _Database(hyperdb.Database):
             for cl in self.classes.values():
                 cl._rollback()
             self._db.rollback()
+            self._db = None
+            self._db = metakit.storage(self.dbnm, 1)
+            self.hist = self._db.view('history')
+            self.tables = self._db.view('tables')
+            self.indexer.datadb = self._db
         self.dirty = 0
     def clear(self):
         for cl in self.classes.values():
@@ -90,42 +95,80 @@ class _Database(hyperdb.Database):
     def hasnode(self, classname, nodeid):
         return self.getclass(classname).hasnode(nodeid)
     def pack(self, pack_before):
-        pass
+        mindate = int(calendar.timegm(pack_before.get_tuple()))
+        i = 0
+        while i < len(self.hist):
+            if self.hist[i].date < mindate and self.hist[i].action != _CREATE:
+                self.hist.delete(i)
+            else:
+                i = i + 1
     def addclass(self, cl):
         self.classes[cl.classname] = cl
         if self.tables.find(name=cl.classname) < 0:
             self.tables.append(name=cl.classname)
-    def addjournal(self, tablenm, nodeid, action, params):
-        tblid = self.tables.find(name=tablenm)
+    def addjournal(self, tablenm, nodeid, action, params, creator=None,
+                creation=None):
+        try:
+            tblid = self.tables.find(name=tablenm)
+        except ValueError:
+            open('/u/roundup-sf/roundup/error.out','w').write('\nself.tables=%s, tablenm=%s\n' % (self.tables.structure(), tablenm))
+            raise
         if tblid == -1:
             tblid = self.tables.append(name=tablenm)
+        if creator is None:
+            creator = self.curuserid
+        else:
+            try:
+                creator = int(creator)
+            except TypeError:
+                creator = int(self.getclass('user').lookup(creator))
+        if creation is None:
+            creation = int(time.time())
+        elif isinstance(creation, date.Date):
+            creation = int(calendar.timegm(creation.get_tuple()))
         # tableid:I,nodeid:I,date:I,user:I,action:I,params:B
         self.hist.append(tableid=tblid,
                          nodeid=int(nodeid),
-                         date=int(time.time()),
+                         date=creation,
                          action=action,
-                         user = self.curuserid,
+                         user = creator,
                          params = marshal.dumps(params))
-    def gethistory(self, tablenm, nodeid):
+    def getjournal(self, tablenm, nodeid):
         rslt = []
         tblid = self.tables.find(name=tablenm)
         if tblid == -1:
             return rslt
         q = self.hist.select(tableid=tblid, nodeid=int(nodeid))
+        if len(q) == 0:
+            raise IndexError, "no history for id %s in %s" % (nodeid, tablenm)
         i = 0
-        userclass = self.getclass('user')
+        #userclass = self.getclass('user')
         for row in q:
             try:
                 params = marshal.loads(row.params)
             except ValueError:
                 print "history couldn't unmarshal %r" % row.params
                 params = {}
-            usernm = userclass.get(str(row.user), 'username')
+            #usernm = userclass.get(str(row.user), 'username')
             dt = date.Date(time.gmtime(row.date))
-            rslt.append((i, dt, usernm, _actionnames[row.action], params))
-            i += 1
+            #rslt.append((nodeid, dt, usernm, _actionnames[row.action], params))
+            rslt.append((nodeid, dt, str(row.user), _actionnames[row.action], params))
         return rslt
             
+    def destroyjournal(self, tablenm, nodeid):
+        nodeid = int(nodeid)
+        tblid = self.tables.find(name=tablenm)
+        if tblid == -1:
+            return 
+        i = 0
+        hist = self.hist
+        while i < len(hist):
+            if hist[i].tableid == tblid and hist[i].nodeid == nodeid:
+                hist.delete(i)
+            else:
+                i = i + 1
+        self.dirty = 1
+        
     def close(self):
         for cl in self.classes.values():
             cl.db = None
@@ -169,6 +212,7 @@ class _Database(hyperdb.Database):
                 hist = db.getas('history[tableid:I,nodeid:I,date:I,user:I,action:I,params:B]')
             if not tables.structure():
                 tables = db.getas('tables[name:S]')
+            db.commit()
         self.tables = tables
         self.hist = hist
         return db
@@ -380,10 +424,12 @@ class Class:
                             (self.classname, str(row.id), key))
 
             elif isinstance(prop, hyperdb.Multilink):
-                if type(value) != _LISTTYPE:
+                if value is not None and type(value) != _LISTTYPE:
                     raise TypeError, 'new property "%s" not a list of ids'%key
                 link_class = prop.classname
                 l = []
+                if value is None:
+                    value = []
                 for entry in value:
                     if type(entry) != _STRINGTYPE:
                         raise ValueError, 'new property "%s" link value ' \
@@ -439,6 +485,8 @@ class Class:
             elif isinstance(prop, hyperdb.String):
                 if value is not None and type(value) != _STRINGTYPE:
                     raise TypeError, 'new property "%s" not a string'%key
+                if value is None:
+                    value = ''
                 setattr(row, key, value)
                 changes[key] = oldvalue
                 if hasattr(prop, 'isfilename') and prop.isfilename:
@@ -448,33 +496,52 @@ class Class:
                         value, 'text/plain')
 
             elif isinstance(prop, hyperdb.Password):
-                if not isinstance(value, password.Password):
+                if value is not None and not isinstance(value, password.Password):
                     raise TypeError, 'new property "%s" not a Password'% key
+                if value is None:
+                    value = ''
                 setattr(row, key, str(value))
                 changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
 
-            elif value is not None and isinstance(prop, hyperdb.Date):
-                if not isinstance(value, date.Date):
+            elif isinstance(prop, hyperdb.Date):
+                if value is not None and not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'% key
-                setattr(row, key, int(calendar.timegm(value.get_tuple())))
+                if value is None:
+                    setattr(row, key, 0)
+                else:
+                    setattr(row, key, int(calendar.timegm(value.get_tuple())))
                 changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
 
-            elif value is not None and isinstance(prop, hyperdb.Interval):
-                if not isinstance(value, date.Interval):
+            elif isinstance(prop, hyperdb.Interval):
+                if value is not None and not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'% key
-                setattr(row, key, str(value))
+                if value is None:
+                    setattr(row, key, '')
+                else:
+                    setattr(row, key, str(value))
                 changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
                 
-            elif value is not None and isinstance(prop, hyperdb.Number):
-                setattr(row, key, int(value))
+            elif isinstance(prop, hyperdb.Number):
+                if value is None:
+                    value = 0
+                try:
+                    v = int(value)
+                except ValueError:
+                    raise TypeError, "%s (%s) is not numeric" % (key, repr(value))
+                setattr(row, key, v)
                 changes[key] = oldvalue
                 propvalues[key] = value
                 
-            elif value is not None and isinstance(prop, hyperdb.Boolean):
-                bv = value != 0
+            elif isinstance(prop, hyperdb.Boolean):
+                if value is None:
+                    bv = 0
+                elif value not in (0,1):
+                    raise TypeError, "%s (%s) is not boolean" % (key, repr(value))
+                else:
+                    bv = value 
                 setattr(row, key, bv)
                 changes[key] = oldvalue
                 propvalues[key] = value
@@ -504,6 +571,8 @@ class Class:
         return propvalues
     
     def retire(self, nodeid):
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError, 'Database open read-only'
         self.fireAuditors('retire', nodeid, None)
         view = self.getview(1)
         ndx = view.find(id=int(nodeid))
@@ -525,12 +594,19 @@ class Class:
     def history(self, nodeid):
         if not self.do_journal:
             raise ValueError, 'Journalling is disabled for this class'
-        return self.db.gethistory(self.classname, nodeid)
+        return self.db.getjournal(self.classname, nodeid)
     def setkey(self, propname):
         if self.keyname:
             if propname == self.keyname:
                 return
             raise ValueError, "%s already indexed on %s" % (self.classname, self.keyname)
+        prop = self.properties.get(propname, None)
+        if prop is None:
+            prop = self.privateprops.get(propname, None)
+        if prop is None:
+            raise KeyError, "no property %s" % propname
+        if not isinstance(prop, hyperdb.String):
+            raise TypeError, "%s is not a String" % propname
         # first setkey for this run
         self.keyname = propname
         iv = self.db._db.view('_%s' % self.classname)
@@ -561,19 +637,21 @@ class Class:
                 return str(view[ndx].id)
         raise KeyError, keyvalue
 
-    def destroy(self, keyvalue):
-        #TODO clean this up once Richard's said how it should work
-        iv = self.getindexview()
-        if iv:
-            ndx = iv.find(k=keyvalue)
-            if ndx > -1:
-                id = iv[ndx].i
-                iv.delete(ndx)
-                view = self.getview()
-                ndx = view.find(id=id)
-                if ndx > -1:
-                    view.delete(ndx)
-
+    def destroy(self, id):
+        view = self.getview(1)
+        ndx = view.find(id=int(id))
+        if ndx > -1:
+            if self.keyname:
+                keyvalue = getattr(view[ndx], self.keyname)
+                iv = self.getindexview(1)
+                if iv:
+                    ivndx = iv.find(k=keyvalue)
+                    if ivndx > -1:
+                        iv.delete(ivndx)
+            view.delete(ndx)
+            self.db.destroyjournal(self.classname, id)
+            self.db.dirty = 1
+        
     def find(self, **propspec):
         """Get the ids of nodes in this class which link to the given nodes.
 
@@ -862,6 +940,59 @@ class Class:
                 # index them under (classname, nodeid, property)
                 self.db.indexer.add_text((self.classname, nodeid, prop),
                                 str(self.get(nodeid, prop)))
+
+    def export_list(self, propnames, nodeid):
+        ''' Export a node - generate a list of CSV-able data in the order
+            specified by propnames for the given node.
+        '''
+        properties = self.getprops()
+        l = []
+        for prop in propnames:
+            proptype = properties[prop]
+            value = self.get(nodeid, prop)
+            # "marshal" data where needed
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Interval):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Password):
+                value = str(value)
+            l.append(repr(value))
+        return l
+        
+    def import_list(self, propnames, proplist):
+        ''' Import a node - all information including "id" is present and
+            should not be sanity checked. Triggers are not triggered. The
+            journal should be initialised using the "creator" and "creation"
+            information.
+
+            Return the nodeid of the node imported.
+        '''
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError, 'Database open read-only'
+        properties = self.getprops()
+
+        d = {}
+        view = self.getview(1)
+        for i in range(len(propnames)):
+            value = eval(proplist[i])
+            propname = propnames[i]
+            prop = properties[propname]
+            if propname == 'id':
+                newid = value
+                value = int(value)
+            elif isinstance(prop, hyperdb.Date):
+                value = int(calendar.timegm(value))
+            elif isinstance(prop, hyperdb.Interval):
+                value = str(date.Interval(value))
+            d[propname] = value
+        view.append(d)
+        creator = d.get('creator', None)
+        creation = d.get('creation', None)
+        self.db.addjournal(self.classname, newid, 'create', {}, creator, creation)
+        return newid
 
     # --- used by Database
     def _commit(self):
