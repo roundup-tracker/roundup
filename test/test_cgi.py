@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.4 2003-01-15 11:14:01 richard Exp $
+# $Id: test_cgi.py,v 1.4.2.1 2003-01-15 22:38:14 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
@@ -58,9 +58,14 @@ class FormTestCase(unittest.TestCase):
             makeForm({})), {})
 
     def testNothingWithRequired(self):
-        form = makeForm({':required': 'title'})
         self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
-            self.db.issue, form)
+            self.db.issue, makeForm({':required': 'title'}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({':required': 'title,status',
+            'status':'1'}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({':required': ['title','status'],
+            'status':'1'}))
 
     #
     # String
@@ -86,6 +91,38 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({'title': ' '}), nodeid), {'title': ''})
+
+    #
+    # Link
+    #
+    def testEmptyLink(self):
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'status': ''})), {})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'status': ' '})), {})
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({'status': ['', '']}))
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'status': '-1'})), {})
+
+    def testSetLink(self):
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'status': 'unread'})), {'status': '1'})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'status': '1'})), {'status': '1'})
+
+    def testUnsetLink(self):
+        nodeid = self.db.issue.create(status='unread')
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'status': '-1'}), nodeid), {'status': None})
+
+    def testInvalidLinkValue(self):
+# XXX This is not the current behaviour - should we enforce this?
+#        self.assertRaises(IndexError, client.parsePropsFromForm, self.db,
+#            self.db.issue, makeForm({'status': '4'}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({'status': 'frozzle'}))
+# XXX need a test for the TypeError where the link class doesn't define a key?
 
     #
     # Multilink
@@ -124,7 +161,7 @@ class FormTestCase(unittest.TestCase):
             self.db.issue, makeForm({'nosy': 'frozzle'}))
         self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
             self.db.issue, makeForm({'nosy': '1,frozzle'}))
-# XXX need a test for the TypeError (where the ML class doesn't define a key
+# XXX need a test for the TypeError (where the ML class doesn't define a key?
 
     def testMultilinkAdd(self):
         nodeid = self.db.issue.create(nosy=['1'])
@@ -162,6 +199,22 @@ class FormTestCase(unittest.TestCase):
         self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
             self.db.issue, makeForm({':remove:nosy': '4'}), nodeid)
 
+    def testMultilinkRetired(self):
+        self.db.user.retire('2')
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'nosy': ['2','3']})), {'nosy': ['2','3']})
+        nodeid = self.db.issue.create(nosy=['1','2'])
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':remove:nosy': '2'}), nodeid), {'nosy': ['1']})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':add:nosy': '3'}), nodeid), {'nosy': ['1','2','3']})
+
+    def testAddRemoveNonexistant(self):
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({':remove:foo': '2'}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({':add:foo': '2'}))
+
     #
     # Password
     #
@@ -195,6 +248,32 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.user.create(username='2', password=password.Password('foo'))
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.user,
             makeForm({'password': '', 'password:confirm': ''}), nodeid), {})
+
+    #
+    # Boolean
+    #
+# XXX this needs a property to work on.
+#    def testEmptyBoolean(self):
+#        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+#            makeForm({'title': ''})), {})
+#        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+#            makeForm({'title': ' '})), {})
+#        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+#            self.db.issue, makeForm({'title': ['', '']}))
+
+#    def testSetBoolean(self):
+#        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+#            makeForm({'title': 'foo'})), {'title': 'foo'})
+#        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+#            makeForm({'title': 'a\r\nb\r\n'})), {'title': 'a\nb'})
+
+#    def testEmptyBooleanSet(self):
+#        nodeid = self.db.issue.create(title='foo')
+#        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+#            makeForm({'title': ''}), nodeid), {'title': ''})
+#        nodeid = self.db.issue.create(title='foo')
+#        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+#            makeForm({'title': ' '}), nodeid), {'title': ''})
 
 
 def suite():

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.65 2003-01-08 04:39:36 richard Exp $
+# $Id: client.py,v 1.65.2.1 2003-01-15 22:38:14 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1150,6 +1150,7 @@ def fixNewlines(text):
     text = text.replace('\r\n', '\n')
     return text.replace('\r', '\n')
 
+
 def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     ''' Pull properties for the given class out of the form.
 
@@ -1173,7 +1174,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     props = {}
     keys = form.keys()
     properties = cl.getprops()
-    existing_cache = {}
     for key in keys:
         # see if we're performing a special multilink action
         mlaction = 'set'
@@ -1188,9 +1188,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
         # does the property exist?
         if not properties.has_key(propname):
-            if mlaction == 'remove':
-                raise ValueError, 'You have submitted a remove action for'\
-                    ' the property "%s" which doesn\'t exist'%propname
+            if mlaction != 'set':
+                raise ValueError, 'You have submitted a %s action for'\
+                    ' the property "%s" which doesn\'t exist'%(mlaction,
+                    propname)
             continue
         proptype = properties[propname]
 
@@ -1208,6 +1209,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 # it's a MiniFieldStorage, but may be a comma-separated list
                 # of values
                 value = [i.strip() for i in value.value.split(',')]
+
+            # filter out the empty bits
+            value = filter(None, value)
         else:
             # multiple values are not OK
             if isinstance(value, type([])):
@@ -1218,8 +1222,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             value = value.value.strip()
 
         if isinstance(proptype, hyperdb.String):
-            if not value:
-                continue
             # fix the CRLF/CR -> LF stuff
             value = fixNewlines(value)
         elif isinstance(proptype, hyperdb.Password):
@@ -1247,7 +1249,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 value = None
         elif isinstance(proptype, hyperdb.Link):
             # see if it's the "no selection" choice
-            if value == '-1':
+            if value == '-1' or not value:
                 # if we're creating, just don't include this property
                 if not nodeid:
                     continue
@@ -1270,12 +1272,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         elif isinstance(proptype, hyperdb.Multilink):
             # perform link class key value lookup if necessary
             link = proptype.classname
+            link_cl = db.classes[link]
             l = []
             for entry in value:
                 if not entry: continue
                 if not num_re.match(entry):
                     try:
-                        entry = db.classes[link].lookup(entry)
+                        entry = link_cl.lookup(entry)
                     except KeyError:
                         raise ValueError, _('property "%(propname)s": '
                             '"%(value)s" not an entry of %(classname)s')%{
@@ -1295,8 +1298,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 # we're modifying the list - get the current list of ids
                 if props.has_key(propname):
                     existing = props[propname]
-                else:
+                elif nodeid:
                     existing = cl.get(nodeid, propname, [])
+                else:
+                    existing = []
 
                 # now either remove or add
                 if mlaction == 'remove':
@@ -1335,10 +1340,21 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 if not properties.has_key(propname):
                     raise
 
+            # existing may be None, which won't equate to empty strings
+            if not existing and not value:
+                continue
+
+            # existing will come out unsorted in some cases
+            if isinstance(proptype, hyperdb.Multilink):
+                existing.sort()
+
             # if changed, set it
             if value != existing:
                 props[propname] = value
         else:
+            # don't bother setting empty/unset values
+            if not value:
+                continue
             props[propname] = value
 
     # see if all the required properties have been supplied
@@ -1350,5 +1366,3 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         raise ValueError, 'Required %s %s not supplied'%(p, ', '.join(required))
 
     return props
-
-
