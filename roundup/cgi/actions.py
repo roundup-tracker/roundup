@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27.2.8 2004-12-15 00:07:58 richard Exp $
+#$Id: actions.py,v 1.27.2.9 2005-01-05 22:09:04 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -52,10 +52,13 @@ class Action:
             raise Unauthorised, _('You do not have permission to '
                 '%(action)s the %(classname)s class.')%info
 
-    def hasPermission(self, permission):
+    _marker = []
+    def hasPermission(self, permission, classname=_marker):
         """Check whether the user has 'permission' on the current class."""
+        if classname is self._marker:
+            classname = self.client.classname
         return self.db.security.hasPermission(permission, self.client.userid,
-            self.client.classname)
+            classname)
 
 class ShowAction(Action):
     def handle(self, typere=re.compile('[@:]type'),

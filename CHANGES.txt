@@ -6,6 +6,7 @@ are given with the most recent entry first.
 Fixed:
 - index args URL generation broken in .10 (sf bug 1096027)
 - handle NotModified for non-static files (sf patch 1095790)
+- fix permission lookup in query editing
 
 
 2005-01-04 0.7.10
