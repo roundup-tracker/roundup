@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.3 2003-01-15 11:07:45 richard Exp $
+# $Id: test_cgi.py,v 1.4 2003-01-15 11:14:01 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
@@ -139,6 +139,10 @@ class FormTestCase(unittest.TestCase):
             makeForm({':add:nosy': '2,mary'}), nodeid), {'nosy': ['1','2','4']})
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({':add:nosy': ['2','3']}), nodeid), {'nosy': ['1','2','3']})
+
+    def testMultilinkAddNew(self):
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':add:nosy': ['2','3']})), {'nosy': ['2','3']})
 
     def testMultilinkRemove(self):
         nodeid = self.db.issue.create(nosy=['1','2'])
