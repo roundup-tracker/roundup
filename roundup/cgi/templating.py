@@ -7,6 +7,7 @@ todo = '''
 - Multilink property additions: change_note and new_upload
 - Add class.find() too
 - NumberHTMLProperty should support numeric operations
+- LinkHTMLProperty should handle comparisons to strings (cf. linked name)
 '''
 
 __docformat__ = 'restructuredtext'
