@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.97.2.2 2004-06-24 07:14:23 richard Exp $
+# $Id: hyperdb.py,v 1.97.2.3 2004-07-20 05:58:47 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -771,6 +771,7 @@ class FileClass:
         propnames = self.getprops().keys()
         propnames.remove('content')
         propnames.sort()
+        print propnames
         return propnames
 
     def export_files(self, dirname, nodeid):

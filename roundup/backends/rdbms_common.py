@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.17 2004-07-19 00:38:54 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.18 2004-07-20 05:58:47 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2550,7 +2550,7 @@ class Class(hyperdb.Class):
         for nodeid, l in d.items():
             self.db.setjournal(self.classname, nodeid, l)
 
-class FileClass(Class, hyperdb.FileClass):
+class FileClass(hyperdb.FileClass, Class):
     '''This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off
        externally to the hyperdb.

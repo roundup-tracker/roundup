@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.6 2004-07-01 03:58:34 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.7 2004-07-20 05:58:47 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1814,7 +1814,7 @@ _typmap = {
     hyperdb.Boolean   : 'I',
     hyperdb.Number    : 'I',
 }
-class FileClass(Class, hyperdb.FileClass):
+class FileClass(hyperdb.FileClass, Class):
     ''' like Class but with a content property
     '''
     default_mime_type = 'text/plain'
