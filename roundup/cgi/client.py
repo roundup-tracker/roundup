@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.79 2003-02-12 06:41:58 richard Exp $
+# $Id: client.py,v 1.80 2003-02-12 07:02:22 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -89,19 +89,30 @@ class Client:
 
     '''
 
+    #
     # special form variables
+    #
     FV_TEMPLATE = re.compile(r'[@+:]template')
     FV_OK_MESSAGE = re.compile(r'[@+:]ok_message')
     FV_ERROR_MESSAGE = re.compile(r'[@+:]error_message')
+
+    # specials for parsePropsFromForm
     FV_REQUIRED = re.compile(r'[@+:]required')
-    FV_LINK = re.compile(r'[@+:]link')
-    FV_MULTILINK = re.compile(r'[@+:]multilink')
-    FV_NOTE = re.compile(r'[@+:]note')
-    FV_FILE = re.compile(r'[@+:]file')
     FV_ADD = re.compile(r'([@+:])add\1')
     FV_REMOVE = re.compile(r'([@+:])remove\1')
     FV_CONFIRM = re.compile(r'.+[@+:]confirm')
-    FV_SPLITTER = re.compile(r'[@+:]')
+
+    # post-edi
+    FV_LINK = re.compile(r'[@+:]link')
+    FV_MULTILINK = re.compile(r'[@+:]multilink')
+
+    # deprecated
+    FV_NOTE = re.compile(r'[@+:]note')
+    FV_FILE = re.compile(r'[@+:]file')
+
+    # Note: index page stuff doesn't appear here:
+    # columns, sort, sortdir, filter, group, groupdir, search_text,
+    # pagesize, startwith
 
     def __init__(self, instance, request, env, form=None):
         hyperdb.traceMark()
@@ -653,7 +664,7 @@ class Client:
         cl = self.db.user
         try:
             props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
-            self.userid = cl.create(**props)
+            self.userid = cl.create(**props['user'])
             self.db.commit()
         except (ValueError, KeyError), message:
             self.error_message.append(message)
@@ -724,10 +735,13 @@ class Client:
                 self.__dict__))
             return
 
+        # identify the entry in the props parsed from the form
+        this = self.classname + self.nodeid
+
         # perform the edit
         try:
             # make changes to the node
-            props = self._changenode(props)
+            props = self._changenode(props[this])
             # handle linked nodes 
             self._post_editnode(self.nodeid)
         except (ValueError, KeyError, IndexError), message:
@@ -803,7 +817,7 @@ class Client:
 
         try:
             # do the create
-            nid = self._createnode(props)
+            nid = self._createnode(props[self.classname])
         except (ValueError, KeyError, IndexError), message:
             # these errors might just be indicative of user dumbness
             self.error_message.append(_('Error: ') + str(message))

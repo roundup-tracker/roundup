@@ -1341,6 +1341,9 @@ class HTMLRequest:
         self.classname = client.classname
         self.template = client.template
 
+        # the special char to use for special vars
+        self.special_char = '@'
+
         self._post_init()
 
     def _post_init(self):
@@ -1348,36 +1351,46 @@ class HTMLRequest:
         '''
         # extract the index display information from the form
         self.columns = []
-        if self.form.has_key(':columns'):
-            self.columns = handleListCGIValue(self.form[':columns'])
+        for name in ':columns +columns @columns'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                self.columns = handleListCGIValue(self.form[name])
+                break
         self.show = ShowDict(self.columns)
 
         # sorting
         self.sort = (None, None)
-        if self.form.has_key(':sort'):
-            sort = self.form[':sort'].value
-            if sort.startswith('-'):
-                self.sort = ('-', sort[1:])
-            else:
-                self.sort = ('+', sort)
-        if self.form.has_key(':sortdir'):
-            self.sort = ('-', self.sort[1])
+        for name in ':sort +sort @sort'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                sort = self.form[name].value
+                if sort.startswith('-'):
+                    self.sort = ('-', sort[1:])
+                else:
+                    self.sort = ('+', sort)
+                if self.form.has_key(self.special_char+'sortdir'):
+                    self.sort = ('-', self.sort[1])
 
         # grouping
         self.group = (None, None)
-        if self.form.has_key(':group'):
-            group = self.form[':group'].value
-            if group.startswith('-'):
-                self.group = ('-', group[1:])
-            else:
-                self.group = ('+', group)
-        if self.form.has_key(':groupdir'):
-            self.group = ('-', self.group[1])
+        for name in ':group +group @group'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                group = self.form[name].value
+                if group.startswith('-'):
+                    self.group = ('-', group[1:])
+                else:
+                    self.group = ('+', group)
+                if self.form.has_key(self.special_char+'groupdir'):
+                    self.group = ('-', self.group[1])
 
         # filtering
         self.filter = []
-        if self.form.has_key(':filter'):
-            self.filter = handleListCGIValue(self.form[':filter'])
+        for name in ':filter +filter @filter'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                self.filter = handleListCGIValue(self.form[name])
+
         self.filterspec = {}
         db = self.client.db
         if self.classname is not None:
@@ -1395,19 +1408,24 @@ class HTMLRequest:
 
         # full-text search argument
         self.search_text = None
-        if self.form.has_key(':search_text'):
-            self.search_text = self.form[':search_text'].value
+        for name in ':search_text +search_text @search_text'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                self.search_text = self.form[name].value
 
         # pagination - size and start index
         # figure batch args
-        if self.form.has_key(':pagesize'):
-            self.pagesize = int(self.form[':pagesize'].value)
-        else:
-            self.pagesize = 50
-        if self.form.has_key(':startwith'):
-            self.startwith = int(self.form[':startwith'].value)
-        else:
-            self.startwith = 0
+        self.pagesize = 50
+        for name in ':pagesize +pagesize @pagesize'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                self.pagesize = int(self.form[name].value)
+
+        self.startwith = 0
+        for name in ':startwith +startwith @startwith'.split():
+            if self.form.has_key(name):
+                self.special_char = name[0]
+                self.startwith = int(self.form[name].value)
 
     def updateFromURL(self, url):
         ''' Parse the URL for query args, and update my attributes using the
@@ -1480,23 +1498,24 @@ env: %(env)s
             filterspec=1):
         ''' return the current index args as form elements '''
         l = []
+        sc = self.special_char
         s = '<input type="hidden" name="%s" value="%s">'
         if columns and self.columns:
-            l.append(s%(':columns', ','.join(self.columns)))
+            l.append(s%(sc+'columns', ','.join(self.columns)))
         if sort and self.sort[1] is not None:
             if self.sort[0] == '-':
                 val = '-'+self.sort[1]
             else:
                 val = self.sort[1]
-            l.append(s%(':sort', val))
+            l.append(s%(sc+'sort', val))
         if group and self.group[1] is not None:
             if self.group[0] == '-':
                 val = '-'+self.group[1]
             else:
                 val = self.group[1]
-            l.append(s%(':group', val))
+            l.append(s%(sc+'group', val))
         if filter and self.filter:
-            l.append(s%(':filter', ','.join(self.filter)))
+            l.append(s%(sc+'filter', ','.join(self.filter)))
         if filterspec:
             for k,v in self.filterspec.items():
                 if type(v) == type([]):
@@ -1504,30 +1523,31 @@ env: %(env)s
                 else:
                     l.append(s%(k, v))
         if self.search_text:
-            l.append(s%(':search_text', self.search_text))
-        l.append(s%(':pagesize', self.pagesize))
-        l.append(s%(':startwith', self.startwith))
+            l.append(s%(sc+'search_text', self.search_text))
+        l.append(s%(sc+'pagesize', self.pagesize))
+        l.append(s%(sc+'startwith', self.startwith))
         return '\n'.join(l)
 
     def indexargs_url(self, url, args):
         ''' embed the current index args in a URL '''
+        sc = self.special_char
         l = ['%s=%s'%(k,v) for k,v in args.items()]
         if self.columns and not args.has_key(':columns'):
-            l.append(':columns=%s'%(','.join(self.columns)))
+            l.append(sc+'columns=%s'%(','.join(self.columns)))
         if self.sort[1] is not None and not args.has_key(':sort'):
             if self.sort[0] == '-':
                 val = '-'+self.sort[1]
             else:
                 val = self.sort[1]
-            l.append(':sort=%s'%val)
+            l.append(sc+'sort=%s'%val)
         if self.group[1] is not None and not args.has_key(':group'):
             if self.group[0] == '-':
                 val = '-'+self.group[1]
             else:
                 val = self.group[1]
-            l.append(':group=%s'%val)
+            l.append(sc+'group=%s'%val)
         if self.filter and not args.has_key(':filter'):
-            l.append(':filter=%s'%(','.join(self.filter)))
+            l.append(sc+'filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():
             if not args.has_key(k):
                 if type(v) == type([]):
@@ -1535,11 +1555,11 @@ env: %(env)s
                 else:
                     l.append('%s=%s'%(k, v))
         if self.search_text and not args.has_key(':search_text'):
-            l.append(':search_text=%s'%self.search_text)
+            l.append(sc+'search_text=%s'%self.search_text)
         if not args.has_key(':pagesize'):
-            l.append(':pagesize=%s'%self.pagesize)
+            l.append(sc+'pagesize=%s'%self.pagesize)
         if not args.has_key(':startwith'):
-            l.append(':startwith=%s'%self.startwith)
+            l.append(sc+'startwith=%s'%self.startwith)
         return '%s?%s'%(url, '&'.join(l))
     indexargs_href = indexargs_url
 
