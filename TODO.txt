@@ -8,7 +8,6 @@ pending example: meta/parent bug implementation (feature request #506815)
 pending example: replace the "extended" example with a "help desk" one, and
                  rename "classic" to "bug tracker"
 pending example: script for retrieval of "mbox" archive of all messages
-pending hyperdb: write a backend for gadfly
 pending hyperdb: range searching of values (dates in particular)
         - filter specifies {property: (comparison function, value)}
           comparison functions: lt, le, eq, ge, gt. eq and
@@ -31,6 +30,7 @@ pending mailgw: Allow multiple email addresses at one gw with different default
                   roundup: "|roundup-mailgw /instances/dev"
                   vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
 pending project: switch to a Roundup instance for Roundup bug/feature tracking
+pending project: have the demo allow anonymous login
 pending security: at least an LDAP user database implementation
 pending security: authenticate over a secure connection
 pending security: use digital signatures in mailgw
@@ -38,19 +38,22 @@ pending web: I18N
 pending web: Better message summary display (feature request #520244)
 pending web: Navigating around the issues (feature request #559149)
 pending web: Re-enable link backrefs from messages (feature request #568714)
-pending web: fix double-submit by having new-item-submit redirect at end
 pending web: Quick help links next to the property labels giving a
              description of the property. Combine with help for the actual
              form element too, eg. how to use the nosy list edit box.
 pending web: clicking on a group header should filter for that type of entry
-pending web: have the page layout (header/footer) be templatable
-pending web: have index page handle mid-page errors better so header and
-             footer are still visible
-pending web: re-work cgi interface to abstract out the explicit "issue"
-             interface
+pending web: re-enable auth by basic http auth
 
-ongoing  any bugs
+active web: have the page layout (header/footer) be templatable
+active web: fixing the templating so it works (GM / RJ)
+active web: re-work cgi interface to abstract out the explicit "issue"
+            interface
+active web: have index page handle mid-page errors better so header and
+            footer are still visible
 
+ongoing: any bugs
+
+done hyperdb: write a backend for gadfly (it's as done as it's going to get)
 done hyperdb: full-text search also search certain String properties (RJ)
 done hyperdb: further split the *dbm backends from the core code, allowing
               easier non-dict-like backends (eg metakit, RDB) (RJ)
@@ -64,4 +67,5 @@ done security: switch to sessions for web authentication (RJ)
 done security: implement and use the new logical control mechanisms
 done web: saving of named queries (GM)
 done web: handle "not found", access and item page render errors better (RJ)
+done web: fix double-submit by having new-item-submit redirect at end (RJ)
 
