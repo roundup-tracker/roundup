@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.120 2004-07-04 05:07:20 richard Exp $
+# $Id: rdbms_common.py,v 1.121 2004-07-05 11:37:10 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1370,7 +1370,7 @@ class Class(hyperdb.Class):
         # done
         self.db.addnode(self.classname, newid, propvalues)
         if self.do_journal:
-            self.db.addjournal(self.classname, newid, 'create', {})
+            self.db.addjournal(self.classname, newid, ''"create", {})
 
         # XXX numeric ids
         return str(newid)
@@ -1531,12 +1531,12 @@ class Class(hyperdb.Class):
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if node[propname] is not None:
-                        self.db.addjournal(link_class, node[propname], 'unlink',
-                            (self.classname, nodeid, propname))
+                        self.db.addjournal(link_class, node[propname],
+                            ''"unlink", (self.classname, nodeid, propname))
 
                     # register the link with the newly linked node
                     if value is not None:
-                        self.db.addjournal(link_class, value, 'link',
+                        self.db.addjournal(link_class, value, ''"link",
                             (self.classname, nodeid, propname))
 
             elif isinstance(prop, Multilink):
@@ -1645,7 +1645,7 @@ class Class(hyperdb.Class):
         self.db.setnode(self.classname, nodeid, propvalues, multilink_changes)
 
         if self.do_journal:
-            self.db.addjournal(self.classname, nodeid, 'set', journalvalues)
+            self.db.addjournal(self.classname, nodeid, ''"set", journalvalues)
 
         return propvalues
 
@@ -1669,7 +1669,7 @@ class Class(hyperdb.Class):
             self.db.arg, self.db.arg)
         self.db.sql(sql, (1, nodeid))
         if self.do_journal:
-            self.db.addjournal(self.classname, nodeid, 'retired', None)
+            self.db.addjournal(self.classname, nodeid, ''"retired", None)
 
         self.fireReactors('retire', nodeid, None)
 
@@ -1699,7 +1699,7 @@ class Class(hyperdb.Class):
             self.db.arg, self.db.arg)
         self.db.sql(sql, (0, nodeid))
         if self.do_journal:
-            self.db.addjournal(self.classname, nodeid, 'restored', None)
+            self.db.addjournal(self.classname, nodeid, ''"restored", None)
 
         self.fireReactors('restore', nodeid, None)
 
