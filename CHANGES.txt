@@ -39,6 +39,8 @@ Feature:
 - added support for last-modified and if-modified-since headers for static
   file serving
 - added Node.get() method
+- nicer page titles (sf feature 65197)
+
 
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages

@@ -1,5 +1,7 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">Message listing</title>
+<title metal:fill-slot="head_title"> 
+ <span tal:replace="config/TRACKER_NAME" />: List of messages
+</title> 
 <td class="page-header-top" metal:fill-slot="body_title">
  <h2>Message listing</h2>
 </td>

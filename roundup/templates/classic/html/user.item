@@ -1,9 +1,18 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">User editing</title>
+<title metal:fill-slot="head_title"> 
+<span tal:replace="config/TRACKER_NAME" />: 
+<span tal:condition="context/id"
+      tal:replace="string:User ${context/id}: ${context/username}" />
+<tal:x tal:condition="not:context/id">New User</tal:x> 
+</title> 
 <td class="page-header-top" metal:fill-slot="body_title">
- <h2>User editing</h2>
+ <h2>
+  User<span tal:replace="context/id" />
+   <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
+ </h2>
 </td>
+
 <td class="content" metal:fill-slot="content">
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
 You are not allowed to view this page.
