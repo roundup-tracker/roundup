@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.74 2004-06-24 06:39:04 richard Exp $
+# $Id: admin.py,v 1.75 2004-06-25 22:23:36 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -622,7 +622,7 @@ Erase it? Y/N: """))
             if ',' in value:
                 values = value.split(',')
             else:
-                values = []
+                values = [value]
             d = props[propname] = {}
             for value in values:
                 d[hyperdb.rawToHyperdb(self.db, cl, None, propname, value)] = 1
