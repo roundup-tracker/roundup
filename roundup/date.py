@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.17 2002-01-16 07:02:57 richard Exp $
+# $Id: date.py,v 1.18 2002-01-23 20:00:50 jhermann Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -168,8 +168,10 @@ class Date:
     def pretty(self):
         ''' print up the date date using a pretty format...
         '''
-        return time.strftime('%e %B %Y', (self.year, self.month,
+        str = time.strftime('%d %B %Y', (self.year, self.month,
             self.day, self.hour, self.minute, self.second, 0, 0, 0))
+        if str[0] == '0': return ' ' + str[1:]
+        return str
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
               (((?P<y>\d\d\d\d)-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
@@ -383,6 +385,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/01/16 07:02:57  richard
+#  . lots of date/interval related changes:
+#    - more relaxed date format for input
+#
 # Revision 1.16  2002/01/08 11:56:24  richard
 # missed an import _
 #
