@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.69 2004-04-20 21:55:45 richard Exp $
+# $Id: test_mailgw.py,v 1.69.2.1 2004-09-29 09:16:09 a1s Exp $
 
 # TODO: test bcc
 
@@ -29,10 +29,10 @@ class Message(rfc822.Message):
     """String-based Message class with equivalence test."""
     def __init__(self, s):
         rfc822.Message.__init__(self, StringIO(s.strip()))
-        
+
     def __eq__(self, other):
         return (self.dict == other.dict and
-                self.fp.read() == other.fp.read()) 
+                self.fp.read() == other.fp.read())
 
 class DiffHelper:
     def compareMessages(self, new, old):
@@ -60,7 +60,7 @@ class DiffHelper:
             if res:
                 res.insert(0, 'Generated message not correct (diff follows):')
                 raise AssertionError, '\n'.join(res)
-    
+
     def compareStrings(self, s2, s1):
         '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
            the first to be the "original" but in the calls in this file,
@@ -135,7 +135,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         # handler can close the db on us and open a new one
         self.db = handler.db
         return ret
-        
+
     def _get_mail(self):
         f = open(SENDMAILDEBUG)
         try:
@@ -204,7 +204,7 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 ''')
-        userlist = self.db.user.list()        
+        userlist = self.db.user.list()
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(userlist, self.db.user.list(),
             "user created when it shouldn't have been")
@@ -271,7 +271,7 @@ _______________________________________________________________________
     #         '''With more than one part'''
     #        see MultipartEnc tests: but if there is more than one part
     #        we return a multipart/mixed and the boundary contains
-    #        the ip address of the test machine. 
+    #        the ip address of the test machine.
 
     # BUG should test some binary attamchent too.
 
@@ -808,21 +808,21 @@ To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing...
-Content-Type: multipart/mixed; boundary="bCsyhTFzCvuiizWE" 
-Content-Disposition: inline 
- 
- 
---bCsyhTFzCvuiizWE 
-Content-Type: text/plain; charset=us-ascii 
-Content-Disposition: inline 
+Content-Type: multipart/mixed; boundary="bCsyhTFzCvuiizWE"
+Content-Disposition: inline
 
-test attachment binary 
 
---bCsyhTFzCvuiizWE 
-Content-Type: application/octet-stream 
-Content-Disposition: attachment; filename="main.dvi" 
+--bCsyhTFzCvuiizWE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-xxxxxx 
+test attachment binary
+
+--bCsyhTFzCvuiizWE
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="main.dvi"
+
+xxxxxx
 
 --bCsyhTFzCvuiizWE--
 ''')
@@ -967,7 +967,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [keyword1] Testing... [name=Bar]
 
-''')        
+''')
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
     def testResentFrom(self):
@@ -1026,4 +1026,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
