@@ -2,48 +2,49 @@ General Roundup project TODO list. Note that some of these are semi-formed
 ideas. Those ideas that don't make the cutoff for the next major release are
 punted automatically into the subsequent major release TODO.
 
-State    Description
+State   Description
 ------------------------------------------------------------------------------
-pending  example: meta/parent bug implementation (feature request #506815)
-pending  hyperdb: write a backend for gadfly
-pending  hyperdb: range searching of values (dates in particular)
-         - filter specifies {property: (comparison function, value)}
-           comparison functions: lt, le, eq, ge, gt. eq and
-           [value, value, ...] implies "in"
-pending  hyperdb: make creator, creation and activity available pre-commit
-pending  hyperdb: migrate "id" property to be Number type
-pending  instance: including much simpler upgrade path and the use of
-                   non-Python configuration files (ConfigParser)
-pending  instance: cleanup to support config (feature request #498658)
-pending  instance: split instance.open() into open() and login()
-pending  instance: rename to "instance" to "tracker"
-pending  instance: sanity check instance setup after all these changes
-pending  mailgw: allow commands (feature request #556996)
-                 like "help", "dump issue123" (would send all info about
-                 issue123, including a digest of all messages, but probably
-                 not all files...), "list issue", ...
-pending  mailgw: Allow multiple email addresses at one gw with different default
-                 classes and property values (possibly through command-line
-                 args to the mailgw as invoked in the mail delivery "aliases"
-                 file) eg:
-                   roundup: "|roundup-mailgw /instances/dev"
-                   vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
-pending  project: switch to a Roundup instance for Roundup bug/feature tracking
-pending  security: at least an LDAP user database implementation
-pending  security: authenticate over a secure connection
-pending  security: use digital signatures in mailgw
-pending  web: I18N
-pending  web: Better message summary display (feature request #520244)
-pending  web: Navigating around the issues (feature request #559149)
-pending  web: Re-enable link backrefs from messages (feature request #568714)
-pending  web: fix double-submit by having new-item-submit redirect at end
-pending  web: Quick help links next to the property labels giving a
-              description of the property. Combine with help for the actual
-              form element too, eg. how to use the nosy list edit box.
-pending  web: feature request #507842
-pending  web: clicking on a group header should filter for that type of entry
-pending  web: have index page handle mid-page errors better so header and footer are
-              still visible!
+pending example: meta/parent bug implementation (feature request #506815)
+pending hyperdb: write a backend for gadfly
+pending hyperdb: range searching of values (dates in particular)
+        - filter specifies {property: (comparison function, value)}
+          comparison functions: lt, le, eq, ge, gt. eq and
+          [value, value, ...] implies "in"
+pending hyperdb: make creator, creation and activity available pre-commit
+pending hyperdb: migrate "id" property to be Number type
+pending hyperdb: allow classes to define their ordering (properties, asc/desc)
+pending instance: including much simpler upgrade path and the use of
+                  non-Python configuration files (ConfigParser)
+pending instance: cleanup to support config (feature request #498658)
+pending instance: split instance.open() into open() and login()
+pending instance: rename to "instance" to "tracker"
+pending instance: sanity check instance setup after all these changes
+pending mailgw: allow commands (feature request #556996)
+                like "help", "dump issue123" (would send all info about
+                issue123, including a digest of all messages, but probably
+                not all files...), "list issue", ...
+pending mailgw: Allow multiple email addresses at one gw with different default
+                classes and property values (possibly through command-line
+                args to the mailgw as invoked in the mail delivery "aliases"
+                file) eg:
+                  roundup: "|roundup-mailgw /instances/dev"
+                  vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
+pending project: switch to a Roundup instance for Roundup bug/feature tracking
+pending security: at least an LDAP user database implementation
+pending security: authenticate over a secure connection
+pending security: use digital signatures in mailgw
+pending web: I18N
+pending web: Better message summary display (feature request #520244)
+pending web: Navigating around the issues (feature request #559149)
+pending web: Re-enable link backrefs from messages (feature request #568714)
+pending web: fix double-submit by having new-item-submit redirect at end
+pending web: Quick help links next to the property labels giving a
+             description of the property. Combine with help for the actual
+             form element too, eg. how to use the nosy list edit box.
+pending web: feature request #507842
+pending web: clicking on a group header should filter for that type of entry
+pending web: have index page handle mid-page errors better so header and
+             footer are still visible!
 
 ongoing  any bugs
 
@@ -58,4 +59,5 @@ done security: add info from doc/security.txt to design doc (RJ)
 done security: switch to sessions for web authentication (RJ)
 done security: implement and use the new logical control mechanisms
 done web: saving of named queries (GM)
+done web: handle "not found", access and item page render errors better (RJ)
 
