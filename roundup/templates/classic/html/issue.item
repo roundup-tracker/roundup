@@ -18,12 +18,12 @@ You are not allowed to view this page.
 
 <table class="form">
 <tr>
- <th nowrap>Title</th>
+ <th class="required" nowrap>Title</th>
  <td colspan=3 tal:content="structure python:context.title.field(size=60)">title</td>
 </tr>
 
 <tr>
- <th nowrap>Priority</th>
+ <th class="required" nowrap>Priority</th>
  <td tal:content="structure context/priority/menu">priority</td>
  <th nowrap>Status</th>
  <td tal:content="structure context/status/menu">status</td>
@@ -60,7 +60,8 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
 <tr>
  <th nowrap>Change Note</th>
  <td colspan=3>
-  <textarea name=":note" wrap="hard" rows="5" cols="60"></textarea>
+  <textarea tal:content="request/form/:note/value | default"
+            name=":note" wrap="hard" rows="5" cols="60"></textarea>
  </td>
 </tr>
 
@@ -76,8 +77,15 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
  </td>
 </tr>
 </table>
-
 </form>
+
+<table class="form" tal:condition="not:context/id">
+<tr>
+ <td>Note:&nbsp;</td>
+ <th class="required">highlighted</th>
+ <td>&nbsp;fields are required.</td>
+</tr>
+</table>
 
 <table class="form" tal:condition="context/is_only_view_ok">
 <tr>
@@ -114,8 +122,8 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
  </p>
 
  <table class="messages" tal:condition="context/messages">
-  <tr><th colspan=4 class="header">Messages</th></tr>
-  <tr tal:repeat="msg context/messages/reverse">
+  <tr><th colspan=5 class="header">Messages</th></tr>
+  <tr tal:repeat="msg context/messages">
    <td><a tal:attributes="href string:msg${msg/id}"
           tal:content="string:msg${msg/id}"></a></td>
    <td tal:content="msg/author">author</td>

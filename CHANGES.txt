@@ -8,6 +8,8 @@ are given with the most recent entry first.
 - added CGI :remove:<propname> and :add:<propname> which specify item ids to
   remove / add in <propname> multilink.
 - bugfix in boolean templating
+- remember the change note on bad submissions (sf bug 625989)
+- highlight required form fields (sf bug 625989)
 
 
 2002-10-16 0.5.1

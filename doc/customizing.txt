@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.58 $
+:Version: $Revision: 1.59 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2578,6 +2578,184 @@ able to give a summary of the total time spent on a particular issue.
 8. If you're using a persistent web server - roundup-server or mod_python for
    example - then you'll need to restart that to pick up the code changes.
    When that's done, you'll be able to use the new time logging interface.
+
+Using a UN*X passwd file as the user database
+---------------------------------------------
+
+On some systems, the primary store of users is the UN*X passwd file. It holds
+information on users such as their username, real name, password and primary
+user group.
+
+Roundup can use this store as its primary source of user information, but it
+needs additional information too - email address(es), roundup Roles, vacation
+flags, roundup hyperdb item ids, etc. Also, "retired" users must still exist
+in the user database, unlike some passwd files in which the users are removed
+when they no longer have access to a system.
+
+To make use of the passwd file, we therefore synchronise between the two user
+stores. We also use the passwd file to validate the user logins, as described
+in the previous example, `using an external password validation source`_. We
+keep the users lists in sync using a fairly simple script that runs once a
+day, or several times an hour if more immediate access is needed. In short, it:
+
+1. parses the passwd file, finding usernames, passwords and real names,
+2. compares that list to the current roundup user list:
+   a. entries no longer in the passwd file are *retired*
+   b. entries with mismatching real names are *updated*
+   a. entries only exist in the passwd file are *created*
+3. send an email to administrators to let them know what's been done.
+
+The retiring and updating are simple operations, requiring only a call to
+``retire()`` or ``set()``. The creation operation requires more information
+though - the user's email address and their roundup Roles. We're going to
+assume that the user's email address is the same as their login name, so we
+just append the domain name to that. The Roles are determined using the
+passwd group identifier - mapping their UN*X group to an appropriate set of
+Roles.
+
+The script to perform all this, broken up into its main components, is as
+follows. Firstly, we import the necessary modules and open the tracker we're
+to work on::
+
+    import sys, os, smtplib
+    from roundup import instance, date
+
+    # open the tracker
+    tracker_home = sys.argv[1]
+    tracker = instance.open(tracker_home)
+
+Next we read in the *passwd* file from the tracker home::
+
+    # read in the users
+    file = os.path.join(tracker_home, 'users.passwd')
+    users = [x.strip().split(':') for x in open(file).readlines()]
+
+Handle special users (those to ignore in the file, and those who don't appear
+in the file)::
+
+    # users to not keep ever, pre-load with the users I know aren't
+    # "real" users
+    ignore = ['ekmmon', 'bfast', 'csrmail']
+
+    # users to keep - pre-load with the roundup-specific users
+    keep = ['comment_pool', 'network_pool', 'admin', 'dev-team', 'cs_pool',
+        'anonymous', 'system_pool', 'automated']
+
+Now we map the UN*X group numbers to the Roles that users should have::
+
+    roles = {
+     '501': 'User,Tech',  # tech
+     '502': 'User',       # finance
+     '503': 'User,CSR',   # customer service reps
+     '504': 'User',       # sales
+     '505': 'User',       # marketing
+    }
+
+Now we do all the work. Note that the body of the script (where we have the
+tracker database open) is wrapped in a ``try`` / ``finally`` clause, so that
+we always close the database cleanly when we're finished. So, we now do all
+the work::
+
+    # open the database
+    db = tracker.open('admin')
+    try:
+        # store away messages to send to the tracker admins
+        msg = []
+
+        # loop over the users list read in from the passwd file
+        for user,passw,uid,gid,real,home,shell in users:
+            if user in ignore:
+                # this user shouldn't appear in our tracker
+                continue
+            keep.append(user)
+            try:
+                # see if the user exists in the tracker
+                uid = db.user.lookup(user)
+
+                # yes, they do - now check the real name for correctness
+                if real != db.user.get(uid, 'realname'):
+                    db.user.set(uid, realname=real)
+                    msg.append('FIX %s - %s'%(user, real))
+            except KeyError:
+                # nope, the user doesn't exist
+                db.user.create(username=user, realname=real,
+                    address='%s@ekit-inc.com'%user, roles=roles[gid])
+                msg.append('ADD %s - %s (%s)'%(user, real, roles[gid]))
+
+        # now check that all the users in the tracker are also in our "keep"
+        # list - retire those who aren't
+        for uid in db.user.list():
+            user = db.user.get(uid, 'username')
+            if user not in keep:
+                db.user.retire(uid)
+                msg.append('RET %s'%user)
+
+        # if we did work, then send email to the tracker admins
+        if msg:
+            # create the email
+            msg = '''Subject: %s user database maintenance
+
+            %s
+            '''%(db.config.TRACKER_NAME, '\n'.join(msg))
+
+            # send the email
+            smtp = smtplib.SMTP(db.config.MAILHOST)
+            addr = db.config.ADMIN_EMAIL
+            smtp.sendmail(addr, addr, msg)
+
+        # now we're done - commit the changes
+        db.commit()
+    finally:
+        # always close the database cleanly
+        db.close()
+
+And that's it!
+
+
+Enabling display of either message summaries or the entire messages
+-------------------------------------------------------------------
+
+This is pretty simple - all we need to do is copy the code from the example
+`displaying entire message contents in the issue display`_ into our template
+alongside the summary display, and then introduce a switch that shows either
+one or the other. We'll use a new form variable, ``:whole_messages`` to
+achieve this::
+
+ <table class="messages" tal:condition="context/messages">
+  <tal:block tal:condition="not:request/form/:whole_messages/value | python:0">
+   <tr><th colspan=3 class="header">Messages</th>
+       <th colspan=2 class="header">
+         <a href="?:whole_messages=yes">show entire messages</a>
+       </th>
+   </tr>
+   <tr tal:repeat="msg context/messages">
+    <td><a tal:attributes="href string:msg${msg/id}"
+           tal:content="string:msg${msg/id}"></a></td>
+    <td tal:content="msg/author">author</td>
+    <td nowrap tal:content="msg/date/pretty">date</td>
+    <td tal:content="msg/summary">summary</td>
+    <td>
+     <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
+    </td>
+   </tr>
+  </tal:block>
+
+  <tal:block tal:condition="request/form/:whole_messages/value | python:0">
+   <tr><th colspan=2 class="header">Messages</th>
+       <th class="header"><a href="?:whole_messages=">show only summaries</a></th>
+   </tr>
+   <tal:block tal:repeat="msg context/messages">
+    <tr>
+     <th tal:content="msg/author">author</th>
+     <th nowrap tal:content="msg/date/pretty">date</th>
+     <th style="text-align: right">
+      (<a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>)
+     </th>
+    </tr>
+    <tr><td colspan=3 tal:content="msg/content"></td></tr>
+   </tal:block>
+  </tal:block>
+ </table>
 
 
 -------------------

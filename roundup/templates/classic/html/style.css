@@ -70,17 +70,20 @@ table.form {
 }
 
 table.form th {
-  font-weight: bold;
   color: #333388;
   text-align: right;
   vertical-align: top;
+  font-weight: normal;
 }
 
 table.form th.header {
   font-weight: bold;
-  color: #333388;
   background-color: #eeeeff;
   text-align: left;
+}
+
+table.form th.required {
+  font-weight: bold;
 }
 
 table.form td {
