@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.2 $
+:Version: $Revision: 1.3 $
 
 .. contents::
 
@@ -17,20 +17,20 @@ There's two "installations" that we talk about when using Roundup:
    directories. On Windows, this is typically:
 
    Scripts
-     <python dir>\scripts\...
+     ``<python dir>\scripts\...``
    Core code
-     <python dir>\lib\site-packages\roundup\...
+     ``<python dir>\lib\site-packages\roundup\...``
    Support files
-     <python dir>\share\roundup\...
+     ``<python dir>\share\roundup\...``
 
    and on Unix-like systems (eg. Linux):
 
    Scripts
-     <python root>/bin/...
+     ``<python root>/bin/...``
    Core code
-     <python root>/lib-<python version>/site-packages/roundup/...
+     ``<python root>/lib-<python version>/site-packages/roundup/...``
    Support files
-     <python root>/share/roundup/...
+     ``<python root>/share/roundup/...``
 
 2. The installation of a specific tracker. When invoking the roundup-admin
    "inst" (and "init") commands, you're creating a new Roundup tracker. This
