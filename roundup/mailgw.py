@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.100 2002-12-10 00:11:15 richard Exp $
+$Id: mailgw.py,v 1.101 2002-12-10 00:23:35 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -90,6 +90,10 @@ class MailUsageError(ValueError):
     pass
 
 class MailUsageHelp(Exception):
+    pass
+
+class MailLoop(Exception):
+    ''' We've seen this message before... '''
     pass
 
 class Unauthorized(Exception):
@@ -270,8 +274,12 @@ class MailGW:
                 m = ['']
                 m.append(str(value))
                 m = self.bounce_message(message, sendto, m)
+            except MailLoop:
+                # XXX we should use a log file here...
+                return
             except:
                 # bounce the message back to the sender with the error message
+                # XXX we should use a log file here...
                 sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
                 m = ['']
                 m.append('An unexpected error occurred during the processing')
@@ -285,6 +293,7 @@ class MailGW:
                 m = self.bounce_message(message, sendto, m)
         else:
             # very bad-looking message - we don't even know who sent it
+            # XXX we should use a log file here...
             sendto = [self.instance.config.ADMIN_EMAIL]
             m = ['Subject: badly formed message from mail gateway']
             m.append('')
@@ -319,6 +328,7 @@ class MailGW:
         '''
         msg = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(msg)
+        writer.addheader('X-Roundup-Loop', 'hello')
         writer.addheader('Subject', subject)
         writer.addheader('From', '%s <%s>'% (self.instance.config.TRACKER_NAME,
             self.instance.config.TRACKER_EMAIL))
@@ -371,6 +381,10 @@ class MailGW:
 
         Parse the message as per the module docstring.
         '''
+        # detect loops
+        if message.getheader('x-roundup-loop', ''):
+            raise MailLoop
+
         # handle the subject line
         subject = message.getheader('subject', '')
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.73 2002-11-05 22:59:46 richard Exp $
+# $Id: roundupdb.py,v 1.74 2002-12-10 00:23:36 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -238,6 +238,9 @@ class IssueClass:
 
         # add a uniquely Roundup header to help filtering
         writer.addheader('X-Roundup-Name', self.db.config.TRACKER_NAME)
+
+        # avoid email loops
+        writer.addheader('X-Roundup-Loop', 'hello')
 
         # attach files
         if message_files:
