@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.92 $
+:Version: $Revision: 1.93 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2432,43 +2432,48 @@ that when you click on "Search Issues" it will be looking for a
 ``issue.search.html`` file to display. So that is the file that we will
 change.
 
-This file should begin to look familiar, by now. It is a simple HTML
-form using a table to define structure. You can add the new category
-search code anywhere you like within that form::
+If you look at this file it should be starting to seem familiar, although it
+does use some new macros. You can add the new category search code anywhere you
+like within that form::
 
-    <tr>
-     <th>Category:</th>
-     <td>
+  <tr tal:define="name string:category;
+                  db_klass string:category;
+                  db_content string:name;">
+    <th>Priority:</th>
+    <td metal:use-macro="search_select"></td>
+    <td metal:use-macro="column_input"></td>
+    <td metal:use-macro="sort_input"></td>
+    <td metal:use-macro="group_input"></td>
+  </tr>
+
+The definitions in the <tr> opening tag are used by the macros:
+
+- search_select expands to a drop-down box with all categories using db_klass
+  and db_content.
+- column_input expands to a checkbox for selecting what columns should be
+  displayed.
+- sort_input expands to a radio button for selecting what property should be
+  sorted on.
+- group_input expands to a radio button for selecting what property should be
+  group on.
+
+The category search code above would expand to the following::
+
+  <tr>
+    <th>Category:</th>
+    <td>
       <select name="category">
-       <option value="">don't care</option>
-       <option value="">------------</option>
-       <option tal:repeat="s db/category/list"
-               tal:attributes="value s/name"
-               tal:content="s/name">category to filter on</option>
+        <option value="">don't care</option>
+        <option value="">------------</option>      
+        <option value="1">scipy</option>
+        <option value="2">chaco</option>
+        <option value="3">weave</option>
       </select>
-     </td>
-     <td><input type="checkbox" name=":columns" value="category"
-                checked></td>
-     <td><input type="radio" name=":sort" value="category"></td>
-     <td><input type="radio" name=":group" value="category"></td>
-    </tr>
-
-Most of this is straightforward to anyone who knows HTML. It is just
-setting up a select list followed by a checkbox and a couple of radio
-buttons. 
-
-The ``tal:repeat`` part repeats the tag for every item in the "category"
-table and sets "s" to each category in turn.
-
-The ``tal:attributes`` part is setting up the ``value=`` part of the
-option tag to be the name part of "s", which is the current category in
-the loop.
-
-The ``tal:content`` part is setting the contents of the option tag to be
-the name part of "s" again. For objects more complex than category,
-obviously you would put an id in the value, and the descriptive part in
-the content; but for categories they are the same.
-
+    </td>
+    <td><input type="checkbox" name=":columns" value="category"></td>
+    <td><input type="radio" name=":sort" value="category"></td>
+    <td><input type="radio" name=":group" value="category"></td>
+  </tr>
 
 Adding category to the default view
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

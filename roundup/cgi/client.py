@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.126 2003-07-21 22:56:54 richard Exp $
+# $Id: client.py,v 1.127 2003-08-10 10:30:56 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1361,7 +1361,10 @@ You should then receive another email with the new password.
         if queryname:
             # parse the environment and figure what the query _is_
             req = HTMLRequest(self)
-            url = req.indexargs_href('', {})
+
+            # The [1:] strips off the '?' character, it isn't part of the
+            # query string.
+            url = req.indexargs_href('', {})[1:]
 
             # handle editing an existing query
             try:

@@ -85,7 +85,7 @@ You are not allowed to view this page.
   <td><a tal:attributes="href string:query${query/id}"
          tal:content="query/name"></a></td>
   <td>
-   <a tal:attributes="href python:'%s%s'%(query['klass'], query['url'])">display</a>
+   <a tal:attributes="href string:${query/klass}?${query/url}">display</a>   
   </td>
   <td>
    <a tal:attributes="href string:?:remove:queries=${query/id}&:action=edit">remove</a>
