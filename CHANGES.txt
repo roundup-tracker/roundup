@@ -14,7 +14,6 @@ Feature:
  . you can now use the roundup-admin tool pack the database
  . unit tests for html templating (and re-enabled the listbox field for
    multilinks)
- . allow abbreviation of "help" in admin tool too.
 
 Fixed:
  . handle attachments with no name (eg tnef)
@@ -24,6 +23,8 @@ Fixed:
  . we'll actually distribute the frontends directory now, as advertised...
  . handle stripping of "AW:" from subject line
  . htmltemplate list() wasn't sorting...
+ . allow abbreviation of "help" in admin tool too.
+ . run_tests testReldate_date failed if LANG is 'german'
 
 
 2002-01-16 - 0.4.0b2

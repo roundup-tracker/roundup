@@ -9,13 +9,20 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: run_tests,v 1.1 2002-01-23 05:53:46 richard Exp $
+# $Id: run_tests,v 1.2 2002-01-23 11:08:52 grubert Exp $
+
+import os
+os.environ['LANG'] = 'us'
 
 import test
 test.go()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/01/23 05:53:46  richard
+# convenience script for running the unit tests...
+# ... they are no longer run in the setup, since they take too long
+#
 #
 #
 #
