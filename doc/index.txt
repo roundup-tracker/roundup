@@ -5,17 +5,30 @@ Roundup: an Issue-Tracking System for Knowledge Workers
 Contents
 ========
 
-- Features_
-- Installation_ and Upgrading_ existing installs
-- `Frequently Asked Questions`_
-- `User Guide`_
-- Configuring and `Customising Roundup`_
-- `Administering Roundup Trackers`_
-- `Roundup's Design`_ (original_)
-- `Developing Roundup`_ 
+- Features__
+- Installation__ and Upgrading__ existing installs
+- `Frequently Asked Questions`__
+- `User Guide`__
+- `Configuring and Customising Roundup`__
+- `Administering Roundup Trackers`__
+- `Roundup's Design`__ (original__)
+- `Developing Roundup`__
+- `Roundup Tracker Templates`__
 - Contact_
 - Acknowledgements_
 - License_
+
+.. __: features.html
+.. __: installation.html
+.. __: upgrading.html
+.. __: FAQ.html
+.. __: user_guide.html
+.. __: customizing.html
+.. __: admin_guide.html
+.. __: design.html
+.. __: spec.html
+.. __: developers.html
+.. __: tracker_templates.html
 
 Contact
 =======
@@ -106,17 +119,4 @@ License
 =======
 
 See COPYING.txt in the software distribution for the licensing terms.
-
-
-.. _Features: features.html
-.. _Installation: installation.html
-.. _Upgrading: upgrading.html
-.. _`Frequently Asked Questions`: FAQ.html
-.. _`User Guide`: user_guide.html
-.. _`Customising Roundup`: customizing.html
-.. _`Administering Roundup Trackers`: admin_guide.html
-.. _`Roundup's Design`: design.html
-.. _`Developing Roundup`: developers.html
-.. _original: spec.html
-.. _Upgrading: upgrading.html
 

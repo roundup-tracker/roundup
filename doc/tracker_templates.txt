@@ -1,0 +1,41 @@
+=========================
+Roundup Tracker Templates
+=========================
+
+:Version: $Revision: 1.1 $
+
+The templates distributed with Roundup are stored in the "share" directory
+nominated by Python. On Unix this is typically 
+``/usr/share/roundup/templates/`` (or ``/usr/local/share...``) and 
+on Windows this is ``c:\python22\share\roundup\templates\``.
+
+The template loading looks in four places to find the templates:
+ 
+1. *share* - eg. ``<prefix>/share/roundup/templates/*``.
+   This should be the standard place to find them when Roundup is
+   installed.
+2. ``<roundup.admin.__file__>/../templates/*``.
+   This will be used if Roundup's run in the distro (aka. source)
+   directory.
+3. ``<current working dir>/*``.
+   This is for when someone unpacks a 3rd-party template.
+4. ``<current working dir>``.
+   This is for someone who "cd"s to the 3rd-party template dir.
+
+Templates contain:
+
+- modules __init__.py, dbinit.py, config.py, interfaces.py
+- directories html and detectors (with appropriate contents)
+- TEMPLATE-INFO.txt which is our template "marker" file, which contains 
+  the name of the template,  a description of the template and its 
+  intended audience.
+
+An example TEMPLATE-INFO.txt::
+
+ Name: classic
+ Description: This is a generic issue tracker that may be used to track bugs,
+              feature requests, project issues or any number of other types
+              of issues. Most users of Roundup will find that this template
+              suits them, with perhaps a few customisations.
+ Intended-For: All first-time Roundup users
+

@@ -1,6 +1,0 @@
-=========================
-Roundup Tracker Templates
-=========================
-
-:Version: $Revision: 1.15 $
-
