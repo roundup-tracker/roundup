@@ -1,4 +1,4 @@
-# $Id: dbinit.py,v 1.1 2001-07-23 23:28:43 richard Exp $
+# $Id: dbinit.py,v 1.2 2001-07-24 01:06:43 richard Exp $
 
 import os
 
@@ -40,8 +40,9 @@ def open(name=None):
                     name=String(), order=String())
     stat.setkey("name")
 
-    keywords = Class(db, "keyword", 
+    keyword = Class(db, "keyword", 
                     name=String())
+    keyword.setkey("name")
 
     user = Class(db, "user", 
                     username=String(),   password=String(),
@@ -57,11 +58,8 @@ def open(name=None):
     file = FileClass(db, "file", 
                     name=String(),       type=String())
 
-    keyword = Class(db, "keyword", name=String())
-    keyword.setkey("name")
-
     issue = IssueClass(db, "issue", 
-                    assignedto=Link("user"), topic=hyperdb.Multilink("keyword"),
+                    assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
     issue.setkey('title')
 
@@ -108,6 +106,9 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/23 23:28:43  richard
+# Adding the classic template
+#
 # Revision 1.4  2001/07/23 08:45:28  richard
 # ok, so now "./roundup-admin init" will ask questions in an attempt to get a
 # workable instance_home set up :)
