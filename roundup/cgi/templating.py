@@ -7,7 +7,6 @@ todo = '''
 - Multilink property additions: change_note and new_upload
 - Add class.find() too
 - NumberHTMLProperty should support numeric operations
-- HTMLProperty should have an isset() method
 '''
 
 __docformat__ = 'restructuredtext'
@@ -1018,8 +1017,8 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         return cmp(self._value, other)
 
     def isset(self):
-        '''Is my _value None?'''
-        return self._value is None
+        '''Is my _value not None?'''
+        return self._value is not None
 
     def is_edit_ok(self):
         ''' Is the user allowed to Edit the current class?
@@ -1556,8 +1555,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         return str(value) in self._value
 
     def isset(self):
-        '''Is my _value []?'''
-        return self._value == []
+        '''Is my _value not []?'''
+        return self._value != []
 
     def reverse(self):
         ''' return the list in reverse order
