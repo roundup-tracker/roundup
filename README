@@ -201,7 +201,7 @@ config
 roundup_cgi
   . searching
   . keep form fields in form on bad submission - only clear it if all ok
-
+  . messages should have the roundup CGI URL in them
 
 
 5. Known Bugs
@@ -210,11 +210,6 @@ roundup_cgi
 date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
-
-The software still probably has bugs. Please let me know when you find 'em.
-Patches are nice, but there'll probably be a good chance I've changed the
-code (there's not much to it ;) so a good description will be appreciated
-as well.
 
 
 
