@@ -1,7 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-08-?? - 0.2.4
+2001-08-?? - 0.2.5
+Features:
+
+Fixed:
+
+
+2001-08-03 - 0.2.4
 Features:
  . Added ability for cgi newblah forms to indicate that the new node
    should be linked somewhere.

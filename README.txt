@@ -19,7 +19,8 @@ For installation notes, please see the file INSTALL.TXT
 3. Usage
 ========
 The system is designed to accessed through the command-line, e-mail or web
-interface.
+interface. Roundup has some useful doucmentation in its docstrings, so
+"pydoc roundup" will give useful information.
 
 3.1 Command-line
 ----------------
@@ -35,6 +36,7 @@ database manipulations such as:
 3.2 E-mail
 ----------
 See the docstring at the start of the roundup/mailgw.py source file.
+Use "pydoc roundup.mailgw".
 
 
 3.3 Web
@@ -76,6 +78,7 @@ hyperdb:
 roundupdb:
   . split the file storage into multiple dirs?
 roundup-mailgw:
+  . do the "sectioning" stuff properly (ie. as it's documented)
   . errors as attachments
   . snip signatures?
 roundup-server:
@@ -94,7 +97,7 @@ date:
 
 6. Author
 =========
-richard@sourceforge.net
+richard@users.sourceforge.net
 
 
 7. Thanks

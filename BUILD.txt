@@ -40,5 +40,5 @@ python setup.py sdist --quiet
 
 2. Author
 =========
-richard@sourceforge.net
+richard@users.sourceforge.net
 

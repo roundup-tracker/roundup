@@ -71,7 +71,7 @@ issueDOTindex = """<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard 
 </tr>
 """
 
-issueDOTitem = """<!-- dollarId: issue.item,v 1.3 2001/07/30 08:12:17 richard Exp dollar-->
+issueDOTitem = """<!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr  bgcolor="ffffea">
