@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.9 2002-07-14 06:11:16 richard Exp $
+#$Id: indexer.py,v 1.10 2002-07-14 23:17:24 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -282,7 +282,7 @@ class Indexer:
                 os.remove(self.indexdb + segment)
             except OSError, error:
                 # probably just nonexistent segment index file
-                if error.errno != errno.EEXIST: raise
+                if error.errno != errno.ENOENT: raise
 
         # First write the much simpler filename/fileid dictionaries
         dbfil = {'WORDS':None, 'FILES':self.files, 'FILEIDS':self.fileids}
@@ -333,6 +333,9 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.9  2002/07/14 06:11:16  richard
+#Some TODOs
+#
 #Revision 1.8  2002/07/09 21:53:38  gmcm
 #Optimize Class.find so that the propspec can contain a set of ids to match.
 #This is used by indexer.search so it can do just one find for all the index matches.
