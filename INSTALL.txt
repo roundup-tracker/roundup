@@ -47,8 +47,18 @@ Initial Setup
 =============
 
 The following instructions assume that you have installed roundup. If you
-haven't, you may still proceed - just preface all commands with "./"
-ie. "./roundup-admin init".
+haven't, you may still proceed - the commands will change though. Where you
+see:
+
+   roundup-admin init
+
+you will need to execute:
+
+   PYTHONPATH=. python roundup/scripts/roundup_admin.py init
+
+where "python" is your python 2.x interpreter ("python2" on redhat
+systems). Note the dash is changed to an underscore - the same pattern
+holds for the roundup-server and roundup-mailgw scripts.
 
 
 Instance
