@@ -9,6 +9,7 @@ Feature:
    signature info in e-mails.
  . Some more flexibility in the mail gateway and more error handling.
  . Login now takes you to the page you back to the were denied access to.
+ . Admin user now can has a user index link on their web interface.
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
