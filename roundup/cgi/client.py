@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.109 2003-03-20 04:02:52 richard Exp $
+# $Id: client.py,v 1.110 2003-03-26 03:35:00 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -229,7 +229,10 @@ class Client:
             # we don't want clients caching our dynamic pages
             self.additional_headers['Cache-Control'] = 'no-cache'
             self.additional_headers['Pragma'] = 'no-cache'
-            self.additional_headers['Expires'] = 'Thu, 1 Jan 1970 00:00:00 GMT'
+
+            # expire this page 5 seconds from now
+            date = rfc822.formatdate(time.time() + 5)
+            self.additional_headers['Expires'] = date
 
             # render the content
             self.write(self.renderContext())
@@ -463,9 +466,13 @@ class Client:
                 raise NotModified
 
         # we just want to serve up the file named
-        mt = mimetypes.guess_type(str(file))[0]
+        file = str(file)
+        mt = mimetypes.guess_type(file)[0]
         if not mt:
-            mt = 'text/plain'
+            if file.endswith('.css'):
+                mt = 'text/css'
+            else:
+                mt = 'text/plain'
         self.additional_headers['Content-Type'] = mt
         self.additional_headers['Last-Modifed'] = rfc822.formatdate(lmt)
         self.write(open(filename, 'rb').read())
@@ -868,6 +875,9 @@ please visit the following URL:
             # pull the rego information out of the otk database
             otk = self.form['otk'].value
             uid = self.db.otks.get(otk, 'uid')
+            if uid is None:
+                self.error_message.append('Invalid One Time Key!')
+                return
 
             # re-open the database as "admin"
             if self.user != 'admin':
@@ -1305,7 +1315,8 @@ You should then receive another email with the new password.
                 else:
                     continue
             else:
-                if not self.form[key].value: continue
+                if not self.form[key].value:
+                    continue
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
         # handle saving the query params
