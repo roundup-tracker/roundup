@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.97 2002-10-15 07:25:49 richard Exp $
+$Id: mailgw.py,v 1.98 2002-10-21 22:03:09 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -130,7 +130,7 @@ class Message(mimetools.Message):
         s.seek(0)
         return Message(s)
 
-subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re|aw)\s*\W?\s*)*'
+subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re|aw)\W\s*)*'
     r'\s*(?P<quote>")?(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
     r'\s*(?P<title>[^[]+)?"?(\[(?P<args>.+?)\])?', re.I)
 

@@ -10,6 +10,7 @@ are given with the most recent entry first.
 - bugfix in boolean templating
 - remember the change note on bad submissions (sf bug 625989)
 - highlight required form fields (sf bug 625989)
+- force non-word boundary to match re: in subject (sf bug 626303)
 
 
 2002-10-16 0.5.1
