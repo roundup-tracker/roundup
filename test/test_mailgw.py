@@ -8,9 +8,10 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.41 2003-03-13 09:27:24 kedder Exp $
+# $Id: test_mailgw.py,v 1.42 2003-03-24 04:47:44 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
+import rfc822
 
 # Note: Should parse emails according to RFC2822 instead of performing a
 # literal string comparision.  Parsing the messages allows the tests to work for
@@ -20,7 +21,7 @@ import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 #except ImportError :
 #    import rfc822 as email
 
-from roundup.mailgw import MailGW, Unauthorized
+from roundup.mailgw import MailGW, Unauthorized, uidFromAddress
 from roundup import init, instance
 
 # TODO: make this output only enough equal lines for context, not all of
@@ -908,6 +909,14 @@ This is a followup
         messageid = newmessages[0]
 
         self.compareStrings(self.db.msg.get(messageid, 'content'), expect)
+
+    def testUserLookup(self):
+        i = self.db.user.create(username='user1', address='user1@foo.com')
+        self.assertEqual(uidFromAddress(self.db, ('', 'user1@foo.com'), 0), i)
+        self.assertEqual(uidFromAddress(self.db, ('', 'USER1@foo.com'), 0), i)
+        i = self.db.user.create(username='user2', address='USER2@foo.com')
+        self.assertEqual(uidFromAddress(self.db, ('', 'USER2@foo.com'), 0), i)
+        self.assertEqual(uidFromAddress(self.db, ('', 'user2@foo.com'), 0), i)
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),

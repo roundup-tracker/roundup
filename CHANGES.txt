@@ -82,6 +82,7 @@ Fixed:
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
 - fixed detection of bad date specs (sf bug 691439)
+- fixed rdbms email address lookup (case insensitivity)
 
 
 2003-02-27 0.5.6
