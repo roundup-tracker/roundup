@@ -43,6 +43,7 @@ Feature:
 - relaxed CVS importing (sf feature 693277)
 - added support for searching on ranges of dates (see doc/user_guide.txt in
   chapter "Searching Page" for details)
+- role names made case insensitive
 
 
 Fixed:

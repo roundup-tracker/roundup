@@ -27,7 +27,7 @@ class Role:
         - permissions
     '''
     def __init__(self, name='', description='', permissions=None):
-        self.name = name
+        self.name = name.lower()
         self.description = description
         if permissions is None:
             permissions = []
@@ -98,7 +98,7 @@ class Security:
         roles = self.db.user.get(userid, 'roles')
         if roles is None:
             return 0
-        for rolename in roles.split(','):
+        for rolename in [x.lower() for x in roles.split(',')]:
             if not rolename or not self.role.has_key(rolename):
                 continue
             # for each of the user's Roles, check the permissions
@@ -155,7 +155,7 @@ class Security:
 
             'rolename' is the name of the role to add the permission to.
         '''
-        role = self.role[rolename]
+        role = self.role[rolename.lower()]
         role.permissions.append(permission)
 
 # vim: set filetype=python ts=4 sw=4 et si

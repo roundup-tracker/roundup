@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.40 2003-02-28 03:33:25 richard Exp $
+# $Id: test_mailgw.py,v 1.41 2003-03-13 09:27:24 kedder Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -644,7 +644,7 @@ Subject: [issue1] Testing... [nosy=-richard]
     def testNewUserAuthor(self):
         # first without the permission
         # heh... just ignore the API for a second ;)
-        self.db.security.role['Anonymous'].permissions=[]
+        self.db.security.role['anonymous'].permissions=[]
         anonid = self.db.user.lookup('anonymous')
         self.db.user.set(anonid, roles='Anonymous')
 
@@ -670,7 +670,7 @@ This is a test submission of a new issue.
 
         # now with the permission
         p = self.db.security.getPermission('Email Registration')
-        self.db.security.role['Anonymous'].permissions=[p]
+        self.db.security.role['anonymous'].permissions=[p]
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         message = cStringIO.StringIO(s)
