@@ -689,25 +689,27 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         timezone = self._db.getUserTimezone()
         if direction == 'descending':
             history.reverse()
+            # pre-load the history with the current state
             for prop_n in self._props.keys():
                 prop = self[prop_n]
-                if isinstance(prop, HTMLProperty):
-                    current[prop_n] = prop.plain()
-                    # make link if hrefable
-                    if (self._props.has_key(prop_n) and
-                            isinstance(self._props[prop_n], hyperdb.Link)):
-                        classname = self._props[prop_n].classname
-                        try:
-                            template = find_template(self._db.config.TEMPLATES,
-                                classname, 'item')
-                            if template[1].startswith('_generic'):
-                                raise NoTemplate, 'not really...'
-                        except NoTemplate:
-                            pass
-                        else:
-                            id = self._klass.get(self._nodeid, prop_n, None)
-                            current[prop_n] = '<a href="%s%s">%s</a>'%(
-                                classname, id, current[prop_n])
+                if not isinstance(prop, HTMLProperty):
+                    continue
+                current[prop_n] = prop.plain()
+                # make link if hrefable
+                if (self._props.has_key(prop_n) and
+                        isinstance(self._props[prop_n], hyperdb.Link)):
+                    classname = self._props[prop_n].classname
+                    try:
+                        template = find_template(self._db.config.TEMPLATES,
+                            classname, 'item')
+                        if template[1].startswith('_generic'):
+                            raise NoTemplate, 'not really...'
+                    except NoTemplate:
+                        pass
+                    else:
+                        id = self._klass.get(self._nodeid, prop_n, None)
+                        current[prop_n] = '<a href="%s%s">%s</a>'%(
+                            classname, id, current[prop_n])
  
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
@@ -829,17 +831,25 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                             current[k] = str(d)
 
                     elif isinstance(prop, hyperdb.Interval) and args[k]:
-                        d = date.Interval(args[k])
-                        cell.append('%s: %s'%(k, str(d)))
+                        val = str(date.Interval(args[k]))
+                        cell.append('%s: %s'%(k, val))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
-                            current[k] = str(d)
+                            current[k] = val
 
                     elif isinstance(prop, hyperdb.String) and args[k]:
-                        cell.append('%s: %s'%(k, cgi.escape(args[k])))
+                        val = cgi.escape(args[k])
+                        cell.append('%s: %s'%(k, val))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
-                            current[k] = cgi.escape(args[k])
+                            current[k] = val
+
+                    elif isinstance(prop, hyperdb.Boolean) and args[k] is not None:
+                        val = args[k] and 'Yes' or 'No'
+                        cell.append('%s: %s'%(k, val))
+                        if current.has_key(k):
+                            cell[-1] += ' -> %s'%current[k]
+                            current[k] = val
 
                     elif not args[k]:
                         if current.has_key(k):

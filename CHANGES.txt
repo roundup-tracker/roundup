@@ -8,6 +8,7 @@ Fixed:
   places (thanks Toby Sargeant)
 - MySQL and Postgresql use BOOL/BOOLEAN for Boolean types
 - OTK generation was busted (thanks Stuart D. Gathman)
+- handle Boolean values in history HTML display
 
 
 2004-03-27 0.7.0b2
