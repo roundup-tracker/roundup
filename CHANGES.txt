@@ -7,6 +7,7 @@ are given with the most recent entry first.
 - remember the session db type (much faster session db opening)
 - backported last-modified and if-modified-since header support for static
   files (ie. style.css etc.) from HEAD
+- changed rdbms_common to fix sql backends under Py2.3
 
 
 2003-06-19 0.5.8
