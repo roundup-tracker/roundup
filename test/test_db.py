@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.33 2002-07-18 11:50:58 richard Exp $ 
+# $Id: test_db.py,v 1.34 2002-07-18 11:52:00 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -73,7 +73,7 @@ class anydbmDBTestCase(MyTestCase):
         self.db2 = anydbm.Database(config, 'test')
         setupSchema(self.db2, 0, anydbm)
 
-    def xtestStringChange(self):
+    def testStringChange(self):
         self.db.issue.create(title="spam", status='1')
         self.assertEqual(self.db.issue.get('1', 'title'), 'spam')
         self.db.issue.set('1', title='eggs')
@@ -88,13 +88,13 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
         self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
 
-    def xtestLinkChange(self):
+    def testLinkChange(self):
         self.db.issue.create(title="spam", status='1')
         self.assertEqual(self.db.issue.get('1', "status"), '1')
         self.db.issue.set('1', status='2')
         self.assertEqual(self.db.issue.get('1', "status"), '2')
 
-    def xtestDateChange(self):
+    def testDateChange(self):
         self.db.issue.create(title="spam", status='1')
         a = self.db.issue.get('1', "deadline")
         self.db.issue.set('1', deadline=date.Date())
@@ -104,7 +104,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
         self.db.issue.set('1', deadline=date.Date())
 
-    def xtestIntervalChange(self):
+    def testIntervalChange(self):
         self.db.issue.create(title="spam", status='1')
         a = self.db.issue.get('1', "foo")
         self.db.issue.set('1', foo=date.Interval('-1d'))
@@ -129,7 +129,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(self.db.user.get('1', 'age'), a)
         self.db.user.set('1', age='1.0')
 
-    def xtestNewProperty(self):
+    def testNewProperty(self):
         ' make sure a new property is added ok '
         self.db.issue.create(title="spam", status='1')
         self.db.issue.addprop(fixer=Link("user"))
@@ -141,7 +141,7 @@ class anydbmDBTestCase(MyTestCase):
             'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
-    def xtestRetire(self):
+    def testRetire(self):
         self.db.issue.create(title="spam", status='1')
         b = self.db.status.get('1', 'name')
         a = self.db.status.list()
@@ -154,7 +154,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.status.get('1', 'name'), b)
         self.assertNotEqual(a, self.db.status.list())
 
-    def xtestSerialisation(self):
+    def testSerialisation(self):
         self.db.issue.create(title="spam", status='1',
             deadline=date.Date(), foo=date.Interval('-1d'))
         self.db.commit()
@@ -165,7 +165,7 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
         assert isinstance(self.db.user.get('1', 'password'), password.Password)
 
-    def xtestTransactions(self):
+    def testTransactions(self):
         # remember the number of items we started
         num_issues = len(self.db.issue.list())
         num_files = self.db.numfiles()
@@ -272,7 +272,7 @@ class anydbmDBTestCase(MyTestCase):
         # invalid boolean value
         ar(TypeError, self.db.user.set, '3', username='foo', assignable='fubar')
 
-    def xtestJournals(self):
+    def testJournals(self):
         self.db.issue.addprop(fixer=Link("user", do_journal='yes'))
         self.db.user.create(username="mary")
         self.db.user.create(username="pete")
@@ -341,7 +341,7 @@ class anydbmDBTestCase(MyTestCase):
         # see if the change was journalled
         self.assertNotEqual(date_stamp, date_stamp2)
 
-    def xtestPack(self):
+    def testPack(self):
         self.db.issue.create(title="spam", status='1')
         self.db.commit()
         self.db.issue.set('1', status='2')
@@ -353,12 +353,12 @@ class anydbmDBTestCase(MyTestCase):
         journal = self.db.getjournal('issue', '1')
         self.assertEqual(2, len(journal))
 
-    def xtestIDGeneration(self):
+    def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db2.issue.create(title="eggs", status='2')
         self.assertNotEqual(id1, id2)
 
-    def xtestSearching(self):
+    def testSearching(self):
         self.db.file.create(content='hello', type="text/plain")
         self.db.file.create(content='world', type="text/frozz",
             comment='blah blah')
@@ -373,7 +373,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'2': {}, '1': {}})
 
-    def xtestReindexing(self):
+    def testReindexing(self):
         self.db.issue.create(title="frooz")
         self.db.commit()
         self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
@@ -384,7 +384,7 @@ class anydbmDBTestCase(MyTestCase):
             {'1': {}})
         self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue), {})
 
-    def xtestForcedReindexing(self):
+    def testForcedReindexing(self):
         self.db.issue.create(title="flebble frooz")
         self.db.commit()
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
@@ -410,7 +410,7 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
         self.db2 = anydbm.Database(config, 'test')
         setupSchema(self.db2, 0, anydbm)
 
-    def xtestExceptions(self):
+    def testExceptions(self):
         ' make sure exceptions are raised on writes to a read-only db '
         # this tests the exceptions that should be raised
         ar = self.assertRaises
@@ -489,7 +489,7 @@ class metakitDBTestCase(anydbmDBTestCase):
         self.db2 = metakit.Database(config, 'test')
         setupSchema(self.db2, 0, metakit)
 
-    def xtestTransactions(self):
+    def testTransactions(self):
         # remember the number of items we started
         num_issues = len(self.db.issue.list())
         self.db.issue.create(title="don't commit me!", status='1')
@@ -535,7 +535,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-    return unittest.TestSuite(l)
+#    return unittest.TestSuite(l)
 
     try:
         import bsddb
@@ -562,6 +562,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2002/07/18 11:50:58  richard
+# added tests for number type too
+#
 # Revision 1.32  2002/07/18 11:41:10  richard
 # added tests for boolean type, and fixes to anydbm backend
 #
