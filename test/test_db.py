@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.10 2001-12-03 21:33:39 richard Exp $ 
+# $Id: test_db.py,v 1.11 2001-12-10 23:17:20 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -33,26 +33,14 @@ def setupSchema(db, create):
     Class(db, "user", username=String(), password=Password())
     Class(db, "issue", title=String(), status=Link("status"),
         nosy=Multilink("user"))
-
-#class MyTestResult(unittest._TestResult):
-#    def addError(self, test, err):
-#        print `err`
-#        TestResult.addError(self, test, err)
-#        if self.showAll:
-#            self.stream.writeln("ERROR")
-#        elif self.dots:
-#            self.stream.write('E')
-#        if err[0] is KeyboardInterrupt:
-#            self.shouldStop = 1
+    db.commit()
 
 class MyTestCase(unittest.TestCase):
-#    def defaultTestResult(self):
-#        return MyTestResult()
     def tearDown(self):
-        if self.db is not None:
+        if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
     
-class DBTestCase(MyTestCase):
+class anydbmDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
         # remove previous test, ignore errors
@@ -82,6 +70,19 @@ class DBTestCase(MyTestCase):
         self.db.issue.history('5')
         self.db.status.history('1')
         self.db.status.history('2')
+
+    def testTransactions(self):
+        num_issues = len(self.db.issue.list())
+        self.db.issue.create(title="don't commit me!", status='1')
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.rollback()
+        self.assertEqual(num_issues, len(self.db.issue.list()))
+        self.db.issue.create(title="please commit me!", status='1')
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.commit()
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
+        self.db.rollback()
+        self.assertNotEqual(num_issues, len(self.db.issue.list()))
 
     def testExceptions(self):
         # this tests the exceptions that should be raised
@@ -149,7 +150,7 @@ class DBTestCase(MyTestCase):
         pass
 
 
-class ReadOnlyDBTestCase(MyTestCase):
+class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
         # remove previous test, ignore errors
@@ -171,7 +172,7 @@ class ReadOnlyDBTestCase(MyTestCase):
         ar(DatabaseError, self.db.status.retire, '1')
 
 
-class bsddbDBTestCase(DBTestCase):
+class bsddbDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb
         # remove previous test, ignore errors
@@ -181,7 +182,7 @@ class bsddbDBTestCase(DBTestCase):
         self.db = bsddb.Database('_test_dir', 'test')
         setupSchema(self.db, 1)
 
-class bsddbReadOnlyDBTestCase(ReadOnlyDBTestCase):
+class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb
         # remove previous test, ignore errors
@@ -194,7 +195,7 @@ class bsddbReadOnlyDBTestCase(ReadOnlyDBTestCase):
         setupSchema(self.db, 0)
 
 
-class bsddb3DBTestCase(DBTestCase):
+class bsddb3DBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb3
         # remove previous test, ignore errors
@@ -204,7 +205,7 @@ class bsddb3DBTestCase(DBTestCase):
         self.db = bsddb3.Database('_test_dir', 'test')
         setupSchema(self.db, 1)
 
-class bsddb3ReadOnlyDBTestCase(ReadOnlyDBTestCase):
+class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb3
         # remove previous test, ignore errors
@@ -218,8 +219,9 @@ class bsddb3ReadOnlyDBTestCase(ReadOnlyDBTestCase):
 
 
 def suite():
-    l = [unittest.makeSuite(DBTestCase, 'test'),
-         unittest.makeSuite(ReadOnlyDBTestCase, 'test')]
+    l = [unittest.makeSuite(anydbmDBTestCase, 'test'),
+         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
+    ]
 
     try:
         import bsddb
@@ -239,6 +241,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/12/03 21:33:39  richard
+# Fixes so the tests use commit and not close
+#
 # Revision 1.9  2001/12/02 05:06:16  richard
 # . We now use weakrefs in the Classes to keep the database reference, so
 #   the close() method on the database is no longer needed.
