@@ -14,16 +14,24 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: db_test_base.py,v 1.43 2004-07-21 00:50:50 richard Exp $ 
+#
+# $Id: db_test_base.py,v 1.44 2004-09-25 15:47:02 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
-from roundup import date, password, init, instance
+from roundup import date, password, init, instance, configuration
 
 from mocknull import MockNull
+
+config = configuration.CoreConfig()
+config.DATABASE = "_test_dir"
+config.RDBMS_NAME = "rounduptest"
+config.RDBMS_HOST = "localhost"
+config.RDBMS_USER = "rounduptest"
+config.RDBMS_PASSWORD = "rounduptest"
+config.logging = MockNull()
 
 def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
@@ -63,22 +71,6 @@ class MyTestCase(unittest.TestCase):
             self.db.close()
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
-
-class config:
-    DATABASE='_test_dir'
-    MAILHOST = 'localhost'
-    MAIL_DOMAIN = 'fill.me.in.'
-    TRACKER_NAME = 'Roundup issue tracker'
-    TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
-    TRACKER_WEB = 'http://some.useful.url/'
-    ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-    FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
-    ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
-    ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
-    MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
-    EMAIL_SIGNATURE_POSITION = 'bottom'
-
-    logging = MockNull()
 
 if os.environ.has_key('LOGGING_LEVEL'):
     from roundup import rlog
@@ -217,7 +209,7 @@ class DBTest(MyTestCase):
 
     # Date
     def testDateChange(self):
-        self.assertRaises(TypeError, self.db.issue.create, 
+        self.assertRaises(TypeError, self.db.issue.create,
             title='spam', deadline=1)
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
@@ -242,7 +234,7 @@ class DBTest(MyTestCase):
 
     # Interval
     def testIntervalChange(self):
-        self.assertRaises(TypeError, self.db.issue.create, 
+        self.assertRaises(TypeError, self.db.issue.create,
             title='spam', foo=1)
         for commit in (0,1):
             nid = self.db.issue.create(title="spam", status='1')
@@ -365,7 +357,7 @@ class DBTest(MyTestCase):
         b = self.db.status.get('1', 'name')
         a = self.db.status.list()
         self.db.status.retire('1')
-        # make sure the list is different 
+        # make sure the list is different
         self.assertNotEqual(a, self.db.status.list())
         # can still access the node if necessary
         self.assertEqual(self.db.status.get('1', 'name'), b)
@@ -375,7 +367,7 @@ class DBTest(MyTestCase):
         self.assertNotEqual(a, self.db.status.list())
         # try to restore retired node
         self.db.status.restore('1')
- 
+
     def testCacheCreateSet(self):
         self.db.issue.create(title="spam", status='1')
         a = self.db.issue.get('1', 'title')
@@ -413,7 +405,7 @@ class DBTest(MyTestCase):
         self.db.rollback()
         self.assertEqual(num_files, self.db.numfiles())
         for i in range(10):
-            self.db.file.create(name="test", type="text/plain", 
+            self.db.file.create(name="test", type="text/plain",
                     content="hi %d"%(i))
             self.db.commit()
         num_files2 = self.db.numfiles()
@@ -518,7 +510,7 @@ class DBTest(MyTestCase):
 
         #
         # key property
-        # 
+        #
         # key must be a String
         ar(TypeError, self.db.file.setkey, 'fooz')
         # key must exist
@@ -1372,7 +1364,7 @@ class ClassicInitTest(unittest.TestCase):
                 f.write(self.extra_config)
             finally:
                 f.close()
-        
+
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
@@ -1405,3 +1397,4 @@ class ClassicInitTest(unittest.TestCase):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
+# vim: set et sts=4 sw=4 :
