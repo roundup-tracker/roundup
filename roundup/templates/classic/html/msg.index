@@ -1,8 +1,13 @@
-<!-- dollarId: msg.index,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
-<tr class="row-hilite">
-    <td><display call="link('date')"></td>
-    <td><display call="plain('author')"></td>
-</tr>
-<tr class="msg-content">
-    <td colspan=2><pre><display call="plain('content', escape=1)"></pre></td>
-</tr>
+hi
+<table class="messages" tal:condition="request/filter">
+ <tr><th colspan=2 class="header">Messages</th></tr>
+ <tal:block tal:repeat="msg issue/messages/reverse">
+  <tr>
+   <th tal:content="string:Author: ${msg/author}">author</th>
+   <th tal:content="string:Date: ${msg/date}">date</th>
+  </tr>
+  <tr>
+   <td colspan="2"><pre tal:content="msg/content">content</pre></td>
+  </tr>
+ </tal:block>
+</table>
