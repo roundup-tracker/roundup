@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.15 2002-07-29 00:56:06 richard Exp $
+# $Id: test_init.py,v 1.16 2002-09-10 00:19:54 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -153,62 +153,4 @@ def suite():
 
     return unittest.TestSuite(l)
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.14  2002/07/26 08:27:00  richard
-# Very close now. The cgi and mailgw now use the new security API. The two
-# templates have been migrated to that setup. Lots of unit tests. Still some
-# issue in the web form for editing Roles assigned to users.
-#
-# Revision 1.13  2002/07/14 02:05:54  richard
-# . all storage-specific code (ie. backend) is now implemented by the backends
-#
-# Revision 1.12  2002/07/11 01:13:13  richard
-# *** empty log message ***
-#
-# Revision 1.11  2002/07/11 01:12:34  richard
-# Forgot to add to init tests
-#
-# Revision 1.10  2002/06/11 04:59:14  richard
-# enabled testing of bsddb in test_init
-#
-# Revision 1.9  2002/05/23 04:26:05  richard
-# 'I must run unit tests before committing\n' * 100
-#
-# Revision 1.8  2002/05/15 03:27:16  richard
-#  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
-#    (thanks dman)
-#  . fixed some sorting issues that were breaking some unit tests under py2.2
-#  . mailgw test output dir was confusing the init test (but only on 2.2 *shrug*)
-#
-# fixed bug in the init unit test that meant only the bsddb test ran if it
-# could (it clobbered the anydbm test)
-#
-# Revision 1.7  2001/10/28 22:51:38  richard
-# Fixed ENOENT/WindowsError thing, thanks Juergen Hermann
-#
-# Revision 1.6  2001/09/29 23:48:06  richard
-# Bug fix for test_init on Windows.
-# More documenation!!
-#
-# Revision 1.5  2001/08/29 06:23:59  richard
-# Disabled the bsddb3 module entirely in the unit testing. See CHANGES for
-# details.
-#
-# Revision 1.4  2001/08/07 00:24:43  richard
-# stupid typo
-#
-# Revision 1.3  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.2  2001/08/05 07:45:27  richard
-# Added tests for instance initialisation
-#
-# Revision 1.1  2001/08/05 07:07:58  richard
-# added tests for roundup.init - but they're disabled until I can figure _if_
-# we can run them (import problems).
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.20 2002-08-13 20:16:10 gmcm Exp $ 
+# $Id: test_htmltemplate.py,v 1.21 2002-09-10 00:19:54 richard Exp $ 
 
 import unittest, cgi, time, os, shutil
 
@@ -553,90 +553,4 @@ def suite():
     ])
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.19  2002/07/26 08:27:00  richard
-# Very close now. The cgi and mailgw now use the new security API. The two
-# templates have been migrated to that setup. Lots of unit tests. Still some
-# issue in the web form for editing Roles assigned to users.
-#
-# Revision 1.18  2002/07/25 07:14:06  richard
-# Bugger it. Here's the current shape of the new security implementation.
-# Still to do:
-#  . call the security funcs from cgi and mailgw
-#  . change shipped templates to include correct initialisation and remove
-#    the old config vars
-# ... that seems like a lot. The bulk of the work has been done though. Honest :)
-#
-# Revision 1.17  2002/07/18 23:07:07  richard
-# Unit tests and a few fixes.
-#
-# Revision 1.16  2002/07/09 05:20:09  richard
-#  . added email display function - mangles email addrs so they're not so easily
-#    scraped from the web
-#
-# Revision 1.15  2002/07/08 06:39:00  richard
-# Fixed unit test support class so the tests ran again.
-#
-# Revision 1.14  2002/05/15 06:37:31  richard
-# ehem and the unit test
-#
-# Revision 1.13  2002/04/03 05:54:31  richard
-# Fixed serialisation problem by moving the serialisation step out of the
-# hyperdb.Class (get, set) into the hyperdb.Database.
-#
-# Also fixed htmltemplate after the showid changes I made yesterday.
-#
-# Unit tests for all of the above written.
-#
-# Revision 1.12  2002/03/29 19:41:48  rochecompaan
-#  . Fixed display of mutlilink properties when using the template
-#    functions, menu and plain.
-#
-# Revision 1.11  2002/02/21 23:11:45  richard
-#  . fixed some problems in date calculations (calendar.py doesn't handle over-
-#    and under-flow). Also, hour/minute/second intervals may now be more than
-#    99 each.
-#
-# Revision 1.10  2002/02/21 06:57:39  richard
-#  . Added popup help for classes using the classhelp html template function.
-#    - add <display call="classhelp('priority', 'id,name,description')">
-#      to an item page, and it generates a link to a popup window which displays
-#      the id, name and description for the priority class. The description
-#      field won't exist in most installations, but it will be added to the
-#      default templates.
-#
-# Revision 1.9  2002/02/15 07:08:45  richard
-#  . Alternate email addresses are now available for users. See the MIGRATION
-#    file for info on how to activate the feature.
-#
-# Revision 1.8  2002/02/06 03:47:16  richard
-#  . #511586 ] unittest FAIL: testReldate_date
-#
-# Revision 1.7  2002/01/23 20:09:41  jhermann
-# Proper fix for failing test
-#
-# Revision 1.6  2002/01/23 05:47:57  richard
-# more HTML template cleanup and unit tests
-#
-# Revision 1.5  2002/01/23 05:10:28  richard
-# More HTML template cleanup and unit tests.
-#  - download() now implemented correctly, replacing link(is_download=1) [fixed in the
-#    templates, but link(is_download=1) will still work for existing templates]
-#
-# Revision 1.4  2002/01/22 22:46:22  richard
-# more htmltemplate cleanups and unit tests
-#
-# Revision 1.3  2002/01/22 06:35:40  richard
-# more htmltemplate tests and cleanup
-#
-# Revision 1.2  2002/01/22 00:12:07  richard
-# Wrote more unit tests for htmltemplate, and while I was at it, I polished
-# off the implementation of some of the functions so they behave sanely.
-#
-# Revision 1.1  2002/01/21 11:05:48  richard
-# New tests for htmltemplate (well, it's a beginning)
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

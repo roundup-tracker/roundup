@@ -158,3 +158,4 @@ class Security:
         role = self.role[rolename]
         role.permissions.append(permission)
 
+# vim: set filetype=python ts=4 sw=4 et si

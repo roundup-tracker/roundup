@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.5 2001-11-22 15:46:42 jhermann Exp $
+# $Id: instance.py,v 1.6 2002-09-10 00:18:20 richard Exp $
 
 __doc__ = '''
 Instance handling (open instance).
@@ -53,22 +53,4 @@ del Opener
 del opener
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.4  2001/11/12 22:01:06  richard
-# Fixed issues with nosy reaction and author copies.
-#
-# Revision 1.3  2001/08/07 00:24:42  richard
-# stupid typo
-#
-# Revision 1.2  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.1  2001/08/05 07:43:52  richard
-# Instances are now opened by a special function that generates a unique
-# module name for the instances on import time.
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

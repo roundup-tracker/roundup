@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_multipart.py,v 1.4 2001-08-07 00:24:43 richard Exp $ 
+# $Id: test_multipart.py,v 1.5 2002-09-10 00:19:55 richard Exp $ 
 
 import unittest, cStringIO
 
@@ -112,17 +112,4 @@ def suite():
    return unittest.makeSuite(MultipartTestCase, 'test')
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.2  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.1  2001/07/28 06:43:02  richard
-# Multipart message class has the getPart method now. Added some tests for it.
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

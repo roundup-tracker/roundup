@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # 
-# $Id: token.py,v 1.2 2002-01-02 02:31:38 richard Exp $
+# $Id: token.py,v 1.3 2002-09-10 00:18:20 richard Exp $
 #
 
 __doc__ = """
@@ -111,12 +111,4 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
         pos = pos + 1
     return l
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.1  2001/12/31 05:09:20  richard
-# Added better tokenising to roundup-admin - handles spaces and stuff. Can
-# use quoting or backslashes. See the roundup.token pydoc.
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.7 2001-11-24 01:00:13 jhermann Exp $
+# $Id: install_util.py,v 1.8 2002-09-10 00:18:20 richard Exp $
 
 __doc__ = """
 Support module to generate and check fingerprints of installed files.
@@ -147,24 +147,4 @@ def test():
 if __name__ == '__main__':
     test()
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.6  2001/11/22 15:46:42  jhermann
-# Added module docstrings to all modules.
-#
-# Revision 1.5  2001/11/12 23:17:38  jhermann
-# Code using copyDigestedFile() that passes unit tests
-#
-# Revision 1.4  2001/11/12 23:14:40  jhermann
-# Copy function, and proper handling of unknown file types
-#
-# Revision 1.3  2001/11/12 22:38:48  richard
-# bleah typo
-#
-# Revision 1.2  2001/11/12 22:37:13  richard
-# Handle all the various file formats in roundup
-#
-# Revision 1.1  2001/11/12 22:26:32  jhermann
-# Added install utils (digest calculation)
-#
-
+# vim: set filetype=python ts=4 sw=4 et si

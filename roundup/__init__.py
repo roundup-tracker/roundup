@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.9 2002-06-24 01:09:33 richard Exp $
+# $Id: __init__.py,v 1.10 2002-09-10 00:18:20 richard Exp $
 
 __doc__ = '''
 This is a simple-to-use and -install issue-tracking system with
@@ -67,29 +67,4 @@ much prettier cake :)
 
 __version__ = '0.4.2'
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.8  2002/06/21 00:24:53  richard
-# *baff* richard.
-#
-# Revision 1.7  2002/06/17 23:14:44  richard
-# . #569415 ] {version}
-#
-# Revision 1.6  2001/08/07 00:24:42  richard
-# stupid typo
-#
-# Revision 1.5  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.4  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.3  2001/07/28 01:39:02  richard
-# Added some documentation to the roundup package.
-#
-# Revision 1.2  2001/07/22 12:09:32  richard
-# Final commit of Grande Splite
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

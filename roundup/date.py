@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.25 2002-08-23 04:42:43 richard Exp $
+# $Id: date.py,v 1.26 2002-09-10 00:18:20 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -459,94 +459,4 @@ def test():
 if __name__ == '__main__':
     test()
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.24  2002/08/21 07:07:27  richard
-# In preparing to turn back on link/unlink journal events (by default these
-# are turned off) I've:
-# - fixed back_anydbm so it can journal those events again (had broken it
-#   with recent changes)
-# - changed the serialisation format for dates and intervals to use a
-#   numbers-only (and sign for Intervals) string instead of tuple-of-ints.
-#   Much smaller.
-#
-# Revision 1.23  2002/07/18 23:07:08  richard
-# Unit tests and a few fixes.
-#
-# Revision 1.22  2002/07/14 06:05:50  richard
-#  . fixed the date module so that Date(". - 2d") works
-#
-# Revision 1.21  2002/05/15 06:32:46  richard
-#  . reverting to dates for intervals > 2 months sucks
-#
-# Revision 1.20  2002/02/21 23:34:51  richard
-# Oops, there's 24 hours in a day, and subtraction of intervals now works
-# properly.
-#
-# Revision 1.19  2002/02/21 23:11:45  richard
-#  . fixed some problems in date calculations (calendar.py doesn't handle over-
-#    and under-flow). Also, hour/minute/second intervals may now be more than
-#    99 each.
-#
-# Revision 1.18  2002/01/23 20:00:50  jhermann
-# %e is a UNIXism and not documented for Python
-#
-# Revision 1.17  2002/01/16 07:02:57  richard
-#  . lots of date/interval related changes:
-#    - more relaxed date format for input
-#
-# Revision 1.16  2002/01/08 11:56:24  richard
-# missed an import _
-#
-# Revision 1.15  2002/01/05 02:27:00  richard
-# I18N'ification
-#
-# Revision 1.14  2001/11/22 15:46:42  jhermann
-# Added module docstrings to all modules.
-#
-# Revision 1.13  2001/09/18 22:58:37  richard
-#
-# Added some more help to roundu-admin
-#
-# Revision 1.12  2001/08/17 03:08:11  richard
-# fixed prettification of intervals of 1 week
-#
-# Revision 1.11  2001/08/15 23:43:18  richard
-# Fixed some isFooTypes that I missed.
-# Refactored some code in the CGI code.
-#
-# Revision 1.10  2001/08/07 00:24:42  richard
-# stupid typo
-#
-# Revision 1.9  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.8  2001/08/05 07:46:12  richard
-# Changed date.Date to use regular string formatting instead of strftime -
-# win32 seems to have problems with %T and no hour... or something...
-#
-# Revision 1.7  2001/08/02 00:27:04  richard
-# Extended the range of intervals that are pretty-printed before actual dates
-# are displayed.
-#
-# Revision 1.6  2001/07/31 09:54:18  richard
-# Fixed the 2.1-specific gmtime() (no arg) call in roundup.date. (Paul Wright)
-#
-# Revision 1.5  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.4  2001/07/25 04:09:34  richard
-# Fixed offset handling (shoulda read the spec a little better)
-#
-# Revision 1.3  2001/07/23 07:56:05  richard
-# Storing only marshallable data in the db - no nasty pickled class references.
-#
-# Revision 1.2  2001/07/22 12:09:32  richard
-# Final commit of Grande Splite
-#
-# Revision 1.1  2001/07/22 11:58:35  richard
-# More Grande Splite
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

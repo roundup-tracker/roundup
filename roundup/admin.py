@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.24 2002-09-09 23:55:18 richard Exp $
+# $Id: admin.py,v 1.25 2002-09-10 00:18:20 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -1144,95 +1144,4 @@ if __name__ == '__main__':
     tool = AdminTool()
     sys.exit(tool.main())
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.23  2002/08/19 02:53:27  richard
-# full database export and import is done
-#
-# Revision 1.22  2002/08/16 04:26:42  richard
-# moving towards full database export
-#
-# Revision 1.21  2002/08/01 01:07:37  richard
-# include info about new user roles
-#
-# Revision 1.20  2002/08/01 00:56:22  richard
-# Added the web access and email access permissions, so people can restrict
-# access to users who register through the email interface (for example).
-# Also added "security" command to the roundup-admin interface to display the
-# Role/Permission config for an instance.
-#
-# Revision 1.19  2002/07/25 07:14:05  richard
-# Bugger it. Here's the current shape of the new security implementation.
-# Still to do:
-#  . call the security funcs from cgi and mailgw
-#  . change shipped templates to include correct initialisation and remove
-#    the old config vars
-# ... that seems like a lot. The bulk of the work has been done though. Honest :)
-#
-# Revision 1.18  2002/07/18 11:17:30  gmcm
-# Add Number and Boolean types to hyperdb.
-# Add conversion cases to web, mail & admin interfaces.
-# Add storage/serialization cases to back_anydbm & back_metakit.
-#
-# Revision 1.17  2002/07/14 06:05:50  richard
-#  . fixed the date module so that Date(". - 2d") works
-#
-# Revision 1.16  2002/07/09 04:19:09  richard
-# Added reindex command to roundup-admin.
-# Fixed reindex on first access.
-# Also fixed reindexing of entries that change.
-#
-# Revision 1.15  2002/06/17 23:14:44  richard
-# . #569415 ] {version}
-#
-# Revision 1.14  2002/06/11 06:41:50  richard
-# Removed prompt for admin email in initialisation.
-#
-# Revision 1.13  2002/05/30 23:58:14  richard
-# oops
-#
-# Revision 1.12  2002/05/26 09:04:42  richard
-# out by one in the init args
-#
-# Revision 1.11  2002/05/23 01:14:20  richard
-#  . split instance initialisation into two steps, allowing config changes
-#    before the database is initialised.
-#
-# Revision 1.10  2002/04/27 10:07:23  richard
-# minor fix to error message
-#
-# Revision 1.9  2002/03/12 22:51:47  richard
-#  . #527416 ] roundup-admin uses undefined value
-#  . #527503 ] unfriendly init blowup when parent dir
-#    (also handles UsageError correctly now in init)
-#
-# Revision 1.8  2002/02/27 03:28:21  richard
-# Ran it through pychecker, made fixes
-#
-# Revision 1.7  2002/02/20 05:04:32  richard
-# Wasn't handling the cvs parser feeding properly.
-#
-# Revision 1.6  2002/01/23 07:27:19  grubert
-#  . allow abbreviation of "help" in admin tool too.
-#
-# Revision 1.5  2002/01/21 16:33:19  rochecompaan
-# You can now use the roundup-admin tool to pack the database
-#
-# Revision 1.4  2002/01/14 06:51:09  richard
-#  . #503164 ] create and passwords
-#
-# Revision 1.3  2002/01/08 05:26:32  rochecompaan
-# Missing "self" in props_from_args
-#
-# Revision 1.2  2002/01/07 10:41:44  richard
-# #500140 ] AdminTool.get_class() returns nothing
-#
-# Revision 1.1  2002/01/05 02:11:22  richard
-# I18N'ed roundup admin - and split the code off into a module so it can be used
-# elsewhere.
-# Big issue with this is the doc strings - that's the help. We're probably going to
-# have to switch to not use docstrings, which will suck a little :(
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.12 2002-07-19 03:36:33 richard Exp $
+#$Id: indexer.py,v 1.13 2002-09-10 00:18:20 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -333,79 +333,4 @@ class Indexer:
         return (hasattr(self,'fileids') and hasattr(self,'files') and
             hasattr(self,'words'))
 
-#
-#$Log: not supported by cvs2svn $
-#Revision 1.11  2002/07/18 11:17:30  gmcm
-#Add Number and Boolean types to hyperdb.
-#Add conversion cases to web, mail & admin interfaces.
-#Add storage/serialization cases to back_anydbm & back_metakit.
-#
-#Revision 1.10  2002/07/14 23:17:24  richard
-#oops
-#
-#Revision 1.9  2002/07/14 06:11:16  richard
-#Some TODOs
-#
-#Revision 1.8  2002/07/09 21:53:38  gmcm
-#Optimize Class.find so that the propspec can contain a set of ids to match.
-#This is used by indexer.search so it can do just one find for all the index matches.
-#This was already confusing code, but for common terms (lots of index matches),
-#it is enormously faster.
-#
-#Revision 1.7  2002/07/09 21:38:43  richard
-#Only save the index if the thing is loaded and changed. Also, don't load
-#the index just for a save.
-#
-#Revision 1.6  2002/07/09 04:26:44  richard
-#We're indexing numbers now, and _underscore words
-#
-#Revision 1.5  2002/07/09 04:19:09  richard
-#Added reindex command to roundup-admin.
-#Fixed reindex on first access.
-#Also fixed reindexing of entries that change.
-#
-#Revision 1.4  2002/07/09 03:02:52  richard
-#More indexer work:
-#- all String properties may now be indexed too. Currently there's a bit of
-#  "issue" specific code in the actual searching which needs to be
-#  addressed. In a nutshell:
-#  + pass 'indexme="yes"' as a String() property initialisation arg, eg:
-#        file = FileClass(db, "file", name=String(), type=String(),
-#            comment=String(indexme="yes"))
-#  + the comment will then be indexed and be searchable, with the results
-#    related back to the issue that the file is linked to
-#- as a result of this work, the FileClass has a default MIME type that may
-#  be overridden in a subclass, or by the use of a "type" property as is
-#  done in the default templates.
-#- the regeneration of the indexes (if necessary) is done once the schema is
-#  set up in the dbinit.
-#
-#Revision 1.3  2002/07/08 06:58:15  richard
-#cleaned up the indexer code:
-# - it splits more words out (much simpler, faster splitter)
-# - removed code we'll never use (roundup.roundup_indexer has the full
-#   implementation, and replaces roundup.indexer)
-# - only index text/plain and rfc822/message (ideas for other text formats to
-#   index are welcome)
-# - added simple unit test for indexer. Needs more tests for regression.
-#
-#Revision 1.2  2002/05/25 07:16:24  rochecompaan
-#Merged search_indexing-branch with HEAD
-#
-#Revision 1.1.2.3  2002/05/02 11:52:12  rochecompaan
-#Fixed small bug that prevented indexes from being generated.
-#
-#Revision 1.1.2.2  2002/04/19 19:54:42  rochecompaan
-#cgi_client.py
-#    removed search link for the time being
-#    moved rendering of matches to htmltemplate
-#hyperdb.py
-#    filtering of nodes on full text search incorporated in filter method
-#roundupdb.py
-#    added paramater to call of filter method
-#roundup_indexer.py
-#    added search method to RoundupIndexer class
-#
-#Revision 1.1.2.1  2002/04/03 11:55:57  rochecompaan
-# . Added feature #526730 - search for messages capability
-#
+# vim: set filetype=python ts=4 sw=4 et si

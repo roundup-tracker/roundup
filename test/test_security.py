@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.3 2002-07-29 21:53:29 richard Exp $
+# $Id: test_security.py,v 1.4 2002-09-10 00:19:55 richard Exp $
 
 import os, unittest, shutil
 
@@ -104,24 +104,4 @@ def suite():
     return unittest.makeSuite(PermissionTest)
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.2  2002/07/26 08:27:00  richard
-# Very close now. The cgi and mailgw now use the new security API. The two
-# templates have been migrated to that setup. Lots of unit tests. Still some
-# issue in the web form for editing Roles assigned to users.
-#
-# Revision 1.1  2002/07/25 07:14:06  richard
-# Bugger it. Here's the current shape of the new security implementation.
-# Still to do:
-#  . call the security funcs from cgi and mailgw
-#  . change shipped templates to include correct initialisation and remove
-#    the old config vars
-# ... that seems like a lot. The bulk of the work has been done though. Honest :)
-#
-# Revision 1.1  2002/07/10 06:40:01  richard
-# ehem, forgot to add
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

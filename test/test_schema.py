@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_schema.py,v 1.8 2002-07-14 02:05:54 richard Exp $ 
+# $Id: test_schema.py,v 1.9 2002-09-10 00:19:55 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -87,39 +87,4 @@ def suite():
    return unittest.makeSuite(SchemaTestCase, 'test')
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.7  2002/01/14 02:20:15  richard
-#  . changed all config accesses so they access either the instance or the
-#    config attriubute on the db. This means that all config is obtained from
-#    instance_config instead of the mish-mash of classes. This will make
-#    switching to a ConfigParser setup easier too, I hope.
-#
-# At a minimum, this makes migration a _little_ easier (a lot easier in the
-# 0.5.0 switch, I hope!)
-#
-# Revision 1.6  2001/12/03 21:33:39  richard
-# Fixes so the tests use commit and not close
-#
-# Revision 1.5  2001/10/09 07:25:59  richard
-# Added the Password property type. See "pydoc roundup.password" for
-# implementation details. Have updated some of the documentation too.
-#
-# Revision 1.4  2001/08/07 00:24:43  richard
-# stupid typo
-#
-# Revision 1.3  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.2  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.1  2001/07/27 06:55:07  richard
-# moving tests -> test
-#
-# Revision 1.3  2001/07/25 04:34:31  richard
-# Added id and log to tests files...
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

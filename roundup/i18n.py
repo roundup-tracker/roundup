@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: i18n.py,v 1.2 2001-11-22 15:46:42 jhermann Exp $
+# $Id: i18n.py,v 1.3 2002-09-10 00:18:20 richard Exp $
 
 __doc__ = """
 RoundUp Internationalization (I18N)
@@ -48,3 +48,4 @@ else:
     # and for now, we JUST implement the dummy in any case
     _ = lambda text: text
 
+# vim: set filetype=python ts=4 sw=4 et si

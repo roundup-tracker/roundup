@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.17 2002-05-29 01:16:17 richard Exp $
+# $Id: __init__.py,v 1.18 2002-09-10 00:19:54 richard Exp $
 
 import os, tempfile, unittest, shutil
 import roundup.roundupdb
@@ -38,84 +38,4 @@ def go(tests=all_tests):
     runner = unittest.TextTestRunner()
     runner.run(suite)
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.16  2002/02/14 23:38:12  richard
-# Fixed the unit tests for the mailgw re: the x-roundup-name header.
-# Also made the test runner more user-friendly:
-#   ./run_tests            - detect all tests in test/test_<name>.py and run them
-#   ./run_tests <name>     - run only test/test_<name>.py
-# eg ./run_tests mailgw    - run the mailgw test from test/test_mailgw.py
-#
-# Revision 1.15  2002/01/22 00:12:20  richard
-# oops
-#
-# Revision 1.14  2002/01/22 00:12:06  richard
-# Wrote more unit tests for htmltemplate, and while I was at it, I polished
-# off the implementation of some of the functions so they behave sanely.
-#
-# Revision 1.13  2002/01/21 11:05:48  richard
-# New tests for htmltemplate (well, it's a beginning)
-#
-# Revision 1.12  2002/01/14 06:53:28  richard
-# had commented out some tests
-#
-# Revision 1.11  2002/01/14 02:20:15  richard
-#  . changed all config accesses so they access either the instance or the
-#    config attriubute on the db. This means that all config is obtained from
-#    instance_config instead of the mish-mash of classes. This will make
-#    switching to a ConfigParser setup easier too, I hope.
-#
-# At a minimum, this makes migration a _little_ easier (a lot easier in the
-# 0.5.0 switch, I hope!)
-#
-# Revision 1.10  2002/01/05 02:09:46  richard
-# make setup abort if tests fail
-#
-# Revision 1.9  2002/01/02 02:31:38  richard
-# Sorry for the huge checkin message - I was only intending to implement #496356
-# but I found a number of places where things had been broken by transactions:
-#  . modified ROUNDUPDBSENDMAILDEBUG to be SENDMAILDEBUG and hold a filename
-#    for _all_ roundup-generated smtp messages to be sent to.
-#  . the transaction cache had broken the roundupdb.Class set() reactors
-#  . newly-created author users in the mailgw weren't being committed to the db
-#
-# Stuff that made it into CHANGES.txt (ie. the stuff I was actually working
-# on when I found that stuff :):
-#  . #496356 ] Use threading in messages
-#  . detectors were being registered multiple times
-#  . added tests for mailgw
-#  . much better attaching of erroneous messages in the mail gateway
-#
-# Revision 1.8  2001/12/31 05:09:20  richard
-# Added better tokenising to roundup-admin - handles spaces and stuff. Can
-# use quoting or backslashes. See the roundup.token pydoc.
-#
-# Revision 1.7  2001/08/07 00:24:43  richard
-# stupid typo
-#
-# Revision 1.6  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.5  2001/08/05 07:45:27  richard
-# Added tests for instance initialisation
-#
-# Revision 1.4  2001/08/03 07:18:22  richard
-# Implemented correct mail splitting (was taking a shortcut). Added unit
-# tests. Also snips signatures now too.
-#
-# Revision 1.3  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.2  2001/07/28 06:43:02  richard
-# Multipart message class has the getPart method now. Added some tests for it.
-#
-# Revision 1.1  2001/07/27 06:55:07  richard
-# moving tests -> test
-#
-# Revision 1.3  2001/07/25 04:34:31  richard
-# Added id and log to tests files...
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

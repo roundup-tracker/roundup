@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_token.py,v 1.1 2001-12-31 05:09:20 richard Exp $
+# $Id: test_token.py,v 1.2 2002-09-10 00:19:55 richard Exp $
 
 import unittest, time
 
@@ -53,8 +53,4 @@ def suite():
    return unittest.makeSuite(TokenTestCase, 'test')
 
 
-#
-# $Log: not supported by cvs2svn $
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

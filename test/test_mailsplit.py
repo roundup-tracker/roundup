@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.10 2002-04-23 16:18:18 rochecompaan Exp $
+# $Id: test_mailsplit.py,v 1.11 2002-09-10 00:19:55 richard Exp $
 
 import unittest, cStringIO
 
@@ -212,37 +212,4 @@ def suite():
    return unittest.makeSuite(MailsplitTestCase, 'test')
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.9  2002/01/10 06:19:20  richard
-# followup lines directly after a quoted section were being eaten.
-#
-# Revision 1.8  2001/10/28 23:22:28  richard
-# fixed bug #474749 ] Indentations lost
-#
-# Revision 1.7  2001/10/23 00:57:32  richard
-# Removed debug print from mailsplit test.
-#
-# Revision 1.6  2001/10/21 03:35:13  richard
-# bug #473125: Paragraph in e-mails
-#
-# Revision 1.5  2001/08/07 00:24:43  richard
-# stupid typo
-#
-# Revision 1.4  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.3  2001/08/05 07:06:25  richard
-# removed some print statements
-#
-# Revision 1.2  2001/08/03 07:23:09  richard
-# er, removed the innocent from the the code :)
-#
-# Revision 1.1  2001/08/03 07:18:22  richard
-# Implemented correct mail splitting (was taking a shortcut). Added unit
-# tests. Also snips signatures now too.
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

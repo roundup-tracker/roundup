@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.4 2001-11-22 15:46:42 jhermann Exp $
+# $Id: password.py,v 1.5 2002-09-10 00:18:20 richard Exp $
 
 __doc__ = """
 Password handling (encoding, decoding).
@@ -115,22 +115,4 @@ def test():
 if __name__ == '__main__':
     test()
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2001/10/20 11:58:48  richard
-# Catch errors in login - no username or password supplied.
-# Fixed editing of password (Password property type) thanks Roch'e Compaan.
-#
-# Revision 1.2  2001/10/09 23:58:10  richard
-# Moved the data stringification up into the hyperdb.Class class' get, set
-# and create methods. This means that the data is also stringified for the
-# journal call, and removes duplication of code from the backends. The
-# backend code now only sees strings.
-#
-# Revision 1.1  2001/10/09 07:25:59  richard
-# Added the Password property type. See "pydoc roundup.password" for
-# implementation details. Have updated some of the documentation too.
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si
