@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.30 2003-02-06 05:43:47 richard Exp $
+# $Id: rdbms_common.py,v 1.31 2003-02-08 15:31:28 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -738,6 +738,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 p = password.Password()
                 p.unpack(v)
                 d[k] = p
+            elif (isinstance(prop, Boolean) or isinstance(prop, Number)) and v is not None:
+                d[k]=float(v)
             else:
                 d[k] = v
         return d

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.68 2003-01-20 23:03:41 richard Exp $ 
+# $Id: test_db.py,v 1.69 2003-02-08 15:31:28 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -732,7 +732,14 @@ class mysqlDBTestCase(anydbmDBTestCase):
         config.MYSQL_DATABASE = ('localhost', 'rounduptest', 'rounduptest',
             'rounduptest')
         os.makedirs(config.DATABASE + '/files')
+        # open database for cleaning
         self.db = mysql.Database(config, 'admin')
+        self.db.sql("DROP DATABASE %s" % config.MYSQL_DATABASE[1])
+        self.db.sql("CREATE DATABASE %s" % config.MYSQL_DATABASE[1])
+        self.db.close()
+        # open database for testing
+        self.db = mysql.Database(config, 'admin')
+        
         setupSchema(self.db, 1, mysql)
 
 class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
@@ -744,12 +751,14 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         config.MYSQL_DATABASE = ('localhost', 'rounduptest', 'rounduptest',
             'rounduptest')
         os.makedirs(config.DATABASE + '/files')
-        db = mysql.Database(config, 'admin')
-        setupSchema(db, 1, mysql)
-        db.close()
-        self.db = sqlite.Database(config)
+        # open database for cleaning
+        self.db = mysql.Database(config, 'admin')
+        self.db.sql("DROP DATABASE %s" % config.MYSQL_DATABASE[1])
+        self.db.sql("CREATE DATABASE %s" % config.MYSQL_DATABASE[1])
+        self.db.close()
+        # open database for testing
+        self.db = mysql.Database(config)
         setupSchema(self.db, 0, mysql)
-
 
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
@@ -846,19 +855,20 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, metakit)
 
 def suite():
-    l = [
-         unittest.makeSuite(anydbmDBTestCase, 'test'),
-         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
-    ]
+    l = []
+#    l = [
+#         unittest.makeSuite(anydbmDBTestCase, 'test'),
+#         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
+#    ]
 #    return unittest.TestSuite(l)
 
     from roundup import backends
     p = []
-#    if hasattr(backends, 'mysql'):
-#        p.append('mysql')
-#        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
-#        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
-#    return unittest.TestSuite(l)
+    if hasattr(backends, 'mysql'):
+        p.append('mysql')
+        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+    #return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):
         p.append('gadfly')
