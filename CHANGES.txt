@@ -13,7 +13,7 @@ Fixed:
  . Missed some isFooType usages (thanks Mikhail Sobolev for spotting them)
  . Reverted back to sending change messages to the web editor of a node so
    that the change note message is actually genrated.
-
+ . CGI interface wasn't generating correct change messages.
 
 2001-08-08 - 0.2.6
 Note:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.22 2001-08-17 00:08:10 richard Exp $
+# $Id: cgi_client.py,v 1.23 2001-08-29 04:47:18 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -199,7 +199,7 @@ class Client:
         num_re = re.compile('^\d+$')
         if keys:
             try:
-                props, changed = parsePropsFromForm(cl, self.form)
+                props, changed = parsePropsFromForm(cl, self.form, self.nodeid)
                 cl.set(self.nodeid, **props)
                 self._post_editnode(self.nodeid, changed)
                 # and some nice feedback for the user
@@ -276,14 +276,10 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
-        # TODO: this should be an auditor
-        # see if we want to send a message to the nosy list...
+        # generate an edit message - nosyreactor will send it
+        # don't bother if there's no messages or nosy list
         props = cl.getprops()
-        # don't do the message thing if there's no nosy list
-        nosy = 0
-        if props.has_key('nosy'):
-            nosy = cl.get(nid, 'nosy')
-            nosy = len(nosy)
+        nosy = len(cl.get(nid, 'nosy', []))
         if (nosy and props.has_key('messages') and
                 isinstance(props['messages'], hyperdb.Multilink) and
                 props['messages'].classname == 'msg'):
@@ -303,7 +299,6 @@ class Client:
                 summary = 'This %s has been edited through the web.\n'%cn
                 m = [summary]
 
-            # generate an edit message - nosyreactor will send it
             first = 1
             for name, prop in props.items():
                 if changes is not None and name not in changes: continue
@@ -333,7 +328,7 @@ class Client:
 
             # now create the message
             content = '\n'.join(m)
-            message_id = self.db.msg.create(author=self.getuid(),
+            message_id = self.db.msg.create(author='admin', #self.getuid(),
                 recipients=[], date=date.Date('.'), summary=summary,
                 content=content)
             messages = cl.get(nid, 'messages')
@@ -463,7 +458,7 @@ class Client:
     def __del__(self):
         self.db.close()
 
-def parsePropsFromForm(cl, form, note_changed=0):
+def parsePropsFromForm(cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
     '''
     props = {}
@@ -511,13 +506,17 @@ def parsePropsFromForm(cl, form, note_changed=0):
             value = l
         props[key] = value
         # if changed, set it
-        if note_changed and value != cl.get(self.nodeid, key):
+        if nodeid and value != cl.get(nodeid, key):
             changed.append(key)
             props[key] = value
     return props, changed
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/08/17 00:08:10  richard
+# reverted back to sending messages always regardless of who is doing the web
+# edit. change notes weren't being saved. bleah. hackish.
+#
 # Revision 1.21  2001/08/15 23:43:18  richard
 # Fixed some isFooTypes that I missed.
 # Refactored some code in the CGI code.

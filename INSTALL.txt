@@ -72,6 +72,12 @@ The email addresses used by the system by default are:
   roundup-admin@MAIL_DOMAIN  - roundup's internal use (problems, etc)
 
 
+Note:
+We run the instance as group "issue_tracker" and add the mail and web user
+("mail" and "apache" on our RedHat 7.1 system) to that group, as well as
+any admin people.
+
+
 Mail
 ----
 Set up a mail alias called "issue_tracker" as:

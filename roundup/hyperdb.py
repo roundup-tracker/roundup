@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.18 2001-08-16 07:34:59 richard Exp $
+# $Id: hyperdb.py,v 1.19 2001-08-29 04:47:18 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -265,7 +265,8 @@ class Class:
             if not node.has_key(key):
                 raise KeyError, key
 
-            if key == self.key:
+            # check to make sure we're not duplicating an existing key
+            if key == self.key and node[key] != value:
                 try:
                     self.lookup(value)
                 except KeyError:
@@ -794,6 +795,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/08/16 07:34:59  richard
+# better CGI text searching - but hidden filter fields are disappearing...
+#
 # Revision 1.17  2001/08/16 06:59:58  richard
 # all searches use re now - and they're all case insensitive
 #
