@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.24 2002-09-01 04:32:30 richard Exp $
+# $Id: dbinit.py,v 1.25 2002-09-02 07:00:22 richard Exp $
 
 import os
 
@@ -69,7 +69,8 @@ def open(name=None):
     #   content = String()    [saved to disk in <instance home>/db/files/]
     #   (it also gets the Class properties creation, activity and creator)
     msg = FileClass(db, "msg", 
-                    author=Link("user"), recipients=Multilink("user"), 
+                    author=Link("user", do_journal='no'),
+                    recipients=Multilink("user", do_journal='no'), 
                     date=Date(),         summary=String(), 
                     files=Multilink("file"),
                     messageid=String(),  inreplyto=String())
@@ -190,6 +191,15 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/09/01 04:32:30  richard
+# . Lots of cleanup in the classic html (stylesheet, search page, index page, ...)
+# . Reinstated searching, but not query saving yet
+# . Filtering only allows sorting and grouping by one property - all backends
+#   now implement this behaviour.
+# . Nosy list journalling turned off by default, everything else is on.
+# . Added some convenience methods (reverse, propchanged, [item] accesses, ...)
+# . Did I mention the stylesheet is much cleaner now? :)
+#
 # Revision 1.23  2002/08/30 08:30:45  richard
 # allow perms on user class
 #
