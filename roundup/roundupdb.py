@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.15 2001-10-23 01:00:18 richard Exp $
+# $Id: roundupdb.py,v 1.16 2001-10-30 00:54:45 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -44,7 +44,23 @@ class Database:
         '''
         (realname, address) = address
         users = self.user.stringFind(address=address)
-        if users: return users[0]
+        for dummy in range(2):
+            if len(users) > 1:
+                # make sure we don't match the anonymous or admin user
+                for user in users:
+                    if user == '1': continue
+                    if self.user.get(user, 'username') == 'anonymous': continue
+                    # first valid match will do
+                    return user
+                # well, I guess we have no choice
+                return user[0]
+            elif users:
+                return users[0]
+            # try to match the username to the address (for local
+            # submissions where the address is empty)
+            users = self.user.stringFind(username=address)
+
+        # couldn't match address or username, so create a new user
         return self.user.create(username=address, address=address,
             realname=realname)
 
@@ -200,6 +216,9 @@ class FileClass(Class):
 
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class):
+    # configuration
+    MESSAGES_TO_AUTHOR = 'no'
+
     # Overridden methods:
 
     def __init__(self, db, classname, **properties):
@@ -247,13 +266,25 @@ class IssueClass(Class):
         r = {}
         for recipid in recipients:
             r[recipid] = 1
+
+        # figure the author's id, and indicate they've received the message
         authid = self.db.msg.get(msgid, 'author')
         r[authid] = 1
 
-        # now figure the nosy people who weren't recipients
         sendto = []
+        # ... but duplicate the message to the author as long as it's not
+        # the anonymous user
+        if (self.MESSAGES_TO_AUTHOR == 'yes' and
+                self.db.user.get(authid, 'username') != 'anonymous'):
+            sendto.append(authid)
+
+        # now figure the nosy people who weren't recipients
         nosy = self.get(nodeid, 'nosy')
         for nosyid in nosy:
+            # Don't send nosy mail to the anonymous user (that user
+            # shouldn't appear in the nosy list, but just in case they
+            # do...)
+            if self.db.user.get(nosyid, 'username') == 'anonymous': continue
             if not r.has_key(nosyid):
                 sendto.append(nosyid)
                 recipients.append(nosyid)
@@ -278,6 +309,7 @@ class IssueClass(Class):
             # TODO attachments
             m = ['Subject: [%s%s] %s'%(cn, nodeid, title)]
             m.append('To: %s'%', '.join(sendto))
+            m.append('From: %s'%self.ISSUE_TRACKER_EMAIL)
             m.append('Reply-To: %s'%self.ISSUE_TRACKER_EMAIL)
             m.append('')
             # add author information
@@ -307,6 +339,13 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/10/23 01:00:18  richard
+# Re-enabled login and registration access after lopping them off via
+# disabling access for anonymous users.
+# Major re-org of the htmltemplate code, cleaning it up significantly. Fixed
+# a couple of bugs while I was there. Probably introduced a couple, but
+# things seem to work OK at the moment.
+#
 # Revision 1.14  2001/10/21 07:26:35  richard
 # feature #473127: Filenames. I modified the file.index and htmltemplate
 #  source so that the filename is used in the link and the creation

@@ -77,3 +77,7 @@ FILTER_POSITION, ANONYMOUS_ACCESS, ANONYMOUS_REGISTER have been added to
 the instance_config.py. Simplest solution is to copy the default values from
 template in the core source.
 
+MESSAGES_TO_AUTHOR has been added to the IssueClass in dbinit.py. Set to 'yes'
+to send nosy messages to the author. Default behaviour is to not send nosy
+messages to the author.
+

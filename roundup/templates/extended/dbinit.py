@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.12 2001-10-09 07:25:59 richard Exp $
+# $Id: dbinit.py,v 1.13 2001-10-30 00:54:45 richard Exp $
 
 import os
 
@@ -39,6 +39,7 @@ class IssueClass(roundupdb.IssueClass):
     ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
+    MESSAGES_TO_AUTHOR = instance_config.MESSAGES_TO_AUTHOR
 
  
 def open(name=None):
@@ -175,6 +176,10 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.11  2001/08/07 00:24:43  richard
 # stupid typo
 #

@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.25 2001-10-28 23:22:28 richard Exp $
+$Id: mailgw.py,v 1.26 2001-10-30 00:54:45 richard Exp $
 '''
 
 
@@ -365,17 +365,20 @@ Subject was: "%s"
             messages.append(message_id)
             props['messages'] = messages
 
-            # if the message is currently 'unread', then set it to 'chatting'
+            # if the message is currently 'unread' or 'resolved', then set
+            # it to 'chatting'
             if properties.has_key('status'):
                 try:
-                    # determine the id of 'unread' and 'chatting'
+                    # determine the id of 'unread', 'resolved' and 'chatting'
                     unread_id = self.db.status.lookup('unread')
+                    resolved_id = self.db.status.lookup('resolved')
                     chatting_id = self.db.status.lookup('chatting')
                 except KeyError:
                     pass
                 else:
                     if (not props.has_key('status') or
-                            props['status'] == unread_id):
+                            props['status'] == unread_id or
+                            props['status'] == resolved_id):
                         props['status'] = chatting_id
 
             cl.set(nodeid, **props)
@@ -441,6 +444,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/10/28 23:22:28  richard
+# fixed bug #474749 ] Indentations lost
+#
 # Revision 1.24  2001/10/23 22:57:52  richard
 # Fix unread->chatting auto transition, thanks Roch'e
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.8 2001-10-23 01:00:18 richard Exp $
+# $Id: instance_config.py,v 1.9 2001-10-30 00:54:45 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -71,8 +71,18 @@ ANONYMOUS_ACCESS = 'deny'
 # Deny or allow anonymous users to register through the web interface
 ANONYMOUS_REGISTER = 'deny'
 
+# Send nosy messages to the author of the message
+MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/10/23 01:00:18  richard
+# Re-enabled login and registration access after lopping them off via
+# disabling access for anonymous users.
+# Major re-org of the htmltemplate code, cleaning it up significantly. Fixed
+# a couple of bugs while I was there. Probably introduced a couple, but
+# things seem to work OK at the moment.
+#
 # Revision 1.7  2001/10/22 03:25:01  richard
 # Added configuration for:
 #  . anonymous user access and registration (deny/allow)

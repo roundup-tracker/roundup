@@ -2,6 +2,11 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-10-?? - 0.3.0 
+Feature:
+ . #467129 ] Lossage when username=e-mail-address
+ . #473123 ] Change message generation for author
+ . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
+
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
  . 'unread' to 'chatting' automagic status change was b0rken.
