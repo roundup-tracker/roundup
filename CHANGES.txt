@@ -39,6 +39,7 @@ Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
 - *dbm-style backends nuke() method now clear id counters
 - removed safeget() from the API (sf bug 994750)
+- demo tracker is always set up on localhost (sf bug 1049101)
 
 
 2004-10-?? 0.7.9
@@ -52,6 +53,8 @@ Fixed:
 - enforce View Permission when serving file content (sf bug 1050470)
 - don't index common words (sf bug 1046612)
 - don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
+- TAL expressions like 'request/show/whatever' return True
+  if the request does not contain explicit @columns list
 
 
 2004-10-15 0.7.8
