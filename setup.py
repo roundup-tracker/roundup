@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.45 2003-04-07 03:47:44 richard Exp $
+# $Id: setup.py,v 1.46 2003-04-10 04:33:02 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -241,20 +241,21 @@ def install_demo():
     # figure basic params for server
     hostname = socket.gethostname()
     port = 8080
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     while 1:
         print 'Trying to set up web server on port %d ...'%port,
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            s.bind((hostname, port))
-        except socket.error, error:
-            if error.errno != errno.EADDRINUSE:
+            s.connect((hostname, port))
+        except socket.error, e:
+            if not hasattr(e, 'args') or e.args[0] != errno.ECONNREFUSED:
                 raise
-            print 'already in use.'
-            port += 100
-        else:
             print 'should be ok.'
             break
+        else:
+            s.close()
+            print 'already in use.'
+            port += 100
     url = 'http://%s:%s/demo/'%(hostname, port)
 
     # write the config
@@ -283,6 +284,7 @@ def install_demo():
     httpd = BaseHTTPServer.HTTPServer((hostname, port), RoundupRequestHandler)
     print 'Server running - connect to:\n  %s'%url
     print 'You may log in as "demo"/"demo" or "admin"/"admin".'
+    print 'Hit Control-C to stop the server.'
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
