@@ -19,7 +19,7 @@ Modified for Roundup 0.5 release:
 - changed imports to import from roundup.cgi
 """
 
-__version__='$Revision: 1.2 $'[11:-2]
+__version__='$Revision: 1.3 $'[11:-2]
 
 import re, sys
 from roundup.cgi import ZTUtils
@@ -223,9 +223,7 @@ class Context:
         return v
 
     evaluateValue = evaluate
-
-    def evaluateBoolean(self, expr):
-        return not not self.evaluate(expr)
+    evaluateBoolean = evaluate
 
     def evaluateText(self, expr, None=None):
         text = self.evaluate(expr)
