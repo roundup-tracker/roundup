@@ -467,9 +467,9 @@ class HTMLClass(HTMLPermissions):
             properties.sort()
             properties = ','.join(properties)
         if property:
-            property = '&property=%s'%property
+            property = '&amp;property=%s'%property
         return '<a class="classhelp" href="javascript:help_window(\'%s?'\
-            ':startwith=0&:template=help&properties=%s%s\', \'%s\', \
+            ':startwith=0&amp;:template=help&amp;properties=%s%s\', \'%s\', \
             \'%s\')">%s</a>'%(self.classname, properties, property, width,
             height, label)
 
