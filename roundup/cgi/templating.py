@@ -636,7 +636,9 @@ class HTMLItem(HTMLPermissions):
                             d = date.Date(args[k]).local(timezone)
                             cell.append('%s: %s'%(k, str(d)))
                             if current.has_key(k):
-                                cell[-1] += ' -> %s' % date.Date(current[k]).local(timezone)
+                                if not current[k] == '(no value)' and current[k]:
+                                    current[k] = date.Date(current[k]).local(timezone)
+                                cell[-1] += ' -> %s' % current[k]
                                 current[k] = str(d)
 
                         elif isinstance(prop, hyperdb.Interval) and args[k]:
