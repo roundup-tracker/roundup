@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.21 2003-03-19 03:25:30 richard Exp $ 
+# $Id: test_dates.py,v 1.22 2003-03-19 05:18:11 richard Exp $ 
 
 import unittest, time
 
@@ -35,6 +35,8 @@ class DateTestCase(unittest.TestCase):
         ae = self.assertEqual
         date = Date("2000-04-17")
         ae(str(date), '2000-04-17.00:00:00')
+        date = Date("2000/04/17")
+        ae(str(date), '2000-04-17.00:00:00')
         date = Date("2000-4-7")
         ae(str(date), '2000-04-07.00:00:00')
         date = Date("2000-4-17")
@@ -43,6 +45,8 @@ class DateTestCase(unittest.TestCase):
         y, m, d, x, x, x, x, x, x = time.gmtime(time.time())
         ae(str(date), '%s-01-25.00:00:00'%y)
         date = Date("2000-04-17.03:45")
+        ae(str(date), '2000-04-17.03:45:00')
+        date = Date("2000/04/17.03:45")
         ae(str(date), '2000-04-17.03:45:00')
         date = Date("08-13.22:13")
         ae(str(date), '%s-08-13.22:13:00'%y)
@@ -161,6 +165,15 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval(' - 1 d 2:50 ')), '- 1d 2:50')
         ae(str(Interval(' 14:00 ')), '+ 14:00')
         ae(str(Interval(' 0:04:33 ')), '+ 0:04:33')
+
+    def testIntervalInitDate(self):
+        ae = self.assertEqual
+        now = Date('.')
+        now.hour = now.minute = now.second = 0
+        then = now + Interval('2d')
+        ae(str(Interval(str(then))), '+ 2d')
+        then = now - Interval('2d')
+        ae(str(Interval(str(then))), '- 2d')
 
     def testIntervalAdd(self):
         ae = self.assertEqual

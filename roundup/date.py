@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.49 2003-03-19 03:25:30 richard Exp $
+# $Id: date.py,v 1.50 2003-03-19 05:18:10 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -96,7 +96,7 @@ class Date:
                 self.second, x, x, x = time.gmtime(ts)
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
-            (((?P<y>\d\d\d\d)-)?(?P<m>\d\d?)?-(?P<d>\d\d?))? # [yyyy-]mm-dd
+            (((?P<y>\d\d\d\d)[/-])?(?P<m>\d\d?)?[/-](?P<d>\d\d?))? # [yyyy-]mm-dd
             (?P<n>\.)?                                     # .
             (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
             (?P<o>.+)?                                     # offset
@@ -147,7 +147,7 @@ class Date:
 
         if info.get('o', None):
             try:
-                self.applyInterval(Interval(info['o']))
+                self.applyInterval(Interval(info['o'], allowdate=0))
             except ValueError:
                 raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
                     '[[h]h:mm[:ss]][offset]')
@@ -321,6 +321,10 @@ class Interval:
         <Interval + 6m>
         >>> Interval('1:00')/2
         <Interval + 0:30>
+        >>> Interval('2003-03-18')
+        <Interval + [number of days between now and 2003-03-18]>
+        >>> Interval('-4d 2003-03-18')
+        <Interval + [number of days between now and 2003-03-14]>
 
     Interval arithmetic is handled in a couple of special ways, trying
     to cater for the most common cases. Fundamentally, Intervals which
@@ -341,10 +345,10 @@ class Interval:
 
     TODO: more examples, showing the order of addition operation
     '''
-    def __init__(self, spec, sign=1):
+    def __init__(self, spec, sign=1, allowdate=1):
         """Construct an interval given a specification."""
         if type(spec) == type(''):
-            self.set(spec)
+            self.set(spec, allowdate)
         else:
             if len(spec) == 7:
                 self.sign, self.year, self.month, self.day, self.hour, \
@@ -355,14 +359,18 @@ class Interval:
                 self.year, self.month, self.day, self.hour, self.minute, \
                     self.second = spec
 
-    def set(self, spec, interval_re=re.compile('''
+    def set(self, spec, allowdate=1, interval_re=re.compile('''
             \s*(?P<s>[-+])?         # + or -
             \s*((?P<y>\d+\s*)y)?    # year
             \s*((?P<m>\d+\s*)m)?    # month
             \s*((?P<w>\d+\s*)w)?    # week
             \s*((?P<d>\d+\s*)d)?    # day
             \s*(((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
-            \s*''', re.VERBOSE), serialised_re=re.compile('''
+            \s*(?P<D>
+                 (\d\d\d\d[/-])?(\d\d?)?[/-](\d\d?)?       # [yyyy-]mm-dd
+                 \.?                                       # .
+                 (\d?\d:\d\d)?(:\d\d)?                     # hh:mm:ss
+               )?''', re.VERBOSE), serialised_re=re.compile('''
             (?P<s>[+-])?1?(?P<y>([ ]{3}\d|\d{4}))(?P<m>\d{2})(?P<d>\d{2})
             (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE)):
         ''' set the date to the value in spec
@@ -375,8 +383,9 @@ class Interval:
             m = interval_re.match(spec)
             if not m:
                 raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
-                    '[#d] [[[H]H:MM]:SS]')
+                    '[#d] [[[H]H:MM]:SS] [date spec]')
 
+        # pull out all the info specified
         info = m.groupdict()
         valid = 0
         for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
@@ -385,7 +394,8 @@ class Interval:
                 valid = 1
                 setattr(self, attr, int(info[group]))
 
-        if not valid:
+        # make sure it's valid
+        if not valid and not info['D']:
             raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
                 '[#d] [[[H]H:MM]:SS]')
 
@@ -394,6 +404,17 @@ class Interval:
 
         if info['s'] is not None:
             self.sign = {'+':1, '-':-1}[info['s']]
+
+        # use a date spec if one is given
+        if allowdate and info['D'] is not None:
+            now = Date('.')
+            date = Date(info['D'])
+            # if no time part was specified, nuke it in the "now" date
+            if not date.hour or date.minute or date.second:
+                now.hour = now.minute = now.second = 0
+            if date != now:
+                y = now - (date + self)
+                self.__init__(y.get_tuple())
 
     def __cmp__(self, other):
         """Compare this interval to another interval."""
