@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.203 2004-11-20 17:46:24 a1s Exp $
+# $Id: client.py,v 1.204 2004-11-21 13:27:03 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -215,14 +215,14 @@ class Client:
         try:
             self.determine_charset()
 
+            # make sure we're identified (even anonymously)
+            self.determine_user()
+
             # figure out the context and desired content template
             # do this first so we don't authenticate for static files
             # Note: this method opens the database as "admin" in order to
             # perform context checks
             self.determine_context()
-
-            # make sure we're identified (even anonymously)
-            self.determine_user()
 
             # possibly handle a form submit action (may change self.classname
             # and self.template, and may also append error/ok_messages)
