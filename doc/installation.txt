@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.74 $
+:Version: $Revision: 1.75 $
 
 .. contents::
 
@@ -267,14 +267,14 @@ Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
 bsddb      Slow        Few   Usually available
-sqlite     Fastest(*)  Few   Needs install (SQLite_)
+sqlite     Fastest(*)  Few   Needs install (PySQLite_)
 metakit    Fastest(*)  Few   Needs install (metakit_)
 postgresql Fast        Many  Needs install/admin (psycopg_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
 ========== =========== ===== ==============================
 
 **sqlite** and **metakit**
-  These use the embedded database engines SQLite_ and metakit_ to provide
+  These use the embedded database engines PySQLite_ and metakit_ to provide
   very fast backends. They are not suitable for trackers which will have
   many simultaneous users.
 **postgresql**
@@ -631,7 +631,7 @@ Next: `User Guide`_
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`administration guide`: admin_guide.html
-.. _sqlite: http://www.hwaci.com/sw/sqlite/
+.. _pysqlite: http://pysqlite.sourceforge.net/
 .. _metakit: http://www.equi4.com/metakit/
 .. _Psycopg: http://initd.org/software/initd/psycopg
 .. _MySQLdb: http://sourceforge.net/projects/mysql-python
