@@ -1,0 +1,1243 @@
+from roundup import hyperdb, date, password, roundupdb
+import metakit
+import re, marshal, os, sys, weakref, time, calendar
+from roundup.roundup_indexer import RoundupIndexer
+
+_instances = weakref.WeakValueDictionary()
+
+def Database(config, journaltag=None):
+    if _instances.has_key(id(config)):
+        db = _instances[id(config)]
+        old = db.journaltag
+        db.journaltag = journaltag
+        if hasattr(db, 'curuserid'):
+            delattr(db, 'curuserid')
+        return db
+    else:
+        db = _Database(config, journaltag)
+        _instances[id(config)] = db
+        return db
+
+class _Database(hyperdb.Database):
+    def __init__(self, config, journaltag=None):
+        self.config = config
+        self.journaltag = journaltag
+        self.classes = {}
+        self._classes = []
+        self.dirty = 0
+        self.__RW = 0
+        self._db = self.__open()
+        self.indexer = RoundupIndexer(self.config.DATABASE)
+        os.umask(0002)
+            
+    # --- defined in ping's spec
+    def __getattr__(self, classname):
+        if classname == 'curuserid':
+            try:
+                self.curuserid = x = int(self.classes['user'].lookup(self.journaltag))
+            except KeyError:
+                x = 0
+            return x
+        return self.getclass(classname)
+    def getclass(self, classname):
+        return self.classes[classname]
+    def getclasses(self):
+        return self.classes.keys()
+    # --- end of ping's spec 
+    # --- exposed methods
+    def commit(self):
+        if self.dirty:
+            if self.__RW:
+                self._db.commit()
+                for cl in self.classes.values():
+                    cl._commit()
+            else:
+                raise RuntimeError, "metakit is open RO"
+        self.dirty = 0
+    def rollback(self):
+        if self.dirty:
+            for cl in self.classes.values():
+                cl._rollback()
+            self._db.rollback()
+        self.dirty = 0
+    def clear(self):
+        for cl in self.classes.values():
+            cl._clear()
+    def hasnode(self, classname, nodeid):
+        return self.getclass(clasname).hasnode(nodeid)
+    def pack(self, pack_before):
+        pass
+    def addclass(self, cl):
+        self.classes[cl.name] = cl
+    def addjournal(self, tablenm, nodeid, action, params):
+        tblid = self.tables.find(name=tablenm)
+        if tblid == -1:
+            tblid = self.tables.append(name=tablenm)
+        # tableid:I,nodeid:I,date:I,user:I,action:I,params:B
+        self.hist.append(tableid=tblid,
+                         nodeid=int(nodeid),
+                         date=int(time.time()),
+                         action=action,
+                         user = self.curuserid,
+                         params = marshal.dumps(params))
+    def gethistory(self, tablenm, nodeid):
+        rslt = []
+        tblid = self.tables.find(name=tablenm)
+        if tblid == -1:
+            return rslt
+        q = self.hist.select(tableid=tblid, nodeid=int(nodeid))
+        i = 0
+        userclass = self.getclass('user')
+        for row in q:
+            try:
+                params = marshal.loads(row.params)
+            except ValueError:
+                print "history couldn't unmarshal %r" % row.params
+                params = {}
+            usernm = userclass.get(str(row.user), 'username')
+            dt = date.Date(time.gmtime(row.date))
+            rslt.append((i, dt, usernm, _actionnames[row.action], params))
+            i += 1
+        return rslt
+            
+    def close(self):
+        import time
+        now = time.time
+        start = now()
+        for cl in self.classes.values():
+            cl.db = None
+        #self._db.rollback()
+        #print "pre-close cleanup of DB(%d) took %2.2f secs" % (self.__RW, now()-start)
+        self._db = None
+        #print "close of DB(%d) took %2.2f secs" % (self.__RW, now()-start)
+        self.classes = {}
+        try:
+            del _instances[id(self.config)]
+        except KeyError:
+            pass
+        self.__RW = 0
+        
+    # --- internal
+    def __open(self):
+        self.dbnm = db = os.path.join(self.config.DATABASE, 'tracker.mk4')
+        self.fastopen = 0
+        if os.path.exists(db):
+            dbtm = os.path.getmtime(db)
+            pkgnm = self.config.__name__.split('.')[0]
+            schemamod = sys.modules.get(pkgnm+'.dbinit', None)
+            if schemamod:
+                if os.path.exists(schemamod.__file__):
+                    schematm = os.path.getmtime(schemamod.__file__)
+                    if schematm < dbtm:
+                        # found schema mod - it's older than the db
+                        self.fastopen = 1
+                else:
+                     # can't find schemamod - must be frozen
+                    self.fastopen = 1
+        else:
+            self.__RW = 1
+        db = metakit.storage(db, self.__RW)
+        hist = db.view('history')
+        tables = db.view('tables')
+        if not self.fastopen:
+            if not hist.structure():
+                hist = db.getas('history[tableid:I,nodeid:I,date:I,user:I,action:I,params:B]')
+            if not tables.structure():
+                tables = db.getas('tables[name:S]')
+        self.tables = tables
+        self.hist = hist
+        return db
+    def isReadOnly(self):
+        return self.__RW == 0
+    def getWriteAccess(self):
+        if self.journaltag is not None and self.__RW == 0:
+            now = time.time
+            start = now()
+            self._db = None
+            #print "closing the file took %2.2f secs" % (now()-start)
+            start = now()
+            self._db = metakit.storage(self.dbnm, 1)
+            self.__RW = 1
+            self.hist = self._db.view('history')
+            self.tables = self._db.view('tables')
+            #print "getting RW access took %2.2f secs" % (now()-start)
+    
+_STRINGTYPE = type('')
+_LISTTYPE = type([])
+_CREATE, _SET, _RETIRE, _LINK, _UNLINK = range(5)
+
+_actionnames = {
+    _CREATE : 'create',
+    _SET : 'set',
+    _RETIRE : 'retire',
+    _LINK : 'link',
+    _UNLINK : 'unlink',
+}
+
+_marker = []
+
+_ALLOWSETTINGPRIVATEPROPS = 0
+
+class Class:    # no, I'm not going to subclass the existing!
+    privateprops = None
+    def __init__(self, db, classname, **properties):
+        self.db = weakref.proxy(db)
+        self.name = classname
+        self.keyname = None
+        self.ruprops = properties
+        self.privateprops = { 'id' : hyperdb.String(),
+                              'activity' : hyperdb.Date(),
+                              'creation' : hyperdb.Date(),
+                              'creator'  : hyperdb.Link('user') }
+        self.auditors = {'create': [], 'set': [], 'retire': []} # event -> list of callables
+        self.reactors = {'create': [], 'set': [], 'retire': []} # ditto
+        view = self.__getview()
+        self.maxid = 1
+        if view:
+            self.maxid = view[-1].id + 1
+        self.uncommitted = {}
+        self.rbactions = []
+        # people reach inside!!
+        self.properties = self.ruprops
+        self.db.addclass(self)
+        self.idcache = {}
+        
+    # --- the roundup.Class methods
+    def audit(self, event, detector):
+        l = self.auditors[event]
+        if detector not in l:
+            self.auditors[event].append(detector)
+    def fireAuditors(self, action, nodeid, newvalues):
+        for audit in self.auditors[action]:
+            audit(self.db, self, nodeid, newvalues)
+    def fireReactors(self, action, nodeid, oldvalues):
+        for react in self.reactors[action]:
+            react(self.db, self, nodeid, oldvalues)
+    def react(self, event, detector):
+        l = self.reactors[event]
+        if detector not in l:
+            self.reactors[event].append(detector)
+    # --- the hyperdb.Class methods
+    def create(self, **propvalues):
+        rowdict = {}
+        rowdict['id'] = newid = self.maxid
+        self.maxid += 1
+        ndx = self.getview(1).append(rowdict)
+        propvalues['#ISNEW'] = 1
+        try:
+            self.set(str(newid), **propvalues)
+        except Exception:
+            self.maxid -= 1
+            raise
+        return str(newid)
+    
+    def get(self, nodeid, propname, default=_marker, cache=1):
+        # default and cache aren't in the spec
+        # cache=0 means "original value"
+
+        view = self.getview()        
+        id = int(nodeid)
+        if cache == 0:
+            oldnode = self.uncommitted.get(id, None)
+            if oldnode and oldnode.has_key(propname):
+                return oldnode[propname]
+        ndx = self.idcache.get(id, None)
+        if ndx is None:
+            ndx = view.find(id=id)
+            if ndx < 0:
+                raise IndexError, "%s has no node %s" % (self.name, nodeid)
+            self.idcache[id] = ndx
+        raw = getattr(view[ndx], propname)
+        rutyp = self.ruprops.get(propname, None)
+        if rutyp is None:
+            rutyp = self.privateprops[propname]
+        converter = _converters.get(rutyp.__class__, None)
+        if converter:
+            raw = converter(raw)
+        return raw
+        
+    def set(self, nodeid, **propvalues):
+        
+        isnew = 0
+        if propvalues.has_key('#ISNEW'):
+            isnew = 1
+            del propvalues['#ISNEW']
+        if not propvalues:
+            return
+        if propvalues.has_key('id'):
+            raise KeyError, '"id" is reserved'
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+        view = self.getview(1)
+        # node must exist & not be retired
+        id = int(nodeid)
+        ndx = view.find(id=id)
+        if ndx < 0:
+            raise IndexError, "%s has no node %s" % (self.name, nodeid)
+        row = view[ndx]
+        if row._isdel:
+            raise IndexError, "%s has no node %s" % (self.name, nodeid)
+        oldnode = self.uncommitted.setdefault(id, {})
+        changes = {}
+        
+        for key, value in propvalues.items():
+            # this will raise the KeyError if the property isn't valid
+            # ... we don't use getprops() here because we only care about
+            # the writeable properties.
+            if _ALLOWSETTINGPRIVATEPROPS:
+                prop = self.ruprops.get(key, None)
+                if not prop:
+                    prop = self.privateprops[key]
+            else:
+                prop = self.ruprops[key]
+            converter = _converters.get(prop.__class__, lambda v: v)
+            # if the value's the same as the existing value, no sense in
+            # doing anything
+            oldvalue = converter(getattr(row, key))
+            if  value == oldvalue:
+                del propvalues[key]
+                continue
+            
+            # check to make sure we're not duplicating an existing key
+            if key == self.keyname:
+                iv = self.getindexview(1)
+                ndx = iv.find(k=value)
+                if ndx == -1:
+                    iv.append(k=value, i=row.id)
+                    if not isnew:
+                        ndx = iv.find(k=oldvalue)
+                        if ndx > -1:
+                            iv.delete(ndx)
+                else:
+                    raise ValueError, 'node with key "%s" exists'%value
+
+            # do stuff based on the prop type
+            if isinstance(prop, hyperdb.Link):
+                link_class = prop.classname
+                # if it isn't a number, it's a key
+                if type(value) != _STRINGTYPE:
+                    raise ValueError, 'link value must be String'
+                try:
+                    int(value)
+                except ValueError:
+                    try:
+                        value = self.db.getclass(link_class).lookup(value)
+                    except (TypeError, KeyError):
+                        raise IndexError, 'new property "%s": %s not a %s'%(
+                            key, value, prop.classname)
+
+                if not self.db.getclass(link_class).hasnode(value):
+                    raise IndexError, '%s has no node %s'%(link_class, value)
+
+                setattr(row, key, int(value))
+                changes[key] = oldvalue
+                
+                if prop.do_journal:
+                    # register the unlink with the old linked node
+                    if oldvalue:
+                        self.db.addjournal(link_class, value, _UNLINK, (self.name, str(row.id), key))
+
+                    # register the link with the newly linked node
+                    if value:
+                        self.db.addjournal(link_class, value, _LINK, (self.name, str(row.id), key))
+
+            elif isinstance(prop, hyperdb.Multilink):
+                if type(value) != _LISTTYPE:
+                    raise TypeError, 'new property "%s" not a list of ids'%key
+                link_class = prop.classname
+                l = []
+                for entry in value:
+                    if type(entry) != _STRINGTYPE:
+                        raise ValueError, 'new property "%s" link value ' \
+                            'must be a string'%key
+                    # if it isn't a number, it's a key
+                    try:
+                        int(entry)
+                    except ValueError:
+                        try:
+                            entry = self.db.getclass(link_class).lookup(entry)
+                        except (TypeError, KeyError):
+                            raise IndexError, 'new property "%s": %s not a %s'%(
+                                key, entry, prop.classname)
+                    l.append(entry)
+                propvalues[key] = value = l
+
+                # handle removals
+                rmvd = []
+                for id in oldvalue:
+                    if id not in value:
+                        rmvd.append(id)
+                        # register the unlink with the old linked node
+                        if prop.do_journal:
+                            self.db.addjournal(link_class, id, _UNLINK, (self.name, str(row.id), key))
+
+                # handle additions
+                adds = []
+                for id in value:
+                    if id not in oldvalue:
+                        if not self.db.getclass(link_class).hasnode(id):
+                            raise IndexError, '%s has no node %s'%(
+                                link_class, id)
+                        adds.append(id)
+                        # register the link with the newly linked node
+                        if prop.do_journal:
+                            self.db.addjournal(link_class, id, _LINK, (self.name, str(row.id), key))
+                            
+                sv = getattr(row, key)
+                i = 0
+                while i < len(sv):
+                    if str(sv[i].fid) in rmvd:
+                        sv.delete(i)
+                    else:
+                        i += 1
+                for id in adds:
+                    sv.append(fid=int(id))
+                changes[key] = oldvalue
+                    
+
+            elif isinstance(prop, hyperdb.String):
+                if value is not None and type(value) != _STRINGTYPE:
+                    raise TypeError, 'new property "%s" not a string'%key
+                setattr(row, key, value)
+                changes[key] = oldvalue
+                if hasattr(prop, 'isfilename') and prop.isfilename:
+                    propvalues[key] = os.path.basename(value)
+
+            elif isinstance(prop, hyperdb.Password):
+                if not isinstance(value, password.Password):
+                    raise TypeError, 'new property "%s" not a Password'% key
+                setattr(row, key, str(value))
+                changes[key] = str(oldvalue)
+                propvalues[key] = str(value)
+
+            elif value is not None and isinstance(prop, hyperdb.Date):
+                if not isinstance(value, date.Date):
+                    raise TypeError, 'new property "%s" not a Date'% key
+                setattr(row, key, int(calendar.timegm(value.get_tuple())))
+                changes[key] = str(oldvalue)
+                propvalues[key] = str(value)
+
+            elif value is not None and isinstance(prop, hyperdb.Interval):
+                if not isinstance(value, date.Interval):
+                    raise TypeError, 'new property "%s" not an Interval'% key
+                setattr(row, key, str(value))
+                changes[key] = str(oldvalue)
+                propvalues[key] = str(value)
+
+            oldnode[key] = oldvalue
+
+        # nothing to do?
+        if not propvalues:
+            return
+        if not row.activity:
+            row.activity = int(time.time())
+        if isnew:
+            if not row.creation:
+                row.creation = int(time.time())
+            if not row.creator:
+                row.creator = self.db.curuserid
+            
+        self.db.dirty = 1
+        if isnew:
+            self.db.addjournal(self.name, nodeid, _CREATE, {})
+        else:
+            self.db.addjournal(self.name, nodeid, _SET, changes)
+
+    def retire(self, nodeid):
+        view = self.getview(1)
+        ndx = view.find(id=int(nodeid))
+        if ndx < 0:
+            raise KeyError, "nodeid %s not found" % nodeid
+        row = view[ndx]
+        oldvalues = self.uncommitted.setdefault(row.id, {})
+        oldval = oldvalues['_isdel'] = row._isdel
+        row._isdel = 1
+        self.db.addjournal(self.name, nodeid, _RETIRE, {})
+        iv = self.getindexview(1)
+        ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
+        if ndx > -1:
+            iv.delete(ndx)
+        self.db.dirty = 1
+    def history(self, nodeid):
+        return self.db.gethistory(self.name, nodeid)
+    def setkey(self, propname):
+        if self.keyname:
+            if propname == self.keyname:
+                return
+            raise ValueError, "%s already indexed on %s" % (self.name, self.keyname)
+        # first setkey for this run
+        self.keyname = propname
+        iv = self.db._db.view('_%s' % self.name)
+        if self.db.fastopen or iv.structure():
+            return
+        # very first setkey ever
+        iv = self.db._db.getas('_%s[k:S,i:I]' % self.name)
+        iv = iv.ordered(1)
+        #XXX
+        print "setkey building index"
+        for row in self.getview():
+            iv.append(k=getattr(row, propname), i=row.id)
+    def getkey(self):
+        return self.keyname
+    def lookup(self, keyvalue):
+        if type(keyvalue) is not _STRINGTYPE:
+            raise TypeError, "%r is not a string" % keyvalue
+        iv = self.getindexview()
+        if iv:
+            ndx = iv.find(k=keyvalue)
+            if ndx > -1:
+                return str(iv[ndx].i)
+        else:
+            view = self.getview()
+            ndx = view.find({self.keyname:keyvalue, '_isdel':0})
+            if ndx > -1:
+                return str(view[ndx].id)
+        raise KeyError, keyvalue
+    def find(self, **propspec):
+        """Get the ids of nodes in this class which link to the given nodes.
+
+        'propspec' consists of keyword args propname={nodeid:1,}   
+          'propname' must be the name of a property in this class, or a
+            KeyError is raised.  That property must be a Link or Multilink
+            property, or a TypeError is raised.
+        Any node in this class whose propname property links to any of the
+        nodeids will be returned. Used by the full text indexing, which knows
+        that "foo" occurs in msg1, msg3 and file7; so we have hits on these issues:
+            db.issue.find(messages={'1':1,'3':1}, files={'7':1})
+        """
+        propspec = propspec.items()
+        for propname, nodeid in propspec:
+            # check the prop is OK
+            prop = self.ruprops[propname]
+            if not isinstance(prop, hyperdb.Link) and not isinstance(prop, hyperdb.Multilink):
+                raise TypeError, "'%s' not a Link/Multilink property"%propname
+
+        vws = []
+        for propname, ids in propspec:
+            prop = self.ruprops[propname]
+            view = self.getview()
+            if isinstance(prop, hyperdb.Multilink):
+                view = view.flatten(getattr(view, propname))
+                def ff(row, nm=propname, ids=ids):
+                    return ids.has_key(str(row.fid))
+            else:
+                def ff(row, nm=propname, ids=ids):
+                    return ids.has_key(str(getattr(row, nm)))
+            ndxview = view.filter(ff)
+            vws.append(ndxview.unique())
+        ndxview = vws[0]
+        for v in vws[1:]:
+            ndxview = ndxview.union(v)
+        view = view.remapwith(ndxview)
+        rslt = []
+        for row in view:
+            rslt.append(str(row.id))
+        return rslt
+            
+
+    def list(self):
+        l = []
+        for row in self.getview().select(_isdel=0):
+            l.append(str(row.id))
+        return l
+    def count(self):
+        return len(self.getview())
+    def getprops(self, protected=1):
+        # protected is not in ping's spec
+        allprops = self.ruprops.copy()
+        if protected and self.privateprops is not None:
+            allprops.update(self.privateprops)
+        return allprops
+    def addprop(self, **properties):
+        for key in properties.keys():
+            if self.ruprops.has_key(key):
+                raise ValueError, "%s is already a property of %s" % (key, self.name)
+        self.ruprops.update(properties)
+        view = self.__getview()
+    # ---- end of ping's spec
+    def filter(self, search_matches, filterspec, sort, group):
+        # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
+        # filterspec is a dict {propname:value}
+        # sort and group are lists of propnames
+        
+        where = {'_isdel':0}
+        mlcriteria = {}
+        regexes = {}
+        orcriteria = {}
+        for propname, value in filterspec.items():
+            prop = self.ruprops.get(propname, None)
+            if prop is None:
+                prop = self.privateprops[propname]
+            if isinstance(prop, hyperdb.Multilink):
+                if type(value) is not _LISTTYPE:
+                    value = [value]
+                # transform keys to ids
+                u = []
+                for item in value:
+                    try:
+                        item = int(item)
+                    except (TypeError, ValueError):
+                        item = int(self.db.getclass(prop.classname).lookup(item))
+                    if item == -1:
+                        item = 0
+                    u.append(item)
+                mlcriteria[propname] = u
+            elif isinstance(prop, hyperdb.Link):
+                if type(value) is not _LISTTYPE:
+                    value = [value]
+                # transform keys to ids
+                u = []
+                for item in value:
+                    try:
+                        item = int(item)
+                    except (TypeError, ValueError):
+                        item = int(self.db.getclass(prop.classname).lookup(item))
+                    if item == -1:
+                        item = 0
+                    u.append(item)
+                if len(u) == 1:
+                    where[propname] = u[0]
+                else:
+                    orcriteria[propname] = u
+            elif isinstance(prop, hyperdb.String):
+                # simple glob searching
+                v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', value)
+                v = v.replace('?', '.')
+                v = v.replace('*', '.*?')
+                regexes[propname] = re.compile(v, re.I)
+            elif propname == 'id':
+                where[propname] = int(value)
+            else:
+                where[propname] = str(value)
+        v = self.getview()
+        #print "filter start at  %s" % time.time() 
+        if where:
+            v = v.select(where)
+        #print "filter where at  %s" % time.time() 
+            
+        if mlcriteria:
+                    # multilink - if any of the nodeids required by the
+                    # filterspec aren't in this node's property, then skip
+                    # it
+            def ff(row, ml=mlcriteria):
+                for propname, values in ml.items():
+                    sv = getattr(row, propname)
+                    for id in values:
+                        if sv.find(fid=id) == -1:
+                            return 0
+                return 1
+            iv = v.filter(ff)
+            v = v.remapwith(iv)
+
+        #print "filter mlcrit at %s" % time.time() 
+        
+        if orcriteria:
+            def ff(row, crit=orcriteria):
+                for propname, allowed in crit.items():
+                    val = getattr(row, propname)
+                    if val not in allowed:
+                        return 0
+                return 1
+            
+            iv = v.filter(ff)
+            v = v.remapwith(iv)
+        
+        #print "filter orcrit at %s" % time.time() 
+        if regexes:
+            def ff(row, r=regexes):
+                for propname, regex in r.items():
+                    val = getattr(row, propname)
+                    if not regex.search(val):
+                        return 0
+                return 1
+            
+            iv = v.filter(ff)
+            v = v.remapwith(iv)
+        #print "filter regexs at %s" % time.time() 
+        
+        if sort or group:
+            sortspec = []
+            rev = []
+            for propname in group + sort:
+                isreversed = 0
+                if propname[0] == '-':
+                    propname = propname[1:]
+                    isreversed = 1
+                try:
+                    prop = getattr(v, propname)
+                except AttributeError:
+                    # I can't sort on 'activity', cause it's psuedo!!
+                    continue
+                if isreversed:
+                    rev.append(prop)
+                sortspec.append(prop)
+            v = v.sortrev(sortspec, rev)[:] #XXX Aaaabh
+        #print "filter sort   at %s" % time.time() 
+            
+        rslt = []
+        for row in v:
+            id = str(row.id)
+            if search_matches is not None:
+                if search_matches.has_key(id):
+                    rslt.append(id)
+            else:
+                rslt.append(id)
+        return rslt
+    
+    def hasnode(self, nodeid):
+        return int(nodeid) < self.maxid
+    
+    def labelprop(self, default_to_id=0):
+        ''' Return the property name for a label for the given node.
+
+        This method attempts to generate a consistent label for the node.
+        It tries the following in order:
+            1. key property
+            2. "name" property
+            3. "title" property
+            4. first property from the sorted property name list
+        '''
+        k = self.getkey()
+        if  k:
+            return k
+        props = self.getprops()
+        if props.has_key('name'):
+            return 'name'
+        elif props.has_key('title'):
+            return 'title'
+        if default_to_id:
+            return 'id'
+        props = props.keys()
+        props.sort()
+        return props[0]
+    def stringFind(self, **requirements):
+        """Locate a particular node by matching a set of its String
+        properties in a caseless search.
+
+        If the property is not a String property, a TypeError is raised.
+        
+        The return is a list of the id of all nodes that match.
+        """
+        for propname in requirements.keys():
+            prop = self.properties[propname]
+            if isinstance(not prop, hyperdb.String):
+                raise TypeError, "'%s' not a String property"%propname
+            requirements[propname] = requirements[propname].lower()
+        requirements['_isdel'] = 0
+        
+        l = []
+        for row in self.getview().select(requirements):
+            l.append(str(row.id))
+        return l
+
+    def addjournal(self, nodeid, action, params):
+        self.db.addjournal(self.name, nodeid, action, params)
+    # --- used by Database
+    def _commit(self):
+        """ called post commit of the DB.
+            interested subclasses may override """
+        self.uncommitted = {}
+        self.rbactions = []
+        self.idcache = {}
+    def _rollback(self):  
+        """ called pre rollback of the DB.
+            interested subclasses may override """
+        for action in self.rbactions:
+            action()
+        self.rbactions = []
+        self.uncommitted = {}
+        self.idcache = {}
+    def _clear(self):
+        view = self.getview(1)
+        if len(view):
+            view[:] = []
+            self.db.dirty = 1
+        iv = self.getindexview(1)
+        if iv:
+            iv[:] = []
+    def rollbackaction(self, action):
+        """ call this to register a callback called on rollback
+            callback is removed on end of transaction """
+        self.rbactions.append(action)
+    # --- internal
+    def __getview(self):
+        db = self.db._db
+        view = db.view(self.name)
+        if self.db.fastopen:
+            return view.ordered(1)
+        # is the definition the same?
+        for nm, rutyp in self.ruprops.items():
+            mkprop = getattr(view, nm, None)
+            if mkprop is None:
+                #print "%s missing prop %s (%s)" % (self.name, nm, rutyp.__class__.__name__)
+                break
+            if _typmap[rutyp.__class__] != mkprop.type:
+                #print "%s - prop %s (%s) has wrong mktyp (%s)" % (self.name, nm, rutyp.__class__.__name__, mkprop.type)
+                break
+        else:
+            return view.ordered(1)
+        # need to create or restructure the mk view
+        # id comes first, so MK will order it for us
+        self.db.dirty = 1
+        s = ["%s[id:I" % self.name]
+        for nm, rutyp in self.ruprops.items():
+            mktyp = _typmap[rutyp.__class__]
+            s.append('%s:%s' % (nm, mktyp))
+            if mktyp == 'V':
+                s[-1] += ('[fid:I]')
+        s.append('_isdel:I,activity:I,creation:I,creator:I]')
+        v = db.getas(','.join(s))
+        return v.ordered(1)
+    def getview(self, RW=0):
+        if RW and self.db.isReadOnly():
+            self.db.getWriteAccess()
+        return self.db._db.view(self.name).ordered(1)
+    def getindexview(self, RW=0):
+        if RW and self.db.isReadOnly():
+            self.db.getWriteAccess()
+        return self.db._db.view("_%s" % self.name).ordered(1)
+    
+def _fetchML(sv):
+    l = []
+    for row in sv:
+        if row.fid:
+            l.append(str(row.fid))
+    return l
+
+def _fetchPW(s):
+    p = password.Password()
+    p.unpack(s)
+    return p
+
+def _fetchLink(n):
+    return n and str(n) or None
+
+def _fetchDate(n):
+    return date.Date(time.gmtime(n))
+
+_converters = {
+    hyperdb.Date   : _fetchDate,
+    hyperdb.Link   : _fetchLink,
+    hyperdb.Multilink : _fetchML,
+    hyperdb.Interval  : date.Interval,
+    hyperdb.Password  : _fetchPW,
+}                
+
+class FileName(hyperdb.String):
+    isfilename = 1            
+
+_typmap = {
+    FileName : 'S',
+    hyperdb.String : 'S',
+    hyperdb.Date   : 'I',
+    hyperdb.Link   : 'I',
+    hyperdb.Multilink : 'V',
+    hyperdb.Interval  : 'S',
+    hyperdb.Password  : 'S',
+}
+class FileClass(Class):
+    ' like Class but with a content property '
+    def __init__(self, db, classname, **properties):
+        properties['content'] = FileName()
+        Class.__init__(self, db, classname, **properties)
+    def get(self, nodeid, propname, default=_marker, cache=1):
+        x = Class.get(self, nodeid, propname, default, cache)
+        if propname == 'content':
+            if x.startswith('file:'):
+                fnm = x[5:]
+                try:
+                    x = open(fnm, 'rb').read()
+                except Exception, e:
+                    x = repr(e)
+        return x
+    def create(self, **propvalues):
+        content = propvalues['content']
+        del propvalues['content']
+        newid = Class.create(self, **propvalues)
+        if not content:
+            return newid
+        if content.startswith('/tracker/download.php?'):
+            self.set(newid, content='http://sourceforge.net'+content)
+            return newid
+        nm = bnm = '%s%s' % (self.name, newid)
+        sd = str(int(int(newid) / 1000))
+        d = os.path.join(self.db.config.DATABASE, 'files', self.name, sd)
+        if not os.path.exists(d):
+            os.makedirs(d)
+        nm = os.path.join(d, nm)
+        open(nm, 'wb').write(content)
+        self.set(newid, content = 'file:'+nm)
+        self.db.indexer.add_files(d, bnm)
+        self.db.indexer.save_index()
+        def undo(fnm=nm, action1=os.remove, indexer=self.db.indexer):
+            remove(fnm)
+            indexer.purge_entry(fnm, indexer.files, indexer.words)
+        self.rollbackaction(undo)
+        return newid
+
+# Yuck - c&p to avoid getting hyperdb.Class
+class IssueClass(Class):
+
+    # Overridden methods:
+
+    def __init__(self, db, classname, **properties):
+        """The newly-created class automatically includes the "messages",
+        "files", "nosy", and "superseder" properties.  If the 'properties'
+        dictionary attempts to specify any of these properties or a
+        "creation" or "activity" property, a ValueError is raised."""
+        if not properties.has_key('title'):
+            properties['title'] = hyperdb.String()
+        if not properties.has_key('messages'):
+            properties['messages'] = hyperdb.Multilink("msg")
+        if not properties.has_key('files'):
+            properties['files'] = hyperdb.Multilink("file")
+        if not properties.has_key('nosy'):
+            properties['nosy'] = hyperdb.Multilink("user")
+        if not properties.has_key('superseder'):
+            properties['superseder'] = hyperdb.Multilink(classname)
+        Class.__init__(self, db, classname, **properties)
+
+    # New methods:
+
+    def addmessage(self, nodeid, summary, text):
+        """Add a message to an issue's mail spool.
+
+        A new "msg" node is constructed using the current date, the user that
+        owns the database connection as the author, and the specified summary
+        text.
+
+        The "files" and "recipients" fields are left empty.
+
+        The given text is saved as the body of the message and the node is
+        appended to the "messages" field of the specified issue.
+        """
+
+    def nosymessage(self, nodeid, msgid, oldvalues):
+        """Send a message to the members of an issue's nosy list.
+
+        The message is sent only to users on the nosy list who are not
+        already on the "recipients" list for the message.
+        
+        These users are then added to the message's "recipients" list.
+        """
+        users = self.db.user
+        messages = self.db.msg
+
+        # figure the recipient ids
+        sendto = []
+        r = {}
+        recipients = messages.get(msgid, 'recipients')
+        for recipid in messages.get(msgid, 'recipients'):
+            r[recipid] = 1
+
+        # figure the author's id, and indicate they've received the message
+        authid = messages.get(msgid, 'author')
+
+        # possibly send the message to the author, as long as they aren't
+        # anonymous
+        if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' and
+                users.get(authid, 'username') != 'anonymous'):
+            sendto.append(authid)
+        r[authid] = 1
+
+        # now figure the nosy people who weren't recipients
+        nosy = self.get(nodeid, 'nosy')
+        for nosyid in nosy:
+            # Don't send nosy mail to the anonymous user (that user
+            # shouldn't appear in the nosy list, but just in case they
+            # do...)
+            if users.get(nosyid, 'username') == 'anonymous':
+                continue
+            # make sure they haven't seen the message already
+            if not r.has_key(nosyid):
+                # send it to them
+                sendto.append(nosyid)
+                recipients.append(nosyid)
+
+        # generate a change note
+        if oldvalues:
+            note = self.generateChangeNote(nodeid, oldvalues)
+        else:
+            note = self.generateCreateNote(nodeid)
+
+        # we have new recipients
+        if sendto:
+            # map userids to addresses
+            sendto = [users.get(i, 'address') for i in sendto]
+
+            # update the message's recipients list
+            messages.set(msgid, recipients=recipients)
+
+            # send the message
+            self.send_message(nodeid, msgid, note, sendto)
+
+    # XXX backwards compatibility - don't remove
+    sendmessage = nosymessage
+
+    def send_message(self, nodeid, msgid, note, sendto):
+        '''Actually send the nominated message from this node to the sendto
+           recipients, with the note appended.
+        '''
+        users = self.db.user
+        messages = self.db.msg
+        files = self.db.file
+
+        # determine the messageid and inreplyto of the message
+        inreplyto = messages.get(msgid, 'inreplyto')
+        messageid = messages.get(msgid, 'messageid')
+
+        # make up a messageid if there isn't one (web edit)
+        if not messageid:
+            # this is an old message that didn't get a messageid, so
+            # create one
+            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
+                self.classname, nodeid, self.db.config.MAIL_DOMAIN)
+            messages.set(msgid, messageid=messageid)
+
+        # send an email to the people who missed out
+        cn = self.classname
+        title = self.get(nodeid, 'title') or '%s message copy'%cn
+        # figure author information
+        authid = messages.get(msgid, 'author')
+        authname = users.get(authid, 'realname')
+        if not authname:
+            authname = users.get(authid, 'username')
+        authaddr = users.get(authid, 'address')
+        if authaddr:
+            authaddr = ' <%s>'%authaddr
+        else:
+            authaddr = ''
+
+        # make the message body
+        m = ['']
+
+        # put in roundup's signature
+        if self.db.config.EMAIL_SIGNATURE_POSITION == 'top':
+            m.append(self.email_signature(nodeid, msgid))
+
+        # add author information
+        if len(self.get(nodeid,'messages')) == 1:
+            m.append("New submission from %s%s:"%(authname, authaddr))
+        else:
+            m.append("%s%s added the comment:"%(authname, authaddr))
+        m.append('')
+
+        # add the content
+        m.append(messages.get(msgid, 'content'))
+
+        # add the change note
+        if note:
+            m.append(note)
+
+        # put in roundup's signature
+        if self.db.config.EMAIL_SIGNATURE_POSITION == 'bottom':
+            m.append(self.email_signature(nodeid, msgid))
+
+        # encode the content as quoted-printable
+        content = cStringIO.StringIO('\n'.join(m))
+        content_encoded = cStringIO.StringIO()
+        quopri.encode(content, content_encoded, 0)
+        content_encoded = content_encoded.getvalue()
+
+        # get the files for this message
+        message_files = messages.get(msgid, 'files')
+
+        # make sure the To line is always the same (for testing mostly)
+        sendto.sort()
+
+        # create the message
+        message = cStringIO.StringIO()
+        writer = MimeWriter.MimeWriter(message)
+        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
+        writer.addheader('To', ', '.join(sendto))
+        writer.addheader('From', '%s <%s>'%(authname,
+            self.db.config.ISSUE_TRACKER_EMAIL))
+        writer.addheader('Reply-To', '%s <%s>'%(self.db.config.INSTANCE_NAME,
+            self.db.config.ISSUE_TRACKER_EMAIL))
+        writer.addheader('MIME-Version', '1.0')
+        if messageid:
+            writer.addheader('Message-Id', messageid)
+        if inreplyto:
+            writer.addheader('In-Reply-To', inreplyto)
+
+        # add a uniquely Roundup header to help filtering
+        writer.addheader('X-Roundup-Name', self.db.config.INSTANCE_NAME)
+
+        # attach files
+        if message_files:
+            part = writer.startmultipartbody('mixed')
+            part = writer.nextpart()
+            part.addheader('Content-Transfer-Encoding', 'quoted-printable')
+            body = part.startbody('text/plain')
+            body.write(content_encoded)
+            for fileid in message_files:
+                name = files.get(fileid, 'name')
+                mime_type = files.get(fileid, 'type')
+                content = files.get(fileid, 'content')
+                part = writer.nextpart()
+                if mime_type == 'text/plain':
+                    part.addheader('Content-Disposition',
+                        'attachment;\n filename="%s"'%name)
+                    part.addheader('Content-Transfer-Encoding', '7bit')
+                    body = part.startbody('text/plain')
+                    body.write(content)
+                else:
+                    # some other type, so encode it
+                    if not mime_type:
+                        # this should have been done when the file was saved
+                        mime_type = mimetypes.guess_type(name)[0]
+                    if mime_type is None:
+                        mime_type = 'application/octet-stream'
+                    part.addheader('Content-Disposition',
+                        'attachment;\n filename="%s"'%name)
+                    part.addheader('Content-Transfer-Encoding', 'base64')
+                    body = part.startbody(mime_type)
+                    body.write(base64.encodestring(content))
+            writer.lastpart()
+        else:
+            writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
+            body = writer.startbody('text/plain')
+            body.write(content_encoded)
+
+        # now try to send the message
+        if SENDMAILDEBUG:
+            open(SENDMAILDEBUG, 'w').write('FROM: %s\nTO: %s\n%s\n'%(
+                self.db.config.ADMIN_EMAIL,
+                ', '.join(sendto),message.getvalue()))
+        else:
+            try:
+                # send the message as admin so bounces are sent there
+                # instead of to roundup
+                smtp = smtplib.SMTP(self.db.config.MAILHOST)
+                smtp.sendmail(self.db.config.ADMIN_EMAIL, sendto,
+                    message.getvalue())
+            except socket.error, value:
+                raise MessageSendError, \
+                    "Couldn't send confirmation email: mailhost %s"%value
+            except smtplib.SMTPException, value:
+                raise MessageSendError, \
+                    "Couldn't send confirmation email: %s"%value
+
+    def email_signature(self, nodeid, msgid):
+        ''' Add a signature to the e-mail with some useful information
+        '''
+        web = self.db.config.ISSUE_TRACKER_WEB + 'issue'+ nodeid
+        email = '"%s" <%s>'%(self.db.config.INSTANCE_NAME,
+            self.db.config.ISSUE_TRACKER_EMAIL)
+        line = '_' * max(len(web), len(email))
+        return '%s\n%s\n%s\n%s'%(line, email, web, line)
+
+    def generateCreateNote(self, nodeid):
+        """Generate a create note that lists initial property values
+        """
+        cn = self.classname
+        cl = self.db.classes[cn]
+        props = cl.getprops(protected=0)
+
+        # list the values
+        m = []
+        l = props.items()
+        l.sort()
+        for propname, prop in l:
+            value = cl.get(nodeid, propname, None)
+            # skip boring entries
+            if not value:
+                continue
+            if isinstance(prop, hyperdb.Link):
+                link = self.db.classes[prop.classname]
+                if value:
+                    key = link.labelprop(default_to_id=1)
+                    if key:
+                        value = link.get(value, key)
+                else:
+                    value = ''
+            elif isinstance(prop, hyperdb.Multilink):
+                if value is None: value = []
+                l = []
+                link = self.db.classes[prop.classname]
+                key = link.labelprop(default_to_id=1)
+                if key:
+                    value = [link.get(entry, key) for entry in value]
+                value.sort()
+                value = ', '.join(value)
+            m.append('%s: %s'%(propname, value))
+        m.insert(0, '----------')
+        m.insert(0, '')
+        return '\n'.join(m)
+
+    def generateChangeNote(self, nodeid, oldvalues):
+        """Generate a change note that lists property changes
+        """
+        cn = self.classname
+        cl = self.db.classes[cn]
+        changed = {}
+        props = cl.getprops(protected=0)
+
+        # determine what changed
+        for key in oldvalues.keys():
+            if key in ['files','messages']: continue
+            new_value = cl.get(nodeid, key)
+            # the old value might be non existent
+            try:
+                old_value = oldvalues[key]
+                if type(new_value) is type([]):
+                    new_value.sort()
+                    old_value.sort()
+                if new_value != old_value:
+                    changed[key] = old_value
+            except:
+                changed[key] = new_value
+
+        # list the changes
+        m = []
+        l = changed.items()
+        l.sort()
+        for propname, oldvalue in l:
+            prop = props[propname]
+            value = cl.get(nodeid, propname, None)
+            if isinstance(prop, hyperdb.Link):
+                link = self.db.classes[prop.classname]
+                key = link.labelprop(default_to_id=1)
+                if key:
+                    if value:
+                        value = link.get(value, key)
+                    else:
+                        value = ''
+                    if oldvalue:
+                        oldvalue = link.get(oldvalue, key)
+                    else:
+                        oldvalue = ''
+                change = '%s -> %s'%(oldvalue, value)
+            elif isinstance(prop, hyperdb.Multilink):
+                change = ''
+                if value is None: value = []
+                if oldvalue is None: oldvalue = []
+                l = []
+                link = self.db.classes[prop.classname]
+                key = link.labelprop(default_to_id=1)
+                # check for additions
+                for entry in value:
+                    if entry in oldvalue: continue
+                    if key:
+                        l.append(link.get(entry, key))
+                    else:
+                        l.append(entry)
+                if l:
+                    change = '+%s'%(', '.join(l))
+                    l = []
+                # check for removals
+                for entry in oldvalue:
+                    if entry in value: continue
+                    if key:
+                        l.append(link.get(entry, key))
+                    else:
+                        l.append(entry)
+                if l:
+                    change += ' -%s'%(', '.join(l))
+            else:
+                change = '%s -> %s'%(oldvalue, value)
+            m.append('%s: %s'%(propname, change))
+        if m:
+            m.insert(0, '----------')
+            m.insert(0, '')
+        return '\n'.join(m)
