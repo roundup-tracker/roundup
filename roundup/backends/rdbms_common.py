@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.41 2003-03-08 20:41:45 kedder Exp $
+# $Id: rdbms_common.py,v 1.42 2003-03-09 21:37:38 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -215,7 +215,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         old_has = old_has.has_key
 
         # now figure how we populate the new table
-        fetch = []      # fetch these from the old table
+        fetch = ['_activity', '_creation', '_creator']
         properties = spec.getprops()
         for propname,x in new_spec[1]:
             prop = properties[propname]
@@ -251,7 +251,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
             for entry in olddata:
-                self.cursor.execute(sql, *entry)
+                self.cursor.execute(sql, tuple(entry))
 
         return 1
 
