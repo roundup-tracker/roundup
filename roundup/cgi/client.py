@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176 2004-05-04 05:56:54 richard Exp $
+# $Id: client.py,v 1.177 2004-05-11 13:32:05 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -6,6 +6,7 @@ __docformat__ = 'restructuredtext'
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, stat, rfc822
+import codecs
 
 
 from roundup import roundupdb, date, hyperdb, password
@@ -86,6 +87,11 @@ class Client:
      actually be one of either ":" or "@".
     '''
 
+    # charset used for data storage and form templates
+    # Note: must be in lower case for comparisons!
+    # XXX take this from instance.config?
+    STORAGE_CHARSET = 'utf-8'
+
     #
     # special form variables
     #
@@ -145,6 +151,9 @@ class Client:
         self.additional_headers = {}
         self.response_code = 200
 
+        # parse cookies (used in charset and session lookups)
+        self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
+
     def main(self):
         ''' Wrap the real main in a try/finally so we always close off the db.
         '''
@@ -187,6 +196,8 @@ class Client:
         self.ok_message = []
         self.error_message = []
         try:
+            self.determine_charset()
+
             # figure out the context and desired content template
             # do this first so we don't authenticate for static files
             # Note: this method opens the database as "admin" in order to
@@ -201,7 +212,7 @@ class Client:
             html = self.handle_action()
 
             if html:
-                self.write(html)
+                self.write_html(html)
                 return
 
             # now render the page
@@ -215,10 +226,10 @@ class Client:
             self.additional_headers['Expires'] = date
 
             # render the content
-            self.write(self.renderContext())
+            self.write_html(self.renderContext())
 
         except SeriousError, message:
-            self.write(str(message))
+            self.write_html(str(message))
         except Redirect, url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
@@ -226,7 +237,7 @@ class Client:
             if url:
                 self.additional_headers['Location'] = url
                 self.response_code = 302
-            self.write('Redirecting to <a href="%s">%s</a>'%(url, url))
+            self.write_html('Redirecting to <a href="%s">%s</a>'%(url, url))
         except SendFile, designator:
             self.serve_file(designator)
         except SendStaticFile, file:
@@ -241,16 +252,16 @@ class Client:
             self.classname = self.nodeid = None
             self.template = ''
             self.error_message.append(message)
-            self.write(self.renderContext())
+            self.write_html(self.renderContext())
         except NotFound:
             # pass through
             raise
         except FormError, e:
             self.error_message.append(_('Form Error: ') + str(e))
-            self.write(self.renderContext())
+            self.write_html(self.renderContext())
         except:
             # everything else
-            self.write(cgitb.html())
+            self.write_html(cgitb.html())
 
     def clean_sessions(self):
         """Age sessions, remove when they haven't been used for a week.
@@ -274,6 +285,59 @@ class Client:
         sessions.set('last_clean', last_use=time.time())
         self.db.commit()
 
+    def determine_charset(self):
+        """Look for client charset in the form parameters or browser cookie.
+
+        If no charset requested by client, use storage charset (utf-8).
+
+        If the charset is found, and differs from the storage charset,
+        recode all form fields of type 'text/plain'
+        """
+        # default to storage charset
+        self.charset = self.STORAGE_CHARSET
+        # look for client charset
+        if self.form.has_key('@charset'):
+            charset = self.form['@charset'].value
+        elif self.cookie.has_key('roundup_charset'):
+            charset = self.cookie['roundup_charset'].value
+        else:
+            charset = None
+        if charset:
+            # make sure the charset is recognized
+            try:
+                codecs.lookup(charset)
+            except LookupError:
+                self.error_message.append(_('Unrecognized charset: %r')
+                    % charset)
+            else:
+                self.charset = charset.lower()
+
+        # if client charset is different from the storage charset,
+        # recode form fields
+        # XXX this requires FieldStorage from Python library.
+        #   mod_python FieldStorage is not supported!
+        if self.charset != self.STORAGE_CHARSET:
+            decoder = codecs.getdecoder(self.charset)
+            encoder = codecs.getencoder(self.STORAGE_CHARSET)
+            re_charref = re.compile('&#([0-9]+|x[0-9a-f]+);', re.IGNORECASE)
+            def _decode_charref(matchobj):
+                num = matchobj.group(1)
+                if num[0].lower() == 'x':
+                    uc = int(num[1:], 16)
+                else:
+                    uc = int(num)
+                return unichr(uc)
+
+            for field_name in self.form.keys():
+                field = self.form[field_name]
+                if (field.type == 'text/plain') and not field.filename:
+                    try:
+                        value = decoder(field.value)[0]
+                    except UnicodeError:
+                        continue
+                    value = re_charref.sub(_decode_charref, value)
+                    field.value = encoder(value)[0]
+
     def determine_user(self):
         ''' Determine who the user is
         '''
@@ -292,7 +356,7 @@ class Client:
             pass
 
         # look up the user session cookie (may override the REMOTE_USER)
-        cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
+        cookie = self.cookie
         user = 'anonymous'
         if (cookie.has_key(self.cookie_name) and
                 cookie[self.cookie_name].value != 'deleted'):
@@ -591,6 +655,29 @@ class Client:
             self.header()
         self.request.wfile.write(content)
 
+    def write_html(self, content):
+        if not self.headers_done:
+            # at this point, we are sure about Content-Type
+            self.additional_headers['Content-Type'] = \
+                'text/html; charset=%s' % self.charset
+            # set the charset cookie
+            # Note: we want to preserve the session cookie
+            #   set by LoginAction or ConfRegoAction.
+            #   i think that's ok: user does not perform
+            #   two actions (login and charset toggle) simultaneously.
+            if not self.additional_headers.has_key('Set-Cookie'):
+                # the charset is remembered for a year
+                expire = Cookie._getdate(86400*365)
+                self.additional_headers['Set-Cookie'] = \
+                    'roundup_charset=%s; expires=%s; Path=%s;' % (
+                        self.charset, expire, self.cookie_path)
+            self.header()
+        if self.charset != self.STORAGE_CHARSET:
+            # recode output
+            content = content.decode(self.STORAGE_CHARSET, 'replace')
+            content = content.encode(self.charset, 'xmlcharrefreplace')
+        self.request.wfile.write(content)
+
     def setHeader(self, header, value):
         '''Override a header to be returned to the user's browser.
         '''
@@ -600,15 +687,15 @@ class Client:
         '''Put up the appropriate header.
         '''
         if headers is None:
-            headers = {'Content-Type':'text/html'}
+            headers = {'Content-Type':'text/html; charset=utf-8'}
         if response is None:
             response = self.response_code
 
         # update with additional info
         headers.update(self.additional_headers)
 
-        if not headers.has_key('Content-Type'):
-            headers['Content-Type'] = 'text/html'
+        if headers.get('Content-Type', 'text/html') == 'text/html':
+            headers['Content-Type'] = 'text/html; charset=utf-8'
         self.request.send_response(response)
         for entry in headers.items():
             self.request.send_header(*entry)
