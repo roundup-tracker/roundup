@@ -22,6 +22,7 @@ Fixed:
    as numbers now.
  . bug #473126: Sender unknown
  . bug #473130: Nosy list not set correctly
+ . bug #473125: Paragraph in e-mails
 
 2001-10-11 - 0.3.0 pre 2
 Fixed:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.5 2001-08-07 00:24:43 richard Exp $
+# $Id: test_mailsplit.py,v 1.6 2001-10-21 03:35:13 richard Exp $
 
 import unittest, cStringIO
 
@@ -83,6 +83,13 @@ userfoo@foo.com
         self.assertEqual(summary, 'testing')
         self.assertEqual(content, 'testing')
 
+    def testParagraphs(self):
+        s = '''testing\n\ntesting\n\ntesting'''
+        summary, content = parseContent(s)
+        print `summary`, `content`
+        self.assertEqual(summary, 'testing')
+        self.assertEqual(content, 'testing\n\ntesting\n\ntesting')
+
     def testEmpty(self):
         s = ''
         summary, content = parseContent(s)
@@ -95,6 +102,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.4  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

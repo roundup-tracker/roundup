@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.21 2001-10-21 00:53:42 richard Exp $
+$Id: mailgw.py,v 1.22 2001-10-21 03:35:13 richard Exp $
 '''
 
 
@@ -414,10 +414,13 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         if signature.match(lines[0]):
             break
         l.append(section)
-    return summary, '\n'.join(l)
+    return summary, '\n\n'.join(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/10/21 00:53:42  richard
+# bug #473130: Nosy list not set correctly
+#
 # Revision 1.20  2001/10/17 23:13:19  richard
 # Did a fair bit of work on the admin tool. Now has an extra command "table"
 # which displays node information in a tabular format. Also fixed import and
