@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.6 $
 
 .. contents::
 
@@ -28,7 +28,7 @@ Index views may be modified by the following arguments:
 | :columns  | selects the columns that should be displayed.                |
 |           | Default is all.                                              |
 +-----------+--------------------------------------------------------------+
-| propname  | selects the values the node properties given by propname     |
+| propname  | selects the values the item properties given by propname     |
 |           | must have (very basic search/filter).                        |
 +-----------+--------------------------------------------------------------+
 
@@ -71,13 +71,13 @@ looking at case 1 or 2 above. Note that any "re:" or "fwd:" prefixes are
 stripped off the subject line before we start looking for real information.
 
 If an item designator (class name and id number, for example ``issue123``)
-is found there, a new "msg" node is added to the "messages" property for
-that item, and any new "file" nodes are added to the "files" property for
+is found there, a new "msg" item is added to the "messages" property for
+that item, and any new "file" items are added to the "files" property for
 the item.
 
 If just an item class name is found there, we attempt to create a new item of
 that class with its "messages" property initialized to contain the new "msg"
-node and its "files" property initialized to contain any new "file" nodes.
+item and its "files" property initialized to contain any new "file" items.
 
 The third case above - where no ``[information]`` is provided, the tracker's
 ``MAIL_DEFAULT_CLASS`` configuration variable defines what class of item
@@ -126,8 +126,8 @@ To do this, incoming messages are examined for multiple parts:
 * In a multipart/mixed message or part, each subpart is extracted and
   examined. The text/plain subparts are assembled to form the textual body
   of the message, to be stored in the file associated with a "msg" class
-  node. Any parts of other types are each stored in separate files and
-  given "file" class nodes that are linked to the "msg" node.
+  item. Any parts of other types are each stored in separate files and
+  given "file" class items that are linked to the "msg" item.
 * In a multipart/alternative message or part, we look for a text/plain
   subpart and ignore the other parts.
 
@@ -138,7 +138,7 @@ sections, then these will be stripped out of the message if the
 Message summary
 :::::::::::::::
 
-The "summary" property on message nodes is taken from the first non-quoting
+The "summary" property on message items is taken from the first non-quoting
 section in the message body. The message body is divided into sections by blank
 lines. Sections where the second and all subsequent lines begin with a ">" or
 "|" character are considered "quoting sections". The first line of the first
@@ -152,8 +152,8 @@ All of the addresses in the ``To:`` and ``Cc:`` headers of the incoming
 message are
 looked up among the tracker users, and the corresponding users are placed
 in the
-"recipients" property on the new "msg" node. The address in the ``From:`` header
-similarly determines the "author" property of the new "msg" node. The default
+"recipients" property on the new "msg" item. The address in the ``From:`` header
+similarly determines the "author" property of the new "msg" item. The default
 handling for addresses that don't have corresponding users is to create new
 users with no passwords and a username equal to the address.
 
@@ -192,11 +192,11 @@ to determine if they get a nosy list copy of the message too.
 Command Line Tool
 -----------------
 
-Usage: ``roundup-admin [-i instance home] [-u login] [-c] <command> <arguments>``
+Usage: ``roundup-admin [-i tracker home] [-u login] [-c] <command> <arguments>``
 
 Options:
 
--i          instance home specify the issue tracker "home directory" to administer
+-i          tracker home specify the issue tracker "home directory" to administer
 -u          the ``user[:password]`` to use for commands
 -c          when outputting lists of data, comma-separate them
 
@@ -218,7 +218,7 @@ Options:
 +-------------+---------------------------------------------------------------+
 |display      |Usage: display designator                                      |
 |             |This lists the properties and their associated values for the  |
-|             |given node.                                                    |
+|             |given item.                                                    |
 +-------------+---------------------------------------------------------------+
 |export       |Usage: export class[,class] destination dir                    |
 |             |This action exports the current data from the database into    |
@@ -227,13 +227,13 @@ Options:
 |             |directory. The journals are not exported.                      |
 +-------------+---------------------------------------------------------------+
 |find         |Usage: find classname propname=value ...                       |
-|             |Find the nodes of the given class with a given link property   |
+|             |Find the items of the given class with a given link property   |
 |             |value. The                                                     |
-|             |value may be either the nodeid of the linked node, or its key  |
+|             |value may be either the itemid of the linked item, or its key  |
 |             |value.                                                         |
 +-------------+---------------------------------------------------------------+
 |get          |Usage: get property designator[,designator]*                   |
-|             |Retrieves the property value of the nodes specified by the     |
+|             |Retrieves the property value of the items specified by the     |
 |             |designators.                                                   |
 +-------------+---------------------------------------------------------------+
 |help         |Usage: help topic                                              |
@@ -243,13 +243,13 @@ Options:
 |             |all       -- all available help                                |
 +-------------+---------------------------------------------------------------+
 |history      |Usage: history designator                                      |
-|             |Lists the journal entries for the node identified by the       |
+|             |Lists the journal entries for the item identified by the       |
 |             |designator.                                                    |
 +-------------+---------------------------------------------------------------+
 |import       |Usage: import class file                                       |
 |             |The file must define the same properties as the class          |
 |             |(including having                                              |
-|             |a "header" line with those property names.) The new nodes are  |
+|             |a "header" line with those property names.) The new items are  |
 |             |added to                                                       |
 |             |the existing database - if you want to create a new database   |
 |             |using the                                                      |
@@ -258,7 +258,7 @@ Options:
 |             |the old data.)                                                 |
 +-------------+---------------------------------------------------------------+
 |initialise   |Usage: initialise [template [backend [admin password]]]        |
-|             |The command will prompt for the instance home directory (if not|
+|             |The command will prompt for the tracker home directory (if not |
 |             |supplied                                                       |
 |             |through INSTANCE HOME or the -i option. The template, backend  |
 |             |and admin                                                      |
@@ -269,14 +269,14 @@ Options:
 |             |See also initopts help.                                        |
 +-------------+---------------------------------------------------------------+
 |list         |Usage: list classname [property]                               |
-|             |Lists all instances of the given class. If the property is not |
+|             |Lists all trackers of the given class. If the property is not |
 |             |specified, the  "label" property is used. The label property is|
 |             |tried                                                          |
 |             |in order: the key, "name", "title" and then the first property,|
 |             |alphabetically.                                                |
 +-------------+---------------------------------------------------------------+
 |retire       |Usage: retire designator[,designator]*                         |
-|             |This action indicates that a particular node is not to be      |
+|             |This action indicates that a particular item is not to be      |
 |             |retrieved by                                                   |
 |             |the list or find commands, and its key value may be re-used.   |
 +-------------+---------------------------------------------------------------+
@@ -293,7 +293,7 @@ Options:
 |             |This lists the properties for a given class.                   |
 +-------------+---------------------------------------------------------------+
 |table        |Usage: table classname [property[,property]*]                  |
-|             |Lists all instances of the given class. If the properties are  |
+|             |Lists all trackers of the given class. If the properties are  |
 |             |not                                                            |
 |             |specified, all properties are displayed. By default, the column|
 |             |widths                                                         |
@@ -310,13 +310,14 @@ Options:
 +-------------+---------------------------------------------------------------+
 
 
-All commands (except help) require an instance specifier. This is just the path to
-the roundup instance you're working with. A roundup instance is where roundup
+All commands (except help) require a tracker specifier. This is just the path to
+the roundup tracker you're working with. A roundup tracker is where roundup
 keeps the database and configuration file that defines an issue tracker. It may be
 thought of as the issue tracker's "home directory". It may be specified in the
-environment variable ``ROUNDUP_INSTANCE`` or on the command line as "``-i instance``".
+environment variable ``ROUNDUP_INSTANCE`` or on the command line as "``-i
+tracker``".
 
-A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
+A designator is a classname and an itemid concatenated, eg. bug1, user10, ...
 Property values are represented as strings in command arguments and in the printed
 results:
 
@@ -336,15 +337,15 @@ results:
     "8:47:11"          yyyy-mm-dd.13:47:11
     "."                "right now"
     
-- Link values are printed as node designators. When given as an argument,
-  node designators and key strings are both accepted.
-- Multilink values are printed as lists of node designators joined by
-  commas. When given as an argument, node designators and key strings are
-  both accepted; an empty string, a single node, or a list of nodes joined
+- Link values are printed as item designators. When given as an argument,
+  item designators and key strings are both accepted.
+- Multilink values are printed as lists of item designators joined by
+  commas. When given as an argument, item designators and key strings are
+  both accepted; an empty string, a single item, or a list of items joined
   by commas is accepted.
   
-When multiple nodes are specified to the roundup get or roundup set commands, the
-specified properties are retrieved or set on all the listed nodes.  When multiple
+When multiple items are specified to the roundup get or roundup set commands, the
+specified properties are retrieved or set on all the listed items.  When multiple
 results are returned by the roundup get or roundup find commands, they are printed
 one per line (default) or joined by commas (with the "``-c``" option).
 

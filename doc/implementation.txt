@@ -2,7 +2,7 @@
 Implementation notes
 ====================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 [see also the roundup package docstring]
 
@@ -30,7 +30,7 @@ In short:
     pass on to the templating mechanism, but the file class _always_ does
     downloading. It'll probably stay this way too...
 
- template - call="link(property)" may be used to link "the current node"
+ template - call="link(property)" may be used to link "the current item"
     (from an index) - the link text is the property specified.
 
  template - added functions that I found very useful: List, History and

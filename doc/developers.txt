@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -49,7 +49,7 @@ relaxed sometimes). In short:
 Other project rules:
 
 - New functionality must be documented, even briefly (so at least we know
-  where there's missing documentation) and changes to instance configuration
+  where there's missing documentation) and changes to tracker configuration
   must be logged in the upgrading document.
 - subscribe to roundup-checkins to receive checkin notifications from the
   other developers with CVS access

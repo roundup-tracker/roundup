@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.22 $
+:Version: $Revision: 1.23 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -15,51 +15,51 @@ What You Can Do
 
 Customisation of Roundup can take one of five forms:
 
-1. `instance configuration`_ file changes
-2. database, or `instance schema`_ changes
+1. `tracker configuration`_ file changes
+2. database, or `tracker schema`_ changes
 3. "definition" class `database content`_ changes
 4. behavioural changes, through detectors_
 5. `access controls`_
 
 The third case is special because it takes two distinctly different forms
-depending upon whether the instance has been initialised or not. The other two
-may be done at any time, before or after instance initialisation. Yes, this
+depending upon whether the tracker has been initialised or not. The other two
+may be done at any time, before or after tracker initialisation. Yes, this
 includes adding or removing properties from classes.
 
 
-Instances in a Nutshell
------------------------
+Trackers in a Nutshell
+----------------------
 
-Instances have the following structure:
+Trackers have the following structure:
 
 +-------------------+--------------------------------------------------------+
-|instance_config.py |Holds the basic instance_configuration                  |
+|config.py          |Holds the basic `tracker configuration`_                |
 +-------------------+--------------------------------------------------------+
-|dbinit.py          |Holds the instance_schema                               |
+|dbinit.py          |Holds the `tracker schema`_                             |
 +-------------------+--------------------------------------------------------+
-|interfaces.py      |Defines the Web and E-Mail interfaces for the instance  |
+|interfaces.py      |Defines the Web and E-Mail interfaces for the tracker   |
 +-------------------+--------------------------------------------------------+
-|select_db.py       |Selects the database back-end for the instance          |
+|select_db.py       |Selects the database back-end for the tracker           |
 +-------------------+--------------------------------------------------------+
-|db/                |Holds the instance's database                           |
+|db/                |Holds the tracker's database                            |
 +-------------------+--------------------------------------------------------+
-|db/files/          |Holds the instance's upload files and messages          |
+|db/files/          |Holds the tracker's upload files and messages           |
 +-------------------+--------------------------------------------------------+
-|detectors/         |Auditors and reactors for this instance                 |
+|detectors/         |Auditors and reactors for this tracker                  |
 +-------------------+--------------------------------------------------------+
 |html/              |Web interface templates, images and style sheets        |
 +-------------------+--------------------------------------------------------+
 
-Instance Configuration
-----------------------
+Tracker Configuration
+---------------------
 
-The instance_config.py located in your instance home contains the basic
+The config.py located in your tracker home contains the basic
 configuration for the web and e-mail components of roundup's interfaces. This
 file is a Python module. The configuration variables available are:
 
 **INSTANCE_HOME** - ``os.path.split(__file__)[0]``
- The instance home directory. The above default code will automatically
- determine the instance home for you.
+ The tracker home directory. The above default code will automatically
+ determine the tracker home for you.
 
 **MAILHOST** - ``'localhost'``
  The SMTP mail host that roundup will use to send e-mail.
@@ -69,22 +69,22 @@ file is a Python module. The configuration variables available are:
 
 **DATABASE** - ``os.path.join(INSTANCE_HOME, 'db')``
  This is the directory that the database is going to be stored in. By default
- it is in the instance home.
+ it is in the tracker home.
 
 **TEMPLATES** - ``os.path.join(INSTANCE_HOME, 'html')``
  This is the directory that the HTML templates reside in. By default they are
- in the instance home.
+ in the tracker home.
 
 **INSTANCE_NAME** - ``'Roundup issue tracker'``
- A descriptive name for your roundup instance. This is sent out in e-mails and
+ A descriptive name for your roundup tracker. This is sent out in e-mails and
  appears in the heading of CGI pages.
 
 **ISSUE_TRACKER_EMAIL** - ``'issue_tracker@%s'%MAIL_DOMAIN``
  The email address that e-mail sent to roundup should go to. Think of it as the
- instance's personal e-mail address.
+ tracker's personal e-mail address.
 
 **ISSUE_TRACKER_WEB** - ``'http://your.tracker.url.example/'``
- The web address that the instance is viewable at. This will be included in
+ The web address that the tracker is viewable at. This will be included in
  information sent to users of the tracker.
 
 **ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
@@ -172,7 +172,7 @@ file is a Python module. The configuration variables available are:
   Selects the columns that should be displayed. Default is all.
  **FILTERSPEC** - *a dictionary giving the filter specification*
   The ``FILTERSPEC`` gives the filtering arguments. This selects the values
-  the node properties given by propname must have.
+  the item properties given by propname must have.
 
   Where the ``FILTERSPEC`` value is ``'CURRENT USER'``, it will be replaced
   by the id of the logged-in user. For example::
@@ -183,7 +183,7 @@ file is a Python module. The configuration variables available are:
    },
 
 **HEADER_ADD_LINKS** - ``['issue']``
- List the classes that users are able to add nodes to.
+ List the classes that users are able to add items to.
 
 **HEADER_SEARCH_LINKS** - ``['issue']``
  List the classes that users can search.
@@ -206,9 +206,9 @@ file is a Python module. The configuration variables available are:
    Selects which props should be displayed on the filter page. Default is
    all.
 
-The default instance_config.py is given below - as you
+The default config.py is given below - as you
 can see, the MAIL_DOMAIN must be edited before any interaction with the
-instance is attempted.::
+tracker is attempted.::
 
     # roundup home is this package's directory
     INSTANCE_HOME=os.path.split(__file__)[0]
@@ -229,13 +229,13 @@ instance is attempted.::
     # This is the directory that the HTML templates reside in
     TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
 
-    # A descriptive name for your roundup instance
+    # A descriptive name for your roundup tracker
     INSTANCE_NAME = 'Roundup issue tracker'
 
     # The email address that mail to roundup should go to
     ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
-    # The web address that the instance is viewable at
+    # The web address that the tracker is viewable at
     ISSUE_TRACKER_WEB = 'http://your.tracker.url.example/'
 
     # The email address that roundup will complain to if it runs into trouble
@@ -286,14 +286,14 @@ instance is attempted.::
     MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
-Instance Schema
----------------
+Tracker Schema
+--------------
 
 Note: if you modify the schema, you'll most likely need to edit the
       `web interface`_ HTML template files and `detectors`_ to reflect
       your changes.
 
-An instance schema defines what data is stored in the instance's database. The
+A tracker schema defines what data is stored in the tracker's database. The
 two schemas shipped with Roundup turn it into a typical software bug tracker
 (the extended schema allowing for support issues as well as bugs). Schemas are
 defined using Python code. The "classic" schema looks like this::
@@ -325,7 +325,7 @@ defined using Python code. The "classic" schema looks like this::
         organisation=String())
     user.setkey("username")
     user.create(username="admin", password=adminpw,
-        address=instance_config.ADMIN_EMAIL)
+        address=config.ADMIN_EMAIL)
 
     msg = FileClass(db, "msg", author=Link("user"), recipients=Multilink
         ("user"), date=Date(), summary=String(), files=Multilink("file"))
@@ -342,7 +342,7 @@ XXX security definitions
 Classes and Properties - creating a new information store
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the instance above, we've defined 7 classes of information:
+In the tracker above, we've defined 7 classes of information:
 
   priority
       Defines the possible levels of urgency for issues.
@@ -378,10 +378,10 @@ Class and Nodes
 
 A Class defines a particular class (or type) of data that will be stored in the
 database. A class comprises one or more properties, which given the information
-about the class nodes.
+about the class items.
 The actual data entered into the database, using class.create() are called
-nodes. They have a special immutable property called id. We sometimes refer to
-this as the nodeid.
+items. They have a special immutable property called id. We sometimes refer to
+this as the itemid.
 
 Properties
 ::::::::::
@@ -392,10 +392,10 @@ A Class is comprised of one or more properties of the following types:
       default encoding is defined on the roundup.password.Password class.
     * Date properties store date-and-time stamps. Their values are Timestamp
       objects.
-    * A Link property refers to a single other node selected from a specified
+    * A Link property refers to a single other item selected from a specified
       class. The class is part of the property; the value is an integer, the id
-      of the chosen node.
-    * A Multilink property refers to possibly many nodes in a specified class.
+      of the chosen item.
+    * A Multilink property refers to possibly many items in a specified class.
       The value is a list of integers.
 
 FileClass
@@ -405,7 +405,7 @@ FileClasses save their "content" attribute off in a separate file from the rest
 of the database. This reduces the number of large entries in the database,
 which generally makes databases more efficient, and also allows us to use
 command-line tools to operate on the files. They are stored in the files sub-
-directory of the db directory in your instance.
+directory of the db directory in your tracker.
 
 IssueClass
 ::::::::::
@@ -420,17 +420,17 @@ directory) handles this action. The superceder link indicates an issue which
 has superceded this one.
 They also have the dynamically generated "creation", "activity" and "creator"
 properties.
-The value of the "creation" property is the date when a node was created, and
-the value of the "activity" property is the date when any property on the node
+The value of the "creation" property is the date when a item was created, and
+the value of the "activity" property is the date when any property on the item
 was last edited (equivalently, these are the dates on the first and last
-records in the node's journal). The "creator" property holds a link to the user
+records in the item's journal). The "creator" property holds a link to the user
 that created the issue.
 
 setkey(property)
 ::::::::::::::::
 
 Select a String property of the class to be the key property. The key property
-muse be unique, and allows references to the nodes in the class by the content
+muse be unique, and allows references to the items in the class by the content
 of the key property. That is, we can refer to users by their username, e.g.
 let's say that there's an issue in roundup, issue 23. There's also a user,
 richard who happens to be user 2. To assign an issue to him, we could do either
@@ -447,7 +447,7 @@ Note, the same thing can be done in the web and e-mail interfaces.
 create(information)
 :::::::::::::::::::
 
-Create a node in the database. This is generally used to create nodes in the
+Create a item in the database. This is generally used to create items in the
 "definitional" classes like "priority" and "status".
 
 
@@ -461,9 +461,9 @@ Detectors - adding behaviour to your tracker
 --------------------------------------------
 .. _detectors:
 
-The detectors in your instance fire before (*auditors*) and after (*reactors*)
+The detectors in your tracker fire before (*auditors*) and after (*reactors*)
 changes to the contents of your database. They are Python modules that sit in
-your instance's ``detectors`` directory. You will have some installed by
+your tracker's ``detectors`` directory. You will have some installed by
 default - have a look. You can write new detectors or modify the existing
 ones. The existing detectors installed for you are:
 
@@ -476,7 +476,7 @@ ones. The existing detectors installed for you are:
   This provides the ``chatty`` auditor which changes the issue status from
   ``unread`` or ``closed`` to ``chatting`` if new messages appear. It also
   provides the ``presetunread`` auditor which pre-sets the status to
-  ``unread`` on new nodes if the status isn't explicitly defined.
+  ``unread`` on new items if the status isn't explicitly defined.
 
 See the detectors section in the `design document`__ for details of the
 interface for detectors.
@@ -496,21 +496,21 @@ Database Content
 ----------------
 
 Note: if you modify the content of definitional classes, you'll most likely
-       need to edit the instance `detectors`_ to reflect your changes.
+       need to edit the tracker `detectors`_ to reflect your changes.
 
 Customisation of the special "definitional" classes (eg. status, priority,
-resolution, ...) may be done either before or after the instance is
+resolution, ...) may be done either before or after the tracker is
 initialised. The actual method of doing so is completely different in each
 case though, so be careful to use the right one.
 
-**Changing content before instance initialisation**
-    Edit the dbinit module in your instance to alter the nodes created in using
+**Changing content before tracker initialisation**
+    Edit the dbinit module in your tracker to alter the items created in using
     the create() methods.
 
 
-**Changing content after instance initialisation**
+**Changing content after tracker initialisation**
     Use the roundup-admin interface's create, set and retire methods to add,
-    alter or remove nodes from the classes in question.
+    alter or remove items from the classes in question.
 
 
 
@@ -518,17 +518,17 @@ Web Interface
 -------------
 
 The web interface works behind the cgi-bin/roundup.cgi or roundup-server
-scripts. In both cases, the scripts determine which instance is being accessed
+scripts. In both cases, the scripts determine which tracker is being accessed
 (the first part of the URL path inside the scope of the CGI handler) and pass
-control on to the instance interfaces.Client class which handles the rest of
+control on to the tracker interfaces.Client class which handles the rest of
 the access through its main() method. This means that you can do pretty much
-anything you want as a web interface to your instance.
+anything you want as a web interface to your tracker.
 
 Figuring out what is displayed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most customisation of the web view can be done by modifying the templates in
-the instance **html** directory. There are several types of files in there:
+the tracker **html** directory. There are several types of files in there:
 
 page
   defines the overall look of your tracker. When you
@@ -581,7 +581,7 @@ Determining web context
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 To determine the "context" of a request, we look at the URL and the special
-request variable ``:template``. The URL path after the instance identifier
+request variable ``:template``. The URL path after the tracker identifier
 is examined. Typical URL paths look like:
 
 1.  ``/tracker/issue``
@@ -590,7 +590,7 @@ is examined. Typical URL paths look like:
 4.  ``/cgi-bin/roundup.cgi/tracker/file1``
 5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
 
-where the "instance identifier" is "tracker" in the above cases. That means
+where the "tracker identifier" is "tracker" in the above cases. That means
 we're looking at "issue", "issue1", "_file/style.css", "file1" and
 "file1/kitten.png" in the cases above. The path is generally only one
 entry long - longer paths are handled differently.
@@ -599,7 +599,7 @@ a. if there is no path, then we are in the "home" context.
 b. if the path starts with "_file" (as in example 3,
    "/tracker/_file/style.css"), then the additional path entry,
    "style.css" specifies the filename of a static file we're to serve up
-   from the instance "html" directory. Raises a SendStaticFile
+   from the tracker "html" directory. Raises a SendStaticFile
    exception.
 c. if there is something in the path (as in example 1, "issue"), it identifies
    the tracker class we're to display.
@@ -644,13 +644,13 @@ edit
  elements you may use:
 
  :link=designator:property and :multilink=designator:property
-  The value specifies a node designator and the property on that
-  node to add _this_ node to as a link or multilink.
- __note
-  Create a message and attach it to the current node's
+  The value specifies an item designator and the property on that
+  item to add _this_ item to as a link or multilink.
+ :note
+  Create a message and attach it to the current item's
   "messages" property.
- __file
-  Create a file and attach it to the current node's
+ :file
+  Create a file and attach it to the current item's
   "files" property. Attach the file to the message created from
   the __note if it's supplied.
  :required=property,property,...
@@ -677,7 +677,7 @@ search
 
 Each of the actions is implemented by a corresponding *actionAction* (where
 "action" is the name of the action) method on
-the roundup.cgi.Client class, which also happens to be in your instance as
+the roundup.cgi.Client class, which also happens to be in your tracker as
 interfaces.Client. So if you need to define new actions, you may add them
 there (see `definining new web actions`_).
 
@@ -713,10 +713,10 @@ search
  Base behaviour is to check the user can view this class.
 
 
-Repurcussions of changing the instance schema
+Repurcussions of changing the tracker schema
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you choose to change the `instance schema`_ you will need to ensure the web
+If you choose to change the `tracker schema`_ you will need to ensure the web
 interface knows about it:
 
 1. Index, item and search pages for the relevant classes may need to have
@@ -727,12 +727,7 @@ interface knows about it:
 Overall Look - "page" template
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The "page" template in your instances
-roundup.cgi_client.Class. This class is mixed-in to your instance through the
-instance's interfaces module. This means you can override the header and
-footer with your own code. This allows you to use a sidebar navigation scheme,
-for example.
-
+XXX
 
 How the templates work
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -873,12 +868,12 @@ The following variables are available to templates.
    - the current index information (``filterspec``, ``filter`` args,
      ``properties``, etc) parsed out of the form. 
    - methods for easy filterspec link generation
-   - *user*, the current user node as an HTMLItem instance
+   - *user*, the current user item as an HTMLItem instance
    - *form*
      The current CGI form information as a mapping of form argument
      name to value
-*instance*
-  The current instance
+*tracker*
+  The current tracker
 *db*
   The current database, through which db.config may be reached.
 *nothing*
@@ -920,7 +915,7 @@ Variable    Holds
 form        the CGI form as a cgi.FieldStorage
 env         the CGI environment variables
 url         the current URL path for this request
-base        the base URL for this instance
+base        the base URL for this tracker
 user        a HTMLUser instance for this user
 classname   the current classname (possibly None)
 template    the current template (suffix, also possibly None)
@@ -975,9 +970,9 @@ added for clarity)::
 
 The index view is determined by two parts of the specifier: the layout part and
 the filter part. The layout part consists of the query parameters that begin
-with colons, and it determines the way that the properties of selected nodes
+with colons, and it determines the way that the properties of selected items
 are displayed. The filter part consists of all the other query parameters, and
-it determines the criteria by which nodes are selected for display.
+it determines the criteria by which items are selected for display.
 The filter part is interactively manipulated with the form widgets displayed in
 the filter section. The layout part is interactively manipulated by clicking on
 the column headings in the table.
@@ -986,7 +981,7 @@ The filter part selects the union of the sets of items with values matching any
 specified Link properties and the intersection of the sets of items with values
 matching any specified Multilink properties.
 
-The example specifies an index of "issue" nodes. Only items with a "status" of
+The example specifies an index of "issue" items. Only items with a "status" of
 either "unread" or "in-progres" or "resolved" are displayed, and only items
 with "topic" values including both "security" and "ui" are displayed. The items
 are grouped by priority, arranged in ascending order; and within groups, sorted
@@ -1066,13 +1061,13 @@ template issue item edit form - from the "issue.item" template)::
  <tr>
   <th nowrap>Change Note</th>
   <td colspan=3>
-   <textarea name="__note" wrap="hard" rows="5" cols="60"></textarea>
+   <textarea name=":note" wrap="hard" rows="5" cols="60"></textarea>
   </td>
  </tr>
  
  <tr>
   <th nowrap>File</th>
-  <td colspan=3><input type="file" name="__file" size="40"></td>
+  <td colspan=3><input type="file" name=":file" size="40"></td>
  </tr>
  
  <tr>
@@ -1086,7 +1081,7 @@ template issue item edit form - from the "issue.item" template)::
 
 When a change is submitted, the system automatically generates a message
 describing the changed properties. As shown in the example, the editor
-template can use the "__note" and "__file" fields, which are added to the
+template can use the ":note" and ":file" fields, which are added to the
 standard change note message generated by Roundup.
 
 Spool Section
@@ -1108,7 +1103,7 @@ This is generally generated with the template::
 
 *To be done:*
 
-*The actual history entries of the node may be accessed for manual templating
+*The actual history entries of the item may be accessed for manual templating
 through the "journal" method of the item*::
 
  <tal:block tal:repeat="entry context/journal">
@@ -1160,18 +1155,18 @@ email users get, for example to not give them access to the web interface if
 they register through email.
 
 You may use the ``roundup-admin`` "``security``" command to display the
-current Role and Permission configuration in your instance.
+current Role and Permission configuration in your tracker.
 
 Adding a new Permission
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 When adding a new Permission, you will need to:
 
-1. add it to your instance's dbinit so it is created
+1. add it to your tracker's dbinit so it is created
 2. enable it for the Roles that should have it (verify with
    "``roundup-admin security``")
 3. add it to the relevant HTML interface templates
-4. add it to the appropriate xxxPermission methods on in your instance
+4. add it to the appropriate xxxPermission methods on in your tracker
    interfaces module
 
 

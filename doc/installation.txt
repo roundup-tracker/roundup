@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.21 $
+:Version: $Revision: 1.22 $
 
 .. contents::
 
@@ -20,10 +20,10 @@ Roundup scripts
  These include the email gateway, the roundup
  HTTP server, the roundup administration command-line interface, etc.
 
-Roundup instances
- Instances consist of core support files, issues
- (be they bug reports or otherwise), instance configuration file(s),
- etc.  Roundup instances also adhere to a specific "Template" which
+Roundup trackers
+ Trackers consist of core support files, issues
+ (be they bug reports or otherwise), tracker configuration file(s),
+ etc.  Roundup trackers also adhere to a specific "Template" which
  defines the fields usable/assignable on a per-issue basis.  A
  description of the provided templates follows.
 
@@ -48,7 +48,7 @@ The priorty class has different default entries too: "fatal-bug", "bug",
 "usability" and "feature".
 
 Users of this template will want to change the contents of the product
-class as soon as the instance is created.
+class as soon as the tracker is created.
 
 
 Prerequisites
@@ -99,7 +99,7 @@ be a trusted one.
 
 
 Basic Installation Steps
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 1. To install the Roundup support code into your Python tree and
    Roundup scripts into /usr/local/bin::
@@ -113,14 +113,14 @@ Basic Installation Steps
 
        python setup.py install --install-scripts=/opt/roundup/bin
 
-2. To create a Roundup instance (necessary to do before you can
+2. To create a Roundup tracker (necessary to do before you can
    use the software in any real fashion):
 
-   a. (Optional) If you intend to keep your roundup instances
+   a. (Optional) If you intend to keep your roundup trackers
       under one top level directory which does not exist yet,
       you should create that directory now.  Example:
 
-         mkdir /opt/roundup/instances
+         mkdir /opt/roundup/trackers
 
    b. Either add the Roundup script location to your ``PATH``
       environment variable or specify the full path to
@@ -131,27 +131,27 @@ Basic Installation Steps
       You will be asked a series of questions.  A description of
       the Roundup-provided templates can be found under the Overview_::
 
-          Enter instance home: /opt/roundup/instances/support
+          Enter tracker home: /opt/roundup/trackers/support
           Templates: classic, extended
           Select template [classic]: classic
           Back ends: anydbm, bsddb
           Select backend [anydbm]: anydbm
 
-      You will now be directed to edit the instance configuration and
+      You will now be directed to edit the tracker configuration and
       initial schema. See `Customising Roundup`_ for details on configuration
       and schema changes. Note that you may change any of the configuration
-      after you've initialised the instance - it's just better to have valid
+      after you've initialised the tracker - it's just better to have valid
       values for this stuff now.
 
    d.  ``roundup-admin initialise``
 
-      This step initialises the instance database. You will need to supply
+      This step initialises the tracker database. You will need to supply
       an admin password at this step. You will be prompted::
 
           Admin Password:
                  Confirm:
 
-      Once this is done, the instance has been created.
+      Once this is done, the tracker has been created.
 
 3. XXX Set up the CGI interface
 
@@ -159,15 +159,15 @@ Basic Installation Steps
 
 
 Shared Environment Steps
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
-Each instance ideally should have its own UNIX group, so create
+Each tracker ideally should have its own UNIX group, so create
 a UNIX group (edit ``/etc/group`` or your appropriate NIS map if
 you're using NIS).  To continue with my examples so far, I would
 create the UNIX group 'support', although the name of the UNIX
-group does not have to be the same as the instance name.  To this
+group does not have to be the same as the tracker name.  To this
 'support' group I then add all of the UNIX usernames who will be
-working with this Roundup instance.  In addition to 'real' users,
+working with this Roundup tracker.  In addition to 'real' users,
 the Roundup email gateway will need to have permissions to this
 area as well, so add the user your mail service runs as to the
 group.  The UNIX group might then look like::
@@ -180,7 +180,7 @@ My group now looks like this::
 
      support:*:1002:jblaine,samh,geezer,mail,apache
 
-The instance "db" directory should be chmod'ed g+sw so that the group can
+The tracker "db" directory should be chmod'ed g+sw so that the group can
 write to the database, and any new files created in the database will be owned
 by the group.
 
@@ -194,15 +194,15 @@ responsibility of running roundup. This user:
    may actually login and play with the roundup setup.
 
 Internet Setup
-~~~~~~~~~~~~~~
+--------------
 
 1. There are two supported ways to get emailed issues into the
-   Roundup instance.  You should pick ONE of the following, both
+   Roundup tracker.  You should pick ONE of the following, both
    of which will continue my example setup from above:
 
    a. Set up a mail alias called "support" as::
 
-       "|/opt/roundup/bin/roundup-mailgw /opt/roundup/instances/support"
+       "|/opt/roundup/bin/roundup-mailgw /opt/roundup/trackers/support"
 
       If you use Sendmail's ``smrsh`` mechanism, please read the notes
       under 'Platform-Specific Notes'
@@ -212,10 +212,10 @@ Internet Setup
       line)::
 
        10 * * * * /opt/roundup/bin/roundup-mailgw
-                /opt/roundup/instances/support /var/mail/support
+                /opt/roundup/trackers/support /var/mail/support
 
    If you don't want to use the email component of Roundup, then remove the
-   "``nosyreator.py``" module from your instance "``detectors``" directory.
+   "``nosyreator.py``" module from your tracker "``detectors``" directory.
 
 2. Test the email gateway.  Under most flavors of UNIX, this
    can be done by::
@@ -230,7 +230,7 @@ Upgrading
 =========
 
 Read the separate `upgrading document`_, which describes the steps needed to
-upgrade existing tracker instances for each version of Roundup that is
+upgrade existing tracker trackers for each version of Roundup that is
 released.
 
 
@@ -243,11 +243,11 @@ ZRoundup installs as a regular Zope product. Copy the ZRoundup directory to
 your Products directory either in an INSTANCE_HOME/Products or the Zope
 code tree lib/python/Products.
 
-You will need to create the instance using the roundup-admin tool (step 2 in
+You will need to create the tracker using the roundup-admin tool (step 2 in
 installation_).
 
 When you next (re)start up Zope, you will be able to add a ZRoundup object
-that interfaces to your new instance.
+that interfaces to your new tracker.
 
 
 Further Reading
@@ -274,7 +274,7 @@ This is usually done via the following 2 steps:
    which points to the full path of your actual ``roundup-mailgw``
    script.
 
-2. change your alias to ``"|roundup-mailgw <instance_home>"``
+2. change your alias to ``"|roundup-mailgw <tracker_home>"``
 
 
 Linux

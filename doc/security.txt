@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.15 $
+:Version: $Revision: 1.16 $
 
 Current situation
 =================
@@ -51,8 +51,8 @@ Possible approaches
 
 Security controls in Roundup could be approached in three ways:
 
-1) at the hyperdb level, with read/write/modify permissions on classes, nodes
-   and node properties for all or specific transitions.
+1) at the hyperdb level, with read/write/modify permissions on classes, items
+   and item properties for all or specific transitions.
 2) at the user interface level, with access permissions on CGI interface
    methods, mailgw methods, roundup-admin methods, and so on.
 3) at a logical permission level, checked as needed.
@@ -66,7 +66,7 @@ Hyperdb-level control
 ---------------------
 
 Control is implemented at the Class.get, Class.set and Class.create level. All
-other methods must access nodes through these methods. Since all accesses go
+other methods must access items through these methods. Since all accesses go
 through the database, we can implement deny by default.
 
 Pros:
@@ -79,7 +79,7 @@ Cons:
    - harder to determine the relationship between user interaction and hyperdb
      permission.
    - a lot of work to define
-   - must special-case to handle by-node permissions (editing user details,
+   - must special-case to handle by-item permissions (editing user details,
      having private messages)
 
 

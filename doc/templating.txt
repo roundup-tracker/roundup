@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 Current Situation and Issues
 ============================
@@ -53,7 +53,7 @@ Templates
 We should also take this opportunity to open up the flexibility of the
 templates through:
 
-1. allowing the instance to define a "page" template, which holds the overall
+1. allowing the tracker to define a "page" template, which holds the overall
    page structure, including header and footer
 
 
@@ -139,17 +139,17 @@ I'm envisaging an infrastructure layer where each template has the following
 defined:
 
 *klass*
-  The current class of node being displayed as an HTMLClass instance. Name is
+  The current class of item being displayed as an HTMLClass instance. Name is
   mangled so it can be used in Python expressions.
 
 *item*
-  The current node from the database, if we're viewing a specific node, as an
+  The current item from the database, if we're viewing a specific item, as an
   HTMLItem instance. If it doesn't exist, then we're on a new item page.
 
 (*classname*)
   this is one of two things:
 
-  1. the *item* is also available under its classname, so a *user* node
+  1. the *item* is also available under its classname, so a *user* item
      would also be available under the name *user*. This is also an HTMLItem
      instance.
   2. if there's no *item* then the current class is available through this
@@ -170,10 +170,10 @@ defined:
    - the current index information (``filterspec``, ``filter`` args,
      ``properties``, etc) parsed out of the form. 
    - methods for easy filterspec link generation
-   - *user*, the current user node as an HTMLItem instance
+   - *user*, the current user item as an HTMLItem instance
 
-*instance*
-  The current instance
+*tracker*
+  The current tracker
 
 *db*
   The current open database
@@ -301,7 +301,7 @@ page
  of special template types:
 
  [classname].index
-  This template is used when the URL specifies only the class, and not a node
+  This template is used when the URL specifies only the class, and not an item
   designator.  It displays a list of [classname] items from the database, and
   a "filter refinement" form.
   Would perform a TAL ``repeat`` command using the list supplied by

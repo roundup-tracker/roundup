@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.9 $
+:Version: $Revision: 1.10 $
 
 NOTE: This is just a grabbag, most of this should go into documentation.
 
@@ -12,65 +12,14 @@ NOTE: This is just a grabbag, most of this should go into documentation.
 Changing HTML layout
 --------------------
 
-Note changes to the files in html take place immediatly without
-restart, even when running roundup-server.
-
-Displaying whole messages not only the summary
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Modify instance/html/msg.index change::
-
-   <td><display call="plain('summary')"></td>
-
-to::
-
-   <td><pre><display call="plain('content')"></pre></td>
-
-displays the whole message not only the first line and 'pre'
-prevents the browser from reformatting. 
-
-Getting the nosy list picker instead of textfield
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In classic template there is plenty of space below the text field.
-So one could modify instance/html/issue.item to use it.
-
-At the file top set 'border=1' to see cell boundaries, then
-replace::
-
-  <td class="form-text"><display call="field('nosy',size=20)"></td>
-  
-by::
-
-  <td rowspan=5 class="form-text"><display call="menu('nosy',height=10)"></td>
-
-and remove the last cell in the next four rows, either by deleting a cell
-or by reducing colspan.
-
-Want to see the issue id (the number) on the issue item display
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The number is really a central information and not an internal one.
-
-In file INSTANCE/html/issue.item displays the creator, so one could add
-the number to it.::
-
-  <td class="form-text"><display call="reldate('creation', pretty=1)">
-      (<display call="plain('creator')">)</td>
-
-to see::
-
-  <td class="form-text"><display call="reldate('creation', pretty=1)">
-      (issue<display call="plain('id')"> by <display call="plain('creator')">)</td>
-
 Installation
 ------------
 
 Living without a mailserver.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Remove the nosy reactor, means delete the file
-'INSTANCE/detectors/nosyreactor.py'.
+Remove the nosy reactor, means delete the tracker file
+'detectors/nosyreactor.py'.
 
 
 Rights issues (MISSING)
@@ -90,42 +39,6 @@ see Troubleshooting_.
 
 Troubleshooting
 ---------------
-
-AttributeError: '_roundup_instance_1' module has no attribute 'open'
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For example submitting issues via roundup-mailgw breaks similar to this::
-
-  Command died with status 1:
-  "/usr/local/bin/python /usr/local/bin/roundup-mailgw /home/roundup".
-  Command output: Traceback (most recent call last):  
-    File "/usr/local/bin/roundup-mailgw", line 178, in ? 
-       sys.exit(main(sys.argv))
-    File "/usr/local/bin/roundup-mailgw", line 153, in main 
-      db = instance.open('admin')
-       AttributeError: '_roundup_instance_1' module has no attribute 'open'
-
-Happens if the user which accesses the instance has no read right
-on 'INSTANCE/dbinit.py' or 'pyc'. 
-
-If the user has no rights on the 'INSTANCE/db' the mailgw finishes,
-but is, of course, unable to add the message. A notification to
-the roundup-admin is sent, with a longer trace ending in::
-
-  File "/opt/python/lib/python2.2/dbhash.py", line 16, in open
-    return bsddb.hashopen(file, flag, mode)
-  error: (13, 'Keine Berechtigung')
-
-Replace 'Keine Berechtigung' by 'Not permitted' or ...
-
-An easy way to test whether it's a permissions problem, or some other mail
-server configuration problem is to cat an email-formatted text file
-directly to the roundup-mailgw script as the roundup user.::
-
-  cat issue.txt | /usr/local/bin/roundup-mailgw /home/roundup
-
-If that doesn't raise any errors, the problem is the permissions of the
-MTA. 
 
 -----------------
 

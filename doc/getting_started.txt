@@ -2,7 +2,7 @@
 Getting Started
 ===============
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.6 $
 
 .. contents::
 
@@ -14,10 +14,10 @@ haven't, you may still proceed - just run the commands as
 "``PYTHONPATH=. python roundup/scripts/roundup_server.py``" for
 ``roundup-server``.
 
-The Instance
-------------
+The Tracker
+-----------
 
-We'll be referring to the term instance a lot from now on. An instance is a
+We'll be referring to the term tracker a lot from now on. A tracker is a
 directory in your filesystem that is where all the information about a live
 issue
 tracker database is stored. The data that is entered as issues, the users who
@@ -29,32 +29,32 @@ Hyperdatabase
 
 Database schema
    This describes the content of the hyperdatabase - what fields are stored
-   for issues, what user information, etc. Being stored in the instance,
+   for issues, what user information, etc. Being stored in the tracker,
    this allows it to be customised for a particular application. It also
    means that changes in the Roundup core code do not affect a running
-   instance.
+   tracker.
 
 Web Interface
-   The web interface templates are defined in the instance too - and the
+   The web interface templates are defined in the tracker too - and the
    actual CGI interface class is defined (mostly using base classes in the
    Roundup core code) so it, like the database, may be customised for each
-   instance in use.
+   tracker in use.
 
-Instances are created using the ``roundup-admin`` tool.
+Trackers are created using the ``roundup-admin`` tool.
 
 Command Line Tool
 -----------------
 
-To set up a new instance, run "``roundup-admin install``". You will be
+To set up a new tracker, run "``roundup-admin install``". You will be
 asked a few questions:
 
-1. Instance home directory
+1. Tracker home directory
 2. Schema to use
 3. Database back-end to use
 
-Once you've chosen these, roundup will install the instance for you. It will
+Once you've chosen these, roundup will install the tracker for you. It will
 then indicate that you should configure some more information in the
-file "``instance_config.py``" in the instance home.  It
+file "``config.py``" in the tracker home.  It
 should be edited before roundup is initialised, and may have the following
 variable declarations:
 
@@ -76,15 +76,15 @@ ADMIN_EMAIL: ``roundup-admin@MAIL_DOMAIN``
 You may also alter the default schema - see the `customisation`_ documentation
 for more info on both configuration variables and schema modifications.
 
-Once you're happy (and note that you can change any of this after the instance
+Once you're happy (and note that you can change any of this after the tracker
 is initialised too!) you must run "``roundup-admin initialise``".
 
 You should also think about whether there is going to be controlled access
 to the
-instance on the machine the instance is running on. That is, who can
+tracker on the machine the tracker is running on. That is, who can
 actually make
 changes to the database using the roundup-admin tool. See the section on
-Users_and_Access_Control for information on how to secure your instance from the
+Users_and_Access_Control for information on how to secure your tracker from the
 start.
 
 E-Mail Interface
@@ -94,14 +94,14 @@ Setup 1: As a mail alias pipe process
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Set up a mail alias called "issue_tracker" as (include the quote marks):
-"``|/usr/bin/python /usr/local/bin/roundup-mailgw <instance_home>``"
+"``|/usr/bin/python /usr/local/bin/roundup-mailgw <tracker_home>``"
 
 In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh so
 sendmail will accept the pipe command. In that case, symlink
 ``/etc/smrsh/roundup-mailgw`` to "``/usr/local/bin/roundup-mailgw``" and change
 the command to::
 
-    |roundup-mailgw <instance_home>
+    |roundup-mailgw <tracker_home>
  
 To test the mail gateway on unix systems, try::
 
@@ -113,7 +113,7 @@ Setup 2: As a regular cron job using a mailbox source
 
 Set ``roundup-mailgw`` up to run every 10 minutes or so. For example::
 
-  10 * * * * /usr/local/bin/roundup-mailgw <instance_home> mailbox <mail_spool_file>
+  10 * * * * /usr/local/bin/roundup-mailgw <tracker_home> mailbox <mail_spool_file>
 
 Where the ``mail_spool_file`` argument is the location of the roundup submission
 user's mail spool. On most systems, the spool for a user "issue_tracker"
@@ -124,7 +124,7 @@ Setup 3: As a regular cron job using a POP source
 
 To retrieve from a POP mailbox, use a similar cron entry to the mailbox one::
 
-  10 * * * * /usr/local/bin/roundup-mailgw <instance_home> pop <pop_spec>
+  10 * * * * /usr/local/bin/roundup-mailgw <tracker_home> pop <pop_spec>
     
 where pop_spec is "``username:password@server``" that specifies the roundup
 submission user's POP account name, password and server.
@@ -137,12 +137,12 @@ This software will work through apache or stand-alone.
 
 Stand-alone:
   1. Edit roundup-server at the top - ``ROUNDUP_INSTANCE_HOMES`` needs to know
-     about your instance. You may also specify the values for
+     about your tracker. You may also specify the values for
      ``ROUNDUP_INSTANCE_HOMES`` on the command-line using "name=home" pairs.
     
-  2. "``roundup-server [-p port] (name=instance_home)*``" (hostname may be "")
+  2. "``roundup-server [-p port] (name=tracker_home)*``" (hostname may be "")
   
-  3. Load up the page "``/<instance name>/index``" where instance name is the name
+  3. Load up the page "``/<tracker name>/index``" where tracker name is the name
      you nominated in ``ROUNDUP_INSTANCE_HOMES``.
 
 Apache:
@@ -150,21 +150,21 @@ Apache:
      distribution.
      
   2. Make sure roundup.cgi is executable. Edit it at the top -
-     ``ROUNDUP_INSTANCE_HOMES`` needs to know about your instance.
+     ``ROUNDUP_INSTANCE_HOMES`` needs to know about your tracker.
      
   3. Edit your "``/etc/httpd/conf/httpd.conf``" and make sure that the
      "``/home/httpd/html/roundup/roundup.cgi``" script will be treated as a CGI script.
      
   4. Re-start your apache to re-load the config if necessary.
   
-  5. Load up the page "``/roundup/roundup.cgi/index/``" where instance name is the
+  5. Load up the page "``/roundup/roundup.cgi/index/``" where tracker name is the
      name you nominated in ``ROUNDUP_INSTANCE_HOMES``.
      
   6. To use the CGI script unchanged, which allows much easier updates, add
      these directives to your "httpd.conf"::
      
 	  SetEnv ROUNDUP_LOG "/var/log/roundup.log"
-	  SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/instances/Default"
+	  SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/trackers/Default"
 	  SetEnv ROUNDUP_DEBUG "0"
 
   7. On Windows, write a batch file "roundup.bat" similar to the one below and
@@ -172,7 +172,7 @@ Apache:
       
 	  @echo off
 	  set ROUNDUP_LOG=c:\Python21\share\roundup\cgi.log
-	  set ROUNDUP_INSTANCE_HOMES=Default=c:\Python21\share\roundup\instances\Default;
+	  set ROUNDUP_INSTANCE_HOMES=Default=c:\Python21\share\roundup\trackers\Default;
 	  set ROUNDUP_DEBUG=0
 	  c:\Python21\python.exe c:\Python21\share\roundup\cgi-bin\roundup.cgi
 
@@ -183,7 +183,7 @@ Users
 Users and permissions
 ~~~~~~~~~~~~~~~~~~~~~
 
-By default, roundup automatically creates one user when the instance database is
+By default, roundup automatically creates one user when the tracker database is
 initialised (using roundup-admin init). The user is "admin" and the password is
 the one you supply at that time.
 
@@ -200,17 +200,17 @@ Command-line interface
 
     1. Add a new user and group to your system (e.g. "issue_tracker")
     
-    2. When creating a new instance home, use the following commands
-       (substituting instance_home for the directory you want to use)::
+    2. When creating a new tracker home, use the following commands
+       (substituting tracker_home for the directory you want to use)::
 	
-	mkdir instance_home
-	chown issue_tracker:issue_tracker instance_home
-	chmod g+rwxs instance_home
-	roundup-admin -i instance_home init
+	    mkdir tracker_home
+	    chown issue_tracker:issue_tracker tracker_home
+	    chmod g+rwxs tracker_home
+	    roundup-admin -i tracker_home init
 	
     3. Now, edit the /etc/group line for the issue_tracker group so it
        includes the unix logins of all the users who are going to
-       administer your roundup instance. If you're running the web or mail
+       administer your roundup tracker. If you're running the web or mail
        gateways, then be sure to include those users in the group too (on
        some Linux systems, these users are "www" or "apache" and "mail".)
        
@@ -232,12 +232,12 @@ Adding users
 
 To add users, use one of the following interfaces:
   
-1. On the web, access the URL .../<instance name>/newuser to bring up a form
+1. On the web, access the URL .../<tracker name>/newuser to bring up a form
    which may be used to add a new user.
     
 2. On the command-line, use::
 
-    roundup-admin -i <instance home> create user username=bozo password=bozo
+    roundup-admin -i <tracker home> create user username=bozo password=bozo
     address=richard@clown.org
     
    Supply the admin username and password. roundup-admin will print the id
@@ -253,12 +253,12 @@ Issues
 
 To add issues, use one of the following interfaces:
 
-1. On the web, access the URL .../<instance name>/newissue to bring up a
+1. On the web, access the URL .../<tracker name>/newissue to bring up a
    form which may be used to add a new issue.
   
 2. On the command-line, use::
 
-     roundup-admin -i <instance home> create issue title="test issue"
+     roundup-admin -i <tracker home> create issue title="test issue"
 
    Supply the admin username and password. roundup-admin will print the id
    of the new issue.

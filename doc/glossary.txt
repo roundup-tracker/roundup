@@ -2,26 +2,26 @@
 Roundup Glossary
 ================
 
-:Version: $Revision: 1.2 $
+:Version: $Revision: 1.3 $
 
 .. contents::
 
 
 class
-   a definition of the properties and behaviour of a set of nodes
+   a definition of the properties and behaviour of a set of items
 db
-   a collection of nodes
+   a collection of items
 designator
-   a combined class + nodeid reference to any node in the hyperdb
-nodeid
-   a numeric reference to a particular node of one class
-node
+   a combined class + itemid reference to any item in the hyperdb
+itemid
+   a numeric reference to a particular item of one class
+item
    a collection of data that forms one entry in the hyperdb.
 property
-   one element of data that makes up a node
+   one element of data that makes up an item
 schema
-   the definition of all the classes that make up an instance
-instance
+   the definition of all the classes that make up an tracker
+tracker
    I've defined this well somewhere else...
 
 
