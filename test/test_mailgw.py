@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.42 2003-03-24 04:47:44 richard Exp $
+# $Id: test_mailgw.py,v 1.43 2003-04-10 05:11:58 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 import rfc822
@@ -224,7 +224,7 @@ status: unread
 title: Testing...
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
@@ -277,7 +277,7 @@ This is a second followup
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
@@ -328,7 +328,7 @@ nosy: +john, mary
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
@@ -375,7 +375,7 @@ nosy: +john, mary
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
@@ -422,7 +422,7 @@ nosy: +john
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 
 ''')
@@ -471,7 +471,7 @@ nosy: +john
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 
 ''')
@@ -520,7 +520,7 @@ nosy: +john
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 
 ''')
@@ -567,7 +567,7 @@ This is a followup
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 
 ''')
@@ -615,7 +615,7 @@ This is a followup
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 
 ''')
@@ -723,7 +723,7 @@ A message with encoding (encoded oe =C3=B6)
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
@@ -778,7 +778,7 @@ A message with first part encoded (encoded oe =C3=B6)
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
@@ -859,7 +859,7 @@ This is a followup
 status: unread -> chatting
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1
+<http://tracker.example/cgi-bin/roundup.cgi/bugs/issue1>
 _______________________________________________________________________
 ''')
 
