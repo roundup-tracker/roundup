@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.68 2004-10-29 17:57:17 a1s Exp $
+$Id: roundup_server.py,v 1.69 2004-10-29 20:39:31 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -428,88 +428,48 @@ else:
     class SvcShutdown(Exception):
         pass
 
-    class RoundupService(win32serviceutil.ServiceFramework,
-            BaseHTTPServer.HTTPServer):
-        ''' A Roundup standalone server for Win32 by Ewout Prangsma
-        '''
+    class RoundupService(win32serviceutil.ServiceFramework):
+
         _svc_name_ = "Roundup Bug Tracker"
         _svc_display_name_ = "Roundup Bug Tracker"
-        def __init__(self, args):
-            # redirect stdout/stderr to our logfile
-            if LOGFILE:
-                # appending, unbuffered
-                sys.stdout = sys.stderr = open(LOGFILE, 'a', 0)
-            win32serviceutil.ServiceFramework.__init__(self, args)
-            BaseHTTPServer.HTTPServer.__init__(self, self.address,
-                RoundupRequestHandler)
 
-            # Create the necessary NT Event synchronization objects...
-            # hevSvcStop is signaled when the SCM sends us a notification
-            # to shutdown the service.
-            self.hevSvcStop = win32event.CreateEvent(None, 0, 0, None)
-
-            # hevConn is signaled when we have a new incomming connection.
-            self.hevConn    = win32event.CreateEvent(None, 0, 0, None)
-
-            # Hang onto this module for other people to use for logging
-            # purposes.
-            import servicemanager
-            self.servicemanager = servicemanager
-
-        def SvcStop(self):
-            # Before we do anything, tell the SCM we are starting the
-            # stop process.
-            self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-            win32event.SetEvent(self.hevSvcStop)
+        running = 0
+        server = None
 
         def SvcDoRun(self):
-            try:
-                self.serve_forever()
-            except SvcShutdown:
-                pass
+            import servicemanager
+            self.ReportServiceStatus(win32service.SERVICE_START_PENDING)
+            config = ServerConfig()
+            (optlist, args) = config.getopt(sys.argv[1:])
+            if not config["LOGFILE"]:
+                servicemanager.LogMsg(servicemanager.EVENTLOG_ERROR_TYPE,
+                    servicemanager.PYS_SERVICE_STOPPED,
+                    (self._svc_display_name_, "\r\nMissing logfile option"))
+                self.ReportServiceStatus(win32service.SERVICE_STOPPED)
+                return
+            self.server = config.get_server()
+            self.running = 1
+            self.ReportServiceStatus(win32service.SERVICE_RUNNING)
+            servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
+                servicemanager.PYS_SERVICE_STARTED, (self._svc_display_name_,
+                    " at %s:%s" % (config["HOST"], config["PORT"])))
+            while self.running:
+                self.server.handle_request()
+            servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
+                servicemanager.PYS_SERVICE_STOPPED,
+                (self._svc_display_name_, ""))
+            self.ReportServiceStatus(win32service.SERVICE_STOPPED)
 
-        def get_request(self):
-            # Call WSAEventSelect to enable self.socket to be waited on.
-            win32file.WSAEventSelect(self.socket, self.hevConn,
-                win32file.FD_ACCEPT)
-            while 1:
-                try:
-                    rv = self.socket.accept()
-                except socket.error, why:
-                    if why[0] != win32file.WSAEWOULDBLOCK:
-                        raise
-                    # Use WaitForMultipleObjects instead of select() because
-                    # on NT select() is only good for sockets, and not general
-                    # NT synchronization objects.
-                    rc = win32event.WaitForMultipleObjects(
-                        (self.hevSvcStop, self.hevConn),
-                        0, win32event.INFINITE)
-                    if rc == win32event.WAIT_OBJECT_0:
-                        # self.hevSvcStop was signaled, this means:
-                        # Stop the service!
-                        # So we throw the shutdown exception, which gets
-                        # caught by self.SvcDoRun
-                        raise SvcShutdown
-                    # Otherwise, rc == win32event.WAIT_OBJECT_0 + 1 which means
-                    # self.hevConn was signaled, which means when we call
-                    # self.socket.accept(), we'll have our incoming connection
-                    # socket!
-                    # Loop back to the top, and let that accept do its thing...
-                else:
-                    # yay! we have a connection
-                    # However... the new socket is non-blocking, we need to
-                    # set it back into blocking mode. (The socket that accept()
-                    # returns has the same properties as the listening sockets,
-                    # this includes any properties set by WSAAsyncSelect, or
-                    # WSAEventSelect, and whether its a blocking socket or not.)
-                    #
-                    # So if you yank the following line, the setblocking() call
-                    # will be useless. The socket will still be in non-blocking
-                    # mode.
-                    win32file.WSAEventSelect(rv[0], self.hevConn, 0)
-                    rv[0].setblocking(1)
-                    break
-            return rv
+        def SvcStop(self):
+            self.running = 0
+            # make dummy connection to self to terminate blocking accept()
+            addr = self.server.socket.getsockname()
+            if addr[0] == "0.0.0.0":
+                addr = ("127.0.0.1", addr[1])
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(addr)
+            sock.close()
+            self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
 
 def usage(message=''):
     if RoundupService:
@@ -621,6 +581,28 @@ def run(port=undefined, success_message=None):
 
     # if running in windows service mode, don't do any other stuff
     if ("-c", "") in optlist:
+        # acquire command line options recognized by service
+        short_options = "c:C:"
+        long_options = ["config"]
+        for (long_name, short_name) in config.OPTIONS.items():
+            short_options += short_name
+            long_name = long_name.lower().replace("_", "-")
+            if short_name[-1] == ":":
+                long_name += "="
+            long_options.append(long_name)
+        optlist = getopt.getopt(sys.argv[1:], short_options, long_options)[0]
+        svc_args = []
+        for (opt, arg) in optlist:
+            if opt in ("-C", "-l"):
+                # make sure file name is absolute
+                svc_args.extend((opt, os.path.abspath(arg)))
+            elif opt in ("--config", "--logfile"):
+                # ditto, for long options
+                svc_args.append("=".join(opt, os.path.abspath(arg)))
+            elif opt != "-c":
+                svc_args.extend(opt)
+        RoundupService._exe_args_ = " ".join(svc_args)
+        # pass the control to serviceutil
         win32serviceutil.HandleCommandLine(RoundupService,
             argv=sys.argv[:1] + args)
         return
