@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.3 2002-02-27 07:33:34 grubert Exp $
+#$Id: blobfiles.py,v 1.4 2002-06-19 03:07:19 richard Exp $
 '''
 This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
@@ -102,10 +102,17 @@ class FileStorage:
         return files_in_dir(files_dir)
 
     def _doStoreFile(self, name, **databases):
-        '''Must be implemented by subclass
+        '''Store the file as part of a transaction commit.
         '''
-    	raise NotImplementedError
+        # the file is currently ".tmp" - move it to its real name to commit
+        os.rename(name+".tmp", name)
+        pattern = name.split('/')[-1]
+        self.indexer.add_files(dir=os.path.dirname(name), pattern=pattern)
+        self.indexer.save_index()
 
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/02/27 07:33:34  grubert
+#  . add, vim line and cvs log key.
+#
 #
 # vim: set filetype=python ts=4 sw=4 et si

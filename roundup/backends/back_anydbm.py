@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.35 2002-05-25 07:16:24 rochecompaan Exp $
+#$Id: back_anydbm.py,v 1.36 2002-06-19 03:07:19 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -466,13 +466,6 @@ class Database(FileStorage, hyperdb.Database):
 
         db[nodeid] = marshal.dumps(l)
 
-    def _doStoreFile(self, name, **databases):
-        # the file is currently ".tmp" - move it to its real name to commit
-        os.rename(name+".tmp", name)
-        pattern = name.split('/')[-1]
-        self.indexer.add_files(dir=os.path.dirname(name), pattern=pattern)
-        self.indexer.save_index()
-
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
@@ -490,6 +483,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.35  2002/05/25 07:16:24  rochecompaan
+#Merged search_indexing-branch with HEAD
+#
 #Revision 1.34  2002/05/15 06:21:21  richard
 # . node caching now works, and gives a small boost in performance
 #
