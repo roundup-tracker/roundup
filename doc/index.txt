@@ -5,13 +5,14 @@ Roundup: an Issue-Tracking System for Knowledge Workers
 Contents
 ========
 
-- Overview_ and Features_ (pdf__)
-- Installation_ (pdf__) and Upgrading_ existing installs (pdf__)
-- `User Guide`_ (pdf__)
-- Configuring and `Customising Roundup`_ (pdf__)
-- `Maintaining Roundup Trackers`_ (pdf__)
-- `Roundup's Design`_ (pdf__) (original_)
-- `Developing Roundup`_ (pdf__)
+- Overview_ and Features_
+- Installation_ and Upgrading_ existing installs
+- `Frequently Asked Questions`_
+- `User Guide`_
+- Configuring and `Customising Roundup`_
+- `Maintaining Roundup Trackers`_
+- `Roundup's Design`_ (original_)
+- `Developing Roundup`_ 
 - Contact_
 - Acknowledgements_
 - License_
@@ -24,8 +25,7 @@ For general support enquiries about usage, a mailing list is available:
     roundup-users@sourceforge.net
 
 If you've got a great idea for roundup, or have found a bug, please
-submit
-an issue to the tracker at: 
+submit an issue to the tracker at: 
 
     http://sourceforge.net/tracker/?group_id=31577
 
@@ -95,6 +95,7 @@ See COPYING.txt in the software distribution for the licensing terms.
 .. _Features: features.html
 .. _Installation: installation.html
 .. _Upgrading: upgrading.html
+.. _`Frequently Asked Questions`: FAQ.html
 .. _`User Guide`: user_guide.html
 .. _`Customising Roundup`: customizing.html
 .. _`Maintaining Roundup Trackers`: maintenance.html
@@ -102,14 +103,4 @@ See COPYING.txt in the software distribution for the licensing terms.
 .. _`Developing Roundup`: developers.html
 .. _original: spec.html
 .. _Upgrading: upgrading.html
-
-.. __: overview.pdf
-.. __: features.pdf
-.. __: installation.pdf
-.. __: upgrading.pdf
-.. __: user_guide.pdf
-.. __: customizing.pdf
-.. __: maintenance.pdf
-.. __: design.pdf
-.. __: developers.pdf
 

@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.18 $
+:Version: $Revision: 1.19 $
 
 .. contents::
 
@@ -37,16 +37,20 @@ The last is usually only used by administrators. Most users will use the web
 and email interfaces. All three are explained below.
 
 
-Searching in your Tracker
--------------------------
+Entering values in your Tracker
+-------------------------------
 
-All interfaces to your tracker use the same format for sepcifying search
-parameters.
+All interfaces to your tracker use the same format for entering values. This
+means the web interface for entering a new issue, the web interface for
+searching issues, the email interface and even the command-line administration
+tool.
+
 
 String and Numeric properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These fields just take a simple text value, like ``topic=It's broken``.
+These fields just take a simple text value, like ``It's broken``.
+
 
 Boolean properties
 ~~~~~~~~~~~~~~~~~~
@@ -54,14 +58,19 @@ Boolean properties
 These fields take a value which indicates "yes"/"no", "true"/"false",
 "1"/"0" or "on"/"off".
 
+
 Constrained (link and multilink) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Fields like "Assigned To" and "Topics" hold references to items in other
 classes ("user" and "keyword" in those two cases.)
 
-We use a comma-separated list of values to indicated which values of "user"
-or "keyword" are interesting. The values may be either numeric ids or the
+Sometimes, the selection is done through a menu, like in the "Assigned To"
+field.
+
+Where the input is not a simple menu selection, we use a comma-separated
+list of values to indicated which values of "user" or "keyword" are
+interesting. The values may be either numeric ids or the
 names of items. The special value "-1" may be used to match items where the
 property is not set. For example, the following searches on the issues:
 
@@ -199,8 +208,10 @@ occurs) you'll get something like:
 Searching Page
 --------------
 
-see `searching in your tracker`_ for an explanation of how the searching
-works.
+See `entering values in your tracker`_ for an explanation of what you may 
+type into the search form.
+
+
 
 Under the covers
 ~~~~~~~~~~~~~~~~
@@ -561,7 +572,7 @@ If either the name or password is not supplied, they are obtained from the
 command-line.
 
 Using with the shell
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 With version 0.6.0 or newer of roundup which supports: multiple
 designators to display and the -d, -S and -s flags.

@@ -1,0 +1,962 @@
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head>
+<title>Roundup: an Issue-Tracking System for Knowledge Workers</title>
+<link rev=made href="mailto:ping@lfw.org">
+</head><body>
+
+<table width="100%">
+<tr>
+
+<td align="left">
+<a href="http://www.software-carpentry.com">
+<img src="images/logo-software-carpentry-standard.png" alt="[Software Carpentry logo]" border="0">
+</a>
+</td>
+
+<td align="right">
+<table>
+<tr><td>
+<a href="http://www.acl.lanl.gov">
+<img src="images/logo-acl-medium.png" alt="[ACL Logo]" border="0">
+</a>
+</td></tr>
+<tr><td><hr></td></tr>
+<tr><td>
+<a href="http://www.codesourcery.com">
+<img src="images/logo-codesourcery-medium.png" alt="[CodeSourcery Logo]" border="0">
+</a>
+</td></tr>
+</table>
+</td>
+
+</tr>
+
+<tr>
+
+<td colspan="2"><em>
+Copyright (c) 2000 Ka-Ping Yee.  This material may
+be distributed only subject to the terms and conditions set forth in
+the Software Carpentry Open Publication License, which is available at:
+<center>
+<a href="http://www.software-carpentry.com/openpub-license.html">http://www.software-carpentry.com/openpub-license.html</a>
+</center>
+</em></td>
+
+</tr>
+</table>
+
+<p><hr><p>
+
+
+<h1 align=center>Roundup</h1>
+<h3 align=center>An Issue-Tracking System for Knowledge Workers</h3>
+<h4 align=center>Ka-Ping Yee</h4>
+<h4 align=center><a href="http://www.lfw.org/">lfw discorporated</a><br>
+<a href="mailto:ping@lfw.org">ping@lfw.org</a></h4>
+
+<!-- the following line will start a comment in lynx -soft_dquotes mode -->
+<p style="><!--">
+
+<p><hr>
+<h2>Contents</h2>
+
+<ul>
+<li><a href="#overview">Overview</a>
+<li><a href="#background">Background</a>
+    <ul>
+    <li><a href="#principles">Guiding Principles</a>
+    </ul>
+<li><a href="#data">Data Model</a>
+    <ul>
+    <li><a href="#hyperdb">The Hyperdatabase</a>
+    <li><a href="#rationale">Rationale</a>
+    <li><a href="#roundupdb">Roundup's Hyperdatabase</a>
+    <li><a href="#schema">The Default Schema</a>
+    </ul>
+<li><a href="#ui">User Interface</a>
+    <ul>
+    <li><a href="#discuss">Submission and Discussion (Nosy Lists)</a>
+    <li><a href="#edit">Editing (Templated UI)</a>
+    <li><a href="#browse">Browsing and Searching</a>
+    </ul>
+<li><a href="#devplan">Development Plan</a>
+<li><a href="#issues">Open Issues</a>
+<li><a href="#summary">Summary</a>
+<li><a href="#ack">Acknowledgements</a>
+</ul>
+
+<!-- this comment will end the comment started in lynx -soft_dquotes mode -->
+
+<p><hr>
+<h2><a name="overview">Overview</a></h2>
+
+<p>We propose an issue-tracking system called
+<em>Roundup</em>, which will manage a number of issues
+(with properties such as "description", "priority", and so on)
+and provide the ability to
+(a) submit new issues,
+(b) find and edit existing issues,
+and
+(c) discuss issues with other participants.
+The system will facilitate communication
+among the participants by managing discussions and
+notifying interested parties when issues are edited.
+
+<p>This design draws on experience from 
+<a href="http://www.lfw.org/ping/roundup.html">an existing
+implementation</a> which we will refer to
+as "the Roundup prototype".
+The graphical interface we have in mind will resemble
+<a href="http://www.lfw.org/ping/roundup-1.png">
+the main display of the prototype</a>.
+
+<p align=center>
+<a href="images/roundup-1.png">
+<img src="images/roundup.png" width=358 height=205 border=0 alt=""></a>
+
+<p><hr>
+<h2><a name="background">Background</a></h2>
+
+<p>A typical software project requires the management of
+many tasks, usually distributed among several collaborators.
+In fact, any project team
+could use a tool for sorting out and discussing all the
+relevant issues.  A common approach is to set up some kind
+of "to-do" list that people can share.
+
+<p>However, to address the overall problem we need much more
+than just a shared to-do list; we need to
+manage a growing body of knowledge and experience to help a
+team collaborate effectively on a project.  The issue-tracking
+tool becomes a nexus for communication: the Grand Central
+Station of the group intelligence.
+
+<p>The primary focus of this design is to help
+developers work together well, not to provide a customer
+service interface to the developers.  This is not to say that
+the design is to be made unsuitable for customers to use.
+Rather, it is assumed that many of the same qualities
+that are good for supporting development (see below)
+are also good for non-developers using the system.
+Additional niceties
+for providing a safe or simplified interface to clients are
+intentionally deferred for later consideration.
+
+<p>A good issue-tracking system should have at least the
+following properties:
+
+<p><table align=right width="40%" bgcolor="#808080"
+cellspacing=0 cellpadding=0 border=0><tr><td
+><table bgcolor="#e8e8e8" width="100%"
+cellspacing=0 cellpadding=5 border=0><tr><td
+><p><font color="#808080"><small>
+With a nod to the time-honoured computer science tradition
+of "filling in the fourth quadrant", we note that
+there are really four kinds of information flow
+going on here.  The three mentioned qualities
+really address the first three quadrants of this 2-by-2 matrix,
+respectively:
+
+<ol>
+<li>User push: a user submits information to the system.
+<li>User pull: a user queries for information from the system.
+<li>System push: the system sends information out to users.
+<li>System pull: the system solicits information from users.
+</ol>
+
+An example of the fourth kind of flow is voting.
+Voting isn't described in this design,
+but it should be noted as a potential enhancement.
+</small></font></td></tr></table></td></tr></table>
+
+<ol>
+<li><strong>Low barrier to participation.</strong>
+The usefulness of the tool depends entirely on the
+information people contribute to it.  It must be made
+as easy as possible to submit new issues and contribute
+information about existing issues.<p>
+
+<li><strong>Straightforward navigation.</strong>
+It should be easy for users to extract information they need
+from the system to direct their decisions and tasks.
+They should be able to get a decent overview of
+things as well as finding specific information when
+they know what they're after.<p>
+
+<li><strong>Controlled information flow.</strong>
+The users must have control over how much information and
+what information they get.  A common flaw of some issue-tracking
+systems is that they inundate users with so much useless
+e-mail that people avoid the system altogether.
+</ol>
+<br clear=all>
+
+<p><br>
+<h3><a name="principles">Guiding Principles</a></h3>
+
+<p><strong>Simplicity.</strong> It is a strong requirement
+that the tool be accessible and understandable.  It should
+be fairly obvious what different parts of the interface do,
+and the inner mechanisms should operate in ways that most
+users can easily predict.
+
+<p><strong>Efficiency.</strong>
+We aim to optimize for minimum effort to do the most common
+operations, and best use of resources like screen real estate
+to maximize the amount of information that we summarize and present.
+
+<p><strong>Generality.</strong> We try to avoid making
+unnecessary assumptions that would restrict the applicability
+of the tool.  For example, there is no reason why one might
+not also want to use this tool to manage a design process,
+non-software projects, or organizational decisions.
+
+<p><strong>Persistence.</strong> We
+prefer hiding or reclassifying information to deleting it.
+This helps support the collection of statistics later.
+If records are never destroyed, there is little danger
+in providing access to a larger community, and logging yields
+accountability, which may encourage better behaviour.
+
+<p><hr>
+<p><table align=right width="40%" bgcolor="#808080"
+cellspacing=0 cellpadding=0 border=0><tr><td
+><table bgcolor="#e8e8e8" width="100%"
+cellspacing=0 cellpadding=5 border=0><tr><td
+><font color="#808080"><small>
+Okay, enough ranting.  Let's get down to business.
+</small></font></td></tr></table></td></tr></table>
+<h2><a name="data">Data Model</a></h2>
+
+<p>Roundup stores a number of <em>items</em>, each of
+which can have several properties and an associated discussion.
+The properties can be used to classify or search for items.
+The discussion is a sequence of e-mail messages.
+Each item is identified by a unique number, and has
+an activity log which
+records the time and content of edits made on its properties.
+The log stays fairly small since the design intentionally
+provides only small data types as item properties, and
+encourages anything large to be attached to
+e-mail where it becomes part of the discussion.
+The next section explains how items are organized.
+
+<h3><a name="hyperdb">The Hyperdatabase</a></h3>
+
+<p><table align=right width="40%" bgcolor="#808080"
+cellspacing=0 cellpadding=0 border=0><tr><td
+><table bgcolor="#e8e8e8" width="100%"
+cellspacing=0 cellpadding=5 border=0><tr><td
+><font color="#808080"><small>
+In my opinion, forcing
+items into fixed categories is one of the most
+serious problems with the Roundup prototype.
+The hyperdatabase is an <em>experimental</em> attempt to
+address the problem of information organization,
+whose scope goes beyond just Roundup.
+</small></font></td></tr></table></td></tr></table>
+
+Often when classifying information we are
+asked to select exactly one of a number of categories
+or to fit it into a rigid hierarchy.  Yet things
+only sometimes fall into one category; often,
+a piece of information may be related to several concepts.
+
+For example, forcing each item into a single topic
+category is not just suboptimal but counterproductive:
+seekers of that
+item may expect to find it in a different category
+and conclude that the item is not present in the
+database -- which has them <em>worse</em> off
+than if the items were not categorized at all.
+
+<p>Some systems try to alleviate this problem by
+allowing nodes to appear at multiple locations
+in a tree, as with "aliases" or "symbolic links" in
+a filesystem, for example.  This does help somewhat,
+but we want to be even more flexible
+by allowing the
+organization of nodes into sets that may freely
+intersect.  Rather than putting each node at exactly
+one place in an overall "grand scheme", a node can
+belong to as many sets as are appropriate.
+
+If we choose to represent the sets themselves as nodes
+and set membership as a link between nodes,
+we're now ready to present the definition of a
+hyperdatabase.
+
+<p><table align=right width="40%" bgcolor="#808080"
+cellpadding=0 cellspacing=0 border=0><tr><td
+><table bgcolor="#e8e8e8" width="100%"
+cellspacing=0 cellpadding=5 border=0><tr><td
+><font color="#808080"><small>
+Perhaps it's too pretentious a name?
+You could say this is just like an object database.
+The hyperdatabase is hardly much of an invention; the
+intent is merely to emphasize querying on links
+rather than properties.
+(I haven't heard of this being done with
+object databases before, but plead ignorance if
+there's already a good name for this idea.)
+</small></font></td></tr></table></td></tr></table>
+A <em>hyperdatabase</em> is a collection of <em>nodes</em>
+that may be hyperlinked to
+each other (hence the name "hyperdatabase").
+Each node carries a collection of key-value pairs,
+where some of the values may be links to other nodes.
+Any node may have an arbitrary number of outgoing and
+incoming links.  Hyperdatabases are able to efficiently
+answer queries such as "what nodes link to this node?"
+and "what nodes does this node link to?"
+
+<h3><a name="rationale">Rationale</a></h3>
+
+<p>There are several reasons for building our
+own kind of database for Roundup rather than using an existing one.
+
+Requiring the installation of a full-blown third-party
+SQL database system would probably deter many potential
+users from attempting to set up Roundup;
+yet a real relational database would be too
+complicated to implement on our own.
+
+On the other hand, a hyperdatabase can be implemented fairly easily
+using one of the Python DBM modules, so we can
+take the "batteries-included" approach and provide it
+as part of the system.  It's easier to build and understand
+than a true relational database (in accordance with our guiding
+principle of <em>simplicity</em>), but provides
+most of the query functionality we want.
+
+<p>A hyperdatabase is well suited for finding the intersection
+of a number of sets in which items belong.  We expect that
+most of the queries people want to do will be of this
+form, rather than complicated SQL queries.  For example, a
+typical request might be
+"show me all critical items related to security".
+The ability to store arbitrary key-value pairs and links
+on nodes gives it more flexibility than an RDBMS.
+
+Users are not going to be making thousands of queries
+per second, so it makes sense to optimize for simplicity
+and flexibility rather than performance.
+
+<p align=center><img src="images/hyperdb.png" width=433 height=352 alt=""></a>
+
+
+<h3><a name="roundupdb">Roundup's Hyperdatabase</a></h3>
+
+<p>For our application, we store each item as a node in a
+hyperdatabase.  The item's properties are stored
+as key-value pairs on its node.
+Four types of properties are allowed:
+<em>string</em>, <em>date</em>,
+<em>choice</em>, and <em>reference</em>.
+
+<p>The <em>string</em> type is for short, free-form strings.
+String properties are not intended to contain large
+amounts of text, and it is recommended that they be presented
+as one-line fields to encourage brevity.
+
+<p>The <em>date</em> type is for calendar dates and times.
+
+<p>The <em>choice</em> type denotes a single selection
+from a number of options.  A <em>choice</em> property
+entails a link from the node possessing the property to
+the node representing the chosen option.
+
+<p>The <em>reference</em> type is for a list of links to any
+number of other nodes in the in the database.  A <em>reference</em>
+property, for example, can be used to refer to related items
+or topic categories relevant to an item.
+
+<p>For Roundup, all items have five properties
+that are not customizable:
+
+<ul>
+<li>a <em>string</em> property named <strong>description</strong>
+<li>a <em>reference</em> property named <strong>superseder</strong>
+<li>a <em>reference</em> property named <strong>nosy</strong>
+<li>a <em>date</em> property named <strong>creation</strong>
+<li>a <em>date</em> property named <strong>activity</strong>
+</ul>
+
+<p>The <strong>description</strong> property is a short
+one-line description of the item.
+The detailed description can go in the
+first e-mail message of the item's discussion spool.
+
+<p>The <strong>superseder</strong> property is used to 
+support the splitting, joining, or replacing of items.
+When several items need to be
+joined into a single item, all the old items
+link to the new item in their <strong>superseder</strong>
+property.
+When an item needs to be split apart, the item
+references all the new items in its <strong>superseder</strong>
+propety.
+We can easily list all active items just by checking
+for an empty <strong>superseder</strong> property, and trace
+the path of an item's origins by querying the hyperdatabase
+for links.
+
+<p>The <strong>nosy</strong> property contains a list of
+the people who are interested in an item.  This
+mechanism is explained in
+<a href="#discuss">the section on Nosy Lists</a>.
+
+<p>The <strong>creation</strong> property records the
+item's creation time.  The <strong>activity</strong>
+property records the last time that the item was edited or
+a mail message was added to its discussion spool.  These two
+properties are managed by Roundup and are not available to
+be edited like other properties.
+
+<p>Users of the system are also represented by nodes in the
+hyperdatabase, containing properties
+like the user's e-mail address, login name, and password.
+
+<h3><a name="schema">The Default Schema</a></h3>
+
+<p><table align=right width="40%" bgcolor="#808080"
+cellpadding=0 cellspacing=0 border=0><tr><td
+><table bgcolor="#e8e8e8" width="100%"
+cellspacing=0 cellpadding=5 border=0><tr><td
+><font color="#808080"><small>
+Roundup could be distributed with a few
+suggested schemas for different purposes.
+One possible enhancement to the
+software-development schema is
+a <em>reference</em> property
+named <strong>implements</strong> for connecting
+development items to design requirements which
+they satisfy, which should
+be enough to provide basic support for
+<a href="http://software-carpentry.codesourcery.com/lists/sc-discuss/msg00046.html">traceability</a>.
+Clearly there is also potential for adding
+properties for related source files, check-ins,
+test results, regression tests for resolved items,
+and so on, though these have not yet been
+sufficiently well thought out to specify here.
+</small></font></td></tr></table></td></tr></table>
+<p>It is hoped that the hyperdatabase together with the
+specializations mentioned above for Roundup will be
+applicable in a variety of situations
+(in accordance with our guiding principle of <em>generality</em>).
+
+<p>To address the problem at hand, we need
+a specific schema for items applied particularly to software development.
+Again, we are trying to keep the schema simple: too many
+options make it tougher for someone to make a good choice.
+The schema is written here in the same form that it would
+appear in a configuration file.
+<br clear=all>
+
+<pre>
+    fixer = Reference()             # people who will fix the problem
+
+    topic = Reference()             # relevant topic keywords
+
+    priority = Choice("critical",   # panic: work is stopped!
+                      "urgent",     # important, but not deadly
+                      "bug",        # lost work or incorrect results
+                      "feature",    # want missing functionality
+                      "wish")       # avoidable bugs, missing conveniences
+
+    status = Choice("unread",       # submitted but no action yet
+                    "deferred",     # intentionally set aside
+                    "chatting",     # under review or seeking clarification
+                    "need-eg",      # need a reproducible example of a bug
+                    "in-progress",  # understood; development in progress
+                    "testing",      # we think it's done; others, please test
+                    "done-cbb",     # okay for now, but could be better
+                    "resolved")     # fix has been released
+</pre>
+
+<p>The <strong>fixer</strong> property assigns
+responsibility for an item to a person or a list of people.
+The <strong>topic</strong> property places the
+item in an arbitrary number of relevant topic sets (see
+<a href="#browse">the section on Browsing and Searching</a>).
+
+<p>As previously mentioned, each item gets an activity log.
+Whenever a property on an item is changed, the log
+records the time of the change, the user making the change,
+and the old and new values of the property.  This permits
+the later gathering of statistics (for example, the average time
+from submission to resolution).
+
+<p>We do not specify or enforce a state transition graph,
+since making the system rigid in that fashion is probably more
+trouble than it's worth.
+Experience has shown that there are probably
+two convenient automatic state transitions:
+
+<ul>
+<li>from <strong>unread</strong> to <strong>chatting</strong>
+when e-mail is written about an item
+<li>from <strong>testing</strong> to <strong>resolved</strong>
+when a new release of the software is made
+</ul>
+
+Beyond these, in accordance with our principle of <em>generality</em>,
+we allow access to the hyperdatabase
+API so that scripts can automate transitions themselves or
+be triggered by changes in the database.
+
+<p><hr>
+<h2><a name="ui">User Interface</a></h2>
+
+<p>Roundup provides its services through two main interfaces:
+e-mail and the Web.
+This division is chosen to optimize the most common tasks.
+
+<p>E-mail is best suited for
+the submission of new items since most people are most comfortable
+with composing long messages in their own favourite e-mail client.
+E-mail also permits them to mention URLs or attach files relevant
+to their submission.  Indeed, in many cases people are already
+used to making requests by sending e-mail to a mailing list
+of people; they can do exactly the same thing to use Roundup
+without even thinking about it.
+Similarly, people are already
+familiar with holding discussions in e-mail, and plenty of
+valuable usage conventions and software tools already exist for that medium.
+
+<p>The Web, on the other hand, is best suited for summarizing
+and seeking information, because it can present an interactive
+overview of items.  Since the Web has forms, it's also
+the best place to edit items.
+
+<h3><a name="discuss">Submission and Discussion</a></h3>
+
+<p><table align=right width="40%" bgcolor="#808080" cellpadding=0 border=0
+><tr><td><table bgcolor="#e8e8e8" width="100%" cellspacing=0 cellpadding=5
+border=0><tr><td><font color="#808080"><small>
+Nosy lists have actually been tried in practice,
+and their emergent properties have
+turned out to be very effective.
+They are one of the key strengths of the Roundup prototype,
+and often cause me to wonder if all mailing lists ought to work this way.
+Roundup could even replace Hypermail.
+</small></font></td></tr></table></td></tr></table>
+
+<p>The system needs an address for receiving mail
+and an address that forwards mail to all participants.
+Each item has its own list
+of interested parties, known as its <em>nosy list</em>.
+Here's how nosy lists work:
+
+<p><ol type="a">
+<li>New items are always submitted by sending an e-mail message
+to Roundup.  The "Subject:" field becomes the description
+of the new item.
+The message is saved in the mail spool of the new item,
+and copied to the list of all participants
+so everyone knows that a new item has been added.
+The new item's nosy list initially contains the submitter.
+
+<li>All e-mail messages sent by Roundup have their "Reply-To:"
+field set to Roundup's address, and have the item's
+number in the "Subject:" field.  Thus, any replies to the
+initial announcement and subsequent threads are all received
+by Roundup.  Roundup notes the item number in the "Subject:"
+field of each incoming message and appends the message
+to the appropriate spool.
+
+<li>Any incoming e-mail tagged with an item number is copied
+to all the people on the item's nosy list,
+and any users found in the "From:", "To:", or "Cc:" fields
+are automatically added to the nosy list.  Whenever a user
+edits an item's properties in the Web interface, they are
+also added to the nosy list.
+</ol>
+
+<p>The effect
+is like each item having its own little mailing list,
+except that no one ever has to worry about subscribing to
+anything.  Indicating interest in an issue is sufficient, and if you
+want to bring someone new into the conversation, all you need to do
+is Cc: a message to them.  It turns out that no one ever has to worry
+about unsubscribing, either: the nosy lists are so specific in scope
+that the conversation tends to die down by itself when the issue is
+resolved or people no longer find it sufficiently important.
+
+<p>Each nosy list is like an asynchronous chat room,
+lasting only a short time (typically five or ten messages)
+and involving a small group of people.
+However, that
+group is the <em>right</em> group of people:
+only those who express interest in an item in some way
+ever end up on
+the list, so no one gets spammed with mail they
+don't care about, and no one who <em>wants</em>
+to see mail about a particular item needs to be left
+out, for they can easily join in, and just as easily
+look at the mail spool on an item to catch up on any
+messages they might have missed.
+
+<p>We can take this a step further and
+permit users to monitor particular topics or
+classifications of items
+by allowing other kinds of nodes to
+also have their own nosy lists.
+For example, a manager could be on the
+nosy list of the priority value node for "critical", or a
+developer could be on the nosy list of the
+topic value node for "security".
+The recipients are then
+determined by the union of the nosy lists on the
+item and all the nodes it links to.
+
+<p>Using many small, specific mailing lists results
+in much more effective communication than one big list.
+Taking away the effort of subscribing and unsubscribing
+gives these lists the "feel" of being cheap and
+disposable.
+
+The transparent capture of the mail spool attached to each
+issue also yields a nice knowledge repository over time.
+
+
+<h3><a name="edit">Editing</a></h3>
+
+<p>
+<img src="images/edit.png" align=right width=171 height=471 alt="">
+Since Roundup is intended to support arbitrary user-defined
+schema for item properties, the editing interface must be
+automatically generated from the schema.  The configuration for
+Roundup will include a template describing how to lay out the
+properties to present a UI for inspecting and editing items.
+For example:
+
+<pre>
+    &lt;table width="100%"&gt;
+    &lt;tr&gt;&lt;td align=right&gt;Description:&lt;/td&gt;
+        &lt;td&gt;&lt;?property description size=70&gt;&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td align=right&gt;Status:&lt;/td&gt;
+        &lt;td&gt;&lt;?property status&gt;&lt;/td&gt;&lt;/tr&gt;
+    &lt;/table&gt;
+</pre>
+
+<p>To display the editing form for an item, Roundup substitutes
+an HTML form widget for each <tt>&lt;?property </tt>...<tt>&gt;</tt>
+tag, and transfers attributes
+(such as <tt>size=70</tt> in the above example)
+from the processing tag to the form widget's tag.
+Each type has its own appropriate editing widget:
+<ul>
+<li><em>string</em> properties appear as text fields
+<li><em>date</em> properties appear as text fields
+<li><em>choice</em> properties appear as selection lists
+<li><em>reference</em> properties appear as multiple-selection lists
+with a text field for adding a new option
+</ul>
+
+<p>We foresee the use of custom date fields for things like deadlines,
+so input fields for <em>date</em> properties should support some
+simple way of specifying relative dates (such as "three weeks from now").
+
+<p>The <strong>superseder</strong> property is a special case:
+although it is more efficient to store a <strong>superseder</strong>
+property in the superseded item, it makes more sense to provide
+a "supersedes" edit field on the superseding item.  So we need
+a special widget on items for this purpose (perhaps something
+as simple as a text field containing a comma-separated list of
+item numbers will do).  Links in the <strong>superseder</strong> property
+should appear on both the superseding and superseded items to
+facilitate navigating an item's pedigree.
+
+<p>After the editing widgets, the item inspection page shows
+a "note" text box and then a display of the messages in the
+discussion spool, like the Roundup prototype.  This field
+lets you enter a note explaining your change when you edit the
+item, and the note is included in the notification message that
+goes out to tell the interested parties on the nosy list of
+your edits.
+
+<h3><a name="browse">Browsing and Searching</a></h3>
+
+<p>The ideal we would like to achieve is to make searching as
+much like browsing as possible: the user simply clicks about
+on things that seem interesting, and the information narrows
+down comfortably until the goal is in sight.  This is preferable
+to trying to digest a screen filled with widgets and buttons
+or entering a search expression in some arcane algebraic syntax.
+
+<p><table align=right width="40%" bgcolor="#808080" cellpadding=0 border=0
+><tr><td><table bgcolor="#e8e8e8" width="100%" cellspacing=0 cellpadding=5
+border=0><tr><td><font color="#808080"><small>
+Though the generation of each page amounts to a database query,
+so that the underlying mechanism is still a series of queries and
+responses, the user interface never separates the query from
+the response, so the <em>experience</em> is one of stepwise
+refinement.
+</small></font></td></tr></table></td></tr></table>
+While a one-shot search may be appropriate when you're
+looking for a single item and you know exactly what you want, it's
+not very helpful when you want an overview of
+things ("Gee, there are a lot more high-priority items than
+there were last week!") or trying to do comparisons ("I have
+some time today, so who is busiest and could most use some help?")
+<br clear=all>
+
+<p>The browsing interface presents filtering
+functionality for each of the properties in the schema.  As with
+editing, the interface is generated from a template
+describing how to lay out the properties.
+Each type of property has its own appropriate filtering widget:
+<ul>
+<li><em>string</em> properties appear as text fields supporting
+case-insensitive substring match
+<li><em>date</em> properties appear as a text field with an
+option to choose dates after or before the specified date
+<li><em>choice</em> properties appear as a group of
+selectable options
+(the filter selects the <em>union</em> of the sets of items
+associated with the active options)
+<li><em>reference</em> properties appear as a group of
+selectable options
+(the filter selects the <em>intersection</em> of the sets of items
+associated with the active options)
+</ul>
+
+<p>For a <em>reference</em> property like <strong>topic</strong>,
+one possibility is to show, as hyperlinks, the keywords whose
+sets have non-empty intersections with the currently displayed set of
+items.  Sorting the keywords by popularity seems
+reasonable.  Clicking on a keyword then narrows both the list of items
+and the list of keywords.  This gives some of the feel of walking
+around a directory tree -- but without the restriction of having
+to select keywords in a particular hierarchical order, and without
+the need to travel all the way to the leaves of the tree before
+any items are visible.
+
+<p>Below the filtering form is a listing of items, with their
+properties displayed in a table.  Rows in the table can also be
+generated from a template, as with the editing interface.
+This listing is the central overview of the system, and it
+should aim to maximize the density of
+useful information in accordance with our guiding principle of
+<em>efficiency</em>.
+For example, 
+<a href="http://www.lfw.org/ping/bugzilla-4.gif">Bugzilla
+initially displays seven or eight items of the index</a>, but only
+after the user has 
+<a href="http://www.lfw.org/ping/bugzilla-1.gif">waded</a>
+through
+<a href="http://www.lfw.org/ping/bugzilla-2.gif">three</a>
+bewildering
+<a href="http://www.lfw.org/ping/bugzilla-3.gif">screens</a> of
+form widgets.
+<a href="http://www.lfw.org/ping/jitterbug-1.gif">Jitterbug can't
+even fit any items at all in the first screenful</a>, as it's
+taken up by artwork and adminstrative debris.  In contrast,
+<a href="http://www.lfw.org/ping/roundup-1.gif">in the
+Roundup prototype,
+25 high-priority issues are immediately visible</a>, with
+most of the screen space devoted to their descriptions.  
+Colour indicates
+the status of each item to help the eye sift through the index quickly.
+
+<p>In both Jitterbug and Bugzilla, items are sorted by default by ID,
+a meaningless field.  Sorting by ID puts the issues in order by
+ascending submission date, which banishes recent issues far away
+at the bottom of the list.
+The Roundup prototype sorts items
+in sections by priority, and then within sections by the date
+of last activity.  This reveals at a glance where discussion is
+most active, and provides an easy way for anyone to move an issue
+up in the list.
+
+<p>The page produced by a given set of browsing options constitutes
+a <em>view</em>.  The options should all be part of the query
+parameters in the URL so that views may be bookmarked.  A view
+specifies:
+
+<ul>
+<li>search strings for string properties
+<li>date ranges for date properties
+<li>acceptable values for choice properties
+<li>required values for reference properties
+<li>one or more sort keys
+<li>a list of properties for which to display filtering widgets
+</ul>
+
+<p>On each sort key there is the option to use sections -- that is,
+instead of making the property's value a column of the table, each
+possible value for the property
+is displayed at the top of a section and all the items having
+that value for that property are grouped underneath.  This avoids
+wasting screen space with redundant information.
+
+<p>We propose that our default view should be:
+
+<ul>
+<li>all options on for <strong>priority</strong> and <strong>fixer</strong>
+<li>all options on except "resolved" for <strong>status</strong>
+<li>no options on for <strong>topic</strong>
+<li>primary sort by <strong>priority</strong> in sections
+<li>secondary sort by decreasing <strong>activity</strong> date
+</ul>
+
+<p>The starting URL for Roundup should immediately present the listing of
+items generated by this default view, with no
+preceding query screen.
+
+<p><hr>
+<h2><a name="devplan">Development Plan</a></h2>
+
+<p>The hyperdatabase is clearly a separable component which
+can be developed and tested independently to an API specification.
+
+<p>As soon as the API to the hyperdatabase is nailed down,
+the implementation of the Roundup database layer
+on top of the hyperdatabase can begin.
+(This refers to the data types and five fixed properties
+specific to Roundup.)  This layer can also be tested separately.
+
+<p>When the interface to the Roundup hyperdatabase is ready,
+development can begin on the user interface.  The mail handler
+and the Web interface can be developed in parallel and mostly
+independently of each other.
+
+<p>The mail handler can be set up for testing fairly easily:
+mail messages on its standard input can be synthesized;
+its output is outgoing mail, which can be
+captured by replacing the implementation of the
+"send mail" function; and its side effects appear in the
+hyperdatabase, which has a Python API.
+
+<p>The Web interface is not easily testable in its entirety,
+though the most important components of it can be unit tested,
+such as the component that translates a view specification
+into a list of items for display, and
+the component that performs replacements on templates
+to produce an editing or filtering interface.
+
+<p><hr>
+<h2><a name="issues">Open Issues</a></h2>
+
+<p>The description of the hyperdatabase above avoids some
+issues regarding node typing that need to be better specified.
+It is conceivable that eventually Roundup
+could support multiple kinds of items with their own schemas.
+
+<p>To permit integration with external tools, it is probably
+a good idea to provide a command-line tool that exposes the
+hyperdatabase API.  This tool will be left for a later phase
+of development and so isn't specified in detail here.
+
+<p>Generating the user interface from a template is like
+applying an XSL stylesheet to XML, and if there's a standard
+Python module for performing these transformations, we could
+use XML instead.
+
+<p>More thinking is needed to determine the best filtering
+interface for <em>reference</em> properties.
+The proposed interface works well for topic keywords, but
+it isn't clear what to do when there are too many keywords
+to display them all.
+
+<p>There has been a variety of reactions to the hyperdatabase
+from reviewers: some like it, some are neutral, and some
+would prefer a "standard" RDBMS solution.
+For those in the latter camp, note
+that it's still possible to build the Roundup database layer
+around an RDBMS if we really need to.  The rest of the design, in
+particular the "nosy list" mechanism, remains intact.
+
+<p>The possibility of malice by registered users has been disregarded.
+The system is intended to be used by a co-operative group.
+
+<p>This design tries to address as many as possible of the
+suggested requirements mentioned on
+<a href="http://software-carpentry.codesourcery.com/sc_track">the contest page</a>:
+
+<ul>
+<li>configuring states: Edit the schema.
+<li>setting state transition rules: We don't enforce any rules.
+<li>assigning responsibility: Set the <strong>fixer</strong> property.
+<li>splitting and joining: Use the <strong>superseder</strong> property.
+<li>hiding information: Add
+a property and a pre-defined view that filters on it.
+<li>secure protocols: Naturally HTTPS would be nice, though it's largely
+a webserver configuration issue; secure e-mail is not addressed.
+<li>archiving old issues: Tag them with a property.
+<li>identifying repeated issues: Use the <strong>superseder</strong> property.
+<li>connecting state changes to external operations: We provide an
+API to the database and the notification mechanism so it can be scripted.
+<li>non-Latin alphabets: Unicode in Python 1.6 will handle
+this for string properties, and we can leverage existing standards for
+internationalizing e-mail messages.
+<li>images and other binaries: Attach them to e-mail messages.
+<li>inspecting item state: Use the editing interface.
+<li>translation between system-dependent formats: This is not addressed.
+<li>performing searches: Use the browsing and filtering interface.
+<li>collecting statistics: Information is gathered in the activity log,
+though tools to summarize it are not described here.
+</ul>
+
+<p><hr>
+<h2><a name="summary">Summary</a></h2>
+
+<p>Roundup is an issue-tracking system that also functions as
+a communications center and a knowledge repository.  It combines
+the strengths of e-mail and the Web to try to provide the best
+possible user interaction.
+
+<ul>
+<li>The submission and discussion of items by e-mail, permitting
+participants to use an easy and familiar tool, achieves our goal
+of <em>low barrier to participation</em>.
+<li>The generic link-based structuring of data and use of
+incremental filtering rather than one-shot querying makes for
+<em>straightforward navigation</em>.
+<li>The use of <em>nosy lists</em> (a powerful replacement for
+e-mail discussion lists) to manage communication on
+a fine-grained level provides <em>controlled information flow</em>.
+</ul>
+
+<p>The use of a "hyperdatabase" as the core model for
+the knowledge repository gives us the flexibility to extend
+Roundup and apply it to a variety of domains by
+providing new item schemas and user-interface templates.
+
+<p>Roundup is self-contained and easy to set up, requiring
+only a webserver and a mailbox.  No one needs to be root to
+configure the webserver or to install database software.
+
+<p>This design is based on an existing deployed
+prototype which has proven its strengths and revealed its
+weaknesses in heavy day-to-day use by a real development team.
+
+<p><hr>
+<h2><a name="ack">Acknowledgements</a></h2>
+
+<p>My thanks are due to 
+Christina Heyl, Jesse Vincent, Mark Miller, Christopher Simons,
+Jeff Dunmall, Wayne Gramlich, and Dean Tribble
+for reviewing this paper and contributing their suggestions.
+
+<p><hr><p>
+
+<center>
+<table>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/index.html"><b>[Home]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/faq.html"><b>[FAQ]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/license.html"><b>[License]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/contest-rules.html"><b>[Rules]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/biblio.html"><b>[Resources]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/lists/"><b>[Archives]</b></a>&nbsp;&nbsp;&nbsp;</td>
+</tr>
+</table>
+</center>
+
+<p><hr>
+<center>
+Last modified 2001/04/06 11:50:59.9063 US/Mountain
+</center>
+</body></html>

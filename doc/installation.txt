@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.45 $
+:Version: $Revision: 1.46 $
 
 .. contents::
 
@@ -470,6 +470,7 @@ Schedule
 
 To have the Roundup mail gateway run periodically to poll a POP email address,
 set the following up in Scheduled Tasks:
+
 Run
  ``c:\cygwin\bin\bash.exe -c "roundup-mailgw /opt/roundup/trackers/support pop roundup:roundup@mail-server"``
 Start In
@@ -498,7 +499,7 @@ This is usually done via the following 2 steps:
 Linux
 -----
 
-Make sure you read the instructions under `shared environment setup`_.
+Make sure you read the instructions under `shared environment steps`_.
 
 Python 2.1.1 as shipped with SuSE7.3 might be missing module
 ``_weakref``.
@@ -509,7 +510,7 @@ Solaris
 
 You'll need to build Python.
 
-Make sure you read the instructions under `shared environment setup`_.
+Make sure you read the instructions under `shared environment steps`_.
 
 -------------------------------------------------------------------------------
 
