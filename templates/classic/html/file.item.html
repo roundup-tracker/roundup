@@ -1,12 +1,13 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">File display</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">File display</span>
+<title metal:fill-slot="head_title" i18n:translate="">File display</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">File display</span>
 
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
-You are not allowed to view this page.
-</span>
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
+ tal:omit-tag="python:1" i18n:translate=""
+>You are not allowed to view this page.</span>
 
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok"
@@ -14,11 +15,11 @@ You are not allowed to view this page.
 
 <table class="form">
  <tr>
-  <th>Name</th>
+  <th i18n:translate="">Name</th>
   <td tal:content="structure context/name/field"></td>
  </tr>
  <tr>
-  <th>Content Type</th>
+  <th i18n:translate="">Content Type</th>
   <td tal:content="structure context/type/field"></td>
  </tr>
 
@@ -37,15 +38,16 @@ You are not allowed to view this page.
 </form>
 
 <a tal:condition="python:context.id and context.is_view_ok()"
-   tal:attributes="href string:file${context/id}/${context/name}">download</a>
+ tal:attributes="href string:file${context/id}/${context/name}"
+ i18n:translate="">download</a>
 
 <table class="form" tal:condition="context/is_only_view_ok">
  <tr>
-  <th>Name</th>
+  <th i18n:translate="">Name</th>
   <td tal:content="context/name"></td>
  </tr>
  <tr>
-  <th>Content Type</th>
+  <th i18n:translate="">Content Type</th>
   <td tal:content="context/type"></td>
  </tr>
 </table>

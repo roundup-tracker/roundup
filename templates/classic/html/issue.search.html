@@ -1,6 +1,7 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">Issue searching</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">Issue searching</span>
+<title metal:fill-slot="head_title" i18n:translate="">Issue searching</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Issue searching</span>
 <td class="content" metal:fill-slot="content">
 
 <form method="GET" name="itemSynopsis"
@@ -19,14 +20,14 @@
 
 <tr>
  <th class="header">&nbsp;</th>
- <th class="header">Filter on</th>
- <th class="header">Display</th>
- <th class="header">Sort on</th>
- <th class="header">Group on</th>
+ <th class="header" i18n:translate="">Filter on</th>
+ <th class="header" i18n:translate="">Display</th>
+ <th class="header" i18n:translate="">Sort on</th>
+ <th class="header" i18n:translate="">Group on</th>
 </tr>
 
 <tr tal:define="name string:@search_text">
-  <th>All text*:</th>
+  <th i18n:translate="">All text*:</th>
   <td metal:use-macro="search_input"></td>
   <td>&nbsp;</td>
   <td>&nbsp;</td>
@@ -34,7 +35,7 @@
 </tr>
 
 <tr tal:define="name string:title">
-  <th>Title:</th>
+  <th i18n:translate="">Title:</th>
   <td metal:use-macro="search_input"></td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -44,7 +45,7 @@
 <tr tal:define="name string:topic;
                 db_klass string:keyword;
                 db_content string:name;">
-  <th>Topic:</th>
+  <th i18n:translate="">Topic:</th>
   <td metal:use-macro="search_select"></td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -52,7 +53,7 @@
 </tr>
 
 <tr tal:define="name string:id">
-  <th>ID:</th>
+  <th i18n:translate="">ID:</th>
   <td metal:use-macro="search_input"></td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -60,7 +61,7 @@
 </tr>
 
 <tr tal:define="name string:creation">
-  <th>Creation Date:</th>
+  <th i18n:translate="">Creation Date:</th>
   <td metal:use-macro="search_input"></td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -70,7 +71,7 @@
 <tr tal:define="name string:creator;
                 db_klass string:user;
                 db_content string:username;">
-  <th>Creator:</th>
+  <th i18n:translate="">Creator:</th>
   <td metal:use-macro="search_select">
     <option metal:fill-slot="extra_options"
             tal:attributes="value request/user/id">created by me</option>
@@ -81,7 +82,7 @@
 </tr>
 
 <tr tal:define="name string:activity">
-  <th>Activity:</th>
+  <th i18n:translate="">Activity:</th>
   <td metal:use-macro="search_input"></td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -89,7 +90,7 @@
 </tr>
 
 <tr tal:define="name string:actor">
-  <th>Actor:</th>
+  <th i18n:translate="">Actor:</th>
   <td metal:use-macro="search_select">
     <option metal:fill-slot="extra_options"
             tal:attributes="value request/user/id">done by me</option>
@@ -102,7 +103,7 @@
 <tr tal:define="name string:priority;
                 db_klass string:priority;
                 db_content string:name;">
-  <th>Priority:</th>
+  <th i18n:translate="">Priority:</th>
   <td metal:use-macro="search_select">
     <option metal:fill-slot="extra_options" value="-1"
             tal:attributes="selected python:value == '-1'">not selected</option>
@@ -115,14 +116,14 @@
 <tr tal:define="name string:status;
                 db_klass string:status;
                 db_content string:name;">
-  <th>Status:</th>
+  <th i18n:translate="">Status:</th>
   <td metal:use-macro="search_select">
     <tal:block metal:fill-slot="extra_options">
       <option value="-1,1,2,3,4,5,6,7"
               tal:attributes="selected python:value == '-1,1,2,3,4,5,6,7'">not resolved</option>
       <option value="-1"
               tal:attributes="selected python:value == '-1'">not selected</option>
-    </tal:block>    
+    </tal:block>
   </td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -132,7 +133,7 @@
 <tr tal:define="name string:assignedto;
                 db_klass string:user;
                 db_content string:username;">
-  <th>Assigned to:</th>
+  <th i18n:translate="">Assigned to:</th>
   <td metal:use-macro="search_select">
     <tal:block metal:fill-slot="extra_options">
       <option tal:attributes="value request/user/id">assigned to me</option>
@@ -145,33 +146,33 @@
 </tr>
 
 <tr>
-<th>Pagesize:</th>
+<th i18n:translate="">Pagesize:</th>
 <td><input name="@pagesize" size="3" value="50"
            tal:attributes="value request/form/@pagesize/value | default"></td>
 </tr>
 
 <tr>
-<th>Start With:</th>
+<th i18n:translate="">Start With:</th>
 <td><input name="@startwith" size="3" value="0"
            tal:attributes="value request/form/@startwith/value | default"></td>
 </tr>
 
 <tr>
-<th>Sort Descending:</th>
+<th i18n:translate="">Sort Descending:</th>
 <td><input type="checkbox" name="@sortdir"
            tal:attributes="checked python:request.sort[0] == '-' or request.sort[0] is None">
 </td>
 </tr>
 
 <tr>
-<th>Group Descending:</th>
+<th i18n:translate="">Group Descending:</th>
 <td><input type="checkbox" name="@groupdir"
            tal:attributes="checked python:request.group[0] == '-'">
 </td>
 </tr>
 
 <tr>
-<th>Query name**:</th>
+<th i18n:translate="">Query name**:</th>
 <td><input name="@queryname"
            tal:attributes="value request/form/@queryname/value | default"></td>
 </tr>
@@ -185,7 +186,7 @@
 </tr>
 
 <tr><td>&nbsp;</td>
- <td colspan="4" class="help">
+ <td colspan="4" class="help" i18n:translate="">
    *: The "all text" field will look in message bodies and issue titles<br>
    **: If you supply a name, the query will be saved off and available as a
        link in the sidebar

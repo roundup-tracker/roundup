@@ -1,16 +1,16 @@
 <!-- dollarId: file.index,v 1.4 2002/01/23 05:10:27 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title"> 
- List of files - <span tal:replace="config/TRACKER_NAME" />
-</title> 
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">List of files</span>
+<title metal:fill-slot="head_title" i18n:translate=""
+ >List of files - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+  i18n:translate="">List of files</span>
 <td class="content" metal:fill-slot="content">
 
 <table class="otherinfo">
-<tr><th style="padding-right: 10">Download</th>
-    <th style="padding-right: 10">Content Type</th>
-    <th style="padding-right: 10">Uploaded By</th>
-    <th style="padding-right: 10">Date</th>
+<tr><th style="padding-right: 10" i18n:translate="">Download</th>
+    <th style="padding-right: 10" i18n:translate="">Content Type</th>
+    <th style="padding-right: 10" i18n:translate="">Uploaded By</th>
+    <th style="padding-right: 10" i18n:translate="">Date</th>
 </tr>
 <tr tal:repeat="file context/list">
  <td>
