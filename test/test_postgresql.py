@@ -14,18 +14,14 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_postgresql.py,v 1.10 2004-05-23 09:44:47 richard Exp $ 
+#
+# $Id: test_postgresql.py,v 1.11 2004-09-25 15:50:36 a1s Exp $
 
 import unittest
 
 from roundup.hyperdb import DatabaseError
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
-
-# Postgresql connection data
-# NOTE: THIS MUST BE A LOCAL DATABASE
-config.POSTGRESQL_DATABASE = {'database': 'rounduptest'}
 
 from roundup import backends
 
@@ -84,7 +80,6 @@ class postgresqlSchemaTest(postgresqlOpener, SchemaTest):
 
 class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest):
     backend = 'postgresql'
-    extra_config = "POSTGRESQL_DATABASE = %r"%config.POSTGRESQL_DATABASE
     def setUp(self):
         postgresqlOpener.setUp(self)
         ClassicInitTest.setUp(self)
@@ -122,3 +117,4 @@ def test_suite():
     suite.addTest(unittest.makeSuite(postgresqlSessionTest))
     return suite
 
+# vim: set et sts=4 sw=4 :
