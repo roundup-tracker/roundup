@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.23 2004-02-17 03:48:08 richard Exp $
+# $Id: test_cgi.py,v 1.24 2004-09-28 10:47:20 a1s Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -71,18 +71,19 @@ class FormTestCase(unittest.TestCase):
         # create the instance
         init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, 'anydbm')
-        init.initialise(self.dirname, 'sekrit')
-        
-        # check we can load the package
-        self.instance = instance.open(self.dirname)
-        # and open the database
+        self.instance = tracker = instance.open(self.dirname)
+        if tracker.exists():
+            tracker.nuke()
+        tracker.init(password.Password('sekrit'))
+
+        # open the database
         self.db = self.instance.open('admin')
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
             realname='Bork, Chef', roles='User')
         self.db.user.create(username='mary', address='mary@test',
             roles='User', realname='Contrary, Mary')
 
-        test = self.instance.dbinit.Class(self.db, "test",
+        test = self.instance.get_backend().Class(self.db, "test",
             string=hyperdb.String(), number=hyperdb.Number(),
             boolean=hyperdb.Boolean(), link=hyperdb.Link('test'),
             multilink=hyperdb.Multilink('test'), date=hyperdb.Date(),
@@ -273,15 +274,15 @@ class FormTestCase(unittest.TestCase):
         cl.classname = 'issue'
         cl.nodeid = None
         cl.db = self.db
-        self.assertEqual(cl.parsePropsFromForm(create=1), 
+        self.assertEqual(cl.parsePropsFromForm(create=1),
             ({('issue', None): {'nosy': ['1','2', '3']}}, []))
 
     def testEmptyMultilinkSet(self):
         nodeid = self.db.issue.create(nosy=['1','2'])
-        self.assertEqual(self.parseForm({'nosy': ''}, 'issue', nodeid), 
+        self.assertEqual(self.parseForm({'nosy': ''}, 'issue', nodeid),
             ({('issue', nodeid): {'nosy': []}}, []))
         nodeid = self.db.issue.create(nosy=['1','2'])
-        self.assertEqual(self.parseForm({'nosy': ' '}, 'issue', nodeid), 
+        self.assertEqual(self.parseForm({'nosy': ' '}, 'issue', nodeid),
             ({('issue', nodeid): {'nosy': []}}, []))
         self.assertEqual(self.parseForm({'nosy': '1,2'}, 'issue', nodeid),
             ({('issue', nodeid): {}}, []))
@@ -468,15 +469,15 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.parseForm({'date': '2003-01-01'}),
             ({('test', None): {'date': date.Date('2003-01-01')}}, []))
         nodeid = self.db.test.create(date=date.Date('2003-01-01'))
-        self.assertEqual(self.parseForm({'date': '2003-01-01'}, 'test', 
+        self.assertEqual(self.parseForm({'date': '2003-01-01'}, 'test',
             nodeid), ({('test', nodeid): {}}, []))
 
     def testEmptyDateSet(self):
         nodeid = self.db.test.create(date=date.Date('.'))
-        self.assertEqual(self.parseForm({'date': ''}, 'test', nodeid), 
+        self.assertEqual(self.parseForm({'date': ''}, 'test', nodeid),
             ({('test', nodeid): {'date': None}}, []))
         nodeid = self.db.test.create(date=date.Date('1970-01-01.00:00:00'))
-        self.assertEqual(self.parseForm({'date': ' '}, 'test', nodeid), 
+        self.assertEqual(self.parseForm({'date': ' '}, 'test', nodeid),
             ({('test', nodeid): {'date': None}}, []))
 
     #
@@ -543,4 +544,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
