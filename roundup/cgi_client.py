@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.27 2001-10-05 02:23:24 richard Exp $
+# $Id: cgi_client.py,v 1.28 2001-10-08 00:34:31 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -340,7 +340,7 @@ class Client:
                     key = link.labelprop(default_to_id=1)
                     for entry in value:
                         if key:
-                            l.append(link.get(entry, link.getkey()))
+                            l.append(link.get(entry, key))
                         else:
                             l.append(entry)
                     value = ', '.join(l)
@@ -701,6 +701,26 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/10/05 02:23:24  richard
+#  . roundup-admin create now prompts for property info if none is supplied
+#    on the command-line.
+#  . hyperdb Class getprops() method may now return only the mutable
+#    properties.
+#  . Login now uses cookies, which makes it a whole lot more flexible. We can
+#    now support anonymous user access (read-only, unless there's an
+#    "anonymous" user, in which case write access is permitted). Login
+#    handling has been moved into cgi_client.Client.main()
+#  . The "extended" schema is now the default in roundup init.
+#  . The schemas have had their page headings modified to cope with the new
+#    login handling. Existing installations should copy the interfaces.py
+#    file from the roundup lib directory to their instance home.
+#  . Incorrectly had a Bizar Software copyright on the cgitb.py module from
+#    Ping - has been removed.
+#  . Fixed a whole bunch of places in the CGI interface where we should have
+#    been returning Not Found instead of throwing an exception.
+#  . Fixed a deviation from the spec: trying to modify the 'id' property of
+#    an item now throws an exception.
+#
 # Revision 1.26  2001/09/12 08:31:42  richard
 # handle cases where mime type is not guessable
 #
