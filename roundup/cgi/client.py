@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.134 2003-09-06 09:45:30 jlgijsbers Exp $
+# $Id: client.py,v 1.135 2003-09-07 22:12:24 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -32,7 +32,11 @@ class  NotModified(HTTPException):
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
 # used by a couple of routines
-chars = string.ascii_letters+string.digits
+if hasattr(string, 'ascii_letters'):
+    chars = string.ascii_letters+string.digits
+else:
+    # python2.1 doesn't have ascii_letters
+    chars = string.letters+string.digits
 
 # XXX actually _use_ FormError
 class FormError(ValueError):
