@@ -127,17 +127,23 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
  </p>
 
  <table class="messages" tal:condition="context/messages">
-  <tr><th colspan=5 class="header">Messages</th></tr>
-  <tr tal:repeat="msg context/messages">
-   <td><a tal:attributes="href string:msg${msg/id}"
-          tal:content="string:msg${msg/id}"></a></td>
-   <td tal:content="msg/author">author</td>
-   <td nowrap tal:content="msg/date/pretty">date</td>
-   <td tal:content="msg/summary">summary</td>
-   <td>
-    <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
-   </td>
-  </tr>
+  <tr><th colspan="4" class="header">Messages</th></tr>
+  <tal:block tal:repeat="msg context/messages">
+   <tr>
+    <th><a tal:attributes="href string:msg${msg/id}"
+           tal:content="string:msg${msg/id}"></a></th>
+    <th tal:content="string:Author: ${msg/author}">author</th>
+    <th tal:content="string:Date: ${msg/date}">date</th>
+    <th>
+     <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
+    </th>
+   </tr>
+   <tr>
+    <td colspan="4" class="content">
+     <pre tal:content="msg/content">content</pre>
+    </td>
+   </tr>
+  </tal:block>
  </table>
 
  <table class="files" tal:condition="context/files">

@@ -64,13 +64,16 @@ You are not allowed to view this page.
 </form>
 
 <table class="otherinfo" tal:condition="context/queries">
- <tr><th colspan="2" class="header">Queries</th></tr>
- <tr><th>Name</th><th>Display</th></tr>
+ <tr><th colspan="3" class="header">Queries</th></tr>
+ <tr><th>Name</th><th colspan="2">Actions</th></tr>
  <tr tal:repeat="query context/queries">
   <td><a tal:attributes="href string:query${query/id}"
          tal:content="query/name"></a></td>
   <td>
    <a tal:attributes="href python:'%s%s'%(query['klass'], query['url'])">display</a>
+  </td>
+  <td>
+   <a tal:attributes="href string:?:remove:queries=${query/id}&:action=edit">remove</a>
   </td>
  </tr>
 </table>

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.23 2002-10-31 04:02:23 richard Exp $
+# $Id: rdbms_common.py,v 1.24 2002-11-06 11:38:42 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1102,7 +1102,7 @@ class Class(hyperdb.Class):
         # done
         self.db.addnode(self.classname, newid, propvalues)
         if self.do_journal:
-            self.db.addjournal(self.classname, newid, 'create', propvalues)
+            self.db.addjournal(self.classname, newid, 'create', {})
 
         self.fireReactors('create', newid, None)
 
@@ -1184,7 +1184,7 @@ class Class(hyperdb.Class):
             creation = None
         if d.has_key('activity'):
             del d['activity']
-        self.db.addjournal(self.classname, newid, 'create', d, creator,
+        self.db.addjournal(self.classname, newid, 'create', {}, creator,
             creation)
         return newid
 
@@ -1323,9 +1323,11 @@ class Class(hyperdb.Class):
 
             # if the value's the same as the existing value, no sense in
             # doing anything
-            if node.has_key(propname) and value == node[propname]:
+            current = node.get(propname, None)
+            if value == current:
                 del propvalues[propname]
                 continue
+            journalvalues[propname] = current
 
             # do stuff based on the prop type
             if isinstance(prop, Link):
@@ -1460,8 +1462,7 @@ class Class(hyperdb.Class):
         self.db.setnode(self.classname, nodeid, propvalues, multilink_changes)
 
         if self.do_journal:
-            propvalues.update(journalvalues)
-            self.db.addjournal(self.classname, nodeid, 'set', propvalues)
+            self.db.addjournal(self.classname, nodeid, 'set', journalvalues)
 
         self.fireReactors('set', nodeid, oldvalues)
 

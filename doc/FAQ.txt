@@ -2,15 +2,12 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.10 $
+:Version: $Revision: 1.11 $
 
 NOTE: This is just a grabbag, most of this should go into documentation.
 
 .. contents::
 
-
-Changing HTML layout
---------------------
 
 Installation
 ------------
@@ -34,11 +31,6 @@ Different jobs run under different users.
 * roundup-mailgw called via .forward from MTA, or running a cron job
   fetching via pop.
 
-see Troubleshooting_.
-
-
-Troubleshooting
----------------
 
 -----------------
 

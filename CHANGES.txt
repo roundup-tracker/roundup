@@ -22,6 +22,9 @@ are given with the most recent entry first.
 - added ID to the search page (sf bug 631601)
 - fixed filtering by id in anydbm
 - show issue ID in the headings (sf bug 631598)
+- show entire messages by default in issues (sf bug 625995)
+- fixed journalling to save old values instead of new (sorry it took so long GM)
+- handle missing REQUEST_URI for cgi-bin users (sf bug 620163)
 
 
 2002-10-16 0.5.1

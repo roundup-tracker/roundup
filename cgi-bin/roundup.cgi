@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.34 2002-10-08 03:31:09 richard Exp $
+# $Id: roundup.cgi,v 1.35 2002-11-06 11:38:42 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -149,7 +149,7 @@ def main(out, err):
             else:
                 protocol = 'http'
             absolute_url = '%s://%s%s/'%(protocol, os.environ['HTTP_HOST'],
-                os.environ['REQUEST_URI'])
+                os.environ.get('REQUEST_URI', ''))
             request.send_header('Location', absolute_url)
             request.end_headers()
             out.write('Moved Permanently')
