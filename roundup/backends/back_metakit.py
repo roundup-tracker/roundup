@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.73 2004-06-08 05:30:32 richard Exp $
+# $Id: back_metakit.py,v 1.74 2004-06-11 15:50:24 wc2so1 Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1717,11 +1717,11 @@ class Class(hyperdb.Class):
                     prop = properties[propname]
                     if value is None:
                         pass
-                    elif isinstance(prop, Date):
+                    elif isinstance(prop, hyperdb.Date):
                         value = date.Date(value)
-                    elif isinstance(prop, Interval):
+                    elif isinstance(prop, hyperdb.Interval):
                         value = date.Interval(value)
-                    elif isinstance(prop, Password):
+                    elif isinstance(prop, hyperdb.Password):
                         pwd = password.Password()
                         pwd.unpack(value)
                         value = pwd
