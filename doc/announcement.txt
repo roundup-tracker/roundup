@@ -1,9 +1,8 @@
-            Roundup 0.3.0pre2 - an issue tracking system
+            Roundup 0.3.0pre3 - an issue tracking system
 
                         **PREVIEW RELEASE**
 
-This release is in use by Bizar Software, but has had little testing beyond
-that. It contains several new features which will require migration, so
+This release contains several new features which will require migration, so
 we're releasing this preview for the bleeding-edge users.
 
 **NOTE** existing users _must_ read the MIGRATION.txt that accompanies the
@@ -13,13 +12,13 @@ This release contains a bunch of changes and bug fixes. See the CHANGES
 file for details.
 
 Source and documentation is available at the website:
-      http://roundup.sourceforge.net/
+     http://roundup.sourceforge.net/
 
 Release Info (via download page):
-     https://sourceforge.net/project/showfiles.php?group_id=31577
+     http://sourceforge.net/project/showfiles.php?group_id=31577
 
 Mailing lists - the place to ask questions:
-     https://sourceforge.net/mail/?group_id=31577
+     http://sourceforge.net/mail/?group_id=31577
 
 
 
