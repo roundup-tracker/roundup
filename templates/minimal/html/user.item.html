@@ -1,12 +1,19 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title" i18n:translate="">User editing</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">
- <tal:x tal:condition="context/is_edit_ok" i18n:translate="">User<span
-  tal:replace="context/id" i18n:name="id"/> Editing</tal:x>
- <tal:x tal:condition="not:context/is_edit_ok" i18n:translate="">User<span
-  tal:replace="context/id" i18n:name="id"/></tal:x>
-</span>
+<title metal:fill-slot="head_title" i18n:translate="">User editing - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<tal:block metal:fill-slot="body_title">
+ <span tal:condition="python: not (context.id or context.is_edit_ok())"
+  tal:omit-tag="python:1" i18n:translate="">New User</span>
+ <span tal:condition="python: not context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">New User Editing</span>
+ <span tal:condition="python: context.id and not context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">User<tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">User<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
 <td class="content" metal:fill-slot="content">
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
  i18n:translate="">You are not allowed to view this page.</span>
