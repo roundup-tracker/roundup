@@ -265,6 +265,18 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('-?\d+')):
                     l.append(entry)
     return l
 
+def lookupKeys(cl, key, ids, num_re=re.compile('-?\d+')):
+    ''' Look up the "key" values for "ids" list - though some may already
+    be key values, not ids.
+    '''
+    l = []
+    for entry in ids:
+        if num_re.match(entry):
+            l.append(cl.get(entry, key))
+        else:
+            l.append(entry)
+    return l
+
 class HTMLPermissions:
     ''' Helpers that provide answers to commonly asked Permission questions.
     '''
@@ -1321,7 +1333,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             showid=1
         if not showid:
             k = linkcl.labelprop(1)
-            value = [linkcl.get(v, k) for v in value]
+            value = lookupKeys(linkcl, k, value)
         value = cgi.escape(','.join(value))
         return '<input name="%s" size="%s" value="%s">'%(self._formname, size, value)
 

@@ -6,6 +6,7 @@ Fixed:
 - existing trackers (ie. live ones) may be used as templates for new
   trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
   appended (so the demo tracker's template name is "classic-demo")
+- handle bad multilink input at item creation time better (sf bug 917834)
 
 
 2004-03-01 0.6.7
