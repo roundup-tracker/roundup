@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.139 2002-07-14 06:14:40 richard Exp $
+# $Id: cgi_client.py,v 1.140 2002-07-14 23:17:15 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -391,12 +391,14 @@ function help_window(helpurl, width, height) {
 
     def _get_customisation_info(self):
         # see if the web has supplied us with any customisation info
-        defaults = 1
         for key in ':sort', ':group', ':filter', ':columns', ':pagesize':
             if self.form.has_key(key):
-                defaults = 0
+                # make list() extract the info from the CGI environ
+                self.classname = 'issue'
+                sort = group = filter = columns = filterspec = pagesize = None
                 break
-        if defaults:
+        else:
+            # TODO: look up the session first
             # try the instance config first
             if hasattr(self.instance, 'DEFAULT_INDEX'):
                 d = self.instance.DEFAULT_INDEX
@@ -416,10 +418,6 @@ function help_window(helpurl, width, height) {
                 columns = self.default_index_columns
                 filterspec = self.default_index_filterspec
                 pagesize = self.default_pagesize
-        else:
-            # make list() extract the info from the CGI environ
-            self.classname = 'issue'
-            sort = group = filter = columns = filterspec = pagesize = None
         return columns, filter, group, sort, filterspec, pagesize
 
     def index(self):
@@ -1499,6 +1497,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.139  2002/07/14 06:14:40  richard
+# Some more TODOs
+#
 # Revision 1.138  2002/07/14 04:03:13  richard
 # Implemented a switch to disable journalling for a Class. CGI session
 # database now uses it.
