@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.68.2.1 $
+:Version: $Revision: 1.68.2.2 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2233,7 +2233,7 @@ Restricting the list of users that are assignable to a task
     <select name="assignedto">
      <option value="-1">- no selection -</option>
      <tal:block tal:repeat="user db/user/list">
-     <option tal:condition="python:user.hasPermission('Fixer', context.classname)"
+     <option tal:condition="python:user.hasPermission('Fixer', context._classname)"
              tal:attributes="value user/id;
                              selected python:user.id == context.assignedto"
              tal:content="user/realname"></option>
