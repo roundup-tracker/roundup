@@ -568,6 +568,6 @@ if __name__ == '__main__':
     main()
     # some more test strings
     _(u'a unicode string')
-    _('*** Seen unexpected token "%(token)s"' % {'token': 'test'})
+    _('*** Seen unexpected token "%(token)s"' % {'token': 'test'}) # this one creates a warning
     _('more' 'than' 'one' 'string')
 
