@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.173 $
+:Version: $Revision: 1.174 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -715,8 +715,8 @@ tracker is initialised. The actual method of doing so is completely
 different in each case though, so be careful to use the right one.
 
 **Changing content before tracker initialisation**
-    Edit the schema module in your tracker to alter the items created in
-    using the ``create()`` methods.
+    Edit the initial_data.py module in your tracker to alter the items
+    created using the ``create( ... )`` methods.
 
 **Changing content after tracker initialisation**
     As the "admin" user, click on the "class list" link in the web
