@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.29 2004-11-10 08:05:21 a1s Exp $
+# $Id: instance.py,v 1.30 2004-11-10 08:58:47 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -53,6 +53,13 @@ class Tracker:
         self.backend = backends.get_backend(self.get_backend_name())
         if self.optimize:
             self.templates.precompileTemplates()
+            # initialize tracker extensions
+            for extension in self.get_extensions('extensions'):
+                extension(self)
+            # load database detectors
+            self.detectors = self.get_extensions('detectors')
+            # db_open is set to True after first open()
+            self.db_open = 0
 
     def get_backend_name(self):
         o = __builtins__['open']
@@ -62,6 +69,10 @@ class Tracker:
         return name
 
     def open(self, name=None):
+        # load the database schema
+        # we cannot skip this part even if self.optimize is set
+        # because the schema has security settings that must be
+        # applied to each database instance
         backend = self.backend
         vars = {
             'Class': backend.Class,
@@ -80,10 +91,23 @@ class Tracker:
         self._load_python('schema.py', vars)
         db = vars['db']
 
-        self.load_extensions(db, 'detectors')
-        self.load_extensions(self, 'extensions')
-
-        db.post_init()
+        if self.optimize:
+            # use preloaded detectors
+            detectors = self.detectors
+        else:
+            # reload extensions and detectors
+            for extension in self.get_extensions('extensions'):
+                extension(self)
+            detectors = self.get_extensions('detectors')
+        # apply the detectors
+        for detector in detectors:
+            detector(db)
+        # if we are running in debug mode
+        # or this is the first time the database is opened,
+        # do database upgrade checks
+        if not (self.optimize and self.db_open):
+            db.post_init()
+            self.db_open = 1
         return db
 
     def load_interfaces(self):
@@ -94,7 +118,18 @@ class Tracker:
         self.Client = vars.get('Client', client.Client)
         self.MailGW = vars.get('MailGW', mailgw.MailGW)
 
-    def load_extensions(self, parent, dirname):
+    def get_extensions(self, dirname):
+        """Load python extensions
+
+        Parameters:
+            dirname:
+                extension directory name relative to tracker home
+
+        Return value:
+            list of init() functions for each extension
+
+        """
+        extensions = []
         dirpath = os.path.join(self.tracker_home, dirname)
         if os.path.isdir(dirpath):
             for name in os.listdir(dirpath):
@@ -102,7 +137,8 @@ class Tracker:
                     continue
                 vars = {}
                 self._load_python(os.path.join(dirname, name), vars)
-                vars['init'](parent)
+                extensions.append(vars['init'])
+        return extensions
 
     def init(self, adminpw):
         db = self.open('admin')
