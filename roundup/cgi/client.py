@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.9 2002-09-03 07:13:42 richard Exp $
+# $Id: client.py,v 1.10 2002-09-03 07:42:38 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1034,7 +1034,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
             if not isinstance(value, type([])):
-                value = [i.strip() for i in value.split(',')]
+                value = [i.strip() for i in value.value.split(',')]
             else:
                 value = [i.value.strip() for i in value]
             link = cl.properties[key].classname
