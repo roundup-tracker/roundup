@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.129 $
+:Version: $Revision: 1.131 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2839,7 +2839,7 @@ Tracking different types of issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sometimes you will want to track different types of issues - developer,
-customer support, systems, sales leads, etc. A single Rounup tracker is
+customer support, systems, sales leads, etc. A single Roundup tracker is
 able to support multiple types of issues. This example demonstrates adding
 a customer support issue class to a tracker.
 
@@ -2856,32 +2856,38 @@ a customer support issue class to a tracker.
                     status=Link("status"), deadline=Date(),
                     affects=Multilink("system"))
 
-3. We're going to restrict the users able to access this new class to just
-   the users with a new "SysAdmin" Role. To do this, we add some security
-   declarations::
+3. Copy the existing "issue.*" (item, search and index) templates in the
+   tracker's "html" to "support.*". Edit them so they use the properties
+   defined in the "support" class. Be sure to check for hidden form
+   variables like "required" to make sure they have the correct set of
+   required properties.
+
+4. Edit the modules in the "detectors", adding lines to their "init"
+   functions where appropriate. Look for "audit" and "react" registrations
+   on the "issue" class, and duplicate them for "support".
+
+5. Create a new sidebar box for the new support class. Duplicate the
+   existing issues one, changing the "issue" class name to "support".
+
+6. Re-start your tracker and start using the new "support" class.
+
+
+Optionally, you might want to restrict the users able to access this new
+class to just the users with a new "SysAdmin" Role. To do this, we add
+some security declarations::
 
     p = db.security.getPermission('View', 'support')
     db.security.addPermissionToRole('SysAdmin', p)
     p = db.security.getPermission('Edit', 'support')
     db.security.addPermissionToRole('SysAdmin', p)
 
-   You would then (as an "admin" user) edit the details of the appropriate
-   users, and add "SysAdmin" to their Roles list.
+You would then (as an "admin" user) edit the details of the appropriate
+users, and add "SysAdmin" to their Roles list.
 
-4. Copy the existing "issue.*" (item, search and index) templates in the
-   tracker's "html" to "support.*". Edit them so they use the properties
-   defined in the "support" class. Be sure to check for hidden form
-   variables like "required" to make sure they have the correct set of
-   required properties.
-
-5. Edit the modules in the "detectors", adding lines to their "init"
-   functions where appropriate. Look for "audit" and "react" registrations
-   on the "issue" class, and duplicate them for "support".
-
-6. Create a new sidebar box for the new support class. Duplicate the
-   existing issues one, changing the "issue" class name to "support".
-
-6. Re-start your tracker and start using the new "support" class.
+Alternatively, you might want to change the Edit/View permissions granted
+for the "issue" class so that it's only available to users with the "System"
+or "Developer" Role, and then the new class you're adding is available to
+all with the "User" Role.
 
 
 Using External User Databases
