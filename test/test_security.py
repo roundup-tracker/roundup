@@ -18,22 +18,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.6 2003-10-25 22:53:26 richard Exp $
+# $Id: test_security.py,v 1.7 2004-11-18 15:54:09 a1s Exp $
 
 import os, unittest, shutil
 
+from roundup import backends
 from roundup.password import Password
 from db_test_base import setupSchema, MyTestCase, config
 
 class PermissionTest(MyTestCase):
     def setUp(self):
-        from roundup.backends import anydbm
+        backend = backends.get_backend('anydbm')
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = anydbm.Database(config, 'admin')
-        setupSchema(self.db, 1, anydbm)
+        self.db = backend.Database(config, 'admin')
+        setupSchema(self.db, 1, backend)
 
     def testInterfaceSecurity(self):
         ' test that the CGI and mailgw have initialised security OK '
@@ -108,4 +109,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
