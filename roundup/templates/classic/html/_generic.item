@@ -1,0 +1,28 @@
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data">
+
+<input type="hidden" name=":template" value="item">
+<input type="hidden" name=":required" value="title">
+
+<table class="form">
+
+<tr tal:repeat="prop python:db[context._classname].properties()">
+ <tal:block tal:condition="python:prop._name not in ('id', 'creator', 'created', 'activity')">
+  <th tal:content="prop/_name"></th>
+  <td tal:content="structure python:context[prop._name].field()"></td>
+ </tal:block>
+</tr>
+<tr>
+ <td>&nbsp;</td>
+ <td colspan=3 tal:content="structure context/submit">
+  submit button will go here
+ </td>
+</tr>
+</table>
+
+
+<tal:block tal:condition="context/id">
+ <tal:block tal:replace="structure context/history" />
+</tal:block>
+
+</form>

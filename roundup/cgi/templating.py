@@ -193,12 +193,16 @@ class HTMLDatabase:
         # we want config to be exposed
         self.config = client.db.config
 
+    def __getitem__(self, item):
+        self._client.db.getclass(item)
+        return HTMLClass(self._client, item)
+
     def __getattr__(self, attr):
         try:
-            self._client.db.getclass(attr)
+            return self[attr]
         except KeyError:
             raise AttributeError, attr
-        return HTMLClass(self._client, attr)
+
     def classes(self):
         l = self._client.db.classes.keys()
         l.sort()
@@ -857,7 +861,7 @@ class LinkHTMLProperty(HTMLProperty):
             value = cgi.escape(value)
         return value
 
-    def field(self):
+    def field(self, showid=0, size=None):
         ''' Render a form edit field for the property
         '''
         linkcl = self._db.getclass(self._prop.classname)
@@ -865,11 +869,11 @@ class LinkHTMLProperty(HTMLProperty):
             sort_on = 'order'  
         else:  
             sort_on = linkcl.labelprop()  
-        options = linkcl.filter(None, {}, [sort_on], []) 
+        options = linkcl.filter(None, {}, ('+', sort_on), (None, None))
         # TODO: make this a field display, not a menu one!
-        l = ['<select name="%s">'%property]
+        l = ['<select name="%s">'%self._name]
         k = linkcl.labelprop(1)
-        if value is None:
+        if self._value is None:
             s = 'selected '
         else:
             s = ''
@@ -877,7 +881,7 @@ class LinkHTMLProperty(HTMLProperty):
         for optionid in options:
             option = linkcl.get(optionid, k)
             s = ''
-            if optionid == value:
+            if optionid == self._value:
                 s = 'selected '
             if showid:
                 lab = '%s%s: %s'%(self._prop.classname, optionid, option)
@@ -999,6 +1003,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         if value:
             value.sort(sortfunc)
         # map the id to the label property
+        if not linkcl.getkey():
+            showid=1
         if not showid:
             k = linkcl.labelprop(1)
             value = [linkcl.get(v, k) for v in value]
