@@ -1,10 +1,10 @@
-            Roundup 0.2.8 - an issue tracking system
+            Roundup 0.3.0 - an issue tracking system
 
-This is a bugfix release.
+** note for existing users of extended schema
 
-Fixed:
- . Missing import in mailgw.
-
+This release includes several bug fixes and  usability improvements. It
+also switches the CGI interface authentication over from HTTP Basic to cookie
+based. For a more detailed in the CHANGES file accompanying the source.
 
 Roundup is a simple-to-use and -install issue-tracking system with 
 command-line, web and e-mail interfaces. It is based on the winning design 

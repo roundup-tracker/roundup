@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.19 2001-09-10 09:48:35 richard Exp $
+# $Id: setup.py,v 1.20 2001-10-08 21:49:30 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -45,7 +45,7 @@ setup ( name = "roundup",
         version = "0.2.9",
         description = "Roundup issue tracking system.",
         author = "Richard Jones",
-        author_email = "richard@sourceforge.net",
+        author_email = "richard@users.sourceforge.net",
         url = 'http://sourceforge.net/projects/roundup/',
         packages = packagelist,
         scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server']
@@ -53,6 +53,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/09/10 09:48:35  richard
+# Started changes log for 0.2.9
+#
 # Revision 1.18  2001/08/30 06:01:17  richard
 # Fixed missing import in mailgw :(
 #

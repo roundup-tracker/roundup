@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-??-?? - 0.2.9
+2001-10-07 - 0.3.0
 Feature:
  . roundup-admin create now prompts for property info if none is supplied
    on the command-line.
@@ -30,6 +30,8 @@ Fixed:
  . Fixed a deviation from the spec: trying to modify the 'id' property of
    an item now throws an exception.
  . The plain() template function now html-escapes the content.
+
+--------------------
 
 2001-08-30 - 0.2.8
 Fixed:
