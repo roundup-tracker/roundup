@@ -7,6 +7,9 @@ Fixed:
 - Importing wasn't setting None values explicitly when it should have been
 - Fixed import warning regarding 0xffff0000 literal, finally, really this
   time. Checked on win2k. (sf bug 786711)
+- fix CGI editCSV action to handle metakit's integer itemids
+- apply fix for "remove" links from Klamer Schutte
+- added permission check on "remove" link while I was there..
 
 
 2003-08-08 0.6.0

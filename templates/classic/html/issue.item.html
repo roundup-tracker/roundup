@@ -140,7 +140,8 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
     <th tal:content="string:Author: ${msg/author}">author</th>
     <th tal:content="string:Date: ${msg/date}">date</th>
     <th>
-     <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
+     <a tal:condition="context/is_edit_ok"
+        tal:attributes="href string:issue${context/id}?:remove:messages=${msg/id}&:action=edit">remove</a>
     </th>
    </tr>
    <tr>
