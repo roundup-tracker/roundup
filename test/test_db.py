@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.63 2002-12-12 09:31:04 richard Exp $ 
+# $Id: test_db.py,v 1.63.2.1 2003-02-27 11:21:04 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -75,6 +75,53 @@ class anydbmDBTestCase(MyTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = anydbm.Database(config, 'admin')
         setupSchema(self.db, 1, anydbm)
+
+    #
+    # schema mutation
+    #
+    def testAddProperty(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        self.db.issue.addprop(fixer=Link("user"))
+        # force any post-init stuff to happen
+        self.db.post_init()
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder', 'title'])
+        self.assertEqual(self.db.issue.get('1', "fixer"), None)
+
+    def testRemoveProperty(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        del self.db.issue.properties['title']
+        self.db.post_init()
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder'])
+        self.assertEqual(self.db.issue.list(), ['1'])
+
+    def testAddRemoveProperty(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        self.db.issue.addprop(fixer=Link("user"))
+        del self.db.issue.properties['title']
+        self.db.post_init()
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder'])
+        self.assertEqual(self.db.issue.list(), ['1'])
 
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
@@ -204,19 +251,6 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.user.lookup('spam'), newid)
         self.db.user.retire(newid)
         self.assertRaises(KeyError, self.db.user.lookup, 'spam')
-
-    def testNewProperty(self):
-        self.db.issue.create(title="spam", status='1')
-        self.db.issue.addprop(fixer=Link("user"))
-        # force any post-init stuff to happen
-        self.db.post_init()
-        props = self.db.issue.getprops()
-        keys = props.keys()
-        keys.sort()
-        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
-            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
-            'nosy', 'status', 'superseder', 'title'])
-        self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRetire(self):
         self.db.issue.create(title="spam", status='1')

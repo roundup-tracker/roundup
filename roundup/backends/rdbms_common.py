@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.27.2.3 2003-02-12 00:03:38 richard Exp $
+# $Id: rdbms_common.py,v 1.27.2.4 2003-02-27 11:21:02 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -177,128 +177,80 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols.sort()
         return cols, mls
 
-    def update_class(self, spec, dbspec):
+    def update_class(self, spec, old_spec):
         ''' Determine the differences between the current spec and the
             database version of the spec, and update where necessary
         '''
-        spec_schema = spec.schema()
-        if spec_schema == dbspec:
-            # no save needed for this one
+        new_spec = spec
+        new_has = new_spec.properties.has_key
+
+        new_spec = new_spec.schema()
+        if new_spec == old_spec:
+            # no changes
             return 0
+
         if __debug__:
             print >>hyperdb.DEBUG, 'update_class FIRING'
 
         # key property changed?
-        if dbspec[0] != spec_schema[0]:
+        if old_spec[0] != new_spec[0]:
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class setting keyprop', `spec[0]`
             # XXX turn on indexing for the key property
 
-        # dict 'em up
-        spec_propnames,spec_props = [],{}
-        for propname,prop in spec_schema[1]:
-            spec_propnames.append(propname)
-            spec_props[propname] = prop
-        dbspec_propnames,dbspec_props = [],{}
-        for propname,prop in dbspec[1]:
-            dbspec_propnames.append(propname)
-            dbspec_props[propname] = prop
-
-        # now compare
-        for propname in spec_propnames:
-            prop = spec_props[propname]
-            if dbspec_props.has_key(propname) and prop==dbspec_props[propname]:
-                continue
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class ADD', (propname, prop)
-
-            if not dbspec_props.has_key(propname):
-                # add the property
-                if isinstance(prop, Multilink):
-                    # all we have to do here is create a new table, easy!
-                    self.create_multilink_table(spec, propname)
-                    continue
-
-                # no ALTER TABLE, so we:
-                # 1. pull out the data, including an extra None column
-                oldcols, x = self.determine_columns(dbspec[1])
-                oldcols.append('id')
-                oldcols.append('__retired__')
-                cn = spec.classname
-                sql = 'select %s,%s from _%s'%(','.join(oldcols), self.arg, cn)
-                if __debug__:
-                    print >>hyperdb.DEBUG, 'update_class', (self, sql, None)
-                self.cursor.execute(sql, (None,))
-                olddata = self.cursor.fetchall()
-
-                # 2. drop the old table
-                self.cursor.execute('drop table _%s'%cn)
-
-                # 3. create the new table
-                cols, mls = self.create_class_table(spec)
-                # ensure the new column is last
-                cols.remove('_'+propname)
-                assert oldcols == cols, "Column lists don't match!"
-                cols.append('_'+propname)
-
-                # 4. populate with the data from step one
-                s = ','.join([self.arg for x in cols])
-                scols = ','.join(cols)
-                sql = 'insert into _%s (%s) values (%s)'%(cn, scols, s)
-
-                # GAH, nothing had better go wrong from here on in... but
-                # we have to commit the drop...
-                # XXX this isn't necessary in sqlite :(
-                self.conn.commit()
-
-                # do the insert
-                for row in olddata:
-                    self.sql(sql, tuple(row))
-
-            else:
-                # modify the property
-                if __debug__:
-                    print >>hyperdb.DEBUG, 'update_class NOOP'
-                pass  # NOOP in gadfly
-
-        # and the other way - only worry about deletions here
-        for propname in dbspec_propnames:
-            prop = dbspec_props[propname]
-            if spec_props.has_key(propname):
-                continue
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class REMOVE', `prop`
-
-            # delete the property
-            if isinstance(prop, Multilink):
+        # detect multilinks that have been removed, and drop their table
+        old_has = {}
+        for name,prop in old_spec[1]:
+            old_has[name] = 1
+            if not new_has(name) and isinstance(prop, Multilink):
+                # it's a multilink, and it's been removed - drop the old
+                # table
                 sql = 'drop table %s_%s'%(spec.classname, prop)
                 if __debug__:
                     print >>hyperdb.DEBUG, 'update_class', (self, sql)
                 self.cursor.execute(sql)
-            else:
-                # no ALTER TABLE, so we:
-                # 1. pull out the data, excluding the removed column
-                oldcols, x = self.determine_columns(spec.properties.items())
-                oldcols.append('id')
-                oldcols.append('__retired__')
-                # remove the missing column
-                oldcols.remove('_'+propname)
-                cn = spec.classname
-                sql = 'select %s from _%s'%(','.join(oldcols), cn)
-                self.cursor.execute(sql, (None,))
-                olddata = sql.fetchall()
+                continue
+        old_has = old_has.has_key
 
-                # 2. drop the old table
-                self.cursor.execute('drop table _%s'%cn)
+        # now figure how we populate the new table
+        fetch = []      # fetch these from the old table
+        properties = spec.getprops()
+        for propname,x in new_spec[1]:
+            prop = properties[propname]
+            if isinstance(prop, Multilink):
+                if not old_has(propname):
+                    # we need to create the new table
+                    self.create_multilink_table(spec, propname)
+            elif old_has(propname):
+                # we copy this col over from the old table
+                fetch.append('_'+propname)
 
-                # 3. create the new table
-                cols, mls = self.create_class_table(self, spec)
-                assert oldcols != cols, "Column lists don't match!"
+        # select the data out of the old table
+        fetch.append('id')
+        fetch.append('__retired__')
+        fetchcols = ','.join(fetch)
+        cn = spec.classname
+        sql = 'select %s from _%s'%(fetchcols, cn)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'update_class', (self, sql)
+        self.cursor.execute(sql)
+        olddata = self.cursor.fetchall()
 
-                # 4. populate with the data from step one
-                qs = ','.join([self.arg for x in cols])
-                sql = 'insert into _%s values (%s)'%(cn, s)
-                self.cursor.execute(sql, olddata)
+        # drop the old table
+        self.cursor.execute('drop table _%s'%cn)
+
+        # create the new table
+        self.create_class_table(spec)
+
+        if olddata:
+            # do the insert
+            args = ','.join([self.arg for x in fetch])
+            sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
+            for entry in olddata:
+                self.cursor.execute(sql, *entry)
+
         return 1
 
     def create_class_table(self, spec):
