@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.77.2.4 2005-03-01 14:39:00 a1s Exp $
+# $Id: setup.py,v 1.77.2.5 2005-03-01 14:41:56 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -243,7 +243,7 @@ class build_py_roundup(build_py):
 class build_roundup(build):
 
     def build_message_files(self):
-        """For each locale/*.po, build .mo file in targen locale directory"""
+        """For each locale/*.po, build .mo file in target locale directory"""
         for (_src, _dst) in list_message_files():
             _build_dst = os.path.join("build", _dst)
             self.mkpath(os.path.dirname(_build_dst))
