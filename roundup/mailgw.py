@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.149.2.3 2004-09-29 08:47:59 a1s Exp $
+$Id: mailgw.py,v 1.149.2.4 2004-10-11 05:20:37 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -572,6 +572,10 @@ class MailGW:
             m.append(s.getvalue())
             self.mailer.bounce_message(message, sendto, m)
 
+    def hasPermissions(self, author, classname, nodeid):
+        # make sure they're allowed to edit this class of information
+        return self.db.security.hasPermission('Edit', author, classname)
+
     def handle_message(self, message):
         ''' message - a Message instance
 
@@ -790,8 +794,7 @@ Unknown address: %s
                 raise Unauthorized, 'You are not permitted to access '\
                     'this tracker.'
 
-        # make sure they're allowed to edit this class of information
-        if not self.db.security.hasPermission('Edit', author, classname):
+        if not self.hasPermissions(author, classname, nodeid):
             raise Unauthorized, 'You are not permitted to edit %s.'%classname
 
         # the author may have been created - make sure the change is
