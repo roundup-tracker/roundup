@@ -1,10 +1,6 @@
 =================================================
-SC-Track Roundup 0.5.6 - an issue tracking system
+SC-Track Roundup 0.5.7 - an issue tracking system
 =================================================
-
-Note: This releases fixes a serious bug in the sqlite and gadfly backends
-which could cause data loss. Users are strongly encouraged to upgrade to this
-version.
 
 This is a bugfix release for version 0.5.x - if you're upgrading from before
 0.5, you *must* read doc/upgrading.txt!
@@ -16,21 +12,18 @@ Roundup requires python 2.1.3 or later for correct operation. Users of the
 sqlite backend are encouraged to upgrade sqlite to version 2.7.3.
 
 We've had a good crack at bugs (thanks to all who contributed!):
-
-- fixed database corruption in rdbms property mutation
-- fixed templating filter function arguments (sf bug 678911)
-- fixed multiselect in searching (sf bug 676874)
-- fixed parsing of content-disposition filenames (sf bug 675116)
-- added 'h' to roundup-server optarg list (sf bug 674070)
-- fixed doc for db.history in anydbm and rdbms_common (sf bug 679221)
-- fixed roundup-reminder (sf bug 681042)
-- fixed int assumptions about Number values (sf bug 677762)
-- clarified licensing
-- another attempt to fix cookie misbehaviour - customise cookie name using
-  tracker name
-- fixed error in indexargs_url (thanks Patrick Ohly)
-- fixed getnode (sf bug 684531)
-- fixed args to some date templating methods (sf bug 689670)
+- fixed Interval maths (sf bug 665357)
+- fixed sqlite rollback/caching bug (sf bug 689383)
+- fixed rdbms table update detection logic (sf bug 703297)
+- fixed detection of bad date specs (sf bug 691439)
+- required String properties not being flagged (thanks Ajit George)
+- only look for CSV files when importing (thanks Dan Grassi)
+- can now unset values in CSV editing (sf bug 704788)
+- fixed rdbms email address lookup (case insensitivity)
+- email file attachments added to issue files list (sf bug 711501)
+- added socket timeout to attempt to prevent stuck processes (sf bug 665487)
+- email registered users shouldn't be able to log in (sf bug 714673)
+- handle missing addresses on users (sf bug 724537)
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/

@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2003-??-?? 0.5.7
+2003-05-08 0.5.7
 - fixed Interval maths (sf bug 665357)
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
