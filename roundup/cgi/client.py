@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.137 2003-09-08 21:07:29 jlgijsbers Exp $
+# $Id: client.py,v 1.138 2003-09-08 21:08:18 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -794,7 +794,7 @@ reply's additional "Re:" is ok),
         try:
             self.mailer.standard_message(to, subject, body, author)
             return 1
-        except MessageSendException, e:
+        except MessageSendError, e:
             self.error_message.append(str(e))
             
     def registerPermission(self, props):
