@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.2 2003-09-29 08:08:31 richard Exp $
+# $Id: setup.py,v 1.55.2.3 2003-11-14 02:55:05 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -186,15 +186,15 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.2 release fixes some bugs:
-- cleaned up, clarified internal caching API in *dbm backends
-- stopped pyc writing to current directory! yay! (patch 800718 with changes)
-- fixed file leak in detector initialisation (patch 800715)
-- commented out example tracker homes (patch 800720)
-- added note about hidden :template var in user.item (bug 799842)
-- fixed change note generation when property was deleted from class and
-  we are trying to edit an instance
-
+The 0.6.6 release fixes some bugs:
+- added script to help migrating queries from pre-0.6 trackers
+- fixed javascript for help window for only one checkbox case
+- Date +/- Interval now works, and Date - Date also works
+- handle socket timeout exception (thanks Marcus Priesch)
+- fixed retirement of items in rdbms imports (sf bug 841355)
+- fixed bug in looking up journal of newly-created items in *dbm backends
+- fixed detectors fix incorrectly fixed in bugfix release 0.6.2
+- added note to upgrading doc for detectors fix in 0.6.2
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
@@ -202,7 +202,7 @@ The 0.6.2 release fixes some bugs:
         download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         packages = packagelist,
         classifiers = [
-            'Development Status :: 4 - Beta',
+            'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
             'Environment :: Web Environment',
             'Intended Audience :: End Users/Desktop',

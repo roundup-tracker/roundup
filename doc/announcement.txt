@@ -1,23 +1,21 @@
 =================================================
-SC-Track Roundup 0.6.2 - an issue tracking system
+SC-Track Roundup 0.6.3 - an issue tracking system
 =================================================
 
 I'm pleased to announce this maintenance release of Roundup which fixes
 some bugs:
 
-- cleaned up, clarified internal caching API in dbm backends
-- stopped pyc writing to current directory! yay! (patch 800718 with changes)
-- fixed file leak in detector initialisation (patch 800715)
-- commented out example tracker homes (patch 800720)
-- added note about hidden :template var in user.item (bug 799842)
-- fixed change note generation when property was deleted from class and
-  we are trying to edit an instance
+- added script to help migrating queries from pre-0.6 trackers
+- fixed javascript for help window for only one checkbox case
+- Date +/- Interval now works, and Date - Date also works
+- handle socket timeout exception (thanks Marcus Priesch)
+- fixed retirement of items in rdbms imports (sf bug 841355)
+- fixed bug in looking up journal of newly-created items in *dbm backends
+- fixed detectors fix incorrectly fixed in bugfix release 0.6.2
+- added note to upgrading doc for detectors fix in 0.6.2
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation. 
-
-Unfortunately, the Zope frontend for Roundup is currently broken. I hope
-to revive it in a future 0.6 maintenance release. No, really.
 
 Roundup requires python 2.1.3 or later for correct operation. Python 2.3.1
 or later is strongly recommended.
