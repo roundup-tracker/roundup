@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.72 2004-10-18 07:51:46 a1s Exp $
+# $Id: setup.py,v 1.73 2004-10-31 08:56:39 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -280,7 +280,8 @@ def main():
     # install man pages on POSIX platforms
     if os.name == 'posix':
         installdatafiles.append(('man/man1', ['doc/roundup-admin.1',
-            'doc/roundup-mailgw.1', 'doc/roundup-server.1']))
+            'doc/roundup-mailgw.1', 'doc/roundup-server.1',
+            'doc/roundup-demo.1']))
 
     # add the templates to the data files lists
     from roundup.init import listTemplates
