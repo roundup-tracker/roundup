@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.1 2001-11-12 22:26:32 jhermann Exp $
+# $Id: install_util.py,v 1.2 2001-11-12 22:37:13 richard Exp $
 
 import os, sha
 
@@ -32,9 +32,13 @@ def checkDigest(filename):
         # handle .py/.sh comment
         fingerprint = lines[-1][6:].strip()
     elif lines[-1][:10] == "<!-- SHA: ":
-        # handle xml files
+        # handle xml/html files
         fingerprint = lines[-1][10:]
         fingerprint = fingerprint.replace('-->', '')
+        fingerprint = fingerprint.strip()
+    elif lines[-1][:8] == "/* SHA: ":
+        fingerprint = lines[-1][8:]
+        fingerprint = fingerprint.replace('*/', '')
         fingerprint = fingerprint.strip()
     else:
         return 0
@@ -66,10 +70,13 @@ class DigestFile:
     def close(self):
         file, ext = os.path.splitext(self.filename)
 
-        if ext in [".xml", ".ent"]:
+        # ".filter", ".index", ".item" are roundup-specific
+        if ext in [".xml", ".ent", ".html", ".filter", ".index", ".item"]:
             self.file.write("<!-- SHA: %s -->\n" % (self.digest.hexdigest(),))
-        elif ext in [".py", ".sh", ".conf", '']:
+        elif ext in [".py", ".sh", ".conf", ".cgi", '']:
             self.file.write("#SHA: %s\n" % (self.digest.hexdigest(),))
+        elif ext in [".css"]:
+            self.file.write("/* SHA: %s %/\n" % (self.digest.hexdigest(),))
 
         self.file.close()
 
@@ -101,4 +108,7 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/11/12 22:26:32  jhermann
+# Added install utils (digest calculation)
+#
 
