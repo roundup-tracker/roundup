@@ -1,4 +1,4 @@
-<html tal:define="title string:${db/config/INSTANCE_NAME} - ${request/classname}">
+<html tal:define="title request/description">
 <head>
 <title tal:content="title">title goes here</title>
 

@@ -1075,6 +1075,19 @@ class HTMLRequest:
         if kwargs.has_key('columns'):
             self.show = ShowDict(self.columns)
 
+    def description(self):
+        ''' Return a description of the request - handle for the page title.
+        '''
+        s = [self.client.db.config.INSTANCE_NAME]
+        if self.classname:
+            if self.client.nodeid:
+                s.append('- %s%s'%(self.classname, self.client.nodeid))
+            else:
+                s.append('- index of '+self.classname)
+        else:
+            s.append('- home')
+        return ' '.join(s)
+
     def __str__(self):
         d = {}
         d.update(self.__dict__)

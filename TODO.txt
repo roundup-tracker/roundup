@@ -49,7 +49,6 @@ pending web: have roundup.cgi pick up instance config from the environment
 pending web: UNIX init.d script for roundup-server
 pending web: modify cgitb to handle PageTemplate errors better (see how 
              Zope handles __traceback_supplement__ and __traceback_info__)
-pending web: title is stoopid
 pending web: rewritten documentation (can come after the beta though so stuff
              is settled) ... including relevant file names in customisation doc
 
