@@ -1,8 +1,8 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2002-09-10 07:07:16 $
-:version: $Revision: 1.8 $
+:date: $Date: 2002-09-12 03:57:09 $
+:version: $Revision: 1.9 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -158,9 +158,13 @@ span.problematic {
 
 table {
   margin-top: 0.5em ;
-  margin-bottom: 0.5em }
+  margin-bottom: 0.5em ;
+  }
 
 table.citation {
+  border-top: 0;
+  border-bottom: 0;
+  border-right: 0;
   border-left: solid thin gray ;
   padding-left: 0.5ex }
 
@@ -174,7 +178,22 @@ table.footnote {
 td, th {
   padding-left: 0.5em ;
   padding-right: 0.5em ;
-  vertical-align: baseline }
+  vertical-align: baseline;
+}
+
+table.table {
+  border-spacing: 0px;
+  border-collapse: separate;
+}
+table.table td {
+  text-align: left;
+  border: solid thin gray;
+}
+
+table.table th {
+  text-align: left;
+  border: solid thin gray;
+}
 
 td > p:first-child, th > p:first-child {
   margin-top: 0em }

@@ -2,13 +2,13 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.30 $
+:Version: $Revision: 1.31 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
 .. contents::
-
+   :depth: 1
 
 What You Can Do
 ===============
@@ -437,6 +437,10 @@ XXX example
 Web Interface
 =============
 
+.. contents::
+   :local:
+   :depth: 1
+
 The web is provided by the roundup.cgi.client module and is used by
 roundup.cgi, roundup-server and ZRoundup.
 In all cases, we determine which tracker is being accessed
@@ -536,14 +540,14 @@ action to take place. As described in `how requests are processed`_, the
 action is performed before the requested page is generated. Actions are
 triggered by using a ``:action`` CGI variable, where the value is one of:
 
-login
+**login**
  Attempt to log a user in.
-logout
+**logout**
  Log the user out - make them "anonymous".
-register
+**register**
  Attempt to create a new user based on the contents of the form and then log
  them in.
-edit
+**edit**
  Perform an edit of an item in the database. There are some special form
  elements you may use:
 
@@ -560,16 +564,16 @@ edit
  :required=property,property,...
   The named properties are required to be filled in the form.
 
-new
+**new**
  Add a new item to the database. You may use the same special form elements
  as in the "edit" action.
 
-editCSV
+**editCSV**
  Performs an edit of all of a class' items in one go. See also the
  *class*.csv templating method which generates the CSV data to be edited, and
  the "_generic.index" template which uses both of these features.
 
-search
+**search**
  Mangle some of the form variables.
 
  Set the form ":filter" variable based on the values of the
@@ -590,29 +594,29 @@ Each action also has a corresponding *actionPermission* (where
 whether the action is permissible given the current user. The base permission
 checks are:
 
-login
+**login**
  Determine whether the user has permission to log in.
  Base behaviour is to check the user has "Web Access".
-logout
+**logout**
  No permission checks are made.
-register
+**register**
  Determine whether the user has permission to register
  Base behaviour is to check the user has "Web Registration".
-edit
+**edit**
  Determine whether the user has permission to edit this item.
  Base behaviour is to check the user can edit this class. If we're
  editing the "user" class, users are allowed to edit their own
  details. Unless it's the "roles" property, which requires the
  special Permission "Web Roles".
-new
+**new**
  Determine whether the user has permission to create (edit) this item.
  Base behaviour is to check the user can edit this class. No
  additional property checks are made. Additionally, new user items
  may be created if the user has the "Web Registration" Permission.
-editCSV
+**editCSV**
  Determine whether the user has permission to edit this class.
  Base behaviour is to check the user can edit this class.
-search
+**search**
  Determine whether the user has permission to search this class.
  Base behaviour is to check the user can view this class.
 
@@ -623,29 +627,29 @@ Default templates
 Most customisation of the web view can be done by modifying the templates in
 the tracker **html** directory. There are several types of files in there:
 
-page
+**page**
   This template defines the overall look of your tracker. When you
   view an issue, it appears inside this template. When you view an index, it
   also appears inside this template. It will have a ``tal:content`` or
   ``tal:replace`` command with the expression ``structure content`` which
   will show the issue, list of issues or whatever.
-home
+**home**
   the default page displayed when no other page is indicated by the user
-home.classlist
+**home.classlist**
   a special version of the default page that lists the classes in the tracker
-*classname*.item
+**classname.item**
   displays an item of the *classname* class
-*classname*.index
+**classname.index**
   displays a list of *classname* items
-*classname*.search
+**classname.search**
   displays a search page for *classname* items
-_generic.index
+**_generic.index**
   used to display a list of items where there is no *classname*.index available
-_generic.help
+**_generic.help**
   used to display a "class help" page where there is no *classname*.help
-user.register
+**user.register**
   a special page just for the user class that renders the registration page
-style.css
+**style.css**
   a static file that is served up as-is
 
 How the templates work
@@ -655,7 +659,7 @@ Roundup's templates consist of special attributes on your template tags. These
 attributes form the Template Attribute Language, or TAL. The commands are:
 
 
-tal:define="variable expression; variable expression; ..."
+**tal:define="variable expression; variable expression; ..."**
    Define a new variable that is local to this tag and its contents. For
    example::
 
@@ -667,7 +671,7 @@ tal:define="variable expression; variable expression; ..."
    expression "request/description". The tal:content command inside the <html>
    tag may then use the "title" variable.
 
-tal:condition="expression"
+**tal:condition="expression"**
    Only keep this tag and its contents if the expression is true. For example::
 
      <p tal:condition="python:request.user.hasPermission('View', 'issue')">
@@ -680,7 +684,7 @@ tal:condition="expression"
    values. Nearly every other value is true, including non-zero numbers, and
    strings with anything in them (even spaces!).
 
-tal:repeat="variable expression"
+**tal:repeat="variable expression"**
    Repeat this tag and its contents for each element of the sequence that the
    expression returns, defining a new local variable and a special "repeat"
    variable for each element. For example::
@@ -694,7 +698,7 @@ tal:repeat="variable expression"
    The example would iterate over the sequence of users returned by
    "user/list" and define the local variable "u" for each entry.
 
-tal:replace="expression"
+**tal:replace="expression"**
    Replace this tag with the result of the expression. For example::
 
     <span tal:replace="request/user/realname"></span>
@@ -703,7 +707,7 @@ tal:replace="expression"
    realname. If the user's realname was "Bruce" then the resultant output
    would be "Bruce".
 
-tal:content="expression"
+**tal:content="expression"**
    Replace the contents of this tag with the result of the expression. For
    example::
 
@@ -713,7 +717,7 @@ tal:content="expression"
    realname. If the user's realname was "Bruce" then the resultant output
    would be "<span>Bruce</span>".
 
-tal:attributes="attribute expression; attribute expression; ..."
+**tal:attributes="attribute expression; attribute expression; ..."**
    Set attributes on this tag to the results of expressions. For example::
 
      <a tal:attributes="href string:user${request/user/id}">My Details</a>
@@ -722,7 +726,7 @@ tal:attributes="attribute expression; attribute expression; ..."
    the "string:user${request/user/id}" expression, which will be something
    like "user123".
 
-tal:omit-tag="expression"
+**tal:omit-tag="expression"**
    Remove this tag (but not its contents) if the expression is true. For
    example::
 
@@ -744,7 +748,7 @@ which would othewise require an illegal tag placement to effect the repeat).
 The expressions you may use in the attibute values may be one of the following
 three forms:
 
-Path Expressions - eg. ``item/status/checklist``
+**Path Expressions** - eg. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the path
    ``item/status/checklist`` is broken into parts ``item``, ``status``
    and ``checklist``. The ``item`` part is the root of the expression.
@@ -759,12 +763,12 @@ Path Expressions - eg. ``item/status/checklist``
 
    XXX "nothing" and "default"
 
-String Expressions - eg. ``string:hello ${user/name}``
+**String Expressions** - eg. ``string:hello ${user/name}``
    These expressions are simple string interpolations (though they can be just
    plain strings with no interpolation if you want. The expression in the
    ``${ ... }`` is just a path expression as above.
 
-Python Expressions - eg. ``python: 1+1``
+**Python Expressions** - eg. ``python: 1+1``
    These expressions give the full power of Python. All the "root level"
    variables are available, so ``python:item.status.checklist()`` would be
    equivalent to ``item/status/checklist``, assuming that ``checklist`` is
@@ -773,14 +777,14 @@ Python Expressions - eg. ``python: 1+1``
 Information available to templates
 ----------------------------------
 
+Note: this is implemented by roundup.cgi.templating.RoundupPageTemplate
+
 The following variables are available to templates.
 
-.. taken from roundup.cgi.templating.RoundupPageTemplate docstring
-
-*context*
+**context**
   The current context. This is either None, a
   `hyperdb class wrapper`_ or a `hyperdb item wrapper`_
-*request*
+**request**
   Includes information about the current request, including:
    - the url
    - the current index information (``filterspec``, ``filter`` args,
@@ -790,11 +794,11 @@ The following variables are available to templates.
    - *form*
      The current CGI form information as a mapping of form argument
      name to value
-*tracker*
+**tracker**
   The current tracker
-*db*
+**db**
   The current database, through which db.config may be reached.
-*nothing*
+**nothing**
   This is a special variable - if an expression evaluates to this, then the
   tag (in the case of a tal:replace), its contents (in the case of
   tal:content) or some attributes (in the case of tal:attributes) will not
@@ -806,7 +810,7 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
-*default*
+**default**
   Also a special variable - if an expression evaluates to this, then the
   existing HTML in the template will not be replaced or removed, it will
   remain. So::
@@ -817,7 +821,7 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
-*utils*
+**utils**
   This variable makes available some utility functions like batching.
 
 The context variable
@@ -1103,7 +1107,6 @@ An example of batching::
    <td tal:define="batch python:utils.Batch(keywords, 4, start)"
        tal:repeat="keyword batch" tal:content="keyword/name">keyword here</td>
   </tr>
-  <tr><td colspan="4" style="border-top: 1px solid gray">&nbsp;</td></tr>
  </table>
 
 ... which will produce a table with four columns containing the items of the
