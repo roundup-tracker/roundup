@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.93 2003-11-16 19:59:10 jlgijsbers Exp $
+# $Id: hyperdb.py,v 1.94 2003-11-16 20:01:16 jlgijsbers Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -230,8 +230,8 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         raise NotImplementedError
 
     def addnode(self, classname, nodeid, node):
-        '''Add the specified node to its class's db.
-        '''
+        """Add the specified node to its class's db.
+        """
         raise NotImplementedError
 
     def serialise(self, classname, node):
@@ -598,12 +598,12 @@ def convertLinkValue(db, propname, prop, value, idre=re.compile('\d+')):
     return value
 
 def fixNewlines(text):
-    ''' Homogenise line endings.
+    """ Homogenise line endings.
 
         Different web clients send different line ending values, but
         other systems (eg. email) don't necessarily handle those line
         endings. Our solution is to convert all line endings to LF.
-    '''
+    """
     text = text.replace('\r\n', '\n')
     return text.replace('\r', '\n')
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.94 2003-11-16 19:59:09 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.95 2003-11-16 20:01:16 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -150,7 +150,7 @@ class IssueClass:
             # Make sure we don't send mail to either the anonymous
             # user or a user who has already seen the message.
             return (userid and
-                    self.db.user.get(userid, 'username') != 'anonymous' and
+                    (self.db.user.get(userid, 'username') != 'anonymous') and
                     not seen_message.has_key(userid))
         
         # possibly send the message to the author, as long as they aren't
