@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.85 2003-02-14 00:31:46 richard Exp $
+# $Id: client.py,v 1.86 2003-02-16 22:57:09 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1142,6 +1142,13 @@ class Client:
             If a String property's form value is a file upload, then we
             try to set additional properties "filename" and "type" (if
             they are valid for the class).
+
+            Two special form values are supported for backwards
+            compatibility:
+             :note - create a message (with content, author and date), link
+                     to the context item
+             :file - create a file, attach to the current item and any
+                     message created by :note
         '''
         # some very useful variables
         db = self.db
