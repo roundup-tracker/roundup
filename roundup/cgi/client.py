@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.90 2003-02-18 01:57:39 richard Exp $
+# $Id: client.py,v 1.91 2003-02-18 01:59:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1523,7 +1523,7 @@ class Client:
             if not isinstance(cl, hyperdb.FileClass):
                 continue
             if not props.get('content', ''):
-                del all_props((cn, id))
+                del all_props[(cn, id)]
 
         return all_props, all_links
 
