@@ -53,3 +53,5 @@
  . Added an issue priority of support
  . Fixed values in text input fields which contained quotes (") are now
    quoted.
+ . Fixed a bug in the hyperdb filter - wrong variable names in the error
+   message.
