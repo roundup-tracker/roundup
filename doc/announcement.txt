@@ -1,5 +1,5 @@
 =================================================
-SC-Track Roundup 0.4.2 - an issue tracking system
+SC-Track Roundup 0.4.3 - an issue tracking system
 =================================================
 
 Note: If you have an existing roundup installation, make a backup of your
@@ -8,18 +8,18 @@ database. Make sure you read doc/upgrading.txt!
 Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
 requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
 
-Big stuff in this release:
+This is a bugfix release, fixing:
 
-- online demo at http://mechanicalcat.net/cgi-bin/roundup.cgi
-- fast full-text searching of messages
-- other speedups
-- bsddb3 backend is re-enabled
-- instance initialisation is a two-step process now, making mods easier
-- optionally auto-add the author and recipients of messages to the nosy
-- enhancements to make multilink editing through the web and email easier
-- cleaner use of auditors and reactors in the default schemas
-- demo scripts supplied in the scripts/ and detectors/ directories
-- Much, much more: see the CHANGES file for details
+ . sf bug #576086: dumb copying mistake (frontends/ZRoundup.py)
+ . installation instructions now mention "python2" in "testing your python".
+ . bsddb3 backend should use 'c' for create, not 'n' for nuke
+ . sf bug #571170: gdbm deadlock
+ . sf bug #576241: MultiLink problems in parsePropsFromForm
+ . sf bug #516854: "My Issues" and redisplay
+ . htmltemplate do_menu with additional properties had problems when they
+   weren't set
+ . sf bug #562686: email attachments from outlook express
+ . sf bug #535868: Anonymous User Login
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
@@ -27,7 +27,6 @@ Release Info (via download page):
      http://sourceforge.net/projects/roundup
 Mailing lists - the place to ask questions:
      http://sourceforge.net/mail/?group_id=31577
-
 
 
 About Roundup

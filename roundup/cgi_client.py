@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.129.2.2 2002-07-22 22:06:45 richard Exp $
+# $Id: cgi_client.py,v 1.129.2.3 2002-09-02 21:49:04 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1296,12 +1296,11 @@ class ExtendedClient(Client):
     default_index_columns = ['activity','status','title','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
 
-def parsePropsFromForm(db, cl, form, nodeid=0):
+def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     '''Pull properties for the given class out of the form.
     '''
     props = {}
     keys = form.keys()
-    num_re = re.compile('^\d+$')
     for key in keys:
         if not cl.properties.has_key(key):
             continue
@@ -1309,7 +1308,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
         if isinstance(proptype, hyperdb.String):
             value = form[key].value.strip()
         elif isinstance(proptype, hyperdb.Password):
-            value = password.Password(form[key].value.strip())
+            value = form[key].value.strip()
+            if not value:
+                # ignore empty password values
+                continue
+            value = password.Password(value)
         elif isinstance(proptype, hyperdb.Date):
             value = form[key].value.strip()
             if value:
@@ -1326,8 +1329,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
             value = form[key].value.strip()
             # see if it's the "no selection" choice
             if value == '-1':
-                # don't set this property
-                continue
+                value = None
             else:
                 # handle key values
                 link = cl.properties[key].classname
@@ -1340,7 +1342,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                             'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if hasattr(value,'value'):
+            if hasattr(value, 'value'):
                 # Quite likely to be a FormItem instance
                 value = value.value
             if not isinstance(value, type([])):
@@ -1380,6 +1382,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.129.2.2  2002/07/22 22:06:45  richard
+# . #535868 ] Anonymous User Login
+#    Hrm, I re-read the intention of the web/email login stuff, and realised
+#    there was a quick fix.
+#
 # Revision 1.129.2.1  2002/07/10 06:50:49  richard
 # . #576241 ] MultiLink problems in parsePropsFromForm
 #
