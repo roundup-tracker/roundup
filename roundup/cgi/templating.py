@@ -1510,7 +1510,6 @@ class MultilinkHTMLProperty(HTMLProperty):
         ''' Support the "in" operator. We have to make sure the passed-in
             value is a string first, not a HTMLProperty.
         '''
-        print (self, value, self._value)
         return str(value) in self._value
 
     def reverse(self):

@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2004-??-?? 0.7.0b2
+2004-03-27 0.7.0b2
 Feature:
 - added CSV export to index pages
 - added emailauditor.py which works around a bug in IE. See
@@ -12,10 +12,11 @@ Feature:
   messages. (sf bug 700265)
 - queries on a per-user basis, and public queries (sf "bug" 891798 :)
 - added DEFAULT_TIMEZONE (sf rfe 895139)
+- added HTML page template to the templating context as "template"
+- added is_retired to HTMLItems in templating
 
 Fixed:
-- Boolean HTML templating was broken
-- Link HTML templating field() was broken
+- Boolean, Date and Link HTML templating was broken
 - fix reporting of test inclusion in postgresql test
 - EditAction was confused about who "self" was
 - edit collision detection was broken for index-page edits
@@ -23,6 +24,7 @@ Fixed:
 - use SimpleCookie instead of Cookie (is an alias for the evil SmartCookie)
 - handle older sessions in session dbm
 - make presetunread more resilient to status Class changes
+- HTMLDatabase classes() was broken
 
 
 2004-03-24 0.7.0b1

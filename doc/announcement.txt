@@ -1,5 +1,5 @@
-It is with a huge sigh of relief that I announce this first beta of
-Roundup version 0.7.
+This is the second beta release of Roundup version 0.7. It fixes some bugs
+in the previous beta release and introduces a few new features.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
@@ -12,22 +12,20 @@ I would *greatly* appreciate people giving this release a whirl with a
 copy of their existing setup. It's only through real-world testing of
 beta releases that we can ensure that older trackers will be OK.
 
-This release introduces far too many features to list here. Some
-highlights:
+Version 0.7 introduces far too many features to list here. I've put
+together a What's New page:
 
-- added postgresql backend (originally from sf patch 761740, many changes
-  since)
-- RDBMS backends implement their session and one-time-key stores and
-  full-text indexers; thus they are now performing their own locking
-  internally
-- added new "actor" automatic property (indicates user who cause the last
-  "activity")
-- all RDBMS backends have sensible data typed columns and indexes on
-  several columns
-- we support confirming registration by replying to the email (sf bug
-  763668)
-- all HTML templating methods now automatically check for permissions
-  (either view or edit as appropriate), greatly simplifying templates
+  http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
+
+Some highlights:
+
+- added postgresql backend
+- RDBMS backends have no external locking requirements
+- new "actor" automatic property (user who caused the last "activity")
+- RDBMS backends have data typed columns and indexes on several columns
+- we support confirming registration by replying to the email
+- all HTML templating methods now automatically check for permissions,
+  greatly simplifying templates
 
 Roundup requires python 2.1.3 or later for correct operation.
 
