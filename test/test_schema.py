@@ -14,28 +14,18 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_schema.py,v 1.13 2003-10-25 22:53:26 richard Exp $ 
+#
+# $Id: test_schema.py,v 1.14 2004-09-30 10:34:26 a1s Exp $
 
 import unittest, os, shutil
 
+from roundup import configuration
 from roundup.backends import back_anydbm
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval
 
-class config:
-    DATABASE='_test_dir'
-    MAILHOST = 'localhost'
-    MAIL_DOMAIN = 'fill.me.in.'
-    NSTANCE_NAME = 'Roundup issue tracker'
-    TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
-    TRACKER_WEB = 'http://some.useful.url/'
-    ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-    FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
-    ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
-    ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
-    MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
-    EMAIL_SIGNATURE_POSITION = 'bottom'
+config = configuration.CoreConfig()
+config.DATABASE = "_test_dir"
 
 class SchemaTestCase(unittest.TestCase):
     def setUp(self):
@@ -95,4 +85,4 @@ if __name__ == '__main__':
     unittest.main(testRunner=runner)
 
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
