@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.42 2001-11-09 10:11:08 richard Exp $
+# $Id: roundup-admin,v 1.43 2001-11-09 22:33:28 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -287,7 +287,7 @@ Command help:
                 raise UsageError, 'argument "%s" not propname=value'%prop
             try:
                 key, value = prop.split('=')
-            except (TypeError, ValueError):
+            except ValueError:
                 raise UsageError, 'argument "%s" not propname=value'%prop
             props[key] = value
         for designator in designators:
@@ -352,7 +352,7 @@ Command help:
             raise UsageError, 'argument "%s" not propname=value'%prop
         try:
             propname, value = args[1].split('=')
-        except (TypeError, ValueError):
+        except ValueError:
             raise UsageError, 'argument "%s" not propname=value'%prop
 
         # if the value isn't a number, look up the linked class to get the
@@ -460,7 +460,7 @@ Command help:
                     raise UsageError, 'argument "%s" not propname=value'%prop
                 try:
                     key, value = prop.split('=')
-                except (TypeError, ValueError):
+                except ValueError:
                     raise UsageError, 'argument "%s" not propname=value'%prop
                 props[key] = value 
 
@@ -882,6 +882,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.42  2001/11/09 10:11:08  richard
+#  . roundup-admin now handles all hyperdb exceptions
+#
 # Revision 1.41  2001/11/09 01:25:40  richard
 # Should parse with python 1.5.2 now.
 #

@@ -72,13 +72,16 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.29 2001-11-07 05:29:26 richard Exp $
+$Id: mailgw.py,v 1.30 2001-11-09 22:33:28 richard Exp $
 '''
 
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import traceback
 import hyperdb, date, password
+
+class MailGWError(ValueError):
+    pass
 
 class MailUsageError(ValueError):
     pass
@@ -129,41 +132,63 @@ class MailGW:
         handle errors in a different manner.
         '''
         m = []
-        try:
-            self.handle_message(message)
-        except MailUsageError, value:
-            # bounce the message back to the sender with the usage message
-            fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
-            sendto = [message.getaddrlist('from')[0][1]]
-            m = ['Subject: Failed issue tracker submission', '']
-            m.append(str(value))
-            m.append('\n\nMail Gateway Help\n=================')
-            m.append(fulldoc)
-        except:
-            # bounce the message back to the sender with the error message
-            sendto = [message.getaddrlist('from')[0][1]]
-            m = ['Subject: failed issue tracker submission']
+        # in some rare cases, a particularly stuffed-up e-mail will make
+        # its way into here... try to handle it gracefully
+        sendto = message.getaddrlist('from')
+        if sendto:
+            try:
+                self.handle_message(message)
+                return
+            except MailUsageError, value:
+                # bounce the message back to the sender with the usage message
+                fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+                sendto = [sendto[0][1]]
+                m = ['Subject: Failed issue tracker submission', '']
+                m.append(str(value))
+                m.append('\n\nMail Gateway Help\n=================')
+                m.append(fulldoc)
+            except:
+                # bounce the message back to the sender with the error message
+                sendto = [sendto[0][1]]
+                m = ['Subject: failed issue tracker submission']
+                m.append('')
+                # TODO as attachments?
+                m.append('----  traceback of failure  ----')
+                s = cStringIO.StringIO()
+                import traceback
+                traceback.print_exc(None, s)
+                m.append(s.getvalue())
+                m.append('---- failed message follows ----')
+                try:
+                    message.fp.seek(0)
+                except:
+                    pass
+                m.append(message.fp.read())
+        else:
+            # very bad-looking message - we don't even know who sent it
+            sendto = [self.ADMIN_EMAIL]
+            m = ['Subject: badly formed message from mail gateway']
             m.append('')
-            # TODO as attachments?
-            m.append('----  traceback of failure  ----')
-            s = cStringIO.StringIO()
-            import traceback
-            traceback.print_exc(None, s)
-            m.append(s.getvalue())
+            m.append('The mail gateway retrieved a message which has no From:')
+            m.append('line, indicating that it is corrupt. Please check your')
+            m.append('mail gateway source.')
+            m.append('')
             m.append('---- failed message follows ----')
             try:
                 message.fp.seek(0)
             except:
                 pass
             m.append(message.fp.read())
-        if m:
-            try:
-                smtp = smtplib.SMTP(self.MAILHOST)
-                smtp.sendmail(self.ADMIN_EMAIL, sendto, '\n'.join(m))
-            except socket.error, value:
-                return "Couldn't send confirmation email: mailhost %s"%value
-            except smtplib.SMTPException, value:
-                return "Couldn't send confirmation email: %s"%value
+
+        # now send the message
+        try:
+            smtp = smtplib.SMTP(self.MAILHOST)
+            smtp.sendmail(self.ADMIN_EMAIL, sendto, '\n'.join(m))
+        except socket.error, value:
+            raise MailGWError, "Couldn't send confirmation email: "\
+                "mailhost %s"%value
+        except smtplib.SMTPException, value:
+            raise MailGWError, "Couldn't send confirmation email: %s"%value
 
     def handle_message(self, message):
         ''' message - a Message instance
@@ -242,9 +267,25 @@ Subject was: "%s"
                 if isinstance(type, hyperdb.Password):
                     props[key] = password.Password(value)
                 elif isinstance(type, hyperdb.Date):
-                    props[key] = date.Date(value)
+                    try:
+                        props[key] = date.Date(value)
+                    except ValueError, message:
+                        raise UsageError, '''
+Subject argument list contains an invalid date for %s.
+
+Error was: %s
+Subject was: "%s"
+'''%(key, message, subject)
                 elif isinstance(type, hyperdb.Interval):
-                    props[key] = date.Interval(value)
+                    try:
+                        props[key] = date.Interval(value)
+                    except ValueError, message:
+                        raise UsageError, '''
+Subject argument list contains an invalid date interval for %s.
+
+Error was: %s
+Subject was: "%s"
+'''%(key, message, subject)
                 elif isinstance(type, hyperdb.Link):
                     props[key] = value
                 elif isinstance(type, hyperdb.Multilink):
@@ -386,7 +427,13 @@ Subject was: "%s"
                             props['status'] == resolved_id):
                         props['status'] = chatting_id
 
-            cl.set(nodeid, **props)
+            try:
+                cl.set(nodeid, **props)
+            except (TypeError, IndexError, ValueError), message:
+                raise MailUsageError, '''
+There was a problem with the message you sent:
+   %s
+'''%message
         else:
             # If just an item class name is found there, we attempt to create a
             # new item of that class with its "messages" property initialized to
@@ -399,15 +446,35 @@ Subject was: "%s"
             if properties.has_key('assignedto') and \
                     not props.has_key('assignedto'):
                 props['assignedto'] = '1'             # "admin"
+
+            # pre-set the issue to unread
             if properties.has_key('status') and not props.has_key('status'):
-                props['status'] = '1'                 # "unread"
+                try:
+                    # determine the id of 'unread'
+                    unread_id = self.db.status.lookup('unread')
+                except KeyError:
+                    pass
+                else:
+                    props['status'] = '1'
+
+            # set the title to the subject
             if properties.has_key('title') and not props.has_key('title'):
                 props['title'] = title
+
+            # pre-load the messages list and nosy list
             props['messages'] = [message_id]
             props['nosy'] = props.get('nosy', []) + recipients
             props['nosy'].append(author)
             props['nosy'].sort()
-            nodeid = cl.create(**props)
+
+            # and attempt to create the new node
+            try:
+                nodeid = cl.create(**props)
+            except (TypeError, IndexError, ValueError), message:
+                raise MailUsageError, '''
+There was a problem with the message you sent:
+   %s
+'''%message
 
 def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         eol=re.compile(r'[\r\n]+'), signature=re.compile(r'^[>|\s]*[-_]+\s*$')):
@@ -449,6 +516,12 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2001/11/07 05:29:26  richard
+# Modified roundup-mailgw so it can read e-mails from a local mail spool
+# file. Truncates the spool file after parsing.
+# Fixed a couple of small bugs introduced in roundup.mailgw when I started
+# the popgw.
+#
 # Revision 1.28  2001/11/01 22:04:37  richard
 # Started work on supporting a pop3-fetching server
 # Fixed bugs:
