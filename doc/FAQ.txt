@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.21 $
+:Version: $Revision: 1.22 $
 
 .. contents::
 
@@ -92,6 +92,13 @@ following should be useful as a starting template::
   RewriteRule ^/issues/(.*)$ http://tracker.example:8080/issues/$1 [P,L]
   
   </IfModule>
+
+
+How do I run Roundup through SSL (HTTPS)?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You should proxy through apache and use its SSL service. See the previous
+question on how to proxy through apache.
 
 
 Roundup runs very slowly on my XP machine when accessed from the Internet

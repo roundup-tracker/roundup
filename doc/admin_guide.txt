@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.16 $
+:Version: $Revision: 1.17 $
 
 .. contents::
 
@@ -66,6 +66,7 @@ Configuration for "BasicLogging" implementation:
 
 In both cases, if no logfile is specified then logging will simply be sent
 to sys.stderr with only logging of ERROR messages.
+
 
 Configuring roundup-server
 ==========================
@@ -163,6 +164,7 @@ Maintenance of Roundup can involve one of the following:
 2. `software upgrade`_
 3. `migrating backends`_
 4. `moving a tracker`_
+5. `migrating from other software`_
 
 
 Tracker Backup
@@ -253,6 +255,31 @@ moved using the above steps) then you'll need to:
 5. use the roundup-admin "import" command to import the tracker on the new
    machine, and
 6. start the tracker web and email frontends on the new machine.
+
+
+Migrating From Other Software
+-----------------------------
+
+You have a couple of choices. You can either use a CSV import into Roundup,
+or you can write a simple Python script which uses the Roundup API
+directly. The latter is almost always simpler -- see the "scripts"
+directory in the Roundup source for some example uses of the API.
+
+"roundup-admin import" will import data into your tracker from a 
+directory containing files with the following format:
+
+- one colon-separated-values file per Class with columns for each property,
+  named <classname>.csv
+- one colon-separated-values file per Class with journal information,
+  named <classname>-journals.csv (this is required, even if it's empty)
+- if the Class is a FileClass, you may have the "content" property 
+  stored in separate files from the csv files. This goes in a directory
+  structure::
+
+      <classname>-files/<N>/<designator>
+
+  where ``<designator>`` is the item's ``<classname><id>`` combination.
+  The ``<N>`` value is ``int(<id> / 1000)``.
 
 
 Running the Servers
