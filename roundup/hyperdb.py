@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.80 2002-08-16 04:28:13 richard Exp $
+# $Id: hyperdb.py,v 1.81 2002-08-30 08:37:16 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -83,7 +83,7 @@ class Interval:
 class Link:
     """An object designating a Link property that links to a
        node in a specified class."""
-    def __init__(self, classname, do_journal='no'):
+    def __init__(self, classname, do_journal='yes'):
         ''' Default is to not journal link and unlink events
         '''
         self.classname = classname
@@ -101,7 +101,7 @@ class Multilink:
        "do_journal" indicates whether the linked-to nodes should have
                     'link' and 'unlink' events placed in their journal
     """
-    def __init__(self, classname, do_journal='no'):
+    def __init__(self, classname, do_journal='yes'):
         ''' Default is to not journal link and unlink events
         '''
         self.classname = classname
@@ -334,7 +334,7 @@ class Class:
     def __repr__(self):
         '''Slightly more useful representation
         '''
-        return '<hypderdb.Class "%s">'%self.classname
+        return '<hyperdb.Class "%s">'%self.classname
 
     # Editing nodes:
 
@@ -609,6 +609,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.80  2002/08/16 04:28:13  richard
+# added is_retired query to Class
+#
 # Revision 1.79  2002/07/29 23:30:14  richard
 # documentation reorg post-new-security
 #
