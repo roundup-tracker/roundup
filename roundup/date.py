@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.33 2002-10-10 07:18:02 richard Exp $
+# $Id: date.py,v 1.34 2002-10-10 08:24:37 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -362,7 +362,7 @@ class Interval:
             \s*((?P<d>\d+\s*)d)?    # day
             \s*(((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
             \s*''', re.VERBOSE), serialised_re=re.compile('''
-            (?P<s>[+-])(?P<y>\d{4})(?P<m>\d{2})(?P<d>\d{2})
+            (?P<s>[+-])?1?(?P<y>([ ]{3}\d|\d{4}))(?P<m>\d{2})(?P<d>\d{2})
             (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE)):
         ''' set the date to the value in spec
         '''
