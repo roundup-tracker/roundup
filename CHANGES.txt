@@ -2,8 +2,9 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2002-01-?? - 0.4.0??
+ . display superseder as html link in history.
+ . display links as html link in history (e.g. message history back to issue).
  . handle attachments with no name (eg tnef)
- . display links a html link in history.
 
 2002-01-16 - 0.4.0b2
 Fixed:
