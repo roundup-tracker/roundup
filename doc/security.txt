@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.6 $
 
 Current situation
 =================
@@ -192,14 +192,14 @@ The instance dbinit module then has::
                     description="User may log in through email")
     mr = perm.create(name="Mail Registration",
                     description="User may register through email")
-    aa = perm.create(name="Access Everything",
+    ae = perm.create(name="Access Everything",
                     description="User may access everthing")
     role.create(name="User", description="A regular user, no privs",
                 permissions=[wa, wr, ma, mr])
     role.create(name="Admin", description="An admin user, full privs",
-                permissions=[aa])
-    ro = role.create(name="No Rego", description="A user who can't register",
-                     permissions=[wa, ma])
+                permissions=[ae])
+    role.create(name="No Rego", description="A user who can't register",
+                permissions=[wa, ma])
 
   in init():
 
@@ -211,6 +211,9 @@ The instance dbinit module then has::
     #r = db.getclass('role').lookup('No Rego')
     r = db.getclass('role').lookup('User')
     user.create(username="anonymous", roles=[r])
+
+Then in the code that matters, calls to ``hasPermission`` are made to
+determine if the user has permission to perform some action.
 
 
 Authentication of Users
@@ -236,12 +239,21 @@ The CGI interface must be changed to:
   real credentials (username/password) around for each request (this means
   sessions and hence a session database)
 - use the new logical control mechanisms
+  - implement the permission module
+  - implement a Role editing interface for users
+  - implement htmltemplate tests on permissions
+  - switch all code over from using config vars for permission checks to using
+    permissions
+  - include config vars for initial Roles for anonymous web, new web and new
+    email users
 
 The mail gateway must be changed to:
 
 - use digital signatures
 - use the new logical control mechanisms
-    
+  - switch all code over from using config vars for permission checks to using
+    permissions
+
 The command-line tool must be changed to:
 
 - use the new logical control mechanisms (only allowing write
