@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.23 2001-10-09 23:36:25 richard Exp $
+# $Id: roundup-admin,v 1.24 2001-10-10 03:54:57 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -24,6 +24,10 @@ if int(sys.version[0]) < 2:
     sys.exit(1)
 
 import string, os, getpass, getopt, re
+try:
+    import csv
+except ImportError:
+    csv = None
 from roundup import date, roundupdb, init, password
 import roundup.instance
 
@@ -233,7 +237,7 @@ def do_spec(db, args):
         else:
             print '%s: %s'%(key, value)
 
-def do_create(db, args, pretty_re=re.compile(r'<roundup\.hyperdb\.(.*)>')):
+def do_create(db, args):
     '''Usage: create classname property=value ...
     Create a new entry of a given class.
 
@@ -251,12 +255,19 @@ def do_create(db, args, pretty_re=re.compile(r'<roundup\.hyperdb\.(.*)>')):
         # ask for the properties
         for key, value in properties.items():
             if key == 'id': continue
-            m = pretty_re.match(str(value))
-            if m:
-                value = m.group(1)
-            value = raw_input('%s (%s): '%(key.capitalize(), value))
-            if value:
-                props[key] = value
+            name = value.__class__.__name__
+            if isinstance(value , hyperdb.Password):
+                again = None
+                while value != again:
+                    value = getpass.getpass('%s (Password): '%key.capitalize())
+                    again = getpass.getpass('   %s (Again): '%key.capitalize())
+                    if value != again: print 'Sorry, try again...'
+                if value:
+                    props[key] = value
+            else:
+                value = raw_input('%s (%s): '%(key.capitalize(), name))
+                if value:
+                    props[key] = value
     else:
         # use the args
         for prop in args[1:]:
@@ -270,6 +281,8 @@ def do_create(db, args, pretty_re=re.compile(r'<roundup\.hyperdb\.(.*)>')):
             props[key] = date.Date(value)
         elif isinstance(type, hyperdb.Interval):
             props[key] = date.Interval(value)
+        elif isinstance(type, hyperdb.Password):
+            props[key] = password.Password(value)
         elif isinstance(type, hyperdb.Multilink):
             props[key] = value.split(',')
 
@@ -323,6 +336,111 @@ def do_retire(db, args):
     for designator in designators:
         classname, nodeid = roundupdb.splitDesignator(designator)
         db.getclass(classname).retire(nodeid)
+    return 0
+
+def do_export(db, args):
+    '''Usage: export class[,class] destination_dir
+    Export the database to CSV files by class in the given directory.
+
+    This action exports the current data from the database into
+    comma-separated files that are placed in the nominated destination
+    directory. The journals are not exported.
+    '''
+    if len(args) < 2:
+        print do_export.__doc__
+        return 1
+    classes = string.split(args[0], ',')
+    dir = args[1]
+
+    # use the csv parser if we can - it's faster
+    if csv is not None:
+        p = csv.parser()
+
+    # do all the classes specified
+    for classname in classes:
+        cl = db.getclass(classname)
+        f = open(os.path.join(dir, classname+'.csv'), 'w')
+        f.write(string.join(cl.properties.keys(), ',') + '\n')
+
+        # all nodes for this class
+        for nodeid in cl.list():
+            if csv is not None:
+               s = p.join(map(str, cl.getnode(nodeid).values(protected=0)))
+               f.write(s + '\n')
+            else:
+               l = []
+               # escape the individual entries to they're valid CSV
+               for entry in map(str, cl.getnode(nodeid).values(protected=0)):
+                  if '"' in entry:
+                      entry = '""'.join(entry.split('"'))
+                  if ',' in entry:
+                      entry = '"%s"'%entry
+                  l.append(entry)
+               f.write(','.join(l) + '\n')
+    return 0
+
+def do_import(db, args):
+    '''Usage: import class file
+    Import the contents of the CSV file as new nodes for the given class.
+
+    The file must define the same properties as the class (including having
+    a "header" line with those property names.)
+    '''
+    if len(args) < 2:
+        print do_export.__doc__
+        return 1
+    if csv is None:
+        print 'Sorry, you need the csv module to use this function.'
+        print 'Get it from: http://www.object-craft.com.au/projects/csv/'
+        return 1
+
+    from roundup import hyperdb
+
+    # ensure that the properties and the CSV file headings match
+    cl = db.getclass(args[0])
+    f = open(args[1])
+    p = csv.parser()
+    file_props = p.parse(f.readline())
+    props = cl.properties.keys()
+    m = file_props[:]
+    m.sort()
+    props.sort()
+    if m != props:
+        print do_export.__doc__
+        print "\n\nFile doesn't define the same properties"
+        return 1
+
+    # loop through the file and create a node for each entry
+    n = range(len(props))
+    while 1:
+        line = f.readline()
+        if not line: break
+
+        # parse lines until we get a complete entry
+        while 1:
+            l = p.parse(line)
+            if l: break
+
+        # make the new node's property map
+        d = {}
+        for i in n:
+            value = l[i]
+            key = file_props[i]
+            type = cl.properties[key]
+            if isinstance(type, hyperdb.Date):
+                value = date.Date(value)
+            elif isinstance(type, hyperdb.Interval):
+                value = date.Interval(value)
+            elif isinstance(type, hyperdb.Password):
+                pwd = password.Password()
+                pwd.unpack(value)
+                value = pwd
+            elif isinstance(type, hyperdb.Multilink):
+                value = value.split(',')
+            d[key] = value
+
+        # and create the new node
+        apply(cl.create, (), d)
     return 0
 
 def do_freshen(db, args):
@@ -444,6 +562,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/10/09 23:36:25  richard
+# Spit out command help if roundup-admin command doesn't get an argument.
+#
 # Revision 1.22  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.
