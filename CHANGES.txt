@@ -1,6 +1,10 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+200?-??-?? 0.7.0
+Feature:
+- support confirming registration by replying to the email (sf bug 763668)
+
 2003-09-?? 0.6.2
 Fixed:
 - cleaned up, clarified internal caching API in *dbm backends
