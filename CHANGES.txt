@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - cleaned up, clarified internal caching API in *dbm backends
 - stopped pyc writing to current directory! yay! (patch 800718 with changes)
+- fixed file leak in detector initialisation (patch 800715)
 - commented out example tracker homes (patch 800720)
 
 
