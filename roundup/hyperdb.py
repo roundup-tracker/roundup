@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.90 2003-10-24 22:52:48 richard Exp $
+# $Id: hyperdb.py,v 1.91 2003-11-11 00:35:13 richard Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -571,6 +571,171 @@ class Class:
         '''Add (or refresh) the node to search indexes
         '''
         raise NotImplementedError
+
+class HyperdbValueError(ValueError):
+    ''' Error converting a raw value into a Hyperdb value '''
+    pass
+
+def convertLinkValue(db, propname, prop, value, idre=re.compile('\d+')):
+    ''' Convert the link value (may be id or key value) to an id value. '''
+    linkcl = db.classes[prop.classname]
+    if not idre.match(value):
+        if linkcl.getkey():
+            try:
+                value = linkcl.lookup(value)
+            except KeyError, message:
+                raise HyperdbValueError, 'property %s: %r is not a %s.'%(
+                    propname, value, prop.classname)
+        else:
+            raise HyperdbValueError, 'you may only enter ID values '\
+                'for property %s'%propname
+    return value
+
+def fixNewlines(text):
+    ''' Homogenise line endings.
+
+        Different web clients send different line ending values, but
+        other systems (eg. email) don't necessarily handle those line
+        endings. Our solution is to convert all line endings to LF.
+    '''
+    text = text.replace('\r\n', '\n')
+    return text.replace('\r', '\n')
+
+def rawToHyperdb(db, klass, itemid, propname, value,
+        pwre=re.compile(r'{(\w+)}(.+)')):
+    ''' Convert the raw (user-input) value to a hyperdb-storable value. The
+        value is for the "propname" property on itemid (may be None for a
+        new item) of "klass" in "db".
+
+        The value is usually a string, but in the case of multilink inputs
+        it may be either a list of strings or a string with comma-separated
+        values.
+    '''
+    properties = klass.getprops()
+
+    # ensure it's a valid property name
+    propname = propname.strip()
+    try:
+        proptype =  properties[propname]
+    except KeyError:
+        raise HyperdbValueError, '%r is not a property of %s'%(propname,
+            klass.classname)
+
+    # if we got a string, strip it now
+    if isinstance(value, type('')):
+        value = value.strip()
+
+    # convert the input value to a real property value
+    if isinstance(proptype, String):
+        # fix the CRLF/CR -> LF stuff
+        value = fixNewlines(value)
+    if isinstance(proptype, Password):
+        m = pwre.match(value)
+        if m:
+            # password is being given to us encrypted
+            p = password.Password()
+            p.scheme = m.group(1)
+            if p.scheme not in 'SHA crypt plaintext'.split():
+                raise HyperdbValueError, 'property %s: unknown encryption '\
+                    'scheme %r'%(propname, p.scheme)
+            p.password = m.group(2)
+            value = p
+        else:
+            try:
+                value = password.Password(value)
+            except password.PasswordValueError, message:
+                raise HyperdbValueError, 'property %s: %s'%(propname, message)
+    elif isinstance(proptype, Date):
+        try:
+            tz = db.getUserTimezone()
+            value = date.Date(value).local(tz)
+        except ValueError, message:
+            raise HyperdbValueError, 'property %s: %r is an invalid '\
+                'date (%s)'%(propname, value, message)
+    elif isinstance(proptype, Interval):
+        try:
+            value = date.Interval(value)
+        except ValueError, message:
+            raise HyperdbValueError, 'property %s: %r is an invalid '\
+                'date interval (%s)'%(propname, value, message)
+    elif isinstance(proptype, Link):
+        if value == '-1' or not value:
+            value = None
+        else:
+            value = convertLinkValue(db, propname, proptype, value)
+
+    elif isinstance(proptype, Multilink):
+        # get the current item value if it's not a new item
+        if itemid and not itemid.startswith('-'):
+            curvalue = klass.get(itemid, propname)
+        else:
+            curvalue = []
+
+        # if the value is a comma-separated string then split it now
+        if isinstance(value, type('')):
+            value = value.split(',')
+
+        # handle each add/remove in turn
+        # keep an extra list for all items that are
+        # definitely in the new list (in case of e.g.
+        # <propname>=A,+B, which should replace the old
+        # list with A,B)
+        set = 1
+        newvalue = []
+        for item in value:
+            item = item.strip()
+
+            # skip blanks
+            if not item: continue
+
+            # handle +/-
+            remove = 0
+            if item.startswith('-'):
+                remove = 1
+                item = item[1:]
+                set = 0
+            elif item.startswith('+'):
+                item = item[1:]
+                set = 0
+
+            # look up the value
+            itemid = convertLinkValue(db, propname, proptype, item)
+
+            # perform the add/remove
+            if remove:
+                try:
+                    curvalue.remove(itemid)
+                except ValueError:
+                    raise HyperdbValueError, 'property %s: %r is not ' \
+                        'currently an element'%(propname, item)
+            else:
+                newvalue.append(itemid)
+                if itemid not in curvalue:
+                    curvalue.append(itemid)
+
+        # that's it, set the new Multilink property value,
+        # or overwrite it completely
+        if set:
+            value = newvalue
+        else:
+            value = curvalue
+
+        # TODO: one day, we'll switch to numeric ids and this will be
+        # unnecessary :(
+        value = [int(x) for x in value]
+        value.sort()
+        value = [str(x) for x in value]
+    elif isinstance(proptype, Boolean):
+        value = value.strip()
+        value = value.lower() in ('yes', 'true', 'on', '1')
+    elif isinstance(proptype, Number):
+        value = value.strip()
+        try:
+            value = float(value)
+        except ValueError:
+            raise HyperdbValueError, 'property %s: %r is not a number'%(
+                propname, value)
+    return value
 
 class FileClass:
     ''' A class that requires the "content" property and stores it on

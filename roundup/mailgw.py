@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.136 2003-11-03 18:34:03 jlgijsbers Exp $
+$Id: mailgw.py,v 1.137 2003-11-11 00:35:13 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -851,11 +851,10 @@ There was a problem with the message you sent:
         return nodeid
 
  
-def setPropArrayFromString(self, cl, propString, nodeid = None):
+def setPropArrayFromString(self, cl, propString, nodeid=None):
     ''' takes string of form prop=value,value;prop2=value
         and returns (error, prop[..])
     '''
-    properties = cl.getprops()
     props = {}
     errors = []
     for prop in string.split(propString, ';'):
@@ -866,100 +865,13 @@ def setPropArrayFromString(self, cl, propString, nodeid = None):
             errors.append('not of form [arg=value,value,...;'
                 'arg=value,value,...]')
             return (errors, props)
-
-        # ensure it's a valid property name
+        # convert the value to a hyperdb-usable value
         propname = propname.strip()
         try:
-            proptype =  properties[propname]
-        except KeyError:
-            errors.append('refers to an invalid property: "%s"'%propname)
-            continue
-
-        # convert the string value to a real property value
-        if isinstance(proptype, hyperdb.String):
-            props[propname] = value.strip()
-        if isinstance(proptype, hyperdb.Password):
-            props[propname] = password.Password(value.strip())
-        elif isinstance(proptype, hyperdb.Date):
-            try:
-                props[propname] = date.Date(value.strip()).local(self.db.getUserTimezone())
-            except ValueError, message:
-                errors.append('contains an invalid date for %s.'%propname)
-        elif isinstance(proptype, hyperdb.Interval):
-            try:
-                props[propname] = date.Interval(value)
-            except ValueError, message:
-                errors.append('contains an invalid date interval for %s.'%
-                    propname)
-        elif isinstance(proptype, hyperdb.Link):
-            linkcl = self.db.classes[proptype.classname]
-            propkey = linkcl.labelprop(default_to_id=1)
-            try:
-                props[propname] = linkcl.lookup(value)
-            except KeyError, message:
-                errors.append('"%s" is not a value for %s.'%(value, propname))
-        elif isinstance(proptype, hyperdb.Multilink):
-            # get the linked class
-            linkcl = self.db.classes[proptype.classname]
-            propkey = linkcl.labelprop(default_to_id=1)
-            if nodeid:
-                curvalue = cl.get(nodeid, propname)
-            else:
-                curvalue = []
-
-            # handle each add/remove in turn
-            # keep an extra list for all items that are
-            # definitely in the new list (in case of e.g.
-            # <propname>=A,+B, which should replace the old
-            # list with A,B)
-            set = 0
-            newvalue = []
-            for item in value.split(','):
-                item = item.strip()
-
-                # handle +/-
-                remove = 0
-                if item.startswith('-'):
-                    remove = 1
-                    item = item[1:]
-                elif item.startswith('+'):
-                    item = item[1:]
-                else:
-                    set = 1
-
-                # look up the value
-                try:
-                    item = linkcl.lookup(item)
-                except KeyError, message:
-                    errors.append('"%s" is not a value for %s.'%(item,
-                        propname))
-                    continue
-
-                # perform the add/remove
-                if remove:
-                    try:
-                        curvalue.remove(item)
-                    except ValueError:
-                        errors.append('"%s" is not currently in for %s.'%(item,
-                            propname))
-                        continue
-                else:
-                    newvalue.append(item)
-                    if item not in curvalue:
-                        curvalue.append(item)
-
-            # that's it, set the new Multilink property value,
-            # or overwrite it completely
-            if set:
-                props[propname] = newvalue
-            else:
-                props[propname] = curvalue
-        elif isinstance(proptype, hyperdb.Boolean):
-            value = value.strip()
-            props[propname] = value.lower() in ('yes', 'true', 'on', '1')
-        elif isinstance(proptype, hyperdb.Number):
-            value = value.strip()
-            props[propname] = float(value)
+            props[propname] = hyperdb.rawToHyperdb(self.db, cl, nodeid,
+                propname, value)
+        except hyperdb.HyperdbValueError, message:
+            errors.append(message)
     return errors, props
 
 

@@ -28,6 +28,8 @@ Fixed:
 - Date arithmetic was utterly broken, and has been for a long time.
   Date +/- Interval now works, and Date - Date also works (produces
   an Interval.
+- Centralised conversion of user-input data to hyperdb values (bug #802405,
+  bug #817217, rfe #816994)
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.

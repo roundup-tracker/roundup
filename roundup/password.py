@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.9 2003-04-10 05:12:41 richard Exp $
+# $Id: password.py,v 1.10 2003-11-11 00:35:13 richard Exp $
 
 __doc__ = """
 Password handling (encoding, decoding).
@@ -26,6 +26,10 @@ try:
     import crypt
 except:
     crypt = None
+    pass
+
+class PasswordValueError(ValueError):
+    ''' The password value is not valid '''
     pass
 
 def encodePassword(plaintext, scheme, other=None):
@@ -45,7 +49,7 @@ def encodePassword(plaintext, scheme, other=None):
     elif scheme == 'plaintext':
         s = plaintext
     else:
-        raise ValueError, 'Unknown encryption scheme "%s"'%scheme
+        raise PasswordValueError, 'unknown encryption scheme %r'%scheme
     return s
 
 def generatePassword(length=8):

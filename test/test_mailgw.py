@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.60 2003-11-03 22:23:02 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.61 2003-11-11 00:35:14 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -93,7 +93,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, 'anydbm')
         init.initialise(self.dirname, 'sekrit')
-        
+
         # check we can load the package
         self.instance = instance.open(self.dirname)
 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.59 2003-10-24 19:48:05 jlgijsbers Exp $
+# $Id: admin.py,v 1.60 2003-11-11 00:35:13 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -569,42 +569,11 @@ Command help:
 
             properties = cl.getprops()
             for key, value in props.items():
-                proptype =  properties[key]
-                if isinstance(proptype, hyperdb.Multilink):
-                    if value is None:
-                        props[key] = []
-                    else:
-                        props[key] = value.split(',')
-                elif value is None:
-                    continue
-                elif isinstance(proptype, hyperdb.String):
-                    continue
-                elif isinstance(proptype, hyperdb.Password):
-                    m = pwre.match(value)
-                    if m:
-                        # password is being given to us encrypted
-                        p = password.Password()
-                        p.scheme = m.group(1)
-                        p.password = m.group(2)
-                        props[key] = p
-                    else:
-                        props[key] = password.Password(value)
-                elif isinstance(proptype, hyperdb.Date):
-                    try:
-                        props[key] = date.Date(value)
-                    except ValueError, message:
-                        raise UsageError, '"%s": %s'%(value, message)
-                elif isinstance(proptype, hyperdb.Interval):
-                    try:
-                        props[key] = date.Interval(value)
-                    except ValueError, message:
-                        raise UsageError, '"%s": %s'%(value, message)
-                elif isinstance(proptype, hyperdb.Link):
-                    props[key] = value
-                elif isinstance(proptype, hyperdb.Boolean):
-                    props[key] = value.lower() in ('yes', 'true', 'on', '1')
-                elif isinstance(proptype, hyperdb.Number):
-                    props[key] = float(value)
+                try:
+                    props[key] = hyperdb.rawToHyperdb(self.db, cl, itemid,
+                        key, value)
+                except hyperdb.HyperdbValueError, message:
+                    raise UsageError, message
 
             # try the set
             try:
@@ -777,39 +746,11 @@ Command help:
 
         # convert types
         for propname, value in props.items():
-            # get the property
             try:
-                proptype = properties[propname]
-            except KeyError:
-                raise UsageError, _('%(classname)s has no property '
-                    '"%(propname)s"')%locals()
-
-            if isinstance(proptype, hyperdb.Date):
-                try:
-                    props[propname] = date.Date(value)
-                except ValueError, message:
-                    raise UsageError, _('"%(value)s": %(message)s')%locals()
-            elif isinstance(proptype, hyperdb.Interval):
-                try:
-                    props[propname] = date.Interval(value)
-                except ValueError, message:
-                    raise UsageError, _('"%(value)s": %(message)s')%locals()
-            elif isinstance(proptype, hyperdb.Password):
-                m = pwre.match(value)
-                if m:
-                    # password is being given to us encrypted
-                    p = password.Password()
-                    p.scheme = m.group(1)
-                    p.password = m.group(2)
-                    props[propname] = p
-                else:
-                    props[propname] = password.Password(value)
-            elif isinstance(proptype, hyperdb.Multilink):
-                props[propname] = value.split(',')
-            elif isinstance(proptype, hyperdb.Boolean):
-                props[propname] = value.lower() in ('yes', 'true', 'on', '1')
-            elif isinstance(proptype, hyperdb.Number):
-                props[propname] = float(value)
+                props[key] = hyperdb.rawToHyperdb(self.db, cl, None,
+                    propname, value)
+            except hyperdb.HyperdbValueError, message:
+                raise UsageError, message
 
         # check for the key property
         propname = cl.getkey()

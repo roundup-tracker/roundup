@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.143 2003-10-24 09:32:19 jlgijsbers Exp $
+# $Id: client.py,v 1.144 2003-11-11 00:35:14 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1675,51 +1675,18 @@ You should then receive another email with the new password.
                 if value != confirm.value:
                     raise FormError, 'Password and confirmation text do '\
                         'not match'
-                value = password.Password(value)
+                try:
+                    value = password.Password(value)
+                except hyperdb.HyperdbValueError, msg:
+                    raise FormError, msg
 
-            elif isinstance(proptype, hyperdb.Link):
-                # see if it's the "no selection" choice
-                if value == '-1' or not value:
-                    # if we're creating, just don't include this property
-                    if not nodeid or nodeid.startswith('-'):
-                        continue
-                    value = None
-                else:
-                    # handle key values
-                    link = proptype.classname
-                    if not num_re.match(value):
-                        try:
-                            value = db.classes[link].lookup(value)
-                        except KeyError:
-                            raise FormError, _('property "%(propname)s": '
-                                '%(value)s not a %(classname)s')%{
-                                'propname': propname, 'value': value,
-                                'classname': link}
-                        except TypeError, message:
-                            raise FormError, _('you may only enter ID values '
-                                'for property "%(propname)s": %(message)s')%{
-                                'propname': propname, 'message': message}
             elif isinstance(proptype, hyperdb.Multilink):
-                # perform link class key value lookup if necessary
-                link = proptype.classname
-                link_cl = db.classes[link]
-                l = []
-                for entry in value:
-                    if not entry: continue
-                    if not num_re.match(entry):
-                        try:
-                            entry = link_cl.lookup(entry)
-                        except KeyError:
-                            raise FormError, _('property "%(propname)s": '
-                                '"%(value)s" not an entry of %(classname)s')%{
-                                'propname': propname, 'value': entry,
-                                'classname': link}
-                        except TypeError, message:
-                            raise FormError, _('you may only enter ID values '
-                                'for property "%(propname)s": %(message)s')%{
-                                'propname': propname, 'message': message}
-                    l.append(entry)
-                l.sort()
+                # convert input to list of ids
+                try:
+                    l = hyperdb.rawToHyperdb(self.db, cl, nodeid,
+                        propname, value)
+                except hyperdb.HyperdbValueError, msg:
+                    raise FormError, msg
 
                 # now use that list of ids to modify the multilink
                 if mlaction == 'set':
@@ -1753,13 +1720,10 @@ You should then receive another email with the new password.
                     value.sort()
 
             elif value == '':
-                # if we're creating, just don't include this property
-                if not nodeid or nodeid.startswith('-'):
-                    continue
                 # other types should be None'd if there's no value
                 value = None
             else:
-                # handle ValueErrors for all these in a similar fashion
+                # handle all other types
                 try:
                     if isinstance(proptype, hyperdb.String):
                         if (hasattr(value, 'filename') and
@@ -1777,23 +1741,17 @@ You should then receive another email with the new password.
                                 props['type'] = mimetypes.guess_type(fn)[0]
                                 if not props['type']:
                                     props['type'] = "application/octet-stream"
-                            # finally, read the content
+                            # finally, read the content RAW
                             value = value.value
                         else:
-                            # normal String fix the CRLF/CR -> LF stuff
-                            value = fixNewlines(value)
+                            value = hyperdb.rawToHyperdb(self.db, cl,
+                                nodeid, propname, value)
 
-                    elif isinstance(proptype, hyperdb.Date):
-                        value = date.Date(value, offset=timezone)
-                    elif isinstance(proptype, hyperdb.Interval):
-                        value = date.Interval(value)
-                    elif isinstance(proptype, hyperdb.Boolean):
-                        value = value.lower() in ('yes', 'true', 'on', '1')
-                    elif isinstance(proptype, hyperdb.Number):
-                        value = float(value)
-                except ValueError, msg:
-                    raise FormError, _('Error with %s property: %s')%(
-                        propname, msg)
+                    else:
+                        value = hyperdb.rawToHyperdb(self.db, cl, nodeid,
+                            propname, value)
+                except hyperdb.HyperdbValueError, msg:
+                    raise FormError, msg
 
             # register that we got this property
             if value:
@@ -1880,16 +1838,6 @@ You should then receive another email with the new password.
                 elif props.has_key('content') and not props['content']:
                       raise FormError, _('File is empty')
         return all_props, all_links
-
-def fixNewlines(text):
-    ''' Homogenise line endings.
-
-        Different web clients send different line ending values, but
-        other systems (eg. email) don't necessarily handle those line
-        endings. Our solution is to convert all line endings to LF.
-    '''
-    text = text.replace('\r\n', '\n')
-    return text.replace('\r', '\n')
 
 def extractFormList(value):
     ''' Extract a list of values from the form value.
