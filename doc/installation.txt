@@ -32,13 +32,10 @@ Roundup scripts
 Prerequisites
 =============
 
-Roundup requires Python 2.1.3 or newer with a functioning anydbm or
-bsddb module. Download the latest version from http://www.python.org/.
+Roundup requires Python 2.1.3 or newer with a functioning anydbm
+module. Download the latest version from http://www.python.org/.
 It is highly recommended that users install the latest patch version
 of python as these contain many fixes to serious bugs.
-
-If you want to use Berkeley DB bsddb3 with Roundup, use version 3.3.0 or
-later. Download the latest version from http://pybsddb.sourceforge.net/.
 
 If you're on windows, you will either need to be using the ActiveState python
 distribution (at http://www.activestate.com/Products/ActivePython/), or you'll
@@ -199,8 +196,12 @@ Configuring your first tracker
           Enter tracker home: /opt/roundup/trackers/support
           Templates: classic
           Select template [classic]: classic
-          Back ends: anydbm, bsddb
+          Back ends: anydbm, mysql, sqlite
           Select backend [anydbm]: anydbm
+
+      Note: "Back ends" selection list depends on availability of
+      third-party database modules.  Standard python distribution
+      includes anydbm module only.
 
       The "support" part of the tracker name can be anything you want - it
       is going to be used as the directory that the tracker information
@@ -283,8 +284,6 @@ There's several to choose from, each with benefits and limitations:
 Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
-bsddb      Slow        Few   Usually available
-bsddb3     Slow        Few   Needs install (pybsddb_)
 sqlite     Fastest(*)  Few   Needs install (PySQLite_)
 metakit    Fastest(*)  Few   Needs install (metakit_)
 postgresql Fast        Many  Needs install/admin (psycopg_)
@@ -294,7 +293,9 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
 **sqlite** and **metakit**
   These use the embedded database engines PySQLite_ and metakit_ to provide
   very fast backends. They are not suitable for trackers which will have
-  many simultaneous users.
+  many simultaneous users, but require much less installation and
+  maintenance effort than more scalable postgresql and mysql backends.
+  If you are choosing from these two, please select sqlite.
 **postgresql**
   Backend for popular RDBMS PostgreSQL. You must read doc/postgresql.txt for
   additional installation steps and requirements.
@@ -768,5 +769,4 @@ Next: `User Guide`_
 .. _mod_python: http://www.modpython.org/
 .. _MySQLdb: http://sourceforge.net/projects/mysql-python
 .. _Psycopg: http://initd.org/software/initd/psycopg
-.. _pybsddb: http://pybsddb.sourceforge.net/
 .. _pysqlite: http://pysqlite.sourceforge.net/
