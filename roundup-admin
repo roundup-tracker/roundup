@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.37 2001-10-23 01:00:18 richard Exp $
+# $Id: roundup-admin,v 1.38 2001-11-05 23:45:40 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -177,9 +177,9 @@ Command help:
         if template not in templates:
             print 'Templates:', ', '.join(templates)
         while template not in templates:
-            template = raw_input('Select template [extended]: ').strip()
+            template = raw_input('Select template [classic]: ').strip()
             if not template:
-                template = 'extended'
+                template = 'classic'
 
         import roundup.backends
         backends = roundup.backends.__all__
@@ -687,6 +687,13 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.37  2001/10/23 01:00:18  richard
+# Re-enabled login and registration access after lopping them off via
+# disabling access for anonymous users.
+# Major re-org of the htmltemplate code, cleaning it up significantly. Fixed
+# a couple of bugs while I was there. Probably introduced a couple, but
+# things seem to work OK at the moment.
+#
 # Revision 1.36  2001/10/21 00:45:15  richard
 # Added author identification to e-mail messages from roundup.
 #

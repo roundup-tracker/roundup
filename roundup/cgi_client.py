@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.49 2001-11-04 03:07:12 richard Exp $
+# $Id: cgi_client.py,v 1.50 2001-11-05 23:45:40 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -571,7 +571,7 @@ class Client:
         else:
             raise Unauthorised
 
-    def login(self, message=None):
+    def login(self, message=None, newuser_form=None):
         self.pagehead('Login to roundup', message)
         self.write('''
 <table>
@@ -589,30 +589,35 @@ class Client:
             self.write('</table>')
             self.pagefoot()
             return
+        values = {'realname': '', 'organisation': '', 'address': '',
+            'phone': '', 'username': '', 'password': '', 'confirm': ''}
+        if newuser_form is not None:
+            for key in newuser_form.keys():
+                values[key] = newuser_form[key].value
         self.write('''
 <p>
 <tr><td colspan=2 class="strong-header">New User Registration</td></tr>
 <tr><td colspan=2><em>marked items</em> are optional...</td></tr>
 <form action="newuser_action" method=POST>
 <tr><td align=right><em>Name: </em></td>
-    <td><input name="realname"></td></tr>
+    <td><input name="realname" value="%(realname)s"></td></tr>
 <tr><td align=right><em>Organisation: </em></td>
-    <td><input name="organisation"></td></tr>
+    <td><input name="organisation" value="%(organisation)s"></td></tr>
 <tr><td align=right>E-Mail Address: </td>
-    <td><input name="address"></td></tr>
+    <td><input name="address" value="%(address)s"></td></tr>
 <tr><td align=right><em>Phone: </em></td>
-    <td><input name="phone"></td></tr>
+    <td><input name="phone" value="%(phone)s"></td></tr>
 <tr><td align=right>Preferred Login name: </td>
-    <td><input name="username"></td></tr>
+    <td><input name="username" value="%(username)s"></td></tr>
 <tr><td align=right>Password: </td>
-    <td><input type="password" name="password"></td></tr>
+    <td><input type="password" name="password" value="%(password)s"></td></tr>
 <tr><td align=right>Password Again: </td>
-    <td><input type="password" name="confirm"></td></tr>
+    <td><input type="password" name="confirm" value="%(confirm)s"></td></tr>
 <tr><td></td>
     <td><input type="submit" value="Register"></td></tr>
 </form>
 </table>
-''')
+'''%values)
         self.pagefoot()
 
     def login_action(self, message=None):
@@ -674,12 +679,15 @@ class Client:
         self.db = self.instance.open('admin')
 
         # TODO: pre-check the required fields and username key property
-        cl = self.db.classes['user']
-        props, dummy = parsePropsFromForm(self.db, cl, self.form)
-        uid = cl.create(**props)
-        self.user = self.db.user.get(uid, 'username')
-        password = self.db.user.get(uid, 'password')
-        self.set_cookie(self.user, password)
+        cl = self.db.user
+        try:
+            props, dummy = parsePropsFromForm(self.db, cl, self.form)
+            uid = cl.create(**props)
+        except ValueError, message:
+            return self.login(message, newuser_form=self.form)
+        self.user = cl.get(uid, 'username')
+        password = cl.get(uid, 'password')
+        self.set_cookie(self.user, self.form['password'].value)
         return self.index()
 
     def main(self, dre=re.compile(r'([^\d]+)(\d+)'),
@@ -919,6 +927,14 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2001/11/04 03:07:12  richard
+# Fixed various cookie-related bugs:
+#  . bug #477685 ] base64.decodestring breaks
+#  . bug #477837 ] lynx does not like the cookie
+#  . bug #477892 ] Password edit doesn't fix login cookie
+# Also closed a security hole - a logged-in user could edit another user's
+# details.
+#
 # Revision 1.48  2001/11/03 01:30:18  richard
 # Oops. uses pagefoot now.
 #
