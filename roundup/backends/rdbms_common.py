@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.145 2005-01-06 17:35:34 a1s Exp $
+# $Id: rdbms_common.py,v 1.146 2005-01-08 16:16:59 jlgijsbers Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -320,7 +320,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for klass in classes:
             for nodeid in klass.list():
                 klass.index(nodeid)
-        self.indexer.save_index()
 
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'TEXT',
@@ -1175,9 +1174,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # now, do all the other transaction stuff
         for method, args in self.transactions:
             method(*args)
-
-        # save the indexer state
-        self.indexer.save_index()
 
         # clear out the transactions
         self.transactions = []

@@ -1,11 +1,11 @@
-#$Id: indexer_rdbms.py,v 1.7 2005-01-08 11:25:23 jlgijsbers Exp $
+#$Id: indexer_rdbms.py,v 1.8 2005-01-08 16:16:59 jlgijsbers Exp $
 ''' This implements the full-text indexer over two RDBMS tables. The first
 is a mapping of words to occurance IDs. The second maps the IDs to (Class,
 propname, itemid) instances.
 '''
 import re
 
-from indexer_dbm import Indexer, is_stopword
+from indexer_common import Indexer, is_stopword
 
 class Indexer(Indexer):
     def __init__(self, db):
@@ -128,12 +128,4 @@ class Indexer(Indexer):
             self.db.cursor.execute(sql, tuple(map(int, r)))
 
         return self.db.cursor.fetchall()
-
-    def save_index(self):
-        # the normal RDBMS backend transaction mechanisms will handle this
-        pass
-
-    def rollback(self):
-        # the normal RDBMS backend transaction mechanisms will handle this
-        pass
 

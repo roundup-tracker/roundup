@@ -1,7 +1,20 @@
-#$Id: indexer_common.py,v 1.3 2005-01-08 11:25:23 jlgijsbers Exp $
+#$Id: indexer_common.py,v 1.4 2005-01-08 16:16:59 jlgijsbers Exp $
 import re
 
 from roundup import hyperdb
+
+stopwords = [
+"A", "AND", "ARE", "AS", "AT", "BE", "BUT", "BY",
+"FOR", "IF", "IN", "INTO", "IS", "IT",
+"NO", "NOT", "OF", "ON", "OR", "SUCH",
+"THAT", "THE", "THEIR", "THEN", "THERE", "THESE",
+"THEY", "THIS", "TO", "WAS", "WILL", "WITH" 
+]
+
+is_stopword = {}
+for word in stopwords:
+    is_stopword[word] = None
+is_stopword = is_stopword.has_key
 
 def _isLink(propclass):
     return (isinstance(propclass, hyperdb.Link) or

@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.4 2005-01-05 22:14:21 jlgijsbers Exp $
+#$Id: indexer_dbm.py,v 1.5 2005-01-08 16:16:59 jlgijsbers Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -23,19 +23,7 @@ __docformat__ = 'restructuredtext'
 
 import os, shutil, re, mimetypes, marshal, zlib, errno
 from roundup.hyperdb import Link, Multilink
-from roundup.backends.indexer_common import Indexer
-
-stopwords = [
-"A", "AND", "ARE", "AS", "AT", "BE", "BUT", "BY",
-"FOR", "IF", "IN", "INTO", "IS", "IT",
-"NO", "NOT", "OF", "ON", "OR", "SUCH",
-"THAT", "THE", "THEIR", "THEN", "THERE", "THESE",
-"THEY", "THIS", "TO", "WAS", "WILL", "WITH" 
-]
-is_stopword = {}
-for word in stopwords:
-    is_stopword[word] = None
-is_stopword = is_stopword.has_key
+from roundup.backends.indexer_common import Indexer, is_stopword
 
 class Indexer(Indexer):
     '''Indexes information from roundup's hyperdb to allow efficient

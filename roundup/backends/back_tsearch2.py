@@ -1,4 +1,4 @@
-#$Id: back_tsearch2.py,v 1.8 2005-01-08 11:25:23 jlgijsbers Exp $
+#$Id: back_tsearch2.py,v 1.9 2005-01-08 16:16:59 jlgijsbers Exp $
 
 # Note: this backend is EXPERIMENTAL. Do not use if you value your data.
 import re
@@ -133,9 +133,6 @@ class Indexer(Indexer):
 
     # These only exist to satisfy the interface that's expected from indexers.
     def force_reindex(self):
-        pass
-    
-    def save_index(self):
         pass
 
     def add_text(self, identifier, text, mime_type=None):
