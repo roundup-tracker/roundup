@@ -15,33 +15,33 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.15 2002-01-22 00:12:20 richard Exp $
+# $Id: __init__.py,v 1.16 2002-02-14 23:38:12 richard Exp $
 
-import unittest
-import os, tempfile
+import os, tempfile, unittest, shutil
 os.environ['SENDMAILDEBUG'] = tempfile.mktemp()
 
-import test_dates, test_schema, test_db, test_multipart, test_mailsplit
-import test_init, test_token, test_mailgw, test_htmltemplate
+# figure all the modules available
+dir = os.path.split(__file__)[0]
+test_mods = {}
+for file in os.listdir(dir):
+    if file.startswith('test_') and file.endswith('.py'):
+	name = file[5:-3]
+	test_mods[name] = __import__(file[:-3], globals(), locals(), [])
+all_tests = test_mods.keys()
 
-def go():
-    suite = unittest.TestSuite((
-        test_dates.suite(),
-        test_schema.suite(),
-        test_db.suite(),
-        test_init.suite(),
-        test_multipart.suite(),
-        test_mailsplit.suite(),
-        test_mailgw.suite(),
-        test_token.suite(),
-        test_htmltemplate.suite(),
-    ))
+def go(tests=all_tests):
+    l = []
+    for name in tests:
+        l.append(test_mods[name].suite())
+    suite = unittest.TestSuite(l)
     runner = unittest.TextTestRunner()
-    result = runner.run(suite)
-    return result.wasSuccessful()
+    runner.run(suite)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/01/22 00:12:20  richard
+# oops
+#
 # Revision 1.14  2002/01/22 00:12:06  richard
 # Wrote more unit tests for htmltemplate, and while I was at it, I polished
 # off the implementation of some of the functions so they behave sanely.

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.10 2002-02-12 08:08:55 grubert Exp $
+# $Id: test_mailgw.py,v 1.11 2002-02-14 23:38:12 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -86,6 +86,7 @@ From: Chef <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
 
 
 New submission from Chef <chef@bork.bork.bork>:
@@ -113,7 +114,7 @@ ___________________________________________________
     #	the ip address of the test machine. 
 
     # BUG should test some binary attamchent too.
-	
+
     def testFollowup(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -140,6 +141,7 @@ Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
 
 
 richard <richard@test> added the comment:
@@ -182,6 +184,7 @@ Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
 
 
 mary <mary@test> added the comment:
@@ -227,6 +230,7 @@ Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
 
 
 mary <mary@test> added the comment:
@@ -279,6 +283,7 @@ Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
 
 
 mary <mary@test> added the comment:
@@ -305,6 +310,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/02/12 08:08:55  grubert
+#  . Clean up mail handling, multipart handling.
+#
 # Revision 1.9  2002/02/05 14:15:29  grubert
 #  . respect encodings in non multipart messages.
 #
