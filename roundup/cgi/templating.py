@@ -930,6 +930,13 @@ class LinkHTMLProperty(HTMLProperty):
         entry identified by the assignedto property on item, and then the
         name property of that user)
     '''
+    def __init__(self, *args):
+        HTMLProperty.__init__(self, *args)
+        # if we're representing a form value, then the -1 from the form really
+        # should be a None
+        if str(self._value) == '-1':
+            self._value = None
+
     def __getattr__(self, attr):
         ''' return a new HTMLItem '''
        #print 'Link.getattr', (self, attr, self._value)

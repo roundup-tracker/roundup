@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.59 2002-12-10 00:11:15 richard Exp $
+# $Id: client.py,v 1.60 2002-12-10 06:01:59 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1309,9 +1309,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
         elif isinstance(proptype, hyperdb.Boolean):
             value = value.lower() in ('yes', 'true', 'on', '1')
-            props[propname] = value
         elif isinstance(proptype, hyperdb.Number):
-            props[propname] = value = int(value)
+            value = int(value)
 
         # register this as received if required?
         if propname in required and value is not None:

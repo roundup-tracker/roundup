@@ -69,7 +69,6 @@ pending web       implement a python dict version of the form values
 active  web       UNIX init.d script for roundup-server
 bug     web       query editing isn't fully implemented
 bug     web       no testing for parsePropsFromForm
-active  web       revert to showing entire message in classic issue display
 bug     hyperdb   pysqlite and locks
                   http://www.hwaci.com/sw/sqlite/c_interface.html
 bug     web       implement the request.url attribute?
