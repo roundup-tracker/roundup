@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.135 2003-10-25 12:03:41 jlgijsbers Exp $
+$Id: mailgw.py,v 1.136 2003-11-03 18:34:03 jlgijsbers Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -789,27 +789,27 @@ not find a text/plain part to use.
         # 
         # handle the attachments
         #
-        files = []
-        for (name, mime_type, data) in attachments:
-            if not name:
-                name = "unnamed"
-            files.append(self.db.file.create(type=mime_type, name=name,
-                content=data, **file_props))
-        # attach the files to the issue
-        if nodeid:
-            # extend the existing files list
-            fileprop = cl.get(nodeid, 'files')
-            fileprop.extend(files)
-            props['files'] = fileprop
-        else:
-            # pre-load the files list
-            props['files'] = files
-
+        if properties.has_key('files'):
+            files = []
+            for (name, mime_type, data) in attachments:
+                if not name:
+                    name = "unnamed"
+                files.append(self.db.file.create(type=mime_type, name=name,
+                                                 content=data, **file_props))
+            # attach the files to the issue
+            if nodeid:
+                # extend the existing files list
+                fileprop = cl.get(nodeid, 'files')
+                fileprop.extend(files)
+                props['files'] = fileprop
+            else:
+                # pre-load the files list
+                props['files'] = files
 
         # 
         # create the message if there's a message body (content)
         #
-        if content:
+        if (content and properties.has_key('messages')):
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files, messageid=messageid,

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.57 2003-10-25 22:53:26 richard Exp $
+# $Id: test_mailgw.py,v 1.58 2003-11-03 18:34:03 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -997,6 +997,23 @@ This is a test confirmation of registration.
 
         self.db.user.lookup('johannes')
 
+    def testFollowupOnNonIssue(self):
+        self.db.keyword.create(name='Foo')
+        message = StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [keyword1] Testing... [name=Bar]
+
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        handler.main(message)
+        
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+    
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(MailgwTestCase))
