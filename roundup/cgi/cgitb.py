@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
-# 
-# $Id: cgitb.py,v 1.10 2004-02-11 23:55:09 richard Exp $
+#
+# $Id: cgitb.py,v 1.11 2004-06-09 09:20:01 a1s Exp $
 
 """Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
@@ -10,7 +10,10 @@ __docformat__ = 'restructuredtext'
 import sys, os, types, string, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
-from roundup.i18n import _
+from roundup.cgi import templating
+
+def _(msgid):
+    return templating.translationService.gettext(msgid)
 
 def breaker():
     return ('<body bgcolor="white">' +
