@@ -1,0 +1,93 @@
+#!/bin/sh
+
+#
+# Configuration
+# 
+PORT=8080
+PIDFILE="/usr/local/roundup/var/roundup-server.pid"
+LOGFILE="/usr/local/roundup/var/roundup-server.log"
+OTHERARGS=""
+TRACKERS="cg=/usr/local/roundup/trackers/cg"
+
+SERVER="/usr/local/bin/roundup-server -l ${LOGFILE} -d ${PIDFILE} -p ${PORT} ${OTHERARGS} ${TRACKERS}"
+ERROR=0
+ARGV="$@"
+if [ "x$ARGV" = "x" ] ; then 
+    ARGS="help"
+fi
+
+for ARG in $@ $ARGS
+do
+    # check for pidfile
+    if [ -f $PIDFILE ] ; then
+	PID=`cat $PIDFILE`
+	if [ "x$PID" != "x" ] && kill -0 $PID 2>/dev/null ; then
+	    STATUS="roundup-server (pid $PID) running"
+	    RUNNING=1
+	else
+	    STATUS="roundup-server (pid $PID?) not running"
+	    RUNNING=0
+	fi
+    else
+	STATUS="roundup-server (no pid file) not running"
+	RUNNING=0
+    fi
+
+    case $ARG in
+    start)
+	if [ $RUNNING -eq 1 ] ; then
+	    echo "$0 $ARG: roundup-server (pid $PID) already running"
+	    continue
+	fi
+	if $SERVER ; then
+	    echo "$0 $ARG: roundup-server started"
+	else
+	    echo "$0 $ARG: roundup-server could not be started"
+	    ERROR=1
+	fi
+	;;
+    condstart)
+	if [ $RUNNING -eq 1 ] ; then
+	    continue
+	fi
+	if $SERVER ; then
+	    echo "$0 $ARG: roundup-server started"
+	else
+	    echo "$0 $ARG: roundup-server could not be started"
+	    ERROR=1
+	fi
+	;;
+    stop)
+	if [ $RUNNING -eq 0 ] ; then
+	    echo "$0 $ARG: $STATUS"
+	    continue
+	fi
+	if kill $PID ; then
+	    echo "$0 $ARG: roundup-server stopped"
+	else
+	    echo "$0 $ARG: roundup-server could not be stopped"
+	    ERROR=2
+	fi
+	;;
+    status)
+	echo $STATUS
+	;;
+    *)
+	echo "usage: $0 (start|condstart|stop|status)"
+	cat <<EOF
+
+    start      - start roundup-server
+    condstart  - start roundup-server if it's not running
+    stop       - stop roundup-server
+    status     - display roundup-server status
+
+EOF
+	ERROR=3
+    ;;
+
+    esac
+
+done
+
+exit $ERROR
+
