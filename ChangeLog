@@ -1,0 +1,321 @@
+2001-07-24 11:08  richard
+
+	* CHANGES.TXT: noted changes in changes.txt
+
+2001-07-24 11:07  richard
+
+	* roundup-server: Added command-line arg handling to roundup-server
+	so it's more useful out-of-the-box.
+
+2001-07-24 11:06  richard
+
+	* roundup/templates/classic/dbinit.py: Oops - accidentally duped
+	the keywords class
+
+2001-07-24 09:32  richard
+
+	* INSTALL.TXT: minor edit
+
+2001-07-24 09:32  richard
+
+	* CHANGES.TXT: added mention of the new template
+
+2001-07-24 09:28  richard
+
+	* roundup/templates/: README.txt, classic/__init__.py,
+	classic/dbinit.py, classic/instance_config.py,
+	classic/interfaces.py, classic/detectors/__init__.py,
+	classic/detectors/nosyreaction.py, classic/html/file.index,
+	classic/html/issue.filter, classic/html/issue.index,
+	classic/html/issue.item, classic/html/msg.index,
+	classic/html/msg.item, classic/html/style.css,
+	classic/html/user.index, classic/html/user.item: Adding the classic
+	template
+
+2001-07-24 09:20  richard
+
+	* roundup/templates/extended/dbinit.py: forgot to remove the
+	interfaces from the dbinit module ;)
+
+2001-07-24 09:16  richard
+
+	* roundup/templates/extended/: __init__.py, interfaces.py: Split
+	off the interfaces (CGI, mailgw) into a separate file from the DB
+	stuff.
+
+2001-07-23 20:31  richard
+
+	* roundup-server: disabled the reloading until it can be done
+	properly
+
+2001-07-23 18:55  richard
+
+	* CHANGES, CHANGES.TXT, INSTALL.TXT, README, README.TXT: renamed
+	the text files so that they're recognised as text files on windows
+	added INSTALL.TXT
+
+2001-07-23 18:53  richard
+
+	* README, roundup-server: Fixed the ROUNDUPS decl in roundup-server
+	Move the installation notes to INSTALL
+
+2001-07-23 18:45  richard
+
+	* roundup-admin, roundup/init.py,
+	roundup/templates/extended/dbinit.py: ok, so now "./roundup-admin
+	init" will ask questions in an attempt to get a workable
+	instance_home set up :) _and_ anydbm has had its first test :)
+
+2001-07-23 18:25  richard
+
+	* roundup/backends/back_bsddb.py: more handling of bad journals
+
+2001-07-23 18:20  richard
+
+	* roundup-admin, roundup/backends/back_anydbm.py,
+	roundup/backends/back_bsddb.py: Moved over to using marshal in the
+	bsddb and anydbm backends.  roundup-admin now has a "freshen"
+	command that'll load/save all nodes (not  retired - mod
+	hyperdb.Class.list() so it lists retired nodes)
+
+2001-07-23 17:56  richard
+
+	* roundup/: date.py, backends/back_bsddb.py: Storing only
+	marshallable data in the db - no nasty pickled class references.
+
+2001-07-23 17:22  richard
+
+	* roundup/backends/: __init__.py, _anydbm.py, _bsddb.py,
+	back_anydbm.py, back_bsddb.py: *sigh* some databases have _foo.so
+	as their underlying implementation.  This time for sure, Rocky.
+
+2001-07-23 17:15  richard
+
+	* roundup/backends/: _anydbm.py, _bsddb.py, bsddb.py: Moved the
+	backends into the backends package. Anydbm hasn't been tested at
+	all.
+
+2001-07-23 17:14  richard
+
+	* roundup/: roundupdb.py, backends/__init__.py,
+	templates/extended/dbinit.py: Moved the database backends off into
+	backends.
+
+2001-07-23 16:25  richard
+
+	* roundup/templates/extended/dbinit.py: relfected the move to
+	roundup/backends
+
+2001-07-23 16:24  richard
+
+	* roundup/backends/__init__.py: made backends a package
+
+2001-07-23 16:23  richard
+
+	* roundup/: hyper_bsddb.py, backends/bsddb.py: moved hyper_bsddb.py
+	to the new backends package as bsddb.py
+
+2001-07-23 14:49  anthonybaxter
+
+	* README: changed the 'snip' lines so they don't look like CVS
+	conflict markers.
+
+2001-07-23 14:47  anthonybaxter
+
+	* cgi-bin/roundup.cgi: renamed ROUNDUPS to ROUNDUP_INSTANCE_HOMES
+	sys.exit(0) if python version wrong.
+
+2001-07-23 14:33  richard
+
+	* cgi-bin/roundup.cgi: brought the CGI instance config dict in line
+	with roundup-server
+
+2001-07-23 14:33  anthonybaxter
+
+	* roundup/templates/extended/: __init__.py, dbinit.py,
+	instance_config.py: split __init__.py into 2. dbinit and
+	instance_config.
+
+2001-07-23 14:31  richard
+
+	* CHANGES, cgi-bin/roundup.cgi: Fixed the roundup CGI script for
+	updates to cgi_client.py
+
+2001-07-23 14:21  richard
+
+	* roundup/templates/extended/: html/file.index, html/issue.filter,
+	html/issue.index, html/issue.item, html/msg.index, html/msg.item,
+	html/style.css, html/user.index, html/user.item, issue.filter,
+	issue.item, msg.item, style.css, user.item: moving HTML templates
+	to their own dir
+
+2001-07-23 14:19  richard
+
+	* roundup/templates/extended/: file.index, issue.index, msg.index,
+	user.index: moving the HTML templates into their own dir
+
+2001-07-23 14:05  anthonybaxter
+
+	* roundup-server: actually quit if python version wrong
+
+2001-07-23 13:56  richard
+
+	* roundup/cgi_client.py: oops, missed a config removal
+
+2001-07-23 13:50  anthonybaxter
+
+	* roundup/templates/extended/: __init__.py, file.index,
+	issue.filter, issue.index, issue.item, msg.index, msg.item,
+	style.css, user.index, user.item, detectors/__init__.py,
+	detectors/nosyreaction.py: moved templates to proper location
+
+2001-07-23 13:46  richard
+
+	* roundup-admin, roundup-mailgw, roundup-server: moving the bin
+	files to facilitate out-of-the-boxness
+
+2001-07-22 22:09  richard
+
+	* roundup/: __init__.py, cgi_client.py, cgitb.py, date.py,
+	htmltemplate.py, hyper_bsddb.py, hyperdb.py, init.py, mailgw.py,
+	roundupdb.py: Final commit of Grande Splite
+
+2001-07-22 21:58  richard
+
+	* roundup/: __init__.py, cgi_client.py, cgitb.py, date.py,
+	htmltemplate.py, hyper_bsddb.py, hyperdb.py, init.py, mailgw.py,
+	roundupdb.py: More Grande Splite
+
+2001-07-22 21:47  richard
+
+	* cgi-bin/roundup.cgi: More Grande Splite
+
+2001-07-22 21:11  richard
+
+	* CHANGES, README, cgitb.py, config.py, date.py, hyperdb.py,
+	hyperdb_bsddb.py, roundup-mailgw.py, roundup.cgi, roundup.py,
+	roundup_cgi.py, roundupdb.py, server.py, style.css, template.py,
+	test.py: Initial commit of the Grande Splite
+
+2001-07-20 22:33  richard
+
+	* server.py: oops ;)
+
+2001-07-20 18:20  richard
+
+	* CHANGES: update for recent chagnes
+
+2001-07-20 18:20  richard
+
+	* README, hyperdb.py: Fixed a bug in the filter - wrong variable
+	names in the error message.  Recognised that the filter has an
+	outstanding bug. Hrm. we need a bug tracker for this project :)
+
+2001-07-20 17:35  richard
+
+	* CHANGES, hyperdb.py, hyperdb_bsddb.py, roundup_cgi.py,
+	roundupdb.py, test.py: largish changes as a start of splitting off
+	bits and pieces to allow more flexible installation / database
+	back-ends
+
+2001-07-20 17:34  richard
+
+	* template.py: Quote the value put in the text input value
+	attribute.
+
+2001-07-20 11:37  richard
+
+	* README: Just registering a new TODO
+
+2001-07-20 10:53  richard
+
+	* roundup_cgi.py: Default index now filters out the resolved issues
+	;)
+
+2001-07-20 10:23  richard
+
+	* CHANGES: update for latest changes
+
+2001-07-20 10:22  richard
+
+	* roundupdb.py: Priority list changes - removed the redundant TODO
+	and added support. See roundup-devel for details.
+
+2001-07-20 10:17  richard
+
+	* roundup_cgi.py: Fixed adding a new issue when there is no __note
+
+2001-07-19 20:43  anthonybaxter
+
+	* config.py, server.py: HTTP_HOST and HTTP_PORT config options.
+
+2001-07-19 16:37  anthonybaxter
+
+	* README: added more todo items
+
+2001-07-19 16:27  anthonybaxter
+
+	* cgitb.py, config.py, date.py, hyperdb.py, roundup-mailgw.py,
+	roundup.py, roundup_cgi.py, roundupdb.py, server.py, template.py:
+	fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
+	my using the magic (dollarsign)Id(dollarsign) and
+	(dollarsign)Log(dollarsign) strings in a commit message. I'm a
+	twonk.
+	
+	Also broke the help string in two.
+
+2001-07-19 16:14  richard
+
+	* Makefile, README, dummy_config.py: minor changes to test the cvs
+	mailout system
+
+2001-07-19 16:08  anthonybaxter
+
+	* roundup.py: fixed typo in usage string because it was bugging me
+	each time I saw it.
+
+2001-07-19 15:52  anthonybaxter
+
+	* cgitb.py, config.py, date.py, hyperdb.py, roundup-mailgw.py,
+	roundup.py, roundup_cgi.py, roundupdb.py, server.py, template.py:
+	Added CVS keywords $Id: ChangeLog,v 1.1 2001-07-24 04:19:07 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
+
+2001-07-19 15:46  anthonybaxter
+
+	* config.py: modified to use localconfig.py (if it exists) and to
+	make the various options (e.g. paths) based on ROUNDUP_HOME &c.
+
+2001-07-19 15:23  richard
+
+	* CHANGES, Makefile, config.py, hyperdb.py, roundup_cgi.py,
+	roundupdb.py, template.py:  . Fixed bug in re generation in the
+	filter (I hadn't finished the code ;)
+	 . Added TODO as a priority (between bug and usability)
+	 . Fixed handling of None String property in grouped list headings
+
+2001-07-19 13:12  richard
+
+	* README: mention config.py in the install instructions, removed a
+	bug
+
+2001-07-19 13:11  richard
+
+	* Makefile, dummy_config.py: Added stuff to help with release
+	generation.   . Makefile has the release tgz builder in it   .
+	dummy_config.py is an empty config file that replaces the config.py
+	in the	   release
+
+2001-07-19 12:16  richard
+
+	* README, date.py, hyperdb.py, roundup.cgi, roundup_cgi.py,
+	roundupdb.py, CHANGES, cgitb.py, config.py, roundup-mailgw.py,
+	roundup.py, server.py, style.css, template.py: Initial revision
+
+2001-07-19 12:16  richard
+
+	* README, date.py, hyperdb.py, roundup.cgi, roundup_cgi.py,
+	roundupdb.py, CHANGES, cgitb.py, config.py, roundup-mailgw.py,
+	roundup.py, server.py, style.css, template.py: Initial import of
+	code - currently version 1.0.2 but with the 1.0.3 changes as given
+	in the CHANGES file. Is about ready for a 1.0.3 release.
+
