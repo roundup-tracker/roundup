@@ -9,6 +9,7 @@ are given with the most recent entry first.
 - only look for CSV files when importing (thanks Dan Grassi)
 - can now unset values in CSV editing (sf bug 704788)
 - fixed rdbms email address lookup (case insensitivity)
+- email file attachments added to issue files list (sf bug 711501)
 
 
 2003-02-27 0.5.6
