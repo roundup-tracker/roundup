@@ -1,8 +1,8 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2002-05-24 03:12:39 $
-:version: $Revision: 1.4 $
+:date: $Date: 2002-06-24 00:57:23 $
+:version: $Revision: 1.5 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -113,6 +113,14 @@ p.label {
 
 p.topic-title {
   font-weight: bold }
+
+dd p:first-child {
+  margin-top: 0px;
+}
+
+li p:first-child {
+  margin-top: 0px;
+}
 
 pre.literal-block, pre.doctest-block {
   margin-left: 2em ;
