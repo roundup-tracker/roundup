@@ -67,7 +67,7 @@ issueDOTfilter = """<!-- dollarId: issue.filter,v 1.2 2001/07/30 01:26:59 richar
 issueDOTindex = """<!-- dollarId: issue.index,v 1.2 2001/07/30 01:26:59 richard Exp dollar-->
 <tr>
     <property name="id">
-        <td valign="top"><display call="field('id')"></td>
+        <td valign="top"><display call="plain('id')"></td>
     </property>
     <property name="activity">
         <td valign="top"><display call="reldate('activity', pretty=1)"></td>
@@ -438,7 +438,7 @@ supportDOTfilter = """<!-- dollarId: support.filter,v 1.1 2001/07/30 01:27:28 ri
 supportDOTindex = """<!-- dollarId: support.index,v 1.1 2001/07/30 01:27:28 richard Exp dollar-->
 <tr>
     <property name="id">
-        <td valign="top"><display call="field('id')"></td>
+        <td valign="top"><display call="plain('id')"></td>
     </property>
     <property name="activity">
         <td valign="top"><display call="reldate('activity', pretty=1)"></td>

@@ -1,4 +1,4 @@
-# $Id: interfaces.py,v 1.4 2001-07-30 08:12:17 richard Exp $
+# $Id: interfaces.py,v 1.5 2001-08-01 05:15:09 richard Exp $
 
 import instance_config, urlparse, os
 from roundup import cgi_client, mailgw 
@@ -45,17 +45,20 @@ class Client(cgi_client.Client):
 <tr class="location-bar"><td><big><strong>%s</strong></big></td>
 <td align=right valign=bottom>%s</td></tr>
 <tr class="location-bar">
-<td align=left><a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=activity,status,title,assignedto&:group=priority">All issues</a> | 
-<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=activity,status,title,assignedto&priority=fatal-bug,bug">Bugs</a> | 
-<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=activity,status,title,assignedto&priority=usability,feature">Wishlist</a> | 
-<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=activity,status,title,assignedto&:group=customername">Support</a> | 
+<td align=left><a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">All issues</a> | 
+<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&priority=fatal-bug,bug">Bugs</a> | 
+<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&priority=usability,feature">Wishlist</a> | 
+<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a> | 
 <a href="newissue">New Issue</a> |
 <a href="newsupport">New Support</a> |
 <a href="newuser">New User</a>
 %s</td>
-<td align=right><a href="user%s">Your Details</a></td>
+<td align=right>
+<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
+<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">My Support</a> |
+<a href="user%s">Your Details</a></td>
 </table>
-'''%(title, style, message, title, self.user, extras, userid))
+'''%(title, style, message, title, self.user, extras, userid, userid, userid))
  
 class MailGW(mailgw.MailGW): 
     ''' derives basic mail gateway implementation from the standard module, 
@@ -67,6 +70,9 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/30 08:12:17  richard
+# Added time logging and file uploading to the templates.
+#
 # Revision 1.3  2001/07/30 01:26:59  richard
 # Big changes:
 #  . split off the support priority into its own class

@@ -85,7 +85,7 @@ cgi_client
   . e-mail messages should have the roundup CGI URL in them
 roundup.cgi
   . make it detect that it is in an instance_home and just use that
-    instance by default
+    instance by default?
 
 
 5. Known Bugs
