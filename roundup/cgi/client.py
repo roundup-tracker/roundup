@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.125 2003-07-03 23:43:47 richard Exp $
+# $Id: client.py,v 1.126 2003-07-21 22:56:54 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -317,6 +317,9 @@ class Client:
     def determine_user(self):
         ''' Determine who the user is
         '''
+        # open the database as admin
+        self.opendb('admin')
+
         # clean age sessions
         self.clean_sessions()
 
