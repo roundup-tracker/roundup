@@ -13,6 +13,7 @@ are given with the most recent entry first.
 - fix HTML file detection (hence history xref linking) (sf bug 741478)
 - session database caches it's type, rather than calling whichdb each time 
   around.
+- changed rdbms_common to fix sql backends under Py2.3
 
 
 2003-06-10 0.6.0b3
