@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.91 2004-04-18 05:31:02 richard Exp $
+# $Id: rdbms_common.py,v 1.92 2004-04-20 05:47:33 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -390,6 +390,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if __debug__:
                 print >>hyperdb.DEBUG, 'create_index', (self, index_sql3)
             self.cursor.execute(index_sql3)
+
+        # TODO: create indexes on (selected?) Link property columns, as
+        # they're more likely to be used for lookup
 
     def drop_class_table_indexes(self, cn, key):
         # drop the old table indexes first
@@ -1709,8 +1712,6 @@ class Class(hyperdb.Class):
         None, or a TypeError is raised.  The values of the key property on
         all existing nodes must be unique or a ValueError is raised.
         '''
-        # XXX create an index on the key prop column. We should also 
-        # record that we've created this index in the schema somewhere.
         prop = self.getprops()[propname]
         if not isinstance(prop, String):
             raise TypeError, 'key properties must be String'
