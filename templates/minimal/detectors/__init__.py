@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.1 2003-04-17 03:27:56 richard Exp $
+#$Id: __init__.py,v 1.2 2003-09-04 23:39:18 richard Exp $
 
 import sys, os, imp
 
@@ -29,7 +29,7 @@ def init(db):
         if name == '__init__':
             continue
         if ext == '.py':
-            module = imp.load_module(name, open(path), file,
+            module = imp.load_module(name, open(path), os.path.abspath(path),
                 ('.py', 'r', imp.PY_SOURCE))
             print (name, open(path), file, module)
             module.init(db)

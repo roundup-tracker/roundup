@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2003-09-?? 0.6.2
 Fixed:
 - cleaned up, clarified internal caching API in *dbm backends
+- stopped pyc writing to current directory! yay! (patch 800718 with changes)
 - commented out example tracker homes (patch 800720)
 
 
