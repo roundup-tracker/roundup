@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.189 2004-10-20 06:30:32 a1s Exp $
+# $Id: client.py,v 1.190 2004-10-20 06:36:06 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -241,10 +241,6 @@ class Client:
                 date = time.time() - 1
             else:
                 date = time.time() + 5
-             self.additional_headers['Expires'] = date
-
-
-            date = time.time() + 5
             self.additional_headers['Expires'] = rfc822.formatdate(date)
 
             # render the content
