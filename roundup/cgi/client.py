@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.66 2003-01-11 23:52:28 richard Exp $
+# $Id: client.py,v 1.67 2003-01-13 22:14:00 kedder Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -190,23 +190,33 @@ class Client:
             # everything else
             self.write(cgitb.html())
 
+    def clean_sessions(self):
+        '''age sessions, remove when they haven't been used for a week.
+        Do it only once an hour'''
+        sessions = self.db.sessions
+        last_clean = sessions.get('last_clean', 'last_use') or 0
+
+        week = 60*60*24*7
+        hour = 60*60
+        now = time.time()
+        if now - last_clean > hour:
+            # remove age sessions
+            for sessid in sessions.list():
+                print sessid
+                interval = now - sessions.get(sessid, 'last_use')
+                if interval > week:
+                    sessions.destroy(sessid)
+            sessions.set('last_clean', last_use=time.time())
+
     def determine_user(self):
         ''' Determine who the user is
         '''
         # determine the uid to use
         self.opendb('admin')
-
+        # clean age sessions
+        self.clean_sessions()
         # make sure we have the session Class
         sessions = self.db.sessions
-
-        # age sessions, remove when they haven't been used for a week
-        # TODO: this shouldn't be done every access
-        week = 60*60*24*7
-        now = time.time()
-        for sessid in sessions.list():
-            interval = now - sessions.get(sessid, 'last_use')
-            if interval > week:
-                sessions.destroy(sessid)
 
         # look up the user session cookie
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))

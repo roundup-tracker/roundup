@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2003-??-?? 0.6.0 (?)
+2003-??-?? 0.6.0
 - better hyperlinking in web message texts
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
@@ -9,7 +9,9 @@ are given with the most recent entry first.
   cc addresses, different from address and different nosy list property)
   (thanks John Rouillard)
 - applied patch for nicer history display (sf feature 638280)
-
+- cleaning old unused sessions only once per hour, not on every cgi 
+  request. It is greatly improves web interface performance, especially
+  on trackers under high load
 
 2003-??-?? 0.5.5
 - fixed rdbms searching by ID (sf bug 666615)
@@ -28,7 +30,7 @@ are given with the most recent entry first.
   (multipart/alternative, "fw" and content-type "name")
 - fire auditors and reactors in rdbms retire (thanks Sheila King)
 - better match for mailgw help "command" text
-- handle :add: better in cgi form parsing (sf bug 663235)
+- handle :add: better in cgi form parsing (sf bug 6632.35)
 - handle all-whitespace multilink values in forms (sf bug 663855)
 - fixed searching on date / interval fields (sf bug 658157)
 - fixed form elements names in search form to allow grouping and sorting 
