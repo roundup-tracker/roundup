@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.50 2002-04-08 03:40:31 richard Exp $
+# $Id: roundupdb.py,v 1.51 2002-04-08 03:46:42 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -343,6 +343,9 @@ class IssueClass(Class):
 
         # we have new recipients
         if sendto:
+	    # map userids to addresses
+            sendto = [users.get(i, 'address') for i in sendto]
+
             # update the message's recipients list
             messages.set(msgid, recipients=recipients)
 
@@ -372,14 +375,11 @@ class IssueClass(Class):
                 self.classname, nodeid, self.db.config.MAIL_DOMAIN)
             messages.set(msgid, messageid=messageid)
 
-        # figure the author's id
-        authid = messages.get(msgid, 'author')
-
         # send an email to the people who missed out
-        sendto = [users.get(i, 'address') for i in sendto]
         cn = self.classname
         title = self.get(nodeid, 'title') or '%s message copy'%cn
         # figure author information
+        authid = messages.get(msgid, 'author')
         authname = users.get(authid, 'realname')
         if not authname:
             authname = users.get(authid, 'username')
@@ -620,6 +620,15 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.50  2002/04/08 03:40:31  richard
+#  . added a "detectors" directory for people to put their useful auditors and
+#    reactors in. Note - the roundupdb.IssueClass.sendmessage method has been
+#    split and renamed "nosymessage" specifically for things like the nosy
+#    reactor, and "send_message" which just sends the message.
+#
+# The initial detector is one that we'll be using here at ekit - it bounces new
+# issue messages to a team address.
+#
 # Revision 1.49  2002/03/19 06:41:49  richard
 # Faster, easier, less mess ;)
 #

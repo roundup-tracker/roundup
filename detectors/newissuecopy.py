@@ -11,7 +11,8 @@ def newissuecopy(db, cl, nodeid, oldvalues):
     # send a copy to the nosy list
     for msgid in cl.get(nodeid, 'messages'):
         try:
-            cl.send_message(nodeid, msgid, change_note, 'team@team.host')
+            # note: last arg must be a list
+            cl.send_message(nodeid, msgid, change_note, ['team@team.host'])
         except roundupdb.MessageSendError, message:
             raise roundupdb.DetectorError, message
 
