@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.70 2002-01-23 05:47:57 richard Exp $
+# $Id: htmltemplate.py,v 1.71 2002-01-23 06:15:24 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -456,12 +456,15 @@ class TemplateFunctions:
             return _('[List: not a Multilink]')
 
         value = self.determine_value(property)
-	if not value:
-	    return ''
+        if not value:
+            return ''
 
+        # sort, possibly revers and then re-stringify
+        value = map(int, value)
         value.sort()
         if reverse:
             value.reverse()
+        value = map(str, value)
 
         # render the sub-index into a string
         fp = StringIO.StringIO()
@@ -1040,6 +1043,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.70  2002/01/23 05:47:57  richard
+# more HTML template cleanup and unit tests
+#
 # Revision 1.69  2002/01/23 05:10:27  richard
 # More HTML template cleanup and unit tests.
 #  - download() now implemented correctly, replacing link(is_download=1) [fixed in the
