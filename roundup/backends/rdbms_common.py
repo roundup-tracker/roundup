@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.25 2002-12-12 09:31:04 richard Exp $
+# $Id: rdbms_common.py,v 1.26 2003-01-05 10:55:16 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1489,6 +1489,8 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
 
+        self.fireAuditors('retire', nodeid, None)
+
         # use the arg for __retired__ to cope with any odd database type
         # conversion (hello, sqlite)
         sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
@@ -1496,6 +1498,8 @@ class Class(hyperdb.Class):
         if __debug__:
             print >>hyperdb.DEBUG, 'retire', (self, sql, nodeid)
         self.db.cursor.execute(sql, (1, nodeid))
+
+        self.fireReactors('retire', nodeid, None)
 
     def is_retired(self, nodeid):
         '''Return true if the node is rerired
