@@ -277,7 +277,7 @@ class TokenEater:
             self.__data.append(safe_eval(tstring))
         elif ttype not in [tokenize.COMMENT, token.INDENT, token.DEDENT,
                            token.NEWLINE, tokenize.NL]:
-            # warn if we seen anything else than STRING or whitespace
+            # warn if we see anything else than STRING or whitespace
             print >>sys.stderr, _('*** %(file)s:%(lineno)s: Seen unexpected token "%(token)s"') % {
                 'token': tstring, 'file': self.__curfile, 'lineno': self.__lineno}
             self.__state = self.__waiting
