@@ -1,4 +1,4 @@
-#$Id: back_bsddb3.py,v 1.1 2001-07-24 04:26:03 anthonybaxter Exp $
+#$Id: back_bsddb3.py,v 1.2 2001-07-30 01:41:36 richard Exp $
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date
@@ -99,7 +99,7 @@ class Database(hyperdb.Database):
 
         # convert the marshalled data to instances
         properties = self.classes[classname].properties
-        for key in res.keys():
+        for key in properties.keys():
             if properties[key].isDateType:
                 res[key] = date.Date(res[key])
             elif properties[key].isIntervalType:
@@ -199,6 +199,10 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.1  2001/07/24 04:26:03  anthonybaxter
+#bsddb3 implementation. For now, it's the bsddb implementation with a "3"
+#added in crayon.
+#
 #Revision 1.4  2001/07/23 08:25:33  richard
 #more handling of bad journals
 #

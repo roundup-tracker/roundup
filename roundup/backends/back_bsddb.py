@@ -1,4 +1,4 @@
-#$Id: back_bsddb.py,v 1.4 2001-07-23 08:25:33 richard Exp $
+#$Id: back_bsddb.py,v 1.5 2001-07-30 01:41:36 richard Exp $
 
 import bsddb, os, marshal
 from roundup import hyperdb, date
@@ -99,7 +99,7 @@ class Database(hyperdb.Database):
 
         # convert the marshalled data to instances
         properties = self.classes[classname].properties
-        for key in res.keys():
+        for key in properties.keys():
             if properties[key].isDateType:
                 res[key] = date.Date(res[key])
             elif properties[key].isIntervalType:
@@ -199,6 +199,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.4  2001/07/23 08:25:33  richard
+#more handling of bad journals
+#
 #Revision 1.3  2001/07/23 08:20:44  richard
 #Moved over to using marshal in the bsddb and anydbm backends.
 #roundup-admin now has a "freshen" command that'll load/save all nodes (not
