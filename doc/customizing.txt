@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.16 $
+:Version: $Revision: 1.17 $
 
 .. contents::
 
@@ -515,6 +515,12 @@ Create a node in the database. This is generally used to create nodes in the
 "definitional" classes like "priority" and "status".
 
 
+Examples of adding to your schema
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+
 Detectors - adding behaviour to your tracker
 --------------------------------------------
 .. _detectors:
@@ -581,11 +587,94 @@ scripts. In both cases, the scripts determine which instance is being accessed
 control on to the instance interfaces.Client class which handles the rest of
 the access through its main() method. This means that you can do pretty much
 anything you want as a web interface to your instance.
+
 Most customisation of the web view can be done by modifying the templates in
-the instance html directory. These are divided into index, item and newitem
-views. The newitem view is optional - the item view will be used if the newitem
-view doesn't exist. The header and footer that wrap the various views give the
-pages an overall look.
+the instance **html** directory. There are several types of files in there:
+
+page
+  defines the overall look of your tracker. When you
+  view an issue, it appears inside this template. When you view an index, it
+  also appears inside this template.
+home
+  the default page displayed when no other page is indicated by the user
+home.classlist
+  a special version of the default page that lists the classes in the tracker
+*classname*.item
+  displays an item of the *classname* class
+*classname*.index
+  displays a list of *classname* items
+*classname*.search
+  displays a search page for *classname* items
+_generic.index
+  used to display a list of items where there is no *classname*.index available
+user.register
+  a special page just for the user class that renders the registration page
+style.css
+  a static file that is served up as-is
+
+The basic processing of a web request proceeds as follows:
+
+1. figure out who we are, defaulting to the "anonymous" user
+2. figure out what the request is for - we call this the "context"
+3. handle any requested action (item edit, search, ...)
+4. render a template, resulting in HTML output
+
+In some situations, exceptions occur:
+- HTTP Redirect  (generally raised by an action)
+- SendFile       (generally raised by determine_context)
+  here we serve up a FileClass "content" property
+- SendStaticFile (generally raised by determine_context)
+  here we serve up a file from the tracker "html" directory
+- Unauthorised   (generally raised by an action)
+  here the action is cancelled, the request is rendered and an error
+  message is displayed indicating that permission was not
+  granted for the action to take place
+- NotFound       (raised wherever it needs to be)
+  this exception percolates up to the CGI interface that called the client
+
+To determine the "context" of a request, we look at the URL and the special
+request variable ``:template``. The URL path after the instance identifier
+is examined. Typical URL paths look like:
+
+1.  ``/tracker/issue``
+2.  ``/tracker/issue1``
+3.  ``/tracker/_file/style.css``
+4.  ``/cgi-bin/roundup.cgi/tracker/file1``
+5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
+
+where the "instance identifier" is "tracker" in the above cases. That means
+we're looking at "issue", "issue1", "_file/style.css", "file1" and
+"file1/kitten.png" in the cases above. The path is generally only one
+entry long - longer paths are handled differently.
+
+a. if there is no path, then we are in the "home" context.
+b. if the path starts with "_file" (as in example 3,
+   "/tracker/_file/style.css"), then the additional path entry,
+   "style.css" specifies the filename of a static file we're to serve up
+   from the instance "html" directory. Raises a SendStaticFile
+   exception.
+c. if there is something in the path (as in example 1, "issue"), it identifies
+   the tracker class we're to display.
+d. if the path is an item designator (as in examples 2 and 4, "issue1" and
+   "file1"), then we're to display a specific item.
+e. if the path starts with an item designator and is longer than
+   one entry (as in example 5, "file1/kitten.png"), then we're assumed
+   to be handling an item of a
+   FileClass, and the extra path information gives the filename
+   that the client is going to label the download with (ie
+   "file1/kitten.png" is nicer to download than "file1"). This
+   raises a SendFile exception.
+
+Both b. and e. stop before we bother to
+determine the template we're going to use. That's because they
+don't actually use templates.
+
+The template used is specified by the ``:template`` CGI variable,
+which defaults to:
+
+- only classname suplied:          "index"
+- full item designator supplied:   "item"
+
 
 Repurcussions of changing the instance schema
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -593,124 +682,83 @@ Repurcussions of changing the instance schema
 If you choose to change the `instance schema`_ you will need to ensure the web
 interface knows about it:
 
-1. Index, item and filter pages for the relevant classes may need to have
+1. Index, item and search pages for the relevant classes may need to have
    properties added or removed,
-2. The default page header relies on the existence of, and some values of
-   the priority, status, assignedto and activity classes. If you change any
-   of these (specifically if you remove any of the classes or their default
-   values) you will need to implement your own pagehead() method in your
-   instance's interfaces.py module.
+2. The "page" template may require links to be changed, as might the "home"
+   page's content arguments.
 
-Overall Look - the Header and Footer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Overall Look - "page" template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The header and footer are generated by Python code. The default code is in
+The "page" template in your instances
 roundup.cgi_client.Class. This class is mixed-in to your instance through the
 instance's interfaces module. This means you can override the header and
 footer with your own code. This allows you to use a sidebar navigation scheme,
 for example.
 
 
+PageTemplates in a Nutshell
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PageTemplates consist of two core technologies:
+
+TAL - Template Attribute Language
+  This is the syntax which is woven into the HTML using the ``tal:`` tag
+  attributes. A TAL parser pulls out the TAL commands from the attributes
+  runs them using some expression engine. TAL gives:
+
+  tal:define
+  tal:replace
+  tal:content
+  tal:repeat
+  tal:attributes
+
+  Additionally, a tag is defined, tal:block, which is removed from output. Its
+  content is not, but the tag itself is (so don't go using any tal:attributes
+  commands on it). This is useful for making arbitrary blocks of HTML
+  conditional or repeatable (very handy for repeating multiple table rows,
+  which would othewise require an illegal tag placement to effect the repeat).
+
+TALES - TAL Expression Syntax
+  The expression engine used in this case is TALES, which runs the expressions
+  that form the tag attribute values. TALES expressions come in three
+  flavours:
+
+  Path Expressions - eg. ``item/status/checklist``
+   These are object attribute / item accesses. Roughly speaking, the path
+   ``item/status/checklist`` is broken into parts ``item``, ``status``
+   and ``checklist``. The ``item`` part is the root of the expression.
+   We then look for a ``status`` attribute on ``item``, or failing that, a
+   ``status`` item (as in ``item['status']``). If that
+   fails, the path expression fails. When we get to the end, the object we're
+   left with is evaluated to get a string - methods are called, objects are
+   stringified. Path expressions may have an optional ``path:`` prefix, though
+   they are the default expression type, so it's not necessary.
+
+  String Expressions - eg. ``string:hello ${user/name}``
+   These expressions are simple string interpolations (though they can be just
+   plain strings with no interpolation if you want. The expression in the
+   ``${ ... }`` is just a path expression as above.
+
+  Python Expressions - eg. ``python: 1+1``
+   These expressions give the full power of Python. All the "root level"
+   variables are available, so ``python:item.status.checklist()`` would be
+   equivalent to ``item/status/checklist``, assuming that ``checklist`` is
+   a method.
+
 Displaying Properties
 ~~~~~~~~~~~~~~~~~~~~~
 
 Properties appear in the user interface in three contexts: in indices, in
-editors, and as filters. For each type of property, there are several display
-possibilities. For example, in an index view, a string property may just be
-printed as a plain string, but in an editor view, that property should be
+editors, and as search arguments.
+For each type of property, there are several display possibilities.
+For example, in an index view, a string property may just be
+printed as a plain string, but in an editor view, that property may be
 displayed in an editable field.
-
-The display of a property is handled by functions in the htmltemplate module.
-Displayer functions are triggered by <display> tags in templates. The call
-attribute of the tag provides a Python expression for calling the displayer
-function. The three standard arguments are inserted in front of the arguments
-given. For example, the occurrence of::
-
-         <display call="plain('status')">
-
-in a template triggers a call the "plain" function. The displayer functions can
-accept extra arguments to further specify details about the widgets that should
-be generated. By defining new displayer functions, the user interface can be
-highly customized.
-
-+-----------------------------------------------------------------------------+
-|The displayer functions are                                                  |
-+---------+-------------------------------------------------------------------+
-|plain    |Display a String property directly.                                |
-|         |Display a Date property in a specified time zone with an option to |
-|         |omit the time from the date stamp.                                 |
-|         |For a Link or Multilink property, display the key strings of the   |
-|         |linked nodes (or the ids if the linked class has no key property). |
-|         |Options:                                                           |
-|         |escape (boolean) - HTML-escape the resulting text.                 |
-+---------+-------------------------------------------------------------------+
-|field    |Display a property like the plain displayer above, but in a form   |
-|         |field to be edited. Strings, Dates and Intervals use TEXT fields,  |
-|         |Links use SELECT fields and Multilinks use SELECT MULTIPLE fields. |
-|         |Options:                                                           |
-|         |size (number) - width of TEXT fields.                              |
-|         |height (number) - number of nows in SELECT MULTIPLE tags.          |
-|         |showid (boolean) - true includes the id of linked nodes in the     |
-|         |SELECT MULTIPLE fields.                                            |
-+---------+-------------------------------------------------------------------+
-|menu     |For a Links and Multilinks, display the same field as would be     |
-|         |generated using field.                                             |
-+---------+-------------------------------------------------------------------+
-|link     |For a Link or Multilink property, display the names of the linked  |
-|         |nodes, hyperlinked to the item views on those nodes.               |
-|         |For other properties, link to this node with the property as the   |
-|         |text.                                                              |
-|         |Options:                                                           |
-|         |property (property name) - the property to use in the second case. |
-|         |showid - use the linked node id as the link text (linked node      |
-|         |"value" will be set as a tooltip)                                  |
-+---------+-------------------------------------------------------------------+
-|count    |For a Multilink property, display a count of the number of links in|
-|         |the list.                                                          |
-|         |Arguments:                                                         |
-|         |property (property name) - the property to use.                    |
-+---------+-------------------------------------------------------------------+
-|reldate  |Display a Date property in terms of an interval relative to the    |
-|         |current date (e.g. "+ 3w", "- 2d").                                |
-|         |Arguments:                                                         |
-|         |property (property name) - the property to use.                    |
-|         |Options:                                                           |
-|         |pretty (boolean) - display the relative date in an English form.   |
-+---------+-------------------------------------------------------------------+
-|download |For a Link or Multilink property, display the names of the linked  |
-|         |nodes, hyperlinked to the item views on those nodes.               |
-|         |For other properties, link to this node with the property as the   |
-|         |text.                                                              |
-|         |In all cases, append the name (key property) of the item to the    |
-|         |path so it is the name of the file being downloaded.               |
-|         |Arguments:                                                         |
-|         |property (property name) - the property to use.                    |
-+---------+-------------------------------------------------------------------+
-|checklist|For a Link or Multilink property, display checkboxes for the       |
-|         |available choices to permit filtering.                             |
-|         |Arguments:                                                         |
-|         |property (property name) - the property to use.                    |
-+---------+-------------------------------------------------------------------+
-|note     |Display the special notes field, which is a text area for entering |
-|         |a note to go along with a change.                                  |
-+---------+-------------------------------------------------------------------+
-|list     |List the nodes specified by property using the standard index for  |
-|         |the class.                                                         |
-|         |Arguments:                                                         |
-|         |property (property name) - the property to use.                    |
-+---------+-------------------------------------------------------------------+
-|history  |List the history of the item.                                      |
-+---------+-------------------------------------------------------------------+
-|submit   |Add a submit button for the item.                                  |
-+---------+-------------------------------------------------------------------+
 
 
 Index Views
 ~~~~~~~~~~~
-
-An index view contains two sections: a filter section and an index section. The
-filter section provides some widgets for selecting which items appear in the
-index. The index section is a table of items.
 
 Index View Specifiers
 :::::::::::::::::::::
@@ -750,66 +798,15 @@ Associated with each item class is a default layout specifier. The layout
 specifier in the above example is the default layout to be provided with the
 default bug-tracker schema described above in section 4.4.
 
-Filter Section
-::::::::::::::
+Filtering of indexes
+::::::::::::::::::::
 
-The template for a filter section provides the filtering widgets at the top of
-the index view. Fragments enclosed in <property>...</property> tags are
-included or omitted depending on whether the view specifier requests a filter
-for a particular property.
+TODO
 
-A property must appear in the filter template for it to be available as a
-filter.
+Searching Views
+~~~~~~~~~~~~~~~
 
-Here's a simple example of a filter template.::
-
-     <property name=status>
-         <display call="checklist('status')">
-     </property>
-     <br>
-     <property name=priority>
-         <display call="checklist('priority')">
-     </property>
-     <br>
-     <property name=fixer>
-         <display call="menu('fixer')">
-     </property>
-
-The standard index generation code appends a section to the index pages which
-allows selection of the filters - from those which are defined in the filter
-template.
-
-Index Section
-:::::::::::::
-
-The template for an index section describes one row of the index table.
-Fragments enclosed in <property>...</property> tags are included or omitted
-depending on whether the view specifier requests a column for a particular
-property. The table cells should contain <display> tags to display the values
-of the item's properties.
-
-Here's a simple example of an index template.::
-
-     <tr>
-         <property name=title>
-             <td><display call="plain('title', max=50)"></td>
-         </property>
-         <property name=status>
-             <td><display call="plain('status')"></td>
-         </property>
-         <property name=fixer>
-             <td><display call="plain('fixer')"></td>
-         </property>
-     </tr>
-
-Sorting
-:::::::
-
-String and Date values are sorted in the natural way. Link properties are
-sorted according to the value of the "order" property on the linked nodes if it
-is present; or otherwise on the key string of the linked nodes; or finally on
-the node ids. Multilink properties are sorted according to how many links are
-present.
+TODO
 
 Item Views
 ~~~~~~~~~~
