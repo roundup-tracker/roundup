@@ -83,6 +83,9 @@ roundup-server:
 cgi_client
   . keep form fields in form on bad submission - only clear it if all ok
   . e-mail messages should have the roundup CGI URL in them
+roundup.cgi
+  . make it detect that it is in an instance_home and just use that
+    instance by default
 
 
 5. Known Bugs
@@ -91,9 +94,6 @@ cgi_client
 date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
-
-cgi_client
-  . user creation result form has a lot of [field with no item] entries..
 
 
 6. Author
