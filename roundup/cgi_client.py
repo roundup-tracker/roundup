@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.52 2001-11-06 23:11:22 jhermann Exp $
+# $Id: cgi_client.py,v 1.53 2001-11-06 23:22:05 jhermann Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -665,7 +665,7 @@ class Client:
         user = binascii.b2a_base64('%s:%s'%(user, password)).strip()
         expire = Cookie._getdate(86400*365)
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
-        self.header({'Set-Cookie': 'roundup_user="%s"; expires="%s"; Path="%s";' % (
+        self.header({'Set-Cookie': 'roundup_user=%s; expires=%s; Path=%s;' % (
             user, expire, path)})
 
     def make_user_anonymous(self):
@@ -682,7 +682,7 @@ class Client:
         now = Cookie._getdate()
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
         self.header({'Set-Cookie':
-            'roundup_user=deleted; Max-Age=0; expires="%s"; Path="%s";'%(now,
+            'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
             path)})
         return self.login()
 
@@ -943,6 +943,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2001/11/06 23:11:22  jhermann
+# Fixed debug output in page footer; added expiry date to the login cookie
+# (expires 1 year in the future) to prevent probs with certain versions
+# of IE
+#
 # Revision 1.51  2001/11/06 22:00:34  jhermann
 # Get debug level from ROUNDUP_DEBUG env var
 #
