@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 .. contents::
 
@@ -77,6 +77,19 @@ roundup-server.
 You need to add the last 3 RewriteRule lines for each tracker that you have.
 
 You can now firewall off port 8888 from the rest of the world.
+
+
+Roundup runs very slowly on my XP machine when accessed from the Internet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The issue is probably related to host name resolution for the client
+performing the request. You can turn off the resolution of the names
+when it's so slow like this. To do so, edit the module
+roundup/scripts/roundup_server.py around line 77 to add the following
+to the RoundupRequestHandler class:
+
+     def address_string(self):
+         return self.client_address[0]
 
 
 Templates
