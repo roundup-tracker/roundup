@@ -13,21 +13,33 @@ function trim(value) {
 }
 
 function determineList() {
-    // generate a comma-separated list of the checked items
-    var list = new String('');
-    for (box=0; box < document.frm_help.check.length; box++) {
-        if (document.frm_help.check[box].checked) {
-            if (list.length == 0) {
-                separator = '';
-            }
-            else {
-                separator = ',';
-            }
-            // we used to use an Array and push / join, but IE5.0 sux
-            list = list + separator + document.frm_help.check[box].value;
-        }
-    }
-    return list;
+     // generate a comma-separated list of the checked items
+     var list = new String('');
+ 
+     // either a checkbox object or an array of checkboxes
+     var check = document.frm_help.check;
+ 
+     if ((check.length == undefined) && (check.checked != undefined)) {
+         // only one checkbox on page
+         if (check.checked) {
+             list = check.value;
+         }
+     } else {
+         // array of checkboxes
+         for (box=0; box < check.length; box++) {
+             if (check[box].checked) {
+                 if (list.length == 0) {
+                     separator = '';
+                 }
+                 else {
+                     separator = ',';
+                 }
+                 // we used to use an Array and push / join, but IE5.0 sux
+                 list = list + separator + check[box].value;
+             }
+         }
+     }
+     return list;  
 }
 
 function updateList() {
