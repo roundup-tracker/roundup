@@ -2,21 +2,20 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.5 is a bug fix release, including:
+0.7.6 is a bug fix release, including:
 
-- force lookup of journal props in anydbm filtering
-- fixed lookup of "missing" Link values for new props in anydbm backend
-- allow list of values for id, Number and Boolean filtering in anydbm
-  backend
-- fixed some more mysql 0.6->0.7 upgrade bugs (sf bug 950410)
-- fixed Boolean values in postgresql (sf bugs 972546 and 972600)
-- fixed -g arg to roundup-server (sf bug 973946)
-- better roundup-server usage string (sf bug 973352)
-- include "context" always, as documented (sf bug 965447)
-- fixed REMOTE_USER (external HTTP Basic auth) (sf bug 977309)
-- fixed roundup-admin "find" to use better value parsing
-- fixed RDBMS Class.find() to handle None value in multiple find
-- export now stores file "content" in separate files in export directory
+- rdbms backend full text search failure after import (sf bug 980314)
+- rdbms backends not filtering correctly on link=None
+- fix anydbm journal import (sf bug 983166)
+- handle postgresql bug in SQL generation (sf bug 984591)
+- fix dates-from-Dates (sf bug 984604)
+- fix messageid generated when msgid is None for send_message (sf bug 987933)
+- make user permissions check more sane (fix search page for anonymous)
+- fixed RDBMS filter() for no matches from full-text search (sf bug 990778)
+- fixed DateHTMLProperty for invalid date entry (sf bug 986538)
+- fixed external password source example (sf bug 986601)
+- document the STATIC_FILES config var
+- implement the HTTP HEAD command (sf bug 992544)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
