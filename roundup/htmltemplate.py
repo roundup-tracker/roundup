@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.105 2002-07-26 08:26:59 richard Exp $
+# $Id: htmltemplate.py,v 1.106 2002-07-30 02:41:04 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -1280,7 +1280,11 @@ class IndexTemplate(TemplateFunctions):
             w(' </tr>\n')
         w('</table>\n')
 
-    def sortby(self, sort_name, filterspec, columns, filter, group, sort, pagesize, startwith):
+    def sortby(self, sort_name, filterspec, columns, filter, group, sort,
+            pagesize, startwith):
+        ''' Figure the link for a column heading so we can sort by that
+            column
+        '''
         l = []
         w = l.append
         for k, v in filterspec.items():
@@ -1297,25 +1301,22 @@ class IndexTemplate(TemplateFunctions):
             w(':group=%s'%','.join(map(urllib.quote, group)))
         w(':pagesize=%s' % pagesize)
         w(':startwith=%s' % startwith)
-        m = []
-        s_dir = ''
-        for name in sort:
+
+        # handle the sorting - if we're already sorting by this column,
+        # then reverse the sorting, otherwise set the sorting to be this
+        # column only
+        sorting = None
+        if len(sort) == 1:
+            name = sort[0]
             dir = name[0]
-            if dir == '-':
-                name = name[1:]
-            else:
-                dir = ''
-            if sort_name == name:
-                if dir == '-':
-                    s_dir = ''
-                else:
-                    s_dir = '-'
-            else:
-                m.append(dir+urllib.quote(name))
-        m.insert(0, s_dir+urllib.quote(sort_name))
-        # so things don't get completely out of hand, limit the sort to
-        # two columns
-        w(':sort=%s'%','.join(m[:2]))
+            if dir == '-' and name[1:] == sort_name:
+                sorting = ':sort=%s'%sort_name
+            elif name == sort_name:
+                sorting = ':sort=-%s'%sort_name
+        if sorting is None:
+            sorting = ':sort=%s'%sort_name
+        w(sorting)
+
         return '&'.join(l)
 
 class ItemTemplate(TemplateFunctions):
@@ -1418,6 +1419,11 @@ class NewItemTemplate(ItemTemplate):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.105  2002/07/26 08:26:59  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.104  2002/07/25 07:14:05  richard
 # Bugger it. Here's the current shape of the new security implementation.
 # Still to do:
