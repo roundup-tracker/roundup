@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.95 2003-11-16 20:01:16 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.96 2003-12-05 04:43:30 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -137,8 +137,10 @@ class IssueClass:
         recipients = self.db.msg.safeget(msgid, 'recipients', [])
         
         sendto = []
-        seen_message = dict([(recipient, 1) for recipient in recipients])
-               
+        seen_message = {}
+        for recipient in recipients:
+            seen_message[recipient] = 1
+
         def add_recipient(userid):
             # make sure they have an address
             address = self.db.user.get(userid, 'address')
