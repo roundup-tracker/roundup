@@ -1,5 +1,6 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title" i18n:translate="">Issue searching</title>
+<title metal:fill-slot="head_title" i18n:translate="">Issue searching - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
  i18n:translate="">Issue searching</span>
 <td class="content" metal:fill-slot="content">

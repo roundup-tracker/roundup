@@ -1,6 +1,7 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title" i18n:translate="">Password reset request</title>
+<title metal:fill-slot="head_title" i18n:translate="">Password reset request - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
  i18n:translate="">Password reset request</span>
 <td class="content" metal:fill-slot="content">
