@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 .. contents::
 
@@ -222,7 +222,22 @@ Setting Properties
 The e-mail interface also provides a simple way to set properties on items. At
 the end of the subject line, propname=value pairs can be specified in square
 brackets, using the same conventions as for the roundup set shell command.
-explanatory message given in the exception.
+
+For example,
+
+- setting the priority of an issue::
+
+   Subject: Re: [issue1] the coffee machine is broken! [priority=urgent]
+
+- adding yourself to a nosy list (both of these are equivalent)::
+
+   Subject: Re: [issue2] we're out of widgets [nosy=+richard]
+   Subject: Re: [issue2] we're out of widgets [nosy=richard]
+
+- removing yourself from a nosy list::
+
+   Subject: Re: [issue2] we're out of widgets [nosy=-richard]
+
 
 Message content
 ~~~~~~~~~~~~~~~

@@ -9,18 +9,7 @@ This file contains information for users upgrading from:
   0.3.x -> 0.4.x
   0.2.x -> 0.3.x
 
-From CVS
-========
-
-Files storage
--------------
-
-Messages and files from newly created issues will be put into subdierectories
-in thousands e.g. msg123 will be put into files/msg/0/msg123, file2003
-will go into files/file/2/file2003. Previous messages are still found, but
-could be put into this structure.
-
-Migrating from 0.4.0 to 0.4.1
+Migrating from 0.4.1 to 0.4.2
 =============================
 
 Configuration
@@ -38,8 +27,29 @@ The new configuration variables are:
 - ADD_RECIPIENTS_TO_NOSY
 
 
+Mail Gateway
+------------
+
+You will need to copy the detectors from the distribution into your instance
+home detectors directory. The schema-specific code has been removed from the
+mail gateway and made into auditors:
+
+- nosyreactor.py has now got an updatenosy auditor which updates the nosy
+  list with author, recipient and assignedto information.
+- statusauditor.py makes the unread or resolved -> chatting changes and
+  presets the status of an issue to unread.
+
+
 Migrating from 0.4.0 to 0.4.1
 =============================
+
+Files storage
+-------------
+
+Messages and files from newly created issues will be put into subdierectories
+in thousands e.g. msg123 will be put into files/msg/0/msg123, file2003
+will go into files/file/2/file2003. Previous messages are still found, but
+could be put into this structure.
 
 Configuration
 -------------
@@ -67,8 +77,6 @@ the appropriate variables in instance_config.py.
 
 The extended schema has similar variables added too - see the source for more
 info.
-
-
 
 Alternate E-Mail Addresses
 --------------------------

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.10 $
+:Version: $Revision: 1.11 $
 
 .. contents::
 
@@ -68,10 +68,6 @@ Testing your Python
 
 Run ``"python ./run_tests"`` and make sure there
 are no errors.  If there are errors, please let us know!
-
-Note: if you're installing from the CVS, you will need to run "python setup.py
-build" before the tests will work, as there are modules that must be
-generated that are not stored in the CVS.
 
 
 Getting Roundup

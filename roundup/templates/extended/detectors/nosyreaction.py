@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.11 2002-01-14 22:21:38 richard Exp $
+#$Id: nosyreaction.py,v 1.12 2002-05-29 01:16:17 richard Exp $
 
-from roundup import roundupdb
+from roundup import roundupdb, hyperdb
 
 def nosyreaction(db, cl, nodeid, oldvalues):
     ''' A standard detector is provided that watches for additions to the
@@ -34,12 +34,21 @@ def nosyreaction(db, cl, nodeid, oldvalues):
         The journal recorded by the hyperdatabase on the "recipients" property
         then provides a log of when the message was sent to whom. 
     '''
+    # send a copy of all new messages to the nosy list
+    for msgid in determineNewMessages(cl, nodeid, oldvalues):
+        try:
+            cl.nosymessage(nodeid, msgid, oldvalues)
+        except roundupdb.MessageSendError, message:
+            raise roundupdb.DetectorError, message
+
+def determineNewMessages(cl, nodeid, oldvalues):
+    ''' Figure a list of the messages that are being added to the given
+        node in this transaction.
+    '''
     messages = []
-    change_note = ''
     if oldvalues is None:
         # the action was a create, so use all the messages in the create
         messages = cl.get(nodeid, 'messages')
-	change_note = cl.generateCreateNote(nodeid)
     elif oldvalues.has_key('messages'):
         # the action was a set (so adding new messages to an existing issue)
         m = {}
@@ -50,25 +59,91 @@ def nosyreaction(db, cl, nodeid, oldvalues):
         for msgid in cl.get(nodeid, 'messages'):
             if not m.has_key(msgid):
                 messages.append(msgid)
-        if messages:
-            change_note = cl.generateChangeNote(nodeid, oldvalues)
-    if not messages:
-        return
+    return messages
 
-    # send a copy to the nosy list
-    for msgid in messages:
-        try:
-            cl.sendmessage(nodeid, msgid, change_note)
-        except roundupdb.MessageSendError, message:
-            raise roundupdb.DetectorError, message
+def updatenosy(db, cl, nodeid, newvalues):
+    '''Update the nosy list for changes to the assignedto
+    '''
+    # nodeid will be None if this is a new node
+    current = {}
+    if nodeid is None:
+        ok = ('new', 'yes')
+    else:
+        ok = ('yes',)
+        # old node, get the current values from the node if they haven't
+        # changed
+        if not newvalues.has_key('nosy'):
+            nosy = cl.get(nodeid, 'nosy')
+            for value in nosy:
+                if not current.has_key(value):
+                    current[value] = 1
 
+    # if the nosy list changed in this transaction, init from the new value
+    if newvalues.has_key('nosy'):
+        nosy = newvalues.get('nosy', [])
+        for value in nosy:
+            if not db.hasnode('user', value):
+                continue
+            if not current.has_key(value):
+                current[value] = 1
+
+    # add assignedto(s) to the nosy list
+    if newvalues.has_key('assignedto'):
+        propdef = cl.getprops()
+        if isinstance(propdef['assignedto'], hyperdb.Link):
+            assignedto_ids = [newvalues['assignedto']]
+        elif isinstance(propdef['assignedto'], hyperdb.Multilink):
+            assignedto_ids = newvalues['assignedto']
+        for assignedto_id in assignedto_ids:
+            if not current.has_key(assignedto_id):
+                current[assignedto_id] = 1
+
+    # see if there's any new messages - if so, possibly add the author and
+    # recipient to the nosy
+    if newvalues.has_key('messages'):
+        if nodeid is None:
+            ok = ('new', 'yes')
+            messages = newvalues['messages']
+        else:
+            ok = ('yes',)
+            # figure which of the messages now on the issue weren't
+            # there before - make sure we don't get a cached version!
+            oldmessages = cl.get(nodeid, 'messages', cache=0)
+            messages = []
+            for msgid in newvalues['messages']:
+                if msgid not in oldmessages:
+                    messages.append(msgid)
+
+        # configs for nosy modifications
+        add_author = getattr(db.config, 'ADD_AUTHOR_TO_NOSY', 'new')
+        add_recips = getattr(db.config, 'ADD_RECIPIENTS_TO_NOSY', 'new')
+
+        # now for each new message:
+        msg = db.msg
+        for msgid in messages:
+            if add_author in ok:
+                authid = msg.get(msgid, 'author')
+                current[authid] = 1
+
+            # add on the recipients of the message
+            if add_recips in ok:
+                for recipient in msg.get(msgid, 'recipients'):
+                    current[recipient] = 1
+
+    # that's it, save off the new nosy list
+    newvalues['nosy'] = current.keys()
 
 def init(db):
     db.issue.react('create', nosyreaction)
     db.issue.react('set', nosyreaction)
+    db.issue.audit('create', updatenosy)
+    db.issue.audit('set', updatenosy)
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.11  2002/01/14 22:21:38  richard
+##503353 ] setting properties in initial email
+#
 #Revision 1.10  2002/01/11 23:22:29  richard
 # . #502437 ] rogue reactor and unittest
 #   in short, the nosy reactor was modifying the nosy list. That code had
@@ -118,6 +193,9 @@ def init(db):
 #Revision 1.2  2001/08/07 00:15:51  richard
 #Added the copyright/license notice to (nearly) all files at request of
 #Bizar Software.
+#
+#Revision 1.1  2001/07/23 23:29:10  richard
+#Adding the classic template
 #
 #Revision 1.1  2001/07/23 03:50:47  anthonybaxter
 #moved templates to proper location

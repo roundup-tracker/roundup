@@ -32,7 +32,11 @@ Feature:
  . applied patch #558876 ] cgi client customization
  . split instance initialisation into two steps, allowing config changes
    before the database is initialised.
+ . don't create an empty message on email issue creation if the email is empty
+ . #541941 ] changing multilink properties by mail
  . #526730 ] search for messages capability
+ . #505180 ] split MailGW.handle_Message
+   - also changed cgi client since it was duplicating the functionality
 
 Fixed:
  . stop sending blank (whitespace-only) notes
@@ -58,6 +62,7 @@ Fixed:
  . cleaned out the template stylesheets, removing a bunch of junk that really
    wasn't necessary (font specs, styles never used) and added a style for 
    message content
+ . build htmlbase if tests are run using CVS checkout
 
 2002-03-25 - 0.4.1
 Feature:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.53 2002-05-25 07:16:24 rochecompaan Exp $
+# $Id: roundupdb.py,v 1.54 2002-05-29 01:16:17 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -115,11 +115,9 @@ class Class(hyperdb.Class):
         """
         if propvalues.has_key('creation') or propvalues.has_key('activity'):
             raise KeyError, '"creation" and "activity" are reserved'
-        for audit in self.auditors['create']:
-            audit(self.db, self, None, propvalues)
+        self.fireAuditors('create', None, propvalues)
         nodeid = hyperdb.Class.create(self, **propvalues)
-        for react in self.reactors['create']:
-            react(self.db, self, nodeid, None)
+        self.fireReactors('create', nodeid, None)
         return nodeid
 
     def set(self, nodeid, **propvalues):
@@ -128,8 +126,7 @@ class Class(hyperdb.Class):
         """
         if propvalues.has_key('creation') or propvalues.has_key('activity'):
             raise KeyError, '"creation" and "activity" are reserved'
-        for audit in self.auditors['set']:
-            audit(self.db, self, nodeid, propvalues)
+        self.fireAuditors('set', nodeid, propvalues)
         # Take a copy of the node dict so that the subsequent set
         # operation doesn't modify the oldvalues structure.
         try:
@@ -141,18 +138,15 @@ class Class(hyperdb.Class):
             # with no intervening commit()
             oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
         hyperdb.Class.set(self, nodeid, **propvalues)
-        for react in self.reactors['set']:
-            react(self.db, self, nodeid, oldvalues)
+        self.fireReactors('set', nodeid, oldvalues)
 
     def retire(self, nodeid):
         """These operations trigger detectors and can be vetoed.  Attempts
         to modify the "creation" or "activity" properties cause a KeyError.
         """
-        for audit in self.auditors['retire']:
-            audit(self.db, self, nodeid, None)
+        self.fireAuditors('retire', nodeid, None)
         hyperdb.Class.retire(self, nodeid)
-        for react in self.reactors['retire']:
-            react(self.db, self, nodeid, None)
+        self.fireReactors('retire', nodeid, None)
 
     def get(self, nodeid, propname, default=_marker, cache=1):
         """Attempts to get the "creation" or "activity" properties should
@@ -208,6 +202,12 @@ class Class(hyperdb.Class):
         if detector not in l:
             self.auditors[event].append(detector)
 
+    def fireAuditors(self, action, nodeid, newvalues):
+        """Fire all registered auditors.
+        """
+        for audit in self.auditors[action]:
+            audit(self.db, self, nodeid, newvalues)
+
     def react(self, event, detector):
         """Register a detector
         """
@@ -215,6 +215,11 @@ class Class(hyperdb.Class):
         if detector not in l:
             self.reactors[event].append(detector)
 
+    def fireReactors(self, action, nodeid, oldvalues):
+        """Fire all registered reactors.
+        """
+        for react in self.reactors[action]:
+            react(self.db, self, nodeid, oldvalues)
 
 class FileClass(Class):
     def create(self, **propvalues):
@@ -297,7 +302,7 @@ class IssueClass(Class):
         appended to the "messages" field of the specified issue.
         """
 
-    def nosymessage(self, nodeid, msgid, change_note):
+    def nosymessage(self, nodeid, msgid, oldvalues):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -318,9 +323,6 @@ class IssueClass(Class):
         # figure the author's id, and indicate they've received the message
         authid = messages.get(msgid, 'author')
 
-        # get the current nosy list, we'll need it
-        nosy = self.get(nodeid, 'nosy')
-
         # possibly send the message to the author, as long as they aren't
         # anonymous
         if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' and
@@ -329,6 +331,7 @@ class IssueClass(Class):
         r[authid] = 1
 
         # now figure the nosy people who weren't recipients
+        nosy = self.get(nodeid, 'nosy')
         for nosyid in nosy:
             # Don't send nosy mail to the anonymous user (that user
             # shouldn't appear in the nosy list, but just in case they
@@ -341,6 +344,12 @@ class IssueClass(Class):
                 sendto.append(nosyid)
                 recipients.append(nosyid)
 
+        # generate a change note
+        if oldvalues:
+            note = self.generateChangeNote(nodeid, oldvalues)
+        else:
+            note = self.generateCreateNote(nodeid)
+
         # we have new recipients
         if sendto:
 	    # map userids to addresses
@@ -350,7 +359,7 @@ class IssueClass(Class):
             messages.set(msgid, recipients=recipients)
 
             # send the message
-            self.send_message(nodeid, msgid, change_note, sendto)
+            self.send_message(nodeid, msgid, note, sendto)
 
     # XXX backwards compatibility - don't remove
     sendmessage = nosymessage
@@ -625,6 +634,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.53  2002/05/25 07:16:24  rochecompaan
+# Merged search_indexing-branch with HEAD
+#
 # Revision 1.52  2002/05/15 03:27:16  richard
 #  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
 #    (thanks dman)

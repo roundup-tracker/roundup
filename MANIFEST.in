@@ -5,5 +5,5 @@ recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt
 exclude doc/announcement.txt
 include roundup-*
-include *.txt
+include run_tests *.txt
 

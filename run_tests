@@ -9,7 +9,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: run_tests,v 1.6 2002-05-25 07:24:29 rochecompaan Exp $
+# $Id: run_tests,v 1.7 2002-05-29 01:16:16 richard Exp $
+
+# make sure we have the htmlbase
+try:
+    from roundup.templates.classic import htmlbase
+except ImportError:
+    import setup
+    setup.buildTemplates()
 
 from test import go
 import sys
@@ -20,6 +27,9 @@ else:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2002/05/25 07:24:29  rochecompaan
+# oops
+#
 # Revision 1.4  2002/02/14 23:38:12  richard
 # Fixed the unit tests for the mailgw re: the x-roundup-name header.
 # Also made the test runner more user-friendly:

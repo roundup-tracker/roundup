@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.73 2002-05-22 04:12:05 richard Exp $
+$Id: mailgw.py,v 1.74 2002-05-29 01:16:17 richard Exp $
 '''
 
 
@@ -344,7 +344,7 @@ Subject was: "%s"
             title = ''
 
         # but we do need either a title or a nodeid...
-        if not nodeid and not title:
+        if nodeid is None and not title:
             raise MailUsageError, '''
 I cannot match your message to a node in the database - you need to either
 supply a full node identifier (with number, eg "[issue123]" or keep the
@@ -353,105 +353,135 @@ previous subject title intact so I can match that.
 Subject was: "%s"
 '''%subject
 
-        # extract the args
-        subject_args = m.group('args')
-
         # If there's no nodeid, check to see if this is a followup and
         # maybe someone's responded to the initial mail that created an
         # entry. Try to find the matching nodes with the same title, and
         # use the _last_ one matched (since that'll _usually_ be the most
         # recent...)
-        if not nodeid and m.group('refwd'):
+        if nodeid is None and m.group('refwd'):
             l = cl.stringFind(title=title)
             if l:
                 nodeid = l[-1]
 
-        # start of the props
+        # if a nodeid was specified, make sure it's valid
+        if nodeid is not None and not cl.hasnode(nodeid):
+            raise MailUsageError, '''
+The node specified by the designator in the subject of your message ("%s")
+does not exist.
+
+Subject was: "%s"
+'''%(nodeid, subject)
+
+        #
+        # extract the args
+        #
+        subject_args = m.group('args')
+
+        #
+        # handle the subject argument list
+        #
+        # figure what the properties of this Class are
         properties = cl.getprops()
         props = {}
-
-        # handle the args
         args = m.group('args')
         if args:
+            errors = []
             for prop in string.split(args, ';'):
                 # extract the property name and value
                 try:
-                    key, value = prop.split('=')
+                    propname, value = prop.split('=')
                 except ValueError, message:
-                    raise MailUsageError, '''
-Subject argument list not of form [arg=value,value,...;arg=value,value...]
-   (specific exception message was "%s")
-
-Subject was: "%s"
-'''%(message, subject)
+                    errors.append('not of form [arg=value,'
+                        'value,...;arg=value,value...]')
+                    break
 
                 # ensure it's a valid property name
-                key = key.strip()
+                propname = propname.strip()
                 try:
-                    proptype =  properties[key]
+                    proptype =  properties[propname]
                 except KeyError:
-                    raise MailUsageError, '''
-Subject argument list refers to an invalid property: "%s"
-
-Subject was: "%s"
-'''%(key, subject)
+                    errors.append('refers to an invalid property: '
+                        '"%s"'%propname)
+                    continue
 
                 # convert the string value to a real property value
                 if isinstance(proptype, hyperdb.String):
-                    props[key] = value.strip()
+                    props[propname] = value.strip()
                 if isinstance(proptype, hyperdb.Password):
-                    props[key] = password.Password(value.strip())
+                    props[propname] = password.Password(value.strip())
                 elif isinstance(proptype, hyperdb.Date):
                     try:
-                        props[key] = date.Date(value.strip())
+                        props[propname] = date.Date(value.strip())
                     except ValueError, message:
-                        raise UsageError, '''
-Subject argument list contains an invalid date for %s.
-
-Error was: %s
-Subject was: "%s"
-'''%(key, message, subject)
+                        errors.append('contains an invalid date for '
+                            '%s.'%propname)
                 elif isinstance(proptype, hyperdb.Interval):
                     try:
-                        props[key] = date.Interval(value) # no strip needed
+                        props[propname] = date.Interval(value)
                     except ValueError, message:
-                        raise UsageError, '''
-Subject argument list contains an invalid date interval for %s.
-
-Error was: %s
-Subject was: "%s"
-'''%(key, message, subject)
+                        errors.append('contains an invalid date interval'
+                            'for %s.'%propname)
                 elif isinstance(proptype, hyperdb.Link):
                     linkcl = self.db.classes[proptype.classname]
                     propkey = linkcl.labelprop(default_to_id=1)
                     try:
-                        props[key] = linkcl.lookup(value)
+                        props[propname] = linkcl.lookup(value)
                     except KeyError, message:
-                        raise MailUsageError, '''
-Subject argument list contains an invalid value for %s.
-
-Error was: %s
-Subject was: "%s"
-'''%(key, message, subject)
+                        errors.append('"%s" is not a value for %s.'%(value,
+                            propname))
                 elif isinstance(proptype, hyperdb.Multilink):
                     # get the linked class
                     linkcl = self.db.classes[proptype.classname]
                     propkey = linkcl.labelprop(default_to_id=1)
+                    if nodeid:
+                        curvalue = cl.get(nodeid, propname)
+                    else:
+                        curvalue = []
+
+                    # handle each add/remove in turn
                     for item in value.split(','):
                         item = item.strip()
+
+                        # handle +/-
+                        remove = 0
+                        if item.startswith('-'):
+                            remove = 1
+                            item = item[1:]
+                        elif item.startswith('+'):
+                            item = item[1:]
+
+                        # look up the value
                         try:
                             item = linkcl.lookup(item)
                         except KeyError, message:
-                            raise MailUsageError, '''
-Subject argument list contains an invalid value for %s.
+                            errors.append('"%s" is not a value for %s.'%(item,
+                                propname))
+                            continue
 
-Error was: %s
-Subject was: "%s"
-'''%(key, message, subject)
-                        if props.has_key(key):
-                            props[key].append(item)
+                        # perform the add/remove
+                        if remove:
+                            try:
+                                curvalue.remove(item)
+                            except ValueError:
+                                errors.append('"%s" is not currently in '
+                                    'for %s.'%(item, propname))
+                                continue
                         else:
-                            props[key] = [item]
+                            if item not in curvalue:
+                                curvalue.append(item)
+
+                    # that's it, set the new Multilink property value
+                    props[propname] = curvalue
+
+            # handle any errors parsing the argument list
+            if errors:
+                errors = '\n- '.join(errors)
+                raise MailUsageError, '''
+There were problems handling your subject line argument list:
+- %s
+
+Subject was: "%s"
+'''%(errors, subject)
 
         #
         # handle the users
@@ -624,155 +654,47 @@ not find a text/plain part to use.
             files.append(self.db.file.create(type=mime_type, name=name,
                 content=data))
 
+        # 
+        # create the message if there's a message body (content)
         #
-        # now handle the db stuff
-        #
-        if nodeid:
-            # If an item designator (class name and id number) is found there,
-            # the newly created "msg" node is added to the "messages" property
-            # for that item, and any new "file" nodes are added to the "files" 
-            # property for the item. 
-
-            # if the message is currently 'unread' or 'resolved', then set
-            # it to 'chatting'
-            if properties.has_key('status'):
-                try:
-                    # determine the id of 'unread', 'resolved' and 'chatting'
-                    unread_id = self.db.status.lookup('unread')
-                    resolved_id = self.db.status.lookup('resolved')
-                    chatting_id = self.db.status.lookup('chatting')
-                except KeyError:
-                    pass
-                else:
-                    current_status = cl.get(nodeid, 'status')
-                    if (not props.has_key('status') and
-                            current_status == unread_id or
-                            current_status == resolved_id):
-                        props['status'] = chatting_id
-
-            # update the nosy list
-            current = {}
-            for nid in cl.get(nodeid, 'nosy'):
-                current[nid] = 1
-            self.updateNosy(cl, props, author, recipients, current)
-
-            # create the message
+        if content:
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files, messageid=messageid,
                 inreplyto=inreplyto)
-            try:
+
+            # attach the message to the node
+            if nodeid:
+                # add the message to the node's list
                 messages = cl.get(nodeid, 'messages')
-            except IndexError:
-                raise MailUsageError, '''
-The node specified by the designator in the subject of your message ("%s")
-does not exist.
+                messages.append(message_id)
+                props['messages'] = messages
+            else:
+                # pre-load the messages list
+                props['messages'] = [message_id]
 
-Subject was: "%s"
-'''%(nodeid, subject)
-            messages.append(message_id)
-            props['messages'] = messages
+                # set the title to the subject
+                if properties.has_key('title') and not props.has_key('title'):
+                    props['title'] = title
 
-            # now apply the changes
-            try:
+        #
+        # perform the node change / create
+        #
+        try:
+            if nodeid:
                 cl.set(nodeid, **props)
-            except (TypeError, IndexError, ValueError), message:
-                raise MailUsageError, '''
-There was a problem with the message you sent:
-   %s
-'''%message
-            # commit the changes to the DB
-            self.db.commit()
-        else:
-            # If just an item class name is found there, we attempt to create a
-            # new item of that class with its "messages" property initialized to
-            # contain the new "msg" node and its "files" property initialized to
-            # contain any new "file" nodes. 
-            message_id = self.db.msg.create(author=author,
-                recipients=recipients, date=date.Date('.'), summary=summary,
-                content=content, files=files, messageid=messageid,
-                inreplyto=inreplyto)
-
-            # pre-set the issue to unread
-            if properties.has_key('status') and not props.has_key('status'):
-                try:
-                    # determine the id of 'unread'
-                    unread_id = self.db.status.lookup('unread')
-                except KeyError:
-                    pass
-                else:
-                    props['status'] = '1'
-
-            # set the title to the subject
-            if properties.has_key('title') and not props.has_key('title'):
-                props['title'] = title
-
-            # pre-load the messages list
-            props['messages'] = [message_id]
-
-            # set up (clean) the nosy list
-            self.updateNosy(cl, props, author, recipients)
-
-            # and attempt to create the new node
-            try:
+            else:
                 nodeid = cl.create(**props)
-            except (TypeError, IndexError, ValueError), message:
-                raise MailUsageError, '''
+        except (TypeError, IndexError, ValueError), message:
+            raise MailUsageError, '''
 There was a problem with the message you sent:
    %s
 '''%message
 
-            # commit the new node(s) to the DB
-            self.db.commit()
+        # commit the changes to the DB
+        self.db.commit()
 
         return nodeid
-
-    def updateNosy(self, cl, props, author, recipients, current=None):
-        '''Determine what the nosy list should be given:
-
-            props:      properties specified on the subject line of the message
-            author:     the sender of the message
-            recipients: the recipients (to, cc) of the message
-            current:    if the issue already exists, this is the current nosy
-                        list, as a dictionary.
-        '''
-        if current is None:
-            current = {}
-            ok = ('new', 'yes')
-        else:
-            ok = ('yes',)
-
-        # add nosy in arguments to issue's nosy list
-        nosy = props.get('nosy', [])
-        for value in nosy:
-            if not self.db.hasnode('user', value):
-                continue
-            if not current.has_key(value):
-                current[value] = 1
-
-        # add the author to the nosy list
-        if getattr(self.instance, 'ADD_AUTHOR_TO_NOSY', 'new') in ok:
-            if not current.has_key(author):
-                current[author] = 1
-
-        # add on the recipients of the message
-        if getattr(self.instance, 'ADD_RECIPIENTS_TO_NOSY', 'new') in ok:
-            for recipient in recipients:
-                if not current.has_key(recipient):
-                    current[recipient] = 1
-
-        # add assignedto(s) to the nosy list
-        if props.has_key('assignedto'):
-            propdef = cl.getprops()
-            if isinstance(propdef['assignedto'], hyperdb.Link):
-                assignedto_ids = [props['assignedto']]
-            elif isinstance(propdef['assignedto'], hyperdb.Multilink):
-                assignedto_ids = props['assignedto']
-            for assignedto_id in assignedto_ids:
-                if not current.has_key(assignedto_id):
-                    current[assignedto_id] = 1
-
-        props['nosy'] = current.keys()
 
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
@@ -843,6 +765,12 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.73  2002/05/22 04:12:05  richard
+#  . applied patch #558876 ] cgi client customization
+#    ... with significant additions and modifications ;)
+#    - extended handling of ML assignedto to all places it's handled
+#    - added more NotFound info
+#
 # Revision 1.72  2002/05/22 01:24:51  richard
 # Added note to MIGRATION about new config vars. Also made us more resilient
 # for upgraders. Reinstated list header style (oops)

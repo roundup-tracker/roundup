@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.125 2002-05-25 07:16:24 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.126 2002-05-29 01:16:17 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -604,86 +604,10 @@ function help_window(helpurl, width, height) {
     showmsg = shownode
     searchissue = searchnode
 
-    def _add_author_to_nosy(self, props):
-        ''' add the author value from the props to the nosy list
-        '''
-        if not props.has_key('author'):
-            return
-        author_id = props['author']
-        if not props.has_key('nosy'):
-            # load current nosy
-            if self.nodeid:
-                cl = self.db.classes[self.classname]
-                l = cl.get(self.nodeid, 'nosy')
-                if author_id in l:
-                    return
-                props['nosy'] = l
-            else:
-                props['nosy'] = []
-        if author_id not in props['nosy']:
-            props['nosy'].append(author_id)
-
-    def _add_assignedto_to_nosy(self, props):
-        ''' add the assignedto value from the props to the nosy list
-        '''
-        # get the properties definition and make some checks
-        if not props.has_key('assignedto'):
-            return
-        cl = self.db.classes[self.classname]
-        propdef = cl.getprops()
-        if not propdef.has_key('assignedto') or not propdef.has_key('nosy'):
-            return
-
-        # get the assignedto(s)
-        if isinstance(propdef['assignedto'], hyperdb.Link):
-            assignedto_ids = [props['assignedto']]
-        elif isinstance(propdef['assignedto'], hyperdb.Multilink):
-            assignedto_ids = props['assignedto']
-        else:
-            return
-
-        # ok, now get the nosy list value
-        if not props.has_key('nosy'):
-            # load current nosy
-            if self.nodeid:
-                props['nosy'] = cl.get(self.nodeid, 'nosy')
-            else:
-                props['nosy'] = []
-
-        # and update for assignedto id(s)
-        for assignedto_id in assignedto_ids:
-            if assignedto_id not in props['nosy']:
-                props['nosy'].append(assignedto_id)
-
     def _changenode(self, props):
         ''' change the node based on the contents of the form
         '''
         cl = self.db.classes[self.classname]
-        # set status to chatting if 'unread' or 'resolved'
-        try:
-            # determine the id of 'unread','resolved' and 'chatting'
-            unread_id = self.db.status.lookup('unread')
-            resolved_id = self.db.status.lookup('resolved')
-            chatting_id = self.db.status.lookup('chatting')
-            current_status = cl.get(self.nodeid, 'status')
-            if props.has_key('status'):
-                new_status = props['status']
-            else:
-                # apparently there's a chance that some browsers don't
-                # send status...
-                new_status = current_status
-        except KeyError:
-            pass
-        else:
-            if new_status == unread_id or (new_status == resolved_id
-                    and current_status == resolved_id):
-                props['status'] = chatting_id
-
-        self._add_assignedto_to_nosy(props)
-
-        # possibly add the author of the change to the nosy list
-        if self.db.config.ADD_AUTHOR_TO_NOSY == 'yes':
-            self._add_author_to_nosy(props)
 
         # create the message
         message, files = self._handle_message()
@@ -700,22 +624,6 @@ function help_window(helpurl, width, height) {
         '''
         cl = self.db.classes[self.classname]
         props = parsePropsFromForm(self.db, cl, self.form)
-
-        # set status to 'unread' if not specified - a status of '- no
-        # selection -' doesn't make sense
-        if not props.has_key('status') and cl.getprops().has_key('status'):
-            try:
-                unread_id = self.db.status.lookup('unread')
-            except KeyError:
-                pass
-            else:
-                props['status'] = unread_id
-
-        self._add_assignedto_to_nosy(props)
-
-        # possibly add the author of the new node to the nosy list
-        if self.db.config.ADD_AUTHOR_TO_NOSY in ('new', 'yes'):
-            self._add_author_to_nosy(props)
 
         # check for messages and files
         message, files = self._handle_message()
@@ -1454,6 +1362,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.125  2002/05/25 07:16:24  rochecompaan
+# Merged search_indexing-branch with HEAD
+#
 # Revision 1.124  2002/05/24 02:09:24  richard
 # Nothing like a live demo to show up the bugs ;)
 #

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.33 2002-04-03 05:53:03 richard Exp $
+# $Id: setup.py,v 1.34 2002-05-29 01:16:16 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -112,8 +112,6 @@ def scriptname(path):
         script = script + ".bat"
     return script
 
-# build list of scripts from their implementation modules
-roundup_scripts = map(scriptname, glob('roundup/scripts/[!_]*.py'))
 
 
 #############################################################################
@@ -124,55 +122,75 @@ def isTemplateDir(dir):
     return dir[0] != '.' and dir != 'CVS' and os.path.isdir(dir) \
         and os.path.isfile(os.path.join(dir, '__init__.py'))
 
+# use that function to list all the templates
 templates = map(os.path.basename, filter(isTemplateDir,
     glob(os.path.join('roundup', 'templates', '*'))))
-packagelist = [
-    'roundup',
-    'roundup.backends',
-    'roundup.scripts',
-    'roundup.templates'
-]
-installdatafiles = [
-    ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
-] 
 
-for template in templates:
-    tdir = os.path.join('roundup', 'templates', template)
-    makeHtmlBase(tdir)
+def buildTemplates():
+    for template in templates:
+        tdir = os.path.join('roundup', 'templates', template)
+        makeHtmlBase(tdir)
 
-    # add the template package and subpackage
-    packagelist.append('roundup.templates.%s' % template)
-    packagelist.append('roundup.templates.%s.detectors' % template)
+if __name__ == '__main__':
+    # build list of scripts from their implementation modules
+    roundup_scripts = map(scriptname, glob('roundup/scripts/[!_]*.py'))
 
-    # scan for data files
-    tfiles = glob(os.path.join(tdir, 'html', '*'))
-    tfiles = filter(os.path.isfile, tfiles)
-    installdatafiles.append(
-        ('share/roundup/templates/%s/html' % template, tfiles)
+    # template munching
+    templates = map(os.path.basename, filter(isTemplateDir,
+        glob(os.path.join('roundup', 'templates', '*'))))
+    packagelist = [
+        'roundup',
+        'roundup.backends',
+        'roundup.scripts',
+        'roundup.templates'
+    ]
+    installdatafiles = [
+        ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
+    ] 
+
+    # munge the template HTML into the htmlbase module
+    buildTemplates()
+
+    # add the templates to the setup packages and data files lists
+    for template in templates:
+        tdir = os.path.join('roundup', 'templates', template)
+
+        # add the template package and subpackage
+        packagelist.append('roundup.templates.%s' % template)
+        packagelist.append('roundup.templates.%s.detectors' % template)
+
+        # scan for data files
+        tfiles = glob(os.path.join(tdir, 'html', '*'))
+        tfiles = filter(os.path.isfile, tfiles)
+        installdatafiles.append(
+            ('share/roundup/templates/%s/html' % template, tfiles)
+        )
+
+    # perform the setup action
+    setup(
+        name = "roundup", 
+        version = "0.4.1",
+        description = "Roundup issue tracking system.",
+        author = "Richard Jones",
+        author_email = "richard@users.sourceforge.net",
+        url = 'http://sourceforge.net/projects/roundup/',
+        packages = packagelist,
+
+        # Override certain command classes with our own ones
+        cmdclass = {
+            'build_scripts': build_scripts_roundup,
+        },
+        scripts = roundup_scripts,
+
+        data_files =  installdatafiles
     )
-
-
-setup(
-    name = "roundup", 
-    version = "0.4.1",
-    description = "Roundup issue tracking system.",
-    author = "Richard Jones",
-    author_email = "richard@users.sourceforge.net",
-    url = 'http://sourceforge.net/projects/roundup/',
-    packages = packagelist,
-
-    # Override certain command classes with our own ones
-    cmdclass = {
-        'build_scripts': build_scripts_roundup,
-    },
-    scripts = roundup_scripts,
-
-    data_files =  installdatafiles
-)
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2002/04/03 05:53:03  richard
+# Didn't get around to committing these after the last release.
+#
 # Revision 1.32  2002/03/27 23:47:58  jhermann
 # Fix for scripts running under CMD.EXE
 #

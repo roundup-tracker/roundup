@@ -15,10 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.16 2002-02-14 23:38:12 richard Exp $
+# $Id: __init__.py,v 1.17 2002-05-29 01:16:17 richard Exp $
 
 import os, tempfile, unittest, shutil
-os.environ['SENDMAILDEBUG'] = tempfile.mktemp()
+import roundup.roundupdb
+roundup.roundupdb.SENDMAILDEBUG=os.environ['SENDMAILDEBUG']=tempfile.mktemp()
 
 # figure all the modules available
 dir = os.path.split(__file__)[0]
@@ -39,6 +40,13 @@ def go(tests=all_tests):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/02/14 23:38:12  richard
+# Fixed the unit tests for the mailgw re: the x-roundup-name header.
+# Also made the test runner more user-friendly:
+#   ./run_tests            - detect all tests in test/test_<name>.py and run them
+#   ./run_tests <name>     - run only test/test_<name>.py
+# eg ./run_tests mailgw    - run the mailgw test from test/test_mailgw.py
+#
 # Revision 1.15  2002/01/22 00:12:20  richard
 # oops
 #

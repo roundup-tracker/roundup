@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.19 2002-05-23 04:26:05 richard Exp $
+# $Id: test_mailgw.py,v 1.20 2002-05-29 01:16:17 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -86,7 +86,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
-    def testNewIssue(self):
+    def doNewIssue(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork
@@ -105,6 +105,9 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, ['2', '3'])
+
+    def testNewIssue(self):
+        self.doNewIssue()
 
     def testNewIssueNosy(self):
         self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
@@ -218,53 +221,8 @@ _________________________________________________________________________
 
     # BUG should test some binary attamchent too.
 
-    def testFollowup(self):
-        self.testNewIssue()
-        message = cStringIO.StringIO('''Content-Type: text/plain;
-  charset="iso-8859-1"
-From: richard <richard@test>
-To: issue_tracker@your.tracker.email.domain.example
-Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
-Subject: [issue1] Testing... [assignedto=mary; nosy=john]
-
-This is a followup
-''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.main(message)
-
-        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
-'''FROM: roundup-admin@your.tracker.email.domain.example
-TO: chef@bork.bork.bork, john@test, mary@test
-Content-Type: text/plain
-Subject: [issue1] Testing...
-To: chef@bork.bork.bork, john@test, mary@test
-From: richard <issue_tracker@your.tracker.email.domain.example>
-Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
-MIME-Version: 1.0
-Message-Id: <followup_dummy_id>
-In-Reply-To: <dummy_test_message_id>
-X-Roundup-Name: Roundup issue tracker
-Content-Transfer-Encoding: quoted-printable
-
-
-richard <richard@test> added the comment:
-
-This is a followup
-
-
-----------
-assignedto:  -> mary
-nosy: +mary, john
-status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
-http://your.tracker.url.example/issue1
-_________________________________________________________________________
-''')
-
-    def testFollowup2(self):
-        self.testNewIssue()
+    def testSimpleFollowup(self):
+        self.doNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
@@ -305,8 +263,57 @@ http://your.tracker.url.example/issue1
 _________________________________________________________________________
 ''')
 
+    def testFollowup(self):
+        self.doNewIssue()
+
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing... [assignedto=mary; nosy=john]
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, ['2', '3', '4', '5'])
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork, john@test, mary@test
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, john@test, mary@test
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+richard <richard@test> added the comment:
+
+This is a followup
+
+
+----------
+assignedto:  -> mary
+nosy: +mary, john
+status: unread -> chatting
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
+''')
+
     def testFollowupTitleMatch(self):
-        self.testNewIssue()
+        self.doNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
@@ -351,8 +358,8 @@ _________________________________________________________________________
 ''')
 
     def testFollowupNosyAuthor(self):
-        self.testNewIssue()
-        self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.doNewIssue()
+        self.db.config.ADD_AUTHOR_TO_NOSY = self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
@@ -397,8 +404,8 @@ _________________________________________________________________________
 ''')
 
     def testFollowupNosyRecipients(self):
-        self.testNewIssue()
-        self.instance.ADD_RECIPIENTS_TO_NOSY = 'yes'
+        self.doNewIssue()
+        self.db.config.ADD_RECIPIENTS_TO_NOSY = self.instance.ADD_RECIPIENTS_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
@@ -444,8 +451,8 @@ _________________________________________________________________________
 ''')
 
     def testFollowupNosyAuthorAndCopy(self):
-        self.testNewIssue()
-        self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.doNewIssue()
+        self.db.config.ADD_AUTHOR_TO_NOSY = self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -491,7 +498,7 @@ _________________________________________________________________________
 ''')
 
     def testFollowupNoNosyAuthor(self):
-        self.testNewIssue()
+        self.doNewIssue()
         self.instance.ADD_AUTHOR_TO_NOSY = 'no'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -536,7 +543,7 @@ _________________________________________________________________________
 ''')
 
     def testFollowupNoNosyRecipients(self):
-        self.testNewIssue()
+        self.doNewIssue()
         self.instance.ADD_RECIPIENTS_TO_NOSY = 'no'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -581,8 +588,29 @@ _________________________________________________________________________
 
 ''')
 
+    def testNosyRemove(self):
+        self.doNewIssue()
+
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing... [nosy=-richard]
+
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, ['2'])
+
+        # NO NOSY MESSAGE SHOULD BE SENT!
+        self.assert_(not os.path.exists(os.environ['SENDMAILDEBUG']))
+
     def testEnc01(self):
-        self.testNewIssue()
+        self.doNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
@@ -628,7 +656,7 @@ _________________________________________________________________________
 
 
     def testMultipartEnc01(self):
-        self.testNewIssue()
+        self.doNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
@@ -691,6 +719,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/05/23 04:26:05  richard
+# 'I must run unit tests before committing\n' * 100
+#
 # Revision 1.18  2002/05/15 03:27:16  richard
 #  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
 #    (thanks dman)
