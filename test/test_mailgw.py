@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.22 2002-07-09 01:21:24 richard Exp $
+# $Id: test_mailgw.py,v 1.23 2002-07-14 02:02:43 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -286,7 +286,7 @@ From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
-Subject: [issue1] Testing... [assignedto=mary; nosy=john]
+Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
@@ -335,7 +335,7 @@ From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
-Subject: Re: Testing... [assignedto=mary; nosy=john]
+Subject: Re: Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
@@ -743,6 +743,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/07/09 01:21:24  richard
+# Added ability for unit tests to turn off exception handling in mailgw so
+# that exceptions are reported earlier (and hence make sense).
+#
 # Revision 1.21  2002/06/18 03:59:59  dman13
 # Updated message strings to match the RFC822 address quoting performed
 # by the 'email' and 'rfc822' modules.  The verification really should
