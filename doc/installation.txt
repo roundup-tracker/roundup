@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.60 $
+:Version: $Revision: 1.61 $
 
 .. contents::
 
@@ -31,12 +31,10 @@ Roundup scripts
 Prerequisites
 =============
 
-Python 2.1.1 or newer with a functioning anydbm or bsddb module. Download the
+Python 2.1.3 or newer with a functioning anydbm or bsddb module. Download the
 latest version from http://www.python.org/. It is highly recommended that
-users install the latest patch version of python - 2.1.3 or 2.2.3 - as these
-contain many fixes to serious bugs. Python 2.3 (currently in beta) has some
-"issues", at least with the SQLite backend, and possibly with other backends
-as well. It shouldn't be used with Roundup for now.
+users install the latest patch version of python - 2.1.3, 2.2.3 or 2.3.2 -
+as these contain many fixes to serious bugs.
 
 If you want to use Berkeley DB bsddb3 with Roundup, use version 3.3.0 or
 later. Download the latest version from http://pybsddb.sourceforge.net/.
@@ -56,8 +54,8 @@ Testing your Python
 -------------------
 
 Once you've unpacked roundup's source, run ``python ./run_tests`` in the
-source directory and make sure there are no errors.
-If there are errors, please let us know!
+source directory and make sure there are no errors. If there are errors,
+please let us know!
 
 If the above fails, you may be using the wrong version of python. Try
 ``python2 ./run_tests``. If that works, you will need to substitute
@@ -82,10 +80,10 @@ at so you may start playing. Three users will be set up:
 Installation
 ============
 
-Note: some systems, such as Debian and NetBSD, already have Roundup
-      installed. Try running the command "roundup-admin" with no arguments,
-      and if it runs you may skip the `Basic Installation Steps`_
-      below.
+:Note: Some systems, such as Debian and NetBSD, already have Roundup
+       installed. Try running the command "roundup-admin" with no arguments,
+       and if it runs you may skip the `Basic Installation Steps`_
+       below and go straight to `configuring your first tracker`_.
 
 Set aside 15-30 minutes. Please make sure you're using a supported version of
 Python -- see `testing your python`_. There's several steps to follow in your
@@ -244,9 +242,8 @@ There's several to choose from, each with benefits and limitations:
 **mysql**
   Backend for popular RDBMS MySQL. According to benchmarks, this backend works
   much faster than any of \*dbm ones, but slightly slower than metakit and
-  sqlite. Scalability is unknown at present. Roundup requires InnoDB or BDB
-  support in MySQL. For more info on requirements and installation see
-  `additional mysql documentation`_ (doc/mysql.txt)
+  sqlite. A good scalability is not a property of this backend for now,
+  though. For more info on backend installation see doc/mysql.txt. 
 **metakit**
   This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.
@@ -326,23 +323,6 @@ name=home values on the command-line after all the other options.
 
 To make the server run in the background, use the "-d" option, specifying the
 name of a file to write the server process id (pid) to.
-
-To run the server proxied through apache (to take advantage of SSL or other
-apache features), use the following configuration lines::
-
-  LoadModule proxy_module libexec/apache2/mod_proxy.so
-  LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
-  LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
-
-  <Location /prometheus/>
-    ProxyPass http://192.168.1.2:9090/roundup/
-    AuthType Basic
-    AuthName Roundup
-    AuthUserFile /some/place/htpasswd
-    Require valid-user
-  </Location>
-
-Changing the ProxyPass line to point to the server you're running.
 
 
 Zope Product - ZRoundup
@@ -585,5 +565,4 @@ Next: `User Guide`_
 .. _`maintenance documentation`: maintenance.html
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _metakit: http://www.equi4.com/metakit/
-.. _`additional mysql documentation`: doc/mysql.html
 
