@@ -29,6 +29,7 @@ Fixed:
 - fixed REMOTE_USER (external HTTP Basic auth) (sf bug 977309)
 - fixed roundup-admin "find" to use better value parsing
 - fixed RDBMS Class.find() to handle None value in multiple find
+- export now stores file "content" in separate files in export directory
 
 
 2004-06-10 0.7.4
