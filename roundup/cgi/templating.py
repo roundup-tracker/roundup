@@ -173,7 +173,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
 
         if self._v_errors:
             raise PageTemplate.PTRuntimeError, \
-                'Page Template %s has errors.' % self.id
+                'Page Template %s has errors.'%self.id
 
         # figure the context
         classname = classname or client.classname

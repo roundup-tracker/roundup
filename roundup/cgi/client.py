@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.33 2002-09-15 22:41:15 richard Exp $
+# $Id: client.py,v 1.34 2002-09-16 05:32:09 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -344,8 +344,8 @@ class Client:
             # let the template render figure stuff out
             return pt.render(self, None, None, **kwargs)
         except PageTemplate.PTRuntimeError, message:
-            return '<strong>%s</strong><ol>%s</ol>'%(message,
-                '<li>'.join(pt._v_errors))
+            return '<strong>%s</strong><ol><li>%s</ol>'%(message,
+                '<li>'.join([cgi.escape(x) for x in pt._v_errors]))
         except NoTemplate, message:
             return '<strong>%s</strong>'%message
         except:
@@ -369,21 +369,21 @@ class Client:
         return self.renderTemplate(self.classname, self.template)
 
     # these are the actions that are available
-    actions = {
-        'edit':     'editItemAction',
-        'editCSV':  'editCSVAction',
-        'new':      'newItemAction',
-        'register': 'registerAction',
-        'login':    'loginAction',
-        'logout':   'logout_action',
-        'search':   'searchAction',
-    }
+    actions = (
+        ('edit',     'editItemAction'),
+        ('editCSV',  'editCSVAction'),
+        ('new',      'newItemAction'),
+        ('register', 'registerAction'),
+        ('login',    'loginAction'),
+        ('logout',   'logout_action'),
+        ('search',   'searchAction'),
+    )
     def handle_action(self):
         ''' Determine whether there should be an _action called.
 
             The action is defined by the form variable :action which
             identifies the method on this object to call. The four basic
-            actions are defined in the "actions" dictionary on this class:
+            actions are defined in the "actions" sequence on this class:
              "edit"      -> self.editItemAction
              "new"       -> self.newItemAction
              "register"  -> self.registerAction
@@ -397,11 +397,14 @@ class Client:
         try:
             # get the action, validate it
             action = self.form[':action'].value
-            if not self.actions.has_key(action):
+            for name, method in selc.actions:
+                if name == action:
+                    break
+            else:
                 raise ValueError, 'No such action "%s"'%action
 
             # call the mapped action
-            getattr(self, self.actions[action])()
+            getattr(self, method)()
         except Redirect:
             raise
         except Unauthorised:

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.39 $
+:Version: $Revision: 1.40 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1870,6 +1870,25 @@ Permission requirement (install this as "assignedtoFixer.py" in your tracker
 
 So now, if the edit attempts to set the assignedto to a user that doesn't have
 the "Fixer" Permission, the error will be raised.
+
+
+Setting up a "wizard" (or "druid") for controlled adding of issues
+------------------------------------------------------------------
+
+1. set up the page templates you wish to use for data input
+2. determine what actions need to be taken between the pages - these are
+   usually to validate user choices and determine what page is next
+3. encode those actions in methods on the interfaces Client class and insert
+   hooks to those actions in the "actions" attribute on that class, like so::
+
+    actions = client.Class.actions + (
+        ('page1_submit', page1SubmitAction),
+        ...
+    )
+
+    def page1SubmitAction(self):
+        # do the page 1 submit stuff, redirecting the user to the appropriate
+        # next page if necessary
 
 
 -------------------
