@@ -97,6 +97,7 @@ roundup-server:
   . check the source file timestamps before reloading
 cgi_client
   . keep form fields in form on bad submission - only clear it if all ok
+  . change notes should be handled using an auditor
 
 
 5. Known Bugs
