@@ -38,7 +38,7 @@ class DBTestCase(unittest.TestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['title', 'status', 'user'], 'wrong prop list')
+        self.assertEqual(keys, ['fixer', 'status', 'title'], 'wrong prop list')
         self.db.issue.set('5', status=2)
         self.db.issue.get('5', "status")
         self.db.status.get('2', "name")
@@ -50,6 +50,7 @@ class DBTestCase(unittest.TestCase):
 
     def testExceptions(self):
         # this tests the exceptions that should be raised
+        pass
 
 def suite():
    return unittest.makeSuite(DBTestCase, 'test')
