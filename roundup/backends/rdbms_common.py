@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.150 2005-03-02 14:03:44 a1s Exp $
+# $Id: rdbms_common.py,v 1.151 2005-03-03 22:16:32 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1896,11 +1896,10 @@ class Class(hyperdb.Class):
                    KeyError is raised.  That property must be a Link or
                    Multilink property, or a TypeError is raised.
 
-        Any node in this class whose 'propname' property links to any of the
-        nodeids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7, so we have hits on these
-        issues:
+        Any node in this class whose 'propname' property links to any of
+        the nodeids will be returned. Examples::
 
+            db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
         # shortcut

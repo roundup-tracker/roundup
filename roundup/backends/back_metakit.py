@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.92 2005-02-14 02:48:11 richard Exp $
+# $Id: back_metakit.py,v 1.93 2005-03-03 22:16:32 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1084,18 +1084,16 @@ class Class(hyperdb.Class):
     def find(self, **propspec):
         '''Get the ids of nodes in this class which link to the given nodes.
 
-        'propspec'
-             consists of keyword args propname={nodeid:1,}
-        'propname'
-             must be the name of a property in this class, or a
-             KeyError is raised.  That property must be a Link or
-             Multilink property, or a TypeError is raised.
+        'propspec' consists of keyword args propname=nodeid or
+                   propname={nodeid:1, }
+        'propname' must be the name of a property in this class, or a
+                   KeyError is raised.  That property must be a Link or
+                   Multilink property, or a TypeError is raised.
 
-        Any node in this class whose propname property links to any of the
-        nodeids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7; so we have hits on these
-        issues::
+        Any node in this class whose 'propname' property links to any of
+        the nodeids will be returned. Examples::
 
+            db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
         propspec = propspec.items()
