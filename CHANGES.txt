@@ -11,6 +11,7 @@ Fixed:
 - fix messageid generated when msgid is None for send_message (sf bug 987933)
 - make user permissions check more sane (fix search page for anonymous)
 - fixed RDBMS filter() for no matches from full-text search (sf bug 990778)
+- fixed DateHTMLProperty for invalid date entry (sf bug 986538)
 
 
 2004-06-24 0.7.5

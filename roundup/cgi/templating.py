@@ -1301,7 +1301,7 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, date.Date('.'))
 
-    def field(self, size = 30):
+    def field(self, size=30):
         ''' Render a form edit field for the property
 
             If not editable, just display the value via plain().
@@ -1310,6 +1310,8 @@ class DateHTMLProperty(HTMLProperty):
 
         if self._value is None:
             value = ''
+        elif type(self._value) is type(''):
+            value = self._value
         else:
             tz = self._db.getUserTimezone()
             value = cgi.escape(str(self._value.local(tz)))
