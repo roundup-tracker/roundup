@@ -37,10 +37,11 @@ Both need the bsddb module.
 -----------------
  1. Make a directory in /home/httpd/html called 'roundup'.
  2. Copy the tar file's contents there.
- 3. "python roundup.py init" to initialise the database (by default, it
+ 3. Edit config.py
+ 4. "python roundup.py init" to initialise the database (by default, it
     goes in a directory called 'db' in the current directory). Choose a
     sensible admin password.
- 4. "chmod -R a+rw db"
+ 5. "chmod -R a+rw db"
 
 
 2.2 Mail
@@ -77,6 +78,7 @@ RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=
    note: the RewriteRule must be on one line - no breaks
  4. Re-start your apache to re-load the config
  5. Load up the page "/roundup/roundup.cgi/"
+
 
 
 3. Usage
@@ -163,6 +165,7 @@ In short:
  roundup.py - the command-line tool has a lot more commands at its disposal
 
 
+
 4. TODO
 =======
 Most of the TODO items are captured in comments in the code. In summary:
@@ -191,8 +194,6 @@ roundup_cgi
 
 5. Known Bugs
 =============
-
-http://dirk.adroit/roundup/roundup.cgi/issue?%3Acolumns%3Dactivity%2Cstatus%2Ctitle&%3Asort%3Dtitle%2C-activity&%3Agroup%3Dpriority
 
 date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
