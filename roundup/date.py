@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.76 2004-10-08 00:32:34 richard Exp $
+# $Id: date.py,v 1.77 2004-11-29 14:32:55 a1s Exp $
 
 """Date, time and time interval handling.
 """
@@ -760,6 +760,7 @@ class Interval:
         '''Figure my second, minute, hour and day values using a seconds
         value.
         '''
+        val = int(val)
         if val < 0:
             self.sign = -1
             val = -val
