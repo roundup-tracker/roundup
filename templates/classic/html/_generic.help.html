@@ -15,9 +15,12 @@
       </tal:block>
   </head>
  <body class="body" marginwidth="0" marginheight="0" onload="resetList();">
- <form name="frm_help" action="">
+ <form name="frm_help" action=""
+       tal:define="start python:int(request.form[':startwith'].value);
+                   batch python:utils.Batch(context.list(), 500, start);
+                   props python:request.form['properties'].value.split(',')">
      
-     <div id="classhelp-controls">
+     <div id="classhelp-controls" tal:condition="python:start==0">
        <!--input type="button" name="btn_clear" 
               value="Clear" onClick="clearList()"/ -->
        <input type="text" name="text_preview" size="24" class="preview"
@@ -28,16 +31,16 @@
               value=" Apply " onclick="updateList(); window.close();"/>     
      </div>
 
-     <table class="classhelp" 
-     tal:define="props python:request.form['properties'].value.split(',')">
+     <table class="classhelp">
        <tr>
            <th>&nbsp;<b>x</b></th>
            <th tal:repeat="prop props" tal:content="prop"></th>
        </tr>
-       <tr tal:repeat="item context/list">
+       <tr tal:repeat="item batch">
            <td>
                <input type="checkbox" name="check" 
                onclick="updatePreview();"
+               tal:condition="python:start==0"
                tal:define="attr python:item[props[0]]"
                tal:attributes="value attr; id attr" />
            </td>
@@ -52,7 +55,24 @@
            <th tal:repeat="prop props" tal:content="prop"></th>
        </tr>
      </table>
+     <table width="100%">
+      <tr class="navigation">
+       <th>
+        <a tal:define="prev batch/previous" tal:condition="prev"
+           tal:attributes="href string:${request/classname}?:template=help&:startwith=${prev/first}&properties=${request/form/properties/value}">&lt;&lt; previous</a>
+        &nbsp;
+       </th>
+       <th tal:content="python: '%d...%d out of %d'%(batch.start,
+               batch.start+batch.length-1, batch.sequence_length)">current</th>
+       <th>
+        <a tal:define="next batch/next" tal:condition="next"
+           tal:attributes="href string:${request/classname}?:template=help&:startwith=${next/first}&properties=${request/form/properties/value}">next &gt;&gt;</a>
+        &nbsp;
+       </th>
+      </tr>
+     </table>
 
  </form>
  </body>
 </html>
+<!-- SHA: 97d46e2f10096a13afc6e5c48a3e6175ada9738f -->

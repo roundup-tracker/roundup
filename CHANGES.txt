@@ -8,6 +8,7 @@ are given with the most recent entry first.
 - logfile must be specified if pidfile is (sf bug 772820)
 - timelog editing via csv interface crashes (sf bug 699837)
 - sort multilinks a little better for grouping (sf bug 772935)
+- batch the (list) listings at 500 entries per page (sf bug 759906)
 
 
 2003-07-29 0.6.0b4

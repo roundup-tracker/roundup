@@ -1,16 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
-<link rel="stylesheet" type="text/css" href="_file/style.css">
-</head>
-<body class="body" marginwidth="0" marginheight="0">
+  <head>
+      <link rel="stylesheet" type="text/css" href="_file/style.css" />
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8;" />
+      <tal:block tal:condition="python:request.form.has_key('property')">
+      <title tal:content="string:${request/form/property/value} help">Property</title>
+      <script language="Javascript" type="text/javascript" 
+          tal:content="structure string:
+          // this is the name of the field in the original form that we're working on
+          field = '${request/form/property/value}';" >
+      </script>
+      <script src="_file/help_controls.js" type="text/javascript"><!-- 
+      //--></script>
+      </tal:block>
+  </head>
+ <body class="body" marginwidth="0" marginheight="0" onload="resetList();">
+ <form name="frm_help" action=""
+       tal:define="start python:int(request.form[':startwith'].value);
+                   batch python:utils.Batch(context.list(), 500, start);
+                   props python:request.form['properties'].value.split(',')">
+     
+     <div id="classhelp-controls" tal:condition="python:start==0">
+       <!--input type="button" name="btn_clear" 
+              value="Clear" onClick="clearList()"/ -->
+       <input type="text" name="text_preview" size="24" class="preview"
+              onchange="reviseList(this.value);"/>
+       <input type="button" name="btn_reset" 
+              value=" Cancel " onclick="resetList(); window.close();"/>
+       <input type="button" name="btn_apply" class="apply"
+              value=" Apply " onclick="updateList(); window.close();"/>     
+     </div>
 
-<table class="classhelp"
-       tal:define="props python:request.form['properties'].value.split(',')">
-<tr><th tal:repeat="prop props" tal:content="prop"></th></tr>
-<tr tal:repeat="item context/list">
- <td tal:repeat="prop props" tal:content="python:item[prop]"></td>
-</tr>
-</table>
+     <table class="classhelp">
+       <tr>
+           <th>&nbsp;<b>x</b></th>
+           <th tal:repeat="prop props" tal:content="prop"></th>
+       </tr>
+       <tr tal:repeat="item batch">
+           <td>
+               <input type="checkbox" name="check" 
+               onclick="updatePreview();"
+               tal:condition="python:start==0"
+               tal:define="attr python:item[props[0]]"
+               tal:attributes="value attr; id attr" />
+           </td>
+           <td tal:repeat="prop props">
+               <label class="classhelp-label"
+                      tal:attributes="for python:item[props[0]]" 
+                      tal:content="structure python:item[prop]"></label>
+           </td>
+       </tr>
+       <tr>
+           <th>&nbsp;<b>x</b></th>
+           <th tal:repeat="prop props" tal:content="prop"></th>
+       </tr>
+     </table>
+     <table width="100%">
+      <tr class="navigation">
+       <th>
+        <a tal:define="prev batch/previous" tal:condition="prev"
+           tal:attributes="href string:${request/classname}?:template=help&:startwith=${prev/first}&properties=${request/form/properties/value}">&lt;&lt; previous</a>
+        &nbsp;
+       </th>
+       <th tal:content="python: '%d...%d out of %d'%(batch.start,
+               batch.start+batch.length-1, batch.sequence_length)">current</th>
+       <th>
+        <a tal:define="next batch/next" tal:condition="next"
+           tal:attributes="href string:${request/classname}?:template=help&:startwith=${next/first}&properties=${request/form/properties/value}">next &gt;&gt;</a>
+        &nbsp;
+       </th>
+      </tr>
+     </table>
 
-</body>
+ </form>
+ </body>
+</html>
+<!-- SHA: 97d46e2f10096a13afc6e5c48a3e6175ada9738f -->
