@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.76 2001-12-05 14:26:44 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.77 2001-12-06 22:48:29 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -480,7 +480,7 @@ class Client:
                     link.set(nodeid, **{property: nid})
 
         # handle file attachments
-        files = []
+        files = cl.get(nid, 'files')
         if self.form.has_key('__file'):
             file = self.form['__file']
             if file.filename:
@@ -1084,6 +1084,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.76  2001/12/05 14:26:44  rochecompaan
+# Removed generation of change note from "sendmessage" in roundupdb.py.
+# The change note is now generated when the message is created.
+#
 # Revision 1.75  2001/12/04 01:25:08  richard
 # Added some rollbacks where we were catching exceptions that would otherwise
 # have stopped committing.
