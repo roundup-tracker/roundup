@@ -11,7 +11,7 @@ from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError
 class MockNull:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            self.__dict__[key] = value
 
     def __call__(self, *args, **kwargs): return MockNull()
     def __getattr__(self, name):
@@ -21,12 +21,13 @@ class MockNull:
         # For example (with just 'client' defined):
         #
         # client.db.config.TRACKER_WEB = 'BASE/'
-        setattr(self, name, MockNull())
+        self.__dict__[name] = MockNull()
         return getattr(self, name)
 
     def __getitem__(self, key): return self
     def __nonzero__(self): return 0
     def __str__(self): return ''
+    def __repr__(self): return '<MockNull 0x%x>'%id(self)
 
 def true(*args, **kwargs):
     return 1
@@ -196,3 +197,4 @@ def test_suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
+
