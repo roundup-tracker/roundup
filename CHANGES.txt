@@ -21,6 +21,7 @@ Fixed:
 - fix some column datatypes in postgresql and mysql (sf bugs 962611,
   959177 and 964231)
 - fixed RDBMS journal packing (sf bug 959177)
+- fixed filtering by floats in anydbm (sf bug 963584)
 
 
 2004-05-28 0.7.3

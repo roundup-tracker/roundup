@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.29 2004-06-08 05:35:07 richard Exp $ 
+# $Id: db_test_base.py,v 1.30 2004-06-09 06:35:45 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -813,9 +813,9 @@ class DBTest(MyTestCase):
 
     def filteringSetup(self):
         for user in (
-                {'username': 'bleep'},
-                {'username': 'blop'},
-                {'username': 'blorp'}):
+                {'username': 'bleep', 'age': 1},
+                {'username': 'blop', 'age': 1.5},
+                {'username': 'blorp', 'age': 2}):
             self.db.user.create(**user)
         iss = self.db.issue
         for issue in (
@@ -839,6 +839,13 @@ class DBTest(MyTestCase):
         ae(filt(None, {'id': '1'}, ('+','id'), (None,None)), ['1'])
         ae(filt(None, {'id': '2'}, ('+','id'), (None,None)), ['2'])
         ae(filt(None, {'id': '10'}, ('+','id'), (None,None)), [])
+
+    def testFilteringNumber(self):
+        self.filteringSetup()
+        ae, filt = self.assertEqual, self.db.user.filter
+        ae(filt(None, {'age': '1'}, ('+','id'), (None,None)), ['3'])
+        ae(filt(None, {'age': '1.5'}, ('+','id'), (None,None)), ['4'])
+        ae(filt(None, {'age': '2'}, ('+','id'), (None,None)), ['5'])
 
     def testFilteringString(self):
         ae, filt = self.filteringSetup()
