@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.144 2004-05-04 00:16:06 richard Exp $
+#$Id: back_anydbm.py,v 1.145 2004-05-05 00:17:13 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1736,6 +1736,10 @@ class Class(hyperdb.Class):
                     k.append(v)
             matches = k
 
+        # always sort by id if no other sort is specified
+        if sort == (None, None):
+            sort = ('+', 'id')
+
         # add sorting information to the match entries
         directions = []
         for dir, prop in sort, group:
@@ -1771,8 +1775,9 @@ class Class(hyperdb.Class):
                         v = link.get(v, key)
                 entry.insert(0, v)
 
-        if directions:
-            # sort using the first one or two columns
+        if '-' in directions:
+            # one or more of the sort specs is in reverse order, so we have
+            # to use this icky function to sort
             def sortfun(a, b, directions=directions, n=range(len(directions))):
                 for i in n:
                     if a[i] == b[i]: continue
@@ -1783,6 +1788,9 @@ class Class(hyperdb.Class):
                 # for consistency, sort by the id if the items are equal
                 return cmp(a[-2], b[-2])
             matches.sort(sortfun)
+        else:
+            # sorting is in the normal direction
+            matches.sort()
 
         # pull the id out of the individual entries
         matches = [entry[-2] for entry in matches]
