@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.150 2002-07-30 20:43:18 gmcm Exp $
+# $Id: cgi_client.py,v 1.151 2002-07-30 21:37:43 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1182,8 +1182,9 @@ function help_window(helpurl, width, height) {
         ''' display a list of all the classes in the database
         '''
         userid = self.db.user.lookup(self.user)
-        raise Unauthorised, _("You do not have permission to access"\
-                    " %(action)s.")%{'action': 'all classes'}
+        if not self.db.security.hasPermission('Edit', userid):
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': 'all classes'}
 
         self.pagehead(_('Table of classes'), message)
         classnames = self.db.classes.keys()
@@ -1695,6 +1696,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.150  2002/07/30 20:43:18  gmcm
+# Oops, fix the permission check!
+#
 # Revision 1.149  2002/07/30 20:04:38  gmcm
 # Adapt metakit backend to new security scheme.
 # Put some more permission checks in cgi_client.
