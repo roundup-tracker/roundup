@@ -1,4 +1,4 @@
-# $Id: date.py,v 1.6 2001-07-31 09:54:18 richard Exp $
+# $Id: date.py,v 1.7 2001-08-02 00:27:04 richard Exp $
 
 import time, re, calendar
 
@@ -302,8 +302,16 @@ class Interval:
             < 1 day
             otherwise, return None (so a full date may be displayed)
         '''
-        if self.year or self.month or self.day > 5:
+        if self.year or self.month > 2:
             return None
+        if self.month:
+            days = (self.month * 30) + self.day
+            if days > 28:
+                return '%s months'%int(days/30)
+            else:
+                return '%s weeks'%int(days/7)
+        if self.day > 7:
+            return '%s weeks'%self.day
         if self.day > 1:
             return '%s days'%self.day
         if self.day == 1 or self.hour > 12:
@@ -323,7 +331,7 @@ class Interval:
             return '1 minute'
         if self.minute < 15:
             return '%s minutes'%self.minute
-        quart = self.minute/15
+        quart = int(self.minute/15)
         if quart == 2:
             return '1/2 an hour'
         return '%s/4 hour'%quart
@@ -355,6 +363,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/31 09:54:18  richard
+# Fixed the 2.1-specific gmtime() (no arg) call in roundup.date. (Paul Wright)
+#
 # Revision 1.5  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #
