@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.98 2002-01-14 02:20:14 richard Exp $
+# $Id: cgi_client.py,v 1.99 2002-01-16 03:02:42 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -343,8 +343,16 @@ class Client:
             return
         assignedto_id = props['assignedto']
         if not props.has_key('nosy'):
-            props['nosy'] = [assignedto_id]
-        elif assignedto_id not in props['nosy']:
+            # load current nosy
+            if self.nodeid:
+                cl = self.db.classes[self.classname]
+                l = cl.get(self.nodeid, 'nosy')
+		if assignedto_id in l:
+		    return
+		props['nosy'] = l
+            else:
+                props['nosy'] = []
+        if assignedto_id not in props['nosy']:
             props['nosy'].append(assignedto_id)
 
     def _changenode(self, props):
@@ -1165,6 +1173,15 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.98  2002/01/14 02:20:14  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.97  2002/01/11 23:22:29  richard
 #  . #502437 ] rogue reactor and unittest
 #    in short, the nosy reactor was modifying the nosy list. That code had
