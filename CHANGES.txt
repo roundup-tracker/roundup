@@ -1,6 +1,9 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2003-??-?? 0.5.7
+- fixed Interval maths (sf bug 665357)
+
 2003-02-27 0.5.6
 - fixed templating filter function arguments (sf bug 678911)
 - fixed multiselect in searching (sf bug 676874)
