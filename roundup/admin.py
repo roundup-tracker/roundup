@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.21 2002-08-01 01:07:37 richard Exp $
+# $Id: admin.py,v 1.22 2002-08-16 04:26:42 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -808,17 +808,23 @@ Command help:
         return 0
 
     def do_export(self, args):
-        '''Usage: export class[,class] destination_dir
+        '''Usage: export [class[,class]] destination_dir
         Export the database to tab-separated-value files.
 
         This action exports the current data from the database into
         tab-separated-value files that are placed in the nominated destination
         directory. The journals are not exported.
         '''
-        if len(args) < 2:
+        # grab the directory to export to
+        if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
-        classes = args[0].split(',')
-        dir = args[1]
+        dir = args[-1]
+
+        # get the list of classes to export
+        if len(args) == 2:
+            classes = args[0].split(',')
+        else:
+            classes = self.db.classes.keys()
 
         # use the csv parser if we can - it's faster
         if csv is not None:
@@ -831,7 +837,7 @@ Command help:
             f.write(':'.join(cl.properties.keys()) + '\n')
 
             # all nodes for this class
-            properties = cl.properties.items()
+            properties = cl.getprops()
             for nodeid in cl.list():
                 l = []
                 for prop, proptype in properties:
@@ -1164,6 +1170,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/08/01 01:07:37  richard
+# include info about new user roles
+#
 # Revision 1.20  2002/08/01 00:56:22  richard
 # Added the web access and email access permissions, so people can restrict
 # access to users who register through the email interface (for example).
