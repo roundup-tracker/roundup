@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.41.2.1 2003-02-20 22:59:01 richard Exp $
+# $Id: setup.py,v 1.41.2.2 2003-02-27 11:21:21 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     setup(
         name = "roundup", 
         version = __version__,
-        description = "Roundup issue tracking system.",
+        description = "Roundup issue tracking system",
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
         url = 'http://sourceforge.net/projects/roundup/',
