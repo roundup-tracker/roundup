@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.80 2003-02-12 07:02:22 richard Exp $
+# $Id: client.py,v 1.81 2003-02-12 07:14:29 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1243,7 +1243,9 @@ class Client:
 
             The return from this method is a dict of 
                 classname|designator: properties
-
+            ... this dict _always_ has an entry for the current context,
+            even if it's empty (ie. a submission for an existing issue that
+            doesn't result in any changes would return {'issue123': {}})
         '''
         # some very useful variables
         db = self.db
