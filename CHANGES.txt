@@ -1,6 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-02-25 0.6.7
+Fixed:
+- made error on create consistent with edit when user enters invalid data
+  for Multilink and Link form fields (sf bug 904072)
+
+
 2004-02-25 0.6.6
 Fixed:
 - don't insert spaces into designators, it just confuses users (sf bug
