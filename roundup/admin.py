@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.22 2002-08-16 04:26:42 richard Exp $
+# $Id: admin.py,v 1.23 2002-08-19 02:53:27 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -808,13 +808,19 @@ Command help:
         return 0
 
     def do_export(self, args):
-        '''Usage: export [class[,class]] destination_dir
+        '''Usage: export [class[,class]] export_dir
         Export the database to tab-separated-value files.
 
         This action exports the current data from the database into
         tab-separated-value files that are placed in the nominated destination
         directory. The journals are not exported.
         '''
+        # we need the CSV module
+        if csv is None:
+            raise UsageError, \
+                _('Sorry, you need the csv module to use this function.\n'
+                'Get it from: http://www.object-craft.com.au/projects/csv/')
+
         # grab the directory to export to
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
@@ -827,56 +833,38 @@ Command help:
             classes = self.db.classes.keys()
 
         # use the csv parser if we can - it's faster
-        if csv is not None:
-            p = csv.parser(field_sep=':')
+        p = csv.parser(field_sep=':')
 
         # do all the classes specified
         for classname in classes:
             cl = self.get_class(classname)
             f = open(os.path.join(dir, classname+'.csv'), 'w')
-            f.write(':'.join(cl.properties.keys()) + '\n')
+            properties = cl.getprops()
+            propnames = properties.keys()
+            propnames.sort()
+            print >> f, p.join(propnames)
 
             # all nodes for this class
-            properties = cl.getprops()
             for nodeid in cl.list():
-                l = []
-                for prop, proptype in properties:
-                    value = cl.get(nodeid, prop)
-                    # convert data where needed
-                    if isinstance(proptype, hyperdb.Date):
-                        value = value.get_tuple()
-                    elif isinstance(proptype, hyperdb.Interval):
-                        value = value.get_tuple()
-                    elif isinstance(proptype, hyperdb.Password):
-                        value = str(value)
-                    l.append(repr(value))
-
-                # now write
-                if csv is not None:
-                   f.write(p.join(l) + '\n')
-                else:
-                   # escape the individual entries to they're valid CSV
-                   m = []
-                   for entry in l:
-                      if '"' in entry:
-                          entry = '""'.join(entry.split('"'))
-                      if ':' in entry:
-                          entry = '"%s"'%entry
-                      m.append(entry)
-                   f.write(':'.join(m) + '\n')
+                print >>f, p.join(cl.export_list(propnames, nodeid))
         return 0
 
     def do_import(self, args):
-        '''Usage: import class file
-        Import the contents of the tab-separated-value file.
+        '''Usage: import import_dir
+        Import a database from the directory containing CSV files, one per
+        class to import.
 
-        The file must define the same properties as the class (including having
-        a "header" line with those property names.) The new nodes are added to
-        the existing database - if you want to create a new database using the
-        imported data, then create a new database (or, tediously, retire all
-        the old data.)
+        The files must define the same properties as the class (including having
+        a "header" line with those property names.)
+
+        The imported nodes will have the same nodeid as defined in the
+        import file, thus replacing any existing content.
+
+        XXX The new nodes are added to the existing database - if you want to
+        XXX create a new database using the imported data, then create a new
+        XXX database (or, tediously, retire all the old data.)
         '''
-        if len(args) < 2:
+        if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
         if csv is None:
             raise UsageError, \
@@ -885,56 +873,44 @@ Command help:
 
         from roundup import hyperdb
 
-        # ensure that the properties and the CSV file headings match
-        classname = args[0]
-        cl = self.get_class(classname)
-        f = open(args[1])
-        p = csv.parser(field_sep=':')
-        file_props = p.parse(f.readline())
-        props = cl.properties.keys()
-        m = file_props[:]
-        m.sort()
-        props.sort()
-        if m != props:
-            raise UsageError, _('Import file doesn\'t define the same '
-                'properties as "%(arg0)s".')%{'arg0': args[0]}
+        for file in os.listdir(args[0]):
+            f = open(os.path.join(args[0], file))
 
-        # loop through the file and create a node for each entry
-        n = range(len(props))
-        while 1:
-            line = f.readline()
-            if not line: break
+            # get the classname
+            classname = os.path.splitext(file)[0]
 
-            # parse lines until we get a complete entry
+            # ensure that the properties and the CSV file headings match
+            cl = self.get_class(classname)
+            p = csv.parser(field_sep=':')
+            file_props = p.parse(f.readline())
+            properties = cl.getprops()
+            propnames = properties.keys()
+            propnames.sort()
+            m = file_props[:]
+            m.sort()
+            if m != propnames:
+                raise UsageError, _('Import file doesn\'t define the same '
+                    'properties as "%(arg0)s".')%{'arg0': args[0]}
+
+            # loop through the file and create a node for each entry
+            maxid = 1
             while 1:
-                l = p.parse(line)
-                if l: break
                 line = f.readline()
-                if not line:
-                    raise ValueError, "Unexpected EOF during CSV parse"
+                if not line: break
 
-            # make the new node's property map
-            d = {}
-            for i in n:
-                # Use eval to reverse the repr() used to output the CSV
-                value = eval(l[i])
-                # Figure the property for this column
-                key = file_props[i]
-                proptype = cl.properties[key]
-                # Convert for property type
-                if isinstance(proptype, hyperdb.Date):
-                    value = date.Date(value)
-                elif isinstance(proptype, hyperdb.Interval):
-                    value = date.Interval(value)
-                elif isinstance(proptype, hyperdb.Password):
-                    pwd = password.Password()
-                    pwd.unpack(value)
-                    value = pwd
-                if value is not None:
-                    d[key] = value
+                # parse lines until we get a complete entry
+                while 1:
+                    l = p.parse(line)
+                    if l: break
+                    line = f.readline()
+                    if not line:
+                        raise ValueError, "Unexpected EOF during CSV parse"
 
-            # and create the new node
-            apply(cl.create, (), d)
+                # do the import and figure the current highest nodeid
+                maxid = max(maxid, int(cl.import_list(propnames, l)))
+
+            print 'setting', classname, maxid
+            self.db.setid(classname, str(maxid))
         return 0
 
     def do_pack(self, args):
@@ -1170,6 +1146,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/08/16 04:26:42  richard
+# moving towards full database export
+#
 # Revision 1.21  2002/08/01 01:07:37  richard
 # include info about new user roles
 #

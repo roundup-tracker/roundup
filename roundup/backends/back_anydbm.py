@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.60 2002-08-19 00:23:19 richard Exp $
+#$Id: back_anydbm.py,v 1.61 2002-08-19 02:53:27 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -214,6 +214,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         db.close()
         release_lock(lock)
         return newid
+
+    def setid(self, classname, setid):
+        ''' Set the id counter: used during import of database
+        '''
+        # open the ids DB - create if if doesn't exist
+        lock = self.lockdb('_ids')
+        db = self.opendb('_ids', 'c')
+        db[classname] = str(setid)
+        db.close()
+        release_lock(lock)
 
     #
     # Nodes
@@ -593,13 +603,27 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return self.databases[db_name]
 
     def doSaveJournal(self, classname, nodeid, action, params):
-        # serialise first
+        # handle supply of the special journalling parameters (usually
+        # supplied on importing an existing database)
+        if params.has_key('creator'):
+            journaltag = self.user.get(params['creator'], 'username')
+            del params['creator']
+        else:
+            journaltag = self.journaltag
+        if params.has_key('created'):
+            journaldate = params['created'].get_tuple()
+            del params['created']
+        else:
+            journaldate = date.Date().get_tuple()
+        if params.has_key('activity'):
+            del params['activity']
+
+        # serialise the parameters now
         if action in ('set', 'create'):
             params = self.serialise(classname, params)
 
         # create the journal entry
-        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
-            params)
+        entry = (nodeid, journaldate, journaltag, action, params)
 
         if __debug__:
             print >>hyperdb.DEBUG, 'doSaveJournal', entry
@@ -843,6 +867,67 @@ class Class(hyperdb.Class):
 
         self.fireReactors('create', newid, None)
 
+        return newid
+
+    def export_list(self, propnames, nodeid):
+        ''' Export a node - generate a list of CSV-able data in the order
+            specified by propnames for the given node.
+        '''
+        properties = self.getprops()
+        l = []
+        for prop in propnames:
+            proptype = properties[prop]
+            value = self.get(nodeid, prop)
+            # "marshal" data where needed
+            if isinstance(proptype, hyperdb.Date):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Interval):
+                value = value.get_tuple()
+            elif isinstance(proptype, hyperdb.Password):
+                value = str(value)
+            l.append(repr(value))
+        return l
+
+    def import_list(self, propnames, proplist):
+        ''' Import a node - all information including "id" is present and
+            should not be sanity checked. Triggers are not triggered. The
+            journal should be initialised using the "creator" and "created"
+            information.
+
+            Return the nodeid of the node imported.
+        '''
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+        properties = self.getprops()
+
+        # make the new node's property map
+        d = {}
+        for i in range(len(propnames)):
+            # Use eval to reverse the repr() used to output the CSV
+            value = eval(proplist[i])
+
+            # Figure the property for this column
+            propname = propnames[i]
+            prop = properties[propname]
+
+            # "unmarshal" where necessary
+            if propname == 'id':
+                newid = value
+                continue
+            elif isinstance(prop, hyperdb.Date):
+                value = date.Date(value)
+            elif isinstance(prop, hyperdb.Interval):
+                value = date.Interval(value)
+            elif isinstance(prop, hyperdb.Password):
+                pwd = password.Password()
+                pwd.unpack(value)
+                value = pwd
+            if value is not None:
+                d[propname] = value
+
+        # add
+        self.db.addnode(self.classname, newid, d)
+        self.db.addjournal(self.classname, newid, 'create', d)
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):
@@ -1730,6 +1815,25 @@ class FileClass(Class):
         self.db.storefile(self.classname, newid, None, content)
         return newid
 
+    def import_list(self, propnames, proplist):
+        ''' Trap the "content" property...
+        '''
+        # dupe this list so we don't affect others
+        propnames = propnames[:]
+
+        # extract the "content" property from the proplist
+        i = propnames.index('content')
+        content = proplist[i]
+        del propnames[i]
+        del proplist[i]
+
+        # do the normal import
+        newid = Class.import_list(self, propnames, proplist)
+
+        # save off the "content" file
+        self.db.storefile(self.classname, newid, None, content)
+        return newid
+
     def get(self, nodeid, propname, default=_marker, cache=1):
         ''' trap the content propname and get it from the file
         '''
@@ -1803,6 +1907,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.60  2002/08/19 00:23:19  richard
+#handle "unset" initial Link values (!)
+#
 #Revision 1.59  2002/08/16 04:28:13  richard
 #added is_retired query to Class
 #
