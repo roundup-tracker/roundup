@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: load_tracker.py,v 1.3 2004-04-22 22:17:34 richard Exp $
+# $Id: load_tracker.py,v 1.4 2004-04-24 04:46:43 richard Exp $
 
 '''
 Usage: %s <tracker home> <N>
@@ -51,27 +51,31 @@ Fusce luctus, neque id mattis fringilla, purus pede sodales pede.
 Quis ultricies urna odio sed orci.'''.splitlines()
 
 try:
-    M = N/100
-    print
-    for i in range(M):
-        print '\ruser', i*100./M,
-        sys.stdout.flush()
-        db.user.create(username=names[i%17]+str(i/17))
+    try:
+        db.user.lookup('alpha0')
+    except:
+        # add some users
+        M = N/100
+        for i in range(M):
+            print '\ruser', i, '       ',
+            sys.stdout.flush()
+            db.user.create(username=names[i%17]+str(i/17))
 
+    # assignable user list
     users = db.user.list()
     users.remove(db.user.lookup('anonymous'))
     print
 
     # now create the issues
     for i in range(N):
-        print '\rissue', i*100./N,
+        print '\rissue', i, '       ',
         sys.stdout.flush()
         db.issue.create(
             title=random.choice(titles),
             priority=random.choice(priorities),
             status=random.choice(statuses),
             assignedto=random.choice(users))
-        if i%10:
+        if not i%1000:
             db.commit()
     print
 
