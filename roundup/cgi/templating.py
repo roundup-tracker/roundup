@@ -326,6 +326,7 @@ class HTMLDatabase:
     '''
     def __init__(self, client):
         self._client = client
+        self._ = client._
         self._db = client.db
 
         # we want config to be exposed
@@ -441,6 +442,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     '''
     def __init__(self, client, classname, anonymous=0):
         self._client = client
+        self._ = client._
         self._db = client.db
         self._anonymous = anonymous
 
@@ -668,7 +670,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
     def history(self):
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
         return self._('New node - no history')
 
     def renderWith(self, name, **kwargs):
@@ -787,7 +789,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
     def history(self, direction='descending', dre=re.compile('^\d+$')):
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         # pre-load the history with the current state
         current = {}
@@ -1075,6 +1077,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             anonymous=0):
         self._client = client
         self._db = client.db
+        self._ = client._
         self._classname = classname
         self._nodeid = nodeid
         self._prop = prop
@@ -1160,7 +1163,7 @@ class StringHTMLProperty(HTMLProperty):
           addresses and designators
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1181,7 +1184,7 @@ class StringHTMLProperty(HTMLProperty):
             This requires the StructureText module to be installed separately.
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         s = self.plain(escape=escape)
         if not StructuredText:
@@ -1225,7 +1228,7 @@ class StringHTMLProperty(HTMLProperty):
         ''' Render the value of the property as an obscured email address
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             value = ''
@@ -1247,7 +1250,7 @@ class PasswordHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1281,7 +1284,7 @@ class NumberHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1320,7 +1323,7 @@ class BooleanHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1371,7 +1374,7 @@ class DateHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1388,7 +1391,7 @@ class DateHTMLProperty(HTMLProperty):
             DateHTMLProperty.
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         ret = date.Date('.', translator=self._client)
 
@@ -1432,7 +1435,7 @@ class DateHTMLProperty(HTMLProperty):
                 elif isinstance(default, DateHTMLProperty):
                     raw_value = default._value
                 else:
-                    raise ValueError, _('default value for '
+                    raise ValueError, self._('default value for '
                         'DateHTMLProperty must be either DateHTMLProperty '
                         'or string date representation.')
         elif isinstance(value, str) or isinstance(value, unicode):
@@ -1464,7 +1467,7 @@ class DateHTMLProperty(HTMLProperty):
             If the "pretty" flag is true, then make the display pretty.
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if not self._value:
             return ''
@@ -1484,7 +1487,7 @@ class DateHTMLProperty(HTMLProperty):
             for the situatin when a date only specifies a month and a year.
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if not self._value:
             return ''
@@ -1497,7 +1500,7 @@ class DateHTMLProperty(HTMLProperty):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, self._value, offset=offset)
@@ -1514,7 +1517,7 @@ class IntervalHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1524,7 +1527,7 @@ class IntervalHTMLProperty(HTMLProperty):
         ''' Render the interval in a pretty format (eg. "yesterday")
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         return self._value.pretty()
 
@@ -1565,7 +1568,8 @@ class LinkHTMLProperty(HTMLProperty):
         ''' return a new HTMLItem '''
        #print 'Link.getattr', (self, attr, self._value)
         if not self._value:
-            raise AttributeError, "Can't access missing value"
+            msg = self._('Attempt to look up %(attr)s on a missing value')
+            return MissingValue(msg%locals())
         i = HTMLItem(self._client, self._prop.classname, self._value)
         return getattr(i, attr)
 
@@ -1573,7 +1577,7 @@ class LinkHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         if self._value is None:
             return ''
@@ -1760,7 +1764,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         ''' Render a "plain" representation of the property
         '''
         if not self.is_view_ok():
-            return _('[hidden]')
+            return self._('[hidden]')
 
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
@@ -2329,5 +2333,30 @@ class TemplatingUtils:
         if not self.client.instance.templating_utils.has_key(name):
             raise AttributeError, name
         return self.client.instance.templating_utils[name]
+
+class MissingValue:
+    def __init__(self, description, **kwargs):
+        self.__description = description
+        for key, value in kwargs.items():
+            self.__dict__[key] = value
+
+    def __call__(self, *args, **kwargs): return MissingValue(self.__description)
+    def __getattr__(self, name):
+        # This allows assignments which assume all intermediate steps are Null
+        # objects if they don't exist yet.
+        #
+        # For example (with just 'client' defined):
+        #
+        # client.db.config.TRACKER_WEB = 'BASE/'
+        self.__dict__[name] = MissingValue(self.__description)
+        return getattr(self, name)
+
+    def __getitem__(self, key): return self
+    def __nonzero__(self): return 0
+    def __str__(self): return '[%s]'%self.__description
+    def __repr__(self): return '<MissingValue 0x%x "%s">'%(id(self),
+        self.__description)
+    def gettext(self, str): return str
+    _ = gettext
 
 # vim: set et sts=4 sw=4 :
