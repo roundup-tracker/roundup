@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.85 2003-02-18 01:57:38 richard Exp $
+# $Id: hyperdb.py,v 1.86 2003-02-26 04:55:57 richard Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -588,6 +588,11 @@ class Node:
         return l
     def has_key(self, name):
         return self.cl.getprops().has_key(name)
+    def get(self, name, default=None): 
+        if self.has_key(name):
+            return self[name]
+        else:
+            return default
     def __getattr__(self, name):
         if self.__dict__.has_key(name):
             return self.__dict__[name]
