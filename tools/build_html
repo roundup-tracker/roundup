@@ -1,0 +1,39 @@
+#! /usr/bin/python
+
+import sys
+import os.path
+import glob
+import html
+import dps.utils
+try:
+    from restructuredtext import Parser
+except ImportError:
+    from dps.parsers.restructuredtext import Parser
+
+if sys.argv[1:] == '--help':
+    print """
+Usage: build_html
+
+Converts all structured text (.stx) files to html files.
+"""
+    sys.exit(1)
+
+def to_html(filename):
+    parser = Parser()
+    input = open(filename).read()
+    document = dps.utils.newdocument()
+    parser.parse(input, document)
+
+    formatter = html.DumbHTMLFormatter()
+    return formatter.format_document(document)
+
+
+for filename in glob.glob('*.stx'):
+    htmlfile = "%s.html" % os.path.splitext(filename)[0]
+    print "%s -> %s" % (filename, htmlfile)
+    f=open(htmlfile, 'wb')
+    f.write(to_html(filename))
+    f.close()
+
+            
+
