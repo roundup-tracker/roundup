@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.2
+#! /usr/bin/env python
 #
 # Copyright (c) 2001 Richard Jones
 # This module is free software, and you may redistribute it and/or modify
@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: run_tests,v 1.5 2002-05-25 07:16:23 rochecompaan Exp $
+# $Id: run_tests,v 1.6 2002-05-25 07:24:29 rochecompaan Exp $
 
 from test import go
 import sys
