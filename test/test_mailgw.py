@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.44 2003-04-17 06:51:44 richard Exp $
+# $Id: test_mailgw.py,v 1.45 2003-04-27 02:16:47 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 import rfc822
@@ -94,6 +94,24 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             shutil.rmtree(self.dirname)
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    def testEmptyMessage(self):
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        nodeid = handler.main(message)
+        if os.path.exists(os.environ['SENDMAILDEBUG']):
+            error = open(os.environ['SENDMAILDEBUG']).read()
+            self.assertEqual('no error', error)
+        self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
 
     def doNewIssue(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;

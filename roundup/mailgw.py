@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.120 2003-04-24 20:30:37 kedder Exp $
+$Id: mailgw.py,v 1.121 2003-04-27 02:16:46 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -571,7 +571,6 @@ does not exist.
 Subject was: "%s"
 '''%(nodeid, subject)
 
-
         # Handle the arguments specified by the email gateway command line.
         # We do this by looping over the list of self.arguments looking for
         # a -C to tell us what class then the -S setting string.
@@ -680,11 +679,6 @@ Unknown address: %s
                 recipients.append(recipient)
 
         #
-        # XXX extract the args NOT USED WHY -- rouilj
-        #
-        subject_args = m.group('args')
-
-        #
         # handle the subject argument list
         #
         # figure what the properties of this Class are
@@ -702,6 +696,11 @@ There were problems handling your subject line argument list:
 
 Subject was: "%s"
 '''%(errors, subject)
+
+
+        # set the issue title to the subject
+        if properties.has_key('title') and not issue_props.has_key('title'):
+            issue_props['title'] = title.strip()
 
         #
         # handle message-id and in-reply-to
@@ -875,10 +874,6 @@ not find a text/plain part to use.
             else:
                 # pre-load the messages list
                 props['messages'] = [message_id]
-
-                # set the title to the subject
-                if properties.has_key('title') and not props.has_key('title'):
-                    props['title'] = title
 
         #
         # perform the node change / create
