@@ -1,3 +1,5 @@
+from __future__ import nested_scopes
+
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
 
 from roundup import hyperdb, date, rcsv
@@ -1193,9 +1195,6 @@ class LinkHTMLProperty(HTMLProperty):
         '''
         value = self._value
 
-        # sort function
-        sortfunc = make_sort_function(self._db, self._prop.classname)
-
         linkcl = self._db.getclass(self._prop.classname)
         l = ['<select name="%s">'%self._formname]
         k = linkcl.labelprop(1)
@@ -1250,6 +1249,11 @@ class MultilinkHTMLProperty(HTMLProperty):
         Also be iterable, returning a wrapper object like the Link case for
         each entry in the multilink.
     '''
+    def __init__(self, *args, **kwargs):
+        HTMLProperty.__init__(self, *args, **kwargs)
+        if self._value:
+            self._value.sort(make_sort_function(self._db, self._prop.classname))
+    
     def __len__(self):
         ''' length of the multilink '''
         return len(self._value)
@@ -1302,11 +1306,8 @@ class MultilinkHTMLProperty(HTMLProperty):
     def field(self, size=30, showid=0):
         ''' Render a form edit field for the property
         '''
-        sortfunc = make_sort_function(self._db, self._prop.classname)
         linkcl = self._db.getclass(self._prop.classname)
         value = self._value[:]
-        if value:
-            value.sort(sortfunc)
         # map the id to the label property
         if not linkcl.getkey():
             showid=1
@@ -1322,15 +1323,9 @@ class MultilinkHTMLProperty(HTMLProperty):
         '''
         value = self._value
 
-        # sort function
-        sortfunc = make_sort_function(self._db, self._prop.classname)
-
         linkcl = self._db.getclass(self._prop.classname)
-        if linkcl.getprops().has_key('order'):  
-            sort_on = ('+', 'order')
-        else:  
-            sort_on = ('+', linkcl.labelprop())
-        options = linkcl.filter(None, conditions, sort_on, (None,None)) 
+        sort_on = ('+', find_sort_key(linkcl))
+        options = linkcl.filter(None, conditions, sort_on)
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self._formname, height)]
         k = linkcl.labelprop(1)
@@ -1386,13 +1381,16 @@ def make_sort_function(db, classname):
     '''Make a sort function for a given class
     '''
     linkcl = db.getclass(classname)
-    if linkcl.getprops().has_key('order'):
-        sort_on = 'order'
-    else:
-        sort_on = linkcl.labelprop()
-    def sortfunc(a, b, linkcl=linkcl, sort_on=sort_on):
+    sort_on = find_sort_key(linkcl)
+    def sortfunc(a, b):
         return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
     return sortfunc
+
+def find_sort_key(linkcl):
+    if linkcl.getprops().has_key('order'):
+        return 'order'
+    else:
+        return linkcl.labelprop()
 
 def handleListCGIValue(value):
     ''' Value is either a single item or a list of items. Each item has a
