@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.64 2002-08-22 07:57:11 richard Exp $
+#$Id: back_anydbm.py,v 1.65 2002-08-30 08:35:45 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -491,28 +491,30 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return res
 
     def pack(self, pack_before):
-        ''' delete all journal entries before 'pack_before' '''
+        ''' Delete all journal entries except "create" before 'pack_before'.
+        '''
         if __debug__:
             print >>hyperdb.DEBUG, 'packjournal', (self, pack_before)
 
-        classes = self.getclasses()
-
-        # figure the class db type
-
-        for classname in classes:
+        for classname in self.getclasses():
+            # get the journal db
             db_name = 'journals.%s'%classname
             path = os.path.join(os.getcwd(), self.dir, classname)
             db_type = self.determine_db_type(path)
             db = self.opendb(db_name, 'w')
 
             for key in db.keys():
+                # get the journal for this db entry
                 journal = marshal.loads(db[key])
                 l = []
                 last_set_entry = None
                 for entry in journal:
+                    # unpack the entry
                     (nodeid, date_stamp, self.journaltag, action, 
                         params) = entry
                     date_stamp = date.Date(date_stamp)
+                    # if the entry is after the pack date, _or_ the initial
+                    # create entry, then it stays
                     if date_stamp > pack_before or action == 'create':
                         l.append(entry)
                     elif action == 'set':
@@ -1471,6 +1473,7 @@ class Class(hyperdb.Class):
             "filterspec" is {propname: value(s)}
             "sort" is ['+propname', '-propname', 'propname', ...]
             "group is ['+propname', '-propname', 'propname', ...]
+            "search_matches" is {nodeid: marker}
         '''
         cn = self.classname
 
@@ -1913,6 +1916,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.64  2002/08/22 07:57:11  richard
+#Consistent quoting
+#
 #Revision 1.63  2002/08/22 04:42:28  richard
 #use more robust date stamp comparisons in pack(), make journal smaller too
 #
