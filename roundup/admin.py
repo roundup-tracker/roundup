@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.7 2002-02-20 05:04:32 richard Exp $
+# $Id: admin.py,v 1.8 2002-02-27 03:28:21 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -71,7 +71,7 @@ class AdminTool:
         except KeyError:
             raise UsageError, _('no such class "%(classname)s"')%locals()
 
-    def props_from_args(self, args, klass=None):
+    def props_from_args(self, args):
         props = {}
         for arg in args:
             if arg.find('=') == -1:
@@ -1010,6 +1010,7 @@ Date format is "YYYY-MM-DD" eg:
 
         # handle command-line args
         self.instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+        # TODO: reinstate the user/password stuff (-u arg too)
         name = password = ''
         if os.environ.has_key('ROUNDUP_LOGIN'):
             l = os.environ['ROUNDUP_LOGIN'].split(':')
@@ -1042,6 +1043,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2002/02/20 05:04:32  richard
+# Wasn't handling the cvs parser feeding properly.
+#
 # Revision 1.6  2002/01/23 07:27:19  grubert
 #  . allow abbreviation of "help" in admin tool too.
 #
