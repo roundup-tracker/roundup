@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.49 2002-10-03 06:56:29 richard Exp $
+# $Id: client.py,v 1.50 2002-10-07 00:52:51 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -603,8 +603,8 @@ class Client:
         # re-open the database for real, using the user
         self.opendb(self.user)
 
-        # update the user's session
-        if self.session:
+        # if we have a session, update it
+        if hasattr(self, 'session'):
             self.db.sessions.set(self.session, user=self.user,
                 last_use=time.time())
         else:

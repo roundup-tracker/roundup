@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.87 2002-10-04 06:30:30 richard Exp $
+#$Id: back_anydbm.py,v 1.88 2002-10-07 00:52:51 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1531,8 +1531,8 @@ class Class(hyperdb.Class):
         l.sort()
         return l
 
-    def filter(self, search_matches, filterspec, sort, group, 
-            num_re = re.compile('^\d+$')):
+    def filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None), num_re = re.compile('^\d+$')):
         ''' Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
             sort spec.

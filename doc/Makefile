@@ -3,8 +3,7 @@ STXTOHTML = -c "from docutils.core import publish;publish(writer_name='html')"
 
 SOURCE = announcement.txt customizing.txt developers.txt FAQ.txt features.txt \
     glossary.txt implementation.txt index.txt design.txt \
-    installation.txt security.txt upgrading.txt user_guide.txt \
-    maintenance.txt
+    installation.txt upgrading.txt user_guide.txt maintenance.txt
 
 COMPILED := $(SOURCE:.txt=.html)
 

@@ -738,10 +738,10 @@ class Class:
         view = self.__getview()
         self.db.commit()
     # ---- end of ping's spec
-    def filter(self, search_matches, filterspec, sort, group):
+    def filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None)):
         # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
         # filterspec is a dict {propname:value}
-        # sort and group are lists of propnames
         # sort and group are (dir, prop) where dir is '+', '-' or None
         #                    and prop is a prop name or None
 

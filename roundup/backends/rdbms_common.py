@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.20 2002-10-03 06:56:29 richard Exp $
+# $Id: rdbms_common.py,v 1.21 2002-10-07 00:52:51 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1708,7 +1708,8 @@ class Class(hyperdb.Class):
         '''
         return self.db.getnodeids(self.classname, retired=0)
 
-    def filter(self, search_matches, filterspec, sort, group):
+    def filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None)):
         ''' Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
             sort spec

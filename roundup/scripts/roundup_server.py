@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.12 2002-09-23 06:48:35 richard Exp $
+$Id: roundup_server.py,v 1.13 2002-10-07 00:52:51 richard Exp $
 """
 
 # python version check
@@ -225,7 +225,18 @@ def daemonize(pidfile):
     os.dup2(devnull, 1)
     os.dup2(devnull, 2)
 
+def abspath(path):
+    ''' Make the given path an absolute path.
+
+        Code from Zope-Coders posting of 2002-10-06 by GvR.
+    '''
+    if not os.path.isabs(path):
+        path = os.path.join(os.getcwd(), path)
+    return os.path.normpath(path)
+
 def run():
+    ''' Script entry point - handle args and figure out what to to.
+    '''
     hostname = ''
     port = 8080
     pidfile = None
@@ -242,8 +253,8 @@ def run():
             if opt == '-n': hostname = arg
             elif opt == '-p': port = int(arg)
             elif opt == '-u': user = arg
-            elif opt == '-d': pidfile = arg
-            elif opt == '-l': logfile = arg
+            elif opt == '-d': pidfile = abspath(arg)
+            elif opt == '-l': logfile = abspath(arg)
             elif opt == '-h': usage()
 
         if hasattr(os, 'getuid'):

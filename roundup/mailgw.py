@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.94 2002-10-03 06:56:29 richard Exp $
+$Id: mailgw.py,v 1.95 2002-10-07 00:52:51 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -859,8 +859,7 @@ def uidFromAddress(db, address, create=1):
     # try the user alternate addresses if possible
     props = db.user.getprops()
     if props.has_key('alternate_addresses'):
-        users = db.user.filter(None, {'alternate_addresses': address},
-            [], [])
+        users = db.user.filter(None, {'alternate_addresses': address})
         user = extractUserFromList(db.user, users)
         if user is not None: return user
 

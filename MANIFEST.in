@@ -9,4 +9,5 @@ recursive-exclude roundup *.pyc *.pyo .cvsignore
 recursive-exclude frontends *.pyc *.pyo .cvsignore
 include run_tests *.txt
 exclude BUILD.txt I18N_PROGRESS.txt TODO.txt
+exclude doc/security.txt doc/templating.txt
 

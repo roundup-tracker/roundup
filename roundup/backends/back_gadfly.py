@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.28 2002-10-03 06:56:29 richard Exp $
+# $Id: back_gadfly.py,v 1.29 2002-10-07 00:52:51 richard Exp $
 ''' Gadlfy relational database hypderb backend.
 
 About Gadfly
@@ -137,7 +137,8 @@ class Database(rdbms_common.Database):
         return res
 
 class GadflyClass:
-    def filter(self, search_matches, filterspec, sort, group):
+    def filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None)):
         ''' Gadfly doesn't have a LIKE predicate :(
         '''
         cn = self.classname

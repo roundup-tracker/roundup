@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.83 2002-10-03 06:56:29 richard Exp $
+# $Id: hyperdb.py,v 1.84 2002-10-07 00:52:51 richard Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -512,11 +512,20 @@ class Class:
         """
         raise NotImplementedError
 
-    def filter(self, search_matches, filterspec, sort, group, 
-            num_re = re.compile('^\d+$')):
+    def filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None)):
         ''' Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
-            sort spec
+            sort spec.
+
+            "filterspec" is {propname: value(s)}
+            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+                               and prop is a prop name or None
+            "search_matches" is {nodeid: marker}
+
+            The filter must match all properties specificed - but if the
+            property value to match is a list, any one of the values in the
+            list may match for that property to match.
         '''
         raise NotImplementedError
 
