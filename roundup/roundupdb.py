@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.67 2002-09-10 12:44:42 richard Exp $
+# $Id: roundupdb.py,v 1.68 2002-09-11 02:20:35 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -287,7 +287,6 @@ class IssueClass:
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information
         '''
-
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
         base = self.db.config.TRACKER_WEB 
@@ -296,7 +295,7 @@ class IssueClass:
                 "fully-qualified URL"
         elif base[-1] != '/' :
             base += '/'
-        web = base + 'issue'+ nodeid
+        web = base + self.classname + nodeid
 
         # ensure the email address is properly quoted
         email = straddr((self.db.config.TRACKER_NAME,
