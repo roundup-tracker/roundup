@@ -14,7 +14,7 @@ __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-class Action:    
+class Action:
     def __init__(self, client):
         self.client = client
         self.form = client.form
@@ -25,7 +25,7 @@ class Action:
         self.userid = client.userid
         self.base = client.base
         self.user = client.user
-        
+
     def execute(self):
         """Execute the action specified by this object."""
         self.permission()
@@ -40,20 +40,20 @@ class Action:
         a simple permission, check whether the user has that permission.
         Subclasses must also define the name attribute if they define
         permissionType.
-        
+
         Despite having this permission, users may still be unauthorised to
-        perform parts of actions. It is up to the subclasses to detect this.        
+        perform parts of actions. It is up to the subclasses to detect this.
         """
         if (self.permissionType and
-            not self.hasPermission(self.permissionType)):
-
-            raise Unauthorised, _('You do not have permission to %s the %s class.' %
-                                  (self.name, self.classname))
+                not self.hasPermission(self.permissionType)):
+            info = {'action': self.name, 'classname': self.classname}
+            raise Unauthorised, _('You do not have permission to '
+                '%(action)s the %(classname)s class.')%info
 
     def hasPermission(self, permission):
         """Check whether the user has 'permission' on the current class."""
         return self.db.security.hasPermission(permission, self.client.userid,
-                                              self.client.classname)
+            self.client.classname)
 
 class ShowAction(Action):
     def handle(self, typere=re.compile('[@:]type'),
@@ -75,7 +75,7 @@ class RetireAction(Action):
     permissionType = 'Edit'
 
     def handle(self):
-        """Retire the context item."""        
+        """Retire the context item."""
         # if we want to view the index template now, then unset the nodeid
         # context info (a special-case for retire actions on the index page)
         nodeid = self.nodeid
@@ -98,7 +98,7 @@ class RetireAction(Action):
 class SearchAction(Action):
     name = 'search'
     permissionType = 'View'
-    
+
     def handle(self, wcre=re.compile(r'[\s,]+')):
         """Mangle some of the form variables.
 
@@ -113,7 +113,7 @@ class SearchAction(Action):
 
         """
         self.fakeFilterVars()
-        queryname = self.getQueryName()        
+        queryname = self.getQueryName()
 
         # handle saving the query params
         if queryname:
@@ -165,7 +165,7 @@ class SearchAction(Action):
                         # replace the single value with the split list
                         for v in l:
                             self.form.value.append(cgi.MiniFieldStorage(key, v))
-        
+
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
     FV_QUERYNAME = re.compile(r'[@:]queryname')
@@ -178,7 +178,7 @@ class SearchAction(Action):
 class EditCSVAction(Action):
     name = 'edit'
     permissionType = 'Edit'
-    
+
     def handle(self):
         """Performs an edit of all of a class' items in one go.
 
@@ -270,13 +270,13 @@ class EditCSVAction(Action):
         self.db.commit()
 
         self.client.ok_message.append(_('Items edited OK'))
-    
+
 class _EditAction(Action):
     def isEditingSelf(self):
         """Check whether a user is editing his/her own details."""
         return (self.nodeid == self.userid
                 and self.db.user.get(self.nodeid, 'username') != 'anonymous')
-    
+
     def editItemPermission(self, props):
         """Determine whether the user has permission to edit this item.
 
@@ -444,12 +444,12 @@ class EditItemAction(_EditAction):
 
     def handleCollision(self):
         self.client.template = 'collision'
-    
+
     def handle(self):
         """Perform an edit of an item in the database.
 
         See parsePropsFromForm and _editnodes for special variables.
-        
+
         """
         if self.detectCollision(self.lastUserActivity(), self.lastNodeActivity()):
             self.handleCollision()
@@ -480,7 +480,7 @@ class EditItemAction(_EditAction):
             req = templating.HTMLRequest(self)
             url += '&' + req.indexargs_href('', {})[1:]
         raise Redirect, url
-    
+
 class NewItemAction(_EditAction):
     def handle(self):
         ''' Add a new item to the database.
@@ -512,14 +512,14 @@ class NewItemAction(_EditAction):
         raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
             self.classname, self.nodeid, urllib.quote(messages),
             urllib.quote(self.template))
-        
+
 class PassResetAction(Action):
     def handle(self):
         """Handle password reset requests.
-    
+
         Presence of either "name" or "address" generates email. Presence of
         "otk" performs the reset.
-    
+
         """
         if self.form.has_key('otk'):
             # pull the rego information out of the otk database
@@ -621,7 +621,7 @@ class ConfRegoAction(Action):
         except (ValueError, KeyError), message:
             self.client.error_message.append(str(message))
             return
-        
+
         # log the new user in
         self.client.user = self.db.user.get(self.userid, 'username')
         # re-open the database for real, using the user
@@ -645,19 +645,19 @@ class ConfRegoAction(Action):
 class RegisterAction(Action):
     name = 'register'
     permissionType = 'Web Registration'
-    
+
     def handle(self):
         """Attempt to create a new user based on the contents of the form
         and then set the cookie.
 
         Return 1 on successful login.
-        """        
+        """
         props = self.client.parsePropsFromForm(create=1)[0][('user', None)]
 
         # registration isn't allowed to supply roles
         if props.has_key('roles'):
             raise Unauthorised, _("It is not permitted to supply roles "
-                "at registration.")            
+                "at registration.")
 
         username = props['username']
         try:

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.161 2004-02-15 10:08:20 jlgijsbers Exp $
+# $Id: client.py,v 1.162 2004-02-20 03:48:16 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -239,7 +239,7 @@ class Client:
 
     def clean_sessions(self):
         """Age sessions, remove when they haven't been used for a week.
-        
+
         Do it only once an hour.
 
         Note: also cleans One Time Keys, and other "session" based stuff.
@@ -558,8 +558,8 @@ class Client:
                 # old way of specifying actions
                 getattr(self, action_klass)()
             else:
-                action_klass(self).handle()
-                
+                action_klass(self).execute()
+
         except ValueError, err:
             self.error_message.append(str(err))
 

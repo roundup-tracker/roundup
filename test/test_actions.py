@@ -20,11 +20,11 @@ class MockNull:
         #
         # For example (with just 'client' defined):
         #
-        # client.db.config.TRACKER_WEB = 'BASE/'        
+        # client.db.config.TRACKER_WEB = 'BASE/'
         setattr(self, name, MockNull())
         return getattr(self, name)
 
-    def __getitem__(self, key): return self    
+    def __getitem__(self, key): return self
     def __nonzero__(self): return 0
     def __str__(self): return ''
 
@@ -36,7 +36,7 @@ class ActionTestCase(unittest.TestCase):
         self.form = FieldStorage()
         self.client = MockNull()
         self.client.form = self.form
-    
+
 class ShowActionTestCase(ActionTestCase):
     def assertRaisesMessage(self, exception, callable, message, *args, **kwargs):
         try:
@@ -47,7 +47,7 @@ class ShowActionTestCase(ActionTestCase):
             if hasattr(excClass,'__name__'): excName = excClass.__name__
             else: excName = str(excClass)
             raise self.failureException, excName
-    
+
     def testShowAction(self):
         self.client.db.config.TRACKER_WEB = 'BASE/'
 
@@ -56,7 +56,7 @@ class ShowActionTestCase(ActionTestCase):
 
         self.form.value.append(MiniFieldStorage('@type', 'issue'))
         self.assertRaisesMessage(Redirect, action.handle, 'BASE/issue')
-        
+
         self.form.value.append(MiniFieldStorage('@number', '1'))
         self.assertRaisesMessage(Redirect, action.handle, 'BASE/issue1')
 
@@ -68,12 +68,17 @@ class RetireActionTestCase(ActionTestCase):
         self.assert_(len(self.client.ok_message) == 1)
 
     def testNoPermission(self):
-        self.assertRaises(Unauthorised, RetireAction(self.client).handle)
+        self.assertRaises(Unauthorised, RetireAction(self.client).execute)
 
     def testDontRetireAdminOrAnonymous(self):
         self.client.db.security.hasPermission=true
-        self.client.classname = 'user'        
+        # look up the user class
+        self.client.classname = 'user'
+        # but always look up admin, regardless of nodeid
         self.client.db.user.get = lambda a,b: 'admin'
+        self.assertRaises(ValueError, RetireAction(self.client).handle)
+        # .. or anonymous
+        self.client.db.user.get = lambda a,b: 'anonymous'
         self.assertRaises(ValueError, RetireAction(self.client).handle)
 
 class SearchActionTestCase(ActionTestCase):
@@ -83,8 +88,8 @@ class SearchActionTestCase(ActionTestCase):
 
 class StandardSearchActionTestCase(SearchActionTestCase):
     def testNoPermission(self):
-        self.assertRaises(Unauthorised, self.action.handle)
-    
+        self.assertRaises(Unauthorised, self.action.execute)
+
     def testQueryName(self):
         self.assertEqual(self.action.getQueryName(), '')
 
@@ -99,7 +104,7 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
     def assertFilterEquals(self, expected):
         self.action.fakeFilterVars()
         self.assertEqual(self.form.getvalue('@filter'), expected)
-        
+
     def testEmptyMultilink(self):
         self.form.value.append(MiniFieldStorage('foo', ''))
         self.form.value.append(MiniFieldStorage('foo', ''))
@@ -128,7 +133,7 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
     def testTokenizedStringKey(self):
         self.client.db.classes.getprops = lambda: {'foo': hyperdb.String()}
         self.form.value.append(MiniFieldStorage('foo', 'hello world'))
-        
+
         self.assertFilterEquals('foo')
 
         # The single value gets replaced with the tokenized list.
@@ -139,11 +144,11 @@ class CollisionDetectionTestCase(ActionTestCase):
         ActionTestCase.setUp(self)
         self.action = EditItemAction(self.client)
         self.now = Date('.')
-        
+
     def testLastUserActivity(self):
         self.assertEqual(self.action.lastUserActivity(), None)
 
-        self.client.form.value.append(MiniFieldStorage('@lastactivity', str(self.now)))        
+        self.client.form.value.append(MiniFieldStorage('@lastactivity', str(self.now)))
         self.assertEqual(self.action.lastUserActivity(), self.now)
 
     def testLastNodeActivity(self):
@@ -161,8 +166,8 @@ class CollisionDetectionTestCase(ActionTestCase):
     def testCollision(self):
         self.failUnless(self.action.detectCollision(self.now, self.now + Interval("1d")))
         self.failIf(self.action.detectCollision(self.now, self.now - Interval("1d")))
-        self.failIf(self.action.detectCollision(None, self.now))        
-        
+        self.failIf(self.action.detectCollision(None, self.now))
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(RetireActionTestCase))
