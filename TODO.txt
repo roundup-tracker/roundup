@@ -31,7 +31,6 @@ pending mailgw    Allow multiple email addresses at one gw with different
 pending mailgw    Identification of users should have a configurable degree of
                   strictness (ie. turn off username==address matching)
 pending project   switch to a Roundup instance for Roundup bug/feature tracking
-pending security  an LDAP user database implementation
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
 pending security  use digital signatures in mailgw
