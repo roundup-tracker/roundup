@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.33 2004-11-29 07:34:39 anthonybaxter Exp $
+# $Id: __init__.py,v 1.34 2005-01-06 17:57:05 a1s Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -30,6 +30,7 @@ import sys
 _modules = {
     'mysql': 'MySQLdb',
     'postgresql': 'psycopg',
+    'tsearch2': 'psycopg',
 }
 
 def get_backend(name):
@@ -43,7 +44,7 @@ def get_backend(name):
     try:
         module = __import__(module_name, vars)
     except:
-        # import failed, but in versions prior to 2.4, a (broken) 
+        # import failed, but in versions prior to 2.4, a (broken)
         # module is left in sys.modules and package globals;
         # subsequent imports would succeed and get the broken module.
         # This no longer happens in Python 2.4 and later.
