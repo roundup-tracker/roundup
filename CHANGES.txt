@@ -72,8 +72,9 @@ Feature:
 - added Node.get() method
 
 
-2003-??-?? 0.5.6
+2003-02-28 0.5.6
 - changes appear in 0.6.0
+
 
 2003-01-24 0.5.5
 - changes appear in 0.6.0
