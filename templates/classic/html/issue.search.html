@@ -9,10 +9,15 @@
 <input type="hidden" name=":action" value="search">
 
 <table class="form" tal:define="
-   cols python:'id activity priority title status assignedto'.split();
-   defsort python:['activity'];
-   defgroup python:['priority'];
-   defdisp python:'id activity title status assignedto'.split()">
+   cols python:request.columns or 'id activity title status assignedto'.split();
+   sort_on python:request.sort[1] or 'activity';
+   group_on python:request.group[1] or 'priority';
+
+   search_input templates/page/macros/search_input;
+   column_input templates/page/macros/column_input;
+   sort_input templates/page/macros/sort_input;
+   group_input templates/page/macros/group_input;
+   search_select templates/page/macros/search_select;">
 
 <tr>
  <th class="header">&nbsp;</th>
@@ -22,159 +27,144 @@
  <th class="header">Group on</th>
 </tr>
 
-<tr>
- <th>All text*:</th>
- <td><input name=":search_text"
-            tal:attributes="value request/form/:search_text/value | nothing">
- </td>
- <td>&nbsp;</td>
- <td>&nbsp;</td>
- <td>&nbsp;</td>
+<tr tal:define="name string::search_text">
+  <th>All text*:</th>
+  <td metal:use-macro="search_input"></td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
 </tr>
 
-<tr>
- <th>Title:</th>
- <td><input name="title"></td>
- <td><input type="checkbox" name=":columns" value="title" checked></td>
- <td><input type="radio" name=":sort" value="title"></td>
- <td>&nbsp;</td>
+<tr tal:define="name string:title">
+  <th>Title:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
 </tr>
 
-<tr>
- <th>Topic:</th>
- <td>
-  <select name="topic">
-   <option value="">don't care</option>
-   <option value="">------------</option>
-   <option tal:repeat="s db/keyword/list" tal:attributes="value s/name"
-           tal:content="s/name">topic to filter on</option>
-  </select>
- </td>
- <td><input type="checkbox" name=":columns" value="topic" checked></td>
- <td><input type="radio" name=":sort" value="topic"></td>
- <td><input type="radio" name=":group" value="topic"></td>
+<tr tal:define="name string:topic;
+                db_klass string:keyword;
+                db_content string:name;">
+  <th>Topic:</th>
+  <td metal:use-macro="search_select"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
 </tr>
 
-<tr>
- <th>ID:</th>
- <td><input name="id"></td>
- <td><input type="checkbox" name=":columns" value="id" checked></td>
- <td><input type="radio" name=":sort" value="id"></td>
- <td>&nbsp;</td>
+<tr tal:define="name string:id">
+  <th>ID:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
 </tr>
 
-<tr>
- <th>Creation date:</th>
- <td><input name="creation"></td>
- <td><input type="checkbox" name=":columns" value="creation"></td>
- <td><input type="radio" name=":sort" value="creation"></td>
- <td><input type="radio" name=":group" value="creation"></td>
+<tr tal:define="name string:creation">
+  <th>Creation Date:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
 </tr>
 
-<tr>
- <th>Creator:</th>
- <td>
-  <select name="creator">
-   <option value="">don't care</option>
-   <option tal:attributes="value request/user/id">created by me</option>
-   <option value="-1">------------</option>
-   <option tal:repeat="s db/user/list" tal:attributes="value s/id"
-     tal:content="s/username">user to filter on</option>
-  </select>
- </td>
- <td><input type="checkbox" name=":columns" value="creator" checked></td>
- <td><input type="radio" name=":sort" value="creator"></td>
- <td><input type="radio" name=":group" value="creator"></td>
+<tr tal:define="name string:creator;
+                db_klass string:user;
+                db_content string:username;">
+  <th>Creator:</th>
+  <td metal:use-macro="search_select">
+    <option metal:fill-slot="extra_options"
+            tal:attributes="value request/user/id">created by me</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
 </tr>
 
-<tr>
- <th>Activity:</th>
- <td><input name="activity"></td>
- <td><input type="checkbox" name=":columns" value="activity" checked></td>
- <td><input type="radio" name=":sort" value="activity"></td>
- <td>&nbsp;</td>
+<tr tal:define="name string:activity">
+  <th>Activity:</th>
+  <td metal:use-macro="search_input"></td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
 </tr>
 
-<tr>
- <th>Priority:</th>
- <td>
-  <select name="priority">
-   <option value="">don't care</option>
-   <option value="-1">not selected</option>
-   <option value="">------------</option>
-   <option tal:repeat="s db/priority/list" tal:attributes="value s/id"
-     tal:content="s/name">priority to filter on</option>
-  </select>
- </td>
- <td><input type="checkbox" name=":columns" value="priority"></td>
- <td><input type="radio" name=":sort" value="priority"></td>
- <td><input type="radio" name=":group" value="priority"></td>
+<tr tal:define="name string:priority;
+                db_klass string:priority;
+                db_content string:name;">
+  <th>Priority:</th>
+  <td metal:use-macro="search_select">
+    <option metal:fill-slot="extra_options" value="-1"
+            tal:attributes="selected python:value == '-1'">not selected</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
 </tr>
 
-<tr>
- <th>Status:</th>
- <td>
-  <select name="status">
-   <option value="">don't care</option>
-   <option value="-1,1,2,3,4,5,6,7">not resolved</option>
-   <option value="-1">not selected</option>
-   <option value="">------------</option>
-   <option tal:repeat="s db/status/list" tal:attributes="value s/id"
-           tal:content="s/name">status to filter on</option>
-  </select>
- </td>
- <td><input type="checkbox" name=":columns" value="status" checked></td>
- <td><input type="radio" name=":sort" value="status"></td>
- <td><input type="radio" name=":group" value="status"></td>
+<tr tal:define="name string:status;
+                db_klass string:status;
+                db_content string:name;">
+  <th>Status:</th>
+  <td metal:use-macro="search_select">
+    <tal:block metal:fill-slot="extra_options">
+      <option value="-1,1,2,3,4,5,6,7"
+              tal:attributes="selected python:value == '-1,1,2,3,4,5,6,7'">not resolved</option>
+      <option value="-1"
+              tal:attributes="selected python:value == '-1'">not selected</option>
+    </tal:block>    
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
 </tr>
 
-<tr>
- <th>Assigned To:</th>
- <td>
-  <select name="assignedto">
-   <option value="">don't care</option>
-   <option tal:attributes="value request/user/id">assigned to me</option>
-   <option value="-1">unassigned</option>
-   <option value="">------------</option>
-   <option tal:repeat="s db/user/list" tal:attributes="value s/id"
-     tal:content="s/username">user to filter on</option>
-  </select>
- </td>
- <td><input type="checkbox" name=":columns" value="assignedto" checked></td>
- <td><input type="radio" name=":sort" value="assignedto"></td>
- <td><input type="radio" name=":group" value="assignedto"></td>
+<tr tal:define="name string:assignedto;
+                db_klass string:user;
+                db_content string:username;">
+  <th>Assigned to:</th>
+  <td metal:use-macro="search_select">
+    <tal:block metal:fill-slot="extra_options">
+      <option tal:attributes="value request/user/id">assigned to me</option>
+      <option value="-1" tal:attributes="selected python:value == '-1'">unassigned</option>
+    </tal:block>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td metal:use-macro="group_input"></td>
 </tr>
 
 <tr>
 <th>Pagesize:</th>
-<td><input type="text" name=":pagesize" size="3" value="50"></td>
+<td><input name=":pagesize" size="3" value="50"
+           tal:attributes="value request/form/:pagesize/value | default"></td>
 </tr>
 
 <tr>
 <th>Start With:</th>
-<td><input type="text" name=":startwith" size="3" value="0"></td>
+<td><input name=":startwith" size="3" value="0"
+           tal:attributes="value request/form/:startwith/value | default"></td>
 </tr>
 
 <tr>
 <th>Sort Descending:</th>
-<td><input type="checkbox" name=":sortdir" checked>
+<td><input type="checkbox" name=":sortdir"
+           tal:attributes="checked python:request.sort[0] == '-' or request.sort[0] is None">
 </td>
+</tr>
 
 <tr>
 <th>Group Descending:</th>
-<td><input type="checkbox" name=":groupdir">
+<td><input type="checkbox" name=":groupdir"
+           tal:attributes="checked python:request.group[0] == '-'">
 </td>
 </tr>
 
 <tr>
 <th>Query name**:</th>
 <td><input name=":queryname"
-            tal:attributes="value request/form/:queryname/value | nothing">
-</td>
-</tr>
-
-<tr><td>&nbsp;</td>
-<td><input type="submit" value="Search"></td>
+           tal:attributes="value request/form/:queryname/value | default"></td>
 </tr>
 
 <tr><td>&nbsp;</td>

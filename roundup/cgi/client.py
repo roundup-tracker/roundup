@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.122 2003-06-24 03:58:57 richard Exp $
+# $Id: client.py,v 1.123 2003-06-24 04:16:35 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1598,7 +1598,8 @@ You should then receive another email with the new password.
 
         # we'll store info about the individual class/item edit in these
         all_required = {}       # required props per class/item
-        all_props = {}          # props present per class/item
+        all_props = {}          # props to set per class/item
+        got_props = {}          # props received per class/item
         all_propdef = {}        # note - only one entry per class
         all_links = []          # as many as are required
 
@@ -1662,6 +1663,8 @@ You should then receive another email with the new password.
             if not all_props.has_key(this):
                 all_props[this] = {}
             props = all_props[this]
+            if not got_props.has_key(this):
+                got_props[this] = {}
 
             # is this a link command?
             if d['link']:
@@ -1866,6 +1869,10 @@ You should then receive another email with the new password.
                     raise ValueError, _('Error with %s property: %s')%(
                         propname, msg)
 
+            # register that we got this property
+            if value:
+                got_props[this][propname] = 1
+
             # get the old value
             if nodeid and not nodeid.startswith('-'):
                 try:
@@ -1914,9 +1921,9 @@ You should then receive another email with the new password.
         s = []
         for thing, required in all_required.items():
             # register the values we got
-            got = all_props.get(thing, {})
+            got = got_props.get(thing, {})
             for entry in required[:]:
-                if got.get(entry, ''):
+                if got.has_key(entry):
                     required.remove(entry)
 
             # any required values not present?

@@ -8,6 +8,8 @@ are given with the most recent entry first.
 - handle New User creation (sf bug 754510)
 - fix hackish message escaping (sf bug 757128)
 - fix :required ordering problem (sf bug 740214)
+- audit some user properties for valid values (roles, address) (sf bugs
+  742968 and 739653)
 
 
 2003-06-10 0.6.0b3

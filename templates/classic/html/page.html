@@ -107,3 +107,37 @@
 
 </body>
 </html>
+
+<td metal:define-macro="search_input">
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name">
+</td>
+
+<td metal:define-macro="search_select">
+  <select tal:attributes="name name"
+          tal:define="value python:request.form.getvalue(name)">
+    <option value="">don't care</option>
+    <tal:block metal:define-slot="extra_options"></tal:block>
+    <option value="">------------</option>      
+    <option tal:repeat="s python:db[db_klass].list()"
+            tal:attributes="value s/id; selected python:value == s.id"
+            tal:content="python:s[db_content]"></option>
+  </select>
+</td>
+
+<td metal:define-macro="column_input">
+  <input type="checkbox" name=":columns"
+         tal:attributes="value name;
+                         checked python:name in cols">
+</td>
+
+<td metal:define-macro="sort_input">
+  <input type="radio" name=":sort"
+         tal:attributes="value name;
+                         checked python:name == sort_on">
+</td>
+
+<td metal:define-macro="group_input">
+  <input type="radio" name=":group"
+         tal:attributes="value name;
+                         checked python:name == group_on">
