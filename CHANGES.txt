@@ -1,19 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-200?-??-?? 0.7.0
-Feature:
-- support confirming registration by replying to the email (sf bug 763668)
-
-
-2003-09-?? 0.6.2
+2003-09-29 0.6.2
 Fixed:
 - cleaned up, clarified internal caching API in *dbm backends
 - stopped pyc writing to current directory! yay! (patch 800718 with changes)
 - fixed file leak in detector initialisation (patch 800715)
 - commented out example tracker homes (patch 800720)
 - added note about hidden :template var in user.item (bug 799842)
-- fixed Apply Error that was raised, when property was deleted from class and
+- fixed change note generation when property was deleted from class and
   we are trying to edit an instance
 
 

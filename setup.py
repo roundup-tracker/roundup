@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.1 2003-08-31 04:31:00 richard Exp $
+# $Id: setup.py,v 1.55.2.2 2003-09-29 08:08:31 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -186,32 +186,15 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6 release has lots of new goodies including:
+The 0.6.2 release fixes some bugs:
+- cleaned up, clarified internal caching API in *dbm backends
+- stopped pyc writing to current directory! yay! (patch 800718 with changes)
+- fixed file leak in detector initialisation (patch 800715)
+- commented out example tracker homes (patch 800720)
+- added note about hidden :template var in user.item (bug 799842)
+- fixed change note generation when property was deleted from class and
+  we are trying to edit an instance
 
-- new instant-gratification Demo Mode ("python demo.py" :)
-- added mysql backend (see doc/mysql.txt for details)
-- web interface cleanups including nicer history display, nicer index
-  navigation and nicer popup list windows
-- searching of date ranges
-- better international support, including utf-8 email handling and ability
-  to display localized dates in web interface.
-- more documentation including revamped design document, unix manual pages
-  and some FAQ entries
-- significantly more powerful form handling allowing editing of multiple
-  items
-  and creation of multiple items
-- tracker templates can contain subdirectories and static files (e.g.
-  images)
-  and we may now distribute templates separately from Roundup. Template
-  HTML files now have a .html extension too.
-- user registration is now a two-step process, with confirmation from the email
-  address supplied in the registration form, and we also have a password reset
-  feature for forgotten password / login
-- Windows Service mode for roundup-server when daemonification is attempted
-  on Windows.
-- fixed issues with dumb email or web clients
-- lots more little tweaks and back-end work...
-- email system handles more SMTP and POP features (TLS, APOP, ...)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
