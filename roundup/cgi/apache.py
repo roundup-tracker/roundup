@@ -20,8 +20,8 @@
 #                   instead of mod_python FieldStorage
 # 29-apr-2004 [als] created
 
-__version__ = "$Revision: 1.3 $"[11:-2]
-__date__ = "$Date: 2004-10-23 14:13:24 $"[7:-2]
+__version__ = "$Revision: 1.4 $"[11:-2]
+__date__ = "$Date: 2004-11-22 07:33:34 $"[7:-2]
 
 import cgi
 import os
@@ -76,12 +76,17 @@ def handler(req):
     _options = req.get_options()
     _home = _options.get("TrackerHome")
     _lang = _options.get("TrackerLanguage")
+    _timing = _options.get("TrackerTiming", "no")
+    if _timing.lower() in ("no", "false"):
+        _timing = ""
+    _debug = _options.get("TrackerDebug", "no")
+    _debug = _debug.lower not in ("no", "false")
     if not (_home and os.path.isdir(_home)):
         apache.log_error(
             "PythonOption TrackerHome missing or invalid for %(uri)s"
             % {'uri': req.uri})
         return apache.HTTP_INTERNAL_SERVER_ERROR
-    _tracker = roundup.instance.open(_home)
+    _tracker = roundup.instance.open(_home, not _debug)
     # create environment
     # Note: cookies are read from HTTP variables, so we need all HTTP vars
     req.add_common_vars()
@@ -91,6 +96,8 @@ def handler(req):
     #       os.environ['PATH_INFO'] = string.join(path[2:], '/')
     #   we just remove the first character ('/')
     _env["PATH_INFO"] = req.path_info[1:]
+    if _timing:
+        _env["CGI_SHOW_TIMING"] = _timing
     _form = cgi.FieldStorage(req, environ=_env)
     _client = _tracker.Client(_tracker, Request(req), _env, _form,
         translator=TranslationService.get_translation(_lang,
