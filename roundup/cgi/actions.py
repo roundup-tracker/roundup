@@ -1,11 +1,10 @@
-#$Id: actions.py,v 1.37 2004-08-07 22:17:11 richard Exp $
+#$Id: actions.py,v 1.38 2004-11-18 15:58:23 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
 from roundup import hyperdb, token, date, password, rcsv, exceptions
 from roundup.i18n import _
-from roundup.cgi import templating
-from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError
+from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
 
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
@@ -50,7 +49,8 @@ class Action:
         if (self.permissionType and
                 not self.hasPermission(self.permissionType)):
             info = {'action': self.name, 'classname': self.classname}
-            raise Unauthorised, self._('You do not have permission to '
+            raise exceptions.Unauthorised, self._(
+                'You do not have permission to '
                 '%(action)s the %(classname)s class.')%info
 
     _marker = []
@@ -80,15 +80,15 @@ class ShowAction(Action):
         if not t:
             raise ValueError, self._('No type specified')
         if not n:
-            raise SeriousError, self._('No ID entered')
+            raise exceptions.SeriousError, self._('No ID entered')
         try:
             int(n)
         except ValueError:
             d = {'input': n, 'classname': t}
-            raise SeriousError, self._(
+            raise exceptions.SeriousError, self._(
                 '"%(input)s" is not an ID (%(classname)s ID required)')%d
         url = '%s%s%s'%(self.base, t, n)
-        raise Redirect, url
+        raise exceptions.Redirect, url
 
 class RetireAction(Action):
     name = 'retire'
@@ -420,7 +420,7 @@ class EditCommon:
         """Change the node based on the contents of the form."""
         # check for permission
         if not self.editItemPermission(props):
-            raise Unauthorised, self._(
+            raise exceptions.Unauthorised, self._(
                 'You do not have permission to edit %(class)s'
             ) % {'class': cn}
 
@@ -432,7 +432,7 @@ class EditCommon:
         """Create a node based on the contents of the form."""
         # check for permission
         if not self.newItemPermission(props):
-            raise Unauthorised, self._(
+            raise exceptions.Unauthorised, self._(
                 'You do not have permission to create %(class)s'
             ) % {'class': cn}
 
@@ -455,7 +455,7 @@ class EditCommon:
         """
         if self.classname == 'user':
             if props.has_key('roles') and not self.hasPermission('Web Roles'):
-                raise Unauthorised, self._(
+                raise exceptions.Unauthorised, self._(
                     "You do not have permission to edit user roles")
             if self.isEditingSelf():
                 return 1
@@ -533,7 +533,7 @@ class EditItemAction(EditCommon, Action):
         if self.nodeid is None:
             req = templating.HTMLRequest(self.client)
             url += '&' + req.indexargs_href('', {})[1:]
-        raise Redirect, url
+        raise exceptions.Redirect, url
 
 class NewItemAction(EditCommon, Action):
     def handle(self):
@@ -563,8 +563,8 @@ class NewItemAction(EditCommon, Action):
         self.db.commit()
 
         # redirect to the new item's page
-        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
-            self.classname, self.nodeid, urllib.quote(messages),
+        raise exceptions.Redirect, '%s%s%s?@ok_message=%s&@template=%s' % (
+            self.base, self.classname, self.nodeid, urllib.quote(messages),
             urllib.quote(self.template))
 
 class PassResetAction(Action):
@@ -734,7 +734,7 @@ class RegisterAction(RegoCommon, EditCommon, Action):
         # registration isn't allowed to supply roles
         user_props = props[('user', None)]
         if user_props.has_key('roles'):
-            raise Unauthorised, self._(
+            raise exceptions.Unauthorised, self._(
                 "It is not permitted to supply roles at registration.")
 
         # skip the confirmation step?
@@ -802,7 +802,7 @@ reply's additional "Re:" is ok),
         self.db.commit()
 
         # redirect to the "you're almost there" page
-        raise Redirect, '%suser?@template=rego_progress'%self.base
+        raise exceptions.Redirect, '%suser?@template=rego_progress'%self.base
 
 class LogoutAction(Action):
     def handle(self):
@@ -838,27 +838,11 @@ class LoginAction(Action):
         else:
             password = ''
 
-        # make sure the user exists
         try:
-            self.client.userid = self.db.user.lookup(self.client.user)
-        except KeyError:
-            name = self.client.user
-            self.client.error_message.append(self._('Ivalid login'))
+            self.verifyLogin(self.client.user, password)
+        except exceptions.LoginError, err:
             self.client.make_user_anonymous()
-            return
-
-        # verify the password
-        if not self.verifyPassword(self.client.userid, password):
-            self.client.make_user_anonymous()
-            self.client.error_message.append(self._('Invalid login'))
-            return
-
-        # Determine whether the user has permission to log in.
-        # Base behaviour is to check the user has "Web Access".
-        if not self.hasPermission("Web Access"):
-            self.client.make_user_anonymous()
-            self.client.error_message.append(
-                self._("You do not have permission to login"))
+            self.client.error_message.extend(list(err.args))
             return
 
         # now we're OK, re-open the database for real, using the user
@@ -866,6 +850,23 @@ class LoginAction(Action):
 
         # set the session cookie
         self.client.set_cookie(self.client.user)
+
+    def verifyLogin(self, username, password):
+        # make sure the user exists
+        try:
+            self.client.userid = self.db.user.lookup(username)
+        except KeyError:
+            raise exceptions.LoginError, self._('Invalid login')
+
+        # verify the password
+        if not self.verifyPassword(self.client.userid, password):
+            raise exceptions.LoginError, self._('Invalid login')
+
+        # Determine whether the user has permission to log in.
+        # Base behaviour is to check the user has "Web Access".
+        if not self.hasPermission("Web Access"):
+            raise exceptions.LoginError, self._(
+                "You do not have permission to login")
 
     def verifyPassword(self, userid, password):
         ''' Verify the password that the user has supplied
