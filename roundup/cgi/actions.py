@@ -1,9 +1,10 @@
-#$Id: actions.py,v 1.39 2004-11-18 17:20:40 a1s Exp $
+#$Id: actions.py,v 1.40 2004-11-23 22:45:13 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
-from roundup import hyperdb, token, date, password, rcsv, exceptions
+from roundup import hyperdb, token, date, password, rcsv
 from roundup.i18n import _
+import roundup.exceptions
 from roundup.cgi import exceptions, templating
 from roundup.mailgw import uidFromAddress
 
@@ -522,7 +523,8 @@ class EditItemAction(EditCommon):
         # handle the props
         try:
             message = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError, exceptions.Reject), message:
+        except (ValueError, KeyError, IndexError,
+                roundup.exceptions.Reject), message:
             import traceback;traceback.print_exc()
             self.client.error_message.append(
                 self._('Edit Error: %s') % str(message))
@@ -564,7 +566,8 @@ class NewItemAction(EditCommon):
         try:
             # when it hits the None element, it'll set self.nodeid
             messages = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError, exceptions.Reject), message:
+        except (ValueError, KeyError, IndexError,
+                roundup.exceptions.Reject), message:
             # these errors might just be indicative of user dumbness
             self.client.error_message.append(_('Error: %s') % str(message))
             return
@@ -753,8 +756,8 @@ class RegisterAction(RegoCommon, EditCommon):
             try:
                 # when it hits the None element, it'll set self.nodeid
                 messages = self._editnodes(props, links)
-            except (ValueError, KeyError, IndexError, exceptions.Reject), \
-                    message:
+            except (ValueError, KeyError, IndexError,
+                    roundup.exceptions.Reject), message:
                 # these errors might just be indicative of user dumbness
                 self.client.error_message.append(_('Error: %s') % str(message))
                 return
