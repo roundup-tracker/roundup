@@ -48,5 +48,7 @@
 
 2001-07-19 - 0.1.4
  . Fixed bug in re generation in the filter (I hadn't finished the code ;)
- . Added TODO as a priority (between bug and usability)
  . Fixed handling of None String property in grouped list headings
+ . Fixed adding new issue with no change note
+ . Added an issue priority of support
+
