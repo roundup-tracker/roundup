@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.51 2003-09-07 20:37:33 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.52 2003-09-15 19:35:53 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -957,6 +957,12 @@ This is a followup
         self.assertEqual(uidFromAddress(self.db, ('', 'USER2@foo.com'), 0), i)
         self.assertEqual(uidFromAddress(self.db, ('', 'user2@foo.com'), 0), i)
 
+    def testUserAlternateLookup(self):
+        i = self.db.user.create(username='user1', address='user1@foo.com',
+                                alternate_addresses='user1@bar.com')
+        self.assertEqual(uidFromAddress(self.db, ('', 'user1@bar.com'), 0), i)
+        self.assertEqual(uidFromAddress(self.db, ('', 'USER1@bar.com'), 0), i)
+
     def testUserCreate(self):
         i = uidFromAddress(self.db, ('', 'user@foo.com'), 1)
         self.assertNotEqual(uidFromAddress(self.db, ('', 'user@bar.com'), 1), i)
@@ -991,6 +997,7 @@ This is a test confirmation of registration.
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),
     ]
+    l = [MailgwTestCase("testUserAlternateLookup")]
     return unittest.TestSuite(l)
 
 
