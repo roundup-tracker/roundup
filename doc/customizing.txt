@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.101 $
+:Version: $Revision: 1.102 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2373,8 +2373,6 @@ So putting it all together, and closing the table and form we get::
    <form method="POST" onSubmit="return submit_once()"
          enctype="multipart/form-data">
 
-    <input type="hidden" name="@required" value="name">
-
     <table class="form">
      <tr><th class="header" colspan="2">Category</th></tr>
 
@@ -2385,7 +2383,10 @@ So putting it all together, and closing the table and form we get::
      </tr>
 
      <tr>
-      <td>&nbsp;</td>
+      <td>
+        &nbsp;
+        <input type="hidden" name="@required" value="name"> 
+      </td>
       <td colspan="3" tal:content="structure context/submit">
        submit button will go here
       </td>

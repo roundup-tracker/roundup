@@ -13,13 +13,6 @@ You are not allowed to view this page.
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok">
 
-<input type="hidden" name=":template" value="item">
-<input type="hidden" name=":required" value="name,type">
-
-<input type="hidden" name=":multilink"
-       tal:condition="python:request.form.has_key(':multilink')"
-       tal:attributes="value request/form/:multilink/value">
-
 <table class="form">
  <tr>
   <th>Name</th>
@@ -31,7 +24,14 @@ You are not allowed to view this page.
  </tr>
 
  <tr>
-  <td>&nbsp;</td>
+  <td>
+   &nbsp;
+   <input type="hidden" name=":template" value="item">
+   <input type="hidden" name=":required" value="name,type">
+   <input type="hidden" name=":multilink"
+          tal:condition="python:request.form.has_key(':multilink')"
+          tal:attributes="value request/form/:multilink/value">
+  </td>
   <td tal:content="structure context/submit">submit button here</td>
  </tr>
 </table>

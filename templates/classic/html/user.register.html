@@ -16,10 +16,6 @@ You are not allowed to view this page.
 
 <tal:block tal:condition="editok">
 <form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
-<input type="hidden" name=":template" value="register">
-<input type="hidden" name=":required" value="username">
-<input type="hidden" name=":required" value="password">
-<input type="hidden" name=":required" value="address">
 
 <table class="form">
  <tr>
@@ -66,6 +62,8 @@ You are not allowed to view this page.
  <tr>
   <td>&nbsp;</td>
   <td>
+   <input type="hidden" name=":template" value="register">
+   <input type="hidden" name=":required" value="username,password,address">
    <input type="hidden" name=":action" value="register">
    <input type="submit" name="submit" value="Register">
   </td>

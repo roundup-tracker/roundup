@@ -6,7 +6,6 @@
 <td class="content" metal:fill-slot="content">
 
 <form method="GET" tal:attributes="action request/classname">
-<input type="hidden" name=":action" value="search">
 
 <table class="form" tal:define="
    cols python:request.columns or 'id activity title status assignedto'.split();
@@ -168,7 +167,10 @@
 </tr>
 
 <tr>
-  <td>&nbsp;</td>
+  <td>
+   &nbsp;
+   <input type="hidden" name=":action" value="search">
+  </td>
   <td><input type="submit" value="Search"></td>
 </tr>
 

@@ -10,11 +10,19 @@
 know the email address you registered with, enter it below.</p>
 
 <form method="POST" onSubmit="return submit_once()">
-<input type="hidden" name="@action" value="passrst">
-<input type="hidden" name="@template" value="forgotten">
-<table class="form">
- <tr><th>Email Address:</th> <td><input name="address"></td> </tr>
- <tr><td></td><td><input type="submit" value="Request password reset"></td></tr>
+    <table class="form">
+      <tr>
+        <th>Email Address:</th>
+        <td><input name="address"></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+          <input type="hidden" name="@action" value="passrst">
+          <input type="hidden" name="@template" value="forgotten">
+          <input type="submit" value="Request password reset">
+        </td>
+      </tr>
 </table>
 
 <p>Or, if you know your username, then enter it below.</p>

@@ -23,9 +23,6 @@ You are not allowed to view this page.
       enctype="multipart/form-data" tal:condition="context/is_edit_ok"
       tal:attributes="action context/designator">
 
-<input type="hidden" name=":template" value="item">
-<input type="hidden" name=":required" value="title,priority">
-
 <table class="form">
 <tr>
  <th class="required">Title</th>
@@ -81,7 +78,11 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 </tr>
 
 <tr>
- <td>&nbsp;</td>
+ <td>
+  &nbsp;
+  <input type="hidden" name=":template" value="item">
+  <input type="hidden" name=":required" value="title,priority">
+ </td>
  <td colspan=3 tal:content="structure context/submit">
   submit button will go here
  </td>

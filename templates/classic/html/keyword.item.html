@@ -31,9 +31,6 @@
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data">
 
- <input type="hidden" name=":required" value="name">
- <input type="hidden" name=":template" value="item">
-
  <table class="form">
   <tr>
    <th>Keyword</th>
@@ -41,7 +38,11 @@
   </tr>
 
   <tr>
-   <td>&nbsp;</td>
+   <td>
+    &nbsp;
+    <input type="hidden" name=":required" value="name">
+    <input type="hidden" name=":template" value="item">
+   </td>
    <td colspan=3 tal:content="structure context/submit">
     submit button will go here
    </td>
