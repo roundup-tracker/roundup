@@ -15,6 +15,8 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
+# vim: ts=4 sw=4 expandtab
+#
 
 """An e-mail gateway for Roundup.
 
@@ -72,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.146 2004-03-26 00:44:11 richard Exp $
+$Id: mailgw.py,v 1.147 2004-04-13 04:11:06 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -365,6 +367,79 @@ class MailGW:
             return 1
         fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
         return 0
+
+    def do_imap(self, server, user='', password='', mailbox='', ssl=False):
+        ''' Do an IMAP connection
+        '''
+        import getpass, imaplib, socket
+        try:
+            if not user:
+                user = raw_input('User: ')
+            if not password:
+                password = getpass.getpass()
+        except (KeyboardInterrupt, EOFError):
+            # Ctrl C or D maybe also Ctrl Z under Windows.
+            print "\nAborted by user."
+            return 1
+        # open a connection to the server and retrieve all messages
+        try:
+            if ssl:
+                print 'Trying server "%s" with ssl' % server
+                server = imaplib.IMAP4_SSL(server)
+            else:
+                print 'Trying server %s without ssl' % server
+                server = imaplib.IMAP4(server)
+        except imaplib.IMAP4.error, e:
+            print 'IMAP server error:', e
+            return 1
+        except socket.error, e:
+            print 'SOCKET error:', e
+            return 1
+        except socket.sslerror, e:
+            print 'SOCKET ssl error:', e
+            return 1
+
+        try:
+            server.login(user, password)
+        except imaplib.IMAP4.error, e:
+            print 'Login failure:', e
+            return 1
+
+        try:
+            if not mailbox:
+                #print 'Using INBOX'
+                (typ, data) = server.select()
+            else:
+                #print 'Using mailbox' , mailbox
+                (typ, data) = server.select(mailbox=mailbox)
+            if typ != 'OK':
+                print 'Failed to get mailbox "%s": %s' % (mailbox, data)
+                return 1
+            try:
+                numMessages = int(data[0])
+                #print 'Found %s messages' % numMessages
+            except ValueError:
+                print 'Invalid return value from mailbox'
+                return 1
+            for i in range(1, numMessages+1):
+                #print 'Processing message ', i
+                (typ, data) = server.fetch(str(i), '(RFC822)')
+                #This marks the message as deleted.
+                server.store(str(i), '+FLAGS', r'(\Deleted)')
+                #This is the raw text of the message
+                s = cStringIO.StringIO(data[0][1])
+                s.seek(0)
+                self.handle_Message(Message(s))
+            server.close()
+        finally:
+            try:
+                server.expunge()
+            except:
+                pass
+            server.logout()
+
+        return 0
+
 
     def do_apop(self, server, user='', password=''):
         ''' Do authentication POP

@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.12 2004-04-05 23:43:03 richard Exp $
+# $Id: roundup_mailgw.py,v 1.13 2004-04-13 04:11:06 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -80,6 +80,17 @@ APOP:
  Same as POP, but using Authenticated POP:
     apop username:password@server
 
+IMAP:
+ Connect to an IMAP server. This supports the same notation as that of POP mail.
+    imap username:password@server
+ It also allows you to specify a specific mailbox other than INBOX using this format:
+    imap username:password@server mailbox
+ 
+IMAPS:
+ Connect to an IMAP server over ssl. 
+ This supports the same notation as IMAP.
+    imaps username:password@server [mailbox]
+ 
 ''')
     return 1
 
@@ -126,7 +137,7 @@ def main(argv):
         # otherwise, figure what sort of mail source to handle
         if len(args) < 3:
             return usage(argv, _('Error: not enough source specification information'))
-        source, specification = args[1:]
+        source, specification = args[1:3]
         if source == 'mailbox':
             return handler.do_mailbox(specification)
         elif source == 'pop':
@@ -143,6 +154,18 @@ def main(argv):
                 return handler.do_apop(m.group('server'), m.group('user'),
                     m.group('pass'))
             return usage(argv, _('Error: apop specification not valid'))
+        elif source == 'imap' or source == 'imaps':
+            m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
+                specification)
+            if m:
+                ssl = False
+                if source == 'imaps':
+                    ssl = True
+                mailbox = ''
+                if len(args) > 3:
+                    mailbox = args[3]
+                return handler.do_imap(m.group('server'), m.group('user'),
+                    m.group('pass'), mailbox, ssl)
 
         return usage(argv, _('Error: The source must be either "mailbox", "pop" or "apop"'))
     finally:
