@@ -9,6 +9,7 @@ Fixed:
 - fixed activity displaying as future because of Date arithmetic fix in 0.6.3
   (sf bug 842027).
 - fix Windows service mode for roundup-server (sf bug 819890)
+- fixed #white in cgitb (thanks Henrik Levkowetz)
 
 
 2003-11-14 0.6.3

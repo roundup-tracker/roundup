@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.8 2003-01-21 23:54:28 richard Exp $
+# $Id: cgitb.py,v 1.8.2.1 2003-12-05 03:38:47 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -163,7 +163,7 @@ def html(context=5):
             line = '<tt>%s&nbsp;%s</tt>' % (number, pydoc.html.preformat(line))
             if i == lnum:
                 line = '''
-<table width="100%%" bgcolor="#white" cellspacing=0 cellpadding=0 border=0>
+<table width="100%%" bgcolor="white" cellspacing=0 cellpadding=0 border=0>
 <tr><td>%s</td></tr></table>''' % line
             excerpt.append('\n' + line)
             if i == lnum:
