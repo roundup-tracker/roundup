@@ -58,5 +58,8 @@
  . Major reshuffle of code to allow multiple roundup instances and a
    single, site-packages -based installation. Also allows multiple database
    back-ends.
- . moved the bin/ proggies into the top dir, so that it all works
+ . Moved the bin/ proggies into the top dir, so that it all works
    out-of-the-box
+ . Added the "classic" template - a direct implementation of the Roundup
+   spec. Well, as close as we're going to get, anyway.
+
