@@ -26,8 +26,10 @@ Feature:
   814314 and sf patch 834620)
 - default stylesheet turns off sidebar when printing
 - allow direct supply of filter() arguments (thanks Godefroid Chapelle)
-- improved body_title slot (sf patch 873502)
+- improved body_title slot in HTML templating (sf patch 873502)
 - HTMLLinkProperty field() method renders as a field now (thanks darryl)
+- all HTML templating methods now automatically check for permissions
+  (either view or edit as appropriate), greatly simplifying templates
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
