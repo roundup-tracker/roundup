@@ -5,29 +5,16 @@ Roundup: an Issue-Tracking System for Knowledge Workers
 Contents
 ========
 
-- Overview_ and Features_
-- Installation_ and Upgrading_
-- `User Guide`_
-- `Customising Roundup`_
-- `Maintaining Roundup Trackers`_
-- `Roundup's Design`_ (original_)
-- `Developing Roundup`_
+- Overview_ and Features_ (pdf__)
+- Installation_ (pdf__) and Upgrading_ (pdf__)
+- `User Guide`_ (pdf__)
+- `Customising Roundup`_ (pdf__)
+- `Maintaining Roundup Trackers`_ (pdf__)
+- `Roundup's Design`_ (pdf__) (original_)
+- `Developing Roundup`_ (pdf__)
 - Contact_
 - Acknowledgements_
 - License_
-
-.. _Features: features.html
-.. _Overview: overview.html
-.. _Installation: installation.html
-.. _`Getting Started`: getting_started.html
-.. _`User Guide`: user_guide.html
-.. _`Customising Roundup`: customizing.html
-.. _`Maintaining Roundup Trackers`: maintenance.html
-.. _`Developing Roundup`: developers.html
-.. _`Roundup's Design`: design.html
-.. _original: spec.html
-.. _Upgrading: upgrading.html
-
 
 Contact
 =======
@@ -72,7 +59,9 @@ Engelbert Gruber,
 Juergen Hermann,
 Tobias Hunger,
 James Kew,
+Sheila King,
 Detlef Lannert,
+Andrey Lebedev,
 Gordon McMillan,
 Patrick Ohly,
 Will Partain,
@@ -91,4 +80,27 @@ License
 =======
 
 See COPYING.txt in the software distribution for the licensing terms.
+
+
+.. _Overview: overview.html
+.. _Features: features.html
+.. _Installation: installation.html
+.. _Upgrading: upgrading.html
+.. _`User Guide`: user_guide.html
+.. _`Customising Roundup`: customizing.html
+.. _`Maintaining Roundup Trackers`: maintenance.html
+.. _`Roundup's Design`: design.html
+.. _`Developing Roundup`: developers.html
+.. _original: spec.html
+.. _Upgrading: upgrading.html
+
+.. __: overview.pdf
+.. __: features.pdf
+.. __: installation.pdf
+.. __: upgrading.pdf
+.. __: user_guide.pdf
+.. __: customizing.pdf
+.. __: maintenance.pdf
+.. __: design.pdf
+.. __: developers.pdf
 
