@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.21 2004-04-05 07:13:10 richard Exp $ 
+# $Id: db_test_base.py,v 1.22 2004-04-08 00:40:20 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1075,7 +1075,8 @@ class SchemaTest(MyTestCase):
         self.db = self.module.Database(config, 'admin')
         a = self.module.Class(self.db, "a", name=String())
         a.setkey("name")
-        b = self.module.Class(self.db, "b", name=String())
+        b = self.module.Class(self.db, "b", name=String(),
+            fooz=Multilink('a'))
         b.setkey("name")
         self.db.post_init()
 
@@ -1091,7 +1092,7 @@ class SchemaTest(MyTestCase):
         # add a new class to the schema and check creation of new items
         # (and existence of old ones)
         self.init_ab()
-        bid = self.db.b.create(name='bear')
+        bid = self.db.b.create(name='bear', fooz=[aid])
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
         self.db.commit()
         self.db.close()
@@ -1101,6 +1102,7 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.assertEqual(self.db.b.get(bid, 'name'), 'bear')
+        self.assertEqual(self.db.b.get(bid, 'fooz'), [aid])
         self.assertEqual(self.db.b.lookup('bear'), bid)
 
         # confirm journal's ok
@@ -1174,11 +1176,9 @@ class SchemaTest(MyTestCase):
 
     def init_ml(self):
         self.db = self.module.Database(config, 'admin')
-        a = self.module.Class(self.db, "a", name=String())
-        a.setkey('name')
-        b = self.module.Class(self.db, "b", name=String(),
+        a = self.module.Class(self.db, "a", name=String(),
             fooz=Multilink('a'))
-        b.setkey("name")
+        a.setkey('name')
         self.db.post_init()
 
     def test_makeNewMultilink(self):
@@ -1189,20 +1189,20 @@ class SchemaTest(MyTestCase):
 
         # add a multilink prop
         self.init_ml()
-        bid = self.db.b.create(name='bear', fooz=[aid])
-        self.assertEqual(self.db.b.find(fooz=aid), [bid])
+        bid = self.db.a.create(name='bear', fooz=[aid])
+        self.assertEqual(self.db.a.find(fooz=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.db.commit(); self.db.close()
 
         # check
         self.init_ml()
-        self.assertEqual(self.db.b.find(fooz=aid), [bid])
+        self.assertEqual(self.db.a.find(fooz=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
-        self.assertEqual(self.db.b.lookup('bear'), bid)
+        self.assertEqual(self.db.a.lookup('bear'), bid)
 
         # confirm journal's ok
         self.db.getjournal('a', aid)
-        self.db.getjournal('b', bid)
+        self.db.getjournal('a', bid)
 
     def test_removeMultilink(self):
         # add a multilink prop

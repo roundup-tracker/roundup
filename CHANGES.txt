@@ -13,6 +13,7 @@ Feature:
 - added search_checkboxes as an option for the search form
 
 Fixed:
+- mysql and postgresql schema mutation now handle added Multilinks
 - web CSV export was busted (as was any action returning a result)
 - MultiMapping deviated from the Zope C implementation in a number of
   places (thanks Toby Sargeant)

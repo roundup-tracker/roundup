@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.89 2004-04-05 07:13:10 richard Exp $
+# $Id: rdbms_common.py,v 1.90 2004-04-08 00:40:20 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -320,19 +320,23 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 keyprop_changes['remove'])
 
         # add new columns
-        for propname, x in new_spec[1]:
+        for propname, prop in new_spec[1]:
             if old_has(propname):
                 continue
-            sql = 'alter table _%s add column _%s varchar(255)'%(
-                spec.classname, propname)
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', (self, sql)
-            self.cursor.execute(sql)
+            prop = spec.properties[propname]
+            if isinstance(prop, Multilink):
+                self.create_multilink_table(spec, propname)
+            else:
+                sql = 'alter table _%s add column _%s varchar(255)'%(
+                    spec.classname, propname)
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                self.cursor.execute(sql)
 
-            # if the new column is a key prop, we need an index!
-            if new_spec[0] == propname:
-                self.create_class_table_key_index(spec.classname, propname)
-                del keyprop_changes['add']
+                # if the new column is a key prop, we need an index!
+                if new_spec[0] == propname:
+                    self.create_class_table_key_index(spec.classname, propname)
+                    del keyprop_changes['add']
 
         # if we didn't add the key prop just then, but the key prop has
         # changed, we still need to add the new index
