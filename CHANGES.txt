@@ -25,6 +25,7 @@ are given with the most recent entry first.
 - implemented the missing Interval.__add__
 - added ability to implement new templating utility methods
 - expose the Date.pretty method to templating
+- made form table cell alignment consistent (sf bug 621887)
 
 
 2002-10-02 0.5.0

@@ -82,21 +82,19 @@ table.form th.header {
   text-align: left;
 }
 
-table.form td.optional {
-  font-weight: bold;
-  font-style: italic;
-  color: #333333;
-  empty-cells: show;
-}
-
 table.form td {
   color: #333333;
   empty-cells: show;
+  vertical-align: top;
+}
+
+table.form td.optional {
+  font-weight: bold;
+  font-style: italic;
 }
 
 table.form td.html {
   color: #777777;
-  empty-cells: show;
 }
 
 /* style for lists */
