@@ -1,13 +1,6 @@
                                     Roundup
                                     =======
 
-  This software is released under the GNU GPL. The copyright is held by Bizar
-            Software Pty Ltd (http://www.bizarsoftware.com.au).
-
-   The stylesheet included with this package has been copied from the Zope
-      management interface and presumably belongs to Digital Creations.
-
-
 1. Building Releases
 ====================
 

@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-??-?? - 0.2.7
+2001-08-29 - 0.2.7
 Feature:
  . Text searches are now case insensitive. All forms of text search use
    regular expressions now.
