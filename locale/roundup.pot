@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2004-07-03 18:43+0300\n"
+"POT-Creation-Date: 2004-07-05 14:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -701,6 +701,30 @@ msgstr ""
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr ""
 
+#: ../roundup/backends/rdbms_common.py:1373
+msgid "create"
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:1535
+msgid "unlink"
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:1539
+msgid "link"
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:1648
+msgid "set"
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:1672
+msgid "retired"
+msgstr ""
+
+#: ../roundup/backends/rdbms_common.py:1702
+msgid "restored"
+msgstr ""
+
 #: ../roundup/cgi/actions.py:53
 #, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
@@ -741,48 +765,102 @@ msgstr ""
 msgid "You do not have permission to edit user roles"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:515
+#: ../roundup/cgi/actions.py:413
+#, python-format
+msgid "%(class)s %(id)s %(properties)s edited ok"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:416
+#, python-format
+msgid "%(class)s %(id)s - nothing changed"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:428
+#, python-format
+msgid "%(class)s %(id)s created"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:460
+#, python-format
+msgid "You do not have permission to edit %(class)s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:472
+#, python-format
+msgid "You do not have permission to create %(class)s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:523
 #, python-format
 msgid "Edit Error: %s"
 msgstr ""
 
-# ../roundup/cgi/actions.py:546 :556
-#: ../roundup/cgi/actions.py:546 ../roundup/cgi/actions.py:556
+# ../roundup/cgi/actions.py:554 :564
+#: ../roundup/cgi/actions.py:554 ../roundup/cgi/actions.py:564
 #, python-format
 msgid "Error: %s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:695
+#: ../roundup/cgi/actions.py:590
+msgid ""
+"Invalid One Time Key!\n"
+"(a Mozilla bug may cause this message to show up erroneously, please check "
+"your email)"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:632
+#, python-format
+msgid "Password reset and email sent to %s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:641
+msgid "Unknown username"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:649
+msgid "Unknown email address"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:654
+msgid "You need to specify a username or address"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:679
+#, python-format
+msgid "Email sent to %s"
+msgstr ""
+
+#: ../roundup/cgi/actions.py:705
 msgid "You are now registered, welcome!"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:722
+#: ../roundup/cgi/actions.py:732
 msgid "It is not permitted to supply roles at registration."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:727
+#: ../roundup/cgi/actions.py:737
 #, python-format
 msgid "Error: A user with the username \"%(username)s\" already exists"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:790
+#: ../roundup/cgi/actions.py:800
 msgid "You are logged out"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:801
+#: ../roundup/cgi/actions.py:811
 msgid "Username required"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:816
+#: ../roundup/cgi/actions.py:826
 #, python-format
 msgid "No such user \"%(name)s\""
 msgstr ""
 
-#: ../roundup/cgi/actions.py:824
+#: ../roundup/cgi/actions.py:834
 msgid "Incorrect password"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:832
+#: ../roundup/cgi/actions.py:842
 msgid "You do not have permission to login"
 msgstr ""
 
@@ -856,236 +934,267 @@ msgstr ""
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:649
+#: ../roundup/cgi/templating.py:650
 msgid "(list)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:677
+#: ../roundup/cgi/templating.py:678
 msgid "Submit New Entry"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:689
+#: ../roundup/cgi/templating.py:690
 msgid "New node - no history"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:770
+#: ../roundup/cgi/templating.py:771
 msgid "Submit Changes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:791
+#: ../roundup/cgi/templating.py:792
 msgid "History"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:793
+#: ../roundup/cgi/templating.py:794
 msgid "<th>Date</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:794
+#: ../roundup/cgi/templating.py:795
 msgid "<th>User</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:795
+#: ../roundup/cgi/templating.py:796
 msgid "<th>Action</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:796
+#: ../roundup/cgi/templating.py:797
 msgid "<th>Args</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:858
+#: ../roundup/cgi/templating.py:859
 msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:859
+#: ../roundup/cgi/templating.py:860
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:872
+#: ../roundup/cgi/templating.py:873
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-# ../roundup/cgi/templating.py:905 :926
-#: ../roundup/cgi/templating.py:905 ../roundup/cgi/templating.py:926
+# ../roundup/cgi/templating.py:906 :927
+#: ../roundup/cgi/templating.py:906 ../roundup/cgi/templating.py:927
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:988
+#: ../roundup/cgi/templating.py:966
+msgid "No"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:966
+msgid "Yes"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:977
+#, python-format
+msgid "%s: (no value)"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:989
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1000
+#: ../roundup/cgi/templating.py:1001
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1281
+#: ../roundup/cgi/templating.py:1282
 msgid "*encrypted*"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1446
+#: ../roundup/cgi/templating.py:1447
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1633
+#: ../roundup/cgi/templating.py:1634
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
 
-#: ../roundup/date.py:167
+#: ../roundup/date.py:169
 #, python-format
 msgid "Not a date spec: %s"
 msgstr ""
 
-#: ../roundup/date.py:218
+#: ../roundup/date.py:220
 #, python-format
 msgid "%r not a date spec (%s)"
 msgstr ""
 
-#: ../roundup/date.py:506
+#: ../roundup/date.py:508
 msgid ""
 "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]"
 msgstr ""
 
-#: ../roundup/date.py:525
+#: ../roundup/date.py:527
 msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
 msgstr ""
 
-#: ../roundup/date.py:662
+#: ../roundup/date.py:664
 #, python-format
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:666
+#: ../roundup/date.py:668
 #, python-format
 msgid "%(number)s month"
 msgid_plural "%(number)s months"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:670
+#: ../roundup/date.py:672
 #, python-format
 msgid "%(number)s week"
 msgid_plural "%(number)s weeks"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:674
+#: ../roundup/date.py:676
 #, python-format
 msgid "%(number)s day"
 msgid_plural "%(number)s days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:678
+#: ../roundup/date.py:680
 msgid "tomorrow"
 msgstr ""
 
-#: ../roundup/date.py:680
+#: ../roundup/date.py:682
 msgid "yesterday"
 msgstr ""
 
-#: ../roundup/date.py:683
+#: ../roundup/date.py:685
 #, python-format
 msgid "%(number)s hour"
 msgid_plural "%(number)s hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:687
+#: ../roundup/date.py:689
 msgid "an hour"
 msgstr ""
 
-#: ../roundup/date.py:689
+#: ../roundup/date.py:691
 msgid "1 1/2 hours"
 msgstr ""
 
-#: ../roundup/date.py:691
+#: ../roundup/date.py:693
 #, python-format
 msgid "1 %(number)s/4 hours"
 msgid_plural "1 %(number)s/4 hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:695
+#: ../roundup/date.py:697
 msgid "in a moment"
 msgstr ""
 
-#: ../roundup/date.py:697
+#: ../roundup/date.py:699
 msgid "just now"
 msgstr ""
 
-#: ../roundup/date.py:700
+#: ../roundup/date.py:702
 msgid "1 minute"
 msgstr ""
 
-#: ../roundup/date.py:703
+#: ../roundup/date.py:705
 #, python-format
 msgid "%(number)s minute"
 msgid_plural "%(number)s minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:706
+#: ../roundup/date.py:708
 msgid "1/2 an hour"
 msgstr ""
 
-#: ../roundup/date.py:708
+#: ../roundup/date.py:710
 #, python-format
 msgid "%(number)s/4 hour"
 msgid_plural "%(number)s/4 hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/date.py:712
+#: ../roundup/date.py:714
 #, python-format
 msgid "%s ago"
 msgstr ""
 
-#: ../roundup/date.py:714
+#: ../roundup/date.py:716
 #, python-format
 msgid "in %s"
 msgstr ""
 
-#: ../roundup/roundupdb.py:119
+#: ../roundup/roundupdb.py:120
 msgid "files"
 msgstr ""
 
-#: ../roundup/roundupdb.py:119
+#: ../roundup/roundupdb.py:120
 msgid "messages"
 msgstr ""
 
-#: ../roundup/roundupdb.py:119
+#: ../roundup/roundupdb.py:120
 msgid "nosy"
 msgstr ""
 
-#: ../roundup/roundupdb.py:119
+#: ../roundup/roundupdb.py:120
 msgid "superseder"
 msgstr ""
 
-#: ../roundup/roundupdb.py:119
+#: ../roundup/roundupdb.py:120
 msgid "title"
 msgstr ""
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:121
 msgid "assignedto"
 msgstr ""
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:121
 msgid "priority"
 msgstr ""
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:121
 msgid "status"
 msgstr ""
 
-#: ../roundup/roundupdb.py:120
+#: ../roundup/roundupdb.py:121
 msgid "topic"
+msgstr ""
+
+#: ../roundup/roundupdb.py:124
+msgid "activity"
+msgstr ""
+
+#. following properties are common for all hyperdb classes
+#. they are listed here to keep things in one place
+#: ../roundup/roundupdb.py:124
+msgid "actor"
+msgstr ""
+
+#: ../roundup/roundupdb.py:124
+msgid "creation"
+msgstr ""
+
+#: ../roundup/roundupdb.py:124
+msgid "creator"
 msgstr ""
 
 #: ../roundup/scripts/roundup_mailgw.py:36
@@ -1262,41 +1371,41 @@ msgstr ""
 msgid "Can't change groups - no grp module"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:497
+#: ../roundup/scripts/roundup_server.py:502
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:500
+#: ../roundup/scripts/roundup_server.py:505
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:508
+#: ../roundup/scripts/roundup_server.py:513
 msgid "Can't change users - no pwd module"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:512
+#: ../roundup/scripts/roundup_server.py:522
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:515
+#: ../roundup/scripts/roundup_server.py:525
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:519
+#: ../roundup/scripts/roundup_server.py:529
 msgid "Can't run as root!"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:528
+#: ../roundup/scripts/roundup_server.py:538
 msgid "Instances must be name=home"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:544
+#: ../roundup/scripts/roundup_server.py:554
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:562
+#: ../roundup/scripts/roundup_server.py:572
 #, python-format
 msgid "Roundup server started on %(address)s"
 msgstr ""
