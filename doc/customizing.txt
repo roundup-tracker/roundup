@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.60 $
+:Version: $Revision: 1.61 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2582,7 +2582,7 @@ able to give a summary of the total time spent on a particular issue.
 Using a UN*X passwd file as the user database
 ---------------------------------------------
 
-On some systems, the primary store of users is the UN*X passwd file. It holds
+On some systems the primary store of users is the UN*X passwd file. It holds
 information on users such as their username, real name, password and primary
 user group.
 
@@ -2600,9 +2600,11 @@ day, or several times an hour if more immediate access is needed. In short, it:
 
 1. parses the passwd file, finding usernames, passwords and real names,
 2. compares that list to the current roundup user list:
+
    a. entries no longer in the passwd file are *retired*
    b. entries with mismatching real names are *updated*
    c. entries only exist in the passwd file are *created*
+
 3. send an email to administrators to let them know what's been done.
 
 The retiring and updating are simple operations, requiring only a call to

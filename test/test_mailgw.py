@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.32 2002-09-26 03:04:24 richard Exp $
+# $Id: test_mailgw.py,v 1.33 2002-11-05 22:59:46 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -81,13 +81,14 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         # and open the database
         self.db = self.instance.open('admin')
         self.db.user.create(username='Chef', address='chef@bork.bork.bork',
-            roles='User')
+            realname='Bork, Chef', roles='User')
         self.db.user.create(username='richard', address='richard@test',
             roles='User')
         self.db.user.create(username='mary', address='mary@test',
-            roles='User')
+            roles='User', realname='Contrary, Mary')
         self.db.user.create(username='john', address='john@test',
-            alternate_addresses='jondoe@test\njohn.doe@test', roles='User')
+            alternate_addresses='jondoe@test\njohn.doe@test', roles='User',
+            realname='John Doe')
 
     def tearDown(self):
         if os.path.exists(os.environ['SENDMAILDEBUG']):
@@ -204,15 +205,15 @@ TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, mary@test, richard@test
-From: "Chef" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-New submission from Chef <chef@bork.bork.bork>:
+New submission from Bork, Chef <chef@bork.bork.bork>:
 
 This is a test submission of a new issue.
 
@@ -223,10 +224,10 @@ messages: 1
 nosy: Chef, mary, richard
 status: unread
 title: Testing...
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
     # BUG
@@ -259,8 +260,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: "mary" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -268,17 +269,17 @@ X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-mary <mary@test> added the comment:
+Contrary, Mary <mary@test> added the comment:
 
 This is a second followup
 
 
 ----------
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
     def testFollowup(self):
@@ -307,8 +308,8 @@ TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
-From: "richard" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -325,10 +326,10 @@ This is a followup
 assignedto:  -> mary
 nosy: +john, mary
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
     def testFollowupTitleMatch(self):
@@ -353,8 +354,8 @@ TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
-From: "richard" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -371,10 +372,10 @@ This is a followup
 assignedto:  -> mary
 nosy: +john, mary
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
     def testFollowupNosyAuthor(self):
@@ -400,8 +401,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: "john" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: John Doe <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -409,7 +410,7 @@ X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-john <john@test> added the comment:
+John Doe <john@test> added the comment:
 
 This is a followup
 
@@ -417,10 +418,10 @@ This is a followup
 ----------
 nosy: +john
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 
 ''')
 
@@ -448,8 +449,8 @@ TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: "richard" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -465,10 +466,10 @@ This is a followup
 ----------
 nosy: +john
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 
 ''')
 
@@ -496,8 +497,8 @@ TO: chef@bork.bork.bork, john@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, richard@test
-From: "john" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: John Doe <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -505,7 +506,7 @@ X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-john <john@test> added the comment:
+John Doe <john@test> added the comment:
 
 This is a followup
 
@@ -513,10 +514,10 @@ This is a followup
 ----------
 nosy: +john
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 
 ''')
 
@@ -543,8 +544,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: "john" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: John Doe <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -552,17 +553,17 @@ X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-john <john@test> added the comment:
+John Doe <john@test> added the comment:
 
 This is a followup
 
 
 ----------
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 
 ''')
 
@@ -590,8 +591,8 @@ TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: "richard" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -606,10 +607,10 @@ This is a followup
 
 ----------
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 
 ''')
 
@@ -698,8 +699,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: "mary" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -707,16 +708,16 @@ X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-mary <mary@test> added the comment:
+Contrary, Mary <mary@test> added the comment:
 
 A message with encoding (encoded oe =F6)
 
 ----------
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
 
@@ -752,8 +753,8 @@ TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
-From: "mary" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -761,16 +762,16 @@ X-Roundup-Name: Roundup issue tracker
 Content-Transfer-Encoding: quoted-printable
 
 
-mary <mary@test> added the comment:
+Contrary, Mary <mary@test> added the comment:
 
 A message with first part encoded (encoded oe =F6)
 
 ----------
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
     def testFollowupStupidQuoting(self):
@@ -796,8 +797,8 @@ TO: chef@bork.bork.bork
 Content-Type: text/plain
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
-From: "richard" <issue_tracker@your.tracker.email.domain.example>
-Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+From: richard <issue_tracker@your.tracker.email.domain.example>
+Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
@@ -812,10 +813,10 @@ This is a followup
 
 ----------
 status: unread -> chatting
-_________________________________________________________________________
-"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+_______________________________________________________________________
+Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 http://your.tracker.url.example/issue1
-_________________________________________________________________________
+_______________________________________________________________________
 ''')
 
 def suite():

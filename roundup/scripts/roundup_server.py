@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.14 2002-10-08 03:31:09 richard Exp $
+$Id: roundup_server.py,v 1.15 2002-11-05 22:59:46 richard Exp $
 """
 
 # python version check
@@ -158,6 +158,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         co = filter(None, self.headers.getheaders('cookie'))
         if co:
             env['HTTP_COOKIE'] = ', '.join(co)
+        env['HTTP_AUTHORIZATION'] = self.headers.getheader('authorization')
         env['SCRIPT_NAME'] = ''
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)

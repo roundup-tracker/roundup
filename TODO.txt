@@ -15,6 +15,7 @@ pending hyperdb   range searching of values (dates in particular).
                   comparison functions: lt, le, eq, ge, gt. eq and
                   [value, value, ...] implies "in"
 pending hyperdb   migrate "id" property to be Number type
+pending hyperdb   multilink sorting by length is dumb
 pending tracker   split instance.open() into open() and login()
 pending mailgw    allow commands (feature request #556996)
                   like "help", "dump issue123" (would send all info about
@@ -61,10 +62,8 @@ pending web       search "refinement" - pre-fill the search page with the
 pending web       column-heading sort stuff isn't implemented
 
 active  web       UNIX init.d script for roundup-server
-bug     docs      need to mention somewhere how sorting works
-                  - it's mentioned in the design doc
-                  - multilink sorting by length is dumb
 bug     web       query editing isn't fully implemented
 bug     web       no testing for parsePropsFromForm
+active  web       revert to showing entire message in classic issue display
 ======= ========= =============================================================
 

@@ -13,6 +13,10 @@ are given with the most recent entry first.
 - force non-word boundary to match re: in subject (sf bug 626303)
 - handle sqlite bug (<2.7.2) (sf bug 630828)
 - handle missing props in anydbm stringFind
+- updated email package address formatting (deprecation)
+- copied email address quoting from email v2.4.3 so we're consistent with 2.2
+- email summary extraction now takes the first whole sentence or line -
+  whichever is longer
 
 
 2002-10-16 0.5.1

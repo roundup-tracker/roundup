@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.72 2002-10-08 07:28:34 richard Exp $
+# $Id: roundupdb.py,v 1.73 2002-11-05 22:59:46 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -26,9 +26,19 @@ import MimeWriter, cStringIO
 import base64, quopri, mimetypes
 # if available, use the 'email' module, otherwise fallback to 'rfc822'
 try :
-    from email.Utils import dump_address_pair as straddr
+    from email.Utils import formataddr as straddr
 except ImportError :
-    from rfc822 import dump_address_pair as straddr
+    # code taken from the email package 2.4.3
+    def straddr(pair, specialsre = re.compile(r'[][\()<>@,:;".]'),
+            escapesre = re.compile(r'[][\()"]')):
+        name, address = pair
+        if name:
+            quotes = ''
+            if specialsre.search(name):
+                quotes = '"'
+            name = escapesre.sub(r'\\\g<0>', name)
+            return '%s%s%s <%s>' % (quotes, name, quotes, address)
+        return address
 
 import hyperdb
 

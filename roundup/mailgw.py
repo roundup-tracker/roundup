@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.98 2002-10-21 22:03:09 richard Exp $
+$Id: mailgw.py,v 1.99 2002-11-05 22:59:46 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -913,17 +913,16 @@ def parseContent(content, keep_citations, keep_body,
                     l.append(section)
                 continue
             # keep this section - it has reponse stuff in it
-            if not summary:
-                # and while we're at it, use the first non-quoted bit as
-                # our summary
-                summary = line
             lines = lines[lines.index(line):]
             section = '\n'.join(lines)
+            # and while we're at it, use the first non-quoted bit as
+            # our summary
+            summary = section
 
         if not summary:
             # if we don't have our summary yet use the first line of this
             # section
-            summary = lines[0]
+            summary = section
         elif signature.match(lines[0]) and 2 <= len(lines) <= 10:
             # lose any signature
             break
@@ -933,6 +932,16 @@ def parseContent(content, keep_citations, keep_body,
 
         # and add the section to the output
         l.append(section)
+
+    # figure the summary - find the first sentence-ending punctuation or the
+    # first whole line, whichever is longest
+    sentence = re.search(r'^([^!?\.]+[!?\.])', summary)
+    if sentence:
+        sentence = sentence.group(1)
+    else:
+        sentence = ''
+    first = eol.split(summary)[0]
+    summary = max(sentence, first)
 
     # Now reconstitute the message content minus the bits we don't care
     # about.
