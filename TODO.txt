@@ -47,9 +47,11 @@ New templating TODO:
 . generic class editing
 . classhelp
 . query saving
+  - add ":queryname" to search form submission, and handle it in search action
+  - ?add a drop-down on search page with all queries that fills form with
+     each query's values?
 . search "refinement" (pre-fill the search page with the current search
   parameters)
-. web registration of new users by anonymous
 
 ongoing: any bugs
 

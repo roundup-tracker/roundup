@@ -1,10 +1,8 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
-<tal:block tal:define="
-    editok python:request.user.hasPermission('Edit') or
-           user.id == request.user.id;
-    viewok python:request.user.hasPermission('View')">
+<tal:block tal:define=" editok python:request.user.username=='anonymous' and
+           request.user.hasPermission('Web Registration')">
 
-<span tal:condition="python:not (viewok or editok)">
+<span tal:condition="python:not editok">
 You are not allowed to view this page.
 </span>
 
@@ -51,50 +49,15 @@ You are not allowed to view this page.
 
  <tr>
   <td>&nbsp;</td>
-  <td tal:content="structure user/submit">submit button here</td>
+  <td>
+   <input type="hidden" name=":action" value="register">
+   <input type="submit" name="submit" value="Register">
+  </td>
  </tr>
 </table>
 </form>
 
-<tal:block tal:condition="exists:item">
- <table class="otherinfo" tal:condition="user/queries">
-  <tr><th class="header">Queries</th></tr>
-  <tr tal:repeat="query user/queries">
-   <td tal:content="query">query</td>
-  </tr>
- </table>
-
- <table class="otherinfo">
-  <tr><th class="header">History</th></tr>
-  <tr>
-   <td tal:content="structure user/history">history</td>
-  </tr>
- </table>
 </tal:block>
-
-</tal:block>
-
-<table class="form" tal:condition="python:viewok and not editok">
- <tr>
-  <th colspan=2 class="header" tal:content="user/realname">realname</th>
- </tr>
- <tr>
-  <th>Login Name</th>
-  <td tal:content="user/username">username</td>
- </tr>
- <tr>
-  <th>Phone</th>
-  <td tal:content="user/phone">phone</td>
- </tr>
- <tr>
-  <th>Organisation</th>
-  <td tal:content="user/organisation">organisation</td>
- </tr>
- <tr>
-  <th>E-mail address</th>
-  <td tal:content="user/address/email">address</td>
- </tr>
-</table>
 
 </tal:block>
 

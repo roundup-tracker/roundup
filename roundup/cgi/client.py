@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.4 2002-09-01 22:09:20 richard Exp $
+# $Id: client.py,v 1.5 2002-09-01 23:57:53 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -289,7 +289,7 @@ class Client:
             return pt.render(**kwargs)
         except PageTemplate.PTRuntimeError, message:
             return '<strong>%s</strong><ol>%s</ol>'%(message,
-                cgi.escape('<li>'.join(pt._v_errors)))
+                '<li>'.join(pt._v_errors))
         except:
             # everything else
             return cgitb.html()
@@ -306,9 +306,9 @@ class Client:
     actions = {
         'edit':     'editItemAction',
         'new':      'newItemAction',
+        'register': 'registerAction',
         'login':    'login_action',
         'logout':   'logout_action',
-        'register': 'register_action',
         'search':   'searchAction',
     }
     def handle_action(self):
@@ -319,9 +319,9 @@ class Client:
             actions are defined in the "actions" dictionary on this class:
              "edit"      -> self.editItemAction
              "new"       -> self.newItemAction
+             "register"  -> self.registerAction
              "login"     -> self.login_action
              "logout"    -> self.logout_action
-             "register"  -> self.register_action
              "search"    -> self.searchAction
 
         '''
@@ -472,17 +472,25 @@ class Client:
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
 
-    def register_action(self):
+    def registerAction(self):
         '''Attempt to create a new user based on the contents of the form
         and then set the cookie.
 
         return 1 on successful login
         '''
+        # create the new user
+        cl = self.db.user
+
+        # parse the props from the form
+        try:
+            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
         # make sure we're allowed to register
-        userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Web Registration', userid):
-            raise Unauthorised, _("You do not have permission to access"\
-                        " %(action)s.")%{'action': 'registration'}
+        if not self.registerPermission(props):
+            raise Unauthorised, _("You do not have permission to register")
 
         # re-open the database as "admin"
         if self.user != 'admin':
@@ -493,20 +501,32 @@ class Client:
         try:
             props = parsePropsFromForm(self.db, cl, self.form)
             props['roles'] = self.instance.NEW_WEB_USER_ROLES
-            uid = cl.create(**props)
+            self.userid = cl.create(**props)
             self.db.commit()
         except ValueError, message:
             self.error_message.append(message)
 
         # log the new user in
-        self.user = cl.get(uid, 'username')
+        self.user = cl.get(self.userid, 'username')
         # re-open the database for real, using the user
         self.opendb(self.user)
-        password = cl.get(uid, 'password')
+        password = self.db.user.get(self.userid, 'password')
         self.set_cookie(self.user, password)
 
         # nice message
         self.ok_message.append(_('You are now registered, welcome!'))
+
+    def registerPermission(self, props):
+        ''' Determine whether the user has permission to register
+
+            Base behaviour is to check the user has "Web Registration".
+        '''
+        # registration isn't allowed to supply roles
+        if props.has_key('roles'):
+            return 0
+        if self.db.security.hasPermission('Web Registration', self.userid):
+            return 1
+        return 0
 
     def editItemAction(self):
         ''' Perform an edit of an item in the database.
@@ -589,10 +609,9 @@ class Client:
             # if the item being edited is the current user, we're ok
             if self.nodeid == self.userid:
                 return 1
-        if not self.db.security.hasPermission('Edit', self.userid,
-                self.classname):
-            return 0
-        return 1
+        if self.db.security.hasPermission('Edit', self.userid, self.classname):
+            return 1
+        return 0
 
     def newItemAction(self):
         ''' Add a new item to the database.
@@ -663,9 +682,9 @@ class Client:
         if self.classname == 'user' and has('Web Registration', self.userid,
                 'user'):
             return 1
-        if not has('Edit', self.userid, self.classname):
-            return 0
-        return 1
+        if has('Edit', self.userid, self.classname):
+            return 1
+        return 0
 
     def genericEditAction(self):
         ''' Performs an edit of all of a class' items in one go.

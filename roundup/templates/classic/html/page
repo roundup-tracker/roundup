@@ -39,21 +39,22 @@
    <a href="user?:template=item">Add User</a>
   </p>
 
-  <p class="userblock">
-   <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
-   <form method="POST" action=''
-         tal:condition="python:request.user.username=='anonymous'">
+  <p class="userblock" tal:condition="python:request.user.username=='anonymous'">
+   <form method="POST" action="">
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
     <input type="submit" name=":action" value="login">
     <span tal:replace="structure request/indexargs_form" />
    </form>
-   <tal:block tal:condition="python:request.user.username != 'anonymous'">
-    <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,priority&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
-    <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
-    <a tal:attributes="href python:request.indexargs_href(request.url,
-        {':action':'logout'})">Logout</a>
-   </tal:block>
+   <a href="user?:template=register">Register</a>
+  </p>
+   
+  <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
+   <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
+   <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,priority&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
+   <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
+   <a tal:attributes="href python:request.indexargs_href(request.url,
+       {':action':'logout'})">Logout</a>
   </p>
  </td>
  <td>
