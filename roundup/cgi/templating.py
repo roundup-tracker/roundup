@@ -269,12 +269,12 @@ class HTMLDatabase:
     def classes(self):
         l = self._client.db.classes.keys()
         l.sort()
-        r = []
+        m = []
         for item in l:
             if item == 'user':
                 m.append(HTMLUserClass(self._client, item))
             m.append(HTMLClass(self._client, item))
-        return r
+        return m
 
 def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('-?\d+')):
     ''' "fail_ok" should be specified if we wish to pass through bad values
