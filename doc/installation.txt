@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 .. contents::
 
@@ -166,6 +166,21 @@ Set aside 15-30 minutes.
      echo test | mail -s '[issue] test' support@YOUR_DOMAIN_HERE
 
 TODO (finish)
+
+ZRoundup
+========
+
+Install roundup as usual (see installation_).
+
+ZRoundup installs as a regular Zope product. Copy the ZRoundup directory to
+your Products directory either in an INSTANCE_HOME/Products or the Zope
+code tree lib/python/Products.
+
+You will need to create the instance using the roundup-admin tool (step 2 in
+installation_).
+
+When you next (re)start up Zope, you will be able to add a ZRoundup object
+that interfaces to your new instance.
 
 
 Further Reading

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.6 $
+:Version: $Revision: 1.7 $
 
 .. contents::
 
@@ -372,7 +372,7 @@ highly customized.
 |         |Options:                                                           |
 |         |property (property name) - the property to use in the second case. |
 |         |showid - use the linked node id as the link text (linked node      |
-|         |         "value" will be set as a tooltip)                         |
+|         |"value" will be set as a tooltip)                                  |
 +---------+-------------------------------------------------------------------+
 |count    |For a Multilink property, display a count of the number of links in|
 |         |the list.                                                          |
