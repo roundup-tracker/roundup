@@ -160,11 +160,13 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         # add in the item if there is one
         if client.nodeid:
             if classname == 'user':
-                c['context'] = HTMLUser(client, classname, client.nodeid)
+                c['context'] = HTMLUser(client, classname, client.nodeid,
+                    anonymous=1)
             else:
-                c['context'] = HTMLItem(client, classname, client.nodeid)
+                c['context'] = HTMLItem(client, classname, client.nodeid,
+                    anonymous=1)
         elif client.db.classes.has_key(classname):
-            c['context'] = HTMLClass(client, classname)
+            c['context'] = HTMLClass(client, classname, anonymous=1)
         return c
 
     def render(self, client, classname, request, **options):
@@ -200,9 +202,15 @@ class HTMLDatabase:
         # we want config to be exposed
         self.config = client.db.config
 
-    def __getitem__(self, item):
-        self._client.db.getclass(item)
-        return HTMLClass(self._client, item)
+    def __getitem__(self, item, desre=re.compile(r'(?P<cl>\w+)(?P<id>[-\d]+)')):
+        # check to see if we're actually accessing an item
+        m = desre.match(item)
+        if m:
+            self._client.db.getclass(m.group('cl'))
+            return HTMLItem(self._client, m.group('cl'), m.group('id'))
+        else:
+            self._client.db.getclass(item)
+            return HTMLClass(self._client, item)
 
     def __getattr__(self, attr):
         try:
@@ -250,9 +258,10 @@ class HTMLPermissions:
 class HTMLClass(HTMLPermissions):
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
-    def __init__(self, client, classname):
+    def __init__(self, client, classname, anonymous=0):
         self._client = client
         self._db = client.db
+        self._anonymous = anonymous
 
         # we want classname to be exposed, but _classname gives a
         # consistent API for extending Class/Item
@@ -297,7 +306,8 @@ class HTMLClass(HTMLPermissions):
                     value = []
                 else:
                     value = None
-            return htmlklass(self._client, '', prop, item, value)
+            return htmlklass(self._client, self._classname, '', prop, item,
+                value, self._anonymous)
 
         # no good
         raise KeyError, item
@@ -455,13 +465,16 @@ class HTMLClass(HTMLPermissions):
 class HTMLItem(HTMLPermissions):
     ''' Accesses through an *item*
     '''
-    def __init__(self, client, classname, nodeid):
+    def __init__(self, client, classname, nodeid, anonymous=0):
         self._client = client
         self._db = client.db
         self._classname = classname
         self._nodeid = nodeid
         self._klass = self._db.getclass(classname)
         self._props = self._klass.getprops()
+
+        # do we prefix the form items with the item's identification?
+        self._anonymous = anonymous
 
     def __repr__(self):
         return '<HTMLItem(0x%x) %s %s>'%(id(self), self._classname,
@@ -478,7 +491,9 @@ class HTMLItem(HTMLPermissions):
         prop = self._props[item]
 
         # get the value, handling missing values
-        value = self._klass.get(self._nodeid, item, None)
+        value = None
+        if int(self._nodeid) > 0:
+            value = self._klass.get(self._nodeid, item, None)
         if value is None:
             if isinstance(self._props[item], hyperdb.Multilink):
                 value = []
@@ -486,7 +501,8 @@ class HTMLItem(HTMLPermissions):
         # look up the correct HTMLProperty class
         for klass, htmlklass in propclasses:
             if isinstance(prop, klass):
-                return htmlklass(self._client, self._nodeid, prop, item, value)
+                return htmlklass(self._client, self._classname,
+                    self._nodeid, prop, item, value, self._anonymous)
 
         raise KeyError, item
 
@@ -726,15 +742,15 @@ class HTMLUser(HTMLItem):
         self._security = client.db.security
 
     _marker = []
-    def hasPermission(self, role, classname=_marker):
-        ''' Determine if the user has the Role.
+    def hasPermission(self, permission, classname=_marker):
+        ''' Determine if the user has the Permission.
 
             The class being tested defaults to the template's class, but may
             be overidden for this test by suppling an alternate classname.
         '''
         if classname is self._marker:
             classname = self._default_classname
-        return self._security.hasPermission(role, self._nodeid, classname)
+        return self._security.hasPermission(permission, self._nodeid, classname)
 
     def is_edit_ok(self):
         ''' Is the user allowed to Edit the current class?
@@ -760,15 +776,22 @@ class HTMLProperty:
 
         A wrapper object which may be stringified for the plain() behaviour.
     '''
-    def __init__(self, client, nodeid, prop, name, value):
+    def __init__(self, client, classname, nodeid, prop, name, value,
+            anonymous=0):
         self._client = client
         self._db = client.db
+        self._classname = classname
         self._nodeid = nodeid
         self._prop = prop
-        self._name = name
         self._value = value
+        self._anonymous = anonymous
+        if not anonymous:
+            self._name = '%s%s@%s'%(classname, nodeid, name)
+        else:
+            self._name = name
     def __repr__(self):
-        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._name, self._prop, self._value)
+        return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._name,
+            self._prop, self._value)
     def __str__(self):
         return self.plain()
     def __cmp__(self, other):
@@ -1013,8 +1036,8 @@ class LinkHTMLProperty(HTMLProperty):
         entry identified by the assignedto property on item, and then the
         name property of that user)
     '''
-    def __init__(self, *args):
-        HTMLProperty.__init__(self, *args)
+    def __init__(self, *args, **kw):
+        HTMLProperty.__init__(self, *args, **kw)
         # if we're representing a form value, then the -1 from the form really
         # should be a None
         if str(self._value) == '-1':

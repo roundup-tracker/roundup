@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.94 2003-02-18 06:15:21 richard Exp $
+# $Id: client.py,v 1.95 2003-02-18 10:58:32 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1575,7 +1575,6 @@ class Client:
             # we also don't want to create FileClass items with no content
             if not props.get('content', ''):
                 del all_props[(cn, id)]
-
         return all_props, all_links
 
 def fixNewlines(text):
