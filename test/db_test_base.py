@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.50 2004-10-14 10:47:07 a1s Exp $
+# $Id: db_test_base.py,v 1.51 2004-10-24 09:57:32 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -32,8 +32,34 @@ config.RDBMS_HOST = "localhost"
 config.RDBMS_USER = "rounduptest"
 config.RDBMS_PASSWORD = "rounduptest"
 config.logging = MockNull()
-# MAIL_DOMAIN is required for config.save()
-config.MAIL_DOMAIN = "localhost"
+# these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
+config.MAIL_DOMAIN = "your.tracker.email.domain.example"
+config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
+# uncomment the following to have excessive debug output from test cases
+# FIXME: tracker logging level should be increased by -v arguments
+#   to 'run_tests.py' script
+#config.LOGGING_LEVEL = "DEBUG"
+
+def setupTracker(dirname, backend="anydbm"):
+    """Install and initialize new tracker in dirname; return tracker instance.
+
+    If the directory exists, it is wiped out before the operation.
+
+    """
+    global config
+    try:
+        shutil.rmtree(dirname)
+    except OSError, error:
+        if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+    # create the instance
+    init.install(dirname, 'templates/classic')
+    init.write_select_db(dirname, backend)
+    config.save(os.path.join(dirname, 'config.ini'))
+    tracker = instance.open(dirname)
+    if tracker.exists():
+        tracker.nuke()
+    tracker.init(password.Password('sekrit'))
+    return tracker
 
 def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
@@ -1355,23 +1381,9 @@ class ClassicInitTest(unittest.TestCase):
     def testCreation(self):
         ae = self.assertEqual
 
-        # create the instance
-        init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, self.backend)
-        config.save(os.path.join(self.dirname, 'config.ini'))
-
-        # check we can load the package
-        tracker = instance.open(self.dirname)
-
-        # if there is a database left behind
-        # from previous test runs, nuke it
-        if tracker.exists():
-            tracker.nuke()
-
-        # initialize the tracker database
-        tracker.init(password.Password('sekrit'))
-
-        # and open the database
+        # set up and open a tracker
+        tracker = setupTracker(self.dirname, self.backend)
+        # open the database
         db = self.db = tracker.open('test')
 
         # check the basics of the schema and initial data set
