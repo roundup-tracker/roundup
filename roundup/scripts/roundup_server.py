@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.27 2003-09-04 23:28:50 richard Exp $
+$Id: roundup_server.py,v 1.28 2003-10-05 23:29:49 richard Exp $
 """
 
 # python version check
@@ -305,8 +305,8 @@ options:
  -n: sets the host name
  -p: sets the port to listen on
  -l: sets a filename to log to (instead of stdout)
- -d: run the server in the background and on UN*X write the server's PID
-     to the nominated file. Note: on Windows the PID argument is needed,
+ -d: sets a filename to write server PID to. This option causes the server 
+     to run in the background. Note: on Windows the PID argument is needed,
      but ignored. The -l option *must* be specified if this option is.
  -N: log client machine names in access log instead of IP addresses (much
      slower)
