@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.121 2003-04-27 02:16:46 richard Exp $
+$Id: mailgw.py,v 1.122 2003-06-18 23:31:52 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -221,7 +221,12 @@ class MailGW:
             pass each to the mail handler.
         '''
         # open the spool file and lock it
-        import fcntl, FCNTL
+        import fcntl
+        # FCNTL is deprecated in py2.3 and fcntl takes over all the symbols
+        if hasattr(fcntl, 'LOCK_EX'):
+            FCNTL = fcntl
+        else:
+            import FCNTL
         f = open(filename, 'r+')
         fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
 
