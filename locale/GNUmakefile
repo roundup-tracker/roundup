@@ -1,7 +1,7 @@
 # Extract translatable strings from Roundup sources,
 # update and compile all existing translations
 #
-# $Id: GNUmakefile,v 1.2 2004-05-18 19:36:12 a1s Exp $
+# $Id: GNUmakefile,v 1.3 2004-05-19 17:24:52 a1s Exp $
 
 # tool locations
 XPOT ?= xpot
@@ -31,4 +31,4 @@ $(TEMPLATE):
 	${MSGMERGE} -U --suffix=.bak $@ $<
 
 %.mo: %.po
-	${MSGFMT} -o $@ $<
+	${MSGFMT} --statistics -o $@ $<
