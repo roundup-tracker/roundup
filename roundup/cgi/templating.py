@@ -87,12 +87,17 @@ class NoTemplate(Exception):
     pass
 
 class Unauthorised(Exception):
-    def __init__(self, action, klass):
+    def __init__(self, action, klass, translator=None):
         self.action = action
         self.klass = klass
+        if translator:
+            self._ = translator.gettext
+        else:
+            self._ = translationService.gettext
     def __str__(self):
-        return 'You are not allowed to %s items of class %s'%(self.action,
-            self.klass)
+        return self._('You are not allowed to %(action)s '
+            'items of class %(class)s') % {
+            'action': self.action, 'class': self.klass}
 
 def find_template(dir, name, extension):
     ''' Find a template in the nominated dir
@@ -681,7 +686,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
     def history(self):
         self.view_check()
-        return 'New node - no history'
+        return self._('New node - no history')
 
     def renderWith(self, name, **kwargs):
         ''' Render this class with the given template.
