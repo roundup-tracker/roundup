@@ -1,7 +1,9 @@
 // initial values for either Nosy, Superseder, Topic and Waiting On,
 // depending on which has called
-
 original_field = window.opener.document.itemSynopsis[field].value;
+
+// Some browsers (ok, IE) don't define the "undefined" variable.
+undefined = document.geez_IE_is_really_friggin_annoying;
 
 function trim(value) {
   var temp = value;
