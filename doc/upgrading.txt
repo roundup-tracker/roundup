@@ -9,36 +9,76 @@ accordingly. Note that there is information about upgrade procedures in the
 .. contents::
 
 
-
-Migrating from 0.7 to 0.8
-=========================
-
-0.8.0 Added Dispatcher role
----------------------------
-
-A new config option has been added. There is a 'role' that can be filled, 
-that of the 'dispatcher'. This person acts as a central sentinel for issues
-coming into the system. You can configure it so that all e-mail error messages
-get bounced to them, them and the user in question, or just the user (default).
-
-To toggle these switches, look at the new classic and minimal config.py's,
-specifically:
-
-
-# The 'dispatcher' is a role that can get notified of new items to the database.
-DISPATCHER_EMAIL = ADMIN_EMAIL
-
-...
-
-
-# Send error messages to the dispatcher, user, or both?
-# If 'dispatcher', error message notifications will only be sent to the dispatcher.
-# If 'user',       error message notifications will only be sent to the user.
-# If 'both',       error message notifications will be sent to both individuals.
-ERROR_MESSAGES_TO = 'user'
-
 Migrating from 0.6 to 0.7
 =========================
+
+0.7.0 Saving and sharing of user queries
+----------------------------------------
+
+Due to popular demand, the user query saving mechanisms have been
+overhauled. This means that queries remember the user that created them
+and they may be marked as being private for a particular user.
+
+You *are not required* to make these changes. You only need to make them
+if you wish to use the new query editing features. It's highly
+recommended, as the effort is minimal.
+
+1. You will need to edit your tracker's ``dbinit.py`` to change the way
+   queries are stored. Change the lines::
+
+      query = Class(db, "query",
+                      klass=String(),     name=String(),
+                      url=String())
+      query.setkey("name")
+
+   to::
+
+      query = Class(db, "query",
+                      klass=String(),     name=String(),
+                      url=String(),       private_for=Link('user'))
+
+   That is, add the "private_for" property, and remove the line that says
+   ``query.setkey("name")``. The latter is the most important edit here.
+
+2. You will also need to copy the ``query.edit.html`` template page from the
+   ``templates/classic/html/`` directory of the source to your tracker's
+   ``html`` directory.
+
+3. Once you've done that, edit the tracker's ``page.html`` template to
+   change::
+
+    <td rowspan="2" valign="top" class="sidebar">
+     <p class="classblock" tal:condition="request/user/queries">
+      <b>Your Queries</b><br>
+      <tal:block tal:repeat="qs request/user/queries">
+
+   to::
+
+    <td rowspan="2" valign="top" class="sidebar">
+     <p class="classblock">
+      <b>Your Queries</b> (<a href="query?@template=edit">edit</a>)<br>
+      <tal:block tal:repeat="qs request/user/queries">
+
+   That is, you're removing the ``tal:condition`` and adding a link to the
+   new edit page.
+
+4. You might also wish to remove the redundant query editing section from the
+   ``user.item.html`` page.
+
+
+0.7.0 Added Dispatcher role
+---------------------------
+
+A new config option has been added that specifies the email address of
+a "dispatcher" role.  This email address acts as a central sentinel for
+issues coming into the system. You can configure it so that all e-mail
+error messages get bounced to them, them and the user in question, or
+just the user (default).
+
+To toggle these switches, add the "DISPATCHER_EMAIL" and
+"ERROR_MESSAGES_TO" configuration values to your tracker's ``config.py``.
+See the `customisation documentation`_ for how to use them.
+
 
 0.7.0 Added CSV export action
 -----------------------------

@@ -10,11 +10,14 @@ Feature:
 - added Reject exception which may be raised by auditors. This is trapped
   by mailgw and may be used to veto creation of file attachments or
   messages. (sf bug 700265)
+- queries on a per-user basis, and public queries (sf "bug" 891798 :)
 
 Fixed:
 - Boolean HTML templating was broken
 - Link HTML templating field() was broken
 - Fix reporting of test inclusion in postgresql test
+- EditAction was confused about who "self" was
+- Edit collision detection was broken for index-page edits
 
 
 2004-03-24 0.7.0b1

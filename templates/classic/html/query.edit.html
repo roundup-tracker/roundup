@@ -1,0 +1,105 @@
+<!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title"> 
+<span tal:replace="config/TRACKER_NAME" />: "Your Queries" Editing
+</title> 
+<span metal:fill-slot="body_title" tal:omit-tag="python:1">
+ "Your Queries" Editing
+</span>
+
+<td class="content" metal:fill-slot="content">
+
+<span tal:condition="not:context/is_edit_ok">
+You are not allowed to edit queries.
+</span>
+
+<script language="javascript">
+// This exists solely because I can't figure how to get the & into an
+// attributes TALES expression, and so it keeps getting quoted.
+function retire(qid) {
+    window.location = 'query'+qid+'?@action=retire&@template=edit';
+}
+</script>
+
+<form method="POST" onSubmit="return submit_once()" action="query"
+      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
+
+<table class="list" width="100%"
+       tal:define="uid request/user/id; mine request/user/queries">
+
+<tr><th>Query</th>
+    <th>Include in "Your Queries"</th>
+    <th>Edit</th>
+    <th>Private to you?</th>
+    <th>&nbsp;</th>
+</tr>
+
+<tr tal:repeat="query mine">
+ <tal:block condition="query/is_retired">
+
+ <td><a tal:attributes="href string:${query/klass}?${query/url}"
+        tal:content="query/name">query</a></td>
+
+ <td metal:define-macro="include">
+  <select tal:condition="python:query.id not in mine"
+          tal:attributes="name string:user${uid}@add@queries">
+    <option value="">leave out</option>
+    <option tal:attributes="value query/id">include</option>
+  </select>
+  <select tal:condition="python:query.id in mine"
+          tal:attributes="name string:user${uid}@remove@queries">
+    <option value="">leave in</option>
+    <option tal:attributes="value query/id">remove</option>
+  </select>
+ </td>
+
+ <td colspan="3">[query is retired]</td>
+
+ <!-- <td> maybe offer "restore" some day </td> -->
+ </tal:block>
+</tr>
+
+<tr tal:define="queries python:db.query.filter(filterspec={'private_for':uid})"
+     tal:repeat="query queries">
+ <td><a tal:attributes="href string:${query/klass}?${query/url}"
+        tal:content="query/name">query</a></td>
+
+ <td metal:use-macro="template/macros/include" />
+
+ <td><a tal:attributes="href string:query${query/id}">edit</a></td>
+
+ <td>
+  <select tal:attributes="name string:query${query/id}@private_for">
+   <option tal:attributes="selected python:query.private_for == uid;
+           value uid">yes</option>
+   <option tal:attributes="selected python:query.private_for == None"
+           value="-1">no</option>
+  </select>
+ </td>
+
+ <td>
+  <input type="button" value="Delete"
+  tal:attributes="onClick python:'''retire('%s')'''%query.id">
+  </td>
+</tr>
+
+<tr tal:define="queries python:db.query.filter(filterspec={'private_for':None})"
+     tal:repeat="query queries">
+ <td><a tal:attributes="href string:${query/klass}?${query/url}"
+        tal:content="query/name">query</a></td>
+
+ <td metal:use-macro="template/macros/include" />
+ <td colspan="3">[not yours to edit]</td>
+</tr>
+
+<tr><td colspan="5">
+        <input type="hidden" name="@action" value="edit">
+        <input type="hidden" name="@template" value="edit">
+        <input type="submit" value="Save Selection">
+</td></tr>
+
+</table>
+
+</form>
+</td>
+</tal:block>

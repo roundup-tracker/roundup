@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.6 2004-03-15 05:51:23 richard Exp $
+# $Id: dbinit.py,v 1.7 2004-03-26 04:50:50 richard Exp $
 
 import os
 
@@ -54,8 +54,7 @@ def open(name=None):
     
     query = Class(db, "query",
                     klass=String(),     name=String(),
-                    url=String())
-    query.setkey("name")
+                    url=String(),       private_for=Link('user'))
 
     # add any additional database schema configuration here
     

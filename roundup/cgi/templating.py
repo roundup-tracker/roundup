@@ -124,7 +124,7 @@ class Templates:
                 raise
 
         if self.templates.has_key(src) and \
-                stime < self.templates[src].mtime:
+                stime <= self.templates[src].mtime:
             # compiled template is up to date
             return self.templates[src]
 
@@ -134,7 +134,7 @@ class Templates:
         content_type = mimetypes.guess_type(filename)[0] or 'text/html'
         pt.pt_edit(open(src).read(), content_type)
         pt.id = filename
-        pt.mtime = time.time()
+        pt.mtime = stime
         return pt
 
     def __getitem__(self, name):
@@ -195,6 +195,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
              'tracker': client.instance,
              'utils': utils(client),
              'templates': Templates(client.instance.config.TEMPLATES),
+             'template': self,
         }
         # add in the item if there is one
         if client.nodeid:
@@ -644,6 +645,10 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
     def designator(self):
         """Return this item's designator (classname + id)."""
         return '%s%s'%(self._classname, self._nodeid)
+
+    def is_retired(self):
+        """Is this item retired?"""
+        return self._klass.is_retired(self._nodeid)
     
     def submit(self, label="Submit Changes"):
         """Generate a submit button.
@@ -1505,6 +1510,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         ''' Support the "in" operator. We have to make sure the passed-in
             value is a string first, not a HTMLProperty.
         '''
+        print (self, value, self._value)
         return str(value) in self._value
 
     def reverse(self):

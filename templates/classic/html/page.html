@@ -25,8 +25,8 @@
 
 <tr>
  <td rowspan="2" valign="top" class="sidebar">
-  <p class="classblock" tal:condition="request/user/queries">
-   <b>Your Queries</b><br>
+  <p class="classblock">
+   <b>Your Queries</b> (<a href="query?@template=edit">edit</a>)<br>
    <tal:block tal:repeat="qs request/user/queries">
     <a tal:attributes="href string:${qs/klass}?${qs/url}"
        tal:content="qs/name">link</a><br>
@@ -149,3 +149,4 @@
          tal:attributes="value name;
                          checked python:name == group_on">
 </td>
+<!-- SHA: 9defd15b86478f539e44f06b9548340e239d7320 -->

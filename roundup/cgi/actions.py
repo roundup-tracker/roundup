@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.16 2004-03-26 00:46:33 richard Exp $
+#$Id: actions.py,v 1.17 2004-03-26 04:50:50 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -134,14 +134,36 @@ class SearchAction(Action):
             # query string.
             url = req.indexargs_href('', {})[1:]
 
-            # handle editing an existing query
-            try:
-                qid = self.db.query.lookup(queryname)
-                self.db.query.set(qid, klass=self.classname, url=url)
-            except KeyError:
-                # create a query
-                qid = self.db.query.create(name=queryname,
-                    klass=self.classname, url=url)
+            key = self.db.query.getkey()
+            if key:
+                # edit the old way, only one query per name
+                try:
+                    qid = self.db.query.lookup(queryname)
+                    self.db.query.set(qid, klass=self.classname, url=url)
+                except KeyError:
+                    # create a query
+                    qid = self.db.query.create(name=queryname,
+                        klass=self.classname, url=url)
+            else:
+                # edit the new way, query name not a key any more
+                # see if we match an existing private query
+                uid = self.db.getuid()
+                qids = self.db.query.filter({}, {'name': queryname,
+                        'private_for': uid})
+                if not qids:
+                    # ok, so there's not a private query for the current user
+                    # - see if there's a public one created by them
+                    qids = self.db.query.filter({}, {'name': queryname,
+                        'private_for': -1, 'creator': uid})
+
+                if qids:
+                    # edit query
+                    qid = qids[0]
+                    self.db.query.set(qid, klass=self.classname, url=url)
+                else:
+                    # create a query
+                    qid = self.db.query.create(name=queryname,
+                        klass=self.classname, url=url, private_for=uid)
 
             # and add it to the user's query multilink
             queries = self.db.user.get(self.userid, 'queries')
@@ -435,23 +457,21 @@ class _EditAction(Action):
         return cl.create(**props)
 
 class EditItemAction(_EditAction):
-    def lastUserActivity(self):
+    def lastUserActvity(self):
         if self.form.has_key(':lastactivity'):
-            return date.Date(self.form[':lastactivity'].value)
+            user_actvity = date.Date(self.form[':lastactivity'].value)
         elif self.form.has_key('@lastactivity'):
-            return date.Date(self.form['@lastactivity'].value)
+            user_actvity = date.Date(self.form['@lastactivity'].value)
         else:
             return None
 
     def lastNodeActivity(self):
         cl = getattr(self.client.db, self.classname)
-        return cl.get(self.nodeid, 'activity')
+        node_activity = cl.get(self.nodeid, 'activity')
 
-    def detectCollision(self, userActivity, nodeActivity):
-        # Result from lastUserActivity may be None. If it is, assume there's no
-        # conflict, or at least not one we can detect.
-        if userActivity:
-            return userActivity < nodeActivity
+    def detectCollision(self, user_actvity, node_activity):
+        if user_activity:
+            return user_activity < node_activity
 
     def handleCollision(self):
         self.client.template = 'collision'
@@ -462,7 +482,9 @@ class EditItemAction(_EditAction):
         See parsePropsFromForm and _editnodes for special variables.
 
         """
-        if self.detectCollision(self.lastUserActivity(), self.lastNodeActivity()):
+        user_activity = self.lastUserActvity()
+        if user_activity and self.detectCollision(user_activity,
+                self.lastNodeActivity()):
             self.handleCollision()
             return
 
@@ -488,7 +510,7 @@ class EditItemAction(_EditAction):
         url += '?@ok_message=%s&@template=%s'%(urllib.quote(message),
             urllib.quote(self.template))
         if self.nodeid is None:
-            req = templating.HTMLRequest(self)
+            req = templating.HTMLRequest(self.client)
             url += '&' + req.indexargs_href('', {})[1:]
         raise Redirect, url
 

@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.25 $
+:Version: $Revision: 1.26 $
 
 .. contents::
 
@@ -244,6 +244,24 @@ Searching Page
 See `entering values in your tracker`_ for an explanation of what you
 may type into the search form.
 
+
+Saving queries
+~~~~~~~~~~~~~~
+
+You may save queries in the tracker by giving the query a name. Each user
+may only have one query with a given name - if a subsequent search is
+performed with the same query name supplied, then it will edit the
+existing query of the same name.
+
+Queries may be marked as "private". These queries are only visible to the
+user that created them. If they're not marked "private" then all other
+users may include the query in their list of "Your Queries". Marking it as
+private at a later date does not affect users already using the query, nor
+does deleting the query.
+
+If a user subsequently creates or edits a public query, a new personal
+version of that query is made, with the same editing rules as described
+above.
 
 
 Under the covers
