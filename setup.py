@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.4 2004-06-09 06:43:02 richard Exp $
+# $Id: setup.py,v 1.64.2.5 2004-06-24 07:59:55 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,17 +217,22 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-0.7.4 is a bug fix release, including:
+0.7.5 is a bug fix release, including:
 
-- re-acquire the OTK manager when we re-open the database
-- mailgw handler can close the database on us
-- fixed grouping by a NULL Link value
-- fixed anydbm import/export (sf bugs 965216, 964457, 964450)
-- fix python 2.3.3 strftime deprecation warning (sf patch 968398)
-- fix some column datatypes in postgresql and mysql (sf bugs 962611,
-  959177 and 964231)
-- fixed RDBMS journal packing (sf bug 959177)
-- fixed filtering by floats in anydbm (sf bug 963584)
+- force lookup of journal props in anydbm filtering
+- fixed lookup of "missing" Link values for new props in anydbm backend
+- allow list of values for id, Number and Boolean filtering in anydbm
+  backend
+- fixed some more mysql 0.6->0.7 upgrade bugs (sf bug 950410)
+- fixed Boolean values in postgresql (sf bugs 972546 and 972600)
+- fixed -g arg to roundup-server (sf bug 973946)
+- better roundup-server usage string (sf bug 973352)
+- include "context" always, as documented (sf bug 965447)
+- fixed REMOTE_USER (external HTTP Basic auth) (sf bug 977309)
+- fixed roundup-admin "find" to use better value parsing
+- fixed RDBMS Class.find() to handle None value in multiple find
+- export now stores file "content" in separate files in export directory
+
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
