@@ -11,6 +11,8 @@ are given with the most recent entry first.
 - remember the change note on bad submissions (sf bug 625989)
 - highlight required form fields (sf bug 625989)
 - force non-word boundary to match re: in subject (sf bug 626303)
+- handle sqlite bug (<2.7.2) (sf bug 630828)
+- handle missing props in anydbm stringFind
 
 
 2002-10-16 0.5.1
