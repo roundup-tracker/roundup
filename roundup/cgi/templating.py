@@ -62,7 +62,7 @@ class Unauthorised(Exception):
         if translator:
             self._ = translator.gettext
         else:
-            self._ = translationService.gettext
+            self._ = TranslationService.get_translation().gettext
     def __str__(self):
         return self._('You are not allowed to %(action)s '
             'items of class %(class)s') % {
@@ -406,14 +406,16 @@ class HTMLPermissions:
             view this class.
         '''
         if not self.is_view_ok():
-            raise Unauthorised("view", self._classname)
+            raise Unauthorised("view", self._classname,
+                translator=self._client.translator)
 
     def edit_check(self):
         ''' Raise the Unauthorised exception if the user's not permitted to
             edit this class.
         '''
         if not self.is_edit_ok():
-            raise Unauthorised("edit", self._classname)
+            raise Unauthorised("edit", self._classname,
+                translator=self._client.translator)
 
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
@@ -441,7 +443,7 @@ class HTMLInputMixin:
         """Return the localized translation of msgid"""
         if self._context is None:
             self._context = context(self._client)
-        return translationService.translate(domain="roundup",
+        return self._client.translator.translate(domain="roundup",
             msgid=msgid, context=self._context)
 
     _ = gettext
@@ -1355,7 +1357,7 @@ class DateHTMLProperty(HTMLProperty):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
                 value, anonymous=anonymous)
         if self._value:
-            self._value.setTranslator(translationService)
+            self._value.setTranslator(self._client.translator)
         self._offset = offset
 
     def plain(self):
@@ -1477,7 +1479,7 @@ class IntervalHTMLProperty(HTMLProperty):
         HTMLProperty.__init__(self, client, classname, nodeid, prop,
             name, value, anonymous)
         if self._value:
-            self._value.setTranslator(translationService)
+            self._value.setTranslator(self._client.translator)
 
     def plain(self):
         ''' Render a "plain" representation of the property
@@ -2253,3 +2255,4 @@ class TemplatingUtils:
         '''HTML-quote the supplied text.'''
         return cgi.escape(url)
 
+# vim: set et sts=4 sw=4 :
