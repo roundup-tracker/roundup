@@ -1,8 +1,34 @@
-XPOT=xpot
+# Extract translatable strings from Roundup sources,
+# update and compile all existing translations
+#
+# $Id: GNUmakefile,v 1.2 2004-05-18 19:36:12 a1s Exp $
+
+# tool locations
+XPOT ?= xpot
+MSGFMT ?= msgfmt
+MSGMERGE ?= msgmerge
+XGETTEXT ?= xgettext
+
+TEMPLATE=roundup.pot
+
 PACKAGES=$(shell find ../roundup -type d|grep -v CVS)
-VERSION=$(shell cd .. && python -c 'import roundup; print roundup.__version__')
+SOURCES=$(PACKAGES:=/*.py)
+PO_FILES=$(wildcard *.po)
+MO_FILES=$(PO_FILES:.po=.mo)
 
-all: messages
+.PHONY: $(TEMPLATE)
 
-messages:
-	xpot -p Roundup -v $(VERSION) -o roundup.pot $(PACKAGES:=/*.py)
+all: $(TEMPLATE) $(MO_FILES)
+
+$(TEMPLATE):
+	${XPOT} -n -o $@ $(SOURCES)
+	${XGETTEXT} -j -w 80 -F \
+	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \
+	  --copyright-holder="See Roundup README.txt" \
+	  -o $@ $(SOURCES)
+
+%.po: $(TEMPLATE)
+	${MSGMERGE} -U --suffix=.bak $@ $<
+
+%.mo: %.po
+	${MSGFMT} -o $@ $<
