@@ -1,5 +1,5 @@
 ===================================================
-SC-Track Roundup 0.6.0b2 - an issue tracking system
+SC-Track Roundup 0.6.0b3 - an issue tracking system
 ===================================================
 
 This is the second release of the new version of Roundup which contains a
