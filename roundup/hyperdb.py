@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.88 2003-09-04 00:47:01 richard Exp $
+# $Id: hyperdb.py,v 1.89 2003-10-07 11:58:57 anthonybaxter Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -188,7 +188,15 @@ concrete backend Class.
         raise NotImplementedError
 
     def post_init(self):
-        """Called once the schema initialisation has finished."""
+        """Called once the schema initialisation has finished. 
+           If 'refresh' is true, we want to rebuild the backend
+           structures.
+        """
+        raise NotImplementedError
+
+    def refresh_database(self):
+        """Called to indicate that the backend should rebuild all tables
+           and structures. Not called in normal usage."""
         raise NotImplementedError
 
     def __getattr__(self, classname):

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.64 2003-10-07 08:34:58 anthonybaxter Exp $
+# $Id: rdbms_common.py,v 1.65 2003-10-07 11:58:58 anthonybaxter Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -145,6 +145,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # commit
         self.conn.commit()
 
+    def refresh_database(self):
+        # now detect changes in the schema
+        for classname, spec in self.classes.items():
+            dbspec = self.database_schema[classname]
+            self.update_class(spec, dbspec, force=1)
+            self.database_schema[classname] = spec.schema()
+        # update the database version of the schema
+        self.sql('delete from schema')
+        self.save_dbschema(self.database_schema)
+        # reindex the db 
+        self.reindex()
+        # commit
+        self.conn.commit()
+
+
     def reindex(self):
         for klass in self.classes.values():
             for nodeid in klass.list():
@@ -170,9 +185,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols.sort()
         return cols, mls
 
-    def update_class(self, spec, old_spec):
+    def update_class(self, spec, old_spec, force=0):
         ''' Determine the differences between the current spec and the
-            database version of the spec, and update where necessary
+            database version of the spec, and update where necessary.
+            If 'force' is true, update the database anyway.
         '''
         new_spec = spec
         new_has = new_spec.properties.has_key
@@ -180,7 +196,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         new_spec = new_spec.schema()
         new_spec[1].sort()
         old_spec[1].sort()
-        if new_spec == old_spec:
+        if not force and new_spec == old_spec:
             # no changes
             return 0
 
@@ -188,16 +204,33 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'update_class FIRING'
 
         # key property changed?
-        if old_spec[0] != new_spec[0]:
+        if force or old_spec[0] != new_spec[0]:
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class setting keyprop', `spec[0]`
             # XXX turn on indexing for the key property. 
+            index_sql = 'drop index _%s_%s_idx'%(
+                        spec.classname, old_spec[0])
+            if __debug__:
+                print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
+            try:
+                self.cursor.execute(index_sql1)
+            except:
+                # Hackage. Until we update the schema to include some 
+                # backend-specific knowledge, assume that this might fail.
+                pass
+
+            index_sql = 'create index _%s_%s_idx on _%s(%s)'%(
+                        spec.classname, new_spec[0],
+                        spec.classname, new_spec[0])
+            if __debug__:
+                print >>hyperdb.DEBUG, 'create_index', (self, index_sql)
+            self.cursor.execute(index_sql1)
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}
         for name,prop in old_spec[1]:
             old_has[name] = 1
-            if not new_has(name) and isinstance(prop, Multilink):
+            if (force or not new_has(name)) and isinstance(prop, Multilink):
                 # it's a multilink, and it's been removed - drop the old
                 # table. First drop indexes.
                 index_sqls = [ 'drop index %s_%s_l_idx'%(spec.classname, ml),
@@ -224,7 +257,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for propname,x in new_spec[1]:
             prop = properties[propname]
             if isinstance(prop, Multilink):
-                if not old_has(propname):
+                if force or not old_has(propname):
                     # we need to create the new table
                     self.create_multilink_table(spec, propname)
             elif old_has(propname):

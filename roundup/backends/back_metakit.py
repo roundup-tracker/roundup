@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.50 2003-09-08 20:39:18 jlgijsbers Exp $
+# $Id: back_metakit.py,v 1.51 2003-10-07 11:58:57 anthonybaxter Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -68,6 +68,10 @@ class _Database(hyperdb.Database, roundupdb.Database):
     def post_init(self):
         if self.indexer.should_reindex():
             self.reindex()
+
+    def refresh_database(self):
+        # XXX handle refresh
+        self.reindex()
 
     def reindex(self):
         for klass in self.classes.values():
