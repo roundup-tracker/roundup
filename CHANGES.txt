@@ -78,6 +78,7 @@ Fixed:
 - fixed check for JS pop()/push() to make more general (sf bug 877504)
 - fix re-enabling queries (sf bug 861940)
 - use supplied content-type on file uploads before trying filename)
+- fixed roundup-reminder script to use default schema (thanks Klamer Schutte)
 
 
 2003-12-17 0.6.4
