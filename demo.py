@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.21 2004-10-29 15:55:16 a1s Exp $
+# $Id: demo.py,v 1.22 2004-11-03 01:34:20 richard Exp $
 
 import errno
 import os
@@ -40,7 +40,7 @@ def install_demo(home, backend, template):
         config['RDBMS_NAME'] = 'rounduptest'
 
     # see if we have further db nuking to perform
-    module = getattr(backends, backend)
+    module = backends.get_backend(backend)
     if module.db_exists(config):
         module.db_nuke(config)
 

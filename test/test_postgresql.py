@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_postgresql.py,v 1.11 2004-09-25 15:50:36 a1s Exp $
+# $Id: test_postgresql.py,v 1.12 2004-11-03 01:34:21 richard Exp $
 
 import unittest
 
@@ -23,15 +23,13 @@ from roundup.hyperdb import DatabaseError
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 
-from roundup import backends
+from roundup.backends import get_backend, have_backend
 
 class postgresqlOpener:
-    if hasattr(backends, 'postgresql'):
-        from roundup.backends import postgresql as module
+    if have_backend('postgresql'):
+        module = get_backend('postgresql')
 
     def setUp(self):
-        #from roundup.backends.back_postgresql import db_nuke
-        #db_nuke(config, 1)
         pass
 
     def tearDown(self):
@@ -39,8 +37,7 @@ class postgresqlOpener:
 
     def nuke_database(self):
         # clear out the database - easiest way is to nuke and re-create it
-        from roundup.backends.back_postgresql import db_nuke
-        db_nuke(config)
+        self.module.db_nuke(config)
 
 class postgresqlDBTest(postgresqlOpener, DBTest):
     def setUp(self):
@@ -99,14 +96,13 @@ class postgresqlSessionTest(postgresqlOpener, RDBMSTest):
 
 def test_suite():
     suite = unittest.TestSuite()
-    if not hasattr(backends, 'postgresql'):
+    if not have_backend('postgresql'):
         print "Skipping postgresql tests"
         return suite
 
     # make sure we start with a clean slate
-    from roundup.backends.back_postgresql import db_nuke, db_exists
-    if db_exists(config):
-        db_nuke(config, 1)
+    if postgresqlOpener.module.db_exists(config):
+        postgresqlOpener.module.db_nuke(config, 1)
 
     # TODO: Check if we can run postgresql tests
     print 'Including postgresql tests'

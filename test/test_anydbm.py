@@ -15,14 +15,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_anydbm.py,v 1.3 2004-03-18 01:58:46 richard Exp $ 
+# $Id: test_anydbm.py,v 1.4 2004-11-03 01:34:21 richard Exp $ 
 
 import unittest, os, shutil, time
+from roundup.backends import get_backend
 
 from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
 
 class anydbmOpener:
-    from roundup.backends import anydbm as module
+    module = get_backend('anydbm')
 
     def nuke_database(self):
         shutil.rmtree(config.DATABASE)

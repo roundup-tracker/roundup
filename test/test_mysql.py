@@ -15,19 +15,19 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_mysql.py,v 1.13 2004-09-26 15:18:28 a1s Exp $
+# $Id: test_mysql.py,v 1.14 2004-11-03 01:34:21 richard Exp $
 
 import unittest, os, shutil, time, imp
 
 from roundup.hyperdb import DatabaseError
-from roundup import init, backends
+from roundup.backends import get_backend, have_backend
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 
 
 class mysqlOpener:
-    if hasattr(backends, 'mysql'):
-        from roundup.backends import mysql as module
+    if have_backend('mysql'):
+        module = get_backends('mysql')
 
     def setUp(self):
         self.module.db_nuke(config)
@@ -74,16 +74,15 @@ class mysqlSessionTest(mysqlOpener, RDBMSTest):
 
 def test_suite():
     suite = unittest.TestSuite()
-    if not hasattr(backends, 'mysql'):
+    if not have_backend('mysql'):
         print "Skipping mysql tests"
         return suite
 
-    from roundup.backends import mysql
     import MySQLdb
     try:
         # Check if we can connect to the server.
         # use db_exists() to make a connection, ignore it's return value
-        mysql.db_exists(config)
+        mysqlOpener.module.db_exists(config)
     except (MySQLdb.MySQLError, DatabaseError), msg:
         print "Skipping mysql tests (%s)"%msg
     else:

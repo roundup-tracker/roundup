@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.27 2004-11-02 10:00:36 a1s Exp $
+# $Id: instance.py,v 1.28 2004-11-03 01:34:21 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -61,8 +61,7 @@ class Tracker:
         return name
 
     def get_backend(self):
-        name = self.get_backend_name()
-        return getattr(backends, name)
+        return backends.get_backend(self.get_backend_name())
 
     def open(self, name=None):
         backend = self.get_backend()

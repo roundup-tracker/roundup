@@ -15,16 +15,16 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_sqlite.py,v 1.4 2004-03-18 01:58:46 richard Exp $ 
+# $Id: test_sqlite.py,v 1.5 2004-11-03 01:34:21 richard Exp $ 
 
 import unittest, os, shutil, time
+from roundup.backends import get_backend, have_backend
 
 from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
 
 class sqliteOpener:
-    from roundup import backends
-    if hasattr(backends, 'sqlite'):
-        from roundup.backends import sqlite as module
+    if have_backend('sqlite'):
+        module = get_backend('sqlite')
 
     def nuke_database(self):
         shutil.rmtree(config.DATABASE)
@@ -48,7 +48,7 @@ class sqliteSessionTest(sqliteOpener, RDBMSTest):
 def test_suite():
     suite = unittest.TestSuite()
     from roundup import backends
-    if not hasattr(backends, 'sqlite'):
+    if not have_backend('sqlite'):
         print 'Skipping sqlite tests'
         return suite
     print 'Including sqlite tests'

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.83 2004-10-20 04:45:01 richard Exp $
+# $Id: admin.py,v 1.84 2004-11-03 01:34:21 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -336,7 +336,7 @@ Command help:
         templates = self.listTemplates()
         print _('Templates:'), ', '.join(templates.keys())
         import roundup.backends
-        backends = roundup.backends.__all__
+        backends = roundup.backends.list_backends()
         print _('Back ends:'), ', '.join(backends)
 
     def do_install(self, tracker_home, args):
@@ -392,7 +392,7 @@ Erase it? Y/N: """) % locals())
 
         # select hyperdb backend
         import roundup.backends
-        backends = roundup.backends.__all__
+        backends = roundup.backends.list_backends()
         backend = len(args) > 2 and args[2] or ''
         if backend not in backends:
             print _('Back ends:'), ', '.join(backends)

@@ -15,28 +15,38 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.28 2004-10-24 08:23:16 a1s Exp $
+# $Id: __init__.py,v 1.29 2004-11-03 01:34:21 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
-
-The __all__ variable is constructed containing only the backends which are
-available.
 '''
 __docformat__ = 'restructuredtext'
 
-__all__ = []
+_modules = {
+    'mysql': 'MySQLdb',
+    'postgresql': 'psycopg',
+}
 
-for backend in ['anydbm', ('mysql', 'MySQLdb'),
-        'sqlite', 'metakit', ('postgresql', 'psycopg')]:
-    if len(backend) == 2:
-        backend, backend_module = backend
-    else:
-        backend_module = backend
+def get_backend(name):
+    '''Get a specific backend by name.'''
+    return __import__('back_%s'%name, globals())
+
+def have_backend(name):
+    '''Is backend "name" available?'''
+    module = _modules.get(name, name)
     try:
-        globals()[backend] = __import__('back_%s'%backend, globals())
-        __all__.append(backend)
+        get_backend(name)
+        return 1
     except ImportError, e:
-        if not str(e).startswith('No module named %s'%backend_module):
+        if not str(e).startswith('No module named %s'%module):
             raise
+    return 0
+
+def list_backends():
+    '''List all available backend names.'''
+    l = []
+    for name in 'anydbm', 'mysql', 'sqlite', 'metakit', 'postgresql':
+        if have_backend(name):
+            l.append(name)
+    return l
 
 # vim: set filetype=python ts=4 sw=4 et si

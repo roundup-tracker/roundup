@@ -15,16 +15,16 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_metakit.py,v 1.5 2004-03-24 05:33:13 richard Exp $ 
+# $Id: test_metakit.py,v 1.6 2004-11-03 01:34:21 richard Exp $ 
 import unittest, os, shutil, time, weakref
 
 from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config, password
 
-from roundup import backends
+from roundup.backends import get_backend, have_backend
 
 class metakitOpener:
-    if hasattr(backends, 'metakit'):
-        from roundup.backends import metakit as module
+    if have_backend('metakit'):
+        module = get_backend('metakit')
         module._instances = weakref.WeakValueDictionary()
 
     def nuke_database(self):
@@ -65,7 +65,7 @@ class metakitSessionTest(metakitOpener, DBMTest):
 
 def test_suite():
     suite = unittest.TestSuite()
-    if not hasattr(backends, 'metakit'):
+    if not have_backend('metakit'):
         print 'Skipping metakit tests'
         return suite
     print 'Including metakit tests'
