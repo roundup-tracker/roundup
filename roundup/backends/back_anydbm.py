@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.92 2002-11-06 11:38:42 richard Exp $
+#$Id: back_anydbm.py,v 1.93 2002-11-28 07:02:23 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1423,7 +1423,6 @@ class Class(hyperdb.Class):
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
                 if node[self.key] == keyvalue:
-                    cldb.close()
                     return nodeid
         finally:
             cldb.close()
