@@ -276,6 +276,8 @@ class Database(Database):
                     prop = properties[name]
                     if v is not None:
                         e = self.hyperdb_to_sql_value[prop.__class__](v)
+                    else:
+                        e = None
                     l.append(e)
 
                     # Intervals store the seconds value too
@@ -314,9 +316,9 @@ class Database(Database):
             olddata = []
             for nodeid, journaldate, journaltag, action, params in \
                     self.cursor.fetchall():
-                nodeid = int(nodeid)
-                journaldate = date.Date(journaldate)
-                params = eval(params)
+                #nodeid = int(nodeid)
+                journaldate = str(date.Date(journaldate))
+                #params = eval(params)
                 olddata.append((nodeid, journaldate, journaltag, action,
                     params))
 
