@@ -151,6 +151,11 @@ class Database(rdbms_common.Database):
             self.sql('CREATE INDEX %ss_key_idx ON %ss(%s_key)'%(name, name,
                 name))
 
+    def fix_version_3_tables(self):
+        rdbms_common.Database.fix_version_3_tables(self)
+        self.sql('''CREATE INDEX words_both_idx ON public.__words
+            USING btree (_word, _textid)''')
+
     def add_actor_column(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
