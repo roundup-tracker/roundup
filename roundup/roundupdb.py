@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.42 2002-01-21 09:55:14 rochecompaan Exp $
+# $Id: roundupdb.py,v 1.43 2002-02-14 22:33:15 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -391,6 +391,9 @@ class IssueClass(Class):
         if inreplyto:
             writer.addheader('In-Reply-To', inreplyto)
 
+        # add a uniquely Roundup header to help filtering
+        writer.addheader('X-Roundup-Name', self.db.config.INSTANCE_NAME)
+
         # attach files
         if message_files:
             part = writer.startmultipartbody('mixed')
@@ -568,6 +571,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.42  2002/01/21 09:55:14  rochecompaan
+# Properties in change note are now sorted
+#
 # Revision 1.41  2002/01/15 00:12:40  richard
 # #503340 ] creating issue with [asignedto=p.ohly]
 #

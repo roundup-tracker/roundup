@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-02-?? - ?????
+2002-02-?? - 0.4.1
 Fixed:
  . Clean up mail handling, multipart handling.
  . respect encodings in non multipart messages.
@@ -10,6 +10,7 @@ Fixed:
  . preamble in tepmlateBuilder mentioned htmldata
  . mailgw checks encoding on first part too.
  . #511586 ] unittest FAIL: testReldate_date
+ . Added a uniquely Roundup header to email, "X-Roundup-Name"
 
 
 2002-01-24 - 0.4.0
