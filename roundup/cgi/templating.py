@@ -1,4 +1,4 @@
-import sys, cgi, urllib
+import sys, cgi, urllib, os
 
 from roundup import hyperdb, date
 from roundup.i18n import _
@@ -203,6 +203,12 @@ class HTMLClass:
             'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(self.classname,
             properties, width, height, label)
 
+    def submit(self, label="Submit New Entry"):
+        ''' Generate a submit button (and action hidden element)
+        '''
+        return '  <input type="hidden" name=":action" value="new">\n'\
+        '  <input type="submit" name="submit" value="%s">'%label
+
     def history(self):
         return 'New node - no history'
 
@@ -265,6 +271,12 @@ class HTMLItem:
 
         # no good
         raise AttributeError, attr
+    
+    def submit(self, label="Submit Changes"):
+        ''' Generate a submit button (and action hidden element)
+        '''
+        return '  <input type="hidden" name=":action" value="edit">\n'\
+        '  <input type="submit" name="submit" value="%s">'%label
 
     # XXX this probably should just return the history items, not the HTML
     def history(self, direction='descending'):
@@ -305,8 +317,8 @@ class HTMLItem:
                     # try to get the relevant property and treat it
                     # specially
                     try:
-                        prop = props[k]
-                    except:
+                        prop = self.props[k]
+                    except KeyError:
                         prop = None
                     if prop is not None:
                         if args[k] and (isinstance(prop, hyperdb.Multilink) or
@@ -320,9 +332,9 @@ class HTMLItem:
                                 comments[classname] = _('''The linked class
                                     %(classname)s no longer exists''')%locals()
                             labelprop = linkcl.labelprop(1)
-#                            hrefable = os.path.exists(
-#                                os.path.join(self.instance.TEMPLATES,
-#                                classname+'.item'))
+                            hrefable = os.path.exists(
+                                os.path.join(self.db.config.TEMPLATES,
+                                classname+'.item'))
 
                         if isinstance(prop, hyperdb.Multilink) and \
                                 len(args[k]) > 0:
@@ -349,9 +361,9 @@ class HTMLItem:
                                             exists</strike>''')
                                         subml.append('<strike>%s</strike>'%label)
                                     else:
-#                                        if hrefable:
-                                        subml.append('<a href="%s%s">%s</a>'%(
-                                            classname, linkid, label))
+                                        if hrefable:
+                                            subml.append('<a href="%s%s">%s</a>'%(
+                                                classname, linkid, label))
                                 ml.append(sublabel + ', '.join(subml))
                             cell.append('%s:\n  %s'%(k, ', '.join(ml)))
                         elif isinstance(prop, hyperdb.Link) and args[k]:
