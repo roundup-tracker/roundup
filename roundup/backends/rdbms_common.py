@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.14 2004-07-01 03:58:34 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.15 2004-07-03 22:49:40 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1952,7 +1952,7 @@ class Class(hyperdb.Class):
                     s = '_%s is NULL or '%prop
                 allvalues += tuple(values)
                 s += '_%s in (%s)'%(prop, ','.join([a]*len(values)))
-                where.append(s)
+                where.append('(' + s +')')
         tables = ['_%s'%self.classname]
         if where:
             o.append('(' + ' and '.join(where) + ')')
@@ -2125,8 +2125,9 @@ class Class(hyperdb.Class):
                 v = ['%%'+self.db.sql_stringquote(s)+'%%' for s in v]
 
                 # now add to the where clause
-                where.append(' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s)
-                    for s in v]))
+                where.append('('
+                    +' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
+                    +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
                 if isinstance(v, type([])):
@@ -2142,9 +2143,10 @@ class Class(hyperdb.Class):
                     if d:
                         v = d.keys()
                         s = ','.join([a for x in v])
-                        where.append('(_%s._%s in (%s))'%(cn, k, s))
+                        l.append('(_%s._%s in (%s))'%(cn, k, s))
                         args = args + v
-                    where.append(' or '.join(l))
+                    if l:
+                        where.append('(' + ' or '.join(l) +')')
                 else:
                     if v in ('-1', None):
                         v = None
