@@ -15,17 +15,20 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.61 2001-11-22 15:46:42 jhermann Exp $
+# $Id: cgi_client.py,v 1.62 2001-11-24 00:45:42 jhermann Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
-import binascii, Cookie, time
+import binascii, Cookie, time, __builtin__
 
 import roundupdb, htmltemplate, date, hyperdb, password
 from roundup.i18n import _
+
+# avoid clash with database field "type"
+typeof = __builtin__.type
 
 class Unauthorised(ValueError):
     pass
@@ -152,7 +155,7 @@ class Client:
                 self.write('<dt><b>Form entries</b></dt>')
                 for k in self.form.keys():
                     v = self.form.getvalue(k, "<empty>")
-                    if type(v) is type([]):
+                    if typeof(v) is typeof([]):
                         # Multiple username fields specified
                         v = "|".join(v)
                     self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
@@ -183,7 +186,7 @@ class Client:
         '''
         if self.form.has_key(arg):
             arg =  self.form[arg]
-            if type(arg) == type([]):
+            if typeof(arg) == typeof([]):
                 return [arg.value for arg in arg]
             return arg.value.split(',')
         return []
@@ -205,7 +208,7 @@ class Client:
             value = self.form[key]
             if (isinstance(prop, hyperdb.Link) or
                     isinstance(prop, hyperdb.Multilink)):
-                if type(value) == type([]):
+                if typeof(value) == typeof([]):
                     value = [arg.value for arg in value]
                 else:
                     value = value.value.split(',')
@@ -389,10 +392,10 @@ class Client:
         '''
         nodeid = self.nodeid
         cl = self.db.file
-        type = cl.get(nodeid, 'type')
-        if type == 'message/rfc822':
-            type = 'text/plain'
-        self.header(headers={'Content-Type': type})
+        mimetype = cl.get(nodeid, 'type')
+        if mimetype == 'message/rfc822':
+            mimetype = 'text/plain'
+        self.header(headers={'Content-Type': mimetype})
         self.write(cl.get(nodeid, 'content'))
 
     def _createnode(self):
@@ -412,7 +415,7 @@ class Client:
         for key in keys:
             if key == ':multilink':
                 value = self.form[key].value
-                if type(value) != type([]): value = [value]
+                if typeof(value) != typeof([]): value = [value]
                 for value in value:
                     designator, property = value.split(':')
                     link, nodeid = roundupdb.splitDesignator(designator)
@@ -422,7 +425,7 @@ class Client:
                     link.set(nodeid, **{property: value})
             elif key == ':link':
                 value = self.form[key].value
-                if type(value) != type([]): value = [value]
+                if typeof(value) != typeof([]): value = [value]
                 for value in value:
                     designator, property = value.split(':')
                     link, nodeid = roundupdb.splitDesignator(designator)
@@ -946,7 +949,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                             key, value, link)
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if type(value) != type([]):
+            if typeof(value) != typeof([]):
                 value = [i.strip() for i in value.value.split(',')]
             else:
                 value = [i.value.strip() for i in value]
@@ -982,6 +985,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.61  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.60  2001/11/21 22:57:28  jhermann
 # Added dummy hooks for I18N and some preliminary (test) markup of
 # translatable messages
