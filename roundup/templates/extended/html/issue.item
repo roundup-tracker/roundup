@@ -1,4 +1,4 @@
-<!-- $Id: issue.item,v 1.1 2001-07-23 04:21:20 richard Exp $-->
+<!-- $Id: issue.item,v 1.2 2001-07-30 01:26:59 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -29,22 +29,15 @@
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Priority</span></td>
     <td class="form-text"><display call="field('priority')"></td>
-    <td width=1% nowrap align=right><span class="form-label">Source</span></td>
-    <td class="form-text"><display call="field('source')"></td>
-</tr>
-
-<tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Status</span></td>
     <td class="form-text"><display call="menu('status')"></td>
-    <td width=1% nowrap align=right><span class="form-label">Rate</span></td>
-    <td class="form-text"><display call="field('rate')"></td>
 </tr>
 
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
     <td class="form-text"><display call="field('assignedto')"></td>
-    <td width=1% nowrap align=right><span class="form-label">Customer Name</span></td>
-    <td class="form-text"><display call="field('customername')"></td>
+    <td width=1% nowrap align=right><span class="form-label">Empty</span></td>
+    <td class="form-text">XXXX</td>
 </tr>
 
 <tr bgcolor="ffffea">

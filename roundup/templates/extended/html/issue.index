@@ -1,5 +1,8 @@
-<!-- $Id: issue.index,v 1.1 2001-07-23 04:21:20 richard Exp $-->
+<!-- $Id: issue.index,v 1.2 2001-07-30 01:26:59 richard Exp $-->
 <tr>
+    <property name="id">
+        <td valign="top"><display call="field('id')"></td>
+    </property>
     <property name="activity">
         <td valign="top"><display call="reldate('activity', pretty=1)"></td>
     </property>
@@ -21,13 +24,7 @@
     <property name="version">
         <td valign="top"><display call="plain('version')"></td>
     </property>
-    <property name="source">
-        <td valign="top"><display call="plain('source')"></td>
-    </property>
     <property name="assignedto">
         <td valign="top"><display call="plain('assignedto')"></td>
-    </property>
-    <property name="customername">
-        <td valign="top"><display call="plain('customername')"></td>
     </property>
 </tr>

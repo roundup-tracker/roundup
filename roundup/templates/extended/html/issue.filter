@@ -1,4 +1,4 @@
-<!-- $Id: issue.filter,v 1.1 2001-07-23 04:21:20 richard Exp $-->
+<!-- $Id: issue.filter,v 1.2 2001-07-30 01:26:59 richard Exp $-->
 <property name="title">
  <tr><th width="1%" align="right" class="location-bar">Title</th>
  <td><display call="field('title')"></td></tr>
@@ -23,15 +23,7 @@
  <tr><th width="1%" align="right" class="location-bar">Version</th>
  <td><display call="field('version')"></td></tr>
 </property>
-<property name="source">
- <tr><th width="1%" align="right" class="location-bar">Source</th>
- <td><display call="checklist('source')"></td></tr>
-</property>
 <property name="assignedto">
  <tr><th width="1%" align="right" class="location-bar">Assigned&nbsp;to</th>
  <td><display call="checklist('assignedto')"></td></tr>
-</property>
-<property name="customername">
- <tr><th width="1%" align="right" class="location-bar">Customer&nbsp;name</th>
- <td><display call="field('customername')"></td></tr>
 </property>

@@ -1,4 +1,4 @@
-# $Id: dbinit.py,v 1.7 2001-07-29 07:01:39 richard Exp $
+# $Id: dbinit.py,v 1.8 2001-07-30 01:26:59 richard Exp $
 
 import os
 
@@ -78,13 +78,18 @@ def open(name=None):
                     date=Date(),         time=String(),
                     performedby=Link("user"), description=String())
 
+    support = IssueClass(db, "support", 
+                    assignedto=Link("user"), status=Link("status"),
+                    rate=Link("rate"), source=Link("source"),
+                    product=Link("product"), platform=Multilink("platform"),
+                    version=String(), timelog=Multilink("timelog"),
+                    customername=String())
+
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), priority=Link("priority"), 
-                    status=Link("status"),   rate=Link("rate"), 
-                    source=Link("source"),   product=Link("product"), 
+                    status=Link("status"), product=Link("product"), 
                     platform=Multilink("platform"), version=String(),
-                    timelog=Multilink("timelog"), customername=String())
-    issue.setkey('title')
+                    supportcall=Multilink("support"))
 
     import detectors
     detectors.init(db)
@@ -109,7 +114,6 @@ def init(adminpw):
     pri.create(name="bug", order="2")
     pri.create(name="usability", order="3")
     pri.create(name="feature", order="4")
-    pri.create(name="support", order="5")
 
     stat = db.getclass('status')
     stat.create(name="unread", order="1")
@@ -151,6 +155,9 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.6  2001/07/25 01:23:07  richard
 # Added the Roundup spec to the new documentation directory.
 #
