@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.16 $
+:Version: $Revision: 1.17 $
 
 .. contents::
 
@@ -63,21 +63,22 @@ If you want to use Berkeley DB bsddb3 with Roundup, use version 3.3.0 or
 later. Download the latest version from http://pybsddb.sourceforge.net/.
 
 
+Getting Roundup
+===============
+
+Download the latest version from http://roundup.sf.net/.
+
 Testing your Python
 -------------------
 
-Run ``python ./run_tests`` and make sure there
-are no errors.  If there are errors, please let us know!
+Once you've unpacked roundup's source, run ``python ./run_tests`` in the
+source directory and make sure there are no errors.
+If there are errors, please let us know!
 
 If the above fails, you may be using the wrong version of python. Try
 ``python2 ./run_tests``. If that works, you will need to substitute
 ``python2`` for ``python`` in all further commands you use in relation to
 Roundup -- from installation and scripts.
-
-Getting Roundup
-===============
-
-Download the latest version from http://roundup.sf.net/.
 
 
 Installation
