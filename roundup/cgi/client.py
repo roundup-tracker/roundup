@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.51 2002-10-08 04:11:17 richard Exp $
+# $Id: client.py,v 1.52 2002-10-09 01:00:40 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1033,7 +1033,8 @@ class Client:
         # in a nutshell, don't do anything if there's no note or there's no
         # NOSY
         if self.form.has_key(':note'):
-            note = self.form[':note'].value.strip()
+            # fix the CRLF/CR -> LF stuff
+            note = fixNewlines(self.form[':note'].value.strip())
         if not note:
             return None, files
         if not props.has_key('messages'):
@@ -1105,6 +1106,15 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
+def fixNewlines(text):
+    ''' Homogenise line endings.
+
+        Different web clients send different line ending values, but
+        other systems (eg. email) don't necessarily handle those line
+        endings. Our solution is to convert all line endings to LF.
+    '''
+    text = text.replace('\r\n', '\n')
+    return text.replace('\r', '\n')
 
 def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     ''' Pull properties for the given class out of the form.
@@ -1144,6 +1154,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         if isinstance(proptype, hyperdb.String):
             if not value:
                 continue
+            # fix the CRLF/CR -> LF stuff
+            value = fixNewlines(value)
         elif isinstance(proptype, hyperdb.Password):
             if not value:
                 # ignore empty password values

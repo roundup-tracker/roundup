@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.53 $
+:Version: $Revision: 1.54 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1032,10 +1032,11 @@ The following variables are available to templates.
    - *form*
      The current CGI form information as a mapping of form argument
      name to value
-**tracker**
-  The current tracker
+**config**
+  This variable holds all the values defined in the tracker config.py file 
+  (eg. TRACKER_NAME, etc.)
 **db**
-  The current database, through which db.config may be reached.
+  The current database, used to access arbitrary database items.
 **templates**
   Access to all the tracker templates by name. Used mainly in *use-macro*
   commands.

@@ -126,10 +126,10 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
            - methods for easy filterspec link generation
            - *user*, the current user node as an HTMLItem instance
            - *form*, the current CGI form information as a FieldStorage
-        *tracker*
-          The current tracker
+        *config*
+          The current tracker config.
         *db*
-          The current database, through which db.config may be reached.
+          The current database, used to access arbitrary database items.
     '''
     def getContext(self, client, classname, request):
         c = {
@@ -137,6 +137,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
              'nothing': None,
              'request': request,
              'db': HTMLDatabase(client),
+             'config': client.instance.config,
              'tracker': client.instance,
              'utils': TemplatingUtils(client),
              'templates': Templates(client.instance.config.TEMPLATES),

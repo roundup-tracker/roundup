@@ -14,6 +14,8 @@ are given with the most recent entry first.
 - nicer display of tracker list in roundup-server (sf bug 619769)
 - fixed some missed renaming instance -> tracker (sf bug 619769)
 - allow blank passwords again (sf bug 619714)
+- expose the tracker config as a variable for templating
+- homogenise newlines in CGI text submissions (sf bug 614072)
 
 
 2002-10-02 0.5.0
