@@ -1,0 +1,276 @@
+User Guide
+==========
+
+Command Line Tool
+-----------------
+
+Usage: ``roundup-admin [-i instance home] [-u login] [-c] <command> <arguments>``
+
+Options:
+
+-i          instance home specify the issue tracker "home directory" to administer
+-u          the ``user[:password]`` to use for commands
+-c          when outputting lists of data, comma-separate them
+
++-----------------------------------------------------------------------------+
+| Command Help                                                                |
++=============+===============================================================+
+|commit       |Usage: commit                                                  |
+|             |The changes made during an interactive session are not         |
+|             |automatically written to the database - they must be committed |
+|             |using this command.                                            |
+|             |                                                               |
+|             |One-off commands on the command-line are automatically         |
+|             |committed if they are successful.                              |
++-------------+---------------------------------------------------------------+
+|create       |Usage: create classname property=value ...                     |
+|             |This creates a new entry of the given class using the property |
+|             |name=value arguments provided on the command line after the    |
+|             |"create" command.                                              |
++-------------+---------------------------------------------------------------+
+|display      |Usage: display designator                                      |
+|             |This lists the properties and their associated values for the  |
+|             |given node.                                                    |
++-------------+---------------------------------------------------------------+
+|export       |Usage: export class[,class] destination dir                    |
+|             |This action exports the current data from the database into    |
+|             |tab-separated-value files that are placed in the nominated     |
+|             |destination                                                    |
+|             |directory. The journals are not exported.                      |
++-------------+---------------------------------------------------------------+
+|find         |Usage: find classname propname=value ...                       |
+|             |Find the nodes of the given class with a given link property   |
+|             |value. The                                                     |
+|             |value may be either the nodeid of the linked node, or its key  |
+|             |value.                                                         |
++-------------+---------------------------------------------------------------+
+|get          |Usage: get property designator[,designator]*                   |
+|             |Retrieves the property value of the nodes specified by the     |
+|             |designators.                                                   |
++-------------+---------------------------------------------------------------+
+|help         |Usage: help topic                                              |
+|             |commands  -- list commands                                     |
+|             |x -- help specific to a command                                |
+|             |initopts  -- init command options                              |
+|             |all       -- all available help                                |
++-------------+---------------------------------------------------------------+
+|history      |Usage: history designator                                      |
+|             |Lists the journal entries for the node identified by the       |
+|             |designator.                                                    |
++-------------+---------------------------------------------------------------+
+|import       |Usage: import class file                                       |
+|             |The file must define the same properties as the class          |
+|             |(including having                                              |
+|             |a "header" line with those property names.) The new nodes are  |
+|             |added to                                                       |
+|             |the existing database - if you want to create a new database   |
+|             |using the                                                      |
+|             |imported data, then create a new database (or, tediously,      |
+|             |retire all                                                     |
+|             |the old data.)                                                 |
++-------------+---------------------------------------------------------------+
+|initialise   |Usage: initialise [template [backend [admin password]]]        |
+|             |The command will prompt for the instance home directory (if not|
+|             |supplied                                                       |
+|             |through INSTANCE HOME or the -i option. The template, backend  |
+|             |and admin                                                      |
+|             |password may be specified on the command-line as arguments, in |
+|             |that                                                           |
+|             |order.                                                         |
+|             |                                                               |
+|             |See also initopts help.                                        |
++-------------+---------------------------------------------------------------+
+|list         |Usage: list classname [property]                               |
+|             |Lists all instances of the given class. If the property is not |
+|             |specified, the  "label" property is used. The label property is|
+|             |tried                                                          |
+|             |in order: the key, "name", "title" and then the first property,|
+|             |alphabetically.                                                |
++-------------+---------------------------------------------------------------+
+|retire       |Usage: retire designator[,designator]*                         |
+|             |This action indicates that a particular node is not to be      |
+|             |retrieved by                                                   |
+|             |the list or find commands, and its key value may be re-used.   |
++-------------+---------------------------------------------------------------+
+|rollback     |Usage: rollback                                                |
+|             |The changes made during an interactive session are not         |
+|             |automatically written to the database - they must be committed |
+|             |manually. This command undoes all those changes, so a commit   |
+|             |immediately after would make no changes to the database.       |
++-------------+---------------------------------------------------------------+
+|set          |Usage: set designator[,designator]* propname=value ...         |
+|             |Sets the property to the value for all designators given.      |
++-------------+---------------------------------------------------------------+
+|specification|Usage: specification classname                                 |
+|             |This lists the properties for a given class.                   |
++-------------+---------------------------------------------------------------+
+|table        |Usage: table classname [property[,property]*]                  |
+|             |Lists all instances of the given class. If the properties are  |
+|             |not                                                            |
+|             |specified, all properties are displayed. By default, the column|
+|             |widths                                                         |
+|             |are the width of the property names. The width may be          |
+|             |explicitly defined                                             |
+|             |by defining the property as "name:width". For example::        |
+|             |                                                               |
+|             |  roundup> table priority id,name:10                           |
+|             |  Id Name                                                      |
+|             |  1  fatal-bug                                                 |
+|             |  2  bug                                                       |
+|             |  3  usability                                                 |
+|             |  4  feature                                                   |
++-------------+---------------------------------------------------------------+
+
+
+All commands (except help) require an instance specifier. This is just the path to
+the roundup instance you're working with. A roundup instance is where roundup
+keeps the database and configuration file that defines an issue tracker. It may be
+thought of as the issue tracker's "home directory". It may be specified in the
+environment variable ``ROUNDUP_INSTANCE`` or on the command line as "``-i instance``".
+
+A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
+Property values are represented as strings in command arguments and in the printed
+results:
+
+- Strings are, well, strings.
+- Password values will display as their encoded value.
+- Date values are printed in the full date format in the local time zone,
+  and accepted in the full format or any of the partial formats explained
+  below.::
+  
+    Input of...        Means...
+    "2000-04-17.03:45" 2000-04-17.08:45:00
+    "2000-04-17"       2000-04-17.00:00:00
+    "01-25"            yyyy-01-25.00:00:00
+    "08-13.22:13"      yyyy-08-14.03:13:00
+    "11-07.09:32:43"   yyyy-11-07.14:32:43
+    "14:25"            yyyy-mm-dd.19:25:00
+    "8:47:11"          yyyy-mm-dd.13:47:11
+    "."                "right now"
+    
+- Link values are printed as node designators. When given as an argument,
+  node designators and key strings are both accepted.
+- Multilink values are printed as lists of node designators joined by
+  commas. When given as an argument, node designators and key strings are
+  both accepted; an empty string, a single node, or a list of nodes joined
+  by commas is accepted.
+  
+When multiple nodes are specified to the roundup get or roundup set commands, the
+specified properties are retrieved or set on all the listed nodes.  When multiple
+results are returned by the roundup get or roundup find commands, they are printed
+one per line (default) or joined by commas (with the "``-c``" option).
+
+Where the command changes data, a login name/password is required. The login may
+be specified as either "``name``" or "``name:password``".
+
+- ``ROUNDUP_LOGIN`` environment variable
+- the "``-u``" command-line option
+
+If either the name or password is not supplied, they are obtained from the
+command-line.
+
+
+Web Interface
+-------------
+
+Index views may be modified by the following arguments:
+
++-----------+--------------------------------------------------------------+
+| :sort     | sort by prop name, optionally preceeded with '-'             |
+|           | to give descending or nothing for ascending sorting.         |
++-----------+--------------------------------------------------------------+
+| :group    | group by prop name, optionally preceeded with '-' or         |
+|           | to sort in descending or nothing for ascending order.        |
++-----------+--------------------------------------------------------------+
+| :filter   | selects which props should be displayed in the filter        |
+|           | section. Default is all.                                     |
++-----------+--------------------------------------------------------------+
+| :columns  | selects the columns that should be displayed.                |
+|           | Default is all.                                              |
++-----------+--------------------------------------------------------------+
+| propname  | selects the values the node properties given by propname     |
+|           | must have (very basic search/filter).                        |
++-----------+--------------------------------------------------------------+
+
+Not sure what to put in here...
+
+E-Mail Gateway
+--------------
+
+Performing Actions
+~~~~~~~~~~~~~~~~~~
+
+The subject line of the incoming message is examined to determine whether the
+message is an attempt to create a new item or to discuss an existing item. A
+designator enclosed in square brackets is sought as the first thing on the
+subject line (after skipping any "Fwd:" or "Re:" prefixes).
+If an item designator (class name and id number) is found there, the newly
+created "msg" node is added to the "messages" property for that item, and any
+new "file" nodes are added to the "files" property for the item.
+If just an item class name is found there, we attempt to create a new item of
+that class with its "messages" property initialized to contain the new "msg"
+node and its "files" property initialized to contain any new "file" nodes.
+
+Setting Properties
+~~~~~~~~~~~~~~~~~~
+
+The e-mail interface also provides a simple way to set properties on items. At
+the end of the subject line, propname=value pairs can be specified in square
+brackets, using the same conventions as for the roundup set shell command.
+explanatory message given in the exception.
+
+Message content
+~~~~~~~~~~~~~~~
+
+Incoming messages are examined for multiple parts:
+
+* In a multipart/mixed message or part, each subpart is extracted and
+  examined. The text/plain subparts are assembled to form the textual body
+  of the message, to be stored in the file associated with a "msg" class
+  node. Any parts of other types are each stored in separate files and
+  given "file" class nodes that are linked to the "msg" node.
+* In a multipart/alternative message or part, we look for a text/plain
+  subpart and ignore the other parts.
+
+Message summary
+:::::::::::::::
+
+The "summary" property on message nodes is taken from the first non-quoting
+section in the message body. The message body is divided into sections by blank
+lines. Sections where the second and all subsequent lines begin with a ">" or
+"|" character are considered "quoting sections". The first line of the first
+non-quoting section becomes the summary of the message.
+
+Address handling
+~~~~~~~~~~~~~~~~
+
+All of the addresses in the To: and Cc: headers of the incoming message are
+looked up among the user nodes, and the corresponding users are placed in the
+"recipients" property on the new "msg" node. The address in the From: header
+similarly determines the "author" property of the new "msg" node. The default
+handling for addresses that don't have corresponding users is to create new
+users with no passwords and a username equal to the address. (The web interface
+does not permit logins for users with no passwords.) If we prefer to reject
+mail from outside sources, we can simply register an auditor on the "user"
+class that prevents the creation of user nodes with no passwords.
+
+Triggers
+~~~~~~~~
+
+Both cases may trigger detectors (in the first case we are calling the set()
+method to add the message to the item's spool; in the second case we are
+calling the create() method to create a new node). If an auditor raises an
+exception, the original message is bounced back to the sender with the
+
+Nosy Lists
+::::::::::
+
+A standard detector is provided that watches for additions to the "messages"
+property. When a new message is added, the detector sends it to all the users
+on the "nosy" list for the item that are not already on the "recipients" list
+of the message. Those users are then appended to the "recipients" property on
+the message, so multiple copies of a message are never sent to the same user.
+The journal recorded by the hyperdatabase on the "recipients" property then
+provides a log of when the message was sent to whom.
+
+

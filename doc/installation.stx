@@ -1,0 +1,46 @@
+*Roundup (0.4.1): An Issue-Tracking System for Knowledge Workers*
+
+`Table of contents`_
+
+1. Prerequisites_
+2. `Getting Roundup`_
+3. `Installing Roundup`_
+
+
+Prerequisites
+-------------
+
+Python 2.1.1 is required for the correct operation of roundup.
+
+Download the latest version from http://www.python.org/.
+
+
+Getting Roundup
+---------------
+
+Download the latest version from http://roundup.sf.net/.
+
+Installing Roundup
+------------------
+
+Run:
+
+- "``python setup.py install``"
+- If you would prefer the scripts installed in somewhere other than
+  "``/usr/local/bin``", add "``--install-scripts=<dir>``" to the
+  command::
+
+     python setup.py install --install-scripts=<dir>
+
+- This command gives all the options available for
+  installation::
+
+      python setup.py install --help
+
+
+Next: `Getting Started`_
+
+.. _`table of contents`: index.html
+.. _`getting started`: getting_started.html
+
+$Id: installation.stx,v 1.1 2002-02-21 06:22:00 richard Exp $

@@ -1,0 +1,258 @@
+Getting Started
+===============
+
+The following instructions assume that you have installed roundup. If you
+haven't, you may still proceed - just run the commands as
+"``PYTHONPATH=. python roundup/scripts/roundup_admin.py``" for
+``roundup-admin`` and
+"``PYTHONPATH=. python roundup/scripts/roundup_server.py``" for
+``roundup-server``.
+
+The Instance
+------------
+
+We'll be referring to the term instance a lot from now on. An instance is a
+directory in your filesystem that is where all the information about a live
+issue
+tracker database is stored. The data that is entered as issues, the users who
+access the database and the definition of the database itself all reside there:
+
+Hyperdatabase
+   This is the lowest component of Roundup and is where all the issues,
+   users, file attachments and messages are stored.
+
+Database schema
+   This describes the content of the hyperdatabase - what fields are stored
+   for issues, what user information, etc. Being stored in the instance,
+   this allows it to be customised for a particular application. It also
+   means that changes in the Roundup core code do not affect a running
+   instance.
+
+Web Interface
+   The web interface templates are defined in the instance too - and the
+   actual CGI interface class is defined (mostly using base classes in the
+   Roundup core code) so it, like the database, may be customised for each
+   instance in use.
+
+Instances are created using the ``roundup-admin`` tool.
+
+Command Line Tool
+-----------------
+
+To initiliase a new instance, run "``roundup-admin init``". You will be asked a
+series of questions:
+
+1. Instance home directory
+2. Schema to use
+3. Database back-end to use
+4. Administration user "admin" password.
+
+You should also think about whether there is going to be controlled access
+to the
+instance on the machine the instance is running on. That is, who can
+actually make
+changes to the database using the roundup-admin tool. See the section on
+Users_and_Access_Control for information on how to secure your instance from the
+start.
+
+Roundup is configurable using an ``instance_config.py`` file in the instance
+home.  It
+should be edited before roundup is used, and may have the following variable
+declarations:
+
+MAILHOST
+   The SMTP mail host that roundup will use to send mail
+MAIL_DOMAIN
+   The domain name used for email addresses
+ISSUE_TRACKER_WEB
+   The web address of the issue tracker's web interface
+
+The email addresses used by the system by default are:
+
+ISSUE_TRACKER_EMAIL: ``issue_tracker@MAIL_DOMAIN``
+   submissions of issues
+
+ADMIN_EMAIL: ``roundup-admin@MAIL_DOMAIN``
+   roundup's internal use (problems, etc)
+
+E-Mail Interface
+----------------
+
+Setup 1: As a mail alias pipe process 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set up a mail alias called "issue_tracker" as (include the quote marks):
+"``|/usr/bin/python /usr/local/bin/roundup-mailgw <instance_home>``"
+
+In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh so
+sendmail will accept the pipe command. In that case, symlink
+``/etc/smrsh/roundup-mailgw`` to "``/usr/local/bin/roundup-mailgw``" and change
+the command to::
+
+    |roundup-mailgw <instance_home>
+ 
+To test the mail gateway on unix systems, try::
+
+    echo test |mail -s '[issue] test' issue_tracker@your.domain
+
+
+Setup 2: As a regular cron job using a mailbox source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set ``roundup-mailgw`` up to run every 10 minutes or so. For example::
+
+  10 * * * * /usr/local/bin/roundup-mailgw <instance_home> mailbox <mail_spool_file>
+
+Where the ``mail_spool_file`` argument is the location of the roundup submission
+user's mail spool. On most systems, the spool for a user "issue_tracker"
+will be "``/var/mail/issue_tracker``".
+
+Setup 3: As a regular cron job using a POP source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To retrieve from a POP mailbox, use a similar cron entry to the mailbox one::
+
+  10 * * * * /usr/local/bin/roundup-mailgw <instance_home> pop <pop_spec>
+    
+where pop_spec is "``username:password@server``" that specifies the roundup
+submission user's POP account name, password and server.
+
+
+Web Interface
+-------------
+
+This software will work through apache or stand-alone.
+
+Stand-alone:
+  1. Edit roundup-server at the top - ``ROUNDUP_INSTANCE_HOMES`` needs to know
+     about your instance. You may also specify the values for
+     ``ROUNDUP_INSTANCE_HOMES`` on the command-line using "name=home" pairs.
+    
+  2. "``roundup-server [-p port] (name=instance_home)*``" (hostname may be "")
+  
+  3. Load up the page "``/<instance name>/index``" where instance name is the name
+     you nominated in ``ROUNDUP_INSTANCE_HOMES``.
+
+Apache:
+  1. The CGI script is found in the cgi-bin directory of the roundup
+     distribution.
+     
+  2. Make sure roundup.cgi is executable. Edit it at the top -
+     ``ROUNDUP_INSTANCE_HOMES`` needs to know about your instance.
+     
+  3. Edit your "``/etc/httpd/conf/httpd.conf``" and make sure that the
+     "``/home/httpd/html/roundup/roundup.cgi``" script will be treated as a CGI script.
+     
+  4. Re-start your apache to re-load the config if necessary.
+  
+  5. Load up the page "``/roundup/roundup.cgi/index/``" where instance name is the
+     name you nominated in ``ROUNDUP_INSTANCE_HOMES``.
+     
+  6. To use the CGI script unchanged, which allows much easier updates, add
+     these directives to your "httpd.conf"::
+     
+	  SetEnv ROUNDUP_LOG "/var/log/roundup.log"
+	  SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/instances/Default"
+	  SetEnv ROUNDUP_DEBUG "0"
+	  
+  7. On Windows, write a batch file "roundup.bat" similar to the one below and
+     place it into your cgi-bin directory::
+      
+	  @echo off
+	  set ROUNDUP_LOG=c:\Python21\share\roundup\cgi.log
+	  set ROUNDUP_INSTANCE_HOMES=Default=c:\Python21\share\roundup\instances\Default;
+	  set ROUNDUP_DEBUG=0
+	  c:\Python21\python.exe c:\Python21\share\roundup\cgi-bin\roundup.cgi
+
+
+Users 
+-----
+
+Users and permissions
+~~~~~~~~~~~~~~~~~~~~~
+
+By default, roundup automatically creates one user when the instance database is
+initialised (using roundup-admin init). The user is "admin" and the password is
+the one you supply at that time.
+
+If users attempt to use roundup in any manner and are not identified to roundup,
+they will be using the database in a read-only mode. That is, if roundup doesn't
+know who they are, they can't change anything. This has the following
+repurcussions:
+
+Command-line interface
+    The data modification commands (create, init, retire, set) are performed
+    as the "admin" user. It is therefore important that the database be
+    protected by the filesystem if protection is required. On a Unix system,
+    the easiest and most flexible method of doing so is:
+
+    1. Add a new user and group to your system (e.g. "issue_tracker")
+    
+    2. When creating a new instance home, use the following commands
+       (substituting instance_home for the directory you want to use)::
+	
+	mkdir instance_home
+	chown issue_tracker:issue_tracker instance_home
+	chmod g+rwxs instance_home
+	roundup-admin -i instance_home init
+	
+    3. Now, edit the /etc/group line for the issue_tracker group so it
+       includes the unix logins of all the users who are going to
+       administer your roundup instance. If you're running the web or mail
+       gateways, then be sure to include those users in the group too (on
+       some Linux systems, these users are "www" or "apache" and "mail".)
+       
+E-Mail interface
+    Users are identified by e-mail address - a new user entry will be created
+    for any e-mail address that is not recognised, so users are always
+    identified by roundup.
+
+Web interface
+    Unidentified users have read-only access. If the users database has an
+    entry with the username "anonymous", then unidentified users are
+    automatically logged in as that user. This gives them write access.
+
+**anonymous access and the ANONYMOUS_* configurations.**
+
+
+Adding users
+~~~~~~~~~~~~
+
+To add users, use one of the following interfaces:
+  
+1. On the web, access the URL .../<instance name>/newuser to bring up a form
+   which may be used to add a new user.
+    
+2. On the command-line, use::
+
+    roundup-admin -i <instance home> create user username=bozo password=bozo
+    address=richard@clown.org
+    
+   Supply the admin username and password. roundup-admin will print the id
+   of the new user.
+  
+3. Any e-mail sent to roundup from an address that doesn't match an existing
+   user in the database will result in a new user entry being created for
+   that user.
+    
+
+Issues
+------
+
+To add issues, use one of the following interfaces:
+
+1. On the web, access the URL .../<instance name>/newissue to bring up a
+   form which may be used to add a new issue.
+  
+2. On the command-line, use::
+
+     roundup-admin -i <instance home> create issue title="test issue"
+
+   Supply the admin username and password. roundup-admin will print the id
+   of the new issue.
+
+3. Any e-mail sent to roundup with the subject line containing [issue] will
+   automatically created a new issue in the database using the contents of
+   the e-mail.
+
+

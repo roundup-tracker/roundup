@@ -1,0 +1,557 @@
+Customising Roundup
+===================
+
+Instances have the following structure:
+
++-------------------+--------------------------------------------------------+
+|instance_config.py |Holds the basic instance_configuration                  |
++-------------------+--------------------------------------------------------+
+|dbinit.py          |Holds the instance_schema                               |
++-------------------+--------------------------------------------------------+
+|interfaces.py      |Defines the Web and E-Mail interfaces for the instance  |
++-------------------+--------------------------------------------------------+
+|select_db.py       |Selects the database back-end for the instance          |
++-------------------+--------------------------------------------------------+
+|db/                |Holds the instance's database                           |
++-------------------+--------------------------------------------------------+
+|db/files/          |Holds the instance's upload files and messages          |
++-------------------+--------------------------------------------------------+
+|detectors/         |Auditors and reactors for this instance                 |
++-------------------+--------------------------------------------------------+
+|html/              |Web interface templates, images and style sheets        |
++-------------------+--------------------------------------------------------+
+
+Instance Configuration
+----------------------
+
+The instance_config.py located in your instance home contains the basic
+configuration for the web and e-mail components of roundup's interfaces. This
+file is a Python module. The default instance_config.py is given below - as you
+can see, the MAIL_DOMAIN must be edited before any interaction with the
+instance is attempted.::
+
+  MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
+  HTTP_PORT=0
+
+  # roundup home is this package's directory
+  INSTANCE_HOME=os.path.split(__file__)[0]
+
+  # The SMTP mail host that roundup will use to send mail
+  if not MAILHOST:
+      MAILHOST = 'localhost'
+
+  # The domain name used for email addresses.
+  if not MAIL_DOMAIN:
+      MAIL_DOMAIN = 'fill.me.in.'
+
+  # the next two are only used for the standalone HTTP server.
+  if not HTTP_HOST:
+      HTTP_HOST = ''
+  if not HTTP_PORT:
+      HTTP_PORT = 9080
+
+  # This is the directory that the database is going to be stored in
+  DATABASE = os.path.join(INSTANCE_HOME, 'db')
+
+  # This is the directory that the HTML templates reside in
+  TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
+
+  # The email address that mail to roundup should go to
+  ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+
+  # The web address that the instance is viewable at
+  ISSUE_TRACKER_WEB = 'http://some.useful.url/'
+
+  # The email address that roundup will complain to if it runs into trouble
+  ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+
+  # Somewhere for roundup to log stuff internally sent to stdout or stderr
+  LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
+
+  # Where to place the web filtering HTML on the index page
+  FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
+
+  # Deny or allow anonymous access to the web interface
+  ANONYMOUS_ACCESS = 'deny'
+
+  # Deny or allow anonymous users to register through the web interface
+  ANONYMOUS_REGISTER = 'deny'
+
+  # Send nosy messages to the author of the message
+  MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
+
+
+Instance Schema
+---------------
+
+Note: if you modify the schema, you'll most likely need to web_interface_to
+reflect_your_changes.
+An instance schema defines what data is stored in the instance's database. The
+two schemas shipped with Roundup turn it into a typical software bug tracker
+(the extended schema allowing for support issues as well as bugs). Schemas are
+defined using Python code. The "classic" schema looks like this::
+
+    pri = Class(db, "priority", name=String(), order=String())
+    pri.setkey("name")
+    pri.create(name="critical", order="1")
+    pri.create(name="urgent", order="2")
+    pri.create(name="bug", order="3")
+    pri.create(name="feature", order="4")
+    pri.create(name="wish", order="5")
+
+    stat = Class(db, "status", name=String(), order=String())
+    stat.setkey("name")
+    stat.create(name="unread", order="1")
+    stat.create(name="deferred", order="2")
+    stat.create(name="chatting", order="3")
+    stat.create(name="need-eg", order="4")
+    stat.create(name="in-progress", order="5")
+    stat.create(name="testing", order="6")
+    stat.create(name="done-cbb", order="7")
+    stat.create(name="resolved", order="8")
+
+    keyword = Class(db, "keyword", name=String())
+    keyword.setkey("name")
+
+    user = Class(db, "user", username=String(), password=String(),
+        address=String(), realname=String(), phone=String(),
+        organisation=String())
+    user.setkey("username")
+    user.create(username="admin", password=adminpw,
+        address=instance_config.ADMIN_EMAIL)
+
+    msg = FileClass(db, "msg", author=Link("user"), recipients=Multilink
+        ("user"), date=Date(), summary=String(), files=Multilink("file"))
+
+    file = FileClass(db, "file", name=String(), type=String())
+
+    issue = IssueClass(db, "issue", assignedto=Link("user"),
+        topic=Multilink("keyword"), priority=Link("priority"), status=Link
+        ("status"))
+    issue.setkey('title')
+
+Classes and Properties - creating a new information store
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the instance above, we've defined 7 classes of information:
+
+  priority
+      Defines the possible levels of urgency for issues.
+
+  status
+      Defines the possible states of processing the issue may be in.
+
+  keyword
+      Initially empty, will hold keywords useful for searching issues.
+
+  user
+      Initially holding the "admin" user, will eventually have an entry for all
+      users using roundup.
+
+  msg
+      Initially empty, will all e-mail messages sent to or generated by
+      roundup.
+
+  file
+      Initially empty, will all files attached to issues.
+
+  issue
+      Initially emtyp, this is where the issue information is stored.
+
+We define the "priority" and "status" classes to allow two things: reduction in
+the amount of information stored on the issue and more powerful, accurate
+searching of issues by priority and status. By only requiring a link on the
+issue (which is stored as a single number) we reduce the chance that someone
+mis-types a priority or status - or simply makes a new one up.
+
+Class and Nodes
+:::::::::::::::
+
+A Class defines a particular class (or type) of data that will be stored in the
+database. A class comprises one or more properties, which given the information
+about the class nodes.
+The actual data entered into the database, using class.create() are called
+nodes. They have a special immutable property called id. We sometimes refer to
+this as the nodeid.
+
+Properties
+::::::::::
+
+A Class is comprised of one or more properties of the following types:
+    * String properties are for storing arbitrary-length strings.
+    * Password properties are for storing encoded arbitrary-length strings. The
+      default encoding is defined on the roundup.password.Password class.
+    * Date properties store date-and-time stamps. Their values are Timestamp
+      objects.
+    * A Link property refers to a single other node selected from a specified
+      class. The class is part of the property; the value is an integer, the id
+      of the chosen node.
+    * A Multilink property refers to possibly many nodes in a specified class.
+      The value is a list of integers.
+
+FileClass
+:::::::::
+
+FileClasses save their "content" attribute off in a separate file from the rest
+of the database. This reduces the number of large entries in the database,
+which generally makes databases more efficient, and also allows us to use
+command-line tools to operate on the files. They are stored in the files sub-
+directory of the db directory in your instance.
+
+IssueClass
+::::::::::
+
+IssueClasses automatically include the "messages", "files", "nosy", and
+"superseder" properties.
+The messages and files properties list the links to the messages and files
+related to the issue. The nosy property is a list of links to users who wish to
+be informed of changes to the issue - they get "CC'ed" e-mails when messages
+are sent to or generated by the issue. The nosy reactor (in the detectors
+directory) handles this action. The superceder link indicates an issue which
+has superceded this one.
+They also have the dynamically generated "creation", "activity" and "creator"
+properties.
+The value of the "creation" property is the date when a node was created, and
+the value of the "activity" property is the date when any property on the node
+was last edited (equivalently, these are the dates on the first and last
+records in the node's journal). The "creator" property holds a link to the user
+that created the issue.
+
+setkey(property)
+::::::::::::::::
+
+Select a String property of the class to be the key property. The key property
+muse be unique, and allows references to the nodes in the class by the content
+of the key property. That is, we can refer to users by their username, e.g.
+let's say that there's an issue in roundup, issue 23. There's also a user,
+richard who happens to be user 2. To assign an issue to him, we could do either
+of::
+
+     roundup-admin set issue assignedto=2
+
+or::
+
+     roundup-admin set issue assignedto=richard
+
+Note, the same thing can be done in the web and e-mail interfaces.
+
+create(information)
+:::::::::::::::::::
+
+Create a node in the database. This is generally used to create nodes in the
+"definitional" classes like "priority" and "status".
+
+Web Interface
+-------------
+
+The web interface works behind the cgi-bin/roundup.cgi or roundup-server
+scripts. In both cases, the scripts determine which instance is being accessed
+(the first part of the URL path inside the scope of the CGI handler) and pass
+control on to the instance interfaces.Client class which handles the rest of
+the access through its main() method. This means that you can do pretty much
+anything you want as a web interface to your instance.
+Most customisation of the web view can be done by modifying the templates in
+the instance html directory. These are divided into index, item and newitem
+views. The newitem view is optional - the item view will be used if the newitem
+view doesn't exist.
+
+Repurcussions of changing the instance schema
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you choose to change_the_instance_schema you will need to ensure the web
+interface knows about it:
+
+   1. Index, item and filter pages for the relevant classes may need to have
+      properties added or removed,
+   2. The default page header relies on the existence of, and some values of
+      the priority, status, assignedto and activity classes. If you change any
+      of these (specifically if you remove any of the classes or their default
+      values) you will need to implement your own pagehead() method in your
+      instance's interfaces.py module.
+
+Displaying Properties
+~~~~~~~~~~~~~~~~~~~~~
+
+Properties appear in the user interface in three contexts: in indices, in
+editors, and as filters. For each type of property, there are several display
+possibilities. For example, in an index view, a string property may just be
+printed as a plain string, but in an editor view, that property should be
+displayed in an editable field.
+
+The display of a property is handled by functions in the htmltemplate module.
+Displayer functions are triggered by <display> tags in templates. The call
+attribute of the tag provides a Python expression for calling the displayer
+function. The three standard arguments are inserted in front of the arguments
+given. For example, the occurrence of::
+
+         <display call="plain('status')">
+
+in a template triggers a call the "plain" function. The displayer functions can
+accept extra arguments to further specify details about the widgets that should
+be generated. By defining new displayer functions, the user interface can be
+highly customized.
+
++-----------------------------------------------------------------------------+
+|The displayer functions are                                                  |
++---------+-------------------------------------------------------------------+
+|plain    |Display a String property directly.                                |
+|         |Display a Date property in a specified time zone with an option to |
+|         |omit the time from the date stamp.                                 |
+|         |For a Link or Multilink property, display the key strings of the   |
+|         |linked nodes (or the ids if the linked class has no key property). |
+|         |Options:                                                           |
+|         |escape (boolean) - HTML-escape the resulting text.                 |
++---------+-------------------------------------------------------------------+
+|field    |Display a property like the plain displayer above, but in a form   |
+|         |field to be edited. Strings, Dates and Intervals use TEXT fields,  |
+|         |Links use SELECT fields and Multilinks use SELECT MULTIPLE fields. |
+|         |Options:                                                           |
+|         |size (number) - width of TEXT fields.                              |
+|         |height (number) - number of nows in SELECT MULTIPLE tags.          |
+|         |showid (boolean) - true includes the id of linked nodes in the     |
+|         |SELECT MULTIPLE fields.                                            |
++---------+-------------------------------------------------------------------+
+|menu     |For a Links and Multilinks, display the same field as would be     |
+|         |generated using field.                                             |
++---------+-------------------------------------------------------------------+
+|link     |For a Link or Multilink property, display the names of the linked  |
+|         |nodes, hyperlinked to the item views on those nodes.               |
+|         |For other properties, link to this node with the property as the   |
+|         |text.                                                              |
+|         |Options:                                                           |
+|         |property (property name) - the property to use in the second case. |
++---------+-------------------------------------------------------------------+
+|count    |For a Multilink property, display a count of the number of links in|
+|         |the list.                                                          |
+|         |Arguments:                                                         |
+|         |property (property name) - the property to use.                    |
++---------+-------------------------------------------------------------------+
+|reldate  |Display a Date property in terms of an interval relative to the    |
+|         |current date (e.g. "+ 3w", "- 2d").                                |
+|         |Arguments:                                                         |
+|         |property (property name) - the property to use.                    |
+|         |Options:                                                           |
+|         |pretty (boolean) - display the relative date in an English form.   |
++---------+-------------------------------------------------------------------+
+|download |For a Link or Multilink property, display the names of the linked  |
+|         |nodes, hyperlinked to the item views on those nodes.               |
+|         |For other properties, link to this node with the property as the   |
+|         |text.                                                              |
+|         |In all cases, append the name (key property) of the item to the    |
+|         |path so it is the name of the file being downloaded.               |
+|         |Arguments:                                                         |
+|         |property (property name) - the property to use.                    |
++---------+-------------------------------------------------------------------+
+|checklist|For a Link or Multilink property, display checkboxes for the       |
+|         |available choices to permit filtering.                             |
+|         |Arguments:                                                         |
+|         |property (property name) - the property to use.                    |
++---------+-------------------------------------------------------------------+
+|note     |Display the special notes field, which is a text area for entering |
+|         |a note to go along with a change.                                  |
++---------+-------------------------------------------------------------------+
+|list     |List the nodes specified by property using the standard index for  |
+|         |the class.                                                         |
+|         |Arguments:                                                         |
+|         |property (property name) - the property to use.                    |
++---------+-------------------------------------------------------------------+
+|history  |List the history of the item.                                      |
++---------+-------------------------------------------------------------------+
+|submit   |Add a submit button for the item.                                  |
++---------+-------------------------------------------------------------------+
+
+
+Index Views
+~~~~~~~~~~~
+
+An index view contains two sections: a filter section and an index section. The
+filter section provides some widgets for selecting which items appear in the
+index. The index section is a table of items.
+
+Index View Specifiers
+:::::::::::::::::::::
+
+An index view specifier (URL fragment) looks like this (whitespace has been
+added for clarity)::
+
+     /issue?status=unread,in-progress,resolved&
+             topic=security,ui&
+             :group=+priority&
+             :sort=-activity&
+             :filters=status,topic&
+             :columns=title,status,fixer
+
+The index view is determined by two parts of the specifier: the layout part and
+the filter part. The layout part consists of the query parameters that begin
+with colons, and it determines the way that the properties of selected nodes
+are displayed. The filter part consists of all the other query parameters, and
+it determines the criteria by which nodes are selected for display.
+The filter part is interactively manipulated with the form widgets displayed in
+the filter section. The layout part is interactively manipulated by clicking on
+the column headings in the table.
+
+The filter part selects the union of the sets of items with values matching any
+specified Link properties and the intersection of the sets of items with values
+matching any specified Multilink properties.
+
+The example specifies an index of "issue" nodes. Only items with a "status" of
+either "unread" or "in-progres" or "resolved" are displayed, and only items
+with "topic" values including both "security" and "ui" are displayed. The items
+are grouped by priority, arranged in ascending order; and within groups, sorted
+by activity, arranged in descending order. The filter section shows filters for
+the "status" and "topic" properties, and the table includes columns for the
+"title", "status", and "fixer" properties.
+
+Associated with each item class is a default layout specifier. The layout
+specifier in the above example is the default layout to be provided with the
+default bug-tracker schema described above in section 4.4.
+
+Filter Section
+::::::::::::::
+
+The template for a filter section provides the filtering widgets at the top of
+the index view. Fragments enclosed in <property>...</property> tags are
+included or omitted depending on whether the view specifier requests a filter
+for a particular property.
+
+A property must appear in the filter template for it to be available as a
+filter.
+
+Here's a simple example of a filter template.::
+
+     <property name=status>
+         <display call="checklist('status')">
+     </property>
+     <br>
+     <property name=priority>
+         <display call="checklist('priority')">
+     </property>
+     <br>
+     <property name=fixer>
+         <display call="menu('fixer')">
+     </property>
+
+The standard index generation code appends a section to the index pages which
+allows selection of the filters - from those which are defined in the filter
+template.
+
+Index Section
+:::::::::::::
+
+The template for an index section describes one row of the index table.
+Fragments enclosed in <property>...</property> tags are included or omitted
+depending on whether the view specifier requests a column for a particular
+property. The table cells should contain <display> tags to display the values
+of the item's properties.
+
+Here's a simple example of an index template.::
+
+     <tr>
+         <property name=title>
+             <td><display call="plain('title', max=50)"></td>
+         </property>
+         <property name=status>
+             <td><display call="plain('status')"></td>
+         </property>
+         <property name=fixer>
+             <td><display call="plain('fixer')"></td>
+         </property>
+     </tr>
+
+Sorting
+:::::::
+
+String and Date values are sorted in the natural way. Link properties are
+sorted according to the value of the "order" property on the linked nodes if it
+is present; or otherwise on the key string of the linked nodes; or finally on
+the node ids. Multilink properties are sorted according to how many links are
+present.
+
+Item Views
+~~~~~~~~~~
+
+An item view contains an editor section and a spool section. At the top of an
+item view, links to superseding and superseded items are always displayed.
+
+Editor Section
+::::::::::::::
+
+The editor section is generated from a template containing <display> tags to
+insert the appropriate widgets for editing properties.
+
+Here's an example of a basic editor template.::
+
+     <table>
+     <tr>
+         <td colspan=2>
+             <display call="field('title', size=60)">
+         </td>
+     </tr>
+     <tr>
+         <td>
+             <display call="field('fixer', size=30)">
+         </td>
+         <td>
+             <display call="menu('status')>
+         </td>
+     </tr>
+     <tr>
+         <td>
+             <display call="field('nosy', size=30)">
+         </td>
+         <td>
+             <display call="menu('priority')>
+         </td>
+     </tr>
+     <tr>
+         <td colspan=2>
+             <display call="note()">
+         </td>
+     </tr>
+     </table>
+
+As shown in the example, the editor template can also request the display of a
+"note" field, which is a text area for entering a note to go along with a
+change.
+
+When a change is submitted, the system automatically generates a message
+describing the changed properties.
+
+If a note is given in the "note" field, the note is appended to the
+description. The message is then added to the item's message spool (thus
+triggering the standard detector to react by sending out this message to the
+nosy list).
+
+The message also displays all of the property values on the item and indicates
+which ones have changed. An example of such a message might be this::
+
+     Polly's taken a turn for the worse - this is now really important!
+     -----
+     title: Polly Parrot is dead
+     priority: critical
+     status: unread -> in-progress
+     fixer: terry
+     keywords: parrot,plumage,perch,nailed,dead
+
+Spool Section
+:::::::::::::
+
+The spool section lists messages in the item's "messages" property. The index
+of messages displays the "date", "author", and "summary" properties on the
+message nodes, and selecting a message takes you to its content.
+
+The <property> tag used in the index may also be used here - it checks to see
+if the nominated Multilink property has any entries. This can be used to
+eliminate sections of the spool section if the property has no entries.::
+
+     <property name="files">
+      <tr class="strong-header">
+       <td><b>Files</b></td>
+      </tr>
+
+      <tr>
+       <td><display call="list('files')"></td>
+      </tr>
+     </property>
+
+
