@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.99 2004-06-24 06:39:06 richard Exp $
+# $Id: hyperdb.py,v 1.100 2004-07-02 05:22:08 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -26,30 +26,6 @@ import sys, os, time, re, shutil
 
 # roundup modules
 import date, password
-
-# configure up the DEBUG and TRACE captures
-class Sink:
-    def write(self, content):
-        pass
-DEBUG = os.environ.get('HYPERDBDEBUG', '')
-if DEBUG and __debug__:
-    if DEBUG == 'stdout':
-        DEBUG = sys.stdout
-    else:
-        DEBUG = open(DEBUG, 'a')
-else:
-    DEBUG = Sink()
-TRACE = os.environ.get('HYPERDBTRACE', '')
-if TRACE and __debug__:
-    if TRACE == 'stdout':
-        TRACE = sys.stdout
-    else:
-        TRACE = open(TRACE, 'w')
-else:
-    TRACE = Sink()
-def traceMark():
-    print >>TRACE, '**MARK', time.ctime()
-del Sink
 
 #
 # Types

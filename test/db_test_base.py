@@ -15,14 +15,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.36 2004-06-29 05:51:38 richard Exp $ 
+# $Id: db_test_base.py,v 1.37 2004-07-02 05:22:09 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
-from roundup import date, password
-from roundup import init
+from roundup import date, password, init, instance
+
+from mocknull import MockNull
 
 def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
@@ -77,6 +78,7 @@ class config:
     MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
     EMAIL_SIGNATURE_POSITION = 'bottom'
 
+    logging = MockNull()
 
 class DBTest(MyTestCase):
     def setUp(self):
@@ -1362,10 +1364,10 @@ class ClassicInitTest(unittest.TestCase):
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
-        instance = imp.load_package(self.dirname, self.dirname)
+        tracker = instance.open(self.dirname)
 
         # and open the database
-        db = self.db = instance.open()
+        db = self.db = tracker.open()
 
         # check the basics of the schema and initial data set
         l = db.priority.list()

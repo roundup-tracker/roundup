@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.108 2004-04-20 05:47:33 richard Exp $
+# $Id: roundupdb.py,v 1.109 2004-07-02 05:22:08 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -410,10 +410,9 @@ class IssueClass:
     def generateChangeNote(self, nodeid, oldvalues):
         """Generate a change note that lists property changes
         """
-        if __debug__ :
-            if not isinstance(oldvalues, type({})) :
-                raise TypeError("'oldvalues' must be dict-like, not %s."%
-                    type(oldvalues))
+        if not isinstance(oldvalues, type({})):
+            raise TypeError("'oldvalues' must be dict-like, not %s."%
+                type(oldvalues))
 
         cn = self.classname
         cl = self.db.classes[cn]
@@ -428,7 +427,7 @@ class IssueClass:
                 continue
             # not all keys from oldvalues might be available in database
             # this happens when property was deleted
-            try:                
+            try:
                 new_value = cl.get(nodeid, key)
             except KeyError:
                 continue

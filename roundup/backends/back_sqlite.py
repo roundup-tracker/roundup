@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.29 2004-05-28 01:09:11 richard Exp $
+# $Id: back_sqlite.py,v 1.30 2004-07-02 05:22:09 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -55,6 +55,7 @@ class Database(rdbms_common.Database):
         pysqlite will automatically BEGIN TRANSACTION for us.
         '''
         db = os.path.join(self.config.DATABASE, 'db')
+        self.config.logging.getLogger('hyperdb').info('open database %r'%db)
         conn = sqlite.connect(db=db)
         # set a 30 second timeout (extraordinarily generous) for handling
         # locked database
@@ -74,28 +75,28 @@ class Database(rdbms_common.Database):
             if str(error) != 'no such table: schema':
                 raise
             self.init_dbschema()
-            self.cursor.execute('create table schema (schema varchar)')
-            self.cursor.execute('create table ids (name varchar, num integer)')
-            self.cursor.execute('create index ids_name_idx on ids(name)')
+            self.sql('create table schema (schema varchar)')
+            self.sql('create table ids (name varchar, num integer)')
+            self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
-        self.cursor.execute('create table otks (otk_key varchar, '
+        self.sql('create table otks (otk_key varchar, '
             'otk_value varchar, otk_time integer)')
-        self.cursor.execute('create index otks_key_idx on otks(otk_key)')
-        self.cursor.execute('create table sessions (session_key varchar, '
+        self.sql('create index otks_key_idx on otks(otk_key)')
+        self.sql('create table sessions (session_key varchar, '
             'session_time integer, session_value varchar)')
-        self.cursor.execute('create index sessions_key_idx on '
+        self.sql('create index sessions_key_idx on '
                 'sessions(session_key)')
 
         # full-text indexing store
-        self.cursor.execute('CREATE TABLE __textids (_class varchar, '
+        self.sql('CREATE TABLE __textids (_class varchar, '
             '_itemid varchar, _prop varchar, _textid integer primary key) ')
-        self.cursor.execute('CREATE TABLE __words (_word varchar, '
+        self.sql('CREATE TABLE __words (_word varchar, '
             '_textid integer)')
-        self.cursor.execute('CREATE INDEX words_word_ids ON __words(_word)')
+        self.sql('CREATE INDEX words_word_ids ON __words(_word)')
         sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
-        self.cursor.execute(sql, ('__textids', 1))
+        self.sql(sql, ('__textids', 1))
 
     def add_new_columns_v2(self):
         # update existing tables to have the new actor column
@@ -124,8 +125,7 @@ class Database(rdbms_common.Database):
             # no changes
             return 0
 
-        if __debug__:
-            print >>hyperdb.DEBUG, 'update_class FIRING for', spec.classname
+        self.config.logging.getLogger('hyperdb').info('update_class %s'%spec.classname)
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}
@@ -137,9 +137,7 @@ class Database(rdbms_common.Database):
             # table. First drop indexes.
             self.drop_multilink_table_indexes(spec.classname, ml)
             sql = 'drop table %s_%s'%(spec.classname, prop)
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', (self, sql)
-            self.cursor.execute(sql)
+            self.sql(sql)
         old_has = old_has.has_key
 
         # now figure how we populate the new table
@@ -158,24 +156,20 @@ class Database(rdbms_common.Database):
                     tn = '%s_%s'%(spec.classname, propname)
                     # grabe the current values
                     sql = 'select linkid, nodeid from %s'%tn
-                    if __debug__:
-                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
-                    self.cursor.execute(sql)
+                    self.sql(sql)
                     rows = self.cursor.fetchall()
 
                     # drop the old table
                     self.drop_multilink_table_indexes(spec.classname, propname)
                     sql = 'drop table %s'%tn
-                    if __debug__:
-                        print >>hyperdb.DEBUG, 'migration', (self, sql)
-                    self.cursor.execute(sql)
+                    self.sql(sql)
 
                     # re-create and populate the new table
                     self.create_multilink_table(spec, propname)
                     sql = '''insert into %s (linkid, nodeid) values 
                         (%s, %s)'''%(tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
-                        self.cursor.execute(sql, (int(linkid), int(nodeid)))
+                        self.sql(sql, (int(linkid), int(nodeid)))
             elif old_has(propname):
                 # we copy this col over from the old table
                 fetch.append('_'+propname)
@@ -186,18 +180,14 @@ class Database(rdbms_common.Database):
         fetchcols = ','.join(fetch)
         cn = spec.classname
         sql = 'select %s from _%s'%(fetchcols, cn)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'update_class', (self, sql)
-        self.cursor.execute(sql)
+        self.sql(sql)
         olddata = self.cursor.fetchall()
 
         # TODO: update all the other index dropping code
         self.drop_class_table_indexes(cn, old_spec[0])
 
         # drop the old table
-        if __debug__:
-            print >>hyperdb.DEBUG, 'update_class "drop table _%s"'%cn
-        self.cursor.execute('drop table _%s'%cn)
+        self.sql('drop table _%s'%cn)
 
         # create the new table
         self.create_class_table(spec)
@@ -220,8 +210,6 @@ class Database(rdbms_common.Database):
             args = ','.join([self.arg for x in inscols])
             cols = ','.join(inscols)
             sql = 'insert into _%s (%s) values (%s)'%(cn, cols, args)
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
             for entry in olddata:
                 d = []
                 for name in inscols:
@@ -237,7 +225,7 @@ class Database(rdbms_common.Database):
                     else:
                         v = None
                     d.append(v)
-                self.cursor.execute(sql, tuple(d))
+                self.sql(sql, tuple(d))
 
         return 1
 
@@ -278,7 +266,7 @@ class Database(rdbms_common.Database):
         self.cursor = self.conn.cursor()
 
     def sql_index_exists(self, table_name, index_name):
-        self.cursor.execute('pragma index_list(%s)'%table_name)
+        self.sql('pragma index_list(%s)'%table_name)
         for entry in self.cursor.fetchall():
             if entry[1] == index_name:
                 return 1
@@ -290,17 +278,13 @@ class Database(rdbms_common.Database):
         '''
         # get the next ID
         sql = 'select num from ids where name=%s'%self.arg
-        if __debug__:
-            print >>hyperdb.DEBUG, 'newid', (self, sql, classname)
-        self.cursor.execute(sql, (classname, ))
+        self.sql(sql, (classname, ))
         newid = int(self.cursor.fetchone()[0])
 
         # update the counter
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
         vals = (int(newid)+1, classname)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'newid', (self, sql, vals)
-        self.cursor.execute(sql, vals)
+        self.sql(sql, vals)
 
         # return as string
         return str(newid)
@@ -312,17 +296,13 @@ class Database(rdbms_common.Database):
         '''
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
         vals = (int(setid)+1, classname)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'setid', (self, sql, vals)
-        self.cursor.execute(sql, vals)
+        self.sql(sql, vals)
 
     def create_class(self, spec):
         rdbms_common.Database.create_class(self, spec)
         sql = 'insert into ids (name, num) values (%s, %s)'
         vals = (spec.classname, 1)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'create_class', (self, sql, vals)
-        self.cursor.execute(sql, vals)
+        self.sql(sql, vals)
 
 class sqliteClass:
     def filter(self, search_matches, filterspec, sort=(None,None),

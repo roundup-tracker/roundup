@@ -16,16 +16,14 @@ from roundup.backends import rdbms_common
 
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    if __debug__:
-        print >> hyperdb.DEBUG, '+++ create database +++'
     command = 'CREATE DATABASE %s'%config.POSTGRESQL_DATABASE['database']
+    config.logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
 def db_nuke(config, fail_ok=0):
     """Clear all database contents and drop database itself"""
-    if __debug__:
-        print >> hyperdb.DEBUG, '+++ nuke database +++'
     command = 'DROP DATABASE %s'% config.POSTGRESQL_DATABASE['database']
+    config.logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
     if os.path.exists(config.DATABASE):
@@ -66,8 +64,6 @@ def pg_command(cursor, command):
         elif response.find('ERROR') != -1:
             if response.find('is being accessed by other users') == -1:
                 raise RuntimeError, response
-            if __debug__:
-                print >> hyperdb.DEBUG, '+++ SLEEPING +++'
             time.sleep(1)
             return 0
     return 1
@@ -78,12 +74,8 @@ def db_exists(config):
     try:
         conn = psycopg.connect(**db)
         conn.close()
-        if __debug__:
-            print >> hyperdb.DEBUG, '+++ database exists +++'
         return 1
     except:
-        if __debug__:
-            print >> hyperdb.DEBUG, '+++ no database +++'
         return 0
 
 class Database(rdbms_common.Database):
@@ -91,6 +83,7 @@ class Database(rdbms_common.Database):
 
     def sql_open_connection(self):
         db = getattr(self.config, 'POSTGRESQL_DATABASE')
+        self.config.logging.getLogger('hyperdb').info('open database %r'%db)
         try:
             conn = psycopg.connect(**db)
         except psycopg.OperationalError, message:
@@ -103,9 +96,6 @@ class Database(rdbms_common.Database):
     def open_connection(self):
         if not db_exists(self.config):
             db_create(self.config)
-
-        if __debug__:
-            print >>hyperdb.DEBUG, '+++ open database connection +++'
 
         self.conn, self.cursor = self.sql_open_connection()
 
@@ -121,25 +111,25 @@ class Database(rdbms_common.Database):
 
     def create_version_2_tables(self):
         # OTK store
-        self.cursor.execute('''CREATE TABLE otks (otk_key VARCHAR(255),
+        self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
             otk_value VARCHAR(255), otk_time REAL)''')
-        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
+        self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
-        self.cursor.execute('''CREATE TABLE sessions (
+        self.sql('''CREATE TABLE sessions (
             session_key VARCHAR(255), session_time REAL,
             session_value VARCHAR(255))''')
-        self.cursor.execute('''CREATE INDEX sessions_key_idx ON
+        self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
 
         # full-text indexing store
-        self.cursor.execute('CREATE SEQUENCE ___textids_ids')
-        self.cursor.execute('''CREATE TABLE __textids (
+        self.sql('CREATE SEQUENCE ___textids_ids')
+        self.sql('''CREATE TABLE __textids (
             _textid integer primary key, _class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255))''')
-        self.cursor.execute('''CREATE TABLE __words (_word VARCHAR(30), 
+        self.sql('''CREATE TABLE __words (_word VARCHAR(30), 
             _textid integer)''')
-        self.cursor.execute('CREATE INDEX words_word_idx ON __words(_word)')
+        self.sql('CREATE INDEX words_word_idx ON __words(_word)')
 
     def fix_version_2_tables(self):
         # Convert journal date column to TIMESTAMP, params column to TEXT
@@ -149,22 +139,20 @@ class Database(rdbms_common.Database):
         self._convert_string_properties()
 
         # convert session / OTK *_time columns to REAL
-        c = self.cursor
         for name in ('otk', 'session'):
-            c.execute('drop index %ss_key_idx'%name)
-            c.execute('drop table %ss'%name)
-            c.execute('''CREATE TABLE %ss (%s_key VARCHAR(255),
+            self.sql('drop index %ss_key_idx'%name)
+            self.sql('drop table %ss'%name)
+            self.sql('''CREATE TABLE %ss (%s_key VARCHAR(255),
                 %s_value VARCHAR(255), %s_time REAL)'''%(name, name, name,
                 name))
-            c.execute('CREATE INDEX %ss_key_idx ON %ss(%s_key)'%(name, name,
+            self.sql('CREATE INDEX %ss_key_idx ON %ss(%s_key)'%(name, name,
                 name))
 
     def add_actor_column(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
         for name in tables.keys():
-            self.cursor.execute('ALTER TABLE _%s add __actor '
-                'VARCHAR(255)'%name)
+            self.sql('ALTER TABLE _%s add __actor VARCHAR(255)'%name)
 
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)
@@ -177,41 +165,31 @@ class Database(rdbms_common.Database):
     def sql_index_exists(self, table_name, index_name):
         sql = 'select count(*) from pg_indexes where ' \
             'tablename=%s and indexname=%s'%(self.arg, self.arg)
-        self.cursor.execute(sql, (table_name, index_name))
+        self.sql(sql, (table_name, index_name))
         return self.cursor.fetchone()[0]
 
     def create_class_table(self, spec, create_sequence=1):
         if create_sequence:
             sql = 'CREATE SEQUENCE _%s_ids'%spec.classname
-            if __debug__:
-                print >>hyperdb.DEBUG, 'create_class_table', (self, sql)
-            self.cursor.execute(sql)
+            self.sql(sql)
 
         return rdbms_common.Database.create_class_table(self, spec)
 
     def drop_class_table(self, cn):
         sql = 'drop table _%s'%cn
-        if __debug__:
-            print >>hyperdb.DEBUG, 'drop_class', (self, sql)
-        self.cursor.execute(sql)
+        self.sql(sql)
 
         sql = 'drop sequence _%s_ids'%cn
-        if __debug__:
-            print >>hyperdb.DEBUG, 'drop_class', (self, sql)
-        self.cursor.execute(sql)
+        self.sql(sql)
 
     def newid(self, classname):
         sql = "select nextval('_%s_ids') from dual"%classname
-        if __debug__:
-            print >>hyperdb.DEBUG, 'setid', (self, sql)
-        self.cursor.execute(sql)
+        self.sql(sql)
         return self.cursor.fetchone()[0]
 
     def setid(self, classname, setid):
         sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
-        if __debug__:
-            print >>hyperdb.DEBUG, 'setid', (self, sql)
-        self.cursor.execute(sql)
+        self.sql(sql)
 
 
 class Class(rdbms_common.Class):

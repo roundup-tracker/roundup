@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.23 2004-05-05 01:17:42 richard Exp $
+#$Id: back_bsddb3.py,v 1.24 2004-07-02 05:22:09 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in BSDDB3.
 '''
 __docformat__ = 'restructuredtext'
@@ -57,18 +57,16 @@ class Database(Database):
         '''Low-level database opener that gets around anydbm/dbm
            eccentricities.
         '''
-        if __debug__:
-            print >>hyperdb.DEBUG, self, 'opendb', (self, name, mode)
         # determine which DB wrote the class file
         path = os.path.join(os.getcwd(), self.dir, name)
         if not os.path.exists(path):
             if __debug__:
-                print >>hyperdb.DEBUG, "opendb bsddb3.open(%r, 'c')"%path
+                self.config.logging.getLogger('hyperdb').debug("opendb bsddb3.open(%r, 'c')"%path)
             return bsddb3.btopen(path, 'c')
 
         # open the database with the correct module
         if __debug__:
-            print >>hyperdb.DEBUG, "opendb bsddb3.open(%r, %r)"%(path, mode)
+            self.config.logging.getLogger('hyperdb').debug("opendb bsddb3.open(%r, %r)"%(path, mode))
         return bsddb3.btopen(path, mode)
 
     #
@@ -80,9 +78,6 @@ class Database(Database):
             Raise IndexError if the node doesn't exist (as per history()'s
             API)
         '''
-        if __debug__:
-            print >>hyperdb.DEBUG, 'getjournal', (self, classname, nodeid)
-
         # our journal result
         res = []
 

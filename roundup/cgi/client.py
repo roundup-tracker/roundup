@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.180 2004-06-22 23:35:16 richard Exp $
+# $Id: client.py,v 1.181 2004-07-02 05:22:09 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -105,8 +105,6 @@ class Client:
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator
         random.seed()
-        if __debug__:
-            hyperdb.traceMark()
         self.start = time.time()
         self.instance = instance
         self.request = request
