@@ -120,6 +120,11 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Ex
 </tr>
 
 <tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">File</span></td>
+    <td colspan=3 class="form-text"><input type="file" name="__file" size="80"></td>
+</tr>
+
+<tr bgcolor="ffffea">
     <td>&nbsp;</td>
     <td colspan=3 class="form-text"><display call="submit()"></td>
 </tr>

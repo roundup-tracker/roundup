@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: templatebuilder.py,v 1.11 2001-08-07 00:24:42 richard Exp $
+# $Id: templatebuilder.py,v 1.12 2001-11-14 21:35:21 richard Exp $
 import errno, re
 
 preamble = """ 
@@ -81,10 +81,13 @@ if __name__ == "__main__":
     elif len(sys.argv) == 3:
         installHtmlBase(sys.argv[1], sys.argv[2])
     else:
-        raise "what you talkin about willis?"
+        print "Usage: %s <template directory>"%sys.argv[0]
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.10  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

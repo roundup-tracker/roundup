@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.55 2001-11-07 02:34:06 jhermann Exp $
+# $Id: cgi_client.py,v 1.56 2001-11-14 21:35:21 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -424,6 +424,17 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
+        # handle file attachments
+        files = []
+        if self.form.has_key('__file'):
+            file = self.form['__file']
+            type = mimetypes.guess_type(file.filename)[0]
+            if not type:
+                type = "application/octet-stream"
+            # create the new file entry
+            files.append(self.db.file.create(type=type, name=file.filename,
+                content=file.file.read()))
+
         # generate an edit message
         # don't bother if there's no messages or nosy list 
         props = cl.getprops()
@@ -481,7 +492,7 @@ class Client:
                 content=content)
             messages = cl.get(nid, 'messages')
             messages.append(message_id)
-            props = {'messages': messages}
+            props = {'messages': messages, 'files': files}
             cl.set(nid, **props)
 
     def newnode(self, message=None):
@@ -955,6 +966,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.55  2001/11/07 02:34:06  jhermann
+# Handling of damaged login cookies
+#
 # Revision 1.54  2001/11/07 01:16:12  richard
 # Remove the '=' padding from cookie value so quoting isn't an issue.
 #

@@ -157,6 +157,11 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.5 2001/07/30 08:03:56 richard Ex
 </tr>
 
 <tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">File</span></td>
+    <td colspan=3 class="form-text"><input type="file" name="__file" size="80"></td>
+</tr>
+
+<tr bgcolor="ffffea">
     <td>&nbsp;</td>
     <td colspan=3 class="form-text"><display call="submit()"></td>
 </tr>
@@ -535,6 +540,11 @@ supportDOTitem = """<!-- dollarId: support.item,v 1.2 2001/07/30 08:03:56 richar
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Change Note</span></td>
     <td colspan=3 class="form-text"><display call="note()"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">File</span></td>
+    <td colspan=3 class="form-text"><input type="file" name="__file" size="80"></td>
 </tr>
 
 <tr bgcolor="ffffea">

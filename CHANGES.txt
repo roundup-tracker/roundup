@@ -12,6 +12,7 @@ Feature:
  . roundup-admin now accepts abbreviated commands (eg. l = li = lis = list)
  . roundup-mailgw now supports unix mailbox and POP as sources of mail.
  . roundup-admin now handles all hyperdb exceptions
+ . users may attach files to issues (and support in ext) through the web now
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
