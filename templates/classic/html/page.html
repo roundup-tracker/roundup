@@ -83,6 +83,10 @@
    <a tal:attributes="href python:request.indexargs_href('',
        {':action':'logout'})">Logout</a>
   </p>
+  <p class="userblock">
+   <b>Help</b><br>
+   <a href="http://roundup.sourceforge.net/doc-0.5/">Roundup docs</a>
+  </p>
  </td>
  <td>
   <p tal:condition="options/error_message | nothing" class="error-message"
