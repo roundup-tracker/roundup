@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.14 2002-06-11 06:41:50 richard Exp $
+# $Id: admin.py,v 1.15 2002-06-17 23:14:44 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -24,6 +24,7 @@ try:
 except ImportError:
     csv = None
 from roundup import date, hyperdb, roundupdb, init, password, token
+from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.i18n import _
 
@@ -1045,7 +1046,7 @@ Date format is "YYYY-MM-DD" eg:
     def interactive(self):
         '''Run in an interactive mode
         '''
-        print _('Roundup {version} ready for input.')
+        print _('Roundup %s ready for input.'%roundup_version)
         print _('Type "help" for help.')
         try:
             import readline
@@ -1113,6 +1114,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/06/11 06:41:50  richard
+# Removed prompt for admin email in initialisation.
+#
 # Revision 1.13  2002/05/30 23:58:14  richard
 # oops
 #

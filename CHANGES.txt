@@ -40,14 +40,6 @@ Feature:
    - also changed cgi client since it was duplicating the functionality
 
 Fixed:
- . remove CR characters embedded in messages (ZRoundup)
- . properly quote the email address and "real name" in all situations using the
-    'email' module if it is available and 'rfc822' otherwise
- . #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
- . use the rfc822 module to ensure that every (oddball) email address and
-   real-name is properly quoted
- . #558867 ] ZRoundup redirect /instance requests to /instance/ 
- . #562130 ] cookie path generated from ZRoundup was wrong in some situations
  . stop sending blank (whitespace-only) notes
  . cleanup of serialisation for database storage
  . node ids are now generated from a lockable store - no more race conditions
@@ -75,6 +67,15 @@ Fixed:
  . #565979 ] code error in hyperdb.Class.find
  . #565996 ] The "Attach a File to this Issue" fails
  . #564271 ] find() and new properties
+ . #562130 ] cookie path generated from ZRoundup was wrong in some situations
+ . remove CR characters embedded in messages (ZRoundup)
+ . properly quote the email address and "real name" in all situations using the
+    'email' module if it is available and 'rfc822' otherwise
+ . #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
+ . use the rfc822 module to ensure that every (oddball) email address and
+   real-name is properly quoted
+ . #558867 ] ZRoundup redirect /instance requests to /instance/ 
+ . #569415 ] {version}
 
 
 2002-03-25 - 0.4.1

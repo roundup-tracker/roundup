@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.6 2001-08-07 00:24:42 richard Exp $
+# $Id: __init__.py,v 1.7 2002-06-17 23:14:44 richard Exp $
 
 __doc__ = '''
 This is a simple-to-use and -install issue-tracking system with
@@ -65,8 +65,13 @@ written by Ka-Ping Yee in the "doc" directory. If nothing else, it has a
 much prettier cake :)
 '''
 
+__version__ = '1.4.2rc1'
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.5  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
