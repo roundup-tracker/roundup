@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.3 2003-09-04 23:44:56 richard Exp $
+#$Id: __init__.py,v 1.4 2003-10-07 06:18:45 richard Exp $
 
 import sys, os, imp
 
@@ -31,7 +31,7 @@ def init(db):
             path = os.path.abspath(os.path.join(this_dir, filename))
             fp = open(path)
             try:
-                module = imp.load_module(name, open(path), path,
+                module = imp.load_module(name, fp, path,
                     ('.py', 'r', imp.PY_SOURCE))
             finally:
                 fp.close()

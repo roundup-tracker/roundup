@@ -18,6 +18,21 @@ be replaced with a call to Database.getuid().
 
 
 
+Migrating from 0.6.x to 0.6.3
+=============================
+
+0.6.3 Configuration
+-------------------
+
+You will need to copy the file::
+
+  templates/classic/detectors/__init__.py
+
+to your tracker's ``detectors`` directory, replacing the one already there.
+This fixes a couple of bugs in that file.
+
+
+
 Migrating from 0.5 to 0.6
 =========================
 
