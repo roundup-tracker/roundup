@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-popgw,v 1.1 2001-11-01 22:07:11 richard Exp $
+# $Id: roundup-popgw,v 1.2 2001-11-01 22:09:36 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -51,10 +51,13 @@ for i in range(numMessages):
     for j in M.retr(i+1)[1]:
         s = cStringIO.StringIO('\n'.join(j))
         s.seek(0)
-        handler.main(s)
+        handler.handle_Message(Message(s))
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/11/01 22:07:11  richard
+# Completely untested pop gateway. It's a start.
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
