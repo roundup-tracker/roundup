@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.79 2002-09-15 23:06:20 richard Exp $
+#$Id: back_anydbm.py,v 1.80 2002-09-17 23:59:59 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1877,8 +1877,7 @@ class FileClass(Class):
             modified.
         '''
         d = Class.getprops(self, protected=protected).copy()
-        if protected:
-            d['content'] = hyperdb.String()
+        d['content'] = hyperdb.String()
         return d
 
     def index(self, nodeid):
