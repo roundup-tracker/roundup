@@ -1,5 +1,5 @@
 """Sending Roundup-specific mail over SMTP."""
-# $Id: mailer.py,v 1.3 2003-10-04 11:21:47 jlgijsbers Exp $
+# $Id: mailer.py,v 1.4 2004-01-20 00:05:46 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -7,6 +7,7 @@ from cStringIO import StringIO
 from MimeWriter import MimeWriter
 
 from roundup.rfc2822 import encode_header
+from roundup import __version__
 
 class MessageSendError(RuntimeError):
     pass
@@ -36,6 +37,8 @@ class Mailer:
         writer.addheader('X-Roundup-Name', self.config.TRACKER_NAME)
         # and another one to avoid loops
         writer.addheader('X-Roundup-Loop', 'hello')
+        # finally, an aid to debugging problems
+        writer.addheader('X-Roundup-Version', __version__)
 
         writer.addheader('MIME-Version', '1.0')       
         
@@ -58,7 +61,7 @@ class Mailer:
         quopri.encode(content, body, 0)
 
         self.smtp_send(to, message)
-       
+
     def bounce_message(self, bounced_message, to, error,
                        subject='Failed issue tracker submission'):
         """Bounce a message, attaching the failed submission.
