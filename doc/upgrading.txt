@@ -3,7 +3,7 @@ Upgrading to newer versions of Roundup
 ======================================
 
 Please read each section carefully and edit your tracker home files
-accordingly. Note that there is information about upgrade procedures in the
+accordingly. There is information about upgrade procedures in the
 `administration guide`_.
 
 If a specific version transition isn't mentioned here (eg. 0.6.7 to 0.6.8)

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.76 $
+:Version: 1.76
 
 .. contents::
 
@@ -49,8 +49,9 @@ Non-Python2.3 users may need to `install the "CSV" module`_.
 Install the "CSV" module
 ------------------------
 
-Note: CSV stands for Comma-Separated-Value. These files are used by all
-      manner of programs (eg. spreadsheets) to exchange data.
+.. hint::
+   CSV stands for Comma-Separated-Value. These files are used by all
+   manner of programs (eg. spreadsheets) to exchange data.
 
 The "CSV" module is required if you wish to import or export data in the
 tracker, or if you wish to use the online generic class editing facility.
@@ -115,10 +116,11 @@ at so you may start playing. Three users will be set up:
 Installation
 ============
 
-:Note: Some systems, such as Debian and NetBSD, already have Roundup
-       installed. Try running the command "roundup-admin" with no arguments,
-       and if it runs you may skip the `Basic Installation Steps`_
-       below and go straight to `configuring your first tracker`_.
+.. note::
+    Some systems, such as Debian and NetBSD, already have Roundup
+    installed. Try running the command "roundup-admin" with no arguments,
+    and if it runs you may skip the `Basic Installation Steps`_
+    below and go straight to `configuring your first tracker`_.
 
 Set aside 15-30 minutes. Please make sure you're using a supported version of
 Python -- see `testing your python`_. There's several steps to follow in your
@@ -195,7 +197,7 @@ Configuring your first tracker
 
       You will now be directed to edit the tracker configuration and
       initial schema.  At a minimum, you must set ``MAILHOST``,
-      ``TRACKER_WEB``, ``MAIL_DOMAIN`` and ``ADMIN_EMAIL``. Note that the
+      ``TRACKER_WEB``, ``MAIL_DOMAIN`` and ``ADMIN_EMAIL``. The
       configuration file uses Python syntax, so almost every value must be
       ``'quoted'`` using single or double quotes. If you get stuck, and get
       configuration file errors, then see the `tracker configuration`_ section
@@ -209,7 +211,7 @@ Configuring your first tracker
 
       The URL *must* end in a '/', or your web interface *will not work*.
       See `Customising Roundup`_ for details on configuration and schema
-      changes. Note that you may change any of the configuration after
+      changes. You may change any of the configuration after
       you've initialised the tracker - it's just better to have valid values
       for this stuff now.
 
@@ -312,7 +314,7 @@ A benefit of using the cgi-bin approach is that it's the easiest way to
 restrict access to your tracker to only use HTTPS. Access will be slower
 than through the `stand-alone web server`_ though.
 
-Note that if your Python isn't install as "python" then you'll need to edit
+If your Python isn't install as "python" then you'll need to edit
 the ``roundup.cgi`` script to fix the first line.
 
 If you're using IIS on a Windows platform, you'll need to run this command

@@ -2,7 +2,7 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.8 $
+:version: 1.8
 
 This notes detail the MySQL backend for the Roundup issue tracker.
 
@@ -20,8 +20,10 @@ to install:
    ``roundup/backends/back_mysql.py`` file to enable DBD instead of InnoDB.
 2. Python MySQL interface - http://sourceforge.net/projects/mysql-python
 
-:Note: the InnoDB implementation has a bug that Roundup tickles. See
-       http://bugs.mysql.com/bug.php?id=1810
+.. note::
+   The InnoDB implementation has a bug__ that Roundup tickles. See
+
+__ http://bugs.mysql.com/bug.php?id=1810
 
 Running the MySQL tests
 =======================
@@ -43,7 +45,7 @@ this:
    you can modify MYSQL_* constants in the file test/test_db.py with 
    the correct values.
 
-Note that the MySQL database should not contain any tables. Tests will not 
+The MySQL database should not contain any tables. Tests will not 
 drop the database with existing data.
 
 

@@ -2,13 +2,14 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.27 $
+:Version: 1.27
 
 .. contents::
 
-Note: this document will refer to *issues* as the primary store of
-information in the tracker. This is the default of the classic template,
-but may vary in any given installation.
+.. hint::
+   This document will refer to *issues* as the primary store of
+   information in the tracker. This is the default of the classic template,
+   but may vary in any given installation.
 
 
 Your Tracker in a Nutshell
@@ -187,9 +188,10 @@ at the same time they tried to.
 Web Interface
 =============
 
-Note: this document contains screenshots of the default look and feel.
-Your site may have a slightly (or very) different look, but the
-functionality will be very similar, and the concepts still hold.
+.. note::
+   This document contains screenshots of the default look and feel.
+   Your site may have a slightly (or very) different look, but the
+   functionality will be very similar, and the concepts still hold.
 
 The web interface is broken up into the following parts:
 
@@ -346,9 +348,9 @@ The subject line of the incoming message is examined to find one of:
 3. we default the item class and try some trickiness
 
 If the subject line contains a prefix in ``[square brackets]`` then
-we're looking at case 1 or 2 above. Note that any "re:" or "fwd:"
-prefixes are stripped off the subject line before we start looking for
-real information.
+we're looking at case 1 or 2 above. Any "re:" or "fwd:" prefixes are
+stripped off the subject line before we start looking for real
+information.
 
 If an item designator (class name and id number, for example
 ``issue123``) is found there, a new "msg" item is added to the
@@ -420,8 +422,8 @@ primary email addresses and their alternate addresses) then a new user
 will be created. The new user will have their username set to the "user"
 part of "user@domain" in their email address. Their password will be
 completely randomised, and they'll have to visit the web interface to
-have it changed. Note that some sites don't allow web access by users
-who register via email like this.
+have it changed. Some sites don't allow web access by users who register
+via email like this.
 
 
 E-Mail Message Content

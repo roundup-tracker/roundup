@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.135.2.1 $
+:Version: 1.135.2.1
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -311,9 +311,10 @@ tracker is attempted.::
 Tracker Schema
 ==============
 
-Note: if you modify the schema, you'll most likely need to edit the
-      `web interface`_ HTML template files and `detectors`_ to reflect
-      your changes.
+.. note::
+   If you modify the schema, you'll most likely need to edit the
+   `web interface`_ HTML template files and `detectors`_ to reflect
+   your changes.
 
 A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``dbinit.py`` module of your
@@ -380,7 +381,7 @@ You must never:
 
 **Change the type of a property**
   Property types must *never* be changed - the database simply doesn't take
-  this kind of action into account. Note that you can't just remove a
+  this kind of action into account. You can't just remove a
   property and re-add it as a new type either. If you wanted to make the
   assignedto property a Multilink, you'd need to create a new property
   assignedto_list and remove the old assignedto property.
@@ -521,7 +522,7 @@ or::
 
      roundup-admin set issue23 assignedto=richard
 
-Note, the same thing can be done in the web and e-mail interfaces. 
+The same thing can be done in the web and e-mail interfaces. 
 
 If a class does not have an "order" property, the key is also used to
 sort instances of the class when it is rendered in the user interface.
@@ -638,7 +639,7 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   email errors!
 **creator_resolution.py**
   Catch attempts to set the status to "resolved" - if the assignedto
-  user isn't the creator, then set the status to "confirm-done". Note that
+  user isn't the creator, then set the status to "confirm-done".
   "classic" Roundup doesn't have that status, so you'll have to add it. If
   you don't want to though, it'll just use "in-progress" instead.
 **email_auditor.py**
@@ -697,9 +698,9 @@ is not required).
 Database Content
 ================
 
-Note: if you modify the content of definitional classes, you'll most
-       likely need to edit the tracker `detectors`_ to reflect your
-       changes.
+.. note::
+   If you modify the content of definitional classes, you'll most
+   likely need to edit the tracker `detectors`_ to reflect your changes.
 
 Customisation of the special "definitional" classes (eg. status,
 priority, resolution, ...) may be done either before or after the
@@ -832,7 +833,7 @@ Example Scenarios
  By giving the "anonymous" user the "Email Registration" Role, any
  unidentified user will automatically be registered with the tracker
  (with no password, so they won't be able to log in through the web
- until an admin sets their password). Note: this is the default
+ until an admin sets their password). This is the default
  behaviour in the tracker templates that ship with Roundup.
 
 **anonymous access through the e-mail gateway**
@@ -1266,7 +1267,7 @@ of files in there. The *minimal* template includes:
 
 The *classic* template has a number of additional templates.
 
-Note: Remember that you can create any template extension you want to,
+Remember that you can create any template extension you want to,
 so if you just want to play around with the templating for new issues,
 you can copy the current "issue.item" template to "issue.test", and then
 access the test template using the "@template" URL argument::
@@ -1368,7 +1369,7 @@ TAL commands are:
 
       Hello, world!
 
-Note that the commands on a given tag are evaulated in the order above,
+The commands on a given tag are evaulated in the order above,
 so *define* comes before *condition*, and so on.
 
 Additionally, you may include tags such as <tal:block>, which are
@@ -1497,7 +1498,7 @@ Language, or METAL. The macro commands are:
   where the tag that fills the slot completely replaces the one defined
   as the slot in the macro.
 
-Note that you may not mix METAL and TAL commands on the same tag, but
+You may not mix METAL and TAL commands on the same tag, but
 TAL commands may be used freely inside METAL-using tags (so your
 *fill-slots* tags may have all manner of TAL inside them).
 
@@ -1505,7 +1506,7 @@ TAL commands may be used freely inside METAL-using tags (so your
 Information available to templates
 ----------------------------------
 
-Note: this is implemented by
+The following behaviour is implemented by
 ``roundup.cgi.templating.RoundupPageTemplate``
 
 The following variables are available to templates.
@@ -1583,7 +1584,7 @@ item. The only real difference between cases 2 and 3 above are:
 Hyperdb class wrapper
 :::::::::::::::::::::
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLClass``
+This is implemented by the ``roundup.cgi.templating.HTMLClass``
 class.
 
 This wrapper object provides access to a hyperb class. It is used
@@ -1617,7 +1618,7 @@ is_edit_ok  is the user allowed to Edit the current class?
 is_view_ok  is the user allowed to View the current class?
 =========== =============================================================
 
-Note that if you have a property of the same name as one of the above
+If you have a property of the same name as one of the above
 methods, you'll need to access it using a python "item access"
 expression. For example::
 
@@ -1629,8 +1630,7 @@ will access the "list" property, rather than the list method.
 Hyperdb item wrapper
 ::::::::::::::::::::
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLItem``
-class.
+This is implemented by the ``roundup.cgi.templating.HTMLItem`` class.
 
 This wrapper object provides access to a hyperb item.
 
@@ -1658,7 +1658,7 @@ download_url    generates a url-quoted link for download of FileClass
                 item contents (ie. file<id>/<name>)
 =============== ========================================================
 
-Note that if you have a property of the same name as one of the above
+If you have a property of the same name as one of the above
 methods, you'll need to access it using a python "item access"
 expression. For example::
 
@@ -1670,7 +1670,7 @@ will access the "journal" property, rather than the journal method.
 Hyperdb property wrapper
 ::::::::::::::::::::::::
 
-Note: this is implemented by subclasses of the
+This is implemented by subclasses of the
 ``roundup.cgi.templating.HTMLProperty`` class (``HTMLStringProperty``,
 ``HTMLNumberProperty``, and so on).
 
@@ -1718,14 +1718,14 @@ plain       render a "plain" representation of the property. This method
 
             hyperlink
              If true, turn URLs, email addresses and hyperdb item
-             designators in the text into hyperlinks (default: no). Note
-             that you'll need to use the "structure" TAL option if you
+             designators in the text into hyperlinks (default: no). 
+             You'll need to use the "structure" TAL option if you
              want to use this ``tal:content`` expression::
   
               "structure python:msg.content.plain(hyperlink=1)"
 
-             Note also that the text is automatically HTML-escaped before
-             the hyperlinking transformation.
+             The text is automatically HTML-escaped before the hyperlinking
+             transformation done in the plain() method.
 hyperlinked The same as msg.content.plain(hyperlink=1), but nicer::
 
               "structure msg/content/hyperlinked"
@@ -1786,8 +1786,7 @@ have permission to view the information.
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLRequest``
-class.
+This is implemented by the ``roundup.cgi.templating.HTMLRequest`` class.
 
 The request variable is packed with information about the current
 request.
@@ -1851,8 +1850,8 @@ or the python expression::
 
    python:request.form['name'].value
 
-Note the "item" access used in the python case, and also note the
-explicit "value" attribute we have to access. That's because the form
+We use the "item" access used in the python case with an explicit "value"
+attribute we have to access. That's because the form
 variables are stored as MiniFieldStorages. If there's more than one
 "name" value in the form, then the above will break since
 ``request/form/name`` is actually a *list* of MiniFieldStorages. So it's
@@ -1862,8 +1861,7 @@ best to know beforehand what you're dealing with.
 The db variable
 ~~~~~~~~~~~~~~~
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLDatabase``
-class.
+This is implemented by the ``roundup.cgi.templating.HTMLDatabase`` class.
 
 Allows access to all hyperdb classes as attributes of this variable. If
 you want access to the "user" class, for example, you would use::
@@ -1881,8 +1879,7 @@ The access results in a `hyperdb class wrapper`_.
 The templates variable
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the ``roundup.cgi.templating.Templates``
-class.
+This is implemented by the ``roundup.cgi.templating.Templates`` class.
 
 This variable doesn't have any useful methods defined. It supports being
 used in expressions to access the templates, and consequently the
@@ -1909,9 +1906,8 @@ or the python expression::
 The utils variable
 ~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the
-``roundup.cgi.templating.TemplatingUtils`` class, but it may be extended
-as described below.
+This is implemented by the ``roundup.cgi.templating.TemplatingUtils``
+class, but it may be extended as described below.
 
 =============== ========================================================
 Method          Description
@@ -1960,7 +1956,7 @@ addition, it has several more attributes:
 =============== ========================================================
 Attribute       Description
 =============== ========================================================
-start           indicates the start index of the batch. *Note: unlike
+start           indicates the start index of the batch. *unlike
                 the argument, is a 1-based index (I know, lame)*
 first           indicates the start index of the batch *as a 0-based
                 index*
@@ -2050,9 +2046,10 @@ descending order. The filter section shows filters for the "status" and
 Searching Views
 ---------------
 
-Note: if you add a new column to the ``:columns`` form variable
-      potentials then you will need to add the column to the appropriate
-      `index views`_ template so that it is actually displayed.
+.. note::
+   If you add a new column to the ``:columns`` form variable
+   potentials then you will need to add the column to the appropriate
+   `index views`_ template so that it is actually displayed.
 
 This is one of the class context views. The template used is typically
 "*classname*.search". The form on this page should have "search" as its
@@ -2081,8 +2078,8 @@ The two special form values on search pages which are handled by the
 :query_name
   If supplied, the search parameters (including :search_text) will be
   saved off as a the query item and registered against the user's
-  queries property. Note that the *classic* template schema has this
-  ability, but the *minimal* template schema does not.
+  queries property. The *classic* template schema has this ability, but
+  the *minimal* template schema does not.
 
 
 Item Views
@@ -2535,7 +2532,7 @@ the "category" objects - is matched. If they do have permission then
 they will get a link to another page which will let the user add new
 categories.
 
-Note that if you have permission to *view* but not to *edit* categories,
+If you have permission to *view* but not to *edit* categories,
 then all you will see is a "Categories" header with nothing underneath
 it. This is obviously not very good interface design, but will do for
 now. I just claim that it is so I can add more links in this section
@@ -2803,7 +2800,7 @@ be able to give a summary of the total time spent on a particular issue.
     # storage for time logging
     timelog = Class(db, "timelog", period=Interval())
 
-   Note that we automatically get the date of the time log entry
+   We automatically get the date of the time log entry
    creation through the standard property "creation".
 
 2. Link to the new class from your issue class (again, in
@@ -2880,8 +2877,8 @@ be able to give a summary of the total time spent on a particular issue.
       </tr>
      </table>
 
-   I put this just above the Messages log in my issue display. Note our
-   use of the ``totalTimeSpent`` method which will total up the times
+   I put this just above the Messages log in my issue display. We use
+   the ``totalTimeSpent`` method which will total up the times
    for the issue and return a new Interval. That will be automatically
    displayed in the template as text like "+ 1y 2:40" (1 year, 2 hours
    and 40 minutes).
@@ -3075,7 +3072,7 @@ Now we map the UN*X group numbers to the Roles that users should have::
      '505': 'User',       # marketing
     }
 
-Now we do all the work. Note that the body of the script (where we have
+Now we do all the work. The body of the script (where we have
 the tracker database open) is wrapped in a ``try`` / ``finally`` clause,
 so that we always close the database cleanly when we're finished. So, we
 now do all the work::
@@ -3265,8 +3262,7 @@ vacation". Not very useful, and relatively easy to stop.
             except roundupdb.MessageSendError, message:
                 raise roundupdb.DetectorError, message
 
-   Note that this is the standard nosy reaction code, with the small
-   addition of::
+   This is the standard nosy reaction code, with the small addition of::
 
     # filter out the people on vacation
     sendto = [i for i in sendto if not users.get(i, 'vacation', 0)]
@@ -3460,9 +3456,14 @@ resolved. To achieve this:
 
 4. Finally, and this is an optional step, modify the tracker web page
    URLs so they filter out issues with any blockers. You do this by
-   adding an additional filter on "blockers" for the value "-1". For
-   example, the existing "Show All" link in the "page" template (in the
-   tracker's "html" directory) looks like this::
+   adding an additional filter on "blockers" for the value "-1".
+
+   .. note::
+      the following examples are line-wrapped on the trailing & and
+      should be unwrapped.
+
+   For example, the existing "Show All" link in the "page" template (in
+   the tracker's "html" directory) looks like this::
 
      <a href="issue?:sort=-activity&:group=priority&:filter=status&
         :columns=id,activity,title,creator,assignedto,status&
@@ -3475,12 +3476,9 @@ resolved. To achieve this:
         blockers=-1&:columns=id,activity,title,creator,assignedto,status&
         status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
-   :Note: the above examples are line-wrapped on the trailing & and should
-          be unwrapped.
-
-That's it. You should now be able to set blockers on your issues. Note
-that if you want to know whether an issue has any other issues dependent
-on it (i.e. it's in their blockers list) you can look at the journal
+That's it. You should now be able to set blockers on your issues. If you
+want to know whether an issue has any other issues dependent on it
+(i.e. it's in their blockers list) you can look at the journal
 history at the bottom of the issue page - look for a "link" event to
 another issue's "blockers" property.
 
@@ -3767,7 +3765,7 @@ Finally we add a new *auditor* to the ``detectors`` directory called
      db.issue.audit('retire', audit_provisionaluser)
      db.issue.audit('restore', audit_provisionaluser)
 
-Note that some older trackers might also want to change the ``page.html``
+Some older trackers might also want to change the ``page.html``
 template as follows::
 
  <p class="classblock"
@@ -3777,8 +3775,7 @@ template as follows::
      <tal:block tal:condition="python:request.user.hasPermission('Edit', None)">
       <a href="home?:template=classlist">Class List</a><br>
 
-(note that the "-" indicates a removed line, and the "+" indicates an added
-line).
+(the "-" indicates a removed line, and the "+" indicates an added line).
 
 
 Changes to the Web User Interface
@@ -3974,7 +3971,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
        .
     </form>
 
-   Note that later in the form, I test the value of "cat" include form
+   Later in the form, I test the value of "cat" include form
    elements that are appropriate. For example::
 
     <tal:block tal:condition="python:cat in '6 10 13 14 15 16 17'.split()">

@@ -1,8 +1,8 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2004-04-18 23:12:06 $
-:version: $Revision: 1.12 $
+:date: $Date: 2004-06-09 00:11:49 $
+:version: $Revision: 1.12.2.1 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -25,11 +25,21 @@ div.abstract p.topic-title {
   font-weight: bold ;
   text-align: center }
 
-div.attention, div.caution, div.danger, div.error, div.hint,
-div.important, div.note, div.tip, div.warning {
+div.attention, div.caution, div.danger, div.error,
+div.important, div.tip, div.warning {
   margin: 2em ;
   border: medium outset ;
   padding: 1em }
+
+div.hint, div.note {
+  font-size: 80%;
+  float: right;
+  width: 15em;
+  margin: 1 ;
+  border: solid #aaa;
+  background: #eee;
+  padding: 1em;
+}
 
 div.attention p.admonition-title, div.caution p.admonition-title,
 div.danger p.admonition-title, div.error p.admonition-title,
