@@ -1,18 +1,25 @@
 '''
-Incoming messages are examined for multiple parts. In a multipart/mixed
-message or part, each subpart is extracted and examined. In a
-multipart/alternative message or part, we look for a text/plain subpart and
-ignore the other parts. The text/plain subparts are assembled to form the
-textual body of the message, to be stored in the file associated with a
-"msg" class node. Any parts of other types are each stored in separate
-files and given "file" class nodes that are linked to the "msg" node. 
+An e-mail gateway for Roundup.
 
+Incoming messages are examined for multiple parts:
+ . In a multipart/mixed message or part, each subpart is extracted and
+   examined. The text/plain subparts are assembled to form the textual
+   body of the message, to be stored in the file associated with a "msg"
+   class node. Any parts of other types are each stored in separate files
+   and given "file" class nodes that are linked to the "msg" node. 
+ . In a multipart/alternative message or part, we look for a text/plain
+   subpart and ignore the other parts.
+
+Summary
+-------
 The "summary" property on message nodes is taken from the first non-quoting
 section in the message body. The message body is divided into sections by
 blank lines. Sections where the second and all subsequent lines begin with
 a ">" or "|" character are considered "quoting sections". The first line of
 the first non-quoting section becomes the summary of the message. 
 
+Addresses
+---------
 All of the addresses in the To: and Cc: headers of the incoming message are
 looked up among the user nodes, and the corresponding users are placed in
 the "recipients" property on the new "msg" node. The address in the From:
@@ -24,6 +31,8 @@ passwords.) If we prefer to reject mail from outside sources, we can simply
 register an auditor on the "user" class that prevents the creation of user
 nodes with no passwords. 
 
+Actions
+-------
 The subject line of the incoming message is examined to determine whether
 the message is an attempt to create a new item or to discuss an existing
 item. A designator enclosed in square brackets is sought as the first thing
@@ -38,36 +47,44 @@ of that class with its "messages" property initialized to contain the new
 "msg" node and its "files" property initialized to contain any new "file"
 nodes. 
 
+Triggers
+--------
 Both cases may trigger detectors (in the first case we are calling the
 set() method to add the message to the item's spool; in the second case we
 are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.3 2001-07-28 00:34:34 richard Exp $
+$Id: mailgw.py,v 1.4 2001-07-28 06:43:02 richard Exp $
 '''
 
 
-import string, re, os, mimetools, StringIO, smtplib, socket, binascii, quopri
+import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import traceback
 import date
 
-def getPart(fp, boundary):
-    line = ''
-    s = StringIO.StringIO()
-    while 1:
-        line_n = fp.readline()
-        if not line_n:
-            break
-        line = line_n.strip()
-        if line == '--'+boundary+'--':
-            break
-        if line == '--'+boundary:
-            break
-        s.write(line_n)
-    if not s.getvalue().strip():
-        return None
-    return s
+class Message(mimetools.Message):
+    ''' subclass mimetools.Message so we can retrieve the parts of the
+        message...
+    '''
+    def getPart(self):
+        ''' Get a single part of a multipart message and return it as a new
+            Message instance.
+        '''
+        boundary = self.getparam('boundary')
+        mid, end = '--'+boundary, '--'+boundary+'--'
+        s = cStringIO.StringIO()
+        while 1:
+            line = self.fp.readline()
+            if not line:
+                break
+            if line.strip() in (mid, end):
+                break
+            s.write(line)
+        if not s.getvalue().strip():
+            return None
+        s.seek(0)
+        return Message(s)
 
 subject_re = re.compile(r'(\[?(fwd|re):\s*)*'
     r'(\[(?P<classname>[^\d]+)(?P<nodeid>\d+)?\])'
@@ -78,8 +95,15 @@ class MailGW:
         self.db = db
 
     def main(self, fp):
+        ''' fp - the file from which to read the Message.
+
+        Read a message from fp and then call handle_message() with the
+        result. This method's job is to make that call and handle any
+        errors in a sane manner. It should be replaced if you wish to
+        handle errors in a different manner.
+        '''
         # ok, figure the subject, author, recipients and content-type
-        message = mimetools.Message(fp)
+        message = Message(fp)
         try:
             self.handle_message(message)
         except:
@@ -89,7 +113,7 @@ class MailGW:
             m.append('')
             # TODO as attachments?
             m.append('----  traceback of failure  ----')
-            s = StringIO.StringIO()
+            s = cStringIO.StringIO()
             import traceback
             traceback.print_exc(None, s)
             m.append(s.getvalue())
@@ -108,6 +132,10 @@ class MailGW:
                 return "Couldn't send confirmation email: %s"%value
 
     def handle_message(self, message):
+        ''' message - a Message instance
+
+        Parse the message as per the module docstring.
+        '''
         # handle the subject line
         m = subject_re.match(message.getheader('subject'))
         if not m:
@@ -150,60 +178,62 @@ class MailGW:
         content_type =  message.gettype()
         attachments = []
         if content_type == 'multipart/mixed':
-            boundary = message.getparam('boundary')
             # skip over the intro to the first boundary
-            part = getPart(message.fp, boundary)
+            part = message.getPart()
             content = None
             while 1:
                 # get the next part
-                part = getPart(message.fp, boundary)
+                part = message.getPart()
                 if part is None:
                     break
                 # parse it
-                part.seek(0)
-                submessage = mimetools.Message(part)
-                subtype = submessage.gettype()
+                subtype = part.gettype()
                 if subtype == 'text/plain' and not content:
-                    # this one's our content
-                    content = part.read()
+                    # add all text/plain parts to the message content
+                    if content is None:
+                        content = part.fp.read()
+                    else:
+                        content = content + part.fp.read()
+
                 elif subtype == 'message/rfc822':
-                    i = part.tell()
-                    subsubmess = mimetools.Message(part)
-                    name = subsubmess.getheader('subject')
-                    part.seek(i)
-                    attachments.append((name, 'message/rfc822', part.read()))
+                    # handle message/rfc822 specially - the name should be
+                    # the subject of the actual e-mail embedded here
+                    i = part.fp.tell()
+                    mailmess = Message(part.fp)
+                    name = mailmess.getheader('subject')
+                    part.fp.seek(i)
+                    attachments.append((name, 'message/rfc822', part.fp.read()))
+
                 else:
                     # try name on Content-Type
-                    name = submessage.getparam('name')
+                    name = part.getparam('name')
                     # this is just an attachment
-                    data = part.read()
-                    encoding = submessage.getencoding()
+                    data = part.fp.read()
+                    encoding = part.getencoding()
                     if encoding == 'base64':
                         data = binascii.a2b_base64(data)
                     elif encoding == 'quoted-printable':
                         data = quopri.decode(data)
                     elif encoding == 'uuencoded':
                         data = binascii.a2b_uu(data)
-                    attachments.append((name, submessage.gettype(), data))
+                    attachments.append((name, part.gettype(), data))
+
             if content is None:
                 raise ValueError, 'No text/plain part found'
 
         elif content_type[:10] == 'multipart/':
-            boundary = message.getparam('boundary')
             # skip over the intro to the first boundary
-            getPart(message.fp, boundary)
+            message.getPart()
             content = None
             while 1:
                 # get the next part
-                part = getPart(message.fp, boundary)
+                part = message.getPart()
                 if part is None:
                     break
                 # parse it
-                part.seek(0)
-                submessage = mimetools.Message(part)
-                if submessage.gettype() == 'text/plain' and not content:
+                if part.gettype() == 'text/plain' and not content:
                     # this one's our content
-                    content = part.read()
+                    content = part.fp.read()
             if content is None:
                 raise ValueError, 'No text/plain part found'
 
@@ -267,6 +297,9 @@ class MailGW:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/28 00:34:34  richard
+# Fixed some non-string node ids.
+#
 # Revision 1.2  2001/07/22 12:09:32  richard
 # Final commit of Grande Splite
 #
