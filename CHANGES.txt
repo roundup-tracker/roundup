@@ -10,6 +10,7 @@ are given with the most recent entry first.
 - fixed register with no session (sf bug 618611)
 - fixed log / pid file path handling in roundup-server (sf bug 617981)
 - fixed old gadfly compatibiltiy problem, for sure this time (sf bug 612873)
+- https URLs from config now recognised as valid (sf bug 619829)
 
 
 2002-10-02 0.5.0
