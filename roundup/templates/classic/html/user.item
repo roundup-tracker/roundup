@@ -11,6 +11,8 @@ You are not allowed to view this page.
 <tal:block tal:condition="editok">
 <form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
 
+<input type="hidden" name=":required" value="username,address">
+
 <table class="form">
  <tr>
   <th>Name</th>

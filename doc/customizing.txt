@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.17 $
+:Version: $Revision: 1.18 $
 
 .. contents::
 
@@ -674,6 +674,86 @@ which defaults to:
 
 - only classname suplied:          "index"
 - full item designator supplied:   "item"
+
+Actions are triggered by using a ``:action`` CGI variable, where the value is
+one of:
+
+login
+ Attempt to log a user in.
+logout
+ Log the user out - make them "anonymous".
+register
+ Attempt to create a new user based on the contents of the form and then log
+ them in.
+edit
+ Perform an edit of an item in the database. There are some special form
+ elements you may use:
+
+ :link=designator:property and :multilink=designator:property
+  The value specifies a node designator and the property on that
+  node to add _this_ node to as a link or multilink.
+ __note
+  Create a message and attach it to the current node's
+  "messages" property.
+ __file
+  Create a file and attach it to the current node's
+  "files" property. Attach the file to the message created from
+  the __note if it's supplied.
+ :required=property,property,...
+  The named properties are required to be filled in the form.
+
+new
+ Add a new item to the database. You may use the same special form elements
+ as in the "edit" action.
+
+editCSV
+ Performs an edit of all of a class' items in one go. See also the
+ *class*.csv templating method which generates the CSV data to be edited, and
+ the "_generic.index" template which uses both of these features.
+
+search
+ Mangle some of the form variables.
+
+ Set the form ":filter" variable based on the values of the
+ filter variables - if they're set to anything other than
+ "dontcare" then add them to :filter.
+
+ Also handle the ":queryname" variable and save off the query to
+ the user's query list.
+
+Each of the actions is implemented by a corresponding *name*Action method on
+the roundup.cgi.Client class, which also happens to be in your instance as
+interfaces.Client. So if you need to define new actions, you may add them
+there (see `definining new web actions`_).
+
+Each action also has a corresponding *name*Permission method which determines
+whether the action is permissible given the current user. The base permission
+checks are:
+
+login
+ XXX TODO
+logout
+ No permission checks are made.
+register
+ Determine whether the user has permission to register
+ Base behaviour is to check the user has "Web Registration".
+edit
+ Determine whether the user has permission to edit this item.
+ Base behaviour is to check the user can edit this class. If we're
+ editing the "user" class, users are allowed to edit their own
+ details. Unless it's the "roles" property, which requires the
+ special Permission "Web Roles".
+new
+ Determine whether the user has permission to create (edit) this item.
+ Base behaviour is to check the user can edit this class. No
+ additional property checks are made. Additionally, new user items
+ may be created if the user has the "Web Registration" Permission.
+editCSV
+ Determine whether the user has permission to edit this class.
+ Base behaviour is to check the user can edit this class.
+search
+ Determine whether the user has permission to search this class.
+ Base behaviour is to check the user can view this class.
 
 
 Repurcussions of changing the instance schema

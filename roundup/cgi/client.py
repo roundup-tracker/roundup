@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.16 2002-09-05 23:48:55 richard Exp $
+# $Id: client.py,v 1.17 2002-09-06 03:21:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -495,6 +495,8 @@ class Client:
             self.make_user_anonymous()
             self.error_message.append(_('Incorrect password'))
             return
+
+        # XXX check for web access permission!!!!
 
         # set the session cookie
         self.set_cookie(self.user, password)
