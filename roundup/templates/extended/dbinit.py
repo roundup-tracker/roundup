@@ -1,13 +1,13 @@
-# $Id: dbinit.py,v 1.1 2001-07-23 04:33:21 anthonybaxter Exp $
+# $Id: dbinit.py,v 1.2 2001-07-23 06:25:50 richard Exp $
 
 import instance_config
-from roundup import hyperdb, hyper_bsddb, roundupdb, cgi_client, mailgw 
+from roundup import hyperdb, backends.bsddb, roundupdb, cgi_client, mailgw 
 
 from roundup.roundupdb import Class, FileClass
 import os
 
 
-class Database(roundupdb.Database, hyper_bsddb.Database):
+class Database(roundupdb.Database, backends.bsddb.Database):
     ''' Creates a hybrid database from: 
          . the base Database class given in hyperdb (basic functionlity) 
          . the BSDDB implementation in hyperdb_bsddb 
@@ -172,6 +172,9 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/23 04:33:21  anthonybaxter
+# split __init__.py into 2. dbinit and instance_config.
+#
 # Revision 1.1  2001/07/23 03:50:46  anthonybaxter
 # moved templates to proper location
 #
