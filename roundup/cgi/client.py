@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.191 2004-10-23 14:05:25 a1s Exp $
+# $Id: client.py,v 1.192 2004-10-25 10:43:20 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -409,7 +409,7 @@ class Client:
         # reopen the database as the correct user
         self.opendb(self.user)
 
-    def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
+    def determine_context(self, dre=re.compile(r'([^\d]+)0*(\d+)')):
         """Determine the context of this page from the URL:
 
         The URL path after the instance identifier is examined. The path
