@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.142.2.1 2005-01-04 03:28:07 richard Exp $
+# $Id: rdbms_common.py,v 1.142.2.2 2005-01-06 17:58:52 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -767,19 +767,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Change the specified node.
         '''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('setnode %s%s %r'%(classname,
-                nodeid, values))
+            self.config.logging.getLogger('hyperdb').debug('setnode %s%s %r'
+                % (classname, nodeid, values))
 
         # clear this node out of the cache if it's in there
         key = (classname, nodeid)
         if self.cache.has_key(key):
             del self.cache[key]
             self.cache_lru.remove(key)
-
-        # add the special props
-        values = values.copy()
-        values['activity'] = date.Date()
-        values['actor'] = self.getuid()
 
         cl = self.classes[classname]
         props = cl.getprops()
@@ -1529,6 +1524,9 @@ class Class(hyperdb.Class):
             raise IndexError, 'Requested item is retired'
         num_re = re.compile('^\d+$')
 
+        # make a copy of the values dictionary - we'll modify the contents
+        propvalues = propvalues.copy()
+
         # if the journal value is to be different, store it in here
         journalvalues = {}
 
@@ -1694,6 +1692,10 @@ class Class(hyperdb.Class):
         # nothing to do?
         if not propvalues:
             return propvalues
+
+        # update the activity time
+        propvalues['activity'] = date.Date()
+        propvalues['actor'] = self.db.getuid()
 
         # do the set, and journal it
         self.db.setnode(self.classname, nodeid, propvalues, multilink_changes)

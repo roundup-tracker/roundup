@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.179.2.2 2005-01-04 03:25:24 richard Exp $
+#$Id: back_anydbm.py,v 1.179.2.3 2005-01-06 17:59:38 a1s Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -286,12 +286,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' change the specified node
         '''
         self.dirtynodes.setdefault(classname, {})[nodeid] = 1
-
-        # update the activity time (dupe so we don't affect
-        # calling code's node assumptions)
-        node = node.copy()
-        node['activity'] = date.Date()
-        node['actor'] = self.getuid()
 
         # can't set without having already loaded the node
         self.cache[classname][nodeid] = node
@@ -1248,6 +1242,10 @@ class Class(hyperdb.Class):
         # nothing to do?
         if not propvalues:
             return propvalues
+
+        # update the activity time
+        node['activity'] = date.Date()
+        node['actor'] = self.db.getuid()
 
         # do the set, and journal it
         self.db.setnode(self.classname, nodeid, node)
