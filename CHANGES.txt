@@ -1,6 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+
+2004-10-06 0.7.11
+Fixed:
+- index args URL generation broken in .10 (sf bug 1096027)
+
+
 2005-01-04 0.7.10
 Fixed:
 - reset ID counters if the database is cleared (thanks William)
