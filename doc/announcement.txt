@@ -1,25 +1,46 @@
-=================================================
-SC-Track Roundup 0.4.2 - an issue tracking system
-=================================================
+=====================================================
+SC-Track Roundup 0.5 beta1 - an issue tracking system
+=====================================================
 
-Note: If you have an existing roundup installation, make a backup of your
-database. Make sure you read doc/upgrading.txt!
+Note: This is the first of two beta releases of the newest version of Roundup.
+It is strongly recommended that you maintain your existing 0.4 installation if
+you have one, and run 0.5 on a copy of the database. If you are upgrading from
+0.4, you must read doc/upgrading.txt!
 
 Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
 requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
 
-Big stuff in this release:
+A lot has been done since 0.4:
 
-- online demo at http://mechanicalcat.net/cgi-bin/roundup.cgi
-- fast full-text searching of messages
-- other speedups
-- bsddb3 backend is re-enabled
-- instance initialisation is a two-step process now, making mods easier
-- optionally auto-add the author and recipients of messages to the nosy
-- enhancements to make multilink editing through the web and email easier
-- cleaner use of auditors and reactors in the default schemas
-- demo scripts supplied in the scripts/ and detectors/ directories
-- Much, much more: see the CHANGES file for details
+- new backend for metakit (thanks Gordon McMillan)
+- new backend for gadfly (it's as done as it's going to get)
+- further split the *dbm backends from the core code, allowing easier
+  non-dict-like backends (eg metakit, RDB)
+- implemented and used the new access control mechanisms (Permissions, Roles)
+- switched templating to use Zope's PageTemplates (yay!)
+- switched to sessions for web authentication
+- added Boolean and Number types
+- full-text search may also search certain String properties
+- fixed the journal bloat
+- updated design document for new access controls
+- updated customisation document, including more examples
+- entire database export and import (incl files)
+- better mailgw help message (feature request #558562)
+- re-enabled link backrefs from messages (feature request #568714)
+- the page layout is now templatable
+- re-worked cgi interface to abstract out the explicit "issue" interface
+- have index page handle mid-page errors better so header and footer are
+  still visible
+- saving of named search queries
+- we handle "not found", access and item page render errors better
+- fixed double-submit by having new-item-submit redirect at end
+- daemonify roundup-server (fork, logfile, pidfile)
+- modify cgitb to display PageTemplate errors better
+- rename to "instance" to "tracker"
+- have roundup.cgi pick up tracker config from the environment 
+- revamped look and feel in web interface
+- cleaned up stylesheet usage
+- several bug fixes and documentation fixes
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
@@ -27,7 +48,6 @@ Release Info (via download page):
      http://sourceforge.net/projects/roundup
 Mailing lists - the place to ask questions:
      http://sourceforge.net/mail/?group_id=31577
-
 
 
 About Roundup
@@ -50,8 +70,11 @@ Roundup manages a number of issues (with flexible properties such as
 The system will facilitate communication among the participants by managing
 discussions and notifying interested parties when issues are edited. One of
 the major design goals for Roundup that it be simple to get going. Roundup
-is therefore usable "out of the box" with any python 2.0+ installation. It
+is therefore usable "out of the box" with any python 2.1+ installation. It
 doesn't even need to be "installed" to be operational, though a
 disutils-based install script is provided.
 
-It comes with two issue tracker templates and three database back-ends. 
+It comes with two issue tracker templates (a classic bug/feature tracker and
+a help desk) and five database back-ends (anydbm, bsddb, bsddb3, metakit and
+gadfly). 
+
