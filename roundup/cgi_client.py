@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.64 2001-11-26 22:56:35 richard Exp $
+# $Id: cgi_client.py,v 1.65 2001-11-26 23:00:53 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -104,7 +104,8 @@ class Client:
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
         user_name = self.user or ''
         if self.user == 'admin':
-            admin_links = ' | <a href="list_classes">Class List</a>'
+            admin_links = ' | <a href="list_classes">Class List</a>' \
+                          ' | <a href="user">User List</a>'
         else:
             admin_links = ''
         if self.user not in (None, 'anonymous'):
@@ -284,7 +285,7 @@ class Client:
         cn = self.classname
         cl = self.db.classes[cn]
         self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
-            'classname': cn, 'instancename': cl.INSTANCE_NAME})
+            'classname': cn, 'instancename': self.INSTANCE_NAME})
         if sort is None: sort = self.index_arg(':sort')
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
@@ -922,7 +923,8 @@ class ExtendedClient(Client):
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
         user_name = self.user or ''
         if self.user == 'admin':
-            admin_links = ' | <a href="list_classes">Class List</a>'
+            admin_links = ' | <a href="list_classes">Class List</a>' \
+                          ' | <a href="user">User List</a>'
         else:
             admin_links = ''
         if self.user not in (None, 'anonymous'):
@@ -1038,6 +1040,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.64  2001/11/26 22:56:35  richard
+# typo
+#
 # Revision 1.63  2001/11/26 22:55:56  richard
 # Feature:
 #  . Added INSTANCE_NAME to configuration - used in web and email to identify
