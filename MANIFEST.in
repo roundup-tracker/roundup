@@ -11,4 +11,4 @@ global-exclude .cvsignore *.pyc *.pyo
 include run_tests.py *.txt demo.py MANIFEST.in MANIFEST
 exclude BUILD.txt I18N_PROGRESS.txt TODO.txt
 exclude doc/security.txt doc/templating.txt
-include locale/*.po locale/roundup.pot
+include locale/*.po locale/*.mo locale/roundup.pot
