@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.126 2003-09-06 20:01:10 jlgijsbers Exp $
+#$Id: back_anydbm.py,v 1.127 2003-09-08 20:39:18 jlgijsbers Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -87,7 +87,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # reindex the db if necessary
         if self.indexer.should_reindex():
             self.reindex()
-        self.figure_curuserid()
 
     def reindex(self):
         for klass in self.classes.values():
@@ -243,7 +242,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # add in the "calculated" properties (dupe so we don't affect
             # calling code's node assumptions)
             node = node.copy()
-            node['creator'] = self.curuserid
+            node['creator'] = self.getuid()
             node['creation'] = node['activity'] = date.Date()
 
         self.newnodes.setdefault(classname, {})[nodeid] = 1
@@ -489,7 +488,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 cache_creator, cache_creation) = args
             if cache_classname == classname and cache_nodeid == nodeid:
                 if not cache_creator:
-                    cache_creator = self.curuserid
+                    cache_creator = self.getuid()
                 if not cache_creation:
                     cache_creation = date.Date()
                 res.append((cache_nodeid, cache_creation, cache_creator,
@@ -636,7 +635,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if creator:
             journaltag = creator
         else:
-            journaltag = self.curuserid
+            journaltag = self.getuid()
         if creation:
             journaldate = creation.serialise()
         else:
@@ -1056,7 +1055,7 @@ class Class(hyperdb.Class):
                         # user's been retired, return admin
                         return '1'
             else:
-                return self.db.curuserid
+                return self.db.getuid()
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]

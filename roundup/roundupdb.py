@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.89 2003-09-08 09:28:28 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.90 2003-09-08 20:39:18 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -35,7 +35,13 @@ class Database:
     def getuid(self):
         """Return the id of the "user" node associated with the user
         that owns this connection to the hyperdatabase."""
-        return self.user.lookup(self.journaltag)
+        if self.journaltag is None:
+            return None
+        elif self.journaltag == 'admin':
+            # admin user may not exist, but always has ID 1
+            return '1'
+        else:
+            return self.user.lookup(self.journaltag)
 
     def getUserTimezone(self):
         """Return user timezone defined in 'timezone' property of user class.
@@ -50,16 +56,6 @@ class Database:
             # Greenwich :)
             timezone = 0
         return timezone
-
-    def figure_curuserid(self):
-        """Figure out the 'curuserid'."""
-        if self.journaltag is None:
-            self.curuserid = None
-        elif self.journaltag == 'admin':
-            # admin user may not exist, but always has ID 1
-            self.curuserid = '1'
-        else:
-            self.curuserid = self.user.lookup(self.journaltag)
 
     def confirm_registration(self, otk):
         props = self.otks.getall(otk)
@@ -77,7 +73,6 @@ class Database:
 
         # tag new user creation with 'admin'
         self.journaltag = 'admin'
-        self.figure_curuserid()
 
         # create the new user
         cl = self.user

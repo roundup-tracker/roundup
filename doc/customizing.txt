@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.96 $
+:Version: $Revision: 1.97 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1635,7 +1635,7 @@ you want access to the "user" class, for example, you would use::
   python:db.user
 
 Also, the current id of the current user is available as
-``db.curuserid``. This isn't so useful in templates (where you have
+``db.getuid()``. This isn't so useful in templates (where you have
 ``request/user``), but it can be useful in detectors or interfaces.
 
 The access results in a `hyperdb class wrapper`_.

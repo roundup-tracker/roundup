@@ -7,6 +7,16 @@ accordingly.
 
 .. contents::
 
+Migrating from 0.6 to 0.7
+=========================
+
+0.7.0 Getting the current user id
+---------------------------------
+
+Removed Database.curuserid attribute. Any code referencing this attribute should
+be replaced with a call to Database.getuid().
+
+
 Migrating from 0.5 to 0.6
 =========================
 

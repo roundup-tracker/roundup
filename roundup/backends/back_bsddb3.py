@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.19 2003-05-09 01:47:50 richard Exp $
+#$Id: back_bsddb3.py,v 1.20 2003-09-08 20:39:18 jlgijsbers Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB3.
 '''
@@ -93,7 +93,7 @@ class Database(Database):
                 cache_creator, cache_creation) = args
             if cache_classname == classname and cache_nodeid == nodeid:
                 if not cache_creator:
-                    cache_creator = self.curuserid
+                    cache_creator = self.getuid()
                 if not cache_creation:
                     cache_creation = date.Date()
                 res.append((cache_nodeid, cache_creation, cache_creator,

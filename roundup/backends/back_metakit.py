@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.49 2003-09-04 00:47:01 richard Exp $
+# $Id: back_metakit.py,v 1.50 2003-09-08 20:39:18 jlgijsbers Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -48,10 +48,6 @@ def Database(config, journaltag=None):
         _dbs[config.DATABASE] = db
     else:
         db.journaltag = journaltag
-        try:
-            delattr(db, 'curuserid')
-        except AttributeError:
-            pass
     return db
 
 class _Database(hyperdb.Database, roundupdb.Database):
@@ -81,21 +77,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
 
     # --- defined in ping's spec
     def __getattr__(self, classname):
-        if classname == 'curuserid':
-            if self.journaltag is None:
-                return None
-
-            # try to set the curuserid from the journaltag
-            try:
-                x = int(self.classes['user'].lookup(self.journaltag))
-                self.curuserid = x
-            except KeyError:
-                if self.journaltag == 'admin':
-                    self.curuserid = x = 1
-                else:
-                    x = 0
-            return x
-        elif classname == 'transactions':
+        if classname == 'transactions':
             return self.dirty
         # fall back on the classes
         return self.getclass(classname)
@@ -154,7 +136,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
         if tblid == -1:
             tblid = self.tables.append(name=tablenm)
         if creator is None:
-            creator = self.curuserid
+            creator = self.getuid()
         else:
             try:
                 creator = int(creator)
@@ -642,7 +624,7 @@ class Class:
             if not row.creation:
                 row.creation = int(time.time())
             if not row.creator:
-                row.creator = self.db.curuserid
+                row.creator = self.db.getuid()
 
         self.db.dirty = 1
         if self.do_journal:

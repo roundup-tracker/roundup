@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.61 2003-09-06 20:01:10 jlgijsbers Exp $
+# $Id: rdbms_common.py,v 1.62 2003-09-08 20:39:18 jlgijsbers Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -144,8 +144,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # commit
         self.conn.commit()
-
-        self.figure_curuserid()
 
     def reindex(self):
         for klass in self.classes.values():
@@ -442,7 +440,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # calling code's node assumptions)
             node = node.copy()
             node['creation'] = node['activity'] = date.Date()
-            node['creator'] = self.curuserid
+            node['creator'] = self.getuid()
 
         # default the non-multilink columns
         for col, prop in cl.properties.items():
@@ -732,7 +730,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if creator:
             journaltag = creator
         else:
-            journaltag = self.curuserid
+            journaltag = self.getuid()
         if creation:
             journaldate = creation.serialise()
         else:
@@ -1198,7 +1196,7 @@ class Class(hyperdb.Class):
             if d.has_key('creator'):
                 return d['creator']
             else:
-                return self.db.curuserid
+                return self.db.getuid()
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
