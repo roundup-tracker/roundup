@@ -10,6 +10,9 @@ Fixed:
 - fix nested scope bug in rdbms multilink sorting
 - re-seed the random number generator for each request
 - postgresql backend altered to not use popen (thanks Georges Martin)
+- fixed journal marshalling in RDBMS backends (sf bug 943627)
+- fixed handling of key values starting with numbers (sf bug 941363)
+- fixed journal "param" column size in RDBMS backends
 
 
 2004-04-18 0.7.0b3

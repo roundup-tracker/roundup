@@ -130,6 +130,7 @@ class Database(Database):
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
         hyperdb.Number    : lambda x: x,
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
 
     def sql_open_connection(self):
@@ -302,13 +303,14 @@ class Database(Database):
                     print >>hyperdb.DEBUG, '... data', entry
                 execute(sql, tuple(entry))
 
-            # now load up the old journal data
+            # now load up the old journal data to migrate it
             cols = ','.join('nodeid date tag action params'.split())
             sql = 'select %s from %s__journal'%(cols, cn)
             if __debug__:
                 print >>hyperdb.DEBUG, 'migration', (self, sql)
             execute(sql)
 
+            # data conversions
             olddata = []
             for nodeid, journaldate, journaltag, action, params in \
                     self.cursor.fetchall():
@@ -394,7 +396,7 @@ class Database(Database):
             for x in 'nodeid date tag action params'.split()])
         sql = '''create table %s__journal (
             nodeid integer, date timestamp, tag varchar(255),
-            action varchar(255), params varchar(255)) type=%s'''%(
+            action varchar(255), params text) type=%s'''%(
             spec.classname, self.mysql_backend)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_journal_table', (self, sql)

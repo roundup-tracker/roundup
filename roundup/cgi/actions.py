@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.23 2004-04-05 06:13:42 richard Exp $
+#$Id: actions.py,v 1.24 2004-05-02 23:16:05 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -494,7 +494,8 @@ class EditItemAction(_EditAction):
         try:
             message = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError, exceptions.Reject), message:
-            self.client.error_message.append(_('Apply Error: ') + str(message))
+            import traceback;traceback.print_exc()
+            self.client.error_message.append(_('Edit Error: ') + str(message))
             return
 
         # commit now that all the tricky stuff is done
@@ -532,7 +533,6 @@ class NewItemAction(_EditAction):
         try:
             # when it hits the None element, it'll set self.nodeid
             messages = self._editnodes(props, links)
-
         except (ValueError, KeyError, IndexError, exceptions.Reject), message:
             # these errors might just be indicative of user dumbness
             self.client.error_message.append(_('Error: ') + str(message))

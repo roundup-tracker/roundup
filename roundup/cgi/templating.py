@@ -289,10 +289,11 @@ class HTMLDatabase:
         for item in l:
             if item == 'user':
                 m.append(HTMLUserClass(self._client, item))
-            m.append(HTMLClass(self._client, item))
+            else:
+                m.append(HTMLClass(self._client, item))
         return m
 
-def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('-?\d+')):
+def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('^-?\d+$')):
     ''' "fail_ok" should be specified if we wish to pass through bad values
         (most likely form values that we wish to represent back to the user)
     '''
@@ -310,7 +311,7 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('-?\d+')):
                     l.append(entry)
     return l
 
-def lookupKeys(linkcl, key, ids, num_re=re.compile('-?\d+')):
+def lookupKeys(linkcl, key, ids, num_re=re.compile('^-?\d+$')):
     ''' Look up the "key" values for "ids" list - though some may already
     be key values, not ids.
     '''
@@ -449,7 +450,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         ''' Return this class' designator (classname) '''
         return self._classname
 
-    def getItem(self, itemid, num_re=re.compile('-?\d+')):
+    def getItem(self, itemid, num_re=re.compile('^-?\d+$')):
         ''' Get an item of this class by its item id.
         '''
         # make sure we're looking at an itemid
@@ -680,7 +681,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         # XXX do this
         return []
 
-    def history(self, direction='descending', dre=re.compile('\d+')):
+    def history(self, direction='descending', dre=re.compile('^\d+$')):
         self.view_check()
 
         l = ['<table class="history">'
@@ -1523,6 +1524,8 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __init__(self, *args, **kwargs):
         HTMLProperty.__init__(self, *args, **kwargs)
         if self._value:
+            self._value = lookupIds(self._db, self._prop, self._value,
+                fail_ok=1)
             sortfun = make_sort_function(self._db, self._prop.classname)
             self._value.sort(sortfun)
     

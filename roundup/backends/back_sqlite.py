@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.26 2004-04-18 23:05:18 richard Exp $
+# $Id: back_sqlite.py,v 1.27 2004-05-02 23:16:05 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -36,6 +36,7 @@ class Database(rdbms_common.Database):
         hyperdb.Password  : str,
         hyperdb.Boolean   : int,
         hyperdb.Number    : lambda x: x,
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
     sql_to_hyperdb_value = {
         hyperdb.String : str,
@@ -45,6 +46,7 @@ class Database(rdbms_common.Database):
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : int,
         hyperdb.Number    : rdbms_common._num_cvt,
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
 
     def sql_open_connection(self):

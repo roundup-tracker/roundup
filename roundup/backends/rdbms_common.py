@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.95 2004-04-26 20:59:25 richard Exp $
+# $Id: rdbms_common.py,v 1.96 2004-05-02 23:16:05 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -438,7 +438,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             for x in 'nodeid date tag action params'.split()])
         sql = '''create table %s__journal (
             nodeid integer, date timestamp, tag varchar(255),
-            action varchar(255), params varchar(25))'''%spec.classname
+            action varchar(255), params text)'''%spec.classname
         if __debug__:
             print >>hyperdb.DEBUG, 'create_journal_table', (self, sql)
         self.cursor.execute(sql)
@@ -619,12 +619,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     hyperdb_to_sql_value = {
         hyperdb.String : str,
+        # fractional seconds by default
         hyperdb.Date   : lambda x: x.formal(sep=' ', sec='%.3f'),
         hyperdb.Link   : int,
         hyperdb.Interval  : str,
         hyperdb.Password  : str,
         hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',
         hyperdb.Number    : lambda x: x,
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
     def addnode(self, classname, nodeid, node):
         ''' Add the specified node to its class's db.
@@ -820,6 +822,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Password  : lambda x: password.Password(encrypted=x),
         hyperdb.Boolean   : int,
         hyperdb.Number    : _num_cvt,
+        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
     def getnode(self, classname, nodeid):
         ''' Get a node from the database.
@@ -973,6 +976,26 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'addjournal', (nodeid, journaldate,
                 journaltag, action, params)
+    
+        # make the journalled data marshallable
+        if isinstance(params, type({})):
+            properties = self.getclass(classname).getprops()
+            for param, value in params.items():
+                property = properties[param]
+                cvt = self.hyperdb_to_sql_value[property.__class__]
+                if isinstance(property, Password):
+                    params[param] = cvt(value)
+                elif isinstance(property, Date):
+                    params[param] = cvt(value)
+                elif isinstance(property, Interval):
+                    params[param] = cvt(value)
+                elif isinstance(property, Boolean):
+                    params[param] = cvt(value)
+
+        params = repr(params)
+
+        dc = self.hyperdb_to_sql_value[hyperdb.Date]
+        journaldate = dc(journaldate)
 
         self.save_journal(classname, cols, nodeid, journaldate,
             journaltag, action, params)
@@ -1001,16 +1024,34 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             raise IndexError, '%s has no node %s'%(classname, nodeid)
 
         cols = ','.join('nodeid date tag action params'.split())
-        return self.load_journal(classname, cols, nodeid)
+        journal = self.load_journal(classname, cols, nodeid)
+
+        # now unmarshal the data
+        dc = self.sql_to_hyperdb_value[hyperdb.Date]
+        res = []
+        properties = self.getclass(classname).getprops()
+        for nodeid, date_stamp, user, action, params in journal:
+            params = eval(params)
+            for param, value in params.items():
+                property = properties[param]
+                cvt = self.sql_to_hyperdb_value[property.__class__]
+                if isinstance(property, Password):
+                    params[param] = cvt(value)
+                elif isinstance(property, Date):
+                    params[param] = cvt(value)
+                elif isinstance(property, Interval):
+                    params[param] = cvt(value)
+                elif isinstance(property, Boolean):
+                    params[param] = cvt(value)
+            # XXX numeric ids
+            res.append((str(nodeid), dc(date_stamp), user, action, params))
+        return res
 
     def save_journal(self, classname, cols, nodeid, journaldate,
             journaltag, action, params):
         ''' Save the journal entry to the database
         '''
-        # make the params db-friendly
-        params = repr(params)
-        dc = self.hyperdb_to_sql_value[hyperdb.Date]
-        entry = (nodeid, dc(journaldate), journaltag, action, params)
+        entry = (nodeid, journaldate, journaltag, action, params)
 
         # do the insert
         a = self.arg
@@ -1029,13 +1070,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'load_journal', (self, sql, nodeid)
         self.cursor.execute(sql, (nodeid,))
-        res = []
-        dc = self.sql_to_hyperdb_value[hyperdb.Date]
-        for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
-            params = eval(params)
-            # XXX numeric ids
-            res.append((str(nodeid), dc(date_stamp), user, action, params))
-        return res
+        return self.cursor.fetchall()
 
     def pack(self, pack_before):
         ''' Delete all journal entries except "create" before 'pack_before'.

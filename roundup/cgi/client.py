@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.173 2004-04-25 22:19:15 richard Exp $
+# $Id: client.py,v 1.174 2004-05-02 23:16:05 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -624,13 +624,13 @@ class Client:
         """
         sessions = self.db.getSessionManager()
 
-        # generate a session key
-        s = '%s%s'%(time.time(), random.random())
-        print s
-        self.session = binascii.b2a_base64(s).strip()
-        while sessions.exists(self.session):
+        # generate a unique session key
+        while 1:
             s = '%s%s'%(time.time(), random.random())
-            self.session = binascii.b2a_base64(s).strip()
+            s = binascii.b2a_base64(s).strip()
+            if not sessions.exists(s):
+                break
+        self.session = s
 
         # clean up the base64
         if self.session[-1] == '=':

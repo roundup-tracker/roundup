@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.7 2004-03-26 04:50:50 richard Exp $
+# $Id: dbinit.py,v 1.8 2004-05-02 23:16:05 richard Exp $
 
 import os
 
@@ -150,11 +150,11 @@ def open(name=None):
     return db
  
 def init(adminpw): 
-    ''' as from the roundupdb method initDB 
+    '''Invoked by the "roundup-admin initialise" command to set up the
+    initial state of the hyperdb.
  
-    Open the new database, and add new nodes - used for initialisation. You
-    can edit this before running the "roundup-admin initialise" command to
-    change the initial database entries.
+    If you wish to change the hyperdb *after* running that command, see
+    the customisation doc "Database Content" section.
     ''' 
     dbdir = os.path.join(config.DATABASE, 'files')
     if not os.path.isdir(dbdir):

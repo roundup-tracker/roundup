@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.96 2004-02-11 23:55:08 richard Exp $
+# $Id: hyperdb.py,v 1.97 2004-05-02 23:16:05 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -592,7 +592,7 @@ class HyperdbValueError(ValueError):
     ''' Error converting a raw value into a Hyperdb value '''
     pass
 
-def convertLinkValue(db, propname, prop, value, idre=re.compile('\d+')):
+def convertLinkValue(db, propname, prop, value, idre=re.compile('^\d+$')):
     ''' Convert the link value (may be id or key value) to an id value. '''
     linkcl = db.classes[prop.classname]
     if not idre.match(value):
