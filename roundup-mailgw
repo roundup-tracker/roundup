@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.9 2001-11-07 05:29:26 richard Exp $
+# $Id: roundup-mailgw,v 1.10 2001-11-07 05:30:11 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -30,7 +30,7 @@ if len(sys.argv) > 1:
 else:
     instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
 if not instance_home:
-    print 'No instance home specified'
+    print 'Usage: %s <instance home> [mail spool file]'%sys.argv[0]
     sys.exit(1)
 
 # get the instance
@@ -73,6 +73,12 @@ fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/11/07 05:29:26  richard
+# Modified roundup-mailgw so it can read e-mails from a local mail spool
+# file. Truncates the spool file after parsing.
+# Fixed a couple of small bugs introduced in roundup.mailgw when I started
+# the popgw.
+#
 # Revision 1.8  2001/11/01 22:04:37  richard
 # Started work on supporting a pop3-fetching server
 # Fixed bugs:
