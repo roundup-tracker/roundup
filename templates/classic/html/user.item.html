@@ -21,6 +21,7 @@ You are not allowed to view this page.
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok">
 
+<input type="hidden" name=":template" value="item">
 <input type="hidden" name=":required" value="username,address">
 
 <table class="form">
