@@ -88,7 +88,6 @@ Fixed:
 - fixed missing (pre-commit) journal entries in *dbm backends (sf bug 679217)
 - URL cited in roundup email confusing dumb Email clients (sf bug 716585)
 - set title on issues even when the email body is empty (sf bug 727430)
-- handle missing addresses on users (sf bug 724537)
 
 
 2003-??-?? 0.5.7
@@ -96,12 +95,14 @@ Fixed:
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
 - fixed detection of bad date specs (sf bug 691439)
+- required String properties not being flagged (thanks Ajit George)
 - only look for CSV files when importing (thanks Dan Grassi)
 - can now unset values in CSV editing (sf bug 704788)
 - fixed rdbms email address lookup (case insensitivity)
 - email file attachments added to issue files list (sf bug 711501)
 - added socket timeout to attempt to prevent stuck processes (sf bug 665487)
 - email registered users shouldn't be able to log in (sf bug 714673)
+- handle missing addresses on users (sf bug 724537)
 
 
 2003-02-27 0.5.6
