@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 #
-# $Id: cgitb.py,v 1.11 2004-06-09 09:20:01 a1s Exp $
+# $Id: cgitb.py,v 1.12 2004-07-13 10:18:00 a1s Exp $
 
 """Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
@@ -10,10 +10,25 @@ __docformat__ = 'restructuredtext'
 import sys, os, types, string, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
-from roundup.cgi import templating
+from roundup.cgi import templating, TranslationService
 
-def _(msgid):
-    return templating.translationService.gettext(msgid)
+def get_translator(i18n=None):
+    """Return message translation function (gettext)
+
+    Parameters:
+        i18n - translation service, such as roundup.i18n module
+            or TranslationService object.
+
+    Return ``gettext`` attribute of the ``i18n`` object, if available
+    (must be a message translation function with one argument).
+    If ``gettext`` cannot be obtained from ``i18n``, take default
+    TranslationService.
+
+    """
+    try:
+        return i18n.gettext
+    except:
+        return TranslationService.get_translation().gettext
 
 def breaker():
     return ('<body bgcolor="white">' +
@@ -27,12 +42,14 @@ def niceDict(indent, dict):
             cgi.escape(repr(v))))
     return '\n'.join(l)
 
-def pt_html(context=5):
+def pt_html(context=5, i18n=None):
+    _ = get_translator(i18n)
     esc = cgi.escape
-    l = ['<h1>Templating Error</h1>',
-         '<p><b>%s</b>: %s</p>'%(esc(str(sys.exc_type)),
-            esc(str(sys.exc_value))),
-         '<p class="help">Debugging information follows</p>',
+    exc_info = [esc(str(value)) for value in sys.exc_info()[:2]]
+    l = [_('<h1>Templating Error</h1>\n'
+            '<p><b>%(exc_type)s</b>: %(exc_value)s</p>\n'
+            '<p class="help">Debugging information follows</p>'
+         ) % {'exc_type': exc_info[0], 'exc_value': exc_info[1]},
          '<ol>',]
     from roundup.cgi.PageTemplates.Expressions import TraversalError
     t = inspect.trace(context)
@@ -44,50 +61,60 @@ def pt_html(context=5):
             if isinstance(ti, TraversalError):
                 s = []
                 for name, info in ti.path:
-                    s.append('<li>"%s" (%s)</li>'%(name, esc(repr(info))))
+                    s.append(_('<li>"%(name)s" (%(info)s)</li>')
+                        % {'name': name, 'info': esc(repr(info))})
                 s = '\n'.join(s)
-                l.append('<li>Looking for "%s", current path:<ol>%s</ol></li>'%(
-                    ti.name, s))
+                l.append(_('<li>Looking for "%(name)s", '
+                    'current path:<ol>%(path)s</ol></li>'
+                ) % {'name': ti.name, 'path': s})
             else:
-                l.append('<li>In %s</li>'%esc(str(ti)))
+                l.append(_('<li>In %s</li>') % esc(str(ti)))
         if locals.has_key('__traceback_supplement__'):
             ts = locals['__traceback_supplement__']
             if len(ts) == 2:
                 supp, context = ts
-                s = 'A problem occurred in your template "%s".'%str(context.id)
+                s = _('A problem occurred in your template "%s".') \
+                    % str(context.id)
                 if context._v_errors:
                     s = s + '<br>' + '<br>'.join(
                         [esc(x) for x in context._v_errors])
                 l.append('<li>%s</li>'%s)
             elif len(ts) == 3:
                 supp, context, info = ts
-                l.append('''
-<li>While evaluating the %r expression on line %d
+                l.append(_('''
+<li>While evaluating the %(info)r expression on line %(line)d
 <table class="otherinfo" style="font-size: 90%%">
  <tr><th colspan="2" class="header">Current variables:</th></tr>
- %s
- %s
+ %(globals)s
+ %(locals)s
 </table></li>
-'''%(info, context.position[0], niceDict('    ', context.global_vars),
-     niceDict('    ', context.local_vars)))
+''') % {
+    'info': info,
+    'line': context.position[0],
+    'globals': niceDict('    ', context.global_vars),
+    'locals': niceDict('    ', context.local_vars)
+})
 
     l.append('''
 </ol>
 <table style="font-size: 80%%; color: gray">
- <tr><th class="header" align="left">Full traceback:</th></tr>
+ <tr><th class="header" align="left">%s</th></tr>
  <tr><td><pre>%s</pre></td></tr>
-</table>'''%cgi.escape(''.join(traceback.format_exception(sys.exc_type,
-        sys.exc_value, sys.exc_traceback))))
+</table>''' % (_('Full traceback:'), cgi.escape(''.join(
+        traceback.format_exception(*sys.exc_info())
+    ))))
     l.append('<p>&nbsp;</p>')
     return '\n'.join(l)
 
-def html(context=5):
+def html(context=5, i18n=None):
+    _ = get_translator(i18n)
     etype, evalue = sys.exc_type, sys.exc_value
     if type(etype) is types.ClassType:
         etype = etype.__name__
     pyver = 'Python ' + string.split(sys.version)[0] + '<br>' + sys.executable
     head = pydoc.html.heading(
-        '<font size=+1><strong>%s</strong>: %s</font>'%(etype, evalue),
+        _('<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>')
+        % {'exc_type': etype, 'exc_value': evalue},
         '#ffffff', '#777777', pyver)
 
     head = head + (_('<p>A problem occurred while running a Python script. '
@@ -99,8 +126,8 @@ def html(context=5):
     traceback = []
     for frame, file, lnum, func, lines, index in inspect.trace(context):
         if file is None:
-            link = '''&lt;file is None - probably inside <tt>eval</tt> or
-                    <tt>exec</tt>&gt;'''
+            link = _("&lt;file is None - probably inside <tt>eval</tt> "
+                "or <tt>exec</tt>&gt;")
         else:
             file = os.path.abspath(file)
             link = '<a href="file:%s">%s</a>' % (file, pydoc.html.escape(file))
@@ -108,7 +135,7 @@ def html(context=5):
         if func == '?':
             call = ''
         else:
-            call = 'in <strong>%s</strong>' % func + inspect.formatargvalues(
+            call = _('in <strong>%s</strong>') % func + inspect.formatargvalues(
                     args, varargs, varkw, locals,
                     formatvalue=lambda value: '=' + pydoc.html.repr(value))
 
@@ -189,4 +216,4 @@ def handler():
     print breaker()
     print html()
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python ts=4 sw=4 et si :
