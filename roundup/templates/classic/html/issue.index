@@ -52,13 +52,13 @@ You are not allowed to view this page.
  <tr class="navigation" tal:define="colspan python:len(request.columns)">
   <th tal:attributes="colspan python:colspan/2">
    <a tal:define="prev batch/previous" tal:condition="prev"
-      tal:attributes="href python:request.indexargs_href(request.classname,
+      tal:attributes="href python:request.indexargs_url(request.classname,
       {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
    &nbsp;
   </th>
   <th tal:attributes="colspan python:colspan/2 + colspan%2">
    <a tal:define="next batch/next" tal:condition="next"
-      tal:attributes="href python:request.indexargs_href(request.classname,
+      tal:attributes="href python:request.indexargs_url(request.classname,
       {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
    &nbsp;
   </th>
