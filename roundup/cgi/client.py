@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.86 2003-02-16 22:57:09 richard Exp $
+# $Id: client.py,v 1.87 2003-02-17 00:39:28 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -83,29 +83,26 @@ class Client:
     Special form variables:
      Note that in various places throughout this code, special form
      variables of the form :<name> are used. The colon (":") part may
-     actually be one of several characters from the set:
-
-       : @ + 
-
+     actually be one of either ":" or "@".
     '''
 
     #
     # special form variables
     #
-    FV_TEMPLATE = re.compile(r'[@+:]template')
-    FV_OK_MESSAGE = re.compile(r'[@+:]ok_message')
-    FV_ERROR_MESSAGE = re.compile(r'[@+:]error_message')
+    FV_TEMPLATE = re.compile(r'[@:]template')
+    FV_OK_MESSAGE = re.compile(r'[@:]ok_message')
+    FV_ERROR_MESSAGE = re.compile(r'[@:]error_message')
 
     # specials for parsePropsFromForm
-    FV_REQUIRED = re.compile(r'[@+:]required')
-    FV_ADD = re.compile(r'([@+:])add\1')
-    FV_REMOVE = re.compile(r'([@+:])remove\1')
-    FV_CONFIRM = re.compile(r'.+[@+:]confirm')
-    FV_LINK = re.compile(r'([@+:])link\1(.+)')
+    FV_REQUIRED = re.compile(r'[@:]required')
+    FV_ADD = re.compile(r'([@:])add\1')
+    FV_REMOVE = re.compile(r'([@:])remove\1')
+    FV_CONFIRM = re.compile(r'.+[@:]confirm')
+    FV_LINK = re.compile(r'([@:])link\1(.+)')
 
     # deprecated
-    FV_NOTE = re.compile(r'[@+:]note')
-    FV_FILE = re.compile(r'[@+:]file')
+    FV_NOTE = re.compile(r'[@:]note')
+    FV_FILE = re.compile(r'[@:]file')
 
     # Note: index page stuff doesn't appear here:
     # columns, sort, sortdir, filter, group, groupdir, search_text,
@@ -755,6 +752,7 @@ class Client:
             special form values.
         '''
         # parse the props from the form
+# XXX reinstate exception handling
 #        try:
         if 1:
             props, links = self.parsePropsFromForm()
@@ -763,6 +761,7 @@ class Client:
 #            return
 
         # handle the props - edit or create
+# XXX reinstate exception handling
 #        try:
         if 1:
             # create the context here
@@ -785,7 +784,7 @@ class Client:
         self.db.commit()
 
         # redirect to the new item's page
-        raise Redirect, '%s%s%s?:ok_message=%s'%(self.base, self.classname,
+        raise Redirect, '%s%s%s?@ok_message=%s'%(self.base, self.classname,
             nid, urllib.quote(messages))
 
     def newItemPermission(self, props):
@@ -910,6 +909,7 @@ class Client:
                 _('You do not have permission to search %s' %self.classname))
 
         # add a faked :filter form variable for each filtering prop
+# XXX migrate to new : @ + 
         props = self.db.classes[self.classname].getprops()
         for key in self.form.keys():
             if not props.has_key(key): continue
@@ -1004,6 +1004,7 @@ class Client:
     def showAction(self):
         ''' Show a node
         '''
+# XXX allow : @ +
         t = self.form[':type'].value
         n = self.form[':number'].value
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
@@ -1097,7 +1098,7 @@ class Client:
         ''' Pull properties for the given class out of the form.
 
             In the following, <bracketed> values are variable, ":" may be
-            any of : @ + and other text "required" is fixed.
+            one of ":" or "@", and other text "required" is fixed.
 
             Properties are specified as form variables
              <designator>:<propname>
@@ -1126,7 +1127,7 @@ class Client:
               [classname|designator] will be set/appended the id of the
               newly created item of class <classname>.
 
-            Note: the colon may be one of:  : @ +
+            Note: the colon may be either ":" or "@".
 
             Any of the form variables may be prefixed with a classname or
             designator.
@@ -1158,7 +1159,7 @@ class Client:
             # generate the regexp for detecting
             # <classname|designator>[@:+]property
             classes = '|'.join(db.classes.keys())
-            self.FV_ITEMSPEC = re.compile(r'(%s)([-\d]+)[@+:](.+)$'%classes)
+            self.FV_ITEMSPEC = re.compile(r'(%s)([-\d]+)[@:](.+)$'%classes)
             self.FV_DESIGNATOR = re.compile(r'(%s)([-\d]+)'%classes)
 
         # these indicate the default class / item

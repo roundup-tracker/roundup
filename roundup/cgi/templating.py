@@ -927,6 +927,15 @@ class DateHTMLProperty(HTMLProperty):
             return ''
         return str(self._value.local(self._db.getUserTimezone()))
 
+    def now(self):
+        ''' Return the current time.
+
+            This is useful for defaulting a new value. Returns a
+            DateHTMLProperty.
+        '''
+        return DateHTMLProperty(self._client, self._nodeid, self._prop,
+            self._name, date.Date('.'))
+
     def field(self, size = 30):
         ''' Render a form edit field for the property
         '''
@@ -965,7 +974,7 @@ class DateHTMLProperty(HTMLProperty):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
         return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._name, self._value.local())
+            self._name, self._value.local(offset))
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
@@ -1351,7 +1360,7 @@ class HTMLRequest:
         '''
         # extract the index display information from the form
         self.columns = []
-        for name in ':columns +columns @columns'.split():
+        for name in ':columns @columns'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 self.columns = handleListCGIValue(self.form[name])
@@ -1360,7 +1369,7 @@ class HTMLRequest:
 
         # sorting
         self.sort = (None, None)
-        for name in ':sort +sort @sort'.split():
+        for name in ':sort @sort'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 sort = self.form[name].value
@@ -1373,7 +1382,7 @@ class HTMLRequest:
 
         # grouping
         self.group = (None, None)
-        for name in ':group +group @group'.split():
+        for name in ':group @group'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 group = self.form[name].value
@@ -1386,7 +1395,7 @@ class HTMLRequest:
 
         # filtering
         self.filter = []
-        for name in ':filter +filter @filter'.split():
+        for name in ':filter @filter'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 self.filter = handleListCGIValue(self.form[name])
@@ -1408,7 +1417,7 @@ class HTMLRequest:
 
         # full-text search argument
         self.search_text = None
-        for name in ':search_text +search_text @search_text'.split():
+        for name in ':search_text @search_text'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 self.search_text = self.form[name].value
@@ -1416,13 +1425,13 @@ class HTMLRequest:
         # pagination - size and start index
         # figure batch args
         self.pagesize = 50
-        for name in ':pagesize +pagesize @pagesize'.split():
+        for name in ':pagesize @pagesize'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 self.pagesize = int(self.form[name].value)
 
         self.startwith = 0
-        for name in ':startwith +startwith @startwith'.split():
+        for name in ':startwith @startwith'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
                 self.startwith = int(self.form[name].value)

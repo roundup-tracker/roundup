@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.73 $
+:Version: $Revision: 1.74 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1290,8 +1290,11 @@ email     only on String properties - render the value of the
 confirm   only on Password properties - render a second form edit field for
           the property, used for confirmation that the user typed the
           password correctly. Generates a field with name "name:confirm".
+now       only on Date properties - return the current date as a new property
 reldate   only on Date properties - render the interval between the
           date and now
+local     only on Date properties - return this date as a new property with
+          some timezone offset
 pretty    only on Interval properties - render the interval in a
           pretty format (eg. "yesterday")
 menu      only on Link and Multilink properties - render a form select
