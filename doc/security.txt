@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 Current situation
 =================
@@ -234,7 +234,7 @@ The CGI interface must be changed to:
 - authenticate over a secure connection
 - use unique tokens as a result of authentication, rather than pass the user's
   real credentials (username/password) around for each request (this means
-  sessions :)
+  sessions and hence a session database)
 - use the new logical control mechanisms
 
 The mail gateway must be changed to:

@@ -5,6 +5,9 @@ are given with the most recent entry first.
 Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
+ . made the unit tests run again - they were quite b0rken
+
+Feature:
  . cleaned up the indexer code:
    - it splits more words out
    - removed code we'll never use (roundup.roundup_indexer has the full
@@ -27,9 +30,10 @@ Fixed:
      set up in the dbinit.
    - new "reindex" command in roundup-admin used to force regeneration of the 
      index
- . made the unit tests run again - they were quite b0rken
  . added email display function - mangles email addrs so they're not so easily
    scraped from the web
+ . added sorting of checklist HTML display
+ . switched to using a session-based web login
 
 
 2002-06-24 0.4.2

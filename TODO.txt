@@ -15,7 +15,11 @@ pending  journalling: fix the journal bloat
          related: Re-enable link backrefs from messages
                   feature request #568714
 pending  alternative user auth: at least an LDAP implementation
-pending  security overhaul: see doc/security.txt
+active   security overhaul: see doc/security.txt
+done     - switch to sessions for web authentication (RJ)
+         - authenticate over a secure connection
+         - implement and use the new logical control mechanisms
+         - use digital signatures in mailgw
 pending  fix double-submit by having new-item-submit redirect at end
 pending  split instance.open() into open() and login()
 pending  range searching of values (dates in particular)
@@ -37,7 +41,11 @@ pending  Allow multiple email addresses at one mailgw, with different default
          the mailgw as invoked in the mail delivery "aliases" file) eg:
            roundup: "|/roundup/bin/roundup-mailgw /roundup/instances/dev"
            vmbugs: "|/roundup/bin/roundup-mailgw /roundup/instances/dev component=voicemail"
-active   Have the full-text search also search certain String properties (RJ)
+pending  Quick help links on web interface next to the property labels giving
+         a description of the property. Combine with help for the actual form
+         element too, eg. how to use the nosy list edit box.
 
 ongoing  any bugs
+
+done     Have the full-text search also search certain String properties (RJ)
 
