@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.14 2002-08-22 07:56:51 richard Exp $
+# $Id: __init__.py,v 1.15 2002-08-23 04:48:10 richard Exp $
 
 __all__ = []
 
@@ -42,7 +42,7 @@ except ImportError, message:
     if str(message) != 'No module named gadfly': raise
 else:
     import back_gadfly
-    bsddb = back_gadfly
+    gadfly = back_gadfly
     __all__.append('gadfly')
 
 try:
@@ -74,6 +74,10 @@ else:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/08/22 07:56:51  richard
+# Whee! It's not finished yet, but I can create a new instance and play with
+# it a little bit :)
+#
 # Revision 1.13  2002/07/11 01:11:03  richard
 # Added metakit backend to the db tests and fixed the more easily fixable test
 # failures.

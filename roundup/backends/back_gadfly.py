@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.1 2002-08-22 07:56:51 richard Exp $
+# $Id: back_gadfly.py,v 1.2 2002-08-23 04:48:10 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -19,7 +19,7 @@ intermediate tables.
 
 Journals are stored adjunct to the per-class tables.
 
-Table columns for properties have "_" prepended so the names can't
+Table names and columns have "_" prepended so the names can't
 clash with restricted names (like "order"). Retirement is determined by the
 __retired__ column being true.
 
@@ -48,7 +48,7 @@ used.
 '''
 
 # standard python modules
-import sys, os, time, re, errno, weakref
+import sys, os, time, re, errno, weakref, copy
 
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security
@@ -57,7 +57,8 @@ from roundup.hyperdb import String, Password, Date, Interval, Link, \
 
 # the all-important gadfly :)
 import gadfly
-from gadfly import client
+import gadfly.client
+import gadfly.database
 
 # support
 from blobfiles import FileStorage
@@ -77,6 +78,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.indexer = Indexer(self.dir)
         self.sessions = Sessions(self.config)
         self.security = security.Security(self)
+
+        # additional transaction support for external files and the like
+        self.transactions = []
 
         db = config.GADFLY_DATABASE
         if len(db) == 2:
@@ -98,10 +102,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 cursor.execute('select schema from schema')
                 self.database_schema = cursor.fetchone()[0]
         else:
-            self.conn = client.gfclient(*db)
+            self.conn = gadfly.client.gfclient(*db)
             cursor = self.conn.cursor()
             cursor.execute('select schema from schema')
             self.database_schema = cursor.fetchone()[0]
+
+    def __repr__(self):
+        return '<radfly 0x%x>'%id(self)
 
     def post_init(self):
         ''' Called once the schema initialisation has finished.
@@ -109,11 +116,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             We should now confirm that the schema defined by our "classes"
             attribute actually matches the schema in the database.
         '''
+        # now detect changes in the schema
         for classname, spec in self.classes.items():
             if self.database_schema.has_key(classname):
                 dbspec = self.database_schema[classname]
-                self.update_class(spec.schema(), dbspec)
-                self.database_schema[classname] = dbspec
+                self.update_class(spec, dbspec)
+                self.database_schema[classname] = spec.schema()
             else:
                 self.create_class(spec)
                 self.database_schema[classname] = spec.schema()
@@ -122,11 +130,23 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if not self.classes.has_key(classname):
                 self.drop_class(classname)
 
-        # commit any changes
+        # update the database version of the schema
         cursor = self.conn.cursor()
         cursor.execute('delete from schema')
         cursor.execute('insert into schema values (?)', (self.database_schema,))
+
+        # reindex the db if necessary
+        if self.indexer.should_reindex():
+            self.reindex()
+
+        # commit
         self.conn.commit()
+
+    def reindex(self):
+        for klass in self.classes.values():
+            for nodeid in klass.list():
+                klass.index(nodeid)
+        self.indexer.save_index()
 
     def determine_columns(self, spec):
         ''' Figure the column names and multilink properties from the spec
@@ -145,10 +165,89 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def update_class(self, spec, dbspec):
         ''' Determine the differences between the current spec and the
             database version of the spec, and update where necessary
+
+            NOTE that this doesn't work for adding/deleting properties!
+             ... until gadfly grows an ALTER TABLE command, it's not going to!
         '''
-        if spec == dbspec:
+        spec_schema = spec.schema()
+        if spec_schema == dbspec:
             return
-        raise NotImplementedError
+        if __debug__:
+            print >>hyperdb.DEBUG, 'update_class FIRING'
+
+        # key property changed?
+        if dbspec[0] != spec_schema[0]:
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class setting keyprop', `spec[0]`
+            # XXX turn on indexing for the key property
+
+        # dict 'em up
+        spec_propnames,spec_props = [],{}
+        for propname,prop in spec_schema[1]:
+            spec_propnames.append(propname)
+            spec_props[propname] = prop
+        dbspec_propnames,dbspec_props = [],{}
+        for propname,prop in dbspec[1]:
+            dbspec_propnames.append(propname)
+            dbspec_props[propname] = prop
+
+        # we're going to need one of these
+        cursor = self.conn.cursor()
+
+        # now compare
+        for propname in spec_propnames:
+            prop = spec_props[propname]
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class ...', `prop`
+            if dbspec_props.has_key(propname) and prop==dbspec_props[propname]:
+                continue
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class', `prop`
+
+            if not dbspec_props.has_key(propname):
+                # add the property
+                if isinstance(prop, Multilink):
+                    sql = 'create table %s_%s (linkid varchar, nodeid '\
+                        'varchar)'%(spec.classname, prop)
+                    if __debug__:
+                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                    cursor.execute(sql)
+                else:
+                    # XXX gadfly doesn't have an ALTER TABLE command
+                    raise NotImplementedError
+                    sql = 'alter table _%s add column (_%s varchar)'%(
+                        spec.classname, propname)
+                    if __debug__:
+                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                    cursor.execute(sql)
+            else:
+                # modify the property
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class NOOP'
+                pass  # NOOP in gadfly
+
+        # and the other way - only worry about deletions here
+        for propname in dbspec_propnames:
+            prop = dbspec_props[propname]
+            if spec_props.has_key(propname):
+                continue
+            if __debug__:
+                print >>hyperdb.DEBUG, 'update_class', `prop`
+
+            # delete the property
+            if isinstance(prop, Multilink):
+                sql = 'drop table %s_%s'%(spec.classname, prop)
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                cursor.execute(sql)
+            else:
+                # XXX gadfly doesn't have an ALTER TABLE command
+                raise NotImplementedError
+                sql = 'alter table _%s delete column _%s'%(spec.classname,
+                    propname)
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                cursor.execute(sql)
 
     def create_class(self, spec):
         ''' Create a database table according to the given spec.
@@ -163,7 +262,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # create the base table
         cols = ','.join(['%s varchar'%x for x in cols])
-        sql = 'create table %s (%s)'%(spec.classname, cols)
+        sql = 'create table _%s (%s)'%(spec.classname, cols)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         cursor.execute(sql)
@@ -203,7 +302,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 mls.append(col)
         cursor = self.conn.cursor()
 
-        sql = 'drop table %s'%spec.classname
+        sql = 'drop table _%s'%spec.classname
         if __debug__:
             print >>hyperdb.DEBUG, 'drop_class', (self, sql)
         cursor.execute(sql)
@@ -269,7 +368,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'clear', (self,)
         cursor = self.conn.cursor()
         for cn in self.classes.keys():
-            sql = 'delete from %s'%cn
+            sql = 'delete from _%s'%cn
             if __debug__:
                 print >>hyperdb.DEBUG, 'clear', (self, sql)
             cursor.execute(sql)
@@ -315,6 +414,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def addnode(self, classname, nodeid, node):
         ''' Add the specified node to its class's db.
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'addnode', (self, classname, nodeid, node)
         # gadfly requires values for all non-multilink columns
         cl = self.classes[classname]
         cols, mls = self.determine_columns(cl)
@@ -334,7 +435,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # perform the inserts
         cursor = self.conn.cursor()
-        sql = 'insert into %s (%s) values (%s)'%(classname, cols, s)
+        sql = 'insert into _%s (%s) values (%s)'%(classname, cols, s)
         if __debug__:
             print >>hyperdb.DEBUG, 'addnode', (self, sql, vals)
         cursor.execute(sql, vals)
@@ -349,9 +450,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     print >>hyperdb.DEBUG, 'addnode', (self, sql, vals)
                 cursor.execute(sql, vals)
 
+        # make sure we do the commit-time extra stuff for this node
+        self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
+
     def setnode(self, classname, nodeid, node):
         ''' Change the specified node.
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'setnode', (self, classname, nodeid, node)
         node = self.serialise(classname, node)
 
         cl = self.classes[classname]
@@ -368,12 +474,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # make sure the ordering is correct for column name -> column value
         vals = tuple([node[col[1:]] for col in cols])
-        s = ','.join(['?' for x in cols])
+        s = ','.join(['%s=?'%x for x in cols])
         cols = ','.join(cols)
 
         # perform the update
         cursor = self.conn.cursor()
-        sql = 'update %s (%s) values (%s)'%(classname, cols, s)
+        sql = 'update _%s set %s'%(classname, s)
         if __debug__:
             print >>hyperdb.DEBUG, 'setnode', (self, sql, vals)
         cursor.execute(sql, vals)
@@ -381,26 +487,36 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # now the fun bit, updating the multilinks ;)
         # XXX TODO XXX
 
+        # make sure we do the commit-time extra stuff for this node
+        self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
+
     def getnode(self, classname, nodeid):
         ''' Get a node from the database.
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getnode', (self, classname, nodeid)
         # figure the columns we're fetching
         cl = self.classes[classname]
         cols, mls = self.determine_columns(cl)
-        cols = ','.join(cols)
+        scols = ','.join(cols)
 
         # perform the basic property fetch
         cursor = self.conn.cursor()
-        sql = 'select %s from %s where id=?'%(cols, classname)
+        sql = 'select %s from _%s where id=?'%(scols, classname)
         if __debug__:
             print >>hyperdb.DEBUG, 'getnode', (self, sql, nodeid)
         cursor.execute(sql, (nodeid,))
-        values = cursor.fetchone()
+        try:
+            values = cursor.fetchone()
+        except gadfly.database.error, message:
+            if message == 'no more results':
+                raise IndexError, 'no such %s node %s'%(classname, nodeid)
+            raise
 
         # make up the node
         node = {}
         for col in range(len(cols)):
-            node[col] = values[col]
+            node[cols[col][1:]] = values[col]
 
         # now the multilinks
         for col in mls:
@@ -413,6 +529,29 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             node[col] = [x[0] for x in cursor.fetchall()]
 
         return self.unserialise(classname, node)
+
+    def destroynode(self, classname, nodeid):
+        '''Remove a node from the database. Called exclusively by the
+           destroy() method on Class.
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'destroynode', (self, classname, nodeid)
+
+        # make sure the node exists
+        if not self.hasnode(classname, nodeid):
+            raise IndexError, '%s has no node %s'%(classname, nodeid)
+
+        # see if there's any obvious commit actions that we should get rid of
+        for entry in self.transactions[:]:
+            if entry[1][:2] == (classname, nodeid):
+                self.transactions.remove(entry)
+
+        # now do the SQL
+        cursor = self.conn.cursor()
+        sql = 'delete from _%s where id=?'%(classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'destroynode', (self, sql, nodeid)
+        cursor.execute(sql, (nodeid,))
 
     def serialise(self, classname, node):
         '''Copy the node contents, converting non-marshallable data into
@@ -475,7 +614,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Determine if the database has a given node.
         '''
         cursor = self.conn.cursor()
-        sql = 'select count(*) from %s where nodeid=?'%classname
+        sql = 'select count(*) from _%s where id=?'%classname
         if __debug__:
             print >>hyperdb.DEBUG, 'hasnode', (self, sql, nodeid)
         cursor.execute(sql, (nodeid,))
@@ -485,20 +624,26 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Count the number of nodes that exist for a particular Class.
         '''
         cursor = self.conn.cursor()
-        sql = 'select count(*) from %s'%classname
+        sql = 'select count(*) from _%s'%classname
         if __debug__:
             print >>hyperdb.DEBUG, 'countnodes', (self, sql)
         cursor.execute(sql)
         return cursor.fetchone()[0]
 
-    def getnodeids(self, classname):
+    def getnodeids(self, classname, retired=0):
         ''' Retrieve all the ids of the nodes for a particular Class.
+
+            Set retired=None to get all nodes. Otherwise it'll get all the 
+            retired or non-retired nodes, depending on the flag.
         '''
         cursor = self.conn.cursor()
-        sql = 'select id from %s'%classname
+        # flip the sense of the flag if we don't want all of them
+        if retired is not None:
+            retired = not retired
+        sql = 'select id from _%s where __retired__ <> ?'%classname
         if __debug__:
-            print >>hyperdb.DEBUG, 'getnodeids', (self, sql)
-        cursor.execute(sql)
+            print >>hyperdb.DEBUG, 'getnodeids', (self, sql, retired)
+        cursor.execute(sql, (retired,))
         return [x[0] for x in cursor.fetchall()]
 
     def addjournal(self, classname, nodeid, action, params):
@@ -548,6 +693,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
+        # make sure the node exists
+        if not self.hasnode(classname, nodeid):
+            raise IndexError, '%s has no node %s'%(classname, nodeid)
+
+        # now get the journal entries
         cols = ','.join('nodeid date tag action params'.split())
         cursor = self.conn.cursor()
         sql = 'select %s from %s__journal where nodeid=?'%(cols, classname)
@@ -580,7 +730,27 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Save all data changed since the database was opened or since the
         last commit() or rollback().
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'commit', (self,)
+
+        # commit gadfly
         self.conn.commit()
+
+        # now, do all the other transaction stuff
+        reindex = {}
+        for method, args in self.transactions:
+            reindex[method(*args)] = 1
+
+        # reindex the nodes that request it
+        for classname, nodeid in filter(None, reindex.keys()):
+            print >>hyperdb.DEBUG, 'commit.reindex', (classname, nodeid)
+            self.getclass(classname).index(nodeid)
+
+        # save the indexer state
+        self.indexer.save_index()
+
+        # clear out the transactions
+        self.transactions = []
 
     def rollback(self):
         ''' Reverse all actions from the current transaction.
@@ -588,7 +758,24 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Undo all the changes made since the database was opened or the last
         commit() or rollback() was performed.
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'rollback', (self,)
+
+        # roll back gadfly
         self.conn.rollback()
+
+        # roll back "other" transaction stuff
+        for method, args in self.transactions:
+            # delete temporary files
+            if method == self.doStoreFile:
+                self.rollbackStoreFile(*args)
+        self.transactions = []
+
+    def doSaveNode(self, classname, nodeid, node):
+        ''' dummy that just generates a reindex event
+        '''
+        # return the classname, nodeid so we reindex this content
+        return (classname, nodeid)
 
 #
 # The base Class class
@@ -845,7 +1032,7 @@ class Class(hyperdb.Class):
         d = self.db.getnode(self.classname, nodeid) #, cache=cache)
 
         if not d.has_key(propname):
-            if default is _marker:
+            if default is self._marker:
                 if isinstance(prop, Multilink):
                     return []
                 else:
@@ -886,7 +1073,193 @@ class Class(hyperdb.Class):
         If the value of a Link or Multilink property contains an invalid
         node id, a ValueError is raised.
         '''
-        raise NotImplementedError
+        if not propvalues:
+            return propvalues
+
+        if propvalues.has_key('creation') or propvalues.has_key('activity'):
+            raise KeyError, '"creation" and "activity" are reserved'
+
+        if propvalues.has_key('id'):
+            raise KeyError, '"id" is reserved'
+
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
+        self.fireAuditors('set', nodeid, propvalues)
+        # Take a copy of the node dict so that the subsequent set
+        # operation doesn't modify the oldvalues structure.
+        # XXX used to try the cache here first
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+
+        node = self.db.getnode(self.classname, nodeid)
+        if self.is_retired(nodeid):
+            raise IndexError
+        num_re = re.compile('^\d+$')
+
+        # if the journal value is to be different, store it in here
+        journalvalues = {}
+
+        for propname, value in propvalues.items():
+            # check to make sure we're not duplicating an existing key
+            if propname == self.key and node[propname] != value:
+                try:
+                    self.lookup(value)
+                except KeyError:
+                    pass
+                else:
+                    raise ValueError, 'node with key "%s" exists'%value
+
+            # this will raise the KeyError if the property isn't valid
+            # ... we don't use getprops() here because we only care about
+            # the writeable properties.
+            prop = self.properties[propname]
+
+            # if the value's the same as the existing value, no sense in
+            # doing anything
+            if node.has_key(propname) and value == node[propname]:
+                del propvalues[propname]
+                continue
+
+            # do stuff based on the prop type
+            if isinstance(prop, Link):
+                link_class = prop.classname
+                # if it isn't a number, it's a key
+                if value is not None and not isinstance(value, type('')):
+                    raise ValueError, 'property "%s" link value be a string'%(
+                        propname)
+                if isinstance(value, type('')) and not num_re.match(value):
+                    try:
+                        value = self.db.classes[link_class].lookup(value)
+                    except (TypeError, KeyError):
+                        raise IndexError, 'new property "%s": %s not a %s'%(
+                            propname, value, prop.classname)
+
+                if (value is not None and
+                        not self.db.getclass(link_class).hasnode(value)):
+                    raise IndexError, '%s has no node %s'%(link_class, value)
+
+                if self.do_journal and prop.do_journal:
+                    # register the unlink with the old linked node
+                    if node[propname] is not None:
+                        self.db.addjournal(link_class, node[propname], 'unlink',
+                            (self.classname, nodeid, propname))
+
+                    # register the link with the newly linked node
+                    if value is not None:
+                        self.db.addjournal(link_class, value, 'link',
+                            (self.classname, nodeid, propname))
+
+            elif isinstance(prop, Multilink):
+                if type(value) != type([]):
+                    raise TypeError, 'new property "%s" not a list of'\
+                        ' ids'%propname
+                link_class = self.properties[propname].classname
+                l = []
+                for entry in value:
+                    # if it isn't a number, it's a key
+                    if type(entry) != type(''):
+                        raise ValueError, 'new property "%s" link value ' \
+                            'must be a string'%propname
+                    if not num_re.match(entry):
+                        try:
+                            entry = self.db.classes[link_class].lookup(entry)
+                        except (TypeError, KeyError):
+                            raise IndexError, 'new property "%s": %s not a %s'%(
+                                propname, entry,
+                                self.properties[propname].classname)
+                    l.append(entry)
+                value = l
+                propvalues[propname] = value
+
+                # figure the journal entry for this property
+                add = []
+                remove = []
+
+                # handle removals
+                if node.has_key(propname):
+                    l = node[propname]
+                else:
+                    l = []
+                for id in l[:]:
+                    if id in value:
+                        continue
+                    # register the unlink with the old linked node
+                    if self.do_journal and self.properties[propname].do_journal:
+                        self.db.addjournal(link_class, id, 'unlink',
+                            (self.classname, nodeid, propname))
+                    l.remove(id)
+                    remove.append(id)
+
+                # handle additions
+                for id in value:
+                    if not self.db.getclass(link_class).hasnode(id):
+                        raise IndexError, '%s has no node %s'%(link_class, id)
+                    if id in l:
+                        continue
+                    # register the link with the newly linked node
+                    if self.do_journal and self.properties[propname].do_journal:
+                        self.db.addjournal(link_class, id, 'link',
+                            (self.classname, nodeid, propname))
+                    l.append(id)
+                    add.append(id)
+
+                # figure the journal entry
+                l = []
+                if add:
+                    l.append(('+', add))
+                if remove:
+                    l.append(('-', remove))
+                if l:
+                    journalvalues[propname] = tuple(l)
+
+            elif isinstance(prop, String):
+                if value is not None and type(value) != type(''):
+                    raise TypeError, 'new property "%s" not a string'%propname
+
+            elif isinstance(prop, Password):
+                if not isinstance(value, password.Password):
+                    raise TypeError, 'new property "%s" not a Password'%propname
+                propvalues[propname] = value
+
+            elif value is not None and isinstance(prop, Date):
+                if not isinstance(value, date.Date):
+                    raise TypeError, 'new property "%s" not a Date'% propname
+                propvalues[propname] = value
+
+            elif value is not None and isinstance(prop, Interval):
+                if not isinstance(value, date.Interval):
+                    raise TypeError, 'new property "%s" not an '\
+                        'Interval'%propname
+                propvalues[propname] = value
+
+            elif value is not None and isinstance(prop, Number):
+                try:
+                    float(value)
+                except ValueError:
+                    raise TypeError, 'new property "%s" not numeric'%propname
+
+            elif value is not None and isinstance(prop, Boolean):
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError, 'new property "%s" not boolean'%propname
+
+            node[propname] = value
+
+        # nothing to do?
+        if not propvalues:
+            return propvalues
+
+        # do the set, and journal it
+        self.db.setnode(self.classname, nodeid, node)
+
+        if self.do_journal:
+            propvalues.update(journalvalues)
+            self.db.addjournal(self.classname, nodeid, 'set', propvalues)
+
+        self.fireReactors('set', nodeid, oldvalues)
+
+        return propvalues        
 
     def retire(self, nodeid):
         '''Retire a node.
@@ -898,7 +1271,7 @@ class Class(hyperdb.Class):
         methods, and other nodes may reuse the values of their key properties.
         '''
         cursor = self.db.conn.cursor()
-        sql = 'update %s set __retired__=1 where id=?'%self.classname
+        sql = 'update _%s set __retired__=1 where id=?'%self.classname
         if __debug__:
             print >>hyperdb.DEBUG, 'retire', (self, sql, nodeid)
         cursor.execute(sql, (nodeid,))
@@ -907,7 +1280,7 @@ class Class(hyperdb.Class):
         '''Return true if the node is rerired
         '''
         cursor = self.db.conn.cursor()
-        sql = 'select __retired__ from %s where id=?'%self.classname
+        sql = 'select __retired__ from _%s where id=?'%self.classname
         if __debug__:
             print >>hyperdb.DEBUG, 'is_retired', (self, sql, nodeid)
         cursor.execute(sql, (nodeid,))
@@ -930,7 +1303,9 @@ class Class(hyperdb.Class):
         entries. It will no longer be available, and will generally break code
         if there are any references to the node.
         '''
-        raise NotImplementedError
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+        self.db.destroynode(self.classname, nodeid)
 
     def history(self, nodeid):
         '''Retrieve the journal of edits on a particular node.
@@ -945,7 +1320,9 @@ class Class(hyperdb.Class):
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.
         '''
-        raise NotImplementedError
+        if not self.do_journal:
+            raise ValueError, 'Journalling is disabled for this class'
+        return self.db.getjournal(self.classname, nodeid)
 
     # Locating nodes:
     def hasnode(self, nodeid):
@@ -980,7 +1357,19 @@ class Class(hyperdb.Class):
             3. "title" property
             4. first property from the sorted property name list
         '''
-        raise NotImplementedError
+        k = self.getkey()
+        if  k:
+            return k
+        props = self.getprops()
+        if props.has_key('name'):
+            return 'name'
+        elif props.has_key('title'):
+            return 'title'
+        if default_to_id:
+            return 'id'
+        props = props.keys()
+        props.sort()
+        return props[0]
 
     def lookup(self, keyvalue):
         '''Locate a particular node by its key property and return its id.
@@ -994,7 +1383,7 @@ class Class(hyperdb.Class):
             raise TypeError, 'No key property set'
 
         cursor = self.db.conn.cursor()
-        sql = 'select id from %s where _%s=?'%(self.classname, self.key)
+        sql = 'select id from _%s where _%s=?'%(self.classname, self.key)
         if __debug__:
             print >>hyperdb.DEBUG, 'lookup', (self, sql, keyvalue)
         cursor.execute(sql, (keyvalue,))
@@ -1022,7 +1411,36 @@ class Class(hyperdb.Class):
 
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
-        raise NotImplementedError
+        if __debug__:
+            print >>hyperdb.DEBUG, 'find', (self, propspec)
+        if not propspec:
+            return []
+        queries = []
+        tables = []
+        allvalues = ()
+        for prop, values in propspec.items():
+            allvalues += tuple(values.keys())
+            tables.append('select nodeid from %s_%s where linkid in (%s)'%(
+                self.classname, prop, ','.join(['?' for x in values.keys()])))
+        sql = '\nintersect\n'.join(tables)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'find', (self, sql, allvalues)
+        cursor = self.db.conn.cursor()
+        cursor.execute(sql, allvalues)
+        try:
+            l = [x[0] for x in cursor.fetchall()]
+        except gadfly.database.error, message:
+            if message == 'no more results':
+                l = []
+            raise
+        if __debug__:
+            print >>hyperdb.DEBUG, 'find ... ', l
+        return l
+
+    def list(self):
+        ''' Return a list of the ids of the active nodes in this class.
+        '''
+        return self.db.getnodeids(self.classname, retired=0)
 
     def filter(self, search_matches, filterspec, sort, group, 
             num_re = re.compile('^\d+$')):
@@ -1166,7 +1584,7 @@ class FileClass(Class):
                 # BUG: by catching this we donot see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
-        if default is not _marker:
+        if default is not self._marker:
             return Class.get(self, nodeid, propname, default, cache=cache)
         else:
             return Class.get(self, nodeid, propname, cache=cache)
@@ -1227,6 +1645,10 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/08/22 07:56:51  richard
+# Whee! It's not finished yet, but I can create a new instance and play with
+# it a little bit :)
+#
 # Revision 1.80  2002/08/16 04:28:13  richard
 # added is_retired query to Class
 #
