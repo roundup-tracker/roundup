@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.3 2002-01-22 06:35:40 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.4 2002-01-22 22:46:22 richard Exp $ 
 
 import unittest, cgi
 
@@ -183,7 +183,7 @@ class NodeCase(unittest.TestCase):
 #    def do_link(self, property=None, is_download=0):
     def testLink_novalue(self):
         self.assertEqual(self.tf.do_link('novalue'),
-	        _('[no %(propname)s]')%{'propname':'novalue'.capitalize()})
+            _('[no %(propname)s]')%{'propname':'novalue'.capitalize()})
 
     def testLink_string(self):
         self.assertEqual(self.tf.do_link('string'),
@@ -209,12 +209,41 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_link('multilink'),
             '<a href="other1">the key</a>, <a href="other2">the key</a>')
 
+#    def do_count(self, property, **args):
+    def testCount_nonlinks(self):
+        s = _('[Count: not a Multilink]')
+        self.assertEqual(self.tf.do_count('string'), s)
+        self.assertEqual(self.tf.do_count('date'), s)
+        self.assertEqual(self.tf.do_count('interval'), s)
+        self.assertEqual(self.tf.do_count('password'), s)
+        self.assertEqual(self.tf.do_count('link'), s)
+
+    def testCount_multilink(self):
+        self.assertEqual(self.tf.do_count('multilink'), '2')
+
+#    def do_reldate(self, property, pretty=0):
+    def testReldate_nondate(self):
+        s = _('[Reldate: not a Date]')
+        self.assertEqual(self.tf.do_reldate('string'), s)
+        self.assertEqual(self.tf.do_reldate('interval'), s)
+        self.assertEqual(self.tf.do_reldate('password'), s)
+        self.assertEqual(self.tf.do_reldate('link'), s)
+        self.assertEqual(self.tf.do_reldate('multilink'), s)
+
+    def testReldate_date(self):
+        self.assertEqual(self.tf.do_reldate('date'), '- 2y 1m')
+        self.assertEqual(self.tf.do_reldate('date', pretty=1),
+            ' 1 January 2000')
+
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/01/22 06:35:40  richard
+# more htmltemplate tests and cleanup
+#
 # Revision 1.2  2002/01/22 00:12:07  richard
 # Wrote more unit tests for htmltemplate, and while I was at it, I polished
 # off the implementation of some of the functions so they behave sanely.

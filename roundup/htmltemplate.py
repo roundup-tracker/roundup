@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.66 2002-01-22 06:35:40 richard Exp $
+# $Id: htmltemplate.py,v 1.67 2002-01-22 22:46:22 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -302,8 +302,8 @@ class TemplateFunctions:
 
         # get the value
         value = self.determine_value(property)
-	if not value:
-	    return _('[no %(propname)s]')%{'propname':property.capitalize()}
+        if not value:
+            return _('[no %(propname)s]')%{'propname':property.capitalize()}
 
         propclass = self.properties[property]
         if isinstance(propclass, hyperdb.Link):
@@ -342,11 +342,14 @@ class TemplateFunctions:
         '''
         if not self.nodeid:
             return _('[Count: not called from item]')
+
         propclass = self.properties[property]
+        if not isinstance(propclass, hyperdb.Multilink):
+            return _('[Count: not a Multilink]')
+
+        # figure the length then...
         value = self.cl.get(self.nodeid, property)
-        if isinstance(propclass, hyperdb.Multilink):
-            return str(len(value))
-        return _('[Count: not a Multilink]')
+        return str(len(value))
 
     # XXX pretty is definitely new ;)
     def do_reldate(self, property, pretty=0):
@@ -357,13 +360,19 @@ class TemplateFunctions:
         '''
         if not self.nodeid and self.form is None:
             return _('[Reldate: not called from item]')
+
         propclass = self.properties[property]
-        if isinstance(not propclass, hyperdb.Date):
+        if not isinstance(propclass, hyperdb.Date):
             return _('[Reldate: not a Date]')
+
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
         else:
-            value = date.Date('.')
+            return ''
+        if not value:
+            return ''
+
+        # figure the interval
         interval = value - date.Date('.')
         if pretty:
             if not self.nodeid:
@@ -1038,6 +1047,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.66  2002/01/22 06:35:40  richard
+# more htmltemplate tests and cleanup
+#
 # Revision 1.65  2002/01/22 00:12:06  richard
 # Wrote more unit tests for htmltemplate, and while I was at it, I polished
 # off the implementation of some of the functions so they behave sanely.
