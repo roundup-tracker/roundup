@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.6 2001-11-22 15:46:42 jhermann Exp $
+# $Id: install_util.py,v 1.7 2001-11-24 01:00:13 jhermann Exp $
 
 __doc__ = """
 Support module to generate and check fingerprints of installed files.
@@ -23,7 +23,8 @@ Support module to generate and check fingerprints of installed files.
 
 import os, sha, shutil
 
-sgml_file_types = [".xml", ".ent", ".html", ".filter", ".index", ".item"]
+# ".filter", ".index", ".item", ".newitem" are roundup-specific
+sgml_file_types = [".xml", ".ent", ".html", ".filter", ".index", ".item", ".newitem"]
 hash_file_types = [".py", ".sh", ".conf", ".cgi", '']
 slast_file_types = [".css"]
 
@@ -81,7 +82,6 @@ class DigestFile:
     def close(self):
         file, ext = os.path.splitext(self.filename)
 
-        # ".filter", ".index", ".item" are roundup-specific
         if ext in sgml_file_types:
             self.file.write("<!-- SHA: %s -->\n" % (self.digest.hexdigest(),))
         elif ext in hash_file_types:
@@ -149,6 +149,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.5  2001/11/12 23:17:38  jhermann
 # Code using copyDigestedFile() that passes unit tests
 #
