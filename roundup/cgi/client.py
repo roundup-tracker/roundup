@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.64 2003-01-08 04:33:56 richard Exp $
+# $Id: client.py,v 1.65 2003-01-08 04:39:36 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1272,7 +1272,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             link = proptype.classname
             l = []
             for entry in value:
-                if entry == '': continue
+                if not entry: continue
                 if not num_re.match(entry):
                     try:
                         entry = db.classes[link].lookup(entry)
