@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.202 2004-11-18 16:21:07 a1s Exp $
+# $Id: client.py,v 1.203 2004-11-20 17:46:24 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -379,7 +379,7 @@ class Client:
             user = 'anonymous'
 
         # try handling Basic Auth ourselves
-        if (user == 'anonymous') and self.env['HTTP_AUTHORIZATION']:
+        if (user == 'anonymous') and self.env.get('HTTP_AUTHORIZATION', ''):
             scheme, challenge = self.env['HTTP_AUTHORIZATION'].split(' ', 1)
             if scheme.lower() == 'basic':
                 try:
