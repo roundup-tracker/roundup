@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.58 2004-02-11 23:55:08 richard Exp $
+# $Id: back_metakit.py,v 1.59 2004-02-23 16:57:30 wc2so1 Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -122,6 +122,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
 
     # --- exposed methods
     def commit(self):
+        '''commit all changes to the database'''
         if self.dirty:
             self._db.commit()
             for cl in self.classes.values():
@@ -129,6 +130,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
             self.indexer.save_index()
         self.dirty = 0
     def rollback(self):
+        '''roll back all changes since the last commit'''
         if self.dirty:
             for cl in self.classes.values():
                 cl._rollback()
@@ -141,14 +143,19 @@ class _Database(hyperdb.Database, roundupdb.Database):
             self.indexer.datadb = self._db
         self.dirty = 0
     def clearCache(self):
+        '''clear the internal cache by committing all pending database changes'''
         for cl in self.classes.values():
             cl._commit()
     def clear(self):
+        '''clear the internal cache but don't commit any changes'''
         for cl in self.classes.values():
             cl._clear()
     def hasnode(self, classname, nodeid):
+        '''does a particular class contain a nodeid?'''
         return self.getclass(classname).hasnode(nodeid)
     def pack(self, pack_before):
+        ''' Delete all journal entries except "create" before 'pack_before'.
+        '''
         mindate = int(calendar.timegm(pack_before.get_tuple()))
         i = 0
         while i < len(self.hist):
@@ -157,11 +164,20 @@ class _Database(hyperdb.Database, roundupdb.Database):
             else:
                 i = i + 1
     def addclass(self, cl):
+        ''' Add a Class to the hyperdatabase.
+        '''
         self.classes[cl.classname] = cl
         if self.tables.find(name=cl.classname) < 0:
             self.tables.append(name=cl.classname)
     def addjournal(self, tablenm, nodeid, action, params, creator=None,
-                creation=None):
+                   creation=None):
+        ''' Journal the Action
+        'action' may be:
+
+            'create' or 'set' -- 'params' is a dictionary of property values
+            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
+            'retire' -- 'params' is None
+        '''
         tblid = self.tables.find(name=tablenm)
         if tblid == -1:
             tblid = self.tables.append(name=tablenm)
@@ -184,6 +200,8 @@ class _Database(hyperdb.Database, roundupdb.Database):
                          user = creator,
                          params = marshal.dumps(params))
     def getjournal(self, tablenm, nodeid):
+        ''' get the journal for id
+        '''
         rslt = []
         tblid = self.tables.find(name=tablenm)
         if tblid == -1:
@@ -221,6 +239,10 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self.dirty = 1
         
     def close(self):
+        ''' Close off the connection.
+        '''
+        # de-reference count the metakit databases,
+        #  as this is the only way they will be closed
         for cl in self.classes.values():
             cl.db = None
         self._db = None
@@ -310,6 +332,12 @@ _marker = []
 _ALLOWSETTINGPRIVATEPROPS = 0
 
 class Class(hyperdb.Class):
+    ''' The handle to a particular class of nodes in a hyperdatabase.
+        
+        All methods except __repr__ and getnode must be implemented by a
+        concrete backend Class of which this is one.
+    '''
+
     privateprops = None
     def __init__(self, db, classname, **properties):
         if (properties.has_key('creation') or properties.has_key('activity')
@@ -357,24 +385,53 @@ class Class(hyperdb.Class):
         '''
         self.do_journal = 0
         
-    # --- the roundup.Class methods
+    #
+    # Detector/reactor interface
+    #
     def audit(self, event, detector):
+        '''Register a detector
+        '''
         l = self.auditors[event]
         if detector not in l:
             self.auditors[event].append(detector)
+
     def fireAuditors(self, action, nodeid, newvalues):
-        for audit in self.auditors[action]:
+       '''Fire all registered auditors.
+        '''
+       for audit in self.auditors[action]:
             audit(self.db, self, nodeid, newvalues)
+
+    def react(self, event, detector):
+       '''Register a reactor
+       '''
+       l = self.reactors[event]
+       if detector not in l:
+           self.reactors[event].append(detector)
+
     def fireReactors(self, action, nodeid, oldvalues):
+        '''Fire all registered reactors.
+        '''
         for react in self.reactors[action]:
             react(self.db, self, nodeid, oldvalues)
-    def react(self, event, detector):
-        l = self.reactors[event]
-        if detector not in l:
-            self.reactors[event].append(detector)
-
+            
     # --- the hyperdb.Class methods
     def create(self, **propvalues):
+        ''' Create a new node of this class and return its id.
+
+        The keyword arguments in 'propvalues' map property names to values.
+
+        The values of arguments must be acceptable for the types of their
+        corresponding properties or a TypeError is raised.
+        
+        If this class has a key property, it must be present and its value
+        must not collide with other key strings or a ValueError is raised.
+        
+        Any other properties on this class that are missing from the
+        'propvalues' dictionary are set to None.
+        
+        If an id in a link or multilink property does not refer to a valid
+        node, an IndexError is raised.
+        '''
         if not propvalues:
             raise ValueError, "Need something to create!"
         self.fireAuditors('create', None, propvalues)
@@ -383,21 +440,28 @@ class Class(hyperdb.Class):
         return newid
 
     def create_inner(self, **propvalues):
-        rowdict = {}
-        rowdict['id'] = newid = self.maxid
-        self.maxid += 1
-        ndx = self.getview(READWRITE).append(rowdict)
-        propvalues['#ISNEW'] = 1
-        try:
-            self.set(str(newid), **propvalues)
-        except Exception:
-            self.maxid -= 1
-            raise
-        return str(newid)
+       ''' Called by create, in-between the audit and react calls.
+       '''
+       rowdict = {}
+       rowdict['id'] = newid = self.maxid
+       self.maxid += 1
+       ndx = self.getview(READWRITE).append(rowdict)
+       propvalues['#ISNEW'] = 1
+       try:
+           self.set(str(newid), **propvalues)
+       except Exception:
+           self.maxid -= 1
+           raise
+       return str(newid)
     
     def get(self, nodeid, propname, default=_marker, cache=1):
-        '''
-            'cache' exists for backwards compatibility, and is not used.
+        '''Get the value of a property on an existing node of this class.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.  'propname' must be the name of a property
+        of this class or a KeyError is raised.
+
+        'cache' exists for backwards compatibility, and is not used.
         '''
         view = self.getview()
         id = int(nodeid)
@@ -431,6 +495,23 @@ class Class(hyperdb.Class):
         return raw
         
     def set(self, nodeid, **propvalues):
+        '''Modify a property on an existing node of this class.
+        
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        Each key in 'propvalues' must be the name of a property of this
+        class or a KeyError is raised.
+
+        All values in 'propvalues' must be acceptable types for their
+        corresponding properties or a TypeError is raised.
+
+        If the value of the key property is set, it must not collide with
+        other key strings or a ValueError is raised.
+
+        If the value of a Link or Multilink property contains an invalid
+        node id, a ValueError is raised.
+        '''
         isnew = 0
         if propvalues.has_key('#ISNEW'):
             isnew = 1
@@ -691,6 +772,14 @@ class Class(hyperdb.Class):
         return propvalues
     
     def retire(self, nodeid):
+        '''Retire a node.
+        
+        The properties on the node remain available from the get() method,
+        and the node's id is never reused.
+        
+        Retired nodes are not returned by the find(), list(), or lookup()
+        methods, and other nodes may reuse the values of their key properties.
+        '''
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
         self.fireAuditors('retire', nodeid, None)
@@ -719,10 +808,10 @@ class Class(hyperdb.Class):
         self.fireReactors('retire', nodeid, None)
 
     def restore(self, nodeid):
-        """Restore a retired node.
+        '''Restore a retired node.
 
         Make node available for all operations like it was before retirement.
-        """
+        '''
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
 
@@ -760,6 +849,8 @@ class Class(hyperdb.Class):
         self.fireReactors('restore', nodeid, None)
 
     def is_retired(self, nodeid):
+        '''Return true if the node is retired
+        '''
         view = self.getview(READWRITE)
         # node must exist & not be retired
         id = int(nodeid)
@@ -770,11 +861,29 @@ class Class(hyperdb.Class):
         return row._isdel
 
     def history(self, nodeid):
+        '''Retrieve the journal of edits on a particular node.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        The returned list contains tuples of the form
+
+            (nodeid, date, tag, action, params)
+
+        'date' is a Timestamp object specifying the time of the change and
+        'tag' is the journaltag specified when the database was opened.
+        '''        
         if not self.do_journal:
             raise ValueError, 'Journalling is disabled for this class'
         return self.db.getjournal(self.classname, nodeid)
 
     def setkey(self, propname):
+        '''Select a String property of this class to be the key property.
+
+        'propname' must be the name of a String property of this class or
+        None, or a TypeError is raised.  The values of the key property on
+        all existing nodes must be unique or a ValueError is raised.
+        '''        
         if self.key:
             if propname == self.key:
                 return
@@ -808,16 +917,17 @@ class Class(hyperdb.Class):
         self.db.commit()
 
     def getkey(self):
-        return self.key
+       '''Return the name of the key property for this class or None.'''
+       return self.key
 
     def lookup(self, keyvalue):
-        """Locate a particular node by its key property and return its id.
+        '''Locate a particular node by its key property and return its id.
 
         If this class has no key property, a TypeError is raised.  If the
         keyvalue matches one of the values for the key property among
         the nodes in this class, the matching node's id is returned;
         otherwise a KeyError is raised.
-        """
+        '''
         if not self.key:
             raise TypeError, 'No key property set for class %s'%self.classname
         
@@ -858,6 +968,25 @@ class Class(hyperdb.Class):
         raise KeyError, keyvalue
 
     def destroy(self, id):
+        '''Destroy a node.
+        
+        WARNING: this method should never be used except in extremely rare
+                 situations where there could never be links to the node being
+                 deleted
+
+        WARNING: use retire() instead
+
+        WARNING: the properties of this node will not be available ever again
+
+        WARNING: really, use retire() instead
+
+        Well, I think that's enough warnings. This method exists mostly to
+        support the session storage of the cgi interface.
+
+        The node is completely removed from the hyperdb, including all journal
+        entries. It will no longer be available, and will generally break code
+        if there are any references to the node.
+        '''
         view = self.getview(READWRITE)
         ndx = view.find(id=int(id))
         if ndx > -1:
@@ -873,7 +1002,7 @@ class Class(hyperdb.Class):
             self.db.dirty = 1
         
     def find(self, **propspec):
-        """Get the ids of nodes in this class which link to the given nodes.
+        '''Get the ids of nodes in this class which link to the given nodes.
 
         'propspec'
              consists of keyword args propname={nodeid:1,}   
@@ -888,7 +1017,7 @@ class Class(hyperdb.Class):
         issues::
 
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
-        """
+        '''
         propspec = propspec.items()
         for propname, nodeid in propspec:
             # check the prop is OK
@@ -942,12 +1071,19 @@ class Class(hyperdb.Class):
             
 
     def list(self):
+        ''' Return a list of the ids of the active nodes in this class.
+        '''
         l = []
         for row in self.getview().select(_isdel=0):
             l.append(str(row.id))
         return l
 
     def getnodeids(self):
+        ''' Retrieve all the ids of the nodes for a particular Class.
+
+            Set retired=None to get all nodes. Otherwise it'll get all the 
+            retired or non-retired nodes, depending on the flag.
+        '''
         l = []
         for row in self.getview():
             l.append(str(row.id))
@@ -977,6 +1113,21 @@ class Class(hyperdb.Class):
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
+        '''Return a list of the ids of the active nodes in this class that
+        match the 'filter' spec, sorted by the group spec and then the
+        sort spec
+
+        "filterspec" is {propname: value(s)}
+
+        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+        and prop is a prop name or None
+
+        "search_matches" is {nodeid: marker}
+
+        The filter must match all properties specificed - but if the
+        property value to match is a list, any one of the values in the
+        list may match for that property to match.
+        '''        
         # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
         # filterspec is a dict {propname:value}
         # sort and group are (dir, prop) where dir is '+', '-' or None
@@ -1182,6 +1333,8 @@ class Class(hyperdb.Class):
         return rslt
     
     def hasnode(self, nodeid):
+        '''Determine if the given nodeid actually exists
+        '''
         return int(nodeid) < self.maxid
     
     def labelprop(self, default_to_id=0):
@@ -1210,13 +1363,13 @@ class Class(hyperdb.Class):
         return props[0]
 
     def stringFind(self, **requirements):
-        """Locate a particular node by matching a set of its String
+        '''Locate a particular node by matching a set of its String
         properties in a caseless search.
 
         If the property is not a String property, a TypeError is raised.
         
         The return is a list of the id of all nodes that match.
-        """
+        '''
         for propname in requirements.keys():
             prop = self.properties[propname]
             if isinstance(not prop, hyperdb.String):
@@ -1230,6 +1383,13 @@ class Class(hyperdb.Class):
         return l
 
     def addjournal(self, nodeid, action, params):
+        '''Add a journal to the given nodeid,
+        'action' may be:
+
+            'create' or 'set' -- 'params' is a dictionary of property values
+            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
+            'retire' -- 'params' is None
+        '''
         self.db.addjournal(self.classname, nodeid, action, params)
 
     def index(self, nodeid):
@@ -1345,14 +1505,14 @@ class Class(hyperdb.Class):
 
     # --- used by Database
     def _commit(self):
-        """ called post commit of the DB.
-            interested subclasses may override """
+        ''' called post commit of the DB.
+            interested subclasses may override '''
         self.uncommitted = {}
         self.rbactions = []
         self.idcache = {}
     def _rollback(self):  
-        """ called pre rollback of the DB.
-            interested subclasses may override """
+        ''' called pre rollback of the DB.
+            interested subclasses may override '''
         for action in self.rbactions:
             action()
         self.rbactions = []
@@ -1367,8 +1527,8 @@ class Class(hyperdb.Class):
         if iv:
             iv[:] = []
     def rollbackaction(self, action):
-        """ call this to register a callback called on rollback
-            callback is removed on end of transaction """
+        ''' call this to register a callback called on rollback
+            callback is removed on end of transaction '''
         self.rbactions.append(action)
     # --- internal
     def __getview(self):
@@ -1627,14 +1787,14 @@ class Indexer(indexer.Indexer):
         self.propcache = {}
 
     def close(self):
-        """close the indexing database"""
+        '''close the indexing database'''
         del self.db
         self.db = None
   
     def force_reindex(self):
-        """Force a reindexing of the database.  This essentially
+        '''Force a reindexing of the database.  This essentially
         empties the tables ids and index and sets a flag so
-        that the databases are reindexed"""
+        that the databases are reindexed'''
         v = self.db.view('ids')
         v[:] = []
         v = self.db.view('index')
@@ -1643,7 +1803,7 @@ class Indexer(indexer.Indexer):
         self.reindex = 1
 
     def should_reindex(self):
-        """returns True if the indexes need to be rebuilt"""
+        '''returns True if the indexes need to be rebuilt'''
         return self.reindex
 
     def _getprops(self, classname):
@@ -1694,10 +1854,10 @@ class Indexer(indexer.Indexer):
             self.changed = 1
 
     def find(self, wordlist):
-        """look up all the words in the wordlist.
+        '''look up all the words in the wordlist.
         If none are found return an empty dictionary
         * more rules here
-        """        
+        '''        
         hits = None
         index = self.db.view('index').ordered(1)
         for word in wordlist:
