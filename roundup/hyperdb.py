@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.78 2002-07-21 03:26:37 richard Exp $
+# $Id: hyperdb.py,v 1.79 2002-07-29 23:30:14 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -171,7 +171,6 @@ concrete backend Class.
     # flag to set on retired entries
     RETIRED_FLAG = '__hyperdb_retired'
 
-    # XXX deviates from spec: storagelocator is obtained from the config
     def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
 
@@ -373,7 +372,6 @@ class Class:
         """
         raise NotImplementedError
 
-    # XXX not in spec
     def getnode(self, nodeid, cache=1):
         ''' Return a convenience wrapper for the node.
 
@@ -492,7 +490,6 @@ class Class:
         """
         raise NotImplementedError
 
-    # XXX: change from spec - allows multiple props to match
     def find(self, **propspec):
         """Get the ids of nodes in this class which link to the given nodes.
 
@@ -510,7 +507,6 @@ class Class:
         """
         raise NotImplementedError
 
-    # XXX not in spec
     def filter(self, search_matches, filterspec, sort, group, 
             num_re = re.compile('^\d+$')):
         ''' Return a list of the ids of the active nodes in this class that
@@ -551,7 +547,6 @@ class Class:
         '''
         raise NotImplementedError
 
-# XXX not in spec
 class Node:
     ''' A convenience wrapper for the given node
     '''
@@ -609,6 +604,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.78  2002/07/21 03:26:37  richard
+# Gordon, does this help?
+#
 # Revision 1.77  2002/07/18 11:27:47  richard
 # ws
 #

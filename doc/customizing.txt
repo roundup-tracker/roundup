@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 .. contents::
 
@@ -911,6 +911,46 @@ eliminate sections of the spool section if the property has no entries::
        <td><display call="list('files')"></td>
       </tr>
      </property>
+
+
+Security
+--------
+
+A set of Permissions are built in to the security module by default:
+
+- Edit (everything)
+- View (everything)
+
+The default interfaces define:
+
+- Web Registration
+- Email Registration
+
+These are hooked into the default Roles:
+
+- Admin (Edit everything, View everything)
+- User ()
+- Anonymous (Web Registration, Email Registration)
+
+And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
+gets the "Anonymous" assigned when the database is initialised on installation.
+The two default schemas then define:
+
+- Edit issue, View issue (both)
+- Edit file, View file (both)
+- Edit msg, View msg (both)
+- Edit support, View support (extended only)
+
+and assign those Permissions to the "User" Role. New users are assigned the
+Roles defined in the config file as:
+
+- NEW_WEB_USER_ROLES
+- NEW_EMAIL_USER_ROLES
+
+You may alter the configuration variables to change the Role that new web or
+email users get, for example to not give them access to the web interface if
+they register through email.
+
 
 -----------------
 

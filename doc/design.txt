@@ -250,6 +250,8 @@ operation.
 Hyperdb Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+TODO: replace the Interface Specifications with links to the pydoc
+
 The hyperdb module provides property objects to designate
 the different kinds of properties.  These objects are used when
 specifying what properties belong in classes::
@@ -294,9 +296,10 @@ Here is the interface provided by the hyperdatabase::
     class Database:
         """A database for storing records containing flexible data types."""
 
-        def __init__(self, storagelocator, journaltag):
+        def __init__(self, config, journaltag=None):
             """Open a hyperdatabase given a specifier to some storage.
 
+            The 'storagelocator' is obtained from config.DATABASE.
             The meaning of 'storagelocator' depends on the particular
             implementation of the hyperdatabase.  It could be a file name,
             a directory path, a socket descriptor for a connection to a
@@ -418,14 +421,26 @@ Here is the interface provided by the hyperdatabase::
             """
 
         def find(self, propname, nodeid):
-            """Get the ids of nodes in this class which link to a given node.
-            
+            """Get the ids of nodes in this class which link to the given nodes.
+
+            'propspec' consists of keyword args propname={nodeid:1,}   
             'propname' must be the name of a property in this class, or a
             KeyError is raised.  That property must be a Link or Multilink
-            property, or a TypeError is raised.  'nodeid' must be the id of
-            an existing node in the class linked to by the given property,
-            or an IndexError is raised.
+            property, or a TypeError is raised.
+
+            Any node in this class whose 'propname' property links to any of the
+            nodeids will be returned. Used by the full text indexing, which
+            knows that "foo" occurs in msg1, msg3 and file7, so we have hits
+            on these issues:
+
+                db.issue.find(messages={'1':1,'3':1}, files={'7':1})
             """
+
+        def filter(self, search_matches, filterspec, sort, group):
+            ''' Return a list of the ids of the active nodes in this class that
+                match the 'filter' spec, sorted by the group spec and then the
+                sort spec.
+            '''
 
         def list(self):
             """Return a list of the ids of the active nodes in this class."""
@@ -452,7 +467,22 @@ Here is the interface provided by the hyperdatabase::
             is raised before any properties have been added.
             """
 
-TODO: additional methods
+        def getnode(self, nodeid, cache=1):
+            ''' Return a Node convenience wrapper for the node.
+
+            'nodeid' must be the id of an existing node of this class or an
+            IndexError is raised.
+
+            'cache' indicates whether the transaction cache should be queried
+            for the node. If the node has been modified and you need to
+            determine what its values prior to modification are, you need to
+            set cache=0.
+            '''
+
+    class Node:
+        ''' A convenience wrapper for the given node. It provides a mapping
+            interface to a single node's properties
+        '''
 
 Hyperdatabase Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -462,7 +492,8 @@ Hyperdatabase implementations exist to create the interface described in the
 over an existing storage mechanism. Examples are relational databases,
 \*dbm key-value databases, and so on.
 
-TODO: finish
+Several implementations are provided - they belong in the roundup.backends
+package.
 
 
 Application Example
@@ -550,8 +581,6 @@ issue classes.
 The Roundup database layer adds detectors and user nodes,
 and on issues it provides mail spools, nosy lists, and superseders.
 
-TODO: where functionality is implemented.
-
 Reserved Classes
 ~~~~~~~~~~~~~~~~
 
@@ -559,7 +588,7 @@ Internal to this layer we reserve three special classes
 of nodes that are not issues.
 
 Users
-""""""""""""
+"""""
 
 Users are stored in the hyperdatabase as nodes of
 class "user".  The "user" class has the definition::
@@ -570,7 +599,7 @@ class "user".  The "user" class has the definition::
     db.user.setkey("username")
 
 Messages
-"""""""""""""""
+""""""""
 
 E-mail messages are represented by hyperdatabase nodes of class "msg".
 The actual text content of the messages is stored in separate files.
@@ -595,7 +624,7 @@ The "summary" property contains a summary of the message for display
 in a message index.
 
 Files
-""""""""""""
+"""""
 
 Submitted files are represented by hyperdatabase
 nodes of class "file".  Like e-mail messages, the file content
@@ -731,7 +760,6 @@ typical software bug tracker.  The database is set up like this::
                        topic=hyperdb.Multilink("keyword"),
                        priority=hyperdb.Link("priority"),
                        status=hyperdb.Link("status"))
-
 
 (The "order" property hasn't been explained yet.  It
 gets used by the Web user interface for sorting.)
@@ -915,11 +943,12 @@ Command Interface Specification
 A single command, roundup, provides basic access to
 the hyperdatabase from the command line::
 
-    roundup get [-list] designator[, designator,...] propname
-    roundup set designator[, designator,...] propname=value ...
-    roundup find [-list] classname propname=value ...
+    roundup-admin help
+    roundup-admin get [-list] designator[, designator,...] propname
+    roundup-admin set designator[, designator,...] propname=value ...
+    roundup-admin find [-list] classname propname=value ...
 
-TODO: more stuff here
+See ``roundup-admin help commands`` for a complete list of commands.
 
 Property values are represented as strings in command arguments
 and in the printed results:
@@ -1163,6 +1192,8 @@ checklist for a Link or Multilink property,
           display checkboxes for the available choices to permit filtering
 ========= ====================================================================
 
+TODO: See the htmltemplate pydoc for a complete list of the functions
+
 
 Index Views
 ~~~~~~~~~~~
@@ -1181,7 +1212,7 @@ has been added for clarity)::
 
     /issue?status=unread,in-progress,resolved&amp;
         topic=security,ui&amp;
-        :group=+priority&amp;
+        :group=priority&amp;
         :sort=-activity&amp;
         :filters=status,topic&amp;
         :columns=title,status,fixer
@@ -1274,7 +1305,7 @@ Here's a simple example of an index template::
     </tr>
 
 Sorting
-""""""""""""""
+"""""""
 
 String and Date values are sorted in the natural way.
 Link properties are sorted according to the value of the
@@ -1364,6 +1395,218 @@ The spool section lists messages in the issue's "messages"
 property.  The index of messages displays the "date", "author",
 and "summary" properties on the message nodes, and selecting a
 message takes you to its content.
+
+Access Control
+--------------
+
+At each point that requires an action to be performed, the security mechanisms
+are asked if the current user has permission. This permission is defined as a
+Permission.
+
+Individual assignment of Permission to user is unwieldy. The concept of a
+Role, which encompasses several Permissions and may be assigned to many Users,
+is quite well developed in many projects. Roundup will take this path, and
+allow the multiple assignment of Roles to Users, and multiple Permissions to
+Roles. These definitions are not persistent - they're defined when the
+application initialises.
+
+There will be two levels of Permission. The Class level permissions define
+logical permissions associated with all nodes of a particular class (or all
+classes). The Node level permissions define logical permissions associated
+with specific nodes by way of their user-linked properties.
+
+
+Access Control Interface Specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The security module defines::
+
+    class Permission:
+        ''' Defines a Permission with the attributes
+            - name
+            - description
+            - klass (optional)
+
+            The klass may be unset, indicating that this permission is not
+            locked to a particular hyperdb class. There may be multiple
+            Permissions for the same name for different classes.
+        '''
+
+    class Role:
+        ''' Defines a Role with the attributes
+            - name
+            - description
+            - permissions
+        '''
+
+    class Security:
+        def __init__(self, db):
+            ''' Initialise the permission and role stores, and add in the
+                base roles (for admin user).
+            '''
+
+        def getPermission(self, permission, classname=None):
+            ''' Find the Permission matching the name and for the class, if the
+                classname is specified.
+
+                Raise ValueError if there is no exact match.
+            '''
+
+        def hasPermission(self, permission, userid, classname=None):
+            ''' Look through all the Roles, and hence Permissions, and see if
+                "permission" is there for the specified classname.
+            '''
+
+        def hasNodePermission(self, classname, nodeid, **propspec):
+            ''' Check the named properties of the given node to see if the
+                userid appears in them. If it does, then the user is granted
+                this permission check.
+
+                'propspec' consists of a set of properties and values that
+                must be present on the given node for access to be granted.
+
+                If a property is a Link, the value must match the property
+                value. If a property is a Multilink, the value must appear
+                in the Multilink list.
+            '''
+
+        def addPermission(self, **propspec):
+            ''' Create a new Permission with the properties defined in
+                'propspec'
+            '''
+
+        def addRole(self, **propspec):
+            ''' Create a new Role with the properties defined in 'propspec'
+            '''
+
+        def addPermissionToRole(self, rolename, permission):
+            ''' Add the permission to the role's permission list.
+
+                'rolename' is the name of the role to add permission to.
+            '''
+
+Modules such as ``cgi_client.py`` and ``mailgw.py`` define their own
+permissions like so (this example is ``cgi_client.py``)::
+
+    def initialiseSecurity(security):
+        ''' Create some Permissions and Roles on the security object
+
+            This function is directly invoked by security.Security.__init__()
+            as a part of the Security object instantiation.
+        '''
+        p = security.addPermission(name="Web Registration",
+            description="Anonymous users may register through the web")
+        security.addToRole('Anonymous', p)
+
+Detectors may also define roles in their init() function::
+
+    def init(db):
+        # register an auditor that checks that a user has the "May Resolve"
+        # Permission before allowing them to set an issue status to "resolved"
+        db.issue.audit('set', checkresolvedok)
+        p = db.security.addPermission(name="May Resolve", klass="issue")
+        security.addToRole('Manager', p)
+
+The instance dbinit module then has in ``open()``::
+
+    # open the database - it must be modified to init the Security class
+    # from security.py as db.security
+    db = Database(instance_config, name)
+
+    # add some extra permissions and associate them with roles
+    ei = db.security.addPermission(name="Edit", klass="issue",
+                    description="User is allowed to edit issues")
+    db.security.addPermissionToRole('User', ei)
+    ai = db.security.addPermission(name="View", klass="issue",
+                    description="User is allowed to access issues")
+    db.security.addPermissionToRole('User', ai)
+
+In the dbinit ``init()``::
+
+    # create the two default users
+    user.create(username="admin", password=Password(adminpw),
+                address=instance_config.ADMIN_EMAIL, roles='Admin')
+    user.create(username="anonymous", roles='Anonymous')
+
+Then in the code that matters, calls to ``hasPermission`` and
+``hasNodePermission`` are made to determine if the user has permission
+to perform some action::
+
+    if db.security.hasPermission('issue', 'Edit', userid):
+        # all ok
+
+    if db.security.hasNodePermission('issue', nodeid, assignedto=userid):
+        # all ok
+
+Code in the core will make use of these methods, as should code in auditors in
+custom templates. The htmltemplate will implement a new tag, ``<require>``
+which has the form::
+
+  <require permission="name,name,name" assignedto="$userid" status="open">
+   HTML to display if the user has the permission.
+  <else>
+   HTML to display if the user does not have the permission.
+  </require>
+
+where:
+
+- the permission attribute gives a comma-separated list of permission names.
+  These are checked in turn using ``hasPermission`` and requires one to
+  be OK.
+- the other attributes are lookups on the node using ``hasNodePermission``. If
+  the attribute value is "$userid" then the current user's userid is tested.
+
+Any of these tests must pass or the ``<require>`` check will fail. The section
+of html within the side of the ``<else>`` that fails is remove from processing.
+
+Authentication of Users
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Users must be authenticated correctly for the above controls to work. This is
+not done in the current mail gateway at all. Use of digital signing of
+messages could alleviate this problem.
+
+The exact mechanism of registering the digital signature should be flexible,
+with perhaps a level of trust. Users who supply their signature through their
+first message into the tracker should be at a lower level of trust to those
+who supply their signature to an admin for submission to their user details.
+
+
+Anonymous Users
+~~~~~~~~~~~~~~~
+
+The "anonymous" user must always exist, and defines the access permissions for
+anonymous users. Unknown users accessing Roundup through the web or email
+interfaces will be logged in as the "anonymous" user.
+
+
+Use Cases
+~~~~~~~~~
+
+public - end users can submit bugs, request new features, request support
+    The Users would be given the default "User" Role which gives "View" and
+    "Edit" Permission to the "issue" class.
+developer - developers can fix bugs, implement new features, provide support
+    A new Role "Developer" is created with the Permission "Fixer" which is
+    checked for in custom auditors that see whether the issue is being
+    resolved with a particular resolution ("fixed", "implemented",
+    "supported") and allows that resolution only if the permission is
+    available.
+manager - approvers/managers can approve new features and signoff bug fixes
+    A new Role "Manager" is created with the Permission "Signoff" which is
+    checked for in custom auditors that see whether the issue status is being
+    changed similar to the developer example.
+admin - administrators can add users and set user's roles
+    The existing Role "Admin" has the Permissions "Edit" for all classes
+    (including "user") and "Web Roles" which allow the desired actions.
+system - automated request handlers running various report/escalation scripts
+    A combination of existing and new Roles, Permissions and auditors could
+    be used here.
+privacy - issues that are only visible to some users
+    A new property is added to the issue which marks the user or group of
+    users who are allowed to view and edit the issue. An auditor will check
+    for edit access, and the htmltemplate <require> tag can check for view
+    access.
 
 
 Deployment Scenarios
