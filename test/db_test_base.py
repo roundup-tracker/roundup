@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.47 2004-09-28 10:29:37 a1s Exp $
+# $Id: db_test_base.py,v 1.48 2004-10-08 00:18:28 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1201,7 +1201,9 @@ class SchemaTest(MyTestCase):
 
     def init_amod(self):
         self.db = self.module.Database(config, 'admin')
-        a = self.module.Class(self.db, "a", name=String(), fooz=String())
+        a = self.module.Class(self.db, "a", name=String(), newstr=String(),
+            newint=Interval(), newnum=Number(), newbool=Boolean(),
+            newdate=Date())
         a.setkey("name")
         b = self.module.Class(self.db, "b", name=String())
         b.setkey("name")
@@ -1218,18 +1220,22 @@ class SchemaTest(MyTestCase):
         # modify "a" schema
         self.init_amod()
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
-        self.assertEqual(self.db.a.get(aid, 'fooz'), None)
+        self.assertEqual(self.db.a.get(aid, 'newstr'), None)
+        self.assertEqual(self.db.a.get(aid, 'newint'), None)
+        self.assertEqual(self.db.a.get(aid, 'newnum'), None)
+        self.assertEqual(self.db.a.get(aid, 'newbool'), None)
+        self.assertEqual(self.db.a.get(aid, 'newdate'), None)
         self.assertEqual(self.db.b.get(aid, 'name'), 'bear')
-        aid2 = self.db.a.create(name='aardvark', fooz='booz')
+        aid2 = self.db.a.create(name='aardvark', newstr='booz')
         self.db.commit(); self.db.close()
 
         # test
         self.init_amod()
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
-        self.assertEqual(self.db.a.get(aid, 'fooz'), None)
+        self.assertEqual(self.db.a.get(aid, 'newstr'), None)
         self.assertEqual(self.db.b.get(aid, 'name'), 'bear')
         self.assertEqual(self.db.a.get(aid2, 'name'), 'aardvark')
-        self.assertEqual(self.db.a.get(aid2, 'fooz'), 'booz')
+        self.assertEqual(self.db.a.get(aid2, 'newstr'), 'booz')
 
         # confirm journal's ok
         self.db.getjournal('a', aid)
@@ -1237,8 +1243,8 @@ class SchemaTest(MyTestCase):
 
     def init_amodkey(self):
         self.db = self.module.Database(config, 'admin')
-        a = self.module.Class(self.db, "a", name=String(), fooz=String())
-        a.setkey("fooz")
+        a = self.module.Class(self.db, "a", name=String(), newstr=String())
+        a.setkey("newstr")
         b = self.module.Class(self.db, "b", name=String())
         b.setkey("name")
         self.db.post_init()
@@ -1249,12 +1255,12 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.db.commit(); self.db.close()
 
-        # change the key to fooz on a
+        # change the key to newstr on a
         self.init_amodkey()
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
-        self.assertEqual(self.db.a.get(aid, 'fooz'), None)
+        self.assertEqual(self.db.a.get(aid, 'newstr'), None)
         self.assertRaises(KeyError, self.db.a.lookup, 'apple')
-        aid2 = self.db.a.create(name='aardvark', fooz='booz')
+        aid2 = self.db.a.create(name='aardvark', newstr='booz')
         self.db.commit(); self.db.close()
 
         # check
@@ -1267,7 +1273,7 @@ class SchemaTest(MyTestCase):
     def init_amodml(self):
         self.db = self.module.Database(config, 'admin')
         a = self.module.Class(self.db, "a", name=String(),
-            fooz=Multilink('a'))
+            newml=Multilink('a'))
         a.setkey('name')
         self.db.post_init()
 
@@ -1279,14 +1285,14 @@ class SchemaTest(MyTestCase):
 
         # add a multilink prop
         self.init_amodml()
-        bid = self.db.a.create(name='bear', fooz=[aid])
-        self.assertEqual(self.db.a.find(fooz=aid), [bid])
+        bid = self.db.a.create(name='bear', newml=[aid])
+        self.assertEqual(self.db.a.find(newml=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.db.commit(); self.db.close()
 
         # check
         self.init_amodml()
-        self.assertEqual(self.db.a.find(fooz=aid), [bid])
+        self.assertEqual(self.db.a.find(newml=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.assertEqual(self.db.a.lookup('bear'), bid)
 
@@ -1298,8 +1304,8 @@ class SchemaTest(MyTestCase):
         # add a multilink prop
         self.init_amodml()
         aid = self.db.a.create(name='apple')
-        bid = self.db.a.create(name='bear', fooz=[aid])
-        self.assertEqual(self.db.a.find(fooz=aid), [bid])
+        bid = self.db.a.create(name='bear', newml=[aid])
+        self.assertEqual(self.db.a.find(newml=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.assertEqual(self.db.a.lookup('bear'), bid)
         self.db.commit(); self.db.close()

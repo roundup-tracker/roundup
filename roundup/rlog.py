@@ -102,7 +102,7 @@ class BasicLogger:
         self.format = format
     def write(self, level, message):
         info = {
-            'time': time.strftime('%Y-%m-%d %H:%M:%D'),
+            'time': time.strftime('%Y-%m-%d %H:%M:%S'),
             'level': BasicLogging.NAMES[level],
             'message': message
         }

@@ -175,8 +175,8 @@ class Database(Database):
         self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
-        self.sql('''CREATE TABLE sessions (session_key TEXT,
-            session_time FLOAT(20), session_value VARCHAR(255))
+        self.sql('''CREATE TABLE sessions (session_key VARCHAR(255),
+            session_time FLOAT(20), session_value TEXT)
             TYPE=%s'''%self.mysql_backend)
         self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')

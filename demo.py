@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.17 2004-10-07 06:04:26 richard Exp $
+# $Id: demo.py,v 1.18 2004-10-08 00:18:27 richard Exp $
 
 import sys, os, string, re, urlparse, ConfigParser
 import shutil, socket, errno, BaseHTTPServer
@@ -80,9 +80,9 @@ def run_demo():
     '''
     home = os.path.abspath('demo')
     backend = 'anydbm'
-    if not os.path.exists(home) or (len(sys.argv) > 1 and sys.argv[1] == 'nuke'):
+    if not os.path.exists(home) or sys.argv[-1] == 'nuke':
         if len(sys.argv) > 2:
-            backend = sys.argv[2]
+            backend = sys.argv[-2]
         install_demo(home, backend)
 
     cfg = ConfigParser.ConfigParser()

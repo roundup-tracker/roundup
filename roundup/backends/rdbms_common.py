@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.133 2004-10-07 06:30:20 richard Exp $
+# $Id: rdbms_common.py,v 1.134 2004-10-08 00:18:28 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -378,7 +378,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # no changes
             return 0
 
-        self.config.logging.getLogger('hyperdb').info('update_class %s'%spec.classname)
+        logger = self.config.logging.getLogger('hyperdb')
+        logger.info('update_class %s'%spec.classname)
+
+        logger.debug('old_spec %r'%(old_spec,))
+        logger.debug('new_spec %r'%(new_spec,))
 
         # detect key prop change for potential index change
         keyprop_changes = {}
@@ -424,9 +428,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if isinstance(prop, Multilink):
                 self.create_multilink_table(spec, propname)
             else:
-                sql = 'alter table _%s add column _%s varchar(255)'%(
-                    spec.classname, propname)
+                # add the column
+                coltype = self.hyperdb_to_sql_datatypes[prop.__class__]
+                sql = 'alter table _%s add column _%s %s'%(
+                    spec.classname, propname, coltype)
                 self.sql(sql)
+
+                # extra Interval column
+                if isinstance(prop, Interval):
+                    sql = 'alter table _%s add column __%s_int__ BIGINT'%(
+                        spec.classname, propname)
+                    self.sql(sql)
 
                 # if the new column is a key prop, we need an index!
                 if new_spec[0] == propname:
