@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.24 2001-08-29 04:49:39 richard Exp $
+# $Id: cgi_client.py,v 1.25 2001-08-29 05:30:49 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -276,20 +276,20 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
-        # generate an edit message - nosyreactor will send it
-        # don't bother if there's no messages or nosy list
+        # generate an edit message
+        # don't bother if there's no messages or nosy list 
         props = cl.getprops()
-        nosy = len(cl.get(nid, 'nosy', []))
-        if (nosy and props.has_key('messages') and
+        note = None
+        if self.form.has_key('__note'):
+            note = self.form['__note']
+            note = note.value
+        send = len(cl.get(nid, 'nosy', [])) or note
+        if (send and props.has_key('messages') and
                 isinstance(props['messages'], hyperdb.Multilink) and
                 props['messages'].classname == 'msg'):
 
             # handle the note
-            note = None
-            if self.form.has_key('__note'):
-                note = self.form['__note']
-            if note is not None and note.value:
-                note = note.value
+            if note:
                 if '\n' in note:
                     summary = re.split(r'\n\r?', note)[0]
                 else:
@@ -513,6 +513,9 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/08/29 04:49:39  richard
+# didn't clean up fully after debugging :(
+#
 # Revision 1.23  2001/08/29 04:47:18  richard
 # Fixed CGI client change messages so they actually include the properties
 # changed (again).
