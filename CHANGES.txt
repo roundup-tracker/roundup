@@ -11,6 +11,14 @@ Fixed:
  . fixed the date module so that Date(". - 2d") works
 
 Feature:
+ . added capability to save queries:
+   - a query Class with name, klass (to search) and url (query string) properties
+   - a Multilink to query on user called queries
+   - html templates for query, and a list of queries in user.item
+   - search form has Save button & name input
+   - saved queries put in menu in pagehead
+   - for migration, none of the above is required and old behavior preserved.
+   - showquery translates search form <-> query string
  . cleaned up the indexer code:
    - it splits more words out
    - removed code we'll never use (roundup.roundup_indexer has the full
