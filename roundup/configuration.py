@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.22 2004-11-12 04:07:03 richard Exp $
+# $Id: configuration.py,v 1.23 2004-11-18 14:02:25 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -460,6 +460,11 @@ SETTINGS = (
             "You MUST include a trailing '/' in the URL."),
         (MailAddressOption, "email", "issue_tracker",
             "Email address that mail to roundup should go to."),
+        (NullableOption, "language", "",
+            "Default locale name for this tracker.\n"
+            "If this option is not set, the language is determined\n"
+            "by OS environment variable LANGUAGE, LC_ALL, LC_MESSAGES,\n"
+            "or LANG, in that order of preference."),
     )),
     ("rdbms", (
         (Option, 'name', 'roundup',
@@ -545,6 +550,10 @@ SETTINGS = (
             "if one isn't supplied in email subjects.\n"
             "To disable, leave the value blank.",
             ["MAIL_DEFAULT_CLASS"]),
+        (NullableOption, "language", "",
+            "Default locale name for the tracker mail gateway.\n"
+            "If this option is not set, mail gateway will use\n"
+            "the language of the tracker instance."),
     ), "Roundup Mail Gateway options"),
     ("nosy", (
         (RunDetectorOption, "messages_to_author", "no",
