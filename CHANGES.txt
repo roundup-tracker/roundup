@@ -1,6 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-??-?? 0.6.8
+Fixed:
+- existing trackers (ie. live ones) may be used as templates for new
+  trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
+  appended (so the demo tracker's template name is "classic-demo")
+
+
 2004-03-01 0.6.7
 Fixed:
 - be more backward-compatible when asking for EMAIL_CHARSET
