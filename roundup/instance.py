@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: instance.py,v 1.15 2004-07-19 01:49:26 richard Exp $
+#
+# $Id: instance.py,v 1.16 2004-07-25 13:14:57 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -24,7 +24,7 @@ Backwards compatibility for the old-style "imported" trackers.
 __docformat__ = 'restructuredtext'
 
 import os
-from roundup import rlog
+from roundup import configuration, rlog
 
 class Vars:
     ''' I'm just a container '''
@@ -87,28 +87,16 @@ class OldStyleTrackers:
         tracker = imp.load_package(modname, tracker_home)
 
         # ensure the tracker has all the required bits
-        for required in 'config open init Client MailGW'.split():
+        for required in 'open init Client MailGW'.split():
             if not hasattr(tracker, required):
                 raise TrackerError, \
                     'Required tracker attribute "%s" missing'%required
 
-        # init the logging
-        config = tracker.config
-        if hasattr(config, 'LOGGING_CONFIG'):
-            try:
-                import logging
-                config.logging = logging
-            except ImportError, msg:
-                raise TrackerError, 'Python logging module unavailable: %s'%msg
-            config.logging.fileConfig(config.LOGGING_CONFIG)
-        else:
-            config.logging = rlog.BasicLogging()
-            if hasattr(config, 'LOGGING_FILENAME'):
-                config.logging.setFile(config.LOGGING_FILENAME)
-            if hasattr(config, 'LOGGING_LEVEL'):
-                config.logging.setLevel(config.LOGGING_LEVEL)
-            else:
-                config.logging.setLevel('ERROR')
+        # load and apply the config
+        tracker.config = configuration.Config(tracker_home)
+        # FIXME! dbinit does "import config".
+        #   What would be the upgrade plan for existing trackers?
+        tracker.dbinit.config = tracker.config
 
         return tracker
 
@@ -120,4 +108,4 @@ def open(tracker_home):
 
     return Tracker(tracker_home)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
