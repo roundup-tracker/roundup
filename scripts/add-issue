@@ -1,8 +1,8 @@
 #! /usr/bin/env python
-# $Id: add-issue,v 1.1 2003-04-30 01:26:55 richard Exp $
+# $Id: add-issue,v 1.2 2003-04-30 01:28:37 richard Exp $
 
 '''
-Usage: %s: <tracker home> <priority> <issue title>
+Usage: %s <tracker home> <priority> <issue title>
 
 Create a new issue in the given tracker. Input is taken from STDIN to
 create the initial issue message (which may be empty). Issues will be
