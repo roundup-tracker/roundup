@@ -776,7 +776,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     id = self._klass.get(self._nodeid, prop_n, None)
                     current[prop_n] = '<a href="%s%s">%s</a>'%(
                         classname, id, current[prop_n])
- 
+
         # get the journal, sort and reverse
         history = self._klass.history(self._nodeid)
         history.sort()
@@ -1088,7 +1088,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
                           r'(?P<email>[-+=%/\w\.]+@[\w\.\-]+)|'
-                          r'(?P<item>(?P<class>[A-Za-z_]+)(\s*)?(?P<id>\d+)))')
+                          r'(?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+)))')
     def _hyper_repl(self, match):
         if match.group('url'):
             s = match.group('url')
