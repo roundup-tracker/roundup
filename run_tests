@@ -9,14 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: run_tests,v 1.8 2002-09-10 01:07:04 richard Exp $
-
-# make sure we have the htmlbase
-try:
-    from roundup.templates.classic import htmlbase
-except ImportError:
-    import setup
-    setup.buildTemplates()
+# $Id: run_tests,v 1.9 2003-04-17 06:51:44 richard Exp $
 
 from test import go
 import sys

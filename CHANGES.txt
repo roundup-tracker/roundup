@@ -63,7 +63,6 @@ Feature:
 - Roundup templates are now distributed much more sanely, allowing for
   3rd-party templates.
 
-
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages
   converted from any encoding to utf-8, outgoing messages are encoded 

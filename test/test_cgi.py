@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.14 2003-03-26 06:46:17 richard Exp $
+# $Id: test_cgi.py,v 1.15 2003-04-17 06:51:44 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -45,7 +45,7 @@ class FormTestCase(unittest.TestCase):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        init.install(self.dirname, 'classic')
+        init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, 'anydbm')
         init.initialise(self.dirname, 'sekrit')
         # check we can load the package

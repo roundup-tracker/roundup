@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.43 2003-04-10 05:11:58 richard Exp $
+# $Id: test_mailgw.py,v 1.44 2003-04-17 06:51:44 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 import rfc822
@@ -69,7 +69,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        init.install(self.dirname, 'classic')
+        init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, 'anydbm')
         init.initialise(self.dirname, 'sekrit')
         # check we can load the package
@@ -215,7 +215,6 @@ New submission from Bork, Chef <chef@bork.bork.bork>:
 
 This is a test submission of a new issue.
 
-
 ----------
 assignedto: richard
 messages: 1
@@ -272,7 +271,6 @@ Contrary, Mary <mary@test> added the comment:
 
 This is a second followup
 
-
 ----------
 status: unread -> chatting
 _______________________________________________________________________
@@ -321,7 +319,6 @@ richard <richard@test> added the comment:
 
 This is a followup
 
-
 ----------
 assignedto:  -> mary
 nosy: +john, mary
@@ -367,7 +364,6 @@ Content-Transfer-Encoding: quoted-printable
 richard <richard@test> added the comment:
 
 This is a followup
-
 
 ----------
 assignedto:  -> mary
@@ -415,7 +411,6 @@ Content-Transfer-Encoding: quoted-printable
 John Doe <john@test> added the comment:
 
 This is a followup
-
 
 ----------
 nosy: +john
@@ -465,7 +460,6 @@ richard <richard@test> added the comment:
 
 This is a followup
 
-
 ----------
 nosy: +john
 status: unread -> chatting
@@ -514,7 +508,6 @@ John Doe <john@test> added the comment:
 
 This is a followup
 
-
 ----------
 nosy: +john
 status: unread -> chatting
@@ -561,7 +554,6 @@ Content-Transfer-Encoding: quoted-printable
 John Doe <john@test> added the comment:
 
 This is a followup
-
 
 ----------
 status: unread -> chatting
@@ -610,7 +602,6 @@ richard <richard@test> added the comment:
 
 This is a followup
 
-
 ----------
 status: unread -> chatting
 _______________________________________________________________________
@@ -619,6 +610,28 @@ Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>
 _______________________________________________________________________
 
 ''')
+
+    def testFollowupEmptyMessage(self):
+        self.doNewIssue()
+
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
+
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        handler.main(message)
+        l = self.db.issue.get('1', 'nosy')
+        l.sort()
+        self.assertEqual(l, ['3', '4', '5', '6'])
+
+        # should be no file created (ie. no message)
+        assert not os.path.exists(os.environ['SENDMAILDEBUG'])
 
     def testNosyRemove(self):
         self.doNewIssue()
@@ -854,7 +867,6 @@ richard <richard@test> added the comment:
 
 This is a followup
 
-
 ----------
 status: unread -> chatting
 _______________________________________________________________________
@@ -917,6 +929,10 @@ This is a followup
         i = self.db.user.create(username='user2', address='USER2@foo.com')
         self.assertEqual(uidFromAddress(self.db, ('', 'USER2@foo.com'), 0), i)
         self.assertEqual(uidFromAddress(self.db, ('', 'user2@foo.com'), 0), i)
+
+    def testUserCreate(self):
+        i = uidFromAddress(self.db, ('', 'user@foo.com'), 1)
+        self.assertNotEqual(uidFromAddress(self.db, ('', 'user@bar.com'), 1), i)
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),
