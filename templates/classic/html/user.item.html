@@ -12,12 +12,9 @@
  </span>
 
 <td class="content" metal:fill-slot="content">
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
-You are not allowed to view this page.
-</span>
 
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+      enctype="multipart/form-data"
       tal:attributes="action context/designator">
 
 <table class="form">
@@ -57,7 +54,15 @@ You are not allowed to view this page.
  </tr>
  <tr>
   <th>Timezone</th>
-  <td tal:content="structure context/timezone/field">timezone</td>
+  <td tal:define="timezone request/form/timezone/value | python:'';
+      timezone python:timezone
+      or db._db.user.get(request.user.id, 'timezone')
+      or config.DEFAULT_TIMEZONE">
+  <input tal:condition="context/is_edit_ok" name="timezone"
+      tal:attributes="value timezone">
+  <span tal:condition="context/is_only_view_ok" tal:content="timezone" />
+   (this is a numeric hour offset)
+  </td>
  </tr>
  <tr>
   <th>E-mail address</th>
@@ -79,34 +84,7 @@ You are not allowed to view this page.
 </table>
 </form>
 
-<table class="form" tal:condition="context/is_only_view_ok">
- <tr>
-  <th colspan=2 class="header" tal:content="context/realname">realname</th>
- </tr>
- <tr>
-  <th>Login Name</th>
-  <td tal:content="context/username">username</td>
- </tr>
- <tr>
-  <th>Phone</th>
-  <td tal:content="context/phone">phone</td>
- </tr>
- <tr>
-  <th>Organisation</th>
-  <td tal:content="context/organisation">organisation</td>
- </tr>
- <tr>
-  <th>Timezone</th>
-  <td tal:content="context/timezone">timezone</td>
- </tr>
- <tr>
-  <th>E-mail address</th>
-  <td tal:content="context/address/email">address</td>
- </tr>
-</table>
-
-<tal:block tal:condition="python:context.id and context.is_view_ok()"
-           tal:replace="structure context/history" />
+<tal:block tal:replace="structure context/history" />
 
 </td>
 
