@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.10 2001-07-30 02:38:31 richard Exp $
+# $iD: HYperdb.py,v 1.10 2001/07/30 02:38:31 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -119,7 +119,12 @@ class Class:
                 else:
                     raise ValueError, 'node with key "%s" exists'%value
 
-            prop = self.properties[key]
+            # try to handle this property
+            try:
+                prop = self.properties[key]
+            except KeyError:
+                raise KeyError, '"%s" has no property "%s"'%(self.classname,
+                    key)
 
             if prop.isLinkType:
                 if type(value) != type(''):
@@ -793,6 +798,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/07/30 02:38:31  richard
+# get() now has a default arg - for migration only.
+#
 # Revision 1.9  2001/07/29 09:28:23  richard
 # Fixed sorting by clicking on column headings.
 #

@@ -55,7 +55,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.5 2001-07-29 07:01:39 richard Exp $
+$Id: mailgw.py,v 1.6 2001-08-01 04:24:21 richard Exp $
 '''
 
 
@@ -258,36 +258,37 @@ class MailGW:
         # handle the files
         files = []
         for (name, type, data) in attachments:
-            files.append(self.db.file.create(type=type, name=name, content=data))
+            files.append(self.db.file.create(type=type, name=name,
+                content=data))
 
         # now handle the db stuff
         if nodeid:
-            # If an item designator (class name and id number) is found there, the
-            # newly created "msg" node is added to the "messages" property for
-            # that item, and any new "file" nodes are added to the "files" 
+            # If an item designator (class name and id number) is found there,
+            # the newly created "msg" node is added to the "messages" property
+            # for that item, and any new "file" nodes are added to the "files" 
             # property for the item. 
-            message_id = self.db.msg.create(author=author, recipients=recipients,
-                date=date.Date('.'), summary=summary, content=content,
-                files=files)
+            message_id = self.db.msg.create(author=author,
+                recipients=recipients, date=date.Date('.'), summary=summary,
+                content=content, files=files)
             messages = cl.get(nodeid, 'messages')
             messages.append(message_id)
             props['messages'] = messages
-            apply(cl.set, (nodeid, ), props)
+            cl.set(nodeid, **props)
         else:
             # If just an item class name is found there, we attempt to create a
             # new item of that class with its "messages" property initialized to
             # contain the new "msg" node and its "files" property initialized to
             # contain any new "file" nodes. 
-            message_id = self.db.msg.create(author=author, recipients=recipients,
-                date=date.Date('.'), summary=summary, content=content,
-                files=files)
-            if not props.has_key('assignedto'):
+            message_id = self.db.msg.create(author=author,
+                recipients=recipients, date=date.Date('.'), summary=summary,
+                content=content, files=files)
+            # fill out the properties with defaults where required
+            if properties.has_key('assignedto') and \
+                    not props.has_key('assignedto'):
                 props['assignedto'] = '1'             # "admin"
-            if not props.has_key('priority'):
-                props['priority'] = '1'               # "bug-fatal"
-            if not props.has_key('status'):
+            if properties.has_key('status') and not props.has_key('status'):
                 props['status'] = '1'                 # "unread"
-            if not props.has_key('title'):
+            if properties.has_key('title') and not props.has_key('title'):
                 props['title'] = title
             props['messages'] = [message_id]
             props['nosy'] = recipients[:]
@@ -297,6 +298,9 @@ class MailGW:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.4  2001/07/28 06:43:02  richard
 # Multipart message class has the getPart method now. Added some tests for it.
 #
