@@ -506,7 +506,7 @@ Here is the interface provided by the hyperdatabase::
             have been added.
             """
 
-        def getitem(self, itemid, cache=1):
+        def getnode(self, itemid, cache=1):
             """ Return a Item convenience wrapper for the item.
 
             'itemid' must be the id of an existing item of this class or
