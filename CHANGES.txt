@@ -17,6 +17,8 @@ Fixed:
   1119475)
 - better edit conflict handling (sf bug 1118790)
 - consistent text searching behaviour (AND everywhere) (sf bug 1101036)
+- fix handling of invalid date input (sf bug 1102165)
+- retain Boolean selections in edit error handling (sf bug 1101492)
 
 
 2005-01-13 0.8.0b2
@@ -88,6 +90,7 @@ Fixed:
 - quote full-text search text in URL generation
 - fixed problem migrating mysql databases
 - fix search_checkboxes macro (sf patch 1113828)
+- fix bug in date editing in Metakit
 
 
 2005-01-06 0.7.11

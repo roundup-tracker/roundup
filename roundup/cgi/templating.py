@@ -935,8 +935,11 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 current[k] = old
 
                     elif isinstance(prop, hyperdb.Date) and args[k]:
-                        d = date.Date(args[k],
-                            translator=self._client).local(timezone)
+                        if args[k] is None:
+                            d = ''
+                        else:
+                            d = date.Date(args[k],
+                                translator=self._client).local(timezone)
                         cell.append('%s: %s'%(self._(k), str(d)))
                         if current.has_key(k):
                             cell[-1] += ' -> %s' % current[k]
@@ -1331,8 +1334,13 @@ class BooleanHTMLProperty(HTMLProperty):
         if not self.is_edit_ok():
             return self.plain()
 
-        checked = self._value and "checked" or ""
-        if self._value:
+        value = self._value
+        if isinstance(value, str) or isinstance(value, unicode):
+            value = value.strip().lower() in ('checked', 'yes', 'true',
+                'on', '1')
+
+        checked = value and "checked" or ""
+        if value:
             s = self.input(type="radio", name=self._formname, value="yes",
                 checked="checked")
             s += 'Yes'
@@ -1354,7 +1362,8 @@ class DateHTMLProperty(HTMLProperty):
             anonymous=0, offset=None):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
                 value, anonymous=anonymous)
-        if self._value:
+        if self._value and not (isinstance(self._value, str) or
+                isinstance(self._value, unicode)):
             self._value.setTranslator(self._client.translator)
         self._offset = offset
 
@@ -1410,7 +1419,9 @@ class DateHTMLProperty(HTMLProperty):
             else:
                 return self.pretty(format)
 
-        if self._value is None:
+        value = self._value
+
+        if value is None:
             if default is None:
                 raw_value = None
             else:
@@ -1424,12 +1435,16 @@ class DateHTMLProperty(HTMLProperty):
                     raise ValueError, _('default value for '
                         'DateHTMLProperty must be either DateHTMLProperty '
                         'or string date representation.')
+        elif isinstance(value, str) or isinstance(value, unicode):
+            # most likely erroneous input to be passed back to user
+            value = cgi.escape(str(value), 1)
+            return self.input(name=self._formname, value=value, size=size)
         else:
-            raw_value = self._value
+            raw_value = value
 
         if raw_value is None:
             value = ''
-        elif type(raw_value) is type(''):
+        elif isinstance(raw_value, str) or isinstance(raw_value, unicode):
             if format is self._marker:
                 value = raw_value
             else:
@@ -1632,8 +1647,8 @@ class LinkHTMLProperty(HTMLProperty):
         options = linkcl.filter(None, conditions, sort_on, (None, None))
 
         # make sure we list the current value if it's retired
-        if self._value and self._value not in options:
-            options.insert(0, self._value)
+        if value and value not in options:
+            options.insert(0, value)
 
         for optionid in options:
             # get the option value, and if it's None use an empty string
@@ -1647,6 +1662,8 @@ class LinkHTMLProperty(HTMLProperty):
             # figure the label
             if showid:
                 lab = '%s%s: %s'%(self._prop.classname, optionid, option)
+            elif not option:
+                lab = '%s%s'%(self._prop.classname, optionid)
             else:
                 lab = option
 
