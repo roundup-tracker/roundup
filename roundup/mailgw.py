@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.65 2002-02-15 00:13:38 richard Exp $
+$Id: mailgw.py,v 1.66 2002-03-14 23:59:24 richard Exp $
 '''
 
 
@@ -523,8 +523,8 @@ Unknown address: %s
         #   required body parts.
         #   ACTION: Not handleable as the content is encrypted.
         # multipart/related (rfc 1872, 2112, 2387):
-        #   The Multipart/Related content-type addresses the MIME representation         
-        #   of compound objects.
+        #   The Multipart/Related content-type addresses the MIME
+        #   representation of compound objects.
         #   ACTION: Default. If we are lucky there is a text/plain.
         #   TODO: One should use the start part and look for an Alternative
         #   that is text/plain.
@@ -803,6 +803,11 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.65  2002/02/15 00:13:38  richard
+#  . #503204 ] mailgw needs a default class
+#     - partially done - the setting of additional properties can wait for a
+#       better configuration system.
+#
 # Revision 1.64  2002/02/14 23:46:02  richard
 # . #516883 ] mail interface + ANONYMOUS_REGISTER
 #

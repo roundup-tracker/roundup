@@ -1,5 +1,3 @@
-#! /usr/bin/python
-#
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify
 # under the same terms as Python, so long as this copyright message and
@@ -16,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.2 2002-01-29 20:07:15 jhermann Exp $
+# $Id: roundup_mailgw.py,v 1.3 2002-03-14 23:59:24 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -181,6 +179,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/01/29 20:07:15  jhermann
+# Conversion to generated script stubs
+#
 # Revision 1.1  2002/01/29 19:53:08  jhermann
 # Moved scripts from top-level dir to roundup.scripts subpackage
 #

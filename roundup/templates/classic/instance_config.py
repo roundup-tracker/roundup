@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.12 2002-02-15 00:13:38 richard Exp $
+# $Id: instance_config.py,v 1.13 2002-03-14 23:59:24 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -89,8 +89,66 @@ EMAIL_SIGNATURE_POSITION = 'bottom'
 MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
 #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
+# Define what index links are available in the header, and what their
+# labels are. Each key is used to look up one of the index specifications
+# below - so 'DEFAULT' will use 'DEFAULT_INDEX'.
+# Where the FILTERSPEC has 'assignedto' with a value of None, it will be
+# replaced by the id of the logged-in user.
+HEADER_INDEX_LINKS = ['DEFAULT', 'UNASSIGNED', 'USER']
+
+# list the classes that users are able to add nodes to
+HEADER_ADD_LINKS = ['issue']
+
+# Now the DEFAULT display specification. TODO: describe format
+DEFAULT_INDEX = {
+  'LABEL': 'All Issues',
+  'CLASS': 'issue',
+  'SORT': ['-activity'],
+  'GROUP': ['priority'],
+  'FILTER': ['status'],
+  'COLUMNS': ['id','activity','title','creator','assignedto'],
+  'FILTERSPEC': {
+    'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
+  },
+}
+
+# The "unsassigned issues" index
+UNASSIGNED_INDEX = {
+  'LABEL': 'Unassigned Issues',
+  'CLASS': 'issue',
+  'SORT': ['-activity'],
+  'GROUP': ['priority'],
+  'FILTER': ['status', 'assignedto'],
+  'COLUMNS': ['id','activity','title','creator','status'],
+  'FILTERSPEC': {
+    'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
+    'assignedto': ['-1'],
+  },
+}
+
+# The "my issues" index -- note that the user's id will replace the None
+# valud of the "assignedto" filterspec
+USER_INDEX = {
+  'LABEL': 'My Issues',
+  'CLASS': 'issue',
+  'SORT': ['-activity'],
+  'GROUP': ['priority'],
+  'FILTER': ['status', 'assignedto'],
+  'COLUMNS': ['id','activity','title','creator','status'],
+  'FILTERSPEC': {
+    'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
+    'assignedto': None,
+  },
+}
+
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/02/15 00:13:38  richard
+#  . #503204 ] mailgw needs a default class
+#     - partially done - the setting of additional properties can wait for a
+#       better configuration system.
+#
 # Revision 1.11  2002/02/14 23:46:02  richard
 # . #516883 ] mail interface + ANONYMOUS_REGISTER
 #

@@ -25,6 +25,7 @@ Feature:
      the id, name and description for the priority class. The description
      field won't exist in most installations, but it will be added to the
      default templates.
+ . #517734 ] web header customisation is obscure
 
 Fixed:
  . Clean up mail handling, multipart handling.

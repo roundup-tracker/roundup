@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.112 2002-03-12 22:52:26 richard Exp $
+# $Id: cgi_client.py,v 1.113 2002-03-14 23:59:24 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
-import os, cgi, StringIO, urlparse, re, traceback, mimetypes
+import os, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random
 
 import roundupdb, htmltemplate, date, hyperdb, password
@@ -58,7 +58,7 @@ class Client:
         port = self.env['SERVER_PORT']
         if port != '80': machine = machine + ':' + port
         self.base = urlparse.urlunparse(('http', env['HTTP_HOST'], url,
-	    None, None, None))
+            None, None, None))
 
         if form is None:
             self.form = cgi.FieldStorage(environ=env)
@@ -77,8 +77,8 @@ class Client:
     def header(self, headers=None):
         '''Put up the appropriate header.
         '''
-	if headers is None:
-	    headers = {'Content-Type':'text/html'}
+        if headers is None:
+            headers = {'Content-Type':'text/html'}
         if not headers.has_key('Content-Type'):
             headers['Content-Type'] = 'text/html'
         self.request.send_response(200)
@@ -107,36 +107,114 @@ function help_window(helpurl, width, height) {
 
 </script>
 '''
+    def make_index_link(self, name):
+        '''Turn a configuration entry into a hyperlink...
+        '''
+        # get the link label and spec
+        spec = getattr(self.instance, name+'_INDEX')
+
+        d = {}
+        d[':sort'] = ','.join(map(urllib.quote, spec['SORT']))
+        d[':group'] = ','.join(map(urllib.quote, spec['GROUP']))
+        d[':filter'] = ','.join(map(urllib.quote, spec['FILTER']))
+        d[':columns'] = ','.join(map(urllib.quote, spec['COLUMNS']))
+
+        # snarf the filterspec
+        filterspec = spec['FILTERSPEC'].copy()
+
+        # now format the filterspec
+        for k, l in filterspec.items():
+            # fix up the assignedto if needed
+            if k == 'assignedto' and l is None:
+                l = [self.db.user.lookup(self.user)]
+
+            # add
+            d[urllib.quote(k)] = ','.join(map(urllib.quote, l))
+
+        # finally, format the URL
+        return '<a href="%s?%s">%s</a>'%(spec['CLASS'],
+            '&'.join([k+'='+v for k,v in d.items()]), spec['LABEL'])
+
 
     def pagehead(self, title, message=None):
+        '''Display the page heading, with information about the tracker and
+            links to more information
+        '''
+
+        # include any important message
         if message is not None:
             message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
             message = ''
+
+        # style sheet (CSS)
         style = open(os.path.join(self.instance.TEMPLATES, 'style.css')).read()
+
+        # figure who the user is
         user_name = self.user or ''
-        if self.user == 'admin':
-            admin_links = _(' | <a href="list_classes">Class List</a>' \
-                          ' | <a href="user">User List</a>' \
-                          ' | <a href="newuser">Add User</a>')
-        else:
-            admin_links = ''
-        if self.user not in (None, 'anonymous'):
+        if user_name not in ('', 'anonymous'):
             userid = self.db.user.lookup(self.user)
+        else:
+            userid = None
+
+        # figure all the header links
+        if hasattr(self.instance, 'HEADER_INDEX_LINKS'):
+            links = []
+            for name in self.instance.HEADER_INDEX_LINKS:
+                spec = getattr(self.instance, name + '_INDEX')
+                # skip if we need to fill in the logged-in user id there's
+                # no user logged in
+                if (spec['FILTERSPEC'].has_key('assignedto') and
+                        spec['FILTERSPEC']['assignedto'] is None and
+                        userid is None):
+                    continue
+                links.append(self.make_index_link(name))
+        else:
+            # no config spec - hard-code
+            links = [
+                _('All <a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>'),
+                _('Unassigned <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>')
+            ]
+
+        # if they're logged in, include links to their information, and the
+        # ability to add an issue
+        if user_name not in ('', 'anonymous'):
             user_info = _('''
-<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=-activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
 <a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
 ''')%locals()
+
+            # figure the "add class" links
+            if hasattr(self.instance, 'HEADER_ADD_LINKS'):
+                classes = self.instance.HEADER_ADD_LINKS
+            else:
+                classes = ['issue']
+            l = []
+            for class_name in classes:
+                cap_class = class_name.capitalize()
+                links.append(_('Add <a href="new%(class_name)s">'
+                    '%(cap_class)s</a>')%locals())
+
+            # if there's no config header link spec, force a user link here
+            if not hasattr(self.instance, 'HEADER_INDEX_LINKS'):
+                links.append(_('<a href="issue?assignedto=%(userid)s&status=-1,unread,chatting,open,pending&:filter=status,resolution,assignedto&:sort=-activity&:columns=id,activity,status,resolution,title,creator&:group=type&show_customization=1">My Issues</a>')%locals())
         else:
             user_info = _('<a href="login">Login</a>')
-        if self.user is not None:
-            add_links = _('''
-| Add
-<a href="newissue">Issue</a>
-''')
-        else:
             add_links = ''
+
+        # if the user is admin, include admin links
+        admin_links = ''
+        if user_name == 'admin':
+            links.append(_('<a href="list_classes">Class List</a>'))
+            links.append(_('<a href="user">User List</a>'))
+            links.append(_('<a href="newuser">Add User</a>'))
+
+        # now we have all the links, join 'em
+        links = '\n | '.join(links)
+
+        # include the javascript bit
         global_javascript = self.global_javascript%self.__dict__
+
+        # finally, format the header
         self.write(_('''<html><head>
 <title>%(title)s</title>
 <style type="text/css">%(style)s</style>
@@ -148,12 +226,7 @@ function help_window(helpurl, width, height) {
 <tr class="location-bar"><td><big><strong>%(title)s</strong></big></td>
 <td align=right valign=bottom>%(user_name)s</td></tr>
 <tr class="location-bar">
-<td align=left>All
-<a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
-| Unassigned
-<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
-%(add_links)s
-%(admin_links)s</td>
+<td align=left>%(links)s</td>
 <td align=right>%(user_info)s</td>
 </table>
 ''')%locals())
@@ -247,15 +320,16 @@ function help_window(helpurl, width, height) {
             
         return visible
 
+    # TODO: make this go away some day...
     default_index_sort = ['-activity']
     default_index_group = ['priority']
     default_index_filter = ['status']
     default_index_columns = ['id','activity','title','status','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
+
     def index(self):
-        ''' put up an index
+        ''' put up an index - no class specified
         '''
-        self.classname = 'issue'
         # see if the web has supplied us with any customisation info
         defaults = 1
         for key in ':sort', ':group', ':filter', ':columns':
@@ -263,18 +337,27 @@ function help_window(helpurl, width, height) {
                 defaults = 0
                 break
         if defaults:
-            # no info supplied - use the defaults
-            sort = self.default_index_sort
-            group = self.default_index_group
-            filter = self.default_index_filter
-            columns = self.default_index_columns
-            filterspec = self.default_index_filterspec
+            # try the instance config first
+            if hasattr(self.instance, 'DEFAULT_INDEX_CLASS'):
+                self.classname = self.instance.DEFAULT_INDEX_CLASS
+                sort = self.instance.DEFAULT_INDEX_SORT
+                group = self.instance.DEFAULT_INDEX_GROUP
+                filter = self.instance.DEFAULT_INDEX_FILTER
+                columns = self.instance.DEFAULT_INDEX_COLUMNS
+                filterspec = self.instance.DEFAULT_INDEX_FILTERSPEC
+
+            else:
+                # nope - fall back on the old way of doing it
+                self.classname = 'issue'
+                sort = self.default_index_sort
+                group = self.default_index_group
+                filter = self.default_index_filter
+                columns = self.default_index_columns
+                filterspec = self.default_index_filterspec
         else:
-            sort = self.index_arg(':sort')
-            group = self.index_arg(':group')
-            filter = self.index_arg(':filter')
-            columns = self.index_arg(':columns')
-            filterspec = self.index_filterspec(filter)
+            # make list() extract the info from the CGI environ
+            self.classname = 'issue'
+            sort = group = filter = columns = filterspec = None
         return self.list(columns=columns, filter=filter, group=group,
             sort=sort, filterspec=filterspec)
 
@@ -536,7 +619,7 @@ function help_window(helpurl, width, height) {
 
         # set status to 'unread' if not specified - a status of '- no
         # selection -' doesn't make sense
-        if not props.has_key('status'):
+        if not props.has_key('status') and cl.getprops().has_key('status'):
             try:
                 unread_id = self.db.status.lookup('unread')
             except KeyError:
@@ -1192,60 +1275,6 @@ class ExtendedClient(Client):
     default_index_columns = ['activity','status','title','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
 
-    def pagehead(self, title, message=None):
-        if message is not None:
-            message = _('<div class="system-msg">%(message)s</div>')%locals()
-        else:
-            message = ''
-        style = open(os.path.join(self.instance.TEMPLATES, 'style.css')).read()
-        user_name = self.user or ''
-        if self.user == 'admin':
-            admin_links = _(' | <a href="list_classes">Class List</a>' \
-                          ' | <a href="user">User List</a>' \
-                          ' | <a href="newuser">Add User</a>')
-        else:
-            admin_links = ''
-        if self.user not in (None, 'anonymous'):
-            userid = self.db.user.lookup(self.user)
-            user_info = _('''
-<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=-activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
-<a href="support?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=-activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
-<a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
-''')%locals()
-        else:
-            user_info = _('<a href="login">Login</a>')
-        if self.user is not None:
-            add_links = _('''
-| Add
-<a href="newissue">Issue</a>,
-<a href="newsupport">Support</a>,
-''')
-        else:
-            add_links = ''
-        global_javascript = self.global_javascript%self.__dict__
-        self.write(_('''<html><head>
-<title>%(title)s</title>
-<style type="text/css">%(style)s</style>
-</head>
-%(global_javascript)s
-<body bgcolor=#ffffff>
-%(message)s
-<table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%(title)s</strong></big></td>
-<td align=right valign=bottom>%(user_name)s</td></tr>
-<tr class="location-bar">
-<td align=left>All
-<a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
-<a href="support?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
-| Unassigned
-<a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
-<a href="support?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
-%(add_links)s
-%(admin_links)s</td>
-<td align=right>%(user_info)s</td>
-</table>
-''')%locals())
-
 def parsePropsFromForm(db, cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
     '''
@@ -1327,6 +1356,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.112  2002/03/12 22:52:26  richard
+# more pychecker warnings removed
+#
 # Revision 1.111  2002/02/25 04:32:21  richard
 # ahem
 #
