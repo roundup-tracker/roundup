@@ -23,8 +23,6 @@ import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
      Undefined, Default, _parse_expr
 from string import strip, split, join, replace, lstrip
-from Acquisition import aq_base, aq_inner, aq_parent
-
 
 _engine = None
 def getEngine():
@@ -45,39 +43,23 @@ def installHandlers(engine):
     reg('not', NotExpr)
     reg('defer', DeferExpr)
 
-if sys.modules.has_key('Zope'):
-    import AccessControl
-    from AccessControl import getSecurityManager
-    try:
-        from AccessControl import Unauthorized
-    except ImportError:
-        Unauthorized = "Unauthorized"
-    if hasattr(AccessControl, 'full_read_guard'):
-        from ZRPythonExpr import PythonExpr, _SecureModuleImporter, \
-             call_with_ns
+from PythonExpr import getSecurityManager, PythonExpr
+try:
+    from zExceptions import Unauthorized
+except ImportError:
+    Unauthorized = "Unauthorized"
+def call_with_ns(f, ns, arg=1):
+    if arg==2:
+        return f(None, ns)
     else:
-        from ZPythonExpr import PythonExpr, _SecureModuleImporter, \
-             call_with_ns
-else:
-    from PythonExpr import getSecurityManager, PythonExpr
-    try:
-        from zExceptions import Unauthorized
-    except ImportError:
-        Unauthorized = "Unauthorized"
-    def call_with_ns(f, ns, arg=1):
-        if arg==2:
-            return f(None, ns)
-        else:
-            return f(ns)
+        return f(ns)
 
-    class _SecureModuleImporter:
-        """Simple version of the importer for use with trusted code."""
-        __allow_access_to_unprotected_subobjects__ = 1
-        def __getitem__(self, module):
-            __import__(module)
-            return sys.modules[module]
-
-SecureModuleImporter = _SecureModuleImporter()
+class _SecureModuleImporter:
+    """Simple version of the importer for use with trusted code."""
+    __allow_access_to_unprotected_subobjects__ = 1
+    def __getitem__(self, module):
+        __import__(module)
+        return sys.modules[module]
 
 Undefs = (Undefined, AttributeError, KeyError,
           TypeError, IndexError, Unauthorized)
@@ -90,7 +72,7 @@ def render(ob, ns):
     if hasattr(ob, '__render_with_namespace__'):
         ob = call_with_ns(ob.__render_with_namespace__, ns)
     else:
-        base = aq_base(ob)
+        base = ob
         if callable(base):
             try:
                 if getattr(base, 'isDocTemp', 0):
@@ -283,12 +265,9 @@ def restrictedTraverse(self, path, securityManager,
     if not path[0]:
         # If the path starts with an empty string, go to the root first.
         self = self.getPhysicalRoot()
-        if not securityManager.validateValue(self):
-            raise Unauthorized, name
         path.pop(0)
-        
+
     path.reverse()
-    validate = securityManager.validate
     object = self
     #print 'TRAVERSE', (object, path)
     while path:
@@ -303,73 +282,34 @@ def restrictedTraverse(self, path, securityManager,
             # Never allowed in a URL.
             raise AttributeError, name
 
-        if name=='..':
-            o = get(object, 'aq_parent', M)
-            if o is not M:
-                if not validate(object, object, name, o):
-                    raise Unauthorized, name
-                object=o
-                continue
-
-        t = get(object, '__bobo_traverse__', N)
-        if t is not N:
-            o=t(REQUEST, name)
-                    
-            container = None
-            if has(o, 'im_self'):
-                container = o.im_self
-            elif (has(get(object, 'aq_base', object), name)
-                and get(object, name) == o):
-                container = object
-            if not validate(object, container, name, o):
-                raise Unauthorized, name
-        else:
-            # Try an attribute.
-            o = get(object, name, M)
-        #    print '...', (object, name, M, o)
-            if o is not M:
-                # Check access to the attribute.
-                if has(object, 'aq_acquire'):
-                    object.aq_acquire(
-                        name, validate2, validate)
-                else:
-                    if not validate(object, object, name, o):
-                        raise Unauthorized, name
-            else:
-                # Try an item.
-                try:
-                    # XXX maybe in Python 2.2 we can just check whether
-                    # the object has the attribute "__getitem__"
-                    # instead of blindly catching exceptions.
-        #            print 'Try an item', (object, name)
-                    o = object[name]
-                except AttributeError, exc:
-                    if str(exc).find('__getitem__') >= 0:
-                        # The object does not support the item interface.
-                        # Try to re-raise the original attribute error.
-                        # XXX I think this only happens with
-                        # ExtensionClass instances.
-                        get(object, name)
-                    raise
-                except TypeError, exc:
-                    if str(exc).find('unsubscriptable') >= 0:
-                        # The object does not support the item interface.
-                        # Try to re-raise the original attribute error.
-                        # XXX This is sooooo ugly.
-                        get(object, name)
-                    raise
-                else:
-                    # Check access to the item.
-                    if not validate(object, object, name, o):
-                        raise Unauthorized, name
+        # Try an attribute.
+        o = get(object, name, M)
+#       print '...', (object, name, M, o)
+        if o is M:
+            # Try an item.
+#           print '... try an item'
+            try:
+                # XXX maybe in Python 2.2 we can just check whether
+                # the object has the attribute "__getitem__"
+                # instead of blindly catching exceptions.
+                o = object[name]
+            except AttributeError, exc:
+                if str(exc).find('__getitem__') >= 0:
+                    # The object does not support the item interface.
+                    # Try to re-raise the original attribute error.
+                    # XXX I think this only happens with
+                    # ExtensionClass instances.
+                    get(object, name)
+                raise
+            except TypeError, exc:
+                if str(exc).find('unsubscriptable') >= 0:
+                    # The object does not support the item interface.
+                    # Try to re-raise the original attribute error.
+                    # XXX This is sooooo ugly.
+                    get(object, name)
+                raise
         #print '... object is now', `o`
         object = o
 
     return object
-
-
-def validate2(orig, inst, name, v, real_validate):
-    if not real_validate(orig, inst, name, v):
-        raise Unauthorized, name
-    return 1
 

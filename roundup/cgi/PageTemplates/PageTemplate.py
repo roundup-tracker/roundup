@@ -19,18 +19,16 @@ __version__='$Revision: 1.1 $'[11:-2]
 
 import sys
 
-from TAL.TALParser import TALParser
-from TAL.HTMLTALParser import HTMLTALParser
-from TAL.TALGenerator import TALGenerator
-from TAL.TALInterpreter import TALInterpreter
+from roundup.cgi.TAL.TALParser import TALParser
+from roundup.cgi.TAL.HTMLTALParser import HTMLTALParser
+from roundup.cgi.TAL.TALGenerator import TALGenerator
+from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from Expressions import getEngine
 from string import join, strip, rstrip, split, replace, lower, find
 from cStringIO import StringIO
-from ExtensionClass import Base
 from ComputedAttribute import ComputedAttribute
 
-
-class PageTemplate(Base):
+class PageTemplate:
     "Page Templates using TAL, TALES, and METAL"
      
     content_type = 'text/html'

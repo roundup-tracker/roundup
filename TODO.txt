@@ -49,11 +49,15 @@ pending web: search "refinement"
 pending web: have roundup.cgi pick up instance config from the environment 
 
 New templating TODO:
+. move PageTempalates, TAL, ZTUtils into roundup.cgi and clean up
 . rewritten documentation (can come after the beta though so stuff is settled)
+. modify cgitb to handle PageTemplate errors better
 . add :required to edit action
 active web: title is stoopid
 active hyperdb: full-text searching doesn't appear to match stuff in titles,
                 even though they're supposed to be indexed...
+active web: daemonify roundup-server (fork, logfile, pidfile)
+active web: UNIX init.d script for roundup-server
 
 ongoing: any bugs
 

@@ -10,22 +10,19 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
-__doc__='''Package of template utility classes and functions.
+__doc__='''Package wrapper for Page Templates
 
-$Id: __init__.py,v 1.1 2002-08-30 08:25:34 richard Exp $'''
-__version__='$Revision: 1.1 $'[11:-2]
+This wrapper allows the Page Template modules to be segregated in a
+separate package.
 
-from Batch import Batch
-from Iterator import Iterator
-from Tree import TreeMaker, encodeExpansion, decodeExpansion, a2b, b2a
-from SimpleTree import SimpleTreeMaker
+$Id: __init__.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
+__version__='$$'[11:-2]
 
-import sys
-if sys.modules.has_key('Zope'):
-    del sys
-    __allow_access_to_unprotected_subobjects__ = 1
-    __roles__ = None
 
-    from Zope import Batch, TreeMaker, SimpleTreeMaker, LazyFilter
-    from Zope import url_query, make_query, make_hidden_input
+# Placeholder for Zope Product data
+misc_ = {}
 
+def initialize(context):
+    # Import lazily, and defer initialization to the module
+    import ZopePageTemplate
+    ZopePageTemplate.initialize(context)

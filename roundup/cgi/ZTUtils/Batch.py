@@ -12,18 +12,16 @@
 ##############################################################################
 __doc__='''Batch class, for iterating over a sequence in batches
 
-$Id: Batch.py,v 1.1 2002-08-30 08:25:33 richard Exp $'''
+$Id: Batch.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
 __version__='$Revision: 1.1 $'[11:-2]
 
-from ExtensionClass import Base
-
-class LazyPrevBatch(Base):
+class LazyPrevBatch:
     def __of__(self, parent):
         return Batch(parent._sequence, parent._size,
                      parent.first - parent._size + parent.overlap, 0,
                      parent.orphan, parent.overlap)
 
-class LazyNextBatch(Base):
+class LazyNextBatch:
     def __of__(self, parent):
         try: parent._sequence[parent.end]
         except IndexError: return None
@@ -31,12 +29,12 @@ class LazyNextBatch(Base):
                      parent.end - parent.overlap, 0,
                      parent.orphan, parent.overlap)
 
-class LazySequenceLength(Base):
+class LazySequenceLength:
     def __of__(self, parent):
         parent.sequence_length = l = len(parent._sequence)
         return l
 
-class Batch(Base):
+class Batch:
     """Create a sequence batch"""
     __allow_access_to_unprotected_subobjects__ = 1
 

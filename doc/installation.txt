@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.19 $
+:Version: $Revision: 1.20 $
 
 .. contents::
 
@@ -85,7 +85,21 @@ Installation
 ============
 
 Set aside 15-30 minutes. Please make sure you're using a supported version of
-Python -- see `testing your python`_.
+Python -- see `testing your python`_. There's three sections to this
+installation guide:
+
+1. `basic installation steps`_ that all installers must follow
+2. `shared environment steps`_ to take if you're installing on a shared
+    UNIX machine and want to restrict local access to roundup
+3. `internet setup`_ steps to take if your tracker is to be used by the wider
+    internet community
+
+Most users will only need to follow the first step, since the environment will
+be a trusted one.
+
+
+Basic Installation Steps
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. To install the Roundup support code into your Python tree and
    Roundup scripts into /usr/local/bin::
@@ -139,32 +153,47 @@ Python -- see `testing your python`_.
 
       Once this is done, the instance has been created.
 
-3. Each instance ideally should have its own UNIX group, so create
-   a UNIX group (edit ``/etc/group`` or your appropriate NIS map if
-   you're using NIS).  To continue with my examples so far, I would
-   create the UNIX group 'support', although the name of the UNIX
-   group does not have to be the same as the instance name.  To this
-   'support' group I then add all of the UNIX usernames who will be
-   working with this Roundup instance.  In addition to 'real' users,
-   the Roundup email gateway will need to have permissions to this
-   area as well, so add the user your mail service runs as to the
-   group.  The UNIX group might then look like::
+3. XXX Set up the CGI interface
 
-        support:*:1002:jblaine,samh,geezer,mail
+4. XXX Set up the mail gateway
 
-   If you intend to use the web interface (as most people do), you
-   should also add the username your web server runs as to the group.
-   My group now looks like this::
 
-        support:*:1002:jblaine,samh,geezer,mail,apache
+Shared Environment Steps
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-4. Configure your new instance by editing the file ``instance_config.py``
-   located in the instance home you specified in step 2c above.  This
-   file is Python code and must adhere to Python syntax rules, but
-   don't be daunted if you do not know Python - it should look pretty
-   straightfoward if you carefully read the comments in the file.
+Each instance ideally should have its own UNIX group, so create
+a UNIX group (edit ``/etc/group`` or your appropriate NIS map if
+you're using NIS).  To continue with my examples so far, I would
+create the UNIX group 'support', although the name of the UNIX
+group does not have to be the same as the instance name.  To this
+'support' group I then add all of the UNIX usernames who will be
+working with this Roundup instance.  In addition to 'real' users,
+the Roundup email gateway will need to have permissions to this
+area as well, so add the user your mail service runs as to the
+group.  The UNIX group might then look like::
 
-5. There are two supported ways to get emailed issues into the
+     support:*:1002:jblaine,samh,geezer,mail
+
+If you intend to use the web interface (as most people do), you
+should also add the username your web server runs as to the group.
+My group now looks like this::
+
+     support:*:1002:jblaine,samh,geezer,mail,apache
+
+An alternative to the above is to create a new user who has the sole
+responsibility of running roundup. This user:
+
+1. runs the CGI interface daemon
+2. runs regular polls for email
+3. runs regular checks (using cron) to ensure the daemon is up
+4. optionally has no login password so that nobody but the "root" user
+   may actually login and play with the roundup setup.
+
+
+Internet Setup
+~~~~~~~~~~~~~~
+
+1. There are two supported ways to get emailed issues into the
    Roundup instance.  You should pick ONE of the following, both
    of which will continue my example setup from above:
 
@@ -185,10 +214,13 @@ Python -- see `testing your python`_.
    If you don't want to use the email component of Roundup, then remove the
    "``nosyreator.py``" module from your instance "``detectors``" directory.
 
-6. Test the email gateway.  Under most flavors of UNIX, this
+2. Test the email gateway.  Under most flavors of UNIX, this
    can be done by::
 
      echo test | mail -s '[issue] test' support@YOUR_DOMAIN_HERE
+
+XXX mention HTTPS
+XXX mention Basic vs. cookie auth
 
 
 Upgrading

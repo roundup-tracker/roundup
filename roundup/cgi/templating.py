@@ -16,31 +16,11 @@ try:
 except ImportError:
     StructuredText = None
 
-# Make sure these modules are loaded
-# I need these to run PageTemplates outside of Zope :(
-# If we're running in a Zope environment, these modules will be loaded
-# already...
-if not sys.modules.has_key('zLOG'):
-    import zLOG
-    sys.modules['zLOG'] = zLOG
-if not sys.modules.has_key('MultiMapping'):
-    import MultiMapping
-    sys.modules['MultiMapping'] = MultiMapping
-if not sys.modules.has_key('ComputedAttribute'):
-    import ComputedAttribute
-    sys.modules['ComputedAttribute'] = ComputedAttribute
-if not sys.modules.has_key('ExtensionClass'):
-    import ExtensionClass
-    sys.modules['ExtensionClass'] = ExtensionClass
-if not sys.modules.has_key('Acquisition'):
-    import Acquisition
-    sys.modules['Acquisition'] = Acquisition
-
-# now it's safe to import PageTemplates, TAL and ZTUtils
-from PageTemplates import PageTemplate
-from PageTemplates.Expressions import getEngine
-from TAL.TALInterpreter import TALInterpreter
-import ZTUtils
+# bring in the templating support
+from roundup.cgi.PageTemplates import PageTemplate
+from roundup.cgi.PageTemplates.Expressions import getEngine
+from roundup.cgi.TAL.TALInterpreter import TALInterpreter
+from roundup.cgi import ZTUtils
 
 # XXX WAH pagetemplates aren't pickleable :(
 #def getTemplate(dir, name, classname=None, request=None):

@@ -10,19 +10,11 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
-__doc__='''Package wrapper for Page Templates
+__doc__='''Package of template utility classes and functions.
 
-This wrapper allows the Page Template modules to be segregated in a
-separate package.
+$Id: __init__.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
+__version__='$Revision: 1.1 $'[11:-2]
 
-$Id: __init__.py,v 1.1 2002-08-30 08:27:34 richard Exp $'''
-__version__='$$'[11:-2]
+from Batch import Batch
+from Iterator import Iterator
 
-
-# Placeholder for Zope Product data
-misc_ = {}
-
-def initialize(context):
-    # Import lazily, and defer initialization to the module
-    import ZopePageTemplate
-    ZopePageTemplate.initialize(context)

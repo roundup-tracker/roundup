@@ -15,8 +15,6 @@
 Generic expat-based XML parser base class.
 """
 
-import zLOG
-
 class XMLParser:
 
     ordered_attributes = 0
@@ -50,8 +48,8 @@ class XMLParser:
             try:
                 self.parser.ordered_attributes = self.ordered_attributes
             except AttributeError:
-                zLOG.LOG("TAL.XMLParser", zLOG.INFO, 
-                         "Can't set ordered_attributes")
+                #zLOG.LOG("TAL.XMLParser", zLOG.INFO, 
+                #         "Can't set ordered_attributes")
                 self.ordered_attributes = 0
         for name in self.handler_names:
             method = getattr(self, name, None)
@@ -59,8 +57,9 @@ class XMLParser:
                 try:
                     setattr(p, name, method)
                 except AttributeError:
-                    zLOG.LOG("TAL.XMLParser", zLOG.PROBLEM,
-                             "Can't set expat handler %s" % name)
+                    #zLOG.LOG("TAL.XMLParser", zLOG.PROBLEM,
+                    #         "Can't set expat handler %s" % name)
+                    pass
 
     def createParser(self, encoding=None):
         global XMLParseError

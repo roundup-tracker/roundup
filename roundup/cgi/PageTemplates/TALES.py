@@ -17,7 +17,8 @@ An implementation of a generic TALES engine
 
 __version__='$Revision: 1.1 $'[11:-2]
 
-import re, sys, ZTUtils
+import re, sys
+from roundup.cgi import ZTUtils
 from MultiMapping import MultiMapping
 
 StringType = type('')

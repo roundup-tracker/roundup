@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.71 2002-09-04 07:12:19 richard Exp $
+#$Id: back_anydbm.py,v 1.72 2002-09-05 00:33:22 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -803,7 +803,7 @@ class Class(hyperdb.Class):
                 l = []
                 for entry in value:
                     if type(entry) != type(''):
-                        raise ValueError, '"%s" multilink value (%r) '
+                        raise ValueError, '"%s" multilink value (%r) '\
                             'must contain Strings'%(key, value)
                     # if it isn't a number, it's a key
                     if not num_re.match(entry):
@@ -1909,6 +1909,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.71  2002/09/04 07:12:19  richard
+#better error message
+#
 #Revision 1.70  2002/09/04 04:29:36  richard
 #bugfix
 #
