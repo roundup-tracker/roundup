@@ -5,6 +5,9 @@ are given with the most recent entry first.
 Feature:
 - added CSV export to index pages
 
+Fixed:
+- Boolean HTML templating was broken
+
 
 2004-03-24 0.7.0b1
 Major new features:

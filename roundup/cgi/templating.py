@@ -1205,7 +1205,7 @@ class BooleanHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-        if not is_edit_ok():
+        if not self.is_edit_ok():
             return self.plain()
 
         checked = self._value and "checked" or ""
