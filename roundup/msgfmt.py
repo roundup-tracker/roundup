@@ -100,6 +100,8 @@ def generate():
 def make(filename, outfile):
     ID = 1
     STR = 2
+    global MESSAGES
+    MESSAGES = {}
 
     # Compute .mo name from .po name and arguments
     if filename.endswith('.po'):
