@@ -44,15 +44,21 @@ pending web: Quick help links next to the property labels giving a
 pending web: clicking on a group header should filter for that type of entry
 pending web: re-enable auth by basic http auth
 
-active web: have the page layout (header/footer) be templatable
-active web: fixing the templating so it works (GM / RJ)
-active web: re-work cgi interface to abstract out the explicit "issue"
-            interface
-active web: have index page handle mid-page errors better so header and
-            footer are still visible
+New templating TODO
+. classhelp
+. query saving
+. search page is a shambles
+. view customisation is a shambles
+. style is a shambles
 
 ongoing: any bugs
 
+done web: have the page layout (header/footer) be templatable (RJ)
+done web: fixing the templating so it works (RJ)
+done web: re-work cgi interface to abstract out the explicit "issue"
+          interface (RJ)
+done web: have index page handle mid-page errors better so header and
+          footer are still visible (RJ)
 done hyperdb: write a backend for gadfly (it's as done as it's going to get)
 done hyperdb: full-text search also search certain String properties (RJ)
 done hyperdb: further split the *dbm backends from the core code, allowing
