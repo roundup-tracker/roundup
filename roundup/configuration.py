@@ -1,9 +1,10 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.16 2004-07-28 09:46:58 a1s Exp $
+# $Id: configuration.py,v 1.17 2004-10-17 17:35:32 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
+import getopt
 import imp
 import os
 import time
@@ -303,7 +304,7 @@ class FilePathOption(Option):
     """
 
     class_description = "The path may be either absolute or relative\n" \
-        " to the directory containig this config file."
+        "to the directory containig this config file."
 
     def get(self):
         _val = Option.get(self)
@@ -588,15 +589,18 @@ class Config:
     section_options = None
     # mapping from option names and aliases to Option instances
     options = None
+    # actual name of the config file.  set on load.
+    filepath = os.path.join(HOME, INI_FILE)
 
-    def __init__(self, home_dir=None, layout=None):
+    def __init__(self, config_path=None, layout=None):
         """Initialize confing instance
 
         Parameters:
-            home_dir:
-                optional configuration directory.
-                If passed, load the config from that directory
-                after processing config layout (if any).
+            config_path:
+                optional directory or file name of the config file.
+                If passed, load the config after processing layout (if any).
+                If config_path is a directory name, use default base name
+                of the config file.
             layout:
                 optional configuration layout, a sequence of
                 section definitions suitable for .add_section()
@@ -611,8 +615,8 @@ class Config:
         if layout:
             for section in layout:
                 self.add_section(*section)
-        if home_dir is not None:
-            self.load(home_dir)
+        if config_path is not None:
+            self.load(config_path)
 
     def add_section(self, section, options, description=None):
         """Define new config section
@@ -698,16 +702,30 @@ class Config:
         for _option in self.items():
             _option.reset()
 
-    # This is a placeholder.  TBD.
     # Meant for commandline tools.
     # Allows automatic creation of configuration files like this:
     #  roundup-server -p 8017 -u roundup --save-config
-    def getopt(self, args, **options):
+    def getopt(self, args, short_options="", long_options=(),
+        config_load_options=("C", "config"), **options
+    ):
         """Apply options specified in command line arguments.
 
         Parameters:
             args:
                 command line to parse (sys.argv[1:])
+            short_options:
+                optional string of letters for command line options
+                that are not config options
+            long_options:
+                optional list of names for long options
+                that are not config options
+            config_load_options:
+                two-element sequence (letter, long_option) defining
+                the options for config file.  If unset, don't load
+                config file; otherwise config file is read prior
+                to applying other options.  Short option letter
+                must not have a colon and long_option name must
+                not have an equal sign or '--' prefix.
             options:
                 mapping from option names to command line option specs.
                 e.g. server_port="p:", server_user="u:"
@@ -720,6 +738,53 @@ class Config:
         processed options are removed from returned option list.
 
         """
+        # take a copy of long_options
+        long_options = list(long_options)
+        # build option lists
+        cfg_names = {}
+        booleans = []
+        for (name, letter) in options.items():
+            cfg_name = name.upper()
+            short_opt = "-" + letter[0]
+            name = name.lower().replace("_", "-")
+            cfg_names.update({short_opt: cfg_name, "--" + name: cfg_name})
+
+            short_options += letter
+            if letter[-1] == ":":
+                long_options.append(name + "=")
+            else:
+                booleans.append(short_opt)
+                long_options.append(name)
+
+        if config_load_options:
+            short_options += config_load_options[0] + ":"
+            long_options.append(config_load_options[1] + "=")
+            # compute names that will be searched in getopt return value
+            config_load_options = (
+                "-" + config_load_options[0],
+                "--" + config_load_options[1],
+            )
+        # parse command line arguments
+        optlist, args = getopt.getopt(args, short_options, long_options)
+        # load config file if requested
+        if config_load_options:
+            for option in optlist:
+                if option[0] in config_load_options:
+                    self.load_ini(option[1])
+                    optlist.remove(option)
+                    break
+        # apply options
+        extra_options = []
+        for (opt, arg) in optlist:
+            if (opt in booleans): # and not arg
+                arg = "yes"
+            try:
+                name = cfg_names[opt]
+            except KeyError:
+                extra_options.append((opt, arg))
+            else:
+                self[name] = arg
+        return (extra_options, args)
 
     # option and section locators (used in option access methods)
 
@@ -746,14 +811,24 @@ class Config:
                 need_set.setdefault(option.section, []).append(option.setting)
         return need_set
 
+    def _adjust_options(self, config):
+        """Load ad-hoc option definitions from ConfigParser instance."""
+        pass
+
+    def _get_name(self):
+        """Return the service name for config file heading"""
+        return ""
+
     # file operations
 
-    def load_ini(self, home_dir, defaults=None):
+    def load_ini(self, config_path, defaults=None):
         """Set options from config.ini file in given home_dir
 
         Parameters:
-            home_dir:
-                config home directory
+            config_path:
+                directory or file name of the config file.
+                If config_path is a directory name, use default
+                base name of the config file
             defaults:
                 optional dictionary of defaults for ConfigParser
 
@@ -761,15 +836,23 @@ class Config:
         no error is raised.  Config will be reset to defaults.
 
         """
+        if os.path.isdir(config_path):
+            home_dir = config_path
+            config_path = os.path.join(config_path, self.INI_FILE)
+        else:
+            home_dir = os.path.dirname(config_path)
         # parse the file
         config_defaults = {"HOME": home_dir}
         if defaults:
             config_defaults.update(defaults)
         config = ConfigParser.ConfigParser(config_defaults)
         config.read([os.path.join(home_dir, self.INI_FILE)])
-        # .ini file loaded ok.  set the options, starting from HOME
-        self.reset()
+        # .ini file loaded ok.
         self.HOME = home_dir
+        self.filepath = config_path
+        self._adjust_options(config)
+        # set the options, starting from HOME
+        self.reset()
         for option in self.items():
             option.load_ini(config)
 
@@ -789,12 +872,12 @@ class Config:
 
         """
         if ini_file is None:
-            ini_file = os.path.join(self.HOME, self.INI_FILE)
+            ini_file = self.filepath
         _tmp_file = os.path.splitext(ini_file)[0]
         _bak_file = _tmp_file + ".bak"
         _tmp_file = _tmp_file + ".tmp"
         _fp = file(_tmp_file, "wt")
-        _fp.write("# %s configuration file\n" % self["TRACKER_NAME"])
+        _fp.write("# %s configuration file\n" % self._get_name())
         _fp.write("# Autogenerated at %s\n" % time.asctime())
         need_set = self._get_unset_options()
         if need_set:
@@ -891,40 +974,17 @@ class UserConfig(Config):
 
     """
 
-    def load_ini(self, home_dir, defaults=None):
-        """Load options from config.ini file in given home_dir
-
-        Parameters:
-            home_dir:
-                config home directory
-            defaults:
-                optional dictionary of defaults for ConfigParser
-
-        Options are automatically created as they are read
-        from the config file.
-
-        Note: if home_dir does not contain config.ini file,
-        no error is raised.  Config will be reset to defaults.
-
-        """
-        # parse the file
-        config_defaults = {"HOME": home_dir}
-        if defaults:
-            config_defaults.update(defaults)
-        config = ConfigParser.ConfigParser(defaults)
-        config.read([os.path.join(home_dir, self.INI_FILE)])
-        # .ini file loaded ok.
-        self.HOME = home_dir
+    def _adjust_options(self, config):
+        # config defaults appear in all sections.
+        # we'll need to filter them out.
+        defaults = config.defaults().keys()
         # see what options are already defined and add missing ones
         preset = [(option.section, option.setting) for option in self.items()]
         for section in config.sections():
             for name in config.options(section):
-                if (section, name) not in preset:
+                if ((section, name) not in preset) \
+                and (name not in defaults):
                     self.add_option(Option(self, section, name))
-        # set the options
-        self.reset()
-        for option in self.items():
-            option.load_ini(config)
 
 class CoreConfig(Config):
 
@@ -967,6 +1027,9 @@ class CoreConfig(Config):
                 if not settings:
                     del need_set["mail"]
         return need_set
+
+    def _get_name(self):
+        return self["TRACKER_NAME"]
 
     def reset(self):
         Config.reset(self)
