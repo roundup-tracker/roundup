@@ -284,6 +284,7 @@ def context(client, template=None, classname=None, request=None):
          'template': template,
          'true': 1,
          'false': 0,
+         'i18n': client.translator
     }
     # add in the item if there is one
     if client.nodeid:
