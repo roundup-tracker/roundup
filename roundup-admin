@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.27 2001-10-11 23:43:04 richard Exp $
+# $Id: roundup-admin,v 1.28 2001-10-13 00:07:39 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -33,28 +33,29 @@ import roundup.instance
 
 def usage(message=''):
     if message: message = 'Problem: '+message+'\n'
-    commands = []
-    for command in figureCommands().values():
-        h = command.__doc__.split('\n')[0]
-        commands.append(h[7:])
-    commands.sort()
     print '''%sUsage: roundup-admin [-i instance home] [-u login] [-c] <command> <arguments>
 
-Commands:
- %s
 Help:
  roundup-admin -h
  roundup-admin help                       -- this help
  roundup-admin help <command>             -- command-specific help
- roundup-admin morehelp                   -- even more detailed help
+ roundup-admin help all                   -- all available help
 Options:
  -i instance home  -- specify the issue tracker "home directory" to administer
  -u                -- the user[:password] to use for commands
- -c                -- when outputting lists of data, just comma-separate them'''%(
-message, '\n '.join(commands))
+ -c                -- when outputting lists of data, just comma-separate them'''%message
+    help_commands()
 
-def moreusage(message=''):
-    usage(message)
+def help_commands():
+    print 'Commands:',
+    commands = ['']
+    for command in figureCommands().values():
+        h = command.__doc__.split('\n')[0]
+        commands.append(h[7:])
+    commands.sort()
+    print '\n '.join(commands)
+
+def help_all():
     print '''
 All commands (except help) require an instance specifier. This is just the path
 to the roundup instance you're working with. A roundup instance is where 
@@ -108,6 +109,32 @@ Command help:
         print '%s:'%name
         print '   ',command.__doc__
 
+def do_help(args):
+    '''Usage: help topic
+    Give help about topic.
+
+    commands  -- list commands
+    <command> -- help specific to a command
+    initopts  -- init command options
+    all       -- all available help
+    '''
+    help = figureHelp().get(args[0], None)
+    if help:
+        help()
+        return
+    help = figureCommands().get(args[0], None)
+    if help:
+        print help.__doc__
+
+def help_initopts():
+    import roundup.templates
+    templates = roundup.templates.listTemplates()
+    print 'Templates:', ', '.join(templates)
+    import roundup.backends
+    backends = roundup.backends.__all__
+    print 'Back ends:', ', '.join(backends)
+
+
 def do_init(instance_home, args, comma_sep=0):
     '''Usage: init [template [backend [admin password]]]
     Initialise a new Roundup instance.
@@ -115,6 +142,8 @@ def do_init(instance_home, args, comma_sep=0):
     The command will prompt for the instance home directory (if not supplied
     through INSTANCE_HOME or the -i option. The template, backend and admin
     password may be specified on the command-line as arguments, in that order.
+
+    See also initopts help.
     '''
     # select template
     import roundup.templates
@@ -485,13 +514,12 @@ def figureCommands():
             d[k[3:]] = v
     return d
 
-def printInitOptions():
-    import roundup.templates
-    templates = roundup.templates.listTemplates()
-    print 'Templates:', ', '.join(templates)
-    import roundup.backends
-    backends = roundup.backends.__all__
-    print 'Back ends:', ', '.join(backends)
+def figureHelp():
+    d = {}
+    for k, v in globals().items():
+        if k[:5] == 'help_':
+            d[k[5:]] = v
+    return d
 
 def main():
     opts, args = getopt.getopt(sys.argv[1:], 'i:u:hc')
@@ -507,8 +535,8 @@ def main():
     comma_sep = 0
     for opt, arg in opts:
         if opt == '-h':
-            usage()
-            return 0
+            args = ['help']
+            break
         if opt == '-i':
             instance_home = arg
         if opt == '-c':
@@ -523,18 +551,13 @@ def main():
     # handle help now
     if command == 'help':
         if len(args)>1:
-            command = figureCommands().get(args[1], None)
-            if not command:
-                usage('no such command "%s"'%args[1])
-                return 1
-            print command.__doc__
-            if args[1] == 'init':
-                printInitOptions()
+            do_help(args[1:])
             return 0
         usage()
         return 0
     if command == 'morehelp':
-        moreusage()
+        usage()
+        help_all()
         return 0
 
     # make sure we have an instance_home
@@ -574,6 +597,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/10/11 23:43:04  richard
+# Implemented the comma-separated printing option in the admin tool.
+# Fixed a typo (more of a vim-o actually :) in mailgw.
+#
 # Revision 1.26  2001/10/11 05:03:51  richard
 # Marked the roundup-admin import/export as experimental since they're not fully
 # operational.
