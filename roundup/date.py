@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.73 2004-06-09 06:13:52 richard Exp $
+# $Id: date.py,v 1.74 2004-07-04 05:07:19 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -128,6 +128,8 @@ class Date:
             return
         elif hasattr(spec, 'tuple'):
             spec = spec.tuple()
+        elif isinstance(spec, Date):
+            spec = spec.get_tuple()
         try:
             y,m,d,H,M,S,x,x,x = spec
             frac = S - int(S)

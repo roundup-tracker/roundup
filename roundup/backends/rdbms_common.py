@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.119 2004-07-03 23:05:15 richard Exp $
+# $Id: rdbms_common.py,v 1.120 2004-07-04 05:07:20 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2184,7 +2184,6 @@ class Class(hyperdb.Class):
         cols = ','.join(cols)
         loj = ' '.join(loj)
         sql = 'select %s from %s %s %s%s'%(cols, frum, loj, where, order)
-        print sql
         args = tuple(args)
         __traceback_info__ = (sql, args)
         self.db.sql(sql, args)
