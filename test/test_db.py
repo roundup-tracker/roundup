@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.80 2003-03-18 23:28:16 richard Exp $ 
+# $Id: test_db.py,v 1.81 2003-03-22 22:43:21 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -902,7 +902,7 @@ def suite():
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
     p.append('anydbm')
-    #return unittest.TestSuite(l)
+#    return unittest.TestSuite(l)
 
     from roundup import backends
     if hasattr(backends, 'mysql'):

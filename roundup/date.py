@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.50 2003-03-19 05:18:10 richard Exp $
+# $Id: date.py,v 1.51 2003-03-22 22:43:21 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -384,6 +384,8 @@ class Interval:
             if not m:
                 raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
                     '[#d] [[[H]H:MM]:SS] [date spec]')
+        else:
+            allowdate = 0
 
         # pull out all the info specified
         info = m.groupdict()
