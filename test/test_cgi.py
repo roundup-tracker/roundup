@@ -8,11 +8,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.19 2003-09-07 20:37:33 jlgijsbers Exp $
+# $Id: test_cgi.py,v 1.20 2003-09-24 14:54:23 jlgijsbers Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client
+from roundup.cgi.client import FormError
 from roundup import init, instance, password, hyperdb, date
 
 NEEDS_INSTANCE = 1
@@ -149,21 +150,21 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.parseForm({}), ({('test', None): {}}, []))
 
     def testNothingWithRequired(self):
-        self.assertRaises(ValueError, self.parseForm, {':required': 'string'})
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm, {':required': 'string'})
+        self.assertRaises(FormError, self.parseForm,
             {':required': 'title,status', 'status':'1'}, 'issue')
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {':required': ['title','status'], 'status':'1'}, 'issue')
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {':required': 'status', 'status':''}, 'issue')
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {':required': 'nosy', 'nosy':''}, 'issue')
 
     #
     # Nonexistant edit
     #
     def testEditNonexistant(self):
-        self.assertRaises(IndexError, self.parseForm, {'boolean': ''},
+        self.assertRaises(FormError, self.parseForm, {'boolean': ''},
             'test', '1')
 
     #
@@ -174,7 +175,7 @@ class FormTestCase(unittest.TestCase):
             ({('test', None): {}}, []))
         self.assertEqual(self.parseForm({'string': ' '}),
             ({('test', None): {}}, []))
-        self.assertRaises(ValueError, self.parseForm, {'string': ['', '']})
+        self.assertRaises(FormError, self.parseForm, {'string': ['', '']})
 
     def testSetString(self):
         self.assertEqual(self.parseForm({'string': 'foo'}),
@@ -214,7 +215,7 @@ class FormTestCase(unittest.TestCase):
             ({('test', None): {}}, []))
         self.assertEqual(self.parseForm({'link': ' '}),
             ({('test', None): {}}, []))
-        self.assertRaises(ValueError, self.parseForm, {'link': ['', '']})
+        self.assertRaises(FormError, self.parseForm, {'link': ['', '']})
         self.assertEqual(self.parseForm({'link': '-1'}),
             ({('test', None): {}}, []))
 
@@ -236,8 +237,8 @@ class FormTestCase(unittest.TestCase):
 # XXX This is not the current behaviour - should we enforce this?
 #        self.assertRaises(IndexError, self.parseForm,
 #            {'status': '4'}))
-        self.assertRaises(ValueError, self.parseForm, {'link': 'frozzle'})
-        self.assertRaises(ValueError, self.parseForm, {'status': 'frozzle'},
+        self.assertRaises(FormError, self.parseForm, {'link': 'frozzle'})
+        self.assertRaises(FormError, self.parseForm, {'status': 'frozzle'},
             'issue')
 
     #
@@ -286,11 +287,11 @@ class FormTestCase(unittest.TestCase):
 # XXX This is not the current behaviour - should we enforce this?
 #        self.assertRaises(IndexError, self.parseForm,
 #            {'nosy': '4'}))
-        self.assertRaises(ValueError, self.parseForm, {'nosy': 'frozzle'},
+        self.assertRaises(FormError, self.parseForm, {'nosy': 'frozzle'},
             'issue')
-        self.assertRaises(ValueError, self.parseForm, {'nosy': '1,frozzle'},
+        self.assertRaises(FormError, self.parseForm, {'nosy': '1,frozzle'},
             'issue')
-        self.assertRaises(ValueError, self.parseForm, {'multilink': 'frozzle'})
+        self.assertRaises(FormError, self.parseForm, {'multilink': 'frozzle'})
 
     def testMultilinkAdd(self):
         nodeid = self.db.issue.create(nosy=['1'])
@@ -330,7 +331,7 @@ class FormTestCase(unittest.TestCase):
             'issue', nodeid), ({('issue', nodeid): {'nosy': ['3']}}, []))
 
         # remove one that doesn't exist?
-        self.assertRaises(ValueError, self.parseForm, {':remove:nosy': '4'},
+        self.assertRaises(FormError, self.parseForm, {':remove:nosy': '4'},
             'issue', nodeid)
 
     def testMultilinkRetired(self):
@@ -344,9 +345,9 @@ class FormTestCase(unittest.TestCase):
             ({('issue', nodeid): {'nosy': ['1','2','3']}}, []))
 
     def testAddRemoveNonexistant(self):
-        self.assertRaises(ValueError, self.parseForm, {':remove:foo': '2'},
+        self.assertRaises(FormError, self.parseForm, {':remove:foo': '2'},
             'issue')
-        self.assertRaises(ValueError, self.parseForm, {':add:foo': '2'},
+        self.assertRaises(FormError, self.parseForm, {':add:foo': '2'},
             'issue')
 
     #
@@ -357,9 +358,9 @@ class FormTestCase(unittest.TestCase):
             ({('user', None): {}}, []))
         self.assertEqual(self.parseForm({'password': ''}, 'user'),
             ({('user', None): {}}, []))
-        self.assertRaises(ValueError, self.parseForm, {'password': ['', '']},
+        self.assertRaises(FormError, self.parseForm, {'password': ['', '']},
             'user')
-        self.assertRaises(ValueError, self.parseForm, {'password': 'foo',
+        self.assertRaises(FormError, self.parseForm, {'password': 'foo',
             ':confirm:password': ['', '']}, 'user')
 
     def testSetPassword(self):
@@ -368,9 +369,9 @@ class FormTestCase(unittest.TestCase):
             ({('user', None): {'password': 'foo'}}, []))
 
     def testSetPasswordConfirmBad(self):
-        self.assertRaises(ValueError, self.parseForm, {'password': 'foo'},
+        self.assertRaises(FormError, self.parseForm, {'password': 'foo'},
             'user')
-        self.assertRaises(ValueError, self.parseForm, {'password': 'foo',
+        self.assertRaises(FormError, self.parseForm, {'password': 'foo',
             ':confirm:password': 'bar'}, 'user')
 
     def testEmptyPasswordNotSet(self):
@@ -392,7 +393,7 @@ class FormTestCase(unittest.TestCase):
             ({('test', None): {}}, []))
         self.assertEqual(self.parseForm({'boolean': ' '}),
             ({('test', None): {}}, []))
-        self.assertRaises(ValueError, self.parseForm, {'boolean': ['', '']})
+        self.assertRaises(FormError, self.parseForm, {'boolean': ['', '']})
 
     def testSetBoolean(self):
         self.assertEqual(self.parseForm({'boolean': 'yes'}),
@@ -422,10 +423,10 @@ class FormTestCase(unittest.TestCase):
             ({('test', None): {}}, []))
         self.assertEqual(self.parseForm({'number': ' '}),
             ({('test', None): {}}, []))
-        self.assertRaises(ValueError, self.parseForm, {'number': ['', '']})
+        self.assertRaises(FormError, self.parseForm, {'number': ['', '']})
 
     def testInvalidNumber(self):
-        self.assertRaises(ValueError, self.parseForm, {'number': 'hi, mum!'})
+        self.assertRaises(FormError, self.parseForm, {'number': 'hi, mum!'})
 
     def testSetNumber(self):
         self.assertEqual(self.parseForm({'number': '1'}),
@@ -455,10 +456,10 @@ class FormTestCase(unittest.TestCase):
             ({('test', None): {}}, []))
         self.assertEqual(self.parseForm({'date': ' '}),
             ({('test', None): {}}, []))
-        self.assertRaises(ValueError, self.parseForm, {'date': ['', '']})
+        self.assertRaises(FormError, self.parseForm, {'date': ['', '']})
 
     def testInvalidDate(self):
-        self.assertRaises(ValueError, self.parseForm, {'date': '12'})
+        self.assertRaises(FormError, self.parseForm, {'date': '12'})
 
     def testSetDate(self):
         self.assertEqual(self.parseForm({'date': '2003-01-01'}),
@@ -506,15 +507,15 @@ class FormTestCase(unittest.TestCase):
         )
 
     def testLinkBadDesignator(self):
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {'test-1@link@link': 'blah'})
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {'test-1@link@link': 'issue'})
 
     def testLinkNotLink(self):
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {'test-1@link@boolean': 'issue-1'})
-        self.assertRaises(ValueError, self.parseForm,
+        self.assertRaises(FormError, self.parseForm,
             {'test-1@link@string': 'issue-1'})
 
     def testBackwardsCompat(self):
