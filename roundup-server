@@ -3,7 +3,7 @@
 
 Stolen from CGIHTTPServer
 
-$Id: roundup-server,v 1.1 2001-07-22 11:15:45 richard Exp $
+$Id: roundup-server,v 1.1 2001-07-23 03:46:48 richard Exp $
 
 """
 import sys
@@ -219,5 +219,8 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/22 11:15:45  richard
+# More Grande Splite stuff
+#
 #
 
