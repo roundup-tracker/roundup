@@ -89,7 +89,7 @@ class Indexer(Indexer):
 
     # This indexer never needs to reindex.
     def should_reindex(self):
-        return False
+        return 0
 
     def getHits(self, search_terms, klass):
         return self.find(search_terms, klass)    
@@ -120,7 +120,7 @@ class Indexer(Indexer):
         # filter out files without text/plain mime type
         # XXX: files without text/plain shouldn't be indexed at all, we
         # should take care of this in the trigger
-        if 'type' in klass.getprops():
+        if klass.getprops().has_key('type'):
             nodeids = [nodeid for nodeid in nodeids
                        if klass.get(nodeid, 'type') == 'text/plain']
 
@@ -159,7 +159,7 @@ class FileClass(hyperdb.FileClass, Class):
     default_mime_type = 'text/plain'
     def create(self, **propvalues):
         # figure the mime type
-        if 'type' in self.getprops() and not propvalues.get('type'):
+        if self.getprops().has_key('type') and not propvalues.get('type'):
             propvalues['type'] = self.default_mime_type
         return Class.create(self, **propvalues)
 

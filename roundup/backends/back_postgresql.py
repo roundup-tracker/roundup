@@ -106,7 +106,7 @@ class Database(rdbms_common.Database):
         try:
             self.load_dbschema()
         except psycopg.ProgrammingError, message:
-            if '"schema" does not exist' not in str(message):
+            if str(message).find('"schema" does not exist') == -1:
                 raise
             self.rollback()
             self.init_dbschema()
