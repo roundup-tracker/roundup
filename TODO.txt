@@ -4,21 +4,24 @@ Required:
 - documentation of i18n: TAL tags for translation
 - translation databases in trackers
 - implementing logging for roundup-server, including command-line switches
-- per-property permission spec
 - fix documentation referring to configuration (config.ini, mysql.txt and
   postgresql.txt)
 - fix documentation referring to customisation using interfaces.py
 - fix admin_guide referring to structure of trackers
 - add config.ini section descriptions - DONE?
 - review use of hasPermission etc. in classic template
-- clean up roundup.cgi
 
 Optionally:
+- clean up roundup.cgi (switch to config file, use proper logging, remove
+  all the crap)
 - have rdbms backends look up the journal for actor if it's not set
 - migrate to numeric ID values (fixes bug 817217)
 - configuration editing in Web User Interface: core config,
   standalone server config, detectors and extensions configurations
 - refactor backends to have a common Database class that manages them all,
   allowing different Class implementations from differen backends in the
-  one tracker
+  one tracker. Once this is done, re-work the security stuff so that the
+  roles attribute is a Multlilink and the security module defines the
+  roles "class".
 - include the test system in the binary distributions
+
