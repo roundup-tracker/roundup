@@ -33,6 +33,7 @@ class _Database(hyperdb.Database):
         self.security = security.Security(self)
 
         os.umask(0002)
+
     def post_init(self):
         if self.indexer.should_reindex():
             self.reindex()

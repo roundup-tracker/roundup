@@ -54,7 +54,6 @@ pending web      allow multilink selections to select a "none" element to allow
 pending dist     include the HTML in docs
 
 bug     web      request.url is incorrect in cgi-bin environments
-bug     web      need to indicate that generated pages shouldn't be cached
 
 done    instance rename to "instance" to "tracker"
 done    hyperdb  write a backend for gadfly (it's as done as it's going to get)
@@ -82,6 +81,7 @@ done    web      fix double-submit by having new-item-submit redirect at end
 done    web      daemonify roundup-server (fork, logfile, pidfile)
 done    web      modify cgitb to display PageTemplate errors better
 done    web      have roundup.cgi pick up instance config from the environment 
+done    web      indicate that generated pages shouldn't be cached
 done    admin    have "set" command be applicable to all items in a class, and
                  also be able to unset properties (ie. set to None)
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.76 2002-09-12 05:51:42 richard Exp $
+#$Id: back_anydbm.py,v 1.77 2002-09-12 07:23:23 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -677,6 +677,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.newnodes = {}
         self.destroyednodes = {}
         self.transactions = []
+
+    def close(self):
+        ''' Nothing to do
+        '''
+        pass
 
 _marker = []
 class Class(hyperdb.Class):

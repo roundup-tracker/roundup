@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.17 2002-09-12 05:51:42 richard Exp $
+# $Id: back_gadfly.py,v 1.18 2002-09-12 07:23:23 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -789,6 +789,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         # return the classname, nodeid so we reindex this content
         return (classname, nodeid)
+
+    def close(self):
+        ''' Close off the connection.
+        '''
+        self.conn.close()
 
 #
 # The base Class class
