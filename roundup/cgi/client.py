@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176.2.6 2004-10-26 07:59:28 richard Exp $
+# $Id: client.py,v 1.176.2.7 2004-11-05 04:57:50 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -444,6 +444,11 @@ class Client:
             raise NotFound, designator
         if not props.has_key('content'):
             raise NotFound, designator
+
+        # make sure we have permission
+        if not self.db.security.hasPermission('View', self.userid, classname):
+            raise Unauthorised, self._("You are not allowed to view "
+                "this file.")
 
         mime_type = klass.get(nodeid, 'type')
         content = klass.get(nodeid, 'content')
