@@ -23,10 +23,6 @@ running:
      command)
 8.  unpack the new dist file in /tmp then a) run_test.py and b) demo.py
     with all available Python versions.
-9.  generate gpg signature with "gpg -a --detach-sign" and upload to
-    Sourceforge.
-10. PyPI registration
-11. tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
 
 So, those commands in a nice, cut'n'pasteable form::
 
@@ -41,19 +37,14 @@ Distributing Releases
 
 Once a release is built, follow these steps:
 
-1. FTP the tar.gz from the dist directory to to the "incoming" directory on
+1. generate gpg signature with "gpg -a --detach-sign" and upload to
+   Sourceforge.
+2. tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
+3. FTP the tar.gz from the dist directory to to the "incoming" directory on
    "upload.sourceforge.net".
-2. Make a quick release at:
+4. Make a quick release at:
     http://sourceforge.net/project/admin/qrs.php?package_id=&group_id=31577
-3. Add a news item at:
-    https://sourceforge.net/news/submit.php?group_id=31577
-   using the top of doc/announcement.txt
-4. Send doc/announcement.txt to python-announce@python.org
-5. Notify any other news services as appropriate...
-
-
-Author
-======
-
-richard@users.sourceforge.net
+5. PyPI registration
+6. Send doc/announcement.txt to python-announce@python.org
+7. Notify any other news services as appropriate...
 
