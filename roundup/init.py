@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.26 2003-04-17 03:37:58 richard Exp $
+# $Id: init.py,v 1.27 2003-07-28 23:19:21 richard Exp $
 
 __doc__ = """
 Init (create) a roundup instance.
@@ -85,7 +85,6 @@ def install(instance_home, template):
     '''
     # At the moment, it's just a copy
     copytree(template, instance_home)
-
 
 def write_select_db(instance_home, backend):
     ''' Write the file that selects the backend for the tracker

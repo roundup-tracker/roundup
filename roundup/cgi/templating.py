@@ -56,7 +56,7 @@ def find_template(dir, name, extension):
         return (src, generic)
 
     # finally, try _generic.html
-    generic = filename + '.html'
+    generic = generic + '.html'
     src = os.path.join(dir, generic)
     if os.path.exists(src):
         return (src, generic)
