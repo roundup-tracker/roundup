@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.13 2001-10-21 00:45:15 richard Exp $
+# $Id: roundupdb.py,v 1.14 2001-10-21 07:26:35 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -49,6 +49,9 @@ _marker = []
 class Class(hyperdb.Class):
     # Overridden methods:
     def __init__(self, db, classname, **properties):
+        if (properties.has_key('creation') or properties.has_key('activity')
+                or properties.has_key('creator')):
+            raise ValueError, '"creation", "activity" and "creator" are reserved'
         hyperdb.Class.__init__(self, db, classname, **properties)
         self.auditors = {'create': [], 'set': [], 'retire': []}
         self.reactors = {'create': [], 'set': [], 'retire': []}
@@ -210,9 +213,6 @@ class IssueClass(Class):
             properties['nosy'] = hyperdb.Multilink("user")
         if not properties.has_key('superseder'):
             properties['superseder'] = hyperdb.Multilink(classname)
-        if (properties.has_key('creation') or properties.has_key('activity')
-                or properties.has_key('creator')):
-            raise ValueError, '"creation", "activity" and "creator" are reserved'
         Class.__init__(self, db, classname, **properties)
 
     # New methods:
@@ -303,6 +303,9 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/10/21 00:45:15  richard
+# Added author identification to e-mail messages from roundup.
+#
 # Revision 1.12  2001/10/04 02:16:15  richard
 # Forgot to pass the protected flag down *sigh*.
 #

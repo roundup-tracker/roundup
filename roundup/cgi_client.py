@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.36 2001-10-21 04:44:50 richard Exp $
+# $Id: cgi_client.py,v 1.37 2001-10-21 07:26:35 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -618,57 +618,64 @@ class Client:
         path = self.split_path
         if not path or path[0] in ('', 'index'):
             self.index()
-        elif len(path) == 1:
-            if path[0] == 'list_classes':
-                self.classes()
-                return
-            if path[0] == 'login':
-                self.login()
-                return
-            if path[0] == 'login_action':
-                self.login_action()
-                return
-            if path[0] == 'newuser_action':
-                self.newuser_action()
-                return
-            if path[0] == 'logout':
-                self.logout()
-                return
-            m = dre.match(path[0])
-            if m:
-                self.classname = m.group(1)
-                self.nodeid = m.group(2)
-                try:
-                    cl = self.db.classes[self.classname]
-                except KeyError:
-                    raise NotFound
-                try:
-                    cl.get(self.nodeid, 'id')
-                except IndexError:
-                    raise NotFound
-                try:
-                    func = getattr(self, 'show%s'%self.classname)
-                except AttributeError:
-                    raise NotFound
-                func()
-                return
-            m = nre.match(path[0])
-            if m:
-                self.classname = m.group(1)
-                try:
-                    func = getattr(self, 'new%s'%self.classname)
-                except AttributeError:
-                    raise NotFound
-                func()
-                return
-            self.classname = path[0]
+        elif not path:
+            raise 'ValueError', 'Path not understood'
+
+        #
+        # Everthing ignores path[1:]
+        #
+        # The file download link generator actually relies on this - it
+        # appends the name of the file to the URL so the download file name
+        # is correct, but doesn't actually use it.
+        action = path[0]
+        if action == 'list_classes':
+            self.classes()
+            return
+        if action == 'login':
+            self.login()
+            return
+        if action == 'login_action':
+            self.login_action()
+            return
+        if action == 'newuser_action':
+            self.newuser_action()
+            return
+        if action == 'logout':
+            self.logout()
+            return
+        m = dre.match(action)
+        if m:
+            self.classname = m.group(1)
+            self.nodeid = m.group(2)
             try:
-                self.db.getclass(self.classname)
+                cl = self.db.classes[self.classname]
             except KeyError:
                 raise NotFound
-            self.list()
-        else:
-            raise 'ValueError', 'Path not understood'
+            try:
+                cl.get(self.nodeid, 'id')
+            except IndexError:
+                raise NotFound
+            try:
+                func = getattr(self, 'show%s'%self.classname)
+            except AttributeError:
+                raise NotFound
+            func()
+            return
+        m = nre.match(action)
+        if m:
+            self.classname = m.group(1)
+            try:
+                func = getattr(self, 'new%s'%self.classname)
+            except AttributeError:
+                raise NotFound
+            func()
+            return
+        self.classname = action
+        try:
+            self.db.getclass(self.classname)
+        except KeyError:
+            raise NotFound
+        self.list()
 
     def __del__(self):
         self.db.close()
@@ -808,6 +815,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2001/10/21 04:44:50  richard
+# bug #473124: UI inconsistency with Link fields.
+#    This also prompted me to fix a fairly long-standing usability issue -
+#    that of being able to turn off certain filters.
+#
 # Revision 1.35  2001/10/21 00:17:54  richard
 # CGI interface view customisation section may now be hidden (patch from
 #  Roch'e Compaan.)

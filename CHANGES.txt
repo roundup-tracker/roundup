@@ -4,6 +4,9 @@ are given with the most recent entry first.
 2001-10-?? - 0.3.0
 Feature:
  . MailGW now moves 'unread' to 'chatting' on receiving e-mail for an issue.
+ . feature #473127: Filenames. I modified the file.index and htmltemplate
+   source so that the filename is used in the link and the creation
+   information is displayed.
  Admin Tool (roundup-admin):
   . Interactive mode for running multiple (independant at present) commands.
   . Tabular display of nodes.

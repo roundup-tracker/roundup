@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.30 2001-10-21 04:44:50 richard Exp $
+# $Id: htmltemplate.py,v 1.31 2001-10-21 07:26:35 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -210,11 +210,16 @@ class Menu(Base):
 
 #XXX deviates from spec
 class Link(Base):
-    ''' for a Link or Multilink property, display the names of the linked
-        nodes, hyperlinked to the item views on those nodes
-        for other properties, link to this node with the property as the text
+    '''For a Link or Multilink property, display the names of the linked
+       nodes, hyperlinked to the item views on those nodes.
+       For other properties, link to this node with the property as the
+       text.
+
+       If is_download is true, append the property value to the generated
+       URL so that the link may be used as a download link and the
+       downloaded file name is correct.
     '''
-    def __call__(self, property=None, **args):
+    def __call__(self, property=None, is_download=0):
         if not self.nodeid and self.form is None:
             return '[Link: not called from item]'
         propclass = self.properties[property]
@@ -230,7 +235,11 @@ class Link(Base):
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
             linkvalue = linkcl.get(value, k)
-            return '<a href="%s%s">%s</a>'%(linkname, value, linkvalue)
+            if is_download:
+                return '<a href="%s%s/%s">%s</a>'%(linkname, value,
+                    linkvalue, linkvalue)
+            else:
+                return '<a href="%s%s">%s</a>'%(linkname, value, linkvalue)
         if isinstance(propclass, hyperdb.Multilink):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
@@ -239,11 +248,20 @@ class Link(Base):
             l = []
             for value in value:
                 linkvalue = linkcl.get(value, k)
-                l.append('<a href="%s%s">%s</a>'%(linkname, value, linkvalue))
+                if is_download:
+                    l.append('<a href="%s%s/%s">%s</a>'%(linkname, value,
+                        linkvalue, linkvalue))
+                else:
+                    l.append('<a href="%s%s">%s</a>'%(linkname, value,
+                        linkvalue))
             return ', '.join(l)
         if isinstance(propclass, hyperdb.String):
             if value == '': value = '[no %s]'%property.capitalize()
-        return '<a href="%s%s">%s</a>'%(self.classname, self.nodeid, value)
+        if is_download:
+            return '<a href="%s%s/%s">%s</a>'%(self.classname, self.nodeid,
+                value, value)
+        else:
+            return '<a href="%s%s">%s</a>'%(self.classname, self.nodeid, value)
 
 class Count(Base):
     ''' for a Multilink property, display a count of the number of links in
@@ -815,6 +833,11 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2001/10/21 04:44:50  richard
+# bug #473124: UI inconsistency with Link fields.
+#    This also prompted me to fix a fairly long-standing usability issue -
+#    that of being able to turn off certain filters.
+#
 # Revision 1.29  2001/10/21 00:17:56  richard
 # CGI interface view customisation section may now be hidden (patch from
 #  Roch'e Compaan.)
