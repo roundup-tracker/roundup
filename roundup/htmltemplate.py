@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.4 2001-07-28 07:59:53 richard Exp $
+# $Id: htmltemplate.py,v 1.5 2001-07-28 08:17:09 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -610,8 +610,8 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
                         if value is None:
                             value = '[empty %s]'%name
                         l.append(value)
-                w('<tr class="list-header">'
-                  '<td align=left colspan=%s><strong>%s</strong></td></tr>'%(
+                w('<tr class="section-bar">'
+                  '<td align=middle colspan=%s><strong>%s</strong></td></tr>'%(
                     len(columns), ', '.join(l)))
                 old_group = this_group
 
@@ -795,6 +795,10 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/28 07:59:53  richard
+# Replaced errno integers with their module values.
+# De-tabbed templatebuilder.py
+#
 # Revision 1.3  2001/07/25 03:39:47  richard
 # Hrm - displaying links to classes that don't specify a key property. I've
 # got it defaulting to 'name', then 'title' and then a "random" property (first
