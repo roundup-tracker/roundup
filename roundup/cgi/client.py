@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.67 2003-01-13 22:14:00 kedder Exp $
+# $Id: client.py,v 1.68 2003-01-14 22:21:35 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1252,8 +1252,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             value = value.value.strip()
 
         if isinstance(proptype, hyperdb.String):
-            if not value:
-                continue
             # fix the CRLF/CR -> LF stuff
             value = fixNewlines(value)
         elif isinstance(proptype, hyperdb.Password):
@@ -1369,10 +1367,17 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 if not properties.has_key(propname):
                     raise
 
+            # existing may be None, which won't equate to empty strings
+            if not existing and not value:
+                continue
+
             # if changed, set it
             if value != existing:
                 props[propname] = value
         else:
+            # don't bother setting empty/unset values
+            if not value:
+                continue
             props[propname] = value
 
     # see if all the required properties have been supplied

@@ -13,6 +13,9 @@ are given with the most recent entry first.
   request. It is greatly improves web interface performance, especially
   on trackers under high load
 - fix StringHTMLProperty hyperlinking
+- added mysql backend
+- fixes to CGI form handling (NEEDS BACKPORTING TO 0.5)
+
 
 2003-??-?? 0.5.5
 - fixed rdbms searching by ID (sf bug 666615)
