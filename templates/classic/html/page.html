@@ -44,12 +44,10 @@
   </form>
 
   <p class="classblock"
-     tal:condition="python:request.user.hasPermission('View', 'keyword')">
+     tal:condition="python:request.user.hasPermission('Edit', 'keyword')">
    <b>Keywords</b><br>
-   <a tal:condition="python:request.user.hasPermission('Edit', 'keyword')"
-      href="keyword?:template=item">Create New<br></a>
-   <a tal:condition="python:request.user.hasPermission('Edit', 'keyword') and
-                            len(db.keyword.list())"
+   <a href="keyword?:template=item">Create New<br></a>
+   <a tal:condition="db/keyword/list"
       href="keyword?:template=item">Edit Existing<br></a>
   </p>
 
