@@ -213,7 +213,7 @@ class LoginTestCase(ActionTestCase):
                                         'foo', 'right')
 
     def testCorrectLogin(self):
-        self.client.db.security.hasPermission = lambda a,b,c: True
+        self.client.db.security.hasPermission = lambda *args, **kwargs: True
 
         def opendb(username):
             self.assertEqual(username, 'foo')
