@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.49 2003-03-26 11:02:28 richard Exp $
+# $Id: admin.py,v 1.50 2003-03-27 05:23:39 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -482,10 +482,10 @@ Command help:
 
 
     def do_set(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
-        '''Usage: set [items] property=value property=value ...
+        '''Usage: set items property=value property=value ...
         Set the given properties of one or more items(s).
 
-        The items may be specified as a class or as a comma-separated
+        The items are specified as a class or as a comma-separated
         list of item designators (ie "designator[,designator,...]").
 
         This command sets the properties to the values for all designators

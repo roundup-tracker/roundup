@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.16 $
+:Version: $Revision: 1.17 $
 
 .. contents::
 
@@ -440,7 +440,7 @@ The basic usage is::
   retire designator[,designator]*
   rollback
   security [Role name]
-  set [items] property=value property=value ...
+  set items property=value property=value ...
   specification classname
   table classname [property[,property]*]
  Commands may be abbreviated as long as the abbreviation matches only one

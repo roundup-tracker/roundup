@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.81 $
+:Version: $Revision: 1.82 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -371,11 +371,11 @@ let's say that there's an issue in roundup, issue 23. There's also a user,
 richard who happens to be user 2. To assign an issue to him, we could do either
 of::
 
-     roundup-admin set issue assignedto=2
+     roundup-admin set issue23 assignedto=2
 
 or::
 
-     roundup-admin set issue assignedto=richard
+     roundup-admin set issue23 assignedto=richard
 
 Note, the same thing can be done in the web and e-mail interfaces.
 
