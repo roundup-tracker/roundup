@@ -319,6 +319,10 @@ The ``adsutil.vbs`` file can be found in either ``c:\inetpub\adminscripts``
 or ``c:\winnt\system32\inetsrv\adminsamples\`` or
 ``c:\winnt\system32\inetsrv\adminscripts\`` depending on your installation.
 
+More information about ISS setup may be found at:
+
+   http://support.microsoft.com/default.aspx?scid=kb%3Ben-us%3B276494
+
 Copy the ``cgi-bin/roundup.cgi`` file to your web server's ``cgi-bin``
 directory. You will need to configure it to tell it where your tracker home
 is. You can do this either:
