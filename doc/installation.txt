@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.42 $
+:Version: $Revision: 1.43 $
 
 .. contents::
 
@@ -127,6 +127,10 @@ Basic Installation Steps
           Select template [classic]: classic
           Back ends: anydbm, bsddb
           Select backend [anydbm]: anydbm
+
+      The "support" part of the tracker name can be anything you want - it
+      is going to be used as the directory that the tracker information
+      will be stored in.
 
       You will now be directed to edit the tracker configuration and
       initial schema.  At a minimum, you must set ``MAILHOST``,

@@ -2,14 +2,14 @@
 Roundup Glossary
 ================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 .. contents::
 
 
 class
    a definition of the properties and behaviour of a set of items
-db
+db (or hyperdb)
    a collection of items
 designator
    a combined class + itemid reference to any item in the hyperdb
@@ -22,7 +22,7 @@ property
 schema
    the definition of all the classes that make up an tracker
 tracker
-   I've defined this well somewhere else...
+   the schema and hyperdb that forms one issue tracker
 
 
 -----------------
