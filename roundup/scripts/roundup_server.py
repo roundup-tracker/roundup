@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.26.2.3 2003-12-04 02:39:04 richard Exp $
+$Id: roundup_server.py,v 1.26.2.4 2003-12-04 22:53:54 richard Exp $
 """
 
 # python version check
@@ -44,6 +44,12 @@ TRACKER_HOMES = {
 }
 
 ROUNDUP_USER = None
+ROUNDUP_GROUP = None
+ROUNDUP_LOG_IP = 1
+HOSTNAME = ''
+PORT = 8080
+PIDFILE = None
+LOGFILE = None
 
 
 #
@@ -201,7 +207,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         c = tracker.Client(tracker, self, env)
         c.main()
 
-    LOG_IPADDRESS = 1
+    LOG_IPADDRESS = ROUNDUP_LOG_IP
     def address_string(self):
         if self.LOG_IPADDRESS:
             return self.client_address[0]
@@ -228,8 +234,12 @@ else:
         '''
         _svc_name_ = "Roundup Bug Tracker"
         _svc_display_name_ = "Roundup Bug Tracker"
-        address = ('', 8888)
+        address = (HOSTNAME, PORT)
         def __init__(self, args):
+            # redirect stdout/stderr to our logfile
+            if LOGFILE:
+                # appending, unbuffered
+                sys.stdout = sys.stderr = open(LOGFILE, 'a', 0)
             win32serviceutil.ServiceFramework.__init__(self, args)
             BaseHTTPServer.HTTPServer.__init__(self, self.address, 
                 RoundupRequestHandler)
@@ -304,6 +314,15 @@ else:
 def usage(message=''):
     if message:
         message = _('Error: %(error)s\n\n')%{'error': message}
+    if RoundupService:
+        win = ''' -c: Windows Service options.  If you want to run the server as a Windows
+     Service, you must configure the rest of the options by changing the
+     constants of this program.  You will at least configure one tracker
+     in the TRACKER_HOMES variable.  This option is mutually exclusive
+     from the rest.  Typing "roundup-server -c help" shows Windows
+     Services specifics.'''
+    else:
+        win = ''
     print _('''%(message)sUsage:
 roundup-server [options] [name=tracker home]*
 
@@ -312,10 +331,11 @@ options:
  -p: sets the port to listen on
  -l: sets a filename to log to (instead of stdout)
  -d: run the server in the background and on UN*X write the server's PID
-     to the nominated file. Note: on Windows the PID argument is needed,
-     but ignored. The -l option *must* be specified if this option is.
+     to the nominated file. The -l option *must* be specified if this
+     option is.
  -N: log client machine names in access log instead of IP addresses (much
      slower)
+%(win)s
 
 name=tracker home:
    Sets the tracker home(s) to use. The name is how the tracker is
@@ -381,18 +401,27 @@ def run():
     if hasattr(socket, 'setdefaulttimeout'):
         socket.setdefaulttimeout(60)
 
-    hostname = ''
-    port = 8080
-    pidfile = None
-    logfile = None
+    hostname = HOSTNAME
+    port = PORT
+    pidfile = PIDFILE
+    logfile = LOGFILE
+    user = ROUNDUP_USER
+    group = ROUNDUP_GROUP
+    svc_args = None
+
     try:
         # handle the command-line args
+        options = 'n:p:u:d:l:hN'
+        if RoundupService:
+            options += 'c'
+
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:hN')
+            optlist, args = getopt.getopt(sys.argv[1:], options)
         except getopt.GetoptError, e:
             usage(str(e))
 
         user = ROUNDUP_USER
+        group = None
         for (opt, arg) in optlist:
             if opt == '-n': hostname = arg
             elif opt == '-p': port = int(arg)
@@ -401,6 +430,10 @@ def run():
             elif opt == '-l': logfile = abspath(arg)
             elif opt == '-h': usage()
             elif opt == '-N': RoundupRequestHandler.LOG_IPADDRESS = 0
+            elif opt == '-c': svc_args = [opt] + args; args = None
+
+        if svc_args is not None and len(optlist) > 1:
+            raise ValueError, _("windows service option must be the only one")
 
         if pidfile and not logfile:
             raise ValueError, _("logfile *must* be specified if pidfile is")
@@ -428,7 +461,7 @@ def run():
         if args:
             d = {}
             for arg in args:
-		try:
+                try:
                     name, home = arg.split('=')
                 except ValueError:
                     raise ValueError, _("Instances must be name=home")
@@ -446,16 +479,16 @@ def run():
 
     # fork?
     if pidfile:
-        if RoundupService:
-            # don't do any other stuff
-            RoundupService.address = address
-            return win32serviceutil.HandleCommandLine(RoundupService)
-        elif not hasattr(os, 'fork'):
+        if not hasattr(os, 'fork'):
             print "Sorry, you can't run the server as a daemon on this" \
                 'Operating System'
             sys.exit(0)
         else:
             daemonize(pidfile)
+
+    if svc_args is not None:
+        # don't do any other stuff
+        return win32serviceutil.HandleCommandLine(RoundupService, argv=svc_args)
 
     # redirect stdout/stderr to our logfile
     if logfile:
