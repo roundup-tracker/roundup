@@ -3,7 +3,7 @@
 <tal:block tal:repeat="cl db/classes">
  <tr class="list-header">
   <th colspan="2" align="left">
-   <a tal:attributes="href string:${cl/classname}?:template=genericedit"
+   <a tal:attributes="href string:${cl/classname}"
       tal:content="python:cl.classname.capitalize()">classname</a>
   </th>
  </tr>

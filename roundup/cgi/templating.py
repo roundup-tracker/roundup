@@ -1,4 +1,4 @@
-import sys, cgi, urllib, os, re, os.path, time
+import sys, cgi, urllib, os, re, os.path, time, errno
 
 from roundup import hyperdb, date
 from roundup.i18n import _
@@ -80,14 +80,37 @@ import ZTUtils
 
 templates = {}
 
-def getTemplate(dir, name, classname=None, request=None):
+def getTemplate(dir, name, extension, classname=None, request=None):
     ''' Interface to get a template, possibly loading a compiled template.
-    '''
-    # find the source, figure the time it was last modified
-    src = os.path.join(dir, name)
-    stime = os.stat(src)[os.path.stat.ST_MTIME]
 
-    key = (dir, name)
+        "name" and "extension" indicate the template we're after, which in
+        most cases will be "name.extension". If "extension" is None, then
+        we look for a template just called "name" with no extension.
+
+        If the file "name.extension" doesn't exist, we look for
+        "_generic.extension" as a fallback.
+    '''
+    # default the name to "home"
+    if name is None:
+        name = 'home'
+
+    # find the source, figure the time it was last modified
+    if extension:
+        filename = '%s.%s'%(name, extension)
+    else:
+        filename = name
+    src = os.path.join(dir, filename)
+    try:
+        stime = os.stat(src)[os.path.stat.ST_MTIME]
+    except os.error, error:
+        if error.errno != errno.ENOENT or not extension:
+            raise
+        # try for a generic template
+        filename = '_generic.%s'%extension
+        src = os.path.join(dir, filename)
+        stime = os.stat(src)[os.path.stat.ST_MTIME]
+
+    key = (dir, filename)
     if templates.has_key(key) and stime < templates[key].mtime:
         # compiled template is up to date
         return templates[key]
@@ -262,6 +285,40 @@ class HTMLClass:
         l = [HTMLItem(self.db, self.classname, x) for x in self.klass.list()]
         return l
 
+    def csv(self):
+        ''' Return the items of this class as a chunk of CSV text.
+        '''
+        # get the CSV module
+        try:
+            import csv
+        except ImportError:
+            return 'Sorry, you need the csv module to use this function.\n'\
+                'Get it from: http://www.object-craft.com.au/projects/csv/'
+
+        props = self.propnames()
+        p = csv.parser()
+        s = StringIO.StringIO()
+        s.write(p.join(props) + '\n')
+        for nodeid in self.klass.list():
+            l = []
+            for name in props:
+                value = self.klass.get(nodeid, name)
+                if value is None:
+                    l.append('')
+                elif isinstance(value, type([])):
+                    l.append(':'.join(map(str, value)))
+                else:
+                    l.append(str(self.klass.get(nodeid, name)))
+            s.write(p.join(l) + '\n')
+        return s.getvalue()
+
+    def propnames(self):
+        ''' Return the list of the names of the properties of this class.
+        '''
+        idlessprops = self.klass.getprops(protected=0).keys()
+        idlessprops.sort()
+        return ['id'] + idlessprops
+
     def filter(self, request=None):
         ''' Return a list of items from this class, filtered and sorted
             by the current requested filterspec/filter/sort/group args
@@ -285,7 +342,7 @@ class HTMLClass:
            You may optionally override the label displayed, the width and
            height. The popup window will be resizable and scrollable.
         '''
-        return '<a href="javascript:help_window(\'classhelp?classname=%s&' \
+        return '<a href="javascript:help_window(\'%s?:template=help&' \
             'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(self.classname,
             properties, width, height, label)
 
@@ -307,8 +364,7 @@ class HTMLClass:
         req.update(kwargs)
 
         # new template, using the specified classname and request
-        name = self.classname + '.' + name
-        pt = getTemplate(self.db.config.TEMPLATES, name)
+        pt = getTemplate(self.db.config.TEMPLATES, self.classname, name)
 
         # XXX handle PT rendering errors here nicely
         try:
@@ -946,7 +1002,7 @@ class HTMLRequest:
         "base" the base URL for this instance
         "user" a HTMLUser instance for this user
         "classname" the current classname (possibly None)
-        "template_type" the current template type (suffix, also possibly None)
+        "template" the current template (suffix, also possibly None)
 
         Index args:
         "columns" dictionary of the columns to display in an index page
@@ -971,7 +1027,7 @@ class HTMLRequest:
 
         # store the current class name and action
         self.classname = client.classname
-        self.template_type = client.template_type
+        self.template = client.template
 
         # extract the index display information from the form
         self.columns = []
@@ -1055,7 +1111,7 @@ form: %(form)s
 url: %(url)r
 base: %(base)r
 classname: %(classname)r
-template_type: %(template_type)r
+template: %(template)r
 columns: %(columns)r
 sort: %(sort)r
 group: %(group)r

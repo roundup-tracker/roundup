@@ -49,8 +49,6 @@ pending web: search "refinement"
 pending web: have roundup.cgi pick up instance config from the environment 
 
 New templating TODO:
-. generic class editing
-. classhelp
 . rewritten documentation (can come after the beta though so stuff is settled)
 
 ongoing: any bugs

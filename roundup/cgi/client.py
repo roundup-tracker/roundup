@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.10 2002-09-03 07:42:38 richard Exp $
+# $Id: client.py,v 1.11 2002-09-04 04:31:51 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -110,11 +110,11 @@ class Client:
             self.determine_user()
             # figure out the context and desired content template
             self.determine_context()
-            # possibly handle a form submit action (may change self.message
-            # and self.template_name)
+            # possibly handle a form submit action (may change self.message,
+            # self.classname and self.template)
             self.handle_action()
             # now render the page
-            self.write(self.template('page', ok_message=self.ok_message,
+            self.write(self.renderTemplate('page', '', ok_message=self.ok_message,
                 error_message=self.error_message))
         except Redirect, url:
             # let's redirect - if the url isn't None, then we need to do
@@ -127,8 +127,7 @@ class Client:
         except SendStaticFile, file:
             self.serve_static_file(str(file))
         except Unauthorised, message:
-            self.write(self.template('page.unauthorised',
-                error_message=message))
+            self.write(self.renderTemplate('page', '', error_message=message))
         except:
             # everything else
             self.write(cgitb.html())
@@ -207,9 +206,9 @@ class Client:
              full item designator supplied:   "item"
 
             We set:
-             self.classname
-             self.nodeid
-             self.template_name
+             self.classname  - the class to display, can be None
+             self.template   - the template to render the current context with
+             self.nodeid     - the nodeid of the class we're displaying
         '''
         # default the optional variables
         self.classname = None
@@ -219,11 +218,9 @@ class Client:
         path = self.split_path
         if not path or path[0] in ('', 'home', 'index'):
             if self.form.has_key(':template'):
-                self.template_type = self.form[':template'].value
-                self.template_name = 'home' + '.' + self.template_type
+                self.template = self.form[':template'].value
             else:
-                self.template_type = ''
-                self.template_name = 'home'
+                self.template = ''
             return
         elif path[0] == '_file':
             raise SendStaticFile, path[1]
@@ -239,14 +236,14 @@ class Client:
             self.classname = m.group(1)
             self.nodeid = m.group(2)
             # with a designator, we default to item view
-            self.template_type = 'item'
+            self.template = 'item'
         else:
             # with only a class, we default to index view
-            self.template_type = 'index'
+            self.template = 'index'
 
         # see if we have a template override
         if self.form.has_key(':template'):
-            self.template_type = self.form[':template'].value
+            self.template = self.form[':template'].value
 
 
         # see if we were passed in a message
@@ -254,9 +251,6 @@ class Client:
             self.ok_message.append(self.form[':ok_message'].value)
         if self.form.has_key(':error_message'):
             self.error_message.append(self.form[':error_message'].value)
-
-        # we have the template name now
-        self.template_name = self.classname + '.' + self.template_type
 
     def serve_file(self, designator, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Serve the file from the content property of the designated item.
@@ -279,10 +273,10 @@ class Client:
         self.header({'Content-Type': mt})
         self.write(open(os.path.join(self.instance.TEMPLATES, file)).read())
 
-    def template(self, name, **kwargs):
+    def renderTemplate(self, name, extension, **kwargs):
         ''' Return a PageTemplate for the named page
         '''
-        pt = getTemplate(self.instance.TEMPLATES, name)
+        pt = getTemplate(self.instance.TEMPLATES, name, extension)
         # XXX handle PT rendering errors here more nicely
         try:
             # let the template render figure stuff out
@@ -297,14 +291,23 @@ class Client:
     def content(self):
         ''' Callback used by the page template to render the content of 
             the page.
+
+            If we don't have a specific class to display, that is none was
+            determined in determine_context(), then we display a "home"
+            template.
         '''
         # now render the page content using the template we determined in
         # determine_context
-        return self.template(self.template_name)
+        if self.classname is None:
+            name = 'home'
+        else:
+            name = self.classname
+        return self.renderTemplate(self.classname, self.template)
 
     # these are the actions that are available
     actions = {
         'edit':     'editItemAction',
+        'editCSV':  'editCSVAction',
         'new':      'newItemAction',
         'register': 'registerAction',
         'login':    'login_action',
@@ -631,14 +634,17 @@ class Client:
             self.error_message.append(
                 _('You do not have permission to create %s' %self.classname))
 
-        # XXX
-#        cl = self.db.classes[cn]
-#        if self.form.has_key(':multilink'):
-#            link = self.form[':multilink'].value
-#            designator, linkprop = link.split(':')
-#            xtra = ' for <a href="%s">%s</a>' % (designator, designator)
-#        else:
-#            xtra = ''
+        # create a little extra message for anticipated :link / :multilink
+        if self.form.has_key(':multilink'):
+            link = self.form[':multilink'].value
+        elif self.form.has_key(':link'):
+            link = self.form[':multilink'].value
+        else:
+            link = None
+            xtra = ''
+        if link:
+            designator, linkprop = link.split(':')
+            xtra = ' for <a href="%s">%s</a>'%(designator, designator)
 
         try:
             # do the create
@@ -654,7 +660,7 @@ class Client:
             self.nodeid = nid
 
             # and some nice feedback for the user
-            message = _('%(classname)s created ok')%self.__dict__
+            message = _('%(classname)s created ok')%self.__dict__ + xtra
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -686,15 +692,15 @@ class Client:
             return 1
         return 0
 
-    def genericEditAction(self):
+    def editCSVAction(self):
         ''' Performs an edit of all of a class' items in one go.
 
             The "rows" CGI var defines the CSV-formatted entries for the
             class. New nodes are identified by the ID 'X' (or any other
             non-existent ID) and removed lines are retired.
         '''
-        # generic edit is per-class only
-        if not self.genericEditPermission():
+        # this is per-class only
+        if not self.editCSVPermission():
             self.error_message.append(
                 _('You do not have permission to edit %s' %self.classname))
 
@@ -709,6 +715,7 @@ class Client:
 
         cl = self.db.classes[self.classname]
         idlessprops = cl.getprops(protected=0).keys()
+        idlessprops.sort()
         props = ['id'] + idlessprops
 
         # do the edit
@@ -716,11 +723,15 @@ class Client:
         p = csv.parser()
         found = {}
         line = 0
-        for row in rows:
+        for row in rows[1:]:
             line += 1
             values = p.parse(row)
             # not a complete row, keep going
             if not values: continue
+
+            # skip property names header
+            if values == props:
+                continue
 
             # extract the nodeid
             nodeid, values = values[0], values[1:]
@@ -728,7 +739,8 @@ class Client:
 
             # confirm correct weight
             if len(idlessprops) != len(values):
-                message=(_('Not enough values on line %(line)s'%{'line':line}))
+                self.error_message.append(
+                    _('Not enough values on line %(line)s')%{'line':line})
                 return
 
             # extract the new values
@@ -755,13 +767,12 @@ class Client:
             if not found.has_key(nodeid):
                 cl.retire(nodeid)
 
-        message = _('items edited OK')
+        # all OK
+        self.db.commit()
 
-        # redirect to the class' edit page
-        raise Redirect, '%s/%s?:ok_message=%s'%(self.base, self.classname, 
-            urllib.quote(message))
+        self.ok_message.append(_('Items edited OK'))
 
-    def genericEditPermission(self):
+    def editCSVPermission(self):
         ''' Determine whether the user has permission to edit this class.
 
             Base behaviour is to check the user can edit this class.

@@ -1,0 +1,27 @@
+<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
+
+<p class="form-help">
+ You may edit the contents of the <span tal:replace="request/classname" />
+ class using this form. Commas, newlines and double quotes (") must be
+ handled delicately. You may include commas and newlines by enclosing the
+ values in double-quotes ("). Double quotes themselves must be quoted by
+ doubling ("").
+</p>
+
+<p class="form-help">
+ Multilink properties have their multiple values colon (":") separated 
+ (... ,"one:two:three", ...)
+</p>
+
+<p class="form-help">
+ Remove entries by deleting their line. Add new entries by appending
+ them to the table - put an X in the id column.
+</p>
+
+<form onSubmit="return submit_once()" method="POST">
+<textarea rows="15" cols="60" name="rows" tal:content="klass/csv"></textarea>
+<br>
+<input type="hidden" name=":action" value="editCSV">
+<input type="submit" value="Edit Items">
+</form>
+
