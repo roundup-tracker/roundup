@@ -81,3 +81,11 @@ MESSAGES_TO_AUTHOR has been added to the IssueClass in dbinit.py. Set to 'yes'
 to send nosy messages to the author. Default behaviour is to not send nosy
 messages to the author.
 
+
+CGI script roundup.cgi
+----------------------
+There have been some structural changes to the roundup.cgi script - you will
+need to install it again from the cgi-bin directory of the source
+distribution. Make sure you update the ROUNDUP_INSTANCE_HOMES after the
+copy.
+
