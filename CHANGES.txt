@@ -57,7 +57,8 @@ Fixed:
 - don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
 - NumberHTMLProperty should return '' not "None" if not set (thanks
   William)
-- ensure multilink ordering in RDBMS backends (thanks Marcus Priesch)
+- ensure multilink ordering in RDBMS backends (thanks Marcus Priesch, sf
+  bug 950963)
 - always honor indexme property on Strings (sf patch 1063711)
 
 
