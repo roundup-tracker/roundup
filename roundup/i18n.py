@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.5 2004-05-14 10:40:47 a1s Exp $
+# $Id: i18n.py,v 1.6 2004-05-18 19:20:47 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -43,11 +43,15 @@ try:
     import gettext
 except ImportError:
     # fall-back to dummy on errors (returning the english text)
-    _ = lambda text: text
+    _ = gettext = lambda text: text
+    def ngettext(singular, plural, count):
+        if count == 1: return singular
+        return plural
 else:
     # use roundup messages
     gettext.textdomain("roundup")
-    # export gettext function
-    _ = gettext.gettext
+    # export gettext functions
+    ngettext = gettext.ngettext
+    _ = gettext = gettext.gettext
 
 # vim: set filetype=python ts=4 sw=4 et si
