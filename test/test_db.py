@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.22 2002-05-21 05:52:11 richard Exp $ 
+# $Id: test_db.py,v 1.23 2002-06-20 23:51:48 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -27,15 +27,15 @@ from roundup import date, password
 def setupSchema(db, create):
     status = Class(db, "status", name=String())
     status.setkey("name")
+    user = Class(db, "user", username=String(), password=Password())
+    file = FileClass(db, "file", name=String(), type=String())
+    issue = Class(db, "issue", title=String(), status=Link("status"),
+        nosy=Multilink("user"), deadline=Date(), foo=Interval())
     if create:
         status.create(name="unread")
         status.create(name="in-progress")
         status.create(name="testing")
         status.create(name="resolved")
-    Class(db, "user", username=String(), password=Password())
-    Class(db, "issue", title=String(), status=Link("status"),
-        nosy=Multilink("user"), deadline=Date(), foo=Interval())
-    FileClass(db, "file", name=String(), type=String())
     db.commit()
 
 class MyTestCase(unittest.TestCase):
@@ -69,40 +69,65 @@ class anydbmDBTestCase(MyTestCase):
         self.db2 = anydbm.Database(config, 'test')
         setupSchema(self.db2, 0)
 
-    def testChanges(self):
+    def testStringChange(self):
         self.db.issue.create(title="spam", status='1')
-        self.db.issue.create(title="eggs", status='2')
-        self.db.issue.create(title="ham", status='4')
-        self.db.issue.create(title="arguments", status='2')
-        self.db.issue.create(title="abuse", status='1')
+        self.assertEqual(self.db.issue.get('1', 'title'), 'spam')
+        self.db.issue.set('1', title='eggs')
+        self.assertEqual(self.db.issue.get('1', 'title'), 'eggs')
+        self.db.commit()
+        self.assertEqual(self.db.issue.get('1', 'title'), 'eggs')
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+        self.assertEqual(self.db.issue.get('2', 'title'), 'spam')
+        self.db.issue.set('2', title='ham')
+        self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
+        self.db.commit()
+        self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
+
+    def testLinkChange(self):
+        self.db.issue.create(title="spam", status='1')
+        self.assertEqual(self.db.issue.get('1', "status"), '1')
+        self.db.issue.set('1', status='2')
+        self.assertEqual(self.db.issue.get('1', "status"), '2')
+
+    def testDateChange(self):
+        self.db.issue.create(title="spam", status='1')
+        a = self.db.issue.get('1', "deadline")
+        self.db.issue.set('1', deadline=date.Date())
+        b = self.db.issue.get('1', "deadline")
+        self.db.commit()
+        self.assertNotEqual(a, b)
+        self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
+        self.db.issue.set('1', deadline=date.Date())
+
+    def testIntervalChange(self):
+        self.db.issue.create(title="spam", status='1')
+        a = self.db.issue.get('1', "foo")
+        self.db.issue.set('1', foo=date.Interval('-1d'))
+        self.assertNotEqual(self.db.issue.get('1', "foo"), a)
+
+    def testNewProperty(self):
+        self.db.issue.create(title="spam", status='1')
         self.db.issue.addprop(fixer=Link("user"))
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
         self.assertEqual(keys, ['deadline', 'fixer', 'foo', 'id', 'nosy',
             'status', 'title'])
-        self.db.issue.set('5', status='2')
-        self.db.issue.get('5', "status")
+        self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
-        a = self.db.issue.get('5', "deadline")
-        self.db.issue.set('5', deadline=date.Date())
-        b = self.db.issue.get('5', "deadline")
+    def testRetire(self):
+        self.db.issue.create(title="spam", status='1')
+        b = self.db.status.get('1', 'name')
+        a = self.db.status.list()
+        self.db.status.retire('1')
+        # make sure the list is different 
+        self.assertNotEqual(a, self.db.status.list())
+        # can still access the node if necessary
+        self.assertEqual(self.db.status.get('1', 'name'), b)
         self.db.commit()
-        self.assertNotEqual(a, b)
-        self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
-        self.db.issue.set('5', deadline=date.Date())
-
-        a = self.db.issue.get('5', "foo")
-        self.db.issue.set('5', foo=date.Interval('-1d'))
-        self.assertNotEqual(a, self.db.issue.get('5', "foo"))
-
-        self.db.status.get('2', "name")
-        self.db.issue.get('5', "title")
-        self.db.issue.find(status = self.db.status.lookup("in-progress"))
-        self.db.commit()
-        self.db.issue.history('5')
-        self.db.status.history('1')
-        self.db.status.history('2')
+        self.assertEqual(self.db.status.get('1', 'name'), b)
+        self.assertNotEqual(a, self.db.status.list())
 
     def testSerialisation(self):
         self.db.issue.create(title="spam", status='1',
@@ -266,9 +291,6 @@ class anydbmDBTestCase(MyTestCase):
         journal = self.db.getjournal('issue', '1')
         self.assertEqual(2, len(journal))
 
-    def testRetire(self):
-        pass
-
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db2.issue.create(title="eggs", status='2')
@@ -377,6 +399,12 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/05/21 05:52:11  richard
+# Well whadya know, bsddb3 works again.
+# The backend is implemented _exactly_ the same as bsddb - so there's no
+# using its transaction or locking support. It'd be nice to use those some
+# day I suppose.
+#
 # Revision 1.21  2002/04/15 23:25:15  richard
 # . node ids are now generated from a lockable store - no more race conditions
 #
