@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.57 2003-07-03 23:43:46 richard Exp $
+# $Id: rdbms_common.py,v 1.58 2003-08-12 02:18:46 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1479,7 +1479,7 @@ class Class(hyperdb.Class):
         self.fireReactors('retire', nodeid, None)
 
     def restore(self, nodeid):
-        '''Restpre a retired node.
+        '''Restore a retired node.
 
         Make node available for all operations like it was before retirement.
         '''
@@ -1890,6 +1890,9 @@ class Class(hyperdb.Class):
                 else:
                     where.append('_%s=%s'%(k, a))
                     args.append(v)
+
+        # don't match retired nodes
+        where.append('__retired__ <> 1')
 
         # add results of full text search
         if search_matches is not None:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.89 2003-05-09 01:47:51 richard Exp $ 
+# $Id: test_db.py,v 1.90 2003-08-12 02:22:22 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -683,6 +683,11 @@ class anydbmDBTestCase(MyTestCase):
     def testFilteringLink(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
+
+    def testFilteringRetired(self):
+        ae, filt = self.filteringSetup()
+        self.db.issue.retire('2')
+        ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['3'])
 
     def testFilteringMultilink(self):
         ae, filt = self.filteringSetup()
