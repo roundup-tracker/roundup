@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.64 2004-10-17 18:14:22 a1s Exp $
+$Id: roundup_server.py,v 1.65 2004-10-17 18:22:32 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -553,7 +553,7 @@ def run(port=undefined, success_message=None):
             options, ("help", "version", "save-config",),
             host="n:", port="p:", group="g:", user="u:",
             logfile="l:", pidfile="d:", log_hostnames="N")
-    except (getopt.GetoptError), e: #, configuration.ConfigurationError), e:
+    except (getopt.GetoptError, configuration.ConfigurationError), e:
         usage(str(e))
         return
 
