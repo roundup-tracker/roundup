@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# $Id: setup.py,v 1.2 2001-07-26 07:14:27 richard Exp $
+# $Id: setup.py,v 1.3 2001-07-27 06:56:25 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -20,11 +20,12 @@ for t in templates:
 
 
 setup ( name = "roundup", 
-	version = "0.1.4",
+	version = "0.2.0",
 	description = "roundup tracking system",
 	author = "Richard Jones",
 	url = 'http://sourceforge.net/projects/roundup/',
 	packages = packagelist,
+    scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server']
 )
 
 # now install the bin programs, and the cgi-bin programs
@@ -32,4 +33,7 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/26 07:14:27  richard
+# Made setup.py executable, added id and log.
+#
 #
