@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.99 $
+:Version: $Revision: 1.100 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3530,7 +3530,7 @@ Resolving the issue::
 "Take" the issue::
 
   <a tal:attributes="href
-     string:issue${i/id}?:assignedto=${user/id}&:action=edit">take</a>
+     string:issue${i/id}?:assignedto=${request/user/id}&:action=edit">take</a>
 
 ... and so on
 
