@@ -82,6 +82,12 @@ to ask for help on the roundup-users mailing list.
 Getting Roundup
 ===============
 
+.. note::
+    Some systems, such as Debian and NetBSD, already have Roundup
+    installed. Try running the command "roundup-admin" with no arguments,
+    and if it runs you may skip the `Basic Installation Steps`_
+    below and go straight to `configuring your first tracker`_.
+
 Download the latest version from http://roundup.sf.net/.
 
 If you're using WinZIP's "classic" interface, make sure the "Use
@@ -91,8 +97,9 @@ Testing your Python
 -------------------
 
 .. note::
-   The Windows installer doesn't include the ``run_tests.py`` or ``demo.py``
-   scripts - you will need to download the source to use them.
+   The ``run_tests.py`` script is packaged in Roundup's source distribution
+   - users of the Windows installer, other binary distributions or
+   pre-installed Roundup will need to download the source to use it.
 
 Once you've unpacked roundup's source, run ``python run_tests.py`` in the
 source directory and make sure there are no errors. If there are errors,
@@ -108,8 +115,9 @@ For The Really Impatient
 ========================
 
 .. note::
-   The Windows installer doesn't include the ``demo.py`` script - you
-   will need to download the source to use it.
+   The ``demo.py`` script is packaged in Roundup's source distribution - 
+   users of the Windows installer, other binary distributions or
+   pre-installed Roundup will need to download the source to use it.
 
 If you just want to give Roundup a whirl Right Now, then simply run
 ``python demo.py``. This will set up a simple demo tracker on your
@@ -124,12 +132,6 @@ at so you may start playing. Three users will be set up:
 
 Installation
 ============
-
-.. note::
-    Some systems, such as Debian and NetBSD, already have Roundup
-    installed. Try running the command "roundup-admin" with no arguments,
-    and if it runs you may skip the `Basic Installation Steps`_
-    below and go straight to `configuring your first tracker`_.
 
 Set aside 15-30 minutes. Please make sure you're using a supported version of
 Python -- see `testing your python`_. There's several steps to follow in your
