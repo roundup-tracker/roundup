@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.22 2003-04-24 04:27:32 richard Exp $
+$Id: roundup_server.py,v 1.23 2003-04-24 07:19:02 richard Exp $
 """
 
 # python version check
@@ -58,6 +58,18 @@ ROUNDUP_USER = None
 #
 ##  end configuration
 #
+
+import zlib, base64
+favico = zlib.decompress(base64.decodestring('''
+eJyVUk2IQVEUfn4yaRYjibdQZiVba/ZE2djIUmHWFjaKGVmIlY2iFMVG2ViQhXqFSP6iFFJvw4uF
+LGdWd743mpeMn+a88917Oue7955z3qEoET6FQkHx8iahKDV2A8B7XgERRf/EKMSUzyf8ypbbnnQy
+mWBdr9eVSkVw3tJGoxGNRpvNZigUyufzWPv9Pvwcx0UiERj7/V4g73Y7j8fTarWMRmO73U4kEkKI
+YZhardbr9eLxuOD0+/2ZTMZisYjFYpqmU6kU799uN5tNMBg8HA7ZbPY8GaTh8/mEipRKpclk0ul0
+NpvNarUmk0mWZS/yr9frcrmc+iMOh+NWydPp1Ov1SiSSc344HL7fKKfTiSN2u12tVqOcxWJxn6/V
+ag0GAwxkrlKp5vP5fT7ulMlk6XRar9dLpVIUXi6Xb5Hxa1wul0ajKZVKsVjM7XYXCoVOp3OVPJvN
+AoFAtVo1m825XO7hSODOYrH4kHbxxGAwwODBGI/H6DBs5LNara7yl8slGjIcDsHpdrunU6PRCAP2
+r3fPdUcIYeyEfLSAJ0LeAUZHCAt8Al/8/kLIEWDB5YDj0wm8fAP6fVfo
+'''.strip()))
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = TRACKER_HOMES
@@ -115,8 +127,16 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
         '''
-
         rest = self.path
+
+        if rest == '/favicon.ico':
+            raise client.NotFound
+#            self.send_response(200)
+#            self.send_header('Content-Type', 'image/x-ico')
+#            self.end_headers()
+#            self.wfile.write(favicon)
+#            return
+
         i = rest.rfind('?')
         if i >= 0:
             rest, query = rest[:i], rest[i+1:]
