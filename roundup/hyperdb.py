@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.44 2002-01-02 02:31:38 richard Exp $
+# $Id: hyperdb.py,v 1.45 2002-01-02 04:18:17 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -76,9 +76,147 @@ class DatabaseError(ValueError):
 # the base Database class
 #
 class Database:
+    '''A database for storing records containing flexible data types.
+
+This class defines a hyperdatabase storage layer, which the Classes use to
+store their data.
+
+
+Transactions
+------------
+The Database should support transactions through the commit() and
+rollback() methods. All other Database methods should be transaction-aware,
+using data from the current transaction before looking up the database.
+
+An implementation must provide an override for the get() method so that the
+in-database value is returned in preference to the in-transaction value.
+This is necessary to determine if any values have changed during a
+transaction.
+
+'''
+
     # flag to set on retired entries
     RETIRED_FLAG = '__hyperdb_retired'
 
+    def __init__(self, storagelocator, journaltag=None):
+        """Open a hyperdatabase given a specifier to some storage.
+
+        The meaning of 'storagelocator' depends on the particular
+        implementation of the hyperdatabase.  It could be a file name,
+        a directory path, a socket descriptor for a connection to a
+        database over the network, etc.
+
+        The 'journaltag' is a token that will be attached to the journal
+        entries for any edits done on the database.  If 'journaltag' is
+        None, the database is opened in read-only mode: the Class.create(),
+        Class.set(), and Class.retire() methods are disabled.
+        """
+        raise NotImplementedError
+
+    def __getattr__(self, classname):
+        """A convenient way of calling self.getclass(classname)."""
+        raise NotImplementedError
+
+    def addclass(self, cl):
+        '''Add a Class to the hyperdatabase.
+        '''
+        raise NotImplementedError
+
+    def getclasses(self):
+        """Return a list of the names of all existing classes."""
+        raise NotImplementedError
+
+    def getclass(self, classname):
+        """Get the Class object representing a particular class.
+
+        If 'classname' is not a valid class name, a KeyError is raised.
+        """
+        raise NotImplementedError
+
+    def clear(self):
+        '''Delete all database contents.
+        '''
+        raise NotImplementedError
+
+    def getclassdb(self, classname, mode='r'):
+        '''Obtain a connection to the class db that will be used for
+           multiple actions.
+        '''
+        raise NotImplementedError
+
+    def addnode(self, classname, nodeid, node):
+        '''Add the specified node to its class's db.
+        '''
+        raise NotImplementedError
+
+    def setnode(self, classname, nodeid, node):
+        '''Change the specified node.
+        '''
+        raise NotImplementedError
+
+    def getnode(self, classname, nodeid, db=None, cache=1):
+        '''Get a node from the database.
+        '''
+        raise NotImplementedError
+
+    def hasnode(self, classname, nodeid, db=None):
+        '''Determine if the database has a given node.
+        '''
+        raise NotImplementedError
+
+    def countnodes(self, classname, db=None):
+        '''Count the number of nodes that exist for a particular Class.
+        '''
+        raise NotImplementedError
+
+    def getnodeids(self, classname, db=None):
+        '''Retrieve all the ids of the nodes for a particular Class.
+        '''
+        raise NotImplementedError
+
+    def storefile(self, classname, nodeid, property, content):
+        '''Store the content of the file in the database.
+        
+           The property may be None, in which case the filename does not
+           indicate which property is being saved.
+        '''
+        raise NotImplementedError
+
+    def getfile(self, classname, nodeid, property):
+        '''Store the content of the file in the database.
+        '''
+        raise NotImplementedError
+
+    def addjournal(self, classname, nodeid, action, params):
+        ''' Journal the Action
+        'action' may be:
+
+            'create' or 'set' -- 'params' is a dictionary of property values
+            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
+            'retire' -- 'params' is None
+        '''
+        raise NotImplementedError
+
+    def getjournal(self, classname, nodeid):
+        ''' get the journal for id
+        '''
+        raise NotImplementedError
+
+    def commit(self):
+        ''' Commit the current transactions.
+
+        Save all data changed since the database was opened or since the
+        last commit() or rollback().
+        '''
+        raise NotImplementedError
+
+    def rollback(self):
+        ''' Reverse all actions from the current transaction.
+
+        Undo all the changes made since the database was opened or the last
+        commit() or rollback() was performed.
+        '''
+        raise NotImplementedError
 
 _marker = []
 #
@@ -889,6 +1027,21 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2002/01/02 02:31:38  richard
+# Sorry for the huge checkin message - I was only intending to implement #496356
+# but I found a number of places where things had been broken by transactions:
+#  . modified ROUNDUPDBSENDMAILDEBUG to be SENDMAILDEBUG and hold a filename
+#    for _all_ roundup-generated smtp messages to be sent to.
+#  . the transaction cache had broken the roundupdb.Class set() reactors
+#  . newly-created author users in the mailgw weren't being committed to the db
+#
+# Stuff that made it into CHANGES.txt (ie. the stuff I was actually working
+# on when I found that stuff :):
+#  . #496356 ] Use threading in messages
+#  . detectors were being registered multiple times
+#  . added tests for mailgw
+#  . much better attaching of erroneous messages in the mail gateway
+#
 # Revision 1.43  2001/12/20 06:13:24  rochecompaan
 # Bugs fixed:
 #   . Exception handling in hyperdb for strings-that-look-like numbers got
