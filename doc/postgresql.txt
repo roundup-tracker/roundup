@@ -2,9 +2,8 @@
 PostgreSQL/psycopg Backend
 ==========================
 
-This is notes about PostreSQL backend based on the psycopg adapter for
-roundup issue tracker.
-
+This are notes about PostqreSQL backend based on the psycopg adapter for
+Roundup issue tracker.
 
 Prerequisites
 =============
@@ -28,6 +27,48 @@ you wish to test against a different database.
 
 The test database will be called "rounduptest".
 
+Using the tsearch2 indexer
+==========================
+
+You have the option of using a different indexer for full-text searches. It is
+based on tsearch2_, a module for PostgreSQL 7.3 and above. It is faster and
+more scalable than the standard indexer. The tsearch2 indexer is a good choice
+if you have over a 1000 issues in one tracker.
+
+.. _tsearch2: http://www.sai.msu.su/~megera/postgres/gist/tsearch/V2/
+
+Installation
+------------
+
+tsearch2 is available from the contrib subtree of the PostgreSQL source tree
+starting with PostgreSQL 7.4. This means installing tsearch2 on Debian is
+simple::
+
+  apt-get install postgresql-contrib
+
+FreeBSD is equally simple::
+
+  pkg_add -r postgresql-contrib
+
+RPM packages for Fedora Core are available from all PostgreSQL ftp mirrors_.
+Packages for Suse, Mandrake and others are available from those distributors.
+
+.. _mirrors: http://www.postgresql.org/download/mirrors-ftp
+
+If you're compiling from source, I'm assuming you already know how to build and
+install the main PostgreSQL source. Once you've done that, running the
+following commands in the 'contrib' directory will build and install tsearch2::
+
+  make all
+  make install
+
+Configuring Roundup
+-------------------
+
+Roundup implements tsearch2 as a distinct backend from the postgresql backend.
+Switching to tsearch2 is the same process as `migrating to any other backend`__.
+
+__ admin_guide.html#migrating-backends
 
 Credit
 ======
