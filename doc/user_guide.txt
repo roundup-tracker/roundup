@@ -2,9 +2,192 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 .. contents::
+
+Note: this document will refer to *issues* as the primary store of information
+in the tracker. This is the default of the classic template, bubt may vary in
+any given installation.
+
+Web Interface
+-------------
+
+Index views may be modified by the following arguments:
+
++-----------+--------------------------------------------------------------+
+| :sort     | sort by prop name, optionally preceeded with '-'             |
+|           | to give descending or nothing for ascending sorting.         |
++-----------+--------------------------------------------------------------+
+| :group    | group by prop name, optionally preceeded with '-' or         |
+|           | to sort in descending or nothing for ascending order.        |
++-----------+--------------------------------------------------------------+
+| :filter   | selects which props should be displayed in the filter        |
+|           | section. Default is all.                                     |
++-----------+--------------------------------------------------------------+
+| :columns  | selects the columns that should be displayed.                |
+|           | Default is all.                                              |
++-----------+--------------------------------------------------------------+
+| propname  | selects the values the node properties given by propname     |
+|           | must have (very basic search/filter).                        |
++-----------+--------------------------------------------------------------+
+
+Searching
+~~~~~~~~~
+
+TODO: some information about how searching works
+
+
+Access Controls
+~~~~~~~~~~~~~~~
+
+
+Managing Issues
+~~~~~~~~~~~~~~~
+
+TODO: some mention of how the various widgets work
+
+
+E-Mail Gateway
+--------------
+
+E-mail sent to Roundup is examined for several pieces of information:
+
+1. `subject-line information`_ identifying the purpose of the e-mail
+2. `e-mail message content`_ which is to be extracted
+3. e-mail attachments which should be associated with the message
+
+Subject-line information
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The subject line of the incoming message is examined to find one of:
+
+1. the item that the message is responding to,
+2. the type of item the message should create, or
+3. we default the item class and try some trickiness
+
+If the subject line contains a prefix in ``[square brackets]`` then we're
+looking at case 1 or 2 above. Note that any "re:" or "fwd:" prefixes are
+stripped off the subject line before we start looking for real information.
+
+If an item designator (class name and id number, for example ``issue123``)
+is found there, a new "msg" node is added to the "messages" property for
+that item, and any new "file" nodes are added to the "files" property for
+the item.
+
+If just an item class name is found there, we attempt to create a new item of
+that class with its "messages" property initialized to contain the new "msg"
+node and its "files" property initialized to contain any new "file" nodes.
+
+The third case above - where no ``[information]`` is provided, the tracker's
+``MAIL_DEFAULT_CLASS`` configuration variable defines what class of item
+the message relates to. We try to match the subject line to an existing
+item of the default class, and if there's a match, the message is related to
+that matched item. If not, then a new item of the default class is created.
+
+Setting Properties
+::::::::::::::::::
+
+The e-mail interface also provides a simple way to set properties on items. At
+the end of the subject line, propname=value pairs can be specified in square
+brackets, using the same conventions as for the roundup set shell command.
+
+For example,
+
+- setting the priority of an issue::
+
+   Subject: Re: [issue1] the coffee machine is broken! [priority=urgent]
+
+- adding yourself to a nosy list::
+
+   Subject: Re: [issue2] we're out of widgets [nosy=+richard]
+
+- setting the nosy list to just you::
+
+   Subject: Re: [issue2] we're out of widgets [nosy=richard]
+
+- removing yourself from a nosy list::
+
+   Subject: Re: [issue2] we're out of widgets [nosy=-richard]
+
+In all cases, the message relates to issue 2. The ``Re:`` prefix is stripped
+off.
+
+
+E-Mail Message Content
+~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup only associates plain text (MIME type ``text/plain``) as messages for
+items. Any other parts of a message are associated as downloadable files. If
+no plain text part is found, the message is rejected.
+
+To do this, incoming messages are examined for multiple parts:
+
+* In a multipart/mixed message or part, each subpart is extracted and
+  examined. The text/plain subparts are assembled to form the textual body
+  of the message, to be stored in the file associated with a "msg" class
+  node. Any parts of other types are each stored in separate files and
+  given "file" class nodes that are linked to the "msg" node.
+* In a multipart/alternative message or part, we look for a text/plain
+  subpart and ignore the other parts.
+
+If the message is a response to a previous message, and contains quoted
+sections, then these will be stripped out of the message if the
+``EMAIL_KEEP_QUOTED_TEXT`` configuration variable is set to ``'no'``.
+
+Message summary
+:::::::::::::::
+
+The "summary" property on message nodes is taken from the first non-quoting
+section in the message body. The message body is divided into sections by blank
+lines. Sections where the second and all subsequent lines begin with a ">" or
+"|" character are considered "quoting sections". The first line of the first
+non-quoting section becomes the summary of the message.
+
+
+Address handling
+~~~~~~~~~~~~~~~~
+
+All of the addresses in the ``To:`` and ``Cc:`` headers of the incoming
+message are
+looked up among the tracker users, and the corresponding users are placed
+in the
+"recipients" property on the new "msg" node. The address in the ``From:`` header
+similarly determines the "author" property of the new "msg" node. The default
+handling for addresses that don't have corresponding users is to create new
+users with no passwords and a username equal to the address.
+
+The addresses mentioned in the ``To:``, ``From:`` and ``Cc:`` headers of
+the message may be added to the `nosy list`_ depending on:
+
+``ADD_AUTHOR_TO_NOSY``
+ Does the author of a message get placed on the nosy list automatically?
+ If 'new' is used, then the author will only be added when a message
+ creates a new issue. If 'yes', then the author will be added on followups
+ too. If 'no', they're never added to the nosy.
+
+``ADD_RECIPIENTS_TO_NOSY``
+ Do the recipients (To:, Cc:) of a message get placed on the nosy list?
+ If 'new' is used, then the recipients will only be added when a message
+ creates a new issue. If 'yes', then the recipients will be added on
+ followups too. If 'no', they're never added to the nosy.
+
+
+Nosy List
+:::::::::
+
+The nosy list watches for additions to the "messages" property of items.
+When a new message is added, it is sent to all the users
+on the "nosy" list for the item that are not already on the "recipients" list
+of the message. Those users are then appended to the "recipients" property on
+the message, so multiple copies of a message are never sent to the same user.
+The journal recorded by the hyperdatabase on the "recipients" property then
+provides a log of when the message was sent to whom.
+
+If the author of the message is also in the nosy list for the item that the
+message is attached to, then the config var ``MESSAGES_TO_AUTHOR`` is queried
+to determine if they get a nosy list copy of the message too.
+
 
 Command Line Tool
 -----------------
@@ -174,124 +357,6 @@ be specified as either "``name``" or "``name:password``".
 If either the name or password is not supplied, they are obtained from the
 command-line.
 
-
-Web Interface
--------------
-
-Index views may be modified by the following arguments:
-
-+-----------+--------------------------------------------------------------+
-| :sort     | sort by prop name, optionally preceeded with '-'             |
-|           | to give descending or nothing for ascending sorting.         |
-+-----------+--------------------------------------------------------------+
-| :group    | group by prop name, optionally preceeded with '-' or         |
-|           | to sort in descending or nothing for ascending order.        |
-+-----------+--------------------------------------------------------------+
-| :filter   | selects which props should be displayed in the filter        |
-|           | section. Default is all.                                     |
-+-----------+--------------------------------------------------------------+
-| :columns  | selects the columns that should be displayed.                |
-|           | Default is all.                                              |
-+-----------+--------------------------------------------------------------+
-| propname  | selects the values the node properties given by propname     |
-|           | must have (very basic search/filter).                        |
-+-----------+--------------------------------------------------------------+
-
-Not sure what to put in here...
-
-E-Mail Gateway
---------------
-
-Performing Actions
-~~~~~~~~~~~~~~~~~~
-
-The subject line of the incoming message is examined to determine whether the
-message is an attempt to create a new item or to discuss an existing item. A
-designator enclosed in square brackets is sought as the first thing on the
-subject line (after skipping any "Fwd:" or "Re:" prefixes).
-If an item designator (class name and id number) is found there, the newly
-created "msg" node is added to the "messages" property for that item, and any
-new "file" nodes are added to the "files" property for the item.
-If just an item class name is found there, we attempt to create a new item of
-that class with its "messages" property initialized to contain the new "msg"
-node and its "files" property initialized to contain any new "file" nodes.
-
-Setting Properties
-~~~~~~~~~~~~~~~~~~
-
-The e-mail interface also provides a simple way to set properties on items. At
-the end of the subject line, propname=value pairs can be specified in square
-brackets, using the same conventions as for the roundup set shell command.
-
-For example,
-
-- setting the priority of an issue::
-
-   Subject: Re: [issue1] the coffee machine is broken! [priority=urgent]
-
-- adding yourself to a nosy list (both of these are equivalent)::
-
-   Subject: Re: [issue2] we're out of widgets [nosy=+richard]
-   Subject: Re: [issue2] we're out of widgets [nosy=richard]
-
-- removing yourself from a nosy list::
-
-   Subject: Re: [issue2] we're out of widgets [nosy=-richard]
-
-
-Message content
-~~~~~~~~~~~~~~~
-
-Incoming messages are examined for multiple parts:
-
-* In a multipart/mixed message or part, each subpart is extracted and
-  examined. The text/plain subparts are assembled to form the textual body
-  of the message, to be stored in the file associated with a "msg" class
-  node. Any parts of other types are each stored in separate files and
-  given "file" class nodes that are linked to the "msg" node.
-* In a multipart/alternative message or part, we look for a text/plain
-  subpart and ignore the other parts.
-
-Message summary
-:::::::::::::::
-
-The "summary" property on message nodes is taken from the first non-quoting
-section in the message body. The message body is divided into sections by blank
-lines. Sections where the second and all subsequent lines begin with a ">" or
-"|" character are considered "quoting sections". The first line of the first
-non-quoting section becomes the summary of the message.
-
-Address handling
-~~~~~~~~~~~~~~~~
-
-All of the addresses in the To: and Cc: headers of the incoming message are
-looked up among the user nodes, and the corresponding users are placed in the
-"recipients" property on the new "msg" node. The address in the From: header
-similarly determines the "author" property of the new "msg" node. The default
-handling for addresses that don't have corresponding users is to create new
-users with no passwords and a username equal to the address. (The web interface
-does not permit logins for users with no passwords.) If we prefer to reject
-mail from outside sources, we can simply register an auditor on the "user"
-class that prevents the creation of user nodes with no passwords.
-
-Triggers
-~~~~~~~~
-
-Both cases may trigger detectors (in the first case we are calling the set()
-method to add the message to the item's spool; in the second case we are
-calling the create() method to create a new node). If an auditor raises an
-exception, the original message is bounced back to the sender with the
-
-Nosy Lists
-::::::::::
-
-A standard detector is provided that watches for additions to the "messages"
-property. When a new message is added, the detector sends it to all the users
-on the "nosy" list for the item that are not already on the "recipients" list
-of the message. Those users are then appended to the "recipients" property on
-the message, so multiple copies of a message are never sent to the same user.
-The journal recorded by the hyperdatabase on the "recipients" property then
-provides a log of when the message was sent to whom.
 
 
 -----------------
