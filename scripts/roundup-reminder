@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.2 2002-05-09 02:52:56 richard Exp $
+# $Id: roundup-reminder,v 1.3 2002-09-10 01:07:06 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -150,12 +150,4 @@ and click on "My Issues". Do NOT respond to this message.
     smtp = smtplib.SMTP(db.config.MAILHOST)
     smtp.sendmail(db.config.ADMIN_EMAIL, address, message.getvalue())
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.1  2002/04/15 06:37:31  richard
-# Here's a cron-job reminder script that we're going to be using here at
-# ekit. Might be useful for other people. Could use some work making it more
-# general and easier to customise.
-#
-#
-#
+# vim: set filetype=python ts=4 sw=4 et si

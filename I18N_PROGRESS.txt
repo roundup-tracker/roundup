@@ -34,17 +34,10 @@ roundup/templates/__init__.py
 roundup/templates/classic/__init__.py
 roundup/templates/classic/dbinit.py
 roundup/templates/classic/htmlbase.py
-roundup/templates/classic/instance_config.py
+roundup/templates/classic/config.py
 roundup/templates/classic/interfaces.py
 roundup/templates/classic/detectors/__init__.py
 roundup/templates/classic/detectors/nosyreaction.py
-roundup/templates/extended/__init__.py
-roundup/templates/extended/dbinit.py
-roundup/templates/extended/htmlbase.py
-roundup/templates/extended/instance_config.py
-roundup/templates/extended/interfaces.py
-roundup/templates/extended/detectors/__init__.py
-roundup/templates/extended/detectors/nosyreaction.py
 
 
 THESE FILES DO USE _()
@@ -54,11 +47,9 @@ roundup-mailgw
 roundup-server
 cgi-bin/roundup.cgi
 roundup/__init__.py
-roundup/cgi_client.py
 roundup/admin.py
-roundup/cgitb.py
 roundup/date.py
-roundup/htmltemplate.py
+roundup/cgi/cgitb.py
 
 
 WE DON'T CARE ABOUT THESE FILES
@@ -66,7 +57,6 @@ WE DON'T CARE ABOUT THESE FILES
 BUILD.txt
 CHANGES.txt
 INSTALL.txt
-MIGRATION.txt
 README.txt
 setup.py
 doc/implementation.txt
@@ -90,21 +80,6 @@ roundup/templates/classic/html/msg.item
 roundup/templates/classic/html/style.css
 roundup/templates/classic/html/user.index
 roundup/templates/classic/html/user.item
-roundup/templates/extended/html/file.index
-roundup/templates/extended/html/file.newitem
-roundup/templates/extended/html/issue.filter
-roundup/templates/extended/html/issue.index
-roundup/templates/extended/html/issue.item
-roundup/templates/extended/html/msg.index
-roundup/templates/extended/html/msg.item
-roundup/templates/extended/html/style.css
-roundup/templates/extended/html/support.filter
-roundup/templates/extended/html/support.index
-roundup/templates/extended/html/support.item
-roundup/templates/extended/html/timelog.index
-roundup/templates/extended/html/timelog.item
-roundup/templates/extended/html/user.index
-roundup/templates/extended/html/user.item
 test/README.txt
 test/__init__.py
 test/test_dates.py

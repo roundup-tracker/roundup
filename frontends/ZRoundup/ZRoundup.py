@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.11 2002-09-04 02:11:00 richard Exp $
+# $Id: ZRoundup.py,v 1.12 2002-09-10 01:07:05 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -206,39 +206,4 @@ InitializeClass(ZRoundup)
 modulesecurity.apply(globals())
 
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.10  2002/09/04 02:05:19  richard
-# new cgi client here too
-#
-# Revision 1.9  2002/07/04 01:25:22  dman13
-# fixed #576086 (dumb copying mistake)
-#
-# Revision 1.8  2002/06/16 01:01:42  dman13
-# remove CR characters embedded in messages (ZRoundup)
-#
-# Revision 1.7  2002/06/14 01:25:46  dman13
-# Fixed bug #558867 by redirecting /instance requests to /instance/
-#
-# Revision 1.6  2002/06/12 00:59:44  dman13
-# Fixed the logic for determing the cookie path.  (Closes #562130.)
-#
-# Revision 1.5  2002/05/14 23:36:25  richard
-#  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
-#    (thanks dman)
-#
-# Revision 1.4  2002/01/10 03:38:16  richard
-# reformatting for 80 cols
-#
-# Revision 1.3  2001/12/12 23:55:00  richard
-# Fixed some problems with user editing
-#
-# Revision 1.2  2001/12/12 23:33:58  richard
-# added some implementation notes
-#
-# Revision 1.1  2001/12/12 23:27:13  richard
-# Added a Zope frontend for roundup.
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: statusauditor.py,v 1.1 2002-05-29 01:16:17 richard Exp $
+#$Id: statusauditor.py,v 1.2 2002-09-10 01:07:06 richard Exp $
 
 def chatty(db, cl, nodeid, newvalues):
     ''' If the issue is currently 'unread' or 'resolved', then set
@@ -63,6 +63,4 @@ def init(db):
     db.issue.audit('set', chatty)
     db.issue.audit('create', presetunread)
 
-#
-#$Log: not supported by cvs2svn $
-#
+# vim: set filetype=python ts=4 sw=4 et si

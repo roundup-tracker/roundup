@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.4 2001-08-07 00:24:43 richard Exp $
+# $Id: __init__.py,v 1.5 2002-09-10 01:07:06 richard Exp $
 
 import os
 
@@ -29,12 +29,4 @@ def listTemplates():
             l.append(entry)
     return l
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

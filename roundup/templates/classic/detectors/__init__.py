@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.3 2001-08-07 00:24:43 richard Exp $
+#$Id: __init__.py,v 1.4 2002-09-10 01:07:06 richard Exp $
 
 def init(db):
     ''' execute the init functions of all the modules in this directory
@@ -33,19 +33,4 @@ def init(db):
     finally:
         del sys.path[0]
 
-#
-#$Log: not supported by cvs2svn $
-#Revision 1.2  2001/08/07 00:15:51  richard
-#Added the copyright/license notice to (nearly) all files at request of
-#Bizar Software.
-#
-#Revision 1.1  2001/07/23 23:29:10  richard
-#Adding the classic template
-#
-#Revision 1.1  2001/07/23 03:50:47  anthonybaxter
-#moved templates to proper location
-#
-#Revision 1.1  2001/07/22 12:09:32  richard
-#Final commit of Grande Splite
-#
-#
+# vim: set filetype=python ts=4 sw=4 et si

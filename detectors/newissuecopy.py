@@ -19,3 +19,4 @@ def newissuecopy(db, cl, nodeid, oldvalues):
 def init(db):
     db.issue.react('create', newissuecopy)
 
+# vim: set filetype=python ts=4 sw=4 et si

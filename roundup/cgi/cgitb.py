@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.4 2002-09-09 05:28:48 richard Exp $
+# $Id: cgitb.py,v 1.5 2002-09-10 01:07:05 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -166,49 +166,4 @@ def handler():
     print breaker()
     print html()
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2002/09/06 07:23:29  richard
-# tweak
-#
-# Revision 1.2  2002/09/06 07:21:31  richard
-# much nicer error messages when there's a templating error
-#
-# Revision 1.1  2002/08/30 08:28:44  richard
-# New CGI interface support
-#
-# Revision 1.10  2002/01/16 04:49:45  richard
-# Handle a special case that the CGI interface tickles. I need to check if
-# this needs fixing in python's core.
-#
-# Revision 1.9  2002/01/08 11:56:24  richard
-# missed an import _
-#
-# Revision 1.8  2002/01/05 02:22:32  richard
-# i18n'ification
-#
-# Revision 1.7  2001/11/22 15:46:42  jhermann
-# Added module docstrings to all modules.
-#
-# Revision 1.6  2001/09/29 13:27:00  richard
-# CGI interfaces now spit up a top-level index of all the instances they can
-# serve.
-#
-# Revision 1.5  2001/08/07 00:24:42  richard
-# stupid typo
-#
-# Revision 1.4  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.3  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.2  2001/07/22 12:09:32  richard
-# Final commit of Grande Splite
-#
-# Revision 1.1  2001/07/22 11:58:35  richard
-# More Grande Splite
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si
