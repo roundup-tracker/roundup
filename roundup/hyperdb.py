@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.77 2002-07-18 11:27:47 richard Exp $
+# $Id: hyperdb.py,v 1.78 2002-07-21 03:26:37 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -418,6 +418,24 @@ class Class:
         """
         raise NotImplementedError
 
+    def destroy(self, nodeid):
+        """Destroy a node.
+        
+        WARNING: this method should never be used except in extremely rare
+                 situations where there could never be links to the node being
+                 deleted
+        WARNING: use retire() instead
+        WARNING: the properties of this node will not be available ever again
+        WARNING: really, use retire() instead
+
+        Well, I think that's enough warnings. This method exists mostly to
+        support the session storage of the cgi interface.
+
+        The node is completely removed from the hyperdb, including all journal
+        entries. It will no longer be available, and will generally break code
+        if there are any references to the node.
+        """
+
     def history(self, nodeid):
         """Retrieve the journal of edits on a particular node.
 
@@ -591,6 +609,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.77  2002/07/18 11:27:47  richard
+# ws
+#
 # Revision 1.76  2002/07/18 11:17:30  gmcm
 # Add Number and Boolean types to hyperdb.
 # Add conversion cases to web, mail & admin interfaces.
