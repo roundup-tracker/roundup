@@ -66,7 +66,7 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
  <th nowrap>Change Note</th>
  <td colspan=3>
   <textarea tal:content="request/form/:note/value | default"
-            name=":note" wrap="hard" rows="5" cols="60"></textarea>
+            name=":note" wrap="hard" rows="5" cols="80"></textarea>
  </td>
 </tr>
 
