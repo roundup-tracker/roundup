@@ -20,6 +20,7 @@ Feature:
 - added script for copying user(s) from tracker to tracker (sf patch
   828963)
 - ignore incoming email with "Precedence: bulk" (sf patch 843489)
+- use HTTP 'Content-Length' header (modified sf patch 844577)
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.148 2003-11-21 22:22:32 jlgijsbers Exp $
+# $Id: client.py,v 1.149 2003-12-05 03:28:38 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -471,13 +471,44 @@ class Client:
         if classname != 'file':
             raise NotFound, designator
 
-        # we just want to serve up the file named
         self.opendb('admin')
         file = self.db.file
-        self.additional_headers['Content-Type'] = file.get(nodeid, 'type')
-        self.write(file.get(nodeid, 'content'))
+
+        mime_type = file.get(nodeid, 'type')
+        content = file.get(nodeid, 'content')
+        lmt = file.get(nodeid, 'activity').timestamp()
+
+        self._serve_file(lmt, mime_type, content)
 
     def serve_static_file(self, file):
+        ''' Serve up the file named from the templates dir
+        '''
+        filename = os.path.join(self.instance.config.TEMPLATES, file)
+
+        # last-modified time
+        lmt = os.stat(filename)[stat.ST_MTIME]
+
+        # detemine meta-type
+        file = str(file)
+        mime_type = mimetypes.guess_type(file)[0]
+        if not mime_type:
+            if file.endswith('.css'):
+                mime_type = 'text/css'
+            else:
+                mime_type = 'text/plain'
+
+        # snarf the content
+        f = open(filename, 'rb')
+        try:
+            content = f.read()
+        finally:
+            f.close()
+
+        self._serve_file(lmt, mime_type, content)
+
+    def _serve_file(self, last_modified, mime_type, content):
+        ''' guts of serve_file() and serve_static_file()
+        '''
         ims = None
         # see if there's an if-modified-since...
         if hasattr(self.request, 'headers'):
@@ -485,25 +516,18 @@ class Client:
         elif self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
             # cgi will put the header in the env var
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
-        filename = os.path.join(self.instance.config.TEMPLATES, file)
-        lmt = os.stat(filename)[stat.ST_MTIME]
         if ims:
             ims = rfc822.parsedate(ims)[:6]
             lmtt = time.gmtime(lmt)[:6]
             if lmtt <= ims:
                 raise NotModified
 
-        # we just want to serve up the file named
-        file = str(file)
-        mt = mimetypes.guess_type(file)[0]
-        if not mt:
-            if file.endswith('.css'):
-                mt = 'text/css'
-            else:
-                mt = 'text/plain'
-        self.additional_headers['Content-Type'] = mt
-        self.additional_headers['Last-Modifed'] = rfc822.formatdate(lmt)
-        self.write(open(filename, 'rb').read())
+        # spit out headers
+        self.additional_headers['Content-Type'] = mime_type
+        self.additional_headers['Content-Length'] = len(content)
+        lmt = rfc822.formatdate(last_modified)
+        self.additional_headers['Last-Modifed'] = lmt
+        self.write(content)
 
     def renderContext(self):
         ''' Return a PageTemplate for the named page

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.58 2003-12-04 23:06:53 richard Exp $
+# $Id: date.py,v 1.59 2003-12-05 03:28:38 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -322,6 +322,11 @@ class Date:
     def serialise(self):
         return '%4d%02d%02d%02d%02d%02d'%(self.year, self.month,
             self.day, self.hour, self.minute, self.second)
+
+    def timestamp(self):
+        ''' return a UNIX timestamp for this date '''
+        return calendar.timegm((self.year, self.month, self.day, self.hour,
+            self.minute, self.second, 0, 0, 0))
 
 class Interval:
     '''

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.9 2002-09-10 00:11:50 richard Exp $
+#$Id: blobfiles.py,v 1.10 2003-12-05 03:28:38 richard Exp $
 '''
 This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
@@ -87,17 +87,21 @@ class FileStorage:
     def getfile(self, classname, nodeid, property):
         '''Get the content of the file in the database.
         '''
+        # try a variety of different filenames - the file could be in the
+        # usual place, or it could be in a temp file pre-commit *or* it
+        # could be in an old-style, backwards-compatible flat directory
         filename = self.filename(classname, nodeid, property)
-        try:
-            return open(filename, 'rb').read()
-        except:
-            # now try the temp pre-commit filename
-            try:
-                return open(filename+'.tmp', 'rb').read()
-            except:
-                # fallback to flat file storage
-                filename = self.filename_flat(classname, nodeid, property)
-                return open(filename, 'rb').read()
+        flat_filename = self.filename_flat(classname, nodeid, property)
+        for filename in (filename, filename+'.tmp', flat_filename):
+            if os.path.exists(filename):
+                f = open(filename, 'rb')
+                break
+        else:
+            raise IOError, 'content file not found'
+        # snarf the contents and make sure we close the file
+        content = f.read()
+        f.close()
+        return content
 
     def numfiles(self):
         '''Get number of files in storage, even across subdirectories.
