@@ -24,7 +24,7 @@
        tal:content="i/activity/reldate"></td>
    <td tal:condition="request/show/title">
     <a tal:attributes="href string:issue${i/id}"
-       tal:content="python:i.title.value or '[no title]'">title</a>
+       tal:content="python:str(i.title) or '[no title]'">title</a>
    </td>
    <td tal:condition="request/show/status" tal:content="i/status"></td>
    <td tal:condition="request/show/creator" tal:content="i/creator"></td>
