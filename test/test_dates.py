@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.6 2001-08-07 00:24:43 richard Exp $ 
+# $Id: test_dates.py,v 1.7 2001-08-13 23:01:53 richard Exp $ 
 
 import unittest, time
 
@@ -36,7 +36,7 @@ class DateTestCase(unittest.TestCase):
         date = Date("2000-04-17")
         ae(str(date), '2000-04-17.00:00:00')
         date = Date("01-25")
-        y, m, d, x, x, x, x, x, x = time.gmtime()
+        y, m, d, x, x, x, x, x, x = time.gmtime(time.time())
         ae(str(date), '%s-01-25.00:00:00'%y)
         date = Date("2000-04-17.03:45")
         ae(str(date), '2000-04-17.03:45:00')
@@ -54,7 +54,7 @@ class DateTestCase(unittest.TestCase):
         date = Date("2000-04-17", -5)
         ae(str(date), '2000-04-17.00:00:00')
         date = Date("01-25", -5)
-        y, m, d, x, x, x, x, x, x = time.gmtime()
+        y, m, d, x, x, x, x, x, x = time.gmtime(time.time())
         ae(str(date), '%s-01-25.00:00:00'%y)
         date = Date("2000-04-17.03:45", -5)
         ae(str(date), '2000-04-17.08:45:00')
@@ -83,6 +83,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.5  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
