@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.4 2003-07-27 23:16:33 richard Exp $
+# $Id: demo.py,v 1.5 2003-07-28 23:17:50 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -16,7 +16,11 @@ def install_demo(home):
     init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around
     os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
-    os.remove(os.path.join(home, 'detectors', 'nosyreaction.pyc'))
+    try:
+        os.remove(os.path.join(home, 'detectors', 'nosyreaction.pyc'))
+    except os.error, error:
+        if error.errno != errno.ENOENT:
+            raise
     init.write_select_db(home, 'anydbm')
 
     # figure basic params for server
