@@ -42,6 +42,7 @@
            tal:attributes="href python:request.indexargs_url(request.classname,
            {'@template':'help', 'property': request.form['property'].value,
             'properties': request.form['properties'].value,
+            'form': request.form['form'].value,
             '@startwith':prev.first, '@pagesize':prev.size})"
            i18n:translate="" >&lt;&lt; previous</a>
         &nbsp;
@@ -56,6 +57,7 @@
            tal:attributes="href python:request.indexargs_url(request.classname,
            {'@template':'help', 'property': request.form['property'].value,
             'properties': request.form['properties'].value,
+            'form': request.form['form'].value,
             '@startwith':next.first, '@pagesize':next.size})"
            i18n:translate="" >next &gt;&gt;</a>
         &nbsp;

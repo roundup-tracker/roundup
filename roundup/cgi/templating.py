@@ -2056,7 +2056,7 @@ env: %(env)s
 '''%d
 
     def indexargs_form(self, columns=1, sort=1, group=1, filter=1,
-            filterspec=1):
+            filterspec=1, search_text=1):
         ''' return the current index args as form elements '''
         l = []
         sc = self.special_char
@@ -2087,7 +2087,7 @@ env: %(env)s
                         l.append(s%(k, ','.join(v)))
                 else:
                     l.append(s%(k, v))
-        if self.search_text:
+        if search_text and self.search_text:
             l.append(s%(sc+'search_text', self.search_text))
         l.append(s%(sc+'pagesize', self.pagesize))
         l.append(s%(sc+'startwith', self.startwith))
