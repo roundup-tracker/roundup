@@ -107,20 +107,14 @@ Stand-alone:
     name you nominated in ROUNDUP_INSTANCE_HOMES.
 
 Apache:
- 1. Make sure roundup.cgi is executable. Edit it at the top -
+ 1. The CGI script is found in the cgi-bin directory of the roundup
+    distribution.
+ 2. Make sure roundup.cgi is executable. Edit it at the top -
     ROUNDUP_INSTANCE_HOMES needs to know about your instance.
- 2. Edit your /etc/httpd/conf/httpd.conf and make sure that the
+ 3. Edit your /etc/httpd/conf/httpd.conf and make sure that the
     /home/httpd/html/roundup/roundup.cgi script will be treated as a CGI
     script.
- 3. Add the following to your /etc/httpd/conf/httpd.conf:
-------8<------- snip here ------8<-------
-RewriteEngine on
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=HTTP_CGI_AUTHORIZATION:%1,t=application/x-httpd-cgi,l]
-------8<------- snip here ------8<-------
-   note: the RewriteRule must be on one line - no breaks
- 4. Re-start your apache to re-load the config
+ 4. Re-start your apache to re-load the config if necessary.
  5. Load up the page "/roundup/roundup.cgi/<instance name>/index" where
     instance name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
-
 
