@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.79 2004-03-15 05:50:20 richard Exp $
+# $Id: rdbms_common.py,v 1.80 2004-03-17 22:01:37 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -184,14 +184,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             Return boolean whether we need to save the schema.
         '''
         version = self.database_schema.get('version', 1)
+        if version == self.current_db_version:
+            # nothing to do
+            return 0
+
         if version == 1:
             # version 1 doesn't have the OTK, session and indexing in the
             # database
             self.create_version_2_tables()
             # version 1 also didn't have the actor column
             self.add_actor_column()
-        else:
-            return 0
 
         self.database_schema['version'] = self.current_db_version
         return 1
