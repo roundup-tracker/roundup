@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.31 2003-01-08 05:39:40 richard Exp $
+# $Id: back_gadfly.py,v 1.31.2.1 2003-01-12 23:57:15 richard Exp $
 ''' Gadlfy relational database hypderb backend.
 
 About Gadfly
@@ -185,6 +185,14 @@ class GadflyClass:
                 else:
                     where.append('_%s=%s'%(k, a))
                     args.append(date.Interval(v).serialise())
+            elif k == 'id':
+                if isinstance(v, type([])):
+                    s = ','.join([a for x in v])
+                    where.append('%s in (%s)'%(k, s))
+                    args = args + v
+                else:
+                    where.append('%s=%s'%(k, a))
+                    args.append(v)
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])

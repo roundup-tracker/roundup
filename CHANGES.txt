@@ -1,6 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+
+2003-??-?? 0.5.5
+- fixed rdbms searching by ID (sf bug 666615)
+- detect corrupted index and raise semi-useful exception (sf bug 666767)
+
+
 2003-01-10 0.5.4
 - key the templates cache off full path, not filename
 - implemented whole-database locking

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.27 2003-01-08 05:39:40 richard Exp $
+# $Id: rdbms_common.py,v 1.27.2.1 2003-01-12 23:57:16 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1761,6 +1761,14 @@ class Class(hyperdb.Class):
                     args = args + v
                 else:
                     where.append('id=%s.nodeid and %s.linkid = %s'%(tn, tn, a))
+                    args.append(v)
+            elif k == 'id':
+                if isinstance(v, type([])):
+                    s = ','.join([a for x in v])
+                    where.append('%s in (%s)'%(k, s))
+                    args = args + v
+                else:
+                    where.append('%s=%s'%(k, a))
                     args.append(v)
             elif isinstance(propclass, String):
                 if not isinstance(v, type([])):
