@@ -3,7 +3,7 @@ import re, cgi, StringIO, urllib, Cookie, time, random
 from roundup import hyperdb, token, date, password, rcsv
 from roundup.i18n import _
 from roundup.cgi import templating
-from roundup.cgi.exceptions import Redirect, Unauthorised
+from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError
 from roundup.mailgw import uidFromAddress
 
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
@@ -66,7 +66,15 @@ class ShowAction(Action):
             elif numre.match(key):
                 n = self.form[key].value.strip()
         if not t:
-            raise ValueError, 'Invalid %s number'%t
+            raise ValueError, 'No type specified'
+        if not n:
+            raise SeriousError, _('No ID entered')
+        try:
+            int(n)
+        except ValueError:
+            d = {'input': n, 'classname': t}
+            raise SeriousError, _(
+                '"%(input)s" is not an ID (%(classname)s ID required)')%d
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
         raise Redirect, url
 
@@ -593,7 +601,8 @@ Your password is now: %(password)s
 
         # generate the one-time-key and store the props for later
         otk = ''.join([random.choice(chars) for x in range(32)])
-        self.db.otks.set(otk, uid=uid, __time=time.time())
+        d = {'uid': uid, self.db.otks.timestamp: time.time()}
+        self.db.otks.set(otk, **d)
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
@@ -658,7 +667,7 @@ class RegisterAction(Action):
 
         Return 1 on successful login.
         """
-        props = self.client.parsePropsFromForm(create=1)[0][('user', None)]
+        props = self.client.parsePropsFromForm(create=True)[0][('user', None)]
 
         # registration isn't allowed to supply roles
         if props.has_key('roles'):
@@ -686,7 +695,7 @@ class RegisterAction(Action):
                 props[propname] = str(value)
             elif isinstance(proptype, hyperdb.Password):
                 props[propname] = str(value)
-        props['__time'] = time.time()
+        props[self.db.otks.timestamp] = time.time()
         self.db.otks.set(otk, **props)
 
         # send the email

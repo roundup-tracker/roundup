@@ -30,3 +30,22 @@ class SendFile(Exception):
 
 class SendStaticFile(Exception):
     """Send a static file from the instance html directory."""
+
+class SeriousError(Exception):
+    """Raised when we can't reasonably display an error message on a
+    templated page.
+
+    The exception value will be displayed in the error page, HTML
+    escaped.
+    """
+    def __str__(self):
+        return '''
+<html><head><title>Roundup issue tracker: An error has occurred</title>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
+ <link rel="stylesheet" type="text/css" href="_file/style.css">
+</head>
+<body class="body" marginwidth="0" marginheight="0">
+ <p class="error-message">%s</p>
+</body></html>
+'''%cgi.escape(self.args[0])
+

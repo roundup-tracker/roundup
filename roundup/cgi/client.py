@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.164 2004-02-25 03:39:53 richard Exp $
+# $Id: client.py,v 1.165 2004-02-25 23:27:54 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -208,6 +208,8 @@ class Client:
 
             # render the content
             self.write(self.renderContext())
+        except SeriousError, message:
+            self.write(str(message))
         except Redirect, url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
