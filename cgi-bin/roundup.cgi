@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: roundup.cgi,v 1.1 2001-07-22 11:47:07 richard Exp $
+# $Id: roundup.cgi,v 1.2 2001-07-23 04:31:40 richard Exp $
 
 # python version check
 import sys
@@ -14,7 +14,7 @@ if int(sys.version[0]) < 2:
 
 # This indicates where the Roundup instance lives
 ROUNDUPS = {
-    'test': '/tmp/roundup_test',
+    'roundup_test': '/tmp/',
 }
 
 # Where to log debugging information to. Use an instance of DevNull if you
@@ -49,6 +49,7 @@ def main(instance, out):
     auth = os.environ.get("HTTP_CGI_AUTHORIZATION", None)
     message = 'Unauthorised'
     if auth:
+        import binascii
         l = binascii.a2b_base64(auth.split(' ')[1]).split(':')
         user = l[0]
         password = None
@@ -71,7 +72,7 @@ def main(instance, out):
         keys.sort()
         out.write(message)
         return
-    client = instance.Client(out, os.environ, user)
+    client = instance.Client(out, db, os.environ, user)
     try:
         client.main()
     except cgi_client.Unauthorised:
@@ -86,7 +87,9 @@ out, err = sys.stdout, sys.stderr
 try:
     sys.stdout = sys.stderr = LOG
     import os, string
-    instance = string.split(os.environ['PATH_INFO'], '/')[1]
+    path = string.split(os.environ['PATH_INFO'], '/')
+    instance = path[1]
+    os.environ['PATH_INFO'] = string.join(path[2:], '/')
     if ROUNDUPS.has_key(instance):
         instance_home = ROUNDUPS[instance]
         sys.path.insert(0, instance_home)
@@ -106,4 +109,7 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/22 11:47:07  richard
+# More Grande Splite
+#
 #
