@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.46 2001-11-03 01:26:55 richard Exp $
+# $Id: cgi_client.py,v 1.47 2001-11-03 01:29:28 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -541,7 +541,7 @@ class Client:
 </form>
 ''')
         if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
-            self.write('</table>')
+            self.write('</table></body></html>')
             return
         self.write('''
 <p>
@@ -565,7 +565,7 @@ class Client:
 <tr><td></td>
     <td><input type="submit" value="Register"></td></tr>
 </form>
-</table>
+</table</body></html>>
 ''')
 
     def login_action(self, message=None):
@@ -876,6 +876,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.46  2001/11/03 01:26:55  richard
+# possibly fix truncated base64'ed user:pass
+#
 # Revision 1.45  2001/11/01 22:04:37  richard
 # Started work on supporting a pop3-fetching server
 # Fixed bugs:
