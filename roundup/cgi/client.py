@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.103 2003-03-07 22:46:59 kedder Exp $
+# $Id: client.py,v 1.104 2003-03-09 22:57:47 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1149,7 +1149,7 @@ You should then receive another email with the new password.
         '''
         # check for permission
         if not self.editItemPermission(props):
-            raise PermissionError, 'You do not have permission to edit %s'%cn
+            raise Unauthorised, 'You do not have permission to edit %s'%cn
 
         # make the changes
         cl = self.db.classes[cn]
@@ -1160,7 +1160,7 @@ You should then receive another email with the new password.
         '''
         # check for permission
         if not self.newItemPermission(props):
-            raise PermissionError, 'You do not have permission to create %s'%cn
+            raise Unauthorised, 'You do not have permission to create %s'%cn
 
         # create the node and return its id
         cl = self.db.classes[cn]
