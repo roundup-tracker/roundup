@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.121 2003-06-24 03:51:15 richard Exp $
+# $Id: client.py,v 1.122 2003-06-24 03:58:57 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1915,13 +1915,15 @@ You should then receive another email with the new password.
         for thing, required in all_required.items():
             # register the values we got
             got = all_props.get(thing, {})
-            for entry in required:
+            for entry in required[:]:
                 if got.get(entry, ''):
                     required.remove(entry)
 
             # any required values not present?
             if not required:
                 continue
+
+            # tell the user to entry the values required
             if len(required) > 1:
                 p = 'properties'
             else:
