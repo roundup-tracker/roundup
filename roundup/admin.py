@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.11 2002-05-23 01:14:20 richard Exp $
+# $Id: admin.py,v 1.12 2002-05-26 09:04:42 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -324,8 +324,9 @@ Command help:
         Execute the instance's initialisation function dbinit.init()
         '''
         # password
-        if len(args) > 0:
-            adminpw = args[0]
+        print args
+        if len(args) > 1:
+            adminpw = args[1]
         else:
             adminpw = ''
             confirm = 'x'
@@ -334,8 +335,8 @@ Command help:
                 confirm = getpass.getpass(_('       Confirm: '))
 
         # email
-        if len(args) > 1:
-            adminemail = args[1]
+        if len(args) > 2:
+            adminemail = args[2]
         else:
             adminemail = ''
             while not adminemail:
@@ -494,9 +495,6 @@ Command help:
                 except TypeError:
                     raise UsageError, _('%(classname)s has no key property"')%{
                         'classname': link_class.classname}
-                except KeyError:
-                    raise UsageError, _('%(classname)s has no entry "%(propname)s"')%{
-                        'classname': link_class.classname, 'propname': propname}
 
         # now do the find 
         try:
@@ -1124,6 +1122,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/05/23 01:14:20  richard
+#  . split instance initialisation into two steps, allowing config changes
+#    before the database is initialised.
+#
 # Revision 1.10  2002/04/27 10:07:23  richard
 # minor fix to error message
 #
