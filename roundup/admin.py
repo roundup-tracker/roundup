@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.75 2004-06-25 22:23:36 richard Exp $
+# $Id: admin.py,v 1.76 2004-07-13 10:21:32 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -156,10 +156,10 @@ matches only one command, e.g. l == li == lis == list."""))
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
             usage = h[0]
-            print _('''
+            print '''
 <tr><td valign=top><strong>%(name)s</strong></td>
     <td><tt>%(usage)s</tt><p>
-<pre>''')%locals()
+<pre>''' % locals()
             indent = indent_re.match(h[3])
             if indent: indent = len(indent.group(1))
             for line in h[3:]:
@@ -167,7 +167,7 @@ matches only one command, e.g. l == li == lis == list."""))
                     print line[indent:]
                 else:
                     print line
-            print _('</pre></td></tr>\n')
+            print '</pre></td></tr>\n'
 
     def help_all(self):
         print _('''
@@ -234,7 +234,7 @@ Command help:
 ''')
         for name, command in self.commands.items():
             print _('%s:')%name
-            print _('   '), _(command.__doc__)
+            print '   ', _(command.__doc__)
 
     def do_help(self, args, nl_re=re.compile('[\r\n]'),
             indent_re=re.compile(r'^(\s+)\S+')):

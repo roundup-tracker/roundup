@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.54 2004-07-04 12:52:06 a1s Exp $
+$Id: roundup_server.py,v 1.55 2004-07-13 10:24:19 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -132,10 +132,10 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         keys = self.TRACKER_HOMES.keys()
         keys.sort()
         for tracker in keys:
-            w(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
+            w('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
                 'tracker_url': urllib.quote(tracker),
                 'tracker_name': cgi.escape(tracker)})
-        w(_('</ol></body></html>'))
+        w('</ol></body></html>')
 
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
