@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.9 $
+:Version: $Revision: 1.10 $
 
 .. contents::
 
@@ -196,6 +196,20 @@ For example,
 
 In all cases, the message relates to issue 2. The ``Re:`` prefix is stripped
 off.
+
+
+Automatic Properties
+~~~~~~~~~~~~~~~~~~~~
+
+**status of new issues**
+ When a new message is received that is not identified as being related to an
+ existing issue, it creates a new issue. The status of the new issue is
+ defaulted to "unread".
+
+**reopening of resolved issues**
+ When a message is is received for a resolved issue, the issue status is
+ automatically reset to "chatting" to indicate new information has been
+ received.
 
 
 E-Mail Message Content
