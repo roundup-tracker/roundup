@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.12 2002-01-14 06:53:28 richard Exp $
+# $Id: __init__.py,v 1.13 2002-01-21 11:05:48 richard Exp $
 
 import unittest
 import os, tempfile
 os.environ['SENDMAILDEBUG'] = tempfile.mktemp()
 
 import test_dates, test_schema, test_db, test_multipart, test_mailsplit
-import test_init, test_token, test_mailgw
+import test_init, test_token, test_mailgw, test_htmltemplate
 
 def go():
     suite = unittest.TestSuite((
@@ -34,6 +34,7 @@ def go():
         test_mailsplit.suite(),
         test_mailgw.suite(),
         test_token.suite(),
+        test_htmltemplate.suite(),
     ))
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
@@ -41,6 +42,9 @@ def go():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/01/14 06:53:28  richard
+# had commented out some tests
+#
 # Revision 1.11  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
