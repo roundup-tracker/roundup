@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.194 2004-11-02 10:04:00 a1s Exp $
+# $Id: client.py,v 1.195 2004-11-03 09:49:14 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -540,15 +540,18 @@ class Client:
     def serve_static_file(self, file):
         ''' Serve up the file named from the templates dir
         '''
-        # figure the filename - ensure the load doesn't try to poke
-        # outside of the static files dir
-        prefix = getattr(self.instance.config, 'STATIC_FILES',
-            self.instance.config.TEMPLATES)
-
-        # normalise the prefix and filename for the startswith comparison
-        prefix = os.path.normpath(prefix)
-        filename = os.path.normpath(os.path.join(prefix, file))
-        if not filename.startswith(prefix):
+        # figure the filename - try STATIC_FILES, then TEMPLATES dir
+        for dir_option in ('STATIC_FILES', 'TEMPLATES'):
+            prefix = self.instance.config[dir_option]
+            if not prefix:
+                continue
+            # ensure the load doesn't try to poke outside
+            # of the static files directory
+            prefix = os.path.normpath(prefix)
+            filename = os.path.normpath(os.path.join(prefix, file))
+            if os.path.isfile(filename) and filename.startswith(prefix):
+                break
+        else:
             raise NotFound, file
 
         # last-modified time
