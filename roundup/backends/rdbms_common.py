@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.4 2004-05-23 23:26:29 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.5 2004-05-29 02:09:13 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2007,13 +2007,16 @@ class Class(hyperdb.Class):
         cn = self.classname
 
         timezone = self.db.getUserTimezone()
-        
+
+        # vars to hold the components of the SQL statement
+        frum = ['_'+cn] # FROM clauses
+        loj = []        # LEFT OUTER JOIN clauses
+        where = []      # WHERE clauses
+        args = []       # *any* positional arguments
+        a = self.db.arg
+
         # figure the WHERE clause from the filterspec
         props = self.getprops()
-        frum = ['_'+cn]
-        where = []
-        args = []
-        a = self.db.arg
         mlfilt = 0      # are we joining with Multilink tables?
         for k, v in filterspec.items():
             propclass = props[k]
@@ -2154,12 +2157,15 @@ class Class(hyperdb.Class):
                     # determine whether the linked Class has an order property
                     lcn = props[prop].classname
                     link = self.db.classes[lcn]
+                    o = '_%s._%s'%(cn, prop)
                     if link.getprops().has_key('order'):
                         tn = '_' + lcn
-                        frum.append(tn)
-                        where.append('_%s._%s = %s.id'%(cn, prop, tn))
+                        loj.append('LEFT OUTER JOIN %s on %s=%s.id'%(tn,
+                            o, tn))
                         ordercols.append(tn + '._order')
                         o = tn + '._order'
+                    else:
+                        ordercols.append(o)
                 elif prop == 'id':
                     o = '_%s.id'%cn
                 else:
@@ -2187,7 +2193,8 @@ class Class(hyperdb.Class):
         else:
             order = ''
         cols = ','.join(cols)
-        sql = 'select %s from %s %s%s'%(cols, frum, where, order)
+        loj = ' '.join(loj)
+        sql = 'select %s from %s %s %s%s'%(cols, frum, loj, where, order)
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
