@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.74 $
+:Version: $Revision: 1.75 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -998,6 +998,9 @@ forms:
    ``request/form/foo/value | default`` would simply leave the current HTML
    in place if the "foo" form variable doesn't exist.
 
+   You may use the python function ``path``, as in ``path("item/status")``, to
+   embed path expressions in Python expressions.
+
 **String Expressions** - eg. ``string:hello ${user/name}``
    These expressions are simple string interpolations - though they can be just
    plain strings with no interpolation if you want. The expression in the
@@ -1008,6 +1011,18 @@ forms:
    variables are available, so ``python:item.status.checklist()`` would be
    equivalent to ``item/status/checklist``, assuming that ``checklist`` is
    a method.
+
+Modifiers:
+
+**structure** - eg. ``structure python:msg.content.plain(hyperlink=1)``
+   The result of expressions are normally *escaped* to be safe for HTML
+   display (all "<", ">" and "&" are turned into special entities). The
+   ``structure`` expression modifier turns off this escaping - the result
+   of the expression is now assumed to be HTML structured text.
+
+**not:** - eg. ``not:python:1=1``
+   This simply inverts the logical true/false value of another expression.
+
 
 Template Macros
 ~~~~~~~~~~~~~~~
