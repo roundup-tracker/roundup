@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.27 2002-09-10 00:19:54 richard Exp $
+# $Id: test_mailgw.py,v 1.28 2002-09-10 01:27:13 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -769,12 +769,8 @@ http://your.tracker.url.example/issue1
 _________________________________________________________________________
 ''')
 
-class ExtMailgwTestCase(MailgwTestCase):
-    schema = 'extended'
-
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),
-         unittest.makeSuite(ExtMailgwTestCase, 'test')
     ]
     return unittest.TestSuite(l)
 

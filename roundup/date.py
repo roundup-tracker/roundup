@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.26 2002-09-10 00:18:20 richard Exp $
+# $Id: date.py,v 1.27 2002-09-10 01:27:13 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -160,7 +160,8 @@ class Date:
              2. a date from this date to produce an interval.
         """
         if isinstance(other, Interval):
-            other = Interval(other.get_tuple(), sign=-other.sign)
+            other = Interval(other.get_tuple())
+            other.sign *= -1
             return self.__add__(other)
 
         assert isinstance(other, Date), 'May only subtract Dates or Intervals'
@@ -315,9 +316,14 @@ class Interval:
         if type(spec) == type(''):
             self.set(spec)
         else:
-            self.sign = sign
-            self.year, self.month, self.day, self.hour, self.minute, \
-                self.second = spec
+            if len(spec) == 7:
+                self.sign, self.year, self.month, self.day, self.hour, \
+                    self.minute, self.second = spec
+            else:
+                # old, buggy spec form
+                self.sign = sign
+                self.year, self.month, self.day, self.hour, self.minute, \
+                    self.second = spec
 
     def __cmp__(self, other):
         """Compare this interval to another interval."""
