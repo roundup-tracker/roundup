@@ -7,6 +7,7 @@ are given with the most recent entry first.
 - roundup-server now logs IP addresses by default (sf bug 778795)
 - logfile must be specified if pidfile is (sf bug 772820)
 - timelog editing via csv interface crashes (sf bug 699837)
+- sort multilinks a little better for grouping (sf bug 772935)
 
 
 2003-07-29 0.6.0b4
