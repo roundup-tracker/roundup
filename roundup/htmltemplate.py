@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.21 2001-08-16 07:34:59 richard Exp $
+# $Id: htmltemplate.py,v 1.22 2001-08-30 06:01:17 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -328,13 +328,14 @@ class List(Base):
     ''' list the items specified by property using the standard index for
         the class
     '''
-    def __call__(self, property, **args):
+    def __call__(self, property, reverse=0):
         propclass = self.properties[property]
         if isinstance(not propclass, hyperdb.Multilink):
             return '[List: not a Multilink]'
         fp = StringIO.StringIO()
-        args['show_display_form'] = 0
         value = self.cl.get(self.nodeid, property)
+        if reverse:
+            value.reverse()
         # TODO: really not happy with the way templates is passed on here
         index(fp, self.templates, self.db, propclass.classname, nodeids=value,
             show_display_form=0)
@@ -512,10 +513,10 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         if show_display_form:
             anchor = "%s?%s"%(classname, sortby(name, columns, filter,
                 sort, group, filterspec))
-            w('<td><span class="list-item"><a href="%s">%s</a></span></td>\n'%(
+            w('<td><span class="list-header"><a href="%s">%s</a></span></td>\n'%(
                 anchor, cname))
         else:
-            w('<td><span class="list-item">%s</span></td>\n'%cname)
+            w('<td><span class="list-header">%s</span></td>\n'%cname)
     w('</tr>\n')
 
     # this stuff is used for group headings - optimise the group names
@@ -742,6 +743,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/08/16 07:34:59  richard
+# better CGI text searching - but hidden filter fields are disappearing...
+#
 # Revision 1.20  2001/08/15 23:43:18  richard
 # Fixed some isFooTypes that I missed.
 # Refactored some code in the CGI code.

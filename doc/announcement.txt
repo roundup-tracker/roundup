@@ -1,8 +1,10 @@
-            Roundup [version] - an issue tracking system
+            Roundup 0.2.8 - an issue tracking system
 
 This is a bugfix release.
 
-[CHANGES.txt entries for this version go here]
+Fixed:
+ . Missing import in mailgw.
+
 
 Roundup is a simple-to-use and -install issue-tracking system with 
 command-line, web and e-mail interfaces. It is based on the winning design 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.17 2001-08-08 03:29:35 richard Exp $
+# $Id: setup.py,v 1.18 2001-08-30 06:01:17 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -42,7 +42,7 @@ for t in templates:
 
 
 setup ( name = "roundup", 
-        version = "0.2.7",
+        version = "0.2.8",
         description = "Roundup issue tracking system.",
         author = "Richard Jones",
         author_email = "richard@sourceforge.net",
@@ -53,6 +53,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/08/08 03:29:35  richard
+# Next release is 0.2.6
+#
 # Revision 1.16  2001/08/07 00:24:42  richard
 # stupid typo
 #

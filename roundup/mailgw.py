@@ -72,13 +72,13 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.14 2001-08-13 23:02:54 richard Exp $
+$Id: mailgw.py,v 1.15 2001-08-30 06:01:17 richard Exp $
 '''
 
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import traceback
-import date
+import hyperdb, date
 
 class MailUsageError(ValueError):
     pass
@@ -398,6 +398,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/08/13 23:02:54  richard
+# Make the mail parser a little more robust.
+#
 # Revision 1.13  2001/08/12 06:32:36  richard
 # using isinstance(blah, Foo) now instead of isFooType
 #
