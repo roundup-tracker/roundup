@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.27.2.11 2004-10-08 00:21:31 richard Exp $ 
+# $Id: db_test_base.py,v 1.27.2.12 2004-11-05 05:11:25 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -654,7 +654,7 @@ class DBTest(MyTestCase):
         f2 = self.db.file.create(content='world', type="text/frozz",
             comment='blah blah')
         i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
-        i2 = self.db.issue.create(title="flebble frooz")
+        i2 = self.db.issue.create(title="flebble the frooz")
         self.db.commit()
         self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f1]}})
@@ -663,6 +663,9 @@ class DBTest(MyTestCase):
             {i2: {}})
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {i1: {}, i2: {}})
+
+        # unindexed stopword
+        self.assertEquals(self.db.indexer.search(['the'], self.db.issue), {})
 
     def testReindexing(self):
         search = self.db.indexer.search

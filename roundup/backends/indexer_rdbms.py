@@ -4,10 +4,9 @@ propname, itemid) instances.
 '''
 import re
 
-from indexer_dbm import Indexer
+from indexer_dbm import Indexer, is_stopword
 
 class Indexer(Indexer):
-    disallows = {'THE':1, 'THIS':1, 'ZZZ':1, 'THAT':1, 'WITH':1}
     def __init__(self, db):
         self.db = db
         self.reindex = 0
@@ -55,8 +54,9 @@ class Indexer(Indexer):
         wordlist = re.findall(r'\b\w{2,25}\b', str(text).upper())
         words = {}
         for word in wordlist:
-            if not self.disallows.has_key(word):
-                words[word] = 1
+            if is_stopword(word):
+                continue
+            words[word] = 1
         words = words.keys()
 
         # for each word, add an entry in the db

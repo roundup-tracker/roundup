@@ -11,6 +11,7 @@ Fixed:
 - applied patch fixing some form handling issues in ZRoundup (thanks Chris
   Withers)
 - enforce View Permission when serving file content (sf bug 1050470)
+- don't index common words (sf bug 1046612)
 
 
 2004-10-15 0.7.8
