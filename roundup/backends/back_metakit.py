@@ -57,7 +57,10 @@ class _Database(hyperdb.Database):
             return self.dirty
         return self.getclass(classname)
     def getclass(self, classname):
-        return self.classes[classname]
+        try:
+            return self.classes[classname]
+        except KeyError:
+            raise KeyError, 'There is no class called "%s"'%classname
     def getclasses(self):
         return self.classes.keys()
     # --- end of ping's spec 

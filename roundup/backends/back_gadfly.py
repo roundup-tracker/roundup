@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.19 2002-09-13 08:20:13 richard Exp $
+# $Id: back_gadfly.py,v 1.20 2002-09-15 23:06:20 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -356,7 +356,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'getclass', (self, classname)
-        return self.classes[classname]
+        try:
+            return self.classes[classname]
+        except KeyError:
+            raise KeyError, 'There is no class called "%s"'%classname
 
     def clear(self):
         ''' Delete all database contents.
