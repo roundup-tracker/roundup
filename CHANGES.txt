@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-05-07 0.7.1
+Fixed:
+- several temp files made it into the source distribution (sf bug 949243)
+- typo in roundup/instance.py
+
 2004-05-06 0.7.0
 Fixed:
 - sqlite migration drops some journal information (thanks David Linke)
