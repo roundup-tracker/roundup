@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.71 $
+:Version: $Revision: 1.72 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2552,44 +2552,66 @@ able to give a summary of the total time spent on a particular issue.
 
    The code to do this is::
 
-    actions = client.Client.actions + (
-        ('edit_with_timelog', 'timelogEditAction'),
-    )
+    class Client(client.Client): 
+        ''' derives basic CGI implementation from the standard module, 
+            with any specific extensions 
+        ''' 
+        actions = client.Client.actions + (
+            ('edit_with_timelog', 'timelogEditAction'),
+        )
 
-    def timelogEditAction(self):
-        ''' Handle the creation of a new time log entry if necessary.
+        def timelogEditAction(self):
+            ''' Handle the creation of a new time log entry if necessary.
 
-            If we create a new entry, fake up a CGI form value for the altered
-            "times" property of the issue being edited.
+                If we create a new entry, fake up a CGI form value for the
+                altered "times" property of the issue being edited.
+   
+                Punt to the regular edit action when we're done.
+            '''
+            # if there's a timelog value specified, create an entry
+            if self.form.has_key(':timelog') and \
+                    self.form[':timelog'].value.strip():
+                period = Interval(self.form[':timelog'].value)
+                # create it
+                newid = self.db.timelog.create(period=period)
 
-            Punt to the regular edit action when we're done.
-        '''
-        # if there's a timelog value specified, create an entry
-        if self.form.has_key(':timelog') and \
-                self.form[':timelog'].value.strip():
-            period = Interval(self.form[':timelog'].value)
-            # create it
-            newid = self.db.timelog.create(period=period)
+                # if we're editing an existing item, get the old timelog value
+                if self.nodeid:
+                    l = self.db.issue.get(self.nodeid, 'times')
+                    l.append(newid)
+                else:
+                    l = [newid]
 
-            # if we're editing an existing item, get the old timelog value
-            if self.nodeid:
-                l = self.db.issue.get(self.nodeid, 'times')
-                l.append(newid)
-            else:
-                l = [newid]
+                # now make the fake CGI form values
+                for entry in l:
+                    self.form.list.append(MiniFieldStorage('times', entry))
 
-            # now make the fake CGI form values
-            for entry in l:
-                self.form.list.append(MiniFieldStorage('times', entry))
-
-        # punt to the normal edit action
-        return self.editItemAction()
-
+            # punt to the normal edit action
+            return self.editItemAction()
+   
    you add this code to your Client class in your tracker's ``interfaces.py``
-   file.
+   file. Locate the section that looks like::
+
+    class Client:
+        ''' derives basic CGI implementation from the standard module, 
+            with any specific extensions 
+        ''' 
+        pass
+
+   and insert this code in place of the ``pass`` statement.
 
 5. You'll also need to modify your ``issue.item`` form submit action so it
-   calls the time logging action we just created::
+   calls the time logging action we just created. The current template will
+   look like this::
+
+    <tr>
+     <td>&nbsp;</td>
+     <td colspan=3 tal:content="structure context/submit">
+      submit button will go here
+     </td>
+    </tr>
+
+   replace it with this::
 
     <tr>
      <td>&nbsp;</td>
@@ -2605,16 +2627,14 @@ able to give a summary of the total time spent on a particular issue.
      </td>
     </tr>
 
-   Note that the "context/submit" command usually handles all that for you -
-   isn't it handy? The important change is setting the action to
-   "edit_with_timelog" for edit operations (where the item exists)
+   The important change is setting the action to "edit_with_timelog" for
+   edit operations (where the item exists)
 
 6. We want to display a total of the time log times that have been accumulated
    for an issue. To do this, we'll need to actually write some Python code,
    since it's beyond the scope of PageTemplates to perform such calculations.
    We do this by adding a method to the TemplatingUtils class in our tracker
    ``interfaces.py`` module::
-
 
     class TemplatingUtils:
         ''' Methods implemented on this class will be available to HTML
@@ -2629,8 +2649,9 @@ able to give a summary of the total time spent on a particular issue.
                 total += time.period._value
             return total
 
+   Replace the ``pass`` line as we did in step 4 above with the Client class.
    As indicated in the docstrings, we will be able to access the
-   ``totalTimeSpent`` method via the ``utils`` variable in our templates. See
+   ``totalTimeSpent`` method via the ``utils`` variable in our templates.
 
 7. Display the time log for an issue::
 
