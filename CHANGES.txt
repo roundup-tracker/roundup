@@ -25,6 +25,7 @@ Feature:
 - added option to turn off registration confirmation via email
   ("instant_registration" in config) (sf rfe 922209)
 - roundup-admin reindex command may now work on single items or classes
+- multiple selection Link/Multilink search field (thanks Marlon van den Berg)
 
 
 2004-??-?? 0.7.7

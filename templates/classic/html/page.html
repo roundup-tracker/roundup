@@ -166,6 +166,13 @@ See issue.search.html in the classic template for examples.
   </select>
 </td>
 
+<td metal:define-macro="search_multiselect">
+  <input tal:attributes="value python:request.form.getvalue(name) or nothing;
+                         name name">
+  <span tal:replace="structure python:db[db_klass].classhelp(db_content,
+                                        property=name, width='600')" />
+</td>
+
 <td metal:define-macro="search_checkboxes">
  <ul class="search-checkboxes"
      tal:define="value python:request.form.getvalue(name)">
