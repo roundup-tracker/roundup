@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.70 2004-09-29 08:05:33 a1s Exp $
+# $Id: test_mailgw.py,v 1.71 2004-09-29 09:17:57 a1s Exp $
 
 # TODO: test bcc
 
