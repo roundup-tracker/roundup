@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.40 2001-10-23 23:06:39 richard Exp $
+# $Id: cgi_client.py,v 1.41 2001-10-23 23:52:35 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -512,7 +512,7 @@ class Client:
     <td><input type="submit" value="Log In"></td></tr>
 </form>
 ''')
-        if self.user is None and not self.ANONYMOUS_REGISTER == 'deny':
+        if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
             self.write('</table')
             return
         self.write('''
@@ -587,7 +587,7 @@ class Client:
         now = Cookie._getdate()
         self.header({'Set-Cookie':
             'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
-        return self.index()
+        return self.login()
 
     def newuser_action(self, message=None):
         ''' create a new user based on the contents of the form and then
@@ -644,24 +644,25 @@ class Client:
         # now figure which function to call
         path = self.split_path
         if not path or path[0] in ('', 'index'):
-            return self.index()
-        elif not path:
-            raise 'ValueError', 'Path not understood'
+            action = 'index'
+        else:
+            action = path[0]
 
-        #
         # Everthing ignores path[1:]
-        #
-        # The file download link generator actually relies on this - it
-        # appends the name of the file to the URL so the download file name
-        # is correct, but doesn't actually use it.
-        action = path[0]
+        #  - The file download link generator actually relies on this - it
+        #    appends the name of the file to the URL so the download file name
+        #    is correct, but doesn't actually use it.
+
+        # everyone is allowed to try to log in
         if action == 'login_action':
             return self.login_action()
 
-        # make sure anonymous are allowed to register
+        # if we don't have a login and anonymous people aren't allowed to
+        # register, then spit up the login form
         if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
             return self.login()
 
+        # allow anonymous people to register
         if action == 'newuser_action':
             return self.newuser_action()
 
@@ -669,6 +670,9 @@ class Client:
         if self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
             return self.login()
 
+        # here be the "normal" functionality
+        if action == 'index':
+            return self.index()
         if action == 'list_classes':
             return self.classes()
         if action == 'login':
@@ -845,6 +849,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.40  2001/10/23 23:06:39  richard
+# Some cleanup.
+#
 # Revision 1.39  2001/10/23 01:00:18  richard
 # Re-enabled login and registration access after lopping them off via
 # disabling access for anonymous users.
