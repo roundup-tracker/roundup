@@ -118,6 +118,12 @@ class Security:
         if not self.permission.has_key(permission):
             raise ValueError, 'No permission "%s" defined'%permission
 
+        if classname:
+            try:
+                self.db.getclass(classname)
+            except KeyError:
+                raise ValueError, 'No class "%s" defined'%classname
+
         # look through all the permissions of the given name
         for perm in self.permission[permission]:
             # if we're passed a classname, the permission must match
