@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.27.2.7 2004-06-24 07:14:49 richard Exp $ 
+# $Id: db_test_base.py,v 1.27.2.8 2004-06-29 05:53:37 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -877,6 +877,9 @@ class DBTest(MyTestCase):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
         ae(filt(None, {'assignedto': '-1'}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {'assignedto': None}, ('+','id'), (None,None)), ['3','4'])
+        ae(filt(None, {'assignedto': ['-1', None]}, ('+','id'), (None,None)),
+            ['3','4'])
 
     def testFilteringRetired(self):
         ae, filt = self.filteringSetup()

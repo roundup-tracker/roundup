@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.12 2004-06-28 23:15:39 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.13 2004-06-29 05:53:37 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2130,20 +2130,23 @@ class Class(hyperdb.Class):
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
                 if isinstance(v, type([])):
-                    if '-1' in v:
-                        v = v[:]
-                        v.remove('-1')
-                        xtra = ' or _%s._%s is NULL'%(cn, k)
-                    else:
-                        xtra = ''
-                    if v:
+                    d = {}
+                    for entry in v:
+                        if entry == '-1':
+                            entry = None
+                        d[entry] = entry
+                    l = []
+                    if d.has_key(None) or not d:
+                        del d[None]
+                        l.append('_%s._%s is NULL'%(cn, k))
+                    if d:
+                        v = d.keys()
                         s = ','.join([a for x in v])
-                        where.append('(_%s._%s in (%s)%s)'%(cn, k, s, xtra))
+                        where.append('(_%s._%s in (%s))'%(cn, k, s))
                         args = args + v
-                    else:
-                        where.append('_%s._%s is NULL'%(cn, k))
+                    where.append(' or '.join(l))
                 else:
-                    if v == '-1':
+                    if v in ('-1', None):
                         v = None
                         where.append('_%s._%s is NULL'%(cn, k))
                     else:
