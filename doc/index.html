@@ -157,12 +157,6 @@ The email addresses used by the system by default are:
     <br>roundup's internal use (problems, etc)
 </ol>
 
-<em>Note:</em>
-We run the instance as group "issue_tracker" and add the mail and web user
-("mail" and "apache" on our RedHat 7.1 system) to that group, as well as
-any admin people.
-
-
 <h2><a name="startweb">E-Mail Interface</a></h2>
 Set up a mail alias called "issue_tracker" as:
 <blockquote>
@@ -247,11 +241,13 @@ the easiest and most flexible method of doing so is:
 mkdir instance_home
 chown issue_tracker:issue_tracker instance_home
 chmod g+rwxs instance_home
-chmod o-rwx instance_home
 roundup-admin -i instance_home init
 </pre>
-<li>Now, edit the /etc/group line for issue_tracker so it includes the unix
-logins of all the users who are going to administer your roundup instance.
+<li>Now, edit the /etc/group line for the issue_tracker group so it includes
+the unix logins of all the users who are going to administer your roundup
+instance. If you're running the web or mail gateways, then be sure to
+include those users in the group too (on some Linux systems, these
+users are "www" or "apache" and "mail".)
 </ol>
 
 <dt><strong>E-Mail interface</strong>
@@ -470,6 +466,30 @@ Index views may be modified by the following arguments:
 
 <h2><a name="mail">E-Mail Gateway</a></h2>
 
+<h3>Performing Actions</h3>
+The subject line of the incoming message is examined to determine whether
+the message is an attempt to create a new item or to discuss an existing
+item. A designator enclosed in square brackets is sought as the first thing
+on the subject line (after skipping any "Fwd:" or "Re:" prefixes). 
+<p>
+If an item designator (class name and id number) is found there, the newly
+created "msg" node is added to the "messages" property for that item, and
+any new "file" nodes are added to the "files" property for the item. 
+<p>
+If just an item class name is found there, we attempt to create a new item
+of that class with its "messages" property initialized to contain the new
+"msg" node and its "files" property initialized to contain any new "file"
+nodes. 
+
+<h3>Setting Properties</h3>
+The e-mail interface also provides a simple way to set
+properties on items.  At the end of the subject line,
+<em>propname</em><tt>=</tt><em>value</em> pairs can be
+specified in square brackets, using the same conventions
+as for the <tt>roundup&nbsp;set</tt> shell command.
+explanatory message given in the exception. 
+
+<h3>Message content</h3>
 Incoming messages are examined for multiple parts:
 <ul>
 <li>In a multipart/mixed message or part, each subpart is extracted and
@@ -481,7 +501,7 @@ Incoming messages are examined for multiple parts:
    subpart and ignore the other parts.
 </ul>
 
-<h3>Message content summary</h3>
+<h4>Message summary</h4>
 The "summary" property on message nodes is taken from the first non-quoting
 section in the message body. The message body is divided into sections by
 blank lines. Sections where the second and all subsequent lines begin with
@@ -500,27 +520,22 @@ passwords.) If we prefer to reject mail from outside sources, we can simply
 register an auditor on the "user" class that prevents the creation of user
 nodes with no passwords. 
 
-<h3>Performing Actions</h3>
-The subject line of the incoming message is examined to determine whether
-the message is an attempt to create a new item or to discuss an existing
-item. A designator enclosed in square brackets is sought as the first thing
-on the subject line (after skipping any "Fwd:" or "Re:" prefixes). 
-
-If an item designator (class name and id number) is found there, the newly
-created "msg" node is added to the "messages" property for that item, and
-any new "file" nodes are added to the "files" property for the item. 
-
-If just an item class name is found there, we attempt to create a new item
-of that class with its "messages" property initialized to contain the new
-"msg" node and its "files" property initialized to contain any new "file"
-nodes. 
-
 <h3>Triggers</h3>
 Both cases may trigger detectors (in the first case we are calling the
 set() method to add the message to the item's spool; in the second case we
 are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
-explanatory message given in the exception. 
+
+<h4>Nosy Lists</h4>
+A standard detector is provided that watches for additions
+to the "messages" property.  When a new message is added, the
+detector sends it to all the users on the "nosy" list for the
+item that are not already on the "recipients" list of the
+message.  Those users are then appended to the "recipients"
+property on the message, so multiple copies of a message
+are never sent to the same user.  The journal recorded by
+the hyperdatabase on the "recipients" property then provides
+a log of when the message was sent to whom.
 
 <p><hr>
 <h1><a name="custom">Customising Roundup</a></h1>
@@ -639,10 +654,8 @@ this:
     issue.setkey('title')
 </pre>
 
-<h3>Class, FileClass, IssueClass - creating a new information store</h3>
-A <em>Class</em> defines a particular class (or type) of data that will be
-stored in the database. In the instance above, we've defined 7 classes of
-information:
+<h3>Classes and Properties - creating a new information store</h3>
+In the instance above, we've defined 7 <em>classes</em> of information:
 <dl>
     <dt><strong>priority</strong>
     <dd>Defines the possible levels of urgency for issues.
@@ -661,20 +674,25 @@ information:
     <dd>Initially emtyp, this is where the issue information is stored.
 </dl>
 <p>
-We define the "priority" and "status" classes to allow two things: reduction in the
-amount of information stored on the issue and more powerful, accurate
+We define the "priority" and "status" classes to allow two things: reduction
+in the amount of information stored on the issue and more powerful, accurate
 searching of issues by priority and status. By only requiring a link on
 the issue (which is stored as a single number) we reduce the chance
 that someone mis-types a priority or status - or simply makes a new one
 up.
-<p>
 
-<strong>Class</strong>
-<br>
-Class is the basic store of information.
-
+<h4>Class and Nodes</h4>
+A <em>Class</em> defines a particular class (or type) of data that will be
+stored in the database. A class comprises one or more properties, which
+given the information about the class nodes.
 <p>
-A class is comprised of one or more properties of the following type:
+The actual data entered into the database, using <em>class</em>.create()
+are called <em>nodes</em>. They have a special immutable property called
+id. We sometimes refer to this as the <em>nodeid</em>.
+
+
+<h4>Properties</h4>
+A Class is comprised of one or more <em>properties</em> of the following types:
 
 <ul>
 <li><em>String</em> properties are for storing arbitrary-length
@@ -695,20 +713,14 @@ the value is an integer, the id of the chosen node.
 in a specified class.  The value is a list of integers.
 </ul>
 
-<p>
-
-<strong>FileClass</strong>
-<br>
+<h4>FileClass</h4>
 FileClasses save their "content" attribute off in a separate file from the
 rest of the database. This reduces the number of large entries in the
 database, which generally makes databases more efficient, and also allows
 us to use command-line tools to operate on the files. They are stored in
 the files sub-directory of the db directory in your instance.
 
-<p>
-
-<strong>IssueClass</strong>
-<br>
+<h4>IssueClass</h4>
 IssueClasses automatically include the "messages", "files", "nosy", and
 "superseder" properties.
 <p>
@@ -722,15 +734,15 @@ issue which has superceded this one.
 They also have the dynamically generated
 "creation", "activity" and "creator" properties.
 <p>
-The value of the "creation" property is the date when an item was created,
+The value of the "creation" property is the date when a node was created,
 and the value of the "activity" property is the date when any property on
-the item was last edited (equivalently, these are the dates on the first
-and last records in the item's journal). The "creator" property holds a
+the node was last edited (equivalently, these are the dates on the first
+and last records in the node's journal). The "creator" property holds a
 link to the user that created the issue.
 
 <h4>setkey(property)</h4>
 Select a String property of the class to be the key property. The key
-property muse be unique, and allows references to the items in the class by
+property muse be unique, and allows references to the nodes in the class by
 the content of the key property. That is, we can refer to users by their
 username, e.g. let's say that there's an issue in roundup, issue 23. There's
 also a user, richard who happens to be user 2. To assign an issue to him,
@@ -746,8 +758,9 @@ or
 Note, the same thing can be done in the web and e-mail interfaces.
 
 <h4>create(information)</h4>
-Create an item in the database. This is generally used to create items in
+Create a node in the database. This is generally used to create nodes in
 the "definitional" classes like "priority" and "status".
+
 
 <h2><a name="custweb">Web Interface</a></h2>
 
@@ -821,7 +834,7 @@ SELECT fields and Multilinks use SELECT MULTIPLE fields.
 <em>Options:</em><br>
 size (number) - width of TEXT fields.<br>
 height (number) - number of nows in SELECT MULTIPLE tags.<br>
-showid (boolean) - true includes the id of linked items in the SELECT
+showid (boolean) - true includes the id of linked nodes in the SELECT
 MULTIPLE fields.
 </td></tr>
 
@@ -881,7 +894,7 @@ note to go along with a change.
 </td></tr>
 
 <tr><td valign="top"><strong>list</strong></td>
-<td>List the items specified by property using the standard index for
+<td>List the nodes specified by property using the standard index for
 the class.
 <p>
 <em>Arguments:</em><br>
@@ -1126,7 +1139,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.12 2001-10-09 07:31:02 richard Exp $
+$Id: index.html,v 1.13 2001-10-10 01:47:55 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
