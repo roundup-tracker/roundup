@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.149 2003-12-05 03:28:38 richard Exp $
+# $Id: client.py,v 1.150 2004-01-15 00:01:15 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -468,15 +468,20 @@ class Client:
         if not m:
             raise NotFound, str(designator)
         classname, nodeid = m.group(1), m.group(2)
-        if classname != 'file':
-            raise NotFound, designator
 
         self.opendb('admin')
-        file = self.db.file
+        klass = self.db.getclass(classname)
 
-        mime_type = file.get(nodeid, 'type')
-        content = file.get(nodeid, 'content')
-        lmt = file.get(nodeid, 'activity').timestamp()
+        # make sure we have the appropriate properties
+        props = klass.getprops()
+        if not pops.has_key('type'):
+            raise NotFound, designator
+        if not pops.has_key('content'):
+            raise NotFound, designator
+
+        mime_type = klass.get(nodeid, 'type')
+        content = klass.get(nodeid, 'content')
+        lmt = klass.get(nodeid, 'activity').timestamp()
 
         self._serve_file(lmt, mime_type, content)
 
@@ -543,7 +548,9 @@ class Client:
         }
         try:
             # let the template render figure stuff out
-            return pt.render(self, None, None, **args)
+            result = pt.render(self, None, None, **args)
+            self.additional_headers['Content-Type'] = pt.content_type
+            return result
         except NoTemplate, message:
             return '<strong>%s</strong>'%message
         except:
