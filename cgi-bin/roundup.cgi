@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.28 2002-09-04 04:30:58 richard Exp $
+# $Id: roundup.cgi,v 1.29 2002-09-06 05:05:18 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -67,7 +67,7 @@ LOG = DevNull()
 # 
 try:
     import traceback, StringIO, cgi
-    from roundup import cgitb
+    from roundup.cgi import cgitb
 except:
     print "Content-Type: text/plain\n"
     print _("Failed to import cgitb!\n\n")
@@ -199,6 +199,9 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2002/09/04 04:30:58  richard
+# add the path to the cgi-bin request
+#
 # Revision 1.27  2002/09/04 02:11:00  richard
 # *** empty log message ***
 #
