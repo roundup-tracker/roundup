@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.37 $
+:Version: $Revision: 1.38 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1847,11 +1847,28 @@ Restricting the list of users that are assignable to a task
      </tal:block>
     </select>
 
-For extra security, you may wish to overload the hasEditItemPermission method
-on your tracker's interfaces.Client class to enforce the Permission
-requirement::
+For extra security, you may wish to set up an auditor to enforce the
+Permission requirement::
 
-XXX
+  def assignedtoMustBeFixer(db, cl, nodeid, newvalues):
+      ''' Ensure the assignedto value in newvalues is a used with the Fixer
+          Permission
+      '''
+      if not newvalues.has_key('assignedto'):
+          # don't care
+          return
+  
+      # get the userid
+      userid = newvalues['assignedto']
+      if not db.security.hasPermission('Fixer', userid, cl.classname):
+          raise ValueError, 'You do not have permission to edit %s'%cl.classname
+
+  def init(db):
+      db.issue.audit('set', assignedtoMustBeFixer)
+      db.issue.audit('create', assignedtoMustBeFixer)
+
+So now, if the edit attempts to set the assignedto to a user that doesn't have
+the "Fixer" Permission, the error will be raised.
 
 
 -------------------
