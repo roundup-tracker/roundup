@@ -18,3 +18,8 @@ server-ctl
  restart, condstart (conditional start - only if server is stopped) and
  status commands.
 
+roundup.rc-debian
+ An control script that may be installed in /etc/init.d on Debian systems.
+ Offers start, stop and restart commands and integrates with the Debian
+ init process.
+

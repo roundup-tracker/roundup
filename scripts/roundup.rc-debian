@@ -1,0 +1,51 @@
+#!/bin/sh -e
+#
+# roundup	Startup script for the roundup http server.
+#
+# Version:	$Id: roundup.rc-debian,v 1.1 2003-10-07 23:02:58 richard Exp $
+
+DESC='Roundup HTTP-Server'
+
+BINFILE=roundup-server
+EXECUTABLE=/usr/local/bin/$BINFILE
+PIDFILE=/var/run/roundup/server.pid
+LOGFILE=/var/log/roundup/roundup.log
+TRACKERS=tttech=/tttech/org/software/roundup/tttech/
+OPTIONS="-- -p 8080 -u roundup -d $PIDFILE -l $LOGFILE $TRACKERS"
+
+
+test -x $EXECUTABLE || exit 0
+
+start_stop() {
+	case "$1" in
+	start)
+		printf "Starting $DESC:"
+		start-stop-daemon --start --oknodo --quiet \
+                                  --pidfile $PIDFILE \
+				  --exec $EXECUTABLE $OPTIONS
+		printf " $BINFILE"
+		printf ".\n"
+		;;
+	stop)
+		printf "Stopping $DESC:"
+		start-stop-daemon --stop --oknodo --quiet \
+                                  --pidfile $PIDFILE \
+				  --exec $EXECUTABLE $OPTIONS
+		printf " $BINFILE"
+		printf ".\n"
+		;;
+	restart | force-reload)
+		start_stop stop
+		sleep 1
+		start_stop start
+		;;
+	*)
+		printf "Usage: $0 {start|stop|restart|force-reload}\n" >&2
+		exit 1
+		;;
+	esac
+}
+
+start_stop "$@"
+
+exit 0
