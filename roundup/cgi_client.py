@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.56 2001-11-14 21:35:21 richard Exp $
+# $Id: cgi_client.py,v 1.57 2001-11-15 10:24:27 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -428,12 +428,13 @@ class Client:
         files = []
         if self.form.has_key('__file'):
             file = self.form['__file']
-            type = mimetypes.guess_type(file.filename)[0]
-            if not type:
-                type = "application/octet-stream"
-            # create the new file entry
-            files.append(self.db.file.create(type=type, name=file.filename,
-                content=file.file.read()))
+            if file.filename:
+                type = mimetypes.guess_type(file.filename)[0]
+                if not type:
+                    type = "application/octet-stream"
+                # create the new file entry
+                files.append(self.db.file.create(type=type, name=file.filename,
+                    content=file.file.read()))
 
         # generate an edit message
         # don't bother if there's no messages or nosy list 
@@ -966,6 +967,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.56  2001/11/14 21:35:21  richard
+#  . users may attach files to issues (and support in ext) through the web now
+#
 # Revision 1.55  2001/11/07 02:34:06  jhermann
 # Handling of damaged login cookies
 #

@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.33 2001-11-13 21:44:44 richard Exp $
+$Id: mailgw.py,v 1.34 2001-11-15 10:24:27 richard Exp $
 '''
 
 
@@ -126,7 +126,7 @@ class MailGW:
     def handle_Message(self, message):
         '''Handle an RFC822 Message
 
-        Hanle the Message object by calling handle_message() and then cope
+        Handle the Message object by calling handle_message() and then cope
         with any errors raised by handle_message.
         This method's job is to make that call and handle any
         errors in a sane manner. It should be replaced if you wish to
@@ -521,6 +521,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2001/11/13 21:44:44  richard
+#  . re-open the database as the author in mail handling
+#
 # Revision 1.32  2001/11/12 22:04:29  richard
 # oops, left debug in there
 #
