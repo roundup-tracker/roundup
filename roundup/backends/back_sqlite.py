@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.39 2005-02-14 02:48:11 richard Exp $
+# $Id: back_sqlite.py,v 1.40 2005-02-14 04:37:24 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -12,7 +12,6 @@ __docformat__ = 'restructuredtext'
 import os, base64, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
-from roundup.backends import locking
 from roundup.backends import rdbms_common
 import sqlite
 
