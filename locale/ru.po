@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 0.7.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2004-05-21 17:53+1000\n"
-"PO-Revision-Date: 2004-05-18 22:11FLE Daylight Time\n"
+"POT-Creation-Date: 2004-06-15 12:35+0300\n"
+"PO-Revision-Date: 2004-06-15 12:41+0300\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -284,7 +284,6 @@ msgid "Back ends:"
 msgstr "Серверы:"
 
 #: ../roundup/admin.py:342
-#, fuzzy
 msgid ""
 "Usage: install [template [backend [admin password]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -295,7 +294,12 @@ msgid ""
 "        on the command-line as arguments, in that order.\n"
 "\n"
 "        The initialise command must be called after this command in order\n"
-"        to initialise the tracker"
+"        to initialise the tracker's database. You may edit the tracker's\n"
+"        initial database contents before running that command by editing\n"
+"        the tracker's dbinit.py module init() function.\n"
+"\n"
+"        See also initopts help.\n"
+"        "
 msgstr ""
 "Вызов: install [шаблон [сервер [пароль администратора]]]\n"
 "        Установить новый трекер Roundup.\n"
@@ -371,6 +375,26 @@ msgstr ""
 " внесите изменения в файл конфигурации базы:\n"
 "   %(database_config_file)s\n"
 " О том, как это делать, рассказано в документе \"Customising Roundup\".\n"
+
+#  password
+#. password
+#: ../roundup/admin.py:422
+msgid ""
+"Usage: initialise [adminpw]\n"
+"        Initialise a new Roundup tracker.\n"
+"\n"
+"        The administrator details will be set at this step.\n"
+"\n"
+"        Execute the tracker's initialisation function dbinit.init()\n"
+"        "
+msgstr ""
+"Вызов: initialise [пароль]\n"
+"        Проинициализировать новый трекер Roundup.\n"
+"\n"
+"        На этом шаге заполняется учетная карточка администратора.\n"
+"\n"
+"        Инициализация трекера делается функцией dbinit.init()\n"
+"        "
 
 #: ../roundup/admin.py:436
 msgid "Admin Password: "
@@ -513,7 +537,7 @@ msgstr ""
 msgid "%(key)s: %(value)s (key property)"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/admin.py:693 ../roundup/admin.py:720
+#: ../roundup/admin.py:693
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
@@ -533,6 +557,11 @@ msgstr ""
 "        Выдает список атрибутов и их значений для объектов,\n"
 "        заданных описателями.\n"
 "        "
+
+#: ../roundup/admin.py:720
+#, python-format
+msgid "%(key)s: %(value)r"
+msgstr ""
 
 #: ../roundup/admin.py:723
 msgid ""
@@ -577,7 +606,6 @@ msgid "you must provide the \"%(propname)s\" property."
 msgstr "Атрибут \"%(propname)s\" должен быть заполнен."
 
 #: ../roundup/admin.py:787
-#, fuzzy
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -587,7 +615,10 @@ msgid ""
 "        tried in order: the key, \"name\", \"title\" and then the first\n"
 "        property, alphabetically.\n"
 "\n"
-"        With -c, -S or -s print a list of item id"
+"        With -c, -S or -s print a list of item id's if no property\n"
+"        specified.  If property specified, print list of that property\n"
+"        for every class instance.\n"
+"        "
 msgstr ""
 "Вызов: list класс [атрибут]\n"
 "        Выдать список объектов класса.\n"
@@ -612,14 +643,305 @@ msgstr "Подано слишком много параметров"
 msgid "%(nodeid)4s: %(value)s"
 msgstr ""
 
+#: ../roundup/admin.py:840
+msgid ""
+"Usage: table classname [property[,property]*]\n"
+"        List the instances of a class in tabular form.\n"
+"\n"
+"        Lists all instances of the given class. If the properties are not\n"
+"        specified, all properties are displayed. By default, the column\n"
+"        widths are the width of the largest value. The width may be\n"
+"        explicitly defined by defining the property as \"name:width\".\n"
+"        For example::\n"
+"\n"
+"          roundup> table priority id,name:10\n"
+"          Id Name\n"
+"          1  fatal-bug\n"
+"          2  bug\n"
+"          3  usability\n"
+"          4  feature\n"
+"\n"
+"        Also to make the width of the column the width of the label,\n"
+"        leave a trailing : without a width on the property. For example::\n"
+"\n"
+"          roundup> table priority id,name:\n"
+"          Id Name\n"
+"          1  fata\n"
+"          2  bug\n"
+"          3  usab\n"
+"          4  feat\n"
+"\n"
+"        will result in a the 4 character wide \"Name\" column.\n"
+"        "
+msgstr ""
+"Вызов: table класс [атрибут[,атрибут]*]\n"
+"        Получить список объектов класса в виде таблицы.\n"
+"\n"
+"        Выдает список всех объектов указанного класса.  Если список\n"
+"        атрибутов не указан, печатает все атрибуты.  По умолчанию,\n"
+"        столбцы имеют ширину самого длинного значения в этом столбце.\n"
+"        Можно явно указывать ширины столбцов в виде \"атрибут:ширина\".\n"
+"        Например::\n"
+"\n"
+"          roundup> table priority id,name:10\n"
+"          Id Name\n"
+"          1  fatal-bug\n"
+"          2  bug\n"
+"          3  usability\n"
+"          4  feature\n"
+"\n"
+"        Для того, чтобы столбец имел ширину заголовка, нужно к имени\n"
+"        атрибута добавить двоеточие, но не указывать ширину.  Например::\n"
+"\n"
+"          roundup> table priority id,name:\n"
+"          Id Name\n"
+"          1  fata\n"
+"          2  bug\n"
+"          3  usab\n"
+"          4  feat\n"
+"\n"
+"        обрезает значения столбца \"Name\" до четырех символов.\n"
+"        "
+
 #: ../roundup/admin.py:884
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "Значение \"%(spec)s\" должно быть задано как имя:ширина"
 
+#: ../roundup/admin.py:934
+msgid ""
+"Usage: history designator\n"
+"        Show the history entries of a designator.\n"
+"\n"
+"        Lists the journal entries for the node identified by the "
+"designator.\n"
+"        "
+msgstr ""
+"Вызов: history описатель\n"
+"        Показать историю объекта.\n"
+"\n"
+"        Выдает список протокольных сообщений для объекта,\n"
+"        заданного описателем.\n"
+"        "
+
+#: ../roundup/admin.py:955
+msgid ""
+"Usage: commit\n"
+"        Commit changes made to the database during an interactive session.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        using this command.\n"
+"\n"
+"        One-off commands on the command-line are automatically committed if\n"
+"        they are successful.\n"
+"        "
+msgstr ""
+"Вызов: commit\n"
+"        Сохранить изменения базы данных, сделанные в интерактивном режиме.\n"
+"\n"
+"        Изменения, внесенные в интерактивном режиме, не записываются в базу\n"
+"        данных автоматически.  Они должны быть принудительно сохранены\n"
+"        при помощи этой команды.\n"
+"\n"
+"        Результаты выполнения командной строки записываются в базу данных\n"
+"        автоматически, если при выполнении команды не произошло ошибки.\n"
+"        "
+
+#: ../roundup/admin.py:969
+msgid ""
+"Usage: rollback\n"
+"        Undo all changes that are pending commit to the database.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        manually. This command undoes all those changes, so a commit\n"
+"        immediately after would make no changes to the database.\n"
+"        "
+msgstr ""
+"Вызов: rollback\n"
+"        Отменить изменения базы данных, сделанные в интерактивном режиме.\n"
+"\n"
+"        Изменения, внесенные в интерактивном режиме, не записываются в базу\n"
+"        данных автоматически.  Они должны быть принудительно сохранены\n"
+"        при помощи команды commit.  Команда rollback отменяет все эти\n"
+"        изменения, так что база данных возвращается в состояние, которое\n"
+"        было в момент последней записи.\n"
+"        "
+
+#: ../roundup/admin.py:981
+msgid ""
+"Usage: retire designator[,designator]*\n"
+"        Retire the node specified by designator.\n"
+"\n"
+"        This action indicates that a particular node is not to be retrieved\n"
+"        by the list or find commands, and its key value may be re-used.\n"
+"        "
+msgstr ""
+"Вызов: retire описатель[,описатель]*\n"
+"        Удалить указанные объекты.\n"
+"\n"
+"        Эта команда помечает указанные объекты как удаленные.\n"
+"        Удаленные объекты не показываются в списках, выдаваемых\n"
+"        командами list и find, и их ключевые значения могут быть\n"
+"        использованы в других объектах.\n"
+"        "
+
+#: ../roundup/admin.py:1004
+msgid ""
+"Usage: restore designator[,designator]*\n"
+"        Restore the retired node specified by designator.\n"
+"\n"
+"        The given nodes will become available for users again.\n"
+"        "
+msgstr ""
+"Вызов: restore описатель[,описатель]*\n"
+"        Восстановить удаленные объекты.\n"
+"\n"
+"        С заданных объектов снимается пометка удаления, и этими объектами\n"
+"        можно пользоваться снова.\n"
+"        "
+
+#. grab the directory to export to
+#: ../roundup/admin.py:1026
+msgid ""
+"Usage: export [class[,class]] export_dir\n"
+"        Export the database to colon-separated-value files.\n"
+"\n"
+"        Optionally limit the export to just the names classes.\n"
+"\n"
+"        This action exports the current data from the database into\n"
+"        colon-separated-value files that are placed in the nominated\n"
+"        destination directory.\n"
+"        "
+msgstr ""
+"Вызов: export [класс[,класс]] каталог\n"
+"        Экспортировать базу данных в текстовые файлы.\n"
+"\n"
+"        Если список классов не задан, экспортируются все классы\n"
+"        базы данных.\n"
+"\n"
+"        Эта команда экспортирует данные из базы трекера в текстовые файлы\n"
+"        в указанном каталоге.  Для каждого экспортируемого класса создается\n"
+"        отдельный экспортный файл.  Для каждого объекта класса создается\n"
+"        строка экспортного файла.  Значения атрибутов разделяются\n"
+"        двоеточиями.\n"
+"        "
+
+#: ../roundup/admin.py:1078
+msgid ""
+"Usage: import import_dir\n"
+"        Import a database from the directory containing CSV files,\n"
+"        two per class to import.\n"
+"\n"
+"        The files used in the import are:\n"
+"\n"
+"        <class>.csv\n"
+"          This must define the same properties as the class (including\n"
+"          having a \"header\" line with those property names.)\n"
+"        <class>-journals.csv\n"
+"          This defines the journals for the items being imported.\n"
+"\n"
+"        The imported nodes will have the same nodeid as defined in the\n"
+"        import file, thus replacing any existing content.\n"
+"\n"
+"        The new nodes are added to the existing database - if you want to\n"
+"        create a new database using the imported data, then create a new\n"
+"        database (or, tediously, retire all the old data.)\n"
+"        "
+msgstr ""
+"Вызов: import каталог\n"
+"        Импортировать базу данных из каталога, содержащего файлы\n"
+"        в формате CSV (Comma Separated Values), по два файла на класс.\n"
+"\n"
+"        В импорте участвуют следующие файлы:\n"
+"\n"
+"        <класс>.csv\n"
+"          Этот файл должен содержать данные класса (с указанием имен\n"
+"          атрибутов в первой строке.)\n"
+"        <класс>-journals.csv\n"
+"          Содержит протоколы изменений объектов класса.\n"
+"\n"
+"        Импортируемые объекты имеют идентификаторы, указанные в\n"
+"        импортном файле и замещают объекты с такими же идентификаторами,\n"
+"        существующие в базе данных.\n"
+"\n"
+"        Новые объекты добавляются к существующей базе данных.\n"
+"        Если вы хотите заполнить базу только импортируемыми объектами,\n"
+"        вам нужно создать новую базу данных (или, если не лень, удалить\n"
+"        из существующей базы все объекты).\n"
+"        "
+
+#: ../roundup/admin.py:1138
+msgid ""
+"Usage: pack period | date\n"
+"\n"
+"        Remove journal entries older than a period of time specified or\n"
+"        before a certain date.\n"
+"\n"
+"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
+"The\n"
+"        suffix \"w\" (for \"week\") means 7 days.\n"
+"\n"
+"              \"3y\" means three years\n"
+"              \"2y 1m\" means two years and one month\n"
+"              \"1m 25d\" means one month and 25 days\n"
+"              \"2w 3d\" means two weeks and three days\n"
+"\n"
+"        Date format is \"YYYY-MM-DD\" eg:\n"
+"            2001-01-01\n"
+"\n"
+"        "
+msgstr ""
+"Вызов: pack период | дата\n"
+"\n"
+"        Удалить протокольные сообщения, хранящиеся дольше указанного\n"
+"        периода или созданные до указанной даты.\n"
+"\n"
+"        Период задается числами, к которым добавлены буквы \"y\"\n"
+"        (year - год), \"m\" (month - месяц), \"d\" (day - день)\n"
+"        или \"w\" (week - неделя, семь дней).\n"
+"\n"
+"              \"3y\" означает три года\n"
+"              \"2y 1m\" означает два года и один месяц\n"
+"              \"1m 25d\" означает один месяц и 25 дней\n"
+"              \"2w 3d\" означает две недели и три дня\n"
+"\n"
+"        Дата задается в формате \"YYYY-MM-DD\", например:\n"
+"            2001-01-01\n"
+"\n"
+"        "
+
 #: ../roundup/admin.py:1166
 msgid "Invalid format"
 msgstr "Неправильный формат"
+
+#: ../roundup/admin.py:1176
+msgid ""
+"Usage: reindex\n"
+"        Re-generate a tracker's search indexes.\n"
+"\n"
+"        This will re-generate the search indexes for a tracker.\n"
+"        This will typically happen automatically.\n"
+"        "
+msgstr ""
+"Вызов: reindex\n"
+"        Переиндексировать базу данных.\n"
+"\n"
+"        Эта команда перестраивает индексы, используемые для поиска в базе\n"
+"        данных.  Обычно построение индексов происходит автоматически.\n"
+"        "
+
+#: ../roundup/admin.py:1187
+msgid ""
+"Usage: security [Role name]\n"
+"        Display the Permissions available to one or all Roles.\n"
+"        "
+msgstr ""
+"Вызов: security [роль]\n"
+"        Показать права, выданные указанной роли или всем существующим\n"
+"        ролям.\n"
+"        "
 
 #: ../roundup/admin.py:1195
 #, python-format
@@ -711,87 +1033,93 @@ msgstr "приходите к нам еще..."
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Ой, тут несохраненные изменения. Записать в базу данных (y/N)? "
 
-#: ../roundup/cgi/actions.py:52
+#: ../roundup/cgi/actions.py:53
 #, python-format
 msgid "You do not have permission to %(action)s the %(classname)s class."
 msgstr "У вас нет разрешения %(action)s для класса %(classname)s."
 
-#: ../roundup/cgi/actions.py:73
+#: ../roundup/cgi/actions.py:79
+msgid "No type specified"
+msgstr "Не указан тип"
+
+#: ../roundup/cgi/actions.py:81
 msgid "No ID entered"
 msgstr "Не указан идентификатор"
 
-#: ../roundup/cgi/actions.py:79
+#: ../roundup/cgi/actions.py:87
 #, python-format
 msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
 msgstr ""
 "\"%(input)s\" - не идентификатор (требуется идентификатор класса %(classname)"
 "s)"
 
-#: ../roundup/cgi/actions.py:98
+#: ../roundup/cgi/actions.py:107
 msgid "You may not retire the admin or anonymous user"
 msgstr "Нельзя удалять пользователей admin и anonymous."
 
-#: ../roundup/cgi/actions.py:105
+#: ../roundup/cgi/actions.py:114
 #, python-format
 msgid "%(classname)s %(itemid)s has been retired"
 msgstr "%(classname)s %(itemid)s удален"
 
-#: ../roundup/cgi/actions.py:258
+#: ../roundup/cgi/actions.py:269
 #, python-format
 msgid "Not enough values on line %(line)s"
 msgstr "В строке %(line)s не хватает значений"
 
-#: ../roundup/cgi/actions.py:305
+#: ../roundup/cgi/actions.py:316
 msgid "Items edited OK"
 msgstr "Объекты изменены успешно"
 
-#: ../roundup/cgi/actions.py:323
+#: ../roundup/cgi/actions.py:335
 msgid "You do not have permission to edit user roles"
 msgstr "У вас нет разрешения на изменение ролей пользователей"
 
-#: ../roundup/cgi/actions.py:502
-msgid "Edit Error: "
-msgstr "Ошибка редактирования: "
+#: ../roundup/cgi/actions.py:515
+#, python-format
+msgid "Edit Error: %s"
+msgstr "Ошибка редактирования: %s"
 
-#: ../roundup/cgi/actions.py:533 ../roundup/cgi/actions.py:542
-msgid "Error: "
-msgstr "Ошибка: "
+#: ../roundup/cgi/actions.py:546 ../roundup/cgi/actions.py:556
+#, python-format
+msgid "Error: %s"
+msgstr "Ошибка: %s"
 
-#: ../roundup/cgi/actions.py:680
+#: ../roundup/cgi/actions.py:695
 msgid "You are now registered, welcome!"
 msgstr "Вы зарегистрированы.  Добро пожаловать!"
 
-#: ../roundup/cgi/actions.py:706
+#: ../roundup/cgi/actions.py:722
 msgid "It is not permitted to supply roles at registration."
 msgstr "Нельзя указывать роли при регистрации"
 
-#: ../roundup/cgi/actions.py:712
+#: ../roundup/cgi/actions.py:727
 #, python-format
 msgid "Error: A user with the username \"%(username)s\" already exists"
 msgstr "Ошибка: Имя \"%(username)s\" уже занято"
 
-#: ../roundup/cgi/actions.py:775
+#: ../roundup/cgi/actions.py:790
 msgid "You are logged out"
 msgstr "Сеанс работы завершен"
 
-#: ../roundup/cgi/actions.py:786
+#: ../roundup/cgi/actions.py:801
 msgid "Username required"
 msgstr "Не указано имя пользователя"
 
-#: ../roundup/cgi/actions.py:801
+#: ../roundup/cgi/actions.py:816
 #, python-format
 msgid "No such user \"%(name)s\""
 msgstr "Пользователь \"%(name)s\" не существует"
 
-#: ../roundup/cgi/actions.py:808
+#: ../roundup/cgi/actions.py:824
 msgid "Incorrect password"
 msgstr "Неправильный пароль"
 
-#: ../roundup/cgi/actions.py:815
+#: ../roundup/cgi/actions.py:832
 msgid "You do not have permission to login"
 msgstr "У вас нет разрешения на работу с системой"
 
-#: ../roundup/cgi/cgitb.py:90
+#: ../roundup/cgi/cgitb.py:93
 msgid ""
 "<p>A problem occurred while running a Python script. Here is the sequence of "
 "function calls leading up to the error, with the most recent (innermost) "
@@ -802,101 +1130,164 @@ msgstr ""
 "которой произошла ошибка, - последняя вызванная функция - показана первой.  "
 "Информация об ошибке:"
 
-#: ../roundup/cgi/cgitb.py:142 ../roundup/cgi/cgitb.py:148
+#: ../roundup/cgi/cgitb.py:145 ../roundup/cgi/cgitb.py:151
 msgid "<em>undefined</em>"
 msgstr "<em>неопределено</em>"
 
-#: ../roundup/cgi/client.py:260
+#: ../roundup/cgi/client.py:276
 msgid "Form Error: "
 msgstr "Ошибка формы: "
 
-#: ../roundup/cgi/client.py:310
+#: ../roundup/cgi/client.py:326
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Кодировка %r не распознана"
 
-#: ../roundup/cgi/form_parser.py:386
+#: ../roundup/cgi/form_parser.py:283
+#, python-format
+msgid "link \"%(key)s\" value \"%(value)s\" not a designator"
+msgstr "Значение \"%(value)s ссылки \"%(key)s\" не указывает на объект"
+
+#: ../roundup/cgi/form_parser.py:290
+#, python-format
+msgid "%(class)s %(property)s is not a link or multilink property"
+msgstr "Атрибут %(property)s класса %(class)s не является ссылочным"
+
+#: ../roundup/cgi/form_parser.py:312
+#, python-format
+msgid ""
+"You have submitted a %(action)s action for the property \"%(property)s\" "
+"which doesn't exist"
+msgstr ""
+"Вы запросили действие \"%(action)s\" для атрибута \"%(property)s\", который "
+"не существует"
+
+#: ../roundup/cgi/form_parser.py:331 ../roundup/cgi/form_parser.py:357
+#, python-format
+msgid "You have submitted more than one value for the %s property"
+msgstr "Вы ввели несколько значений для атрибута %s"
+
+# ../roundup/cgi/form_parser.py:354 :360
+#: ../roundup/cgi/form_parser.py:354 ../roundup/cgi/form_parser.py:360
+msgid "Password and confirmation text do not match"
+msgstr "Пароли не совпали"
+
+#: ../roundup/cgi/form_parser.py:395
 #, python-format
 msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
 msgstr "атрибут \"%(propname)s\": значение \"%(value)s\" отсутствует в списке"
 
-#: ../roundup/cgi/form_parser.py:517
+#: ../roundup/cgi/form_parser.py:509
+#, python-format
+msgid "Required %(class)s property %(property)s not supplied"
+msgid_plural "Required %(class)s properties %(property)s not supplied"
+msgstr[0] "Обязательный атрибут %(property)s класса %(class)s не заполнен"
+msgstr[1] "Обязательные атрибуты %(property)s класса %(class)s не заполнены"
+msgstr[2] "Обязательные атрибуты %(property)s класса %(class)s не заполнены"
+
+#: ../roundup/cgi/form_parser.py:526
 msgid "File is empty"
 msgstr "Файл пуст"
 
-#: ../roundup/cgi/templating.py:690
+#: ../roundup/cgi/templating.py:98
+#, python-format
+msgid "You are not allowed to %(action)s items of class %(class)s"
+msgstr "У вас нет разрешения %(action)s для класса %(class)s"
+
+#: ../roundup/cgi/templating.py:649
+msgid "(list)"
+msgstr "(список)"
+
+#: ../roundup/cgi/templating.py:677
+msgid "Submit New Entry"
+msgstr "Добавить"
+
+#: ../roundup/cgi/templating.py:689
+msgid "New node - no history"
+msgstr "Новая карточка - нет истории"
+
+#: ../roundup/cgi/templating.py:770
+msgid "Submit Changes"
+msgstr "Изменить"
+
+#: ../roundup/cgi/templating.py:791
 msgid "History"
 msgstr "История"
 
-#: ../roundup/cgi/templating.py:692
+#: ../roundup/cgi/templating.py:793
 msgid "<th>Date</th>"
 msgstr "<th>Дата</th>"
 
-#: ../roundup/cgi/templating.py:693
+#: ../roundup/cgi/templating.py:794
 msgid "<th>User</th>"
 msgstr "<th>Пользователь</th>"
 
-#: ../roundup/cgi/templating.py:694
+#: ../roundup/cgi/templating.py:795
 msgid "<th>Action</th>"
 msgstr "<th>Действие</th>"
 
-#: ../roundup/cgi/templating.py:695
+#: ../roundup/cgi/templating.py:796
 msgid "<th>Args</th>"
 msgstr "<th>Параметры</th>"
 
-#: ../roundup/cgi/templating.py:757
+#: ../roundup/cgi/templating.py:858
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>Указанный атрибут уже не существует.</em>"
 
-#: ../roundup/cgi/templating.py:770
+#: ../roundup/cgi/templating.py:859
+#, python-format
+msgid "<em>%s: %s</em>\n"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:872
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "Связянный класс %(classname)s уже не существует"
 
 # :823
-#: ../roundup/cgi/templating.py:803 ../roundup/cgi/templating.py:824
+#: ../roundup/cgi/templating.py:905 ../roundup/cgi/templating.py:926
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Связанный объект уже не существует</strike>"
 
-#: ../roundup/cgi/templating.py:883
+#: ../roundup/cgi/templating.py:986
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr "<strong><em>Неизвестный тип события!</em></strong>"
 
-#: ../roundup/cgi/templating.py:894
+#: ../roundup/cgi/templating.py:998
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Примечание:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1175
+#: ../roundup/cgi/templating.py:1279
 msgid "*encrypted*"
 msgstr "*зашифрован*"
 
-#: ../roundup/cgi/templating.py:1488
+#: ../roundup/cgi/templating.py:1601
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- не указано -</option>"
 
-#: ../roundup/date.py:168
+#: ../roundup/date.py:167
 #, python-format
 msgid "Not a date spec: %s"
 msgstr "Дата должна быть в формате %s"
 
-#: ../roundup/date.py:219
+#: ../roundup/date.py:218
 #, python-format
 msgid "%r not a date spec (%s)"
 msgstr "%r не соответствует формату даты (%s)"
 
-#: ../roundup/date.py:487
+#: ../roundup/date.py:506
 msgid ""
 "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec]"
 msgstr ""
 "Интервал должен быть в формате [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [дата]"
 
-#: ../roundup/date.py:506
+#: ../roundup/date.py:525
 msgid "Not an interval spec: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
 msgstr "Интервал должен быть в формате [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS]"
 
-#: ../roundup/date.py:640
+#: ../roundup/date.py:662
 #, python-format
 msgid "%(number)s year"
 msgid_plural "%(number)s years"
@@ -904,7 +1295,7 @@ msgstr[0] "%(number)s год"
 msgstr[1] "%(number)s года"
 msgstr[2] "%(number)s лет"
 
-#: ../roundup/date.py:644
+#: ../roundup/date.py:666
 #, python-format
 msgid "%(number)s month"
 msgid_plural "%(number)s months"
@@ -912,7 +1303,7 @@ msgstr[0] "%(number)s месяц"
 msgstr[1] "%(number)s месяца"
 msgstr[2] "%(number)s месяцев"
 
-#: ../roundup/date.py:648
+#: ../roundup/date.py:670
 #, python-format
 msgid "%(number)s week"
 msgid_plural "%(number)s weeks"
@@ -920,7 +1311,7 @@ msgstr[0] "%(number)s неделя"
 msgstr[1] "%(number)s недели"
 msgstr[2] "%(number)s недель"
 
-#: ../roundup/date.py:652
+#: ../roundup/date.py:674
 #, python-format
 msgid "%(number)s day"
 msgid_plural "%(number)s days"
@@ -928,15 +1319,15 @@ msgstr[0] "%(number)s день"
 msgstr[1] "%(number)s дня"
 msgstr[2] "%(number)s дней"
 
-#: ../roundup/date.py:656
+#: ../roundup/date.py:678
 msgid "tomorrow"
 msgstr "завтра"
 
-#: ../roundup/date.py:658
+#: ../roundup/date.py:680
 msgid "yesterday"
 msgstr "вчера"
 
-#: ../roundup/date.py:661
+#: ../roundup/date.py:683
 #, python-format
 msgid "%(number)s hour"
 msgid_plural "%(number)s hours"
@@ -944,16 +1335,16 @@ msgstr[0] "%(number)s час"
 msgstr[1] "%(number)s часа"
 msgstr[2] "%(number)s часов"
 
-#: ../roundup/date.py:665
+#: ../roundup/date.py:687
 msgid "an hour"
 msgstr "час"
 
-#: ../roundup/date.py:667
+#: ../roundup/date.py:689
 msgid "1 1/2 hours"
 msgstr "полтора часа"
 
 # third form ain't used
-#: ../roundup/date.py:669
+#: ../roundup/date.py:691
 #, python-format
 msgid "1 %(number)s/4 hours"
 msgid_plural "1 %(number)s/4 hours"
@@ -961,21 +1352,21 @@ msgstr[0] "час с четвертью"
 msgstr[1] "час и %(number)s четверти"
 msgstr[2] "час и %(number)s четвертей"
 
-#: ../roundup/date.py:673
+#: ../roundup/date.py:695
 msgid "in a moment"
 msgstr "сейчас"
 
-#: ../roundup/date.py:675
+#: ../roundup/date.py:697
 msgid "just now"
 msgstr "только что"
 
 # используется в выражениях "через минуту" или "минуту назад"
-#: ../roundup/date.py:678
+#: ../roundup/date.py:700
 msgid "1 minute"
 msgstr "минуту"
 
 # используется в выражениях "через 2 минуты" или "2 минуты назад"
-#: ../roundup/date.py:681
+#: ../roundup/date.py:703
 #, python-format
 msgid "%(number)s minute"
 msgid_plural "%(number)s minutes"
@@ -983,24 +1374,24 @@ msgstr[0] "%(number)s минуту"
 msgstr[1] "%(number)s минуты"
 msgstr[2] "%(number)s минут"
 
-#: ../roundup/date.py:684
+#: ../roundup/date.py:706
 msgid "1/2 an hour"
 msgstr "полчаса"
 
-#: ../roundup/date.py:686
+#: ../roundup/date.py:708
 #, python-format
-msgid "%(number)s/4 hours"
+msgid "%(number)s/4 hour"
 msgid_plural "%(number)s/4 hours"
 msgstr[0] "четверть часа"
 msgstr[1] "%(number)s четверти часа"
 msgstr[2] "%(number)s четвертей часа"
 
-#: ../roundup/date.py:690
+#: ../roundup/date.py:712
 #, python-format
 msgid "%s ago"
 msgstr "%s назад"
 
-#: ../roundup/date.py:692
+#: ../roundup/date.py:714
 #, python-format
 msgid "in %s"
 msgstr "через %s"
@@ -1320,314 +1711,944 @@ msgstr ""
 msgid "Roundup server started on %(address)s"
 msgstr "Сервер Roundup готов к работе по адресу %(address)s"
 
-#  password
-#~ msgid ""
-#~ "Usage: initialise [adminpw]\n"
-#~ "        Initialise a new Roundup tracker.\n"
-#~ "\n"
-#~ "        The administrator details will be set at this step.\n"
-#~ "\n"
-#~ "        Execute the tracker's initialisation function dbinit.init()\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: initialise [пароль]\n"
-#~ "        Проинициализировать новый трекер Roundup.\n"
-#~ "\n"
-#~ "        На этом шаге заполняется учетная карточка администратора.\n"
-#~ "\n"
-#~ "        Инициализация трекера делается функцией dbinit.init()\n"
-#~ "        "
+#: ../templates/classic/html/_generic.collision.html:4
+#: ../templates/minimal/html/_generic.collision.html:4
+msgid "${class} Edit Collision - ${tracker}"
+msgstr "Конфликт редактирования ${class} - ${tracker}"
 
-#~ msgid ""
-#~ "Usage: table classname [property[,property]*]\n"
-#~ "        List the instances of a class in tabular form.\n"
-#~ "\n"
-#~ "        Lists all instances of the given class. If the properties are "
-#~ "not\n"
-#~ "        specified, all properties are displayed. By default, the column\n"
-#~ "        widths are the width of the largest value. The width may be\n"
-#~ "        explicitly defined by defining the property as \"name:width\".\n"
-#~ "        For example::\n"
-#~ "\n"
-#~ "          roundup> table priority id,name:10\n"
-#~ "          Id Name\n"
-#~ "          1  fatal-bug\n"
-#~ "          2  bug\n"
-#~ "          3  usability\n"
-#~ "          4  feature\n"
-#~ "\n"
-#~ "        Also to make the width of the column the width of the label,\n"
-#~ "        leave a trailing : without a width on the property. For "
-#~ "example::\n"
-#~ "\n"
-#~ "          roundup> table priority id,name:\n"
-#~ "          Id Name\n"
-#~ "          1  fata\n"
-#~ "          2  bug\n"
-#~ "          3  usab\n"
-#~ "          4  feat\n"
-#~ "\n"
-#~ "        will result in a the 4 character wide \"Name\" column.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: table класс [атрибут[,атрибут]*]\n"
-#~ "        Получить список объектов класса в виде таблицы.\n"
-#~ "\n"
-#~ "        Выдает список всех объектов указанного класса.  Если список\n"
-#~ "        атрибутов не указан, печатает все атрибуты.  По умолчанию,\n"
-#~ "        столбцы имеют ширину самого длинного значения в этом столбце.\n"
-#~ "        Можно явно указывать ширины столбцов в виде \"атрибут:ширина\".\n"
-#~ "        Например::\n"
-#~ "\n"
-#~ "          roundup> table priority id,name:10\n"
-#~ "          Id Name\n"
-#~ "          1  fatal-bug\n"
-#~ "          2  bug\n"
-#~ "          3  usability\n"
-#~ "          4  feature\n"
-#~ "\n"
-#~ "        Для того, чтобы столбец имел ширину заголовка, нужно к имени\n"
-#~ "        атрибута добавить двоеточие, но не указывать ширину.  Например::\n"
-#~ "\n"
-#~ "          roundup> table priority id,name:\n"
-#~ "          Id Name\n"
-#~ "          1  fata\n"
-#~ "          2  bug\n"
-#~ "          3  usab\n"
-#~ "          4  feat\n"
-#~ "\n"
-#~ "        обрезает значения столбца \"Name\" до четырех символов.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.collision.html:7
+#: ../templates/minimal/html/_generic.collision.html:7
+msgid "${class} Edit Collision"
+msgstr "Конфликт редактирования ${class}"
 
-#~ msgid ""
-#~ "Usage: history designator\n"
-#~ "        Show the history entries of a designator.\n"
-#~ "\n"
-#~ "        Lists the journal entries for the node identified by the "
-#~ "designator.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: history описатель\n"
-#~ "        Показать историю объекта.\n"
-#~ "\n"
-#~ "        Выдает список протокольных сообщений для объекта,\n"
-#~ "        заданного описателем.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.collision.html:14
+#: ../templates/minimal/html/_generic.collision.html:14
+msgid ""
+"\n"
+"  There has been a collision. Another user updated this node\n"
+"  while you were editing. Please <a href='${context}'>reload</a>\n"
+"  the node and review your edits.\n"
+msgstr ""
+"\n"
+"  Обнаружен конфликт редактирования.  Пока вы заполняли эту\n"
+"  форму, другой пользователь изменил объект базы данных.\n"
+"  <a href='${context}>Перечитайте</a> форму и внесите изменения\n"
+"  заново, пожалуйста.\n"
 
-#~ msgid ""
-#~ "Usage: commit\n"
-#~ "        Commit changes made to the database during an interactive "
-#~ "session.\n"
-#~ "\n"
-#~ "        The changes made during an interactive session are not\n"
-#~ "        automatically written to the database - they must be committed\n"
-#~ "        using this command.\n"
-#~ "\n"
-#~ "        One-off commands on the command-line are automatically committed "
-#~ "if\n"
-#~ "        they are successful.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: commit\n"
-#~ "        Сохранить изменения базы данных, сделанные в интерактивном "
-#~ "режиме.\n"
-#~ "\n"
-#~ "        Изменения, внесенные в интерактивном режиме, не записываются в "
-#~ "базу\n"
-#~ "        данных автоматически.  Они должны быть принудительно сохранены\n"
-#~ "        при помощи этой команды.\n"
-#~ "\n"
-#~ "        Результаты выполнения командной строки записываются в базу "
-#~ "данных\n"
-#~ "        автоматически, если при выполнении команды не произошло ошибки.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.help.html:9
+#: ../templates/minimal/html/_generic.help.html:9
+msgid "${property} help - ${tracker}"
+msgstr "Справка по ${property} - ${tracker}"
 
-#~ msgid ""
-#~ "Usage: rollback\n"
-#~ "        Undo all changes that are pending commit to the database.\n"
-#~ "\n"
-#~ "        The changes made during an interactive session are not\n"
-#~ "        automatically written to the database - they must be committed\n"
-#~ "        manually. This command undoes all those changes, so a commit\n"
-#~ "        immediately after would make no changes to the database.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: rollback\n"
-#~ "        Отменить изменения базы данных, сделанные в интерактивном "
-#~ "режиме.\n"
-#~ "\n"
-#~ "        Изменения, внесенные в интерактивном режиме, не записываются в "
-#~ "базу\n"
-#~ "        данных автоматически.  Они должны быть принудительно сохранены\n"
-#~ "        при помощи команды commit.  Команда rollback отменяет все эти\n"
-#~ "        изменения, так что база данных возвращается в состояние, которое\n"
-#~ "        было в момент последней записи.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.help.html:31
+#: ../templates/minimal/html/_generic.help.html:31
+msgid " Cancel "
+msgstr " Отменить "
 
-#~ msgid ""
-#~ "Usage: retire designator[,designator]*\n"
-#~ "        Retire the node specified by designator.\n"
-#~ "\n"
-#~ "        This action indicates that a particular node is not to be "
-#~ "retrieved\n"
-#~ "        by the list or find commands, and its key value may be re-used.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: retire описатель[,описатель]*\n"
-#~ "        Удалить указанные объекты.\n"
-#~ "\n"
-#~ "        Эта команда помечает указанные объекты как удаленные.\n"
-#~ "        Удаленные объекты не показываются в списках, выдаваемых\n"
-#~ "        командами list и find, и их ключевые значения могут быть\n"
-#~ "        использованы в других объектах.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.help.html:34
+#: ../templates/minimal/html/_generic.help.html:34
+msgid " Apply "
+msgstr " Применить "
 
-#~ msgid ""
-#~ "Usage: restore designator[,designator]*\n"
-#~ "        Restore the retired node specified by designator.\n"
-#~ "\n"
-#~ "        The given nodes will become available for users again.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: restore описатель[,описатель]*\n"
-#~ "        Восстановить удаленные объекты.\n"
-#~ "\n"
-#~ "        С заданных объектов снимается пометка удаления, и этими "
-#~ "объектами\n"
-#~ "        можно пользоваться снова.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.help.html:66
+#: ../templates/classic/html/issue.index.html:67
+#: ../templates/minimal/html/_generic.help.html:66
+msgid "&lt;&lt; previous"
+msgstr "&lt;&lt; предыдущие"
 
-#~ msgid ""
-#~ "Usage: export [class[,class]] export_dir\n"
-#~ "        Export the database to colon-separated-value files.\n"
-#~ "\n"
-#~ "        Optionally limit the export to just the names classes.\n"
-#~ "\n"
-#~ "        This action exports the current data from the database into\n"
-#~ "        colon-separated-value files that are placed in the nominated\n"
-#~ "        destination directory.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: export [класс[,класс]] каталог\n"
-#~ "        Экспортировать базу данных в текстовые файлы.\n"
-#~ "\n"
-#~ "        Если список классов не задан, экспортируются все классы\n"
-#~ "        базы данных.\n"
-#~ "\n"
-#~ "        Эта команда экспортирует данные из базы трекера в текстовые "
-#~ "файлы\n"
-#~ "        в указанном каталоге.  Для каждого экспортируемого класса "
-#~ "создается\n"
-#~ "        отдельный экспортный файл.  Для каждого объекта класса создается\n"
-#~ "        строка экспортного файла.  Значения атрибутов разделяются\n"
-#~ "        двоеточиями.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.help.html:73
+#: ../templates/classic/html/issue.index.html:75
+#: ../templates/minimal/html/_generic.help.html:73
+msgid "${start}..${end} out of ${total}"
+msgstr "${start}..${end} из ${total}"
 
-#~ msgid ""
-#~ "Usage: import import_dir\n"
-#~ "        Import a database from the directory containing CSV files,\n"
-#~ "        two per class to import.\n"
-#~ "\n"
-#~ "        The files used in the import are:\n"
-#~ "\n"
-#~ "        <class>.csv\n"
-#~ "          This must define the same properties as the class (including\n"
-#~ "          having a \"header\" line with those property names.)\n"
-#~ "        <class>-journals.csv\n"
-#~ "          This defines the journals for the items being imported.\n"
-#~ "\n"
-#~ "        The imported nodes will have the same nodeid as defined in the\n"
-#~ "        import file, thus replacing any existing content.\n"
-#~ "\n"
-#~ "        The new nodes are added to the existing database - if you want "
-#~ "to\n"
-#~ "        create a new database using the imported data, then create a new\n"
-#~ "        database (or, tediously, retire all the old data.)\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: import каталог\n"
-#~ "        Импортировать базу данных из каталога, содержащего файлы\n"
-#~ "        в формате CSV (Comma Separated Values), по два файла на класс.\n"
-#~ "\n"
-#~ "        В импорте участвуют следующие файлы:\n"
-#~ "\n"
-#~ "        <класс>.csv\n"
-#~ "          Этот файл должен содержать данные класса (с указанием имен\n"
-#~ "          атрибутов в первой строке.)\n"
-#~ "        <класс>-journals.csv\n"
-#~ "          Содержит протоколы изменений объектов класса.\n"
-#~ "\n"
-#~ "        Импортируемые объекты имеют идентификаторы, указанные в\n"
-#~ "        импортном файле и замещают объекты с такими же идентификаторами,\n"
-#~ "        существующие в базе данных.\n"
-#~ "\n"
-#~ "        Новые объекты добавляются к существующей базе данных.\n"
-#~ "        Если вы хотите заполнить базу только импортируемыми объектами,\n"
-#~ "        вам нужно создать новую базу данных (или, если не лень, удалить\n"
-#~ "        из существующей базы все объекты).\n"
-#~ "        "
+#: ../templates/classic/html/_generic.help.html:76
+#: ../templates/classic/html/issue.index.html:78
+#: ../templates/minimal/html/_generic.help.html:76
+msgid "next &gt;&gt;"
+msgstr "следующие &gt;&gt;"
 
-#~ msgid ""
-#~ "Usage: pack period | date\n"
-#~ "\n"
-#~ "        Remove journal entries older than a period of time specified or\n"
-#~ "        before a certain date.\n"
-#~ "\n"
-#~ "        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
-#~ "The\n"
-#~ "        suffix \"w\" (for \"week\") means 7 days.\n"
-#~ "\n"
-#~ "              \"3y\" means three years\n"
-#~ "              \"2y 1m\" means two years and one month\n"
-#~ "              \"1m 25d\" means one month and 25 days\n"
-#~ "              \"2w 3d\" means two weeks and three days\n"
-#~ "\n"
-#~ "        Date format is \"YYYY-MM-DD\" eg:\n"
-#~ "            2001-01-01\n"
-#~ "\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: pack период | дата\n"
-#~ "\n"
-#~ "        Удалить протокольные сообщения, хранящиеся дольше указанного\n"
-#~ "        периода или созданные до указанной даты.\n"
-#~ "\n"
-#~ "        Период задается числами, к которым добавлены буквы \"y\"\n"
-#~ "        (year - год), \"m\" (month - месяц), \"d\" (day - день)\n"
-#~ "        или \"w\" (week - неделя, семь дней).\n"
-#~ "\n"
-#~ "              \"3y\" означает три года\n"
-#~ "              \"2y 1m\" означает два года и один месяц\n"
-#~ "              \"1m 25d\" означает один месяц и 25 дней\n"
-#~ "              \"2w 3d\" означает две недели и три дня\n"
-#~ "\n"
-#~ "        Дата задается в формате \"YYYY-MM-DD\", например:\n"
-#~ "            2001-01-01\n"
-#~ "\n"
-#~ "        "
+#: ../templates/classic/html/_generic.index.html:6
+#: ../templates/classic/html/_generic.item.html:4
+#: ../templates/minimal/html/_generic.index.html:6
+#: ../templates/minimal/html/_generic.item.html:4
+msgid "${class} editing - ${tracker}"
+msgstr "Редактирование ${class} - ${tracker}"
 
-#~ msgid ""
-#~ "Usage: reindex\n"
-#~ "        Re-generate a tracker's search indexes.\n"
-#~ "\n"
-#~ "        This will re-generate the search indexes for a tracker.\n"
-#~ "        This will typically happen automatically.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: reindex\n"
-#~ "        Переиндексировать базу данных.\n"
-#~ "\n"
-#~ "        Эта команда перестраивает индексы, используемые для поиска в "
-#~ "базе\n"
-#~ "        данных.  Обычно построение индексов происходит автоматически.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.index.html:9
+#: ../templates/classic/html/_generic.item.html:7
+#: ../templates/minimal/html/_generic.index.html:9
+#: ../templates/minimal/html/_generic.item.html:7
+msgid "${class} editing"
+msgstr "Редактирование ${class}"
 
-#~ msgid ""
-#~ "Usage: security [Role name]\n"
-#~ "        Display the Permissions available to one or all Roles.\n"
-#~ "        "
-#~ msgstr ""
-#~ "Вызов: security [роль]\n"
-#~ "        Показать права, выданные указанной роли или всем существующим\n"
-#~ "        ролям.\n"
-#~ "        "
+#: ../templates/classic/html/_generic.index.html:14
+#: ../templates/classic/html/_generic.item.html:12
+#: ../templates/classic/html/file.item.html:9
+#: ../templates/classic/html/issue.index.html:10
+#: ../templates/classic/html/user.index.html:9
+#: ../templates/classic/html/user.register.html:14
+#: ../templates/minimal/html/_generic.index.html:14
+#: ../templates/minimal/html/_generic.item.html:12
+#: ../templates/minimal/html/user.index.html:9
+#: ../templates/minimal/html/user.item.html:18
+#: ../templates/minimal/html/user.register.html:14
+msgid "You are not allowed to view this page."
+msgstr "У вас нет разрешения на просмотр этой страницы."
+
+#: ../templates/classic/html/_generic.index.html:22
+#: ../templates/minimal/html/_generic.index.html:22
+msgid ""
+"<p class=\"form-help\"> You may edit the contents of the ${classname} class "
+"using this form. Commas, newlines and double quotes (\") must be handled "
+"delicately. You may include commas and newlines by enclosing the values in "
+"double-quotes (\"). Double quotes themselves must be quoted by doubling "
+"(\"\"). </p> <p class=\"form-help\"> Multilink properties have their "
+"multiple values colon (\":\") separated (... ,\"one:two:three\", ...) </p> "
+"<p class=\"form-help\"> Remove entries by deleting their line. Add new "
+"entries by appending them to the table - put an X in the id column. </p>"
+msgstr ""
+"<p class=\"form-help\"> При помощи этой формы вы можете изменить содержимое "
+"класса ${classname}. Будьте осторожны с запятыми, переводами строк и "
+"двойными кавычками (\"). Значения, содержащие запятые и переводы строк, "
+"должны быть заключены в двойные кавычки (\"). Двойные кавычки в значениях "
+"должны быть удвоены (\"\"). </p> <p class=\"form-help\"> Значения "
+"множественных ссылок (multilink properties) разделяются двоеточием (... ,"
+"\"раз:два:три\", ...) </p> <p class=\"form-help\"> Для того, чтобы "
+"уничтожить запись, удалите соответствующую строку.  Новые записи "
+"дописываются в конец таблицы. Вместо идентификатора (id) новых записей нужно "
+"вписывать латинскую букву \"X\". </p>"
+
+#: ../templates/classic/html/_generic.index.html:44
+#: ../templates/minimal/html/_generic.index.html:44
+msgid "Edit Items"
+msgstr "Изменить"
+
+#: ../templates/classic/html/file.index.html:4
+msgid "List of files - ${tracker}"
+msgstr "Список файлов - ${tracker}"
+
+#: ../templates/classic/html/file.index.html:5
+msgid "List of files"
+msgstr "Список файлов"
+
+#: ../templates/classic/html/file.index.html:10
+msgid "Download"
+msgstr "Скачать"
+
+#: ../templates/classic/html/file.index.html:11
+#: ../templates/classic/html/file.item.html:23
+#: ../templates/classic/html/file.item.html:51
+msgid "Content Type"
+msgstr "Тип файла"
+
+#: ../templates/classic/html/file.index.html:12
+msgid "Uploaded By"
+msgstr "Загрузил"
+
+#: ../templates/classic/html/file.index.html:13
+#: ../templates/classic/html/msg.item.html:38
+msgid "Date"
+msgstr "Дата"
+
+#: ../templates/classic/html/file.item.html:2
+msgid "File display - ${tracker}"
+msgstr "Просмотр файла - ${tracker}"
+
+#: ../templates/classic/html/file.item.html:4
+msgid "File display"
+msgstr "Просмотр файла"
+
+#: ../templates/classic/html/file.item.html:19
+#: ../templates/classic/html/file.item.html:47
+#: ../templates/classic/html/user.item.html:34
+#: ../templates/classic/html/user.register.html:24
+msgid "Name"
+msgstr "Имя"
+
+#: ../templates/classic/html/file.item.html:41
+msgid "download"
+msgstr "скачать"
+
+#: ../templates/classic/html/home.classlist.html:2
+#: ../templates/minimal/html/home.classlist.html:2
+msgid "List of classes - ${tracker}"
+msgstr "Список классов - ${tracker}"
+
+#: ../templates/classic/html/home.classlist.html:4
+#: ../templates/minimal/html/home.classlist.html:4
+msgid "List of classes"
+msgstr "Список классов"
+
+#: ../templates/classic/html/issue.index.html:4
+msgid "List of issues - ${tracker}"
+msgstr "Список проблем - ${tracker}"
+
+#: ../templates/classic/html/issue.index.html:6
+msgid "List of issues"
+msgstr "Список проблем"
+
+#: ../templates/classic/html/issue.index.html:17
+#: ../templates/classic/html/issue.item.html:38
+msgid "Priority"
+msgstr "Приоритет"
+
+#: ../templates/classic/html/issue.index.html:18
+msgid "ID"
+msgstr ""
+
+#: ../templates/classic/html/issue.index.html:19
+msgid "Creation"
+msgstr "Дата создания"
+
+#: ../templates/classic/html/issue.index.html:20
+msgid "Activity"
+msgstr "Действие"
+
+#: ../templates/classic/html/issue.index.html:21
+msgid "Actor"
+msgstr "Выполнил"
+
+#: ../templates/classic/html/issue.index.html:22
+msgid "Topic"
+msgstr "Тема"
+
+#: ../templates/classic/html/issue.index.html:23
+#: ../templates/classic/html/issue.item.html:33
+msgid "Title"
+msgstr "Заглавие"
+
+#: ../templates/classic/html/issue.index.html:24
+#: ../templates/classic/html/issue.item.html:40
+msgid "Status"
+msgstr "Статус"
+
+#: ../templates/classic/html/issue.index.html:25
+msgid "Creator"
+msgstr "Автор"
+
+#: ../templates/classic/html/issue.index.html:26
+msgid "Assigned&nbsp;To"
+msgstr "Назначено"
+
+#: ../templates/classic/html/issue.index.html:90
+msgid "Download as CSV"
+msgstr "Скачать CSV"
+
+#: ../templates/classic/html/issue.index.html:98
+msgid "Sort on:"
+msgstr "Сортировка:"
+
+#: ../templates/classic/html/issue.index.html:101
+#: ../templates/classic/html/issue.index.html:117
+msgid "- nothing -"
+msgstr "- нет -"
+
+#: ../templates/classic/html/issue.index.html:108
+#: ../templates/classic/html/issue.index.html:124
+msgid "Descending:"
+msgstr "По убыванию:"
+
+#: ../templates/classic/html/issue.index.html:114
+msgid "Group on:"
+msgstr "Группировка:"
+
+#: ../templates/classic/html/issue.index.html:130
+msgid "Redisplay"
+msgstr "Обновить"
+
+#: ../templates/classic/html/issue.item.html:7
+msgid "Issue ${id}: ${title} - ${tracker}"
+msgstr "Проблема ${id}: ${title} - ${tracker}"
+
+#: ../templates/classic/html/issue.item.html:10
+msgid "New Issue - ${tracker}"
+msgstr "Новая проблема - ${tracker}"
+
+#: ../templates/classic/html/issue.item.html:14
+msgid "New Issue"
+msgstr "Новая проблема"
+
+#: ../templates/classic/html/issue.item.html:16
+msgid "New Issue Editing"
+msgstr "Регистрация новой проблемы"
+
+#: ../templates/classic/html/issue.item.html:19
+msgid "Issue${id}"
+msgstr "Проблема ${id}"
+
+#: ../templates/classic/html/issue.item.html:22
+msgid "Issue${id} Editing"
+msgstr "Редактирование проблемы ${id}"
+
+#: ../templates/classic/html/issue.item.html:45
+msgid "Superseder"
+msgstr "Замещение"
+
+#: ../templates/classic/html/issue.item.html:50
+msgid "View: ${link}"
+msgstr "Просмотр: ${link}"
+
+#: ../templates/classic/html/issue.item.html:54
+msgid "Nosy List"
+msgstr "Рассылка извещений"
+
+#: ../templates/classic/html/issue.item.html:63
+msgid "Assigned To"
+msgstr "Назначено"
+
+#: ../templates/classic/html/issue.item.html:65
+msgid "Topics"
+msgstr "Темы"
+
+#: ../templates/classic/html/issue.item.html:73
+msgid "Change Note"
+msgstr "Заметки"
+
+#: ../templates/classic/html/issue.item.html:81
+msgid "File"
+msgstr "Файл"
+
+#: ../templates/classic/html/issue.item.html:100
+msgid ""
+"<table class=\"form\"> <tr> <td>Note:&nbsp;</td> <th class=\"required"
+"\">highlighted</th> <td>&nbsp;fields are required.</td> </tr> </table>"
+msgstr ""
+"<table class=\"form\"> <tr> <td>Примечание:&nbsp;</td><th class=\"required"
+"\">выделенные</th><td>&nbsp;поля должны быть заполнены.</td> </tr> </table>"
+
+#: ../templates/classic/html/issue.item.html:116
+#: ../templates/classic/html/msg.item.html:51
+msgid "Files"
+msgstr "Файлы"
+
+#: ../templates/classic/html/issue.item.html:118
+#: ../templates/classic/html/msg.item.html:53
+msgid "File name"
+msgstr "Имя файла"
+
+#: ../templates/classic/html/issue.item.html:119
+#: ../templates/classic/html/msg.item.html:54
+msgid "Uploaded"
+msgstr "Загружен"
+
+#: ../templates/classic/html/issue.item.html:120
+msgid "Type"
+msgstr "Тип"
+
+#: ../templates/classic/html/issue.item.html:121
+#: ../templates/classic/html/query.edit.html:30
+msgid "Edit"
+msgstr "Редактировать"
+
+#: ../templates/classic/html/issue.item.html:122
+msgid "Remove"
+msgstr "Удалить"
+
+#: ../templates/classic/html/issue.item.html:149
+#: ../templates/classic/html/msg.index.html:9
+msgid "Messages"
+msgstr "Сообщения"
+
+#: ../templates/classic/html/issue.search.html:2
+msgid "Issue searching - ${tracker}"
+msgstr "Поиск - ${tracker}"
+
+#: ../templates/classic/html/issue.search.html:4
+msgid "Issue searching"
+msgstr "Поиск"
+
+#: ../templates/classic/html/issue.search.html:24
+msgid "Filter on"
+msgstr "Что искать"
+
+#: ../templates/classic/html/issue.search.html:25
+msgid "Display"
+msgstr "Показать"
+
+#: ../templates/classic/html/issue.search.html:26
+msgid "Sort on"
+msgstr "Сортировать"
+
+#: ../templates/classic/html/issue.search.html:27
+msgid "Group on"
+msgstr "Группировать"
+
+#: ../templates/classic/html/issue.search.html:31
+msgid "All text*:"
+msgstr "во всем тексте*:"
+
+#: ../templates/classic/html/issue.search.html:39
+msgid "Title:"
+msgstr "в заголовке:"
+
+#: ../templates/classic/html/issue.search.html:49
+msgid "Topic:"
+msgstr "Тема:"
+
+#: ../templates/classic/html/issue.search.html:57
+msgid "ID:"
+msgstr ""
+
+#: ../templates/classic/html/issue.search.html:65
+msgid "Creation Date:"
+msgstr "Дата создания:"
+
+#: ../templates/classic/html/issue.search.html:75
+msgid "Creator:"
+msgstr "Автор:"
+
+#: ../templates/classic/html/issue.search.html:77
+msgid "created by me"
+msgstr "создано мной"
+
+#: ../templates/classic/html/issue.search.html:86
+msgid "Activity:"
+msgstr "Действие:"
+
+#: ../templates/classic/html/issue.search.html:94
+msgid "Actor:"
+msgstr "Выполнил:"
+
+#: ../templates/classic/html/issue.search.html:96
+msgid "done by me"
+msgstr "выполнено мной"
+
+#: ../templates/classic/html/issue.search.html:107
+msgid "Priority:"
+msgstr "Приоритет:"
+
+#: ../templates/classic/html/issue.search.html:109
+#: ../templates/classic/html/issue.search.html:125
+msgid "not selected"
+msgstr "не установлен"
+
+#: ../templates/classic/html/issue.search.html:120
+msgid "Status:"
+msgstr "Статус:"
+
+#: ../templates/classic/html/issue.search.html:123
+msgid "not resolved"
+msgstr "не закрыт"
+
+#: ../templates/classic/html/issue.search.html:137
+msgid "Assigned to:"
+msgstr "Назначено:"
+
+#: ../templates/classic/html/issue.search.html:140
+msgid "assigned to me"
+msgstr "назначено мне"
+
+#: ../templates/classic/html/issue.search.html:142
+msgid "unassigned"
+msgstr "неназначено"
+
+#: ../templates/classic/html/issue.search.html:152
+msgid "Pagesize:"
+msgstr "Размер страницы:"
+
+#: ../templates/classic/html/issue.search.html:158
+msgid "Start With:"
+msgstr "Начать с:"
+
+#: ../templates/classic/html/issue.search.html:164
+msgid "Sort Descending:"
+msgstr "Сортировать по убыванию:"
+
+#: ../templates/classic/html/issue.search.html:171
+msgid "Group Descending:"
+msgstr "Группировать по убыванию"
+
+#: ../templates/classic/html/issue.search.html:178
+msgid "Query name**:"
+msgstr "Имя запроса**:"
+
+#: ../templates/classic/html/issue.search.html:188
+#: ../templates/classic/html/page.html:46
+msgid "Search"
+msgstr "Поиск"
+
+#: ../templates/classic/html/issue.search.html:192
+msgid ""
+"*: The \"all text\" field will look in message bodies and issue titles<br> "
+"**: If you supply a name, the query will be saved off and available as a "
+"link in the sidebar"
+msgstr ""
+"*: Поиск по всему тексту ищет введенную строку в заголовках и в теле "
+"сообщений.<br />**: Если указано имя, запрос будет сохранен под этим именем "
+"и появится в списке запросов в меню."
+
+#: ../templates/classic/html/keyword.item.html:3
+msgid "Keyword editing - ${tracker}"
+msgstr "Редактирование ключевых слов - ${tracker}"
+
+#: ../templates/classic/html/keyword.item.html:5
+msgid "Keyword editing"
+msgstr "Редактирование ключевых слов"
+
+#: ../templates/classic/html/keyword.item.html:11
+msgid "Existing Keywords"
+msgstr "Существующие ключевые слова"
+
+#: ../templates/classic/html/keyword.item.html:20
+msgid ""
+"To edit an existing keyword (for spelling or typing errors), click on its "
+"entry above."
+msgstr ""
+"Для того, чтобы исправить ошибки или опечатки в ключевом слове, вызовите "
+"редактор по ссылке в этом списке."
+
+#: ../templates/classic/html/keyword.item.html:27
+msgid "To create a new keyword, enter it below and click \"Submit New Entry\"."
+msgstr ""
+"Чтобы создать новое ключевое слово, заполните поле ввода и нажмите кнопку "
+"\"Добавить\"."
+
+#: ../templates/classic/html/keyword.item.html:37
+msgid "Keyword"
+msgstr "Ключевое слово"
+
+#: ../templates/classic/html/msg.index.html:3
+msgid "List of messages - ${tracker}"
+msgstr "Список сообщений - ${tracker}"
+
+#: ../templates/classic/html/msg.index.html:5
+msgid "Message listing"
+msgstr "Список сообщений"
+
+#: ../templates/classic/html/msg.item.html:6
+msgid "Message ${id} - ${tracker}"
+msgstr "Сообщение ${id} - ${tracker}"
+
+#: ../templates/classic/html/msg.item.html:9
+msgid "New Message - ${tracker}"
+msgstr "Новое сообщение - ${tracker}"
+
+#: ../templates/classic/html/msg.item.html:13
+msgid "New Message"
+msgstr "Новое сообщение"
+
+#: ../templates/classic/html/msg.item.html:15
+msgid "New Message Editing"
+msgstr "Редактирование нового сообщения"
+
+#: ../templates/classic/html/msg.item.html:18
+msgid "Message${id}"
+msgstr "Сообщение ${id}"
+
+#: ../templates/classic/html/msg.item.html:21
+msgid "Message${id} Editing"
+msgstr "Редактирование сообщения ${id}"
+
+#: ../templates/classic/html/msg.item.html:28
+msgid "Author"
+msgstr "Автор"
+
+#: ../templates/classic/html/msg.item.html:33
+msgid "Recipients"
+msgstr "Адресаты"
+
+#: ../templates/classic/html/msg.item.html:44
+msgid "Content"
+msgstr "Содержание"
+
+#: ../templates/classic/html/page.html:28
+msgid "<b>Your Queries</b> (<a href=\"query?@template=edit\">edit</a>)"
+msgstr "<b>Ваши запросы</b> (<a href=\"query?@template=edit\">редактор</a>)"
+
+#: ../templates/classic/html/page.html:39
+msgid "Issues"
+msgstr "Проблемы"
+
+#: ../templates/classic/html/page.html:40
+#: ../templates/classic/html/page.html:57
+msgid "Create New"
+msgstr "Добавить"
+
+#: ../templates/classic/html/page.html:42
+msgid "Show Unassigned"
+msgstr "Неназначенные"
+
+#: ../templates/classic/html/page.html:44
+msgid "Show All"
+msgstr "Показать все"
+
+#: ../templates/classic/html/page.html:47
+msgid "Show issue:"
+msgstr "Показать:"
+
+#: ../templates/classic/html/page.html:56
+msgid "Keywords"
+msgstr "Ключевые&nbsp;слова"
+
+#: ../templates/classic/html/page.html:58
+msgid "Edit Existing"
+msgstr "Редактировать"
+
+#: ../templates/classic/html/page.html:64
+#: ../templates/minimal/html/page.html:48
+msgid "Administration"
+msgstr "Администрирование"
+
+#: ../templates/classic/html/page.html:66
+#: ../templates/minimal/html/page.html:49
+msgid "Class List"
+msgstr "Список классов"
+
+#: ../templates/classic/html/page.html:68
+#: ../templates/minimal/html/page.html:51
+msgid "User List"
+msgstr "Список пользователей"
+
+#: ../templates/classic/html/page.html:71
+#: ../templates/minimal/html/page.html:54
+msgid "Add User"
+msgstr "Добавить пользователя"
+
+#: ../templates/classic/html/page.html:78
+#: ../templates/classic/html/page.html:82
+#: ../templates/minimal/html/page.html:30
+msgid "Login"
+msgstr "Вход"
+
+#: ../templates/classic/html/page.html:84
+#: ../templates/classic/html/user.register.html:70
+#: ../templates/minimal/html/page.html:33
+#: ../templates/minimal/html/user.register.html:58
+msgid "Register"
+msgstr "Зарегистрироваться"
+
+#: ../templates/classic/html/page.html:87
+msgid "Lost&nbsp;your&nbsp;login?"
+msgstr "Забыли&nbsp;пароль?"
+
+#: ../templates/classic/html/page.html:92
+msgid "Hello, ${user}"
+msgstr "Здравствуйте, ${user}!"
+
+#: ../templates/classic/html/page.html:94
+msgid "My Issues"
+msgstr "Мои проблемы"
+
+#: ../templates/classic/html/page.html:95
+#: ../templates/minimal/html/page.html:40
+msgid "My Details"
+msgstr "Моя карточка"
+
+#: ../templates/classic/html/page.html:97
+#: ../templates/minimal/html/page.html:42
+msgid "Logout"
+msgstr "Выход"
+
+#: ../templates/classic/html/page.html:101
+msgid "Help"
+msgstr "Помощь"
+
+#: ../templates/classic/html/page.html:102
+msgid "Roundup docs"
+msgstr "Документация Roundup"
+
+#: ../templates/classic/html/page.html:153
+msgid "don't care"
+msgstr "неважно"
+
+#: ../templates/classic/html/page.html:155
+msgid "------------"
+msgstr ""
+
+#: ../templates/classic/html/page.html:173
+msgid "no value"
+msgstr "нет значения"
+
+#: ../templates/classic/html/query.edit.html:4
+msgid "\"Your Queries\" Editing - ${tracker}"
+msgstr "Редактирование \"Ваших запросов\" - ${tracker}"
+
+#: ../templates/classic/html/query.edit.html:6
+msgid "\"Your Queries\" Editing"
+msgstr "Редактирование \"Ваших запросов\""
+
+#: ../templates/classic/html/query.edit.html:11
+msgid "You are not allowed to edit queries."
+msgstr "У вас нет разрешения на редактирование запросов"
+
+#: ../templates/classic/html/query.edit.html:28
+msgid "Query"
+msgstr "Запрос"
+
+#: ../templates/classic/html/query.edit.html:29
+msgid "Include in \"Your Queries\""
+msgstr "Включить в \"Ваши запросы\""
+
+#: ../templates/classic/html/query.edit.html:31
+msgid "Private to you?"
+msgstr "Личный?"
+
+#: ../templates/classic/html/query.edit.html:44
+msgid "leave out"
+msgstr "не включать"
+
+#: ../templates/classic/html/query.edit.html:45
+msgid "include"
+msgstr "включить"
+
+#: ../templates/classic/html/query.edit.html:49
+msgid "leave in"
+msgstr "оставить"
+
+#: ../templates/classic/html/query.edit.html:50
+msgid "remove"
+msgstr "исключить"
+
+#: ../templates/classic/html/query.edit.html:54
+msgid "[query is retired]"
+msgstr "[запрос удален]"
+
+#: ../templates/classic/html/query.edit.html:67
+msgid "edit"
+msgstr "редактировать"
+
+#: ../templates/classic/html/query.edit.html:71
+msgid "yes"
+msgstr "да"
+
+#: ../templates/classic/html/query.edit.html:73
+msgid "no"
+msgstr "нет"
+
+#: ../templates/classic/html/query.edit.html:79
+msgid "Delete"
+msgstr "Удалить"
+
+#: ../templates/classic/html/query.edit.html:90
+msgid "[not yours to edit]"
+msgstr "[чужой запрос - редактировать нельзя]"
+
+#: ../templates/classic/html/query.edit.html:96
+msgid "Save Selection"
+msgstr "Сохранить изменения"
+
+#: ../templates/classic/html/user.forgotten.html:3
+msgid "Password reset request - ${tracker}"
+msgstr "Сброс пароля - ${tracker}"
+
+#: ../templates/classic/html/user.forgotten.html:5
+msgid "Password reset request"
+msgstr "Сброс пароля"
+
+#: ../templates/classic/html/user.forgotten.html:9
+msgid ""
+"You have two options if you have forgotten your password. If you know the "
+"email address you registered with, enter it below."
+msgstr ""
+"Если вы забыли пароль, у вас есть две возможности. Если вы помните адрес "
+"электронной почты, с которым вы зарегистрированы, введите его в этом поле."
+
+#: ../templates/classic/html/user.forgotten.html:16
+msgid "Email Address:"
+msgstr "Адрес email:"
+
+#: ../templates/classic/html/user.forgotten.html:24
+#: ../templates/classic/html/user.forgotten.html:34
+msgid "Request password reset"
+msgstr "Очистить пароль"
+
+#: ../templates/classic/html/user.forgotten.html:30
+msgid "Or, if you know your username, then enter it below."
+msgstr "Или, если вы помните ваше имя пользователя, укажите его здесь"
+
+#: ../templates/classic/html/user.forgotten.html:33
+msgid "Username:"
+msgstr "Имя пользователя:"
+
+#: ../templates/classic/html/user.forgotten.html:39
+msgid ""
+"A confirmation email will be sent to you - please follow the instructions "
+"within it to complete the reset process."
+msgstr ""
+"Для подтверждения этой операции вам будет послано сообщение по электронной "
+"почте. В этом письме будет написано, что вы должны сделать, чтобы очистить "
+"пароль Roundup."
+
+#: ../templates/classic/html/user.index.html:3
+#: ../templates/minimal/html/user.index.html:3
+msgid "User listing - ${tracker}"
+msgstr "Список пользователей - ${tracker}"
+
+#: ../templates/classic/html/user.index.html:5
+#: ../templates/minimal/html/user.index.html:5
+msgid "User listing"
+msgstr "Список пользователей"
+
+#: ../templates/classic/html/user.index.html:14
+#: ../templates/minimal/html/user.index.html:14
+msgid "Username"
+msgstr "Пользователь"
+
+#: ../templates/classic/html/user.index.html:15
+msgid "Real name"
+msgstr "Имя, фамилия"
+
+#: ../templates/classic/html/user.index.html:16
+#: ../templates/classic/html/user.item.html:65
+#: ../templates/classic/html/user.register.html:52
+msgid "Organisation"
+msgstr "Организация"
+
+#: ../templates/classic/html/user.index.html:17
+#: ../templates/minimal/html/user.index.html:15
+msgid "Email address"
+msgstr "Адрес email"
+
+#: ../templates/classic/html/user.index.html:18
+msgid "Phone number"
+msgstr "Телефон"
+
+#: ../templates/classic/html/user.index.html:19
+msgid "Retire"
+msgstr "Уволить"
+
+#: ../templates/classic/html/user.index.html:32
+msgid "retire"
+msgstr "уволить"
+
+#: ../templates/classic/html/user.item.html:7
+msgid "User ${id}: ${title} - ${tracker}"
+msgstr "Пользователь ${id}: ${title} - ${tracker}"
+
+#: ../templates/classic/html/user.item.html:10
+msgid "New User - ${tracker}"
+msgstr "Новый пользователь - ${tracker}"
+
+#: ../templates/classic/html/user.item.html:14
+#: ../templates/minimal/html/user.item.html:6
+msgid "New User"
+msgstr "Новый пользователь"
+
+#: ../templates/classic/html/user.item.html:16
+#: ../templates/minimal/html/user.item.html:8
+msgid "New User Editing"
+msgstr "Регистрация нового пользователя"
+
+#: ../templates/classic/html/user.item.html:19
+#: ../templates/minimal/html/user.item.html:11
+msgid "User${id}"
+msgstr "Пользователь ${id}"
+
+#: ../templates/classic/html/user.item.html:22
+#: ../templates/minimal/html/user.item.html:14
+msgid "User${id} Editing"
+msgstr "Редактирование карточки пользователя ${id}"
+
+#: ../templates/classic/html/user.item.html:38
+#: ../templates/classic/html/user.register.html:28
+#: ../templates/minimal/html/user.item.html:27
+#: ../templates/minimal/html/user.item.html:67
+#: ../templates/minimal/html/user.register.html:26
+msgid "Login Name"
+msgstr "Учетное имя"
+
+#: ../templates/classic/html/user.item.html:42
+#: ../templates/classic/html/user.register.html:32
+#: ../templates/minimal/html/user.item.html:31
+#: ../templates/minimal/html/user.register.html:30
+msgid "Login Password"
+msgstr "Пароль"
+
+#: ../templates/classic/html/user.item.html:46
+#: ../templates/classic/html/user.register.html:36
+#: ../templates/minimal/html/user.item.html:35
+#: ../templates/minimal/html/user.register.html:34
+msgid "Confirm Password"
+msgstr "(еще раз)"
+
+#: ../templates/classic/html/user.item.html:50
+#: ../templates/classic/html/user.register.html:40
+#: ../templates/minimal/html/user.item.html:39
+#: ../templates/minimal/html/user.register.html:38
+msgid "Roles"
+msgstr "Роли"
+
+#: ../templates/classic/html/user.item.html:56
+msgid "(to give the user more than one role, enter a comma,separated,list)"
+msgstr "(если ролей несколько, перечислите их через запятую)"
+
+#: ../templates/classic/html/user.item.html:61
+#: ../templates/classic/html/user.register.html:48
+msgid "Phone"
+msgstr "Телефон"
+
+#: ../templates/classic/html/user.item.html:69
+msgid "Timezone"
+msgstr "Часовой пояс"
+
+#: ../templates/classic/html/user.item.html:73
+msgid "(this is a numeric hour offset, the default is ${zone})"
+msgstr ""
+"(число - разница между местным и гринвичским временем, по умолчанию - "
+"${zone})"
+
+#: ../templates/classic/html/user.item.html:78
+#: ../templates/classic/html/user.register.html:56
+#: ../templates/minimal/html/user.item.html:47
+#: ../templates/minimal/html/user.item.html:71
+#: ../templates/minimal/html/user.register.html:46
+msgid "E-mail address"
+msgstr "Адрес email"
+
+#: ../templates/classic/html/user.item.html:82
+#: ../templates/classic/html/user.register.html:60
+#: ../templates/minimal/html/user.item.html:51
+#: ../templates/minimal/html/user.register.html:50
+msgid "Alternate E-mail addresses<br>One address per line"
+msgstr "Дополнительные адреса email<br />По одному адресу в строке"
+
+#: ../templates/classic/html/user.register.html:4
+#: ../templates/classic/html/user.register.html:7
+#: ../templates/minimal/html/user.register.html:4
+#: ../templates/minimal/html/user.register.html:7
+msgid "Registering with ${tracker}"
+msgstr "Регистрация в ${tracker}"
+
+#: ../templates/classic/html/user.rego_progress.html:4
+#: ../templates/minimal/html/user.rego_progress.html:4
+msgid "Registration in progress - ${tracker}"
+msgstr "Выполняется регистрация - ${tracker}"
+
+#: ../templates/classic/html/user.rego_progress.html:6
+#: ../templates/minimal/html/user.rego_progress.html:6
+msgid "Registration in progress..."
+msgstr "Выполняется регистрация..."
+
+#: ../templates/classic/html/user.rego_progress.html:10
+#: ../templates/minimal/html/user.rego_progress.html:10
+msgid ""
+"You will shortly receive an email to confirm your registration. To complete "
+"the registration process, visit the link indicated in the email."
+msgstr ""
+"Скоро вы получите письмо с подтверждением вашей регистрации. Для того, чтобы "
+"закончить регистрацию, вызовите указанную в письме ссылку."
+
+#: ../templates/minimal/html/home.html:2
+msgid "Tracker home - ${tracker}"
+msgstr "Центр отслеживания проблем - ${tracker}"
+
+#: ../templates/minimal/html/home.html:4
+msgid "Tracker home"
+msgstr "Центр отслеживания проблем"
+
+#: ../templates/minimal/html/home.html:16
+msgid "Please select from one of the menu options on the right."
+msgstr "Выберите действие из меню справа."
+
+#: ../templates/minimal/html/home.html:19
+msgid "Please log in or register."
+msgstr "Пожалуйста, входите или зарегистрируйтесь"
+
+#: ../templates/minimal/html/page.html:38
+msgid "Hello,<br>${user}"
+msgstr "Привет,<br>${user}"
+
+#: ../templates/minimal/html/user.item.html:3
+msgid "User editing - ${tracker}"
+msgstr "Редактирование карточки пользователя - ${tracker}"
