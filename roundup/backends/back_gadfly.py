@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.26 2002-09-24 01:59:28 richard Exp $
+# $Id: back_gadfly.py,v 1.27 2002-09-26 03:04:24 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -47,14 +47,23 @@ used.
 
 '''
 
-from roundup.backends.rdbms_common import *
+# standard python modules
+import sys, os, time, re, errno, weakref, copy
+
+# roundup modules
+from roundup import hyperdb, date, password, roundupdb, security
+from roundup.hyperdb import String, Password, Date, Interval, Link, \
+    Multilink, DatabaseError, Boolean, Number
+
+# basic RDBMS backen implementation
+from roundup.backends import rdbms_common
 
 # the all-important gadfly :)
 import gadfly
 import gadfly.client
 import gadfly.database
 
-class Database(Database):
+class Database(rdbms_common.Database):
     # char to use for positional arguments
     arg = '?'
 
@@ -238,10 +247,18 @@ class GadflyClass:
         # return the IDs
         return [row[0] for row in l]
 
-class Class(GadflyClass, Class):
+    def find(self, **propspec):
+        ''' Overload to filter out duplicates in the result
+        '''
+        d = {}
+        for k in rdbms_common.Class.find(self, **propspec):
+            d[k] = 1
+        return d.keys()
+
+class Class(GadflyClass, rdbms_common.Class):
     pass
-class IssueClass(GadflyClass, IssueClass):
+class IssueClass(GadflyClass, rdbms_common.IssueClass):
     pass
-class FileClass(GadflyClass, FileClass):
+class FileClass(GadflyClass, rdbms_common.FileClass):
     pass
 

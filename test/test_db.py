@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.55 2002-09-24 01:59:44 richard Exp $ 
+# $Id: test_db.py,v 1.56 2002-09-26 03:04:24 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -429,20 +429,20 @@ class anydbmDBTestCase(MyTestCase):
         self.db.commit()
 
         # sleep for at least a second, then get a date to pack at
-        time.sleep(2)
+        time.sleep(1)
         pack_before = date.Date('.')
-        time.sleep(2)
 
-        # one more entry
+        # wait another second and add one more entry
+        time.sleep(1)
         self.db.issue.set(id, status='3')
         self.db.commit()
+        jlen = len(self.db.getjournal('issue', id))
 
         # pack
         self.db.pack(pack_before)
-        journal = self.db.getjournal('issue', id)
 
         # we should have the create and last set entries now
-        self.assertEqual(2, len(journal))
+        self.assertEqual(jlen-1, len(self.db.getjournal('issue', id)))
 
     def testIDGeneration(self):
         id1 = self.db.issue.create(title="spam", status='1')
@@ -486,6 +486,36 @@ class anydbmDBTestCase(MyTestCase):
         self.db.indexer.quiet = 9
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
+
+    #
+    # searching tests follow
+    #
+    def testFind(self):
+        self.db.user.create(username='test')
+        ids = []
+        ids.append(self.db.issue.create(status="1", nosy=['1']))
+        oddid = self.db.issue.create(status="2", nosy=['2'])
+        ids.append(self.db.issue.create(status="1", nosy=['1','2']))
+        self.db.issue.create(status="3", nosy=['1'])
+        ids.sort()
+
+        # should match first and third
+        got = self.db.issue.find(status='1')
+        got.sort()
+        self.assertEqual(got, ids)
+
+        # none
+        self.assertEqual(self.db.issue.find(status='4'), [])
+
+        # should match first three
+        got = self.db.issue.find(status='1', nosy='2')
+        got.sort()
+        ids.append(oddid)
+        ids.sort()
+        self.assertEqual(got, ids)
+
+        # none
+        self.assertEqual(self.db.issue.find(status='4', nosy='3'), [])
 
     def testStringFind(self):
         ids = []
@@ -628,6 +658,13 @@ class gadflyDBTestCase(anydbmDBTestCase):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db.issue.create(title="eggs", status='2')
         self.assertNotEqual(id1, id2)
+
+    def testFilteringString(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'title': 'issue one'}, ('+','id'), (None,None)), ['1'])
+        # XXX gadfly can't do substring LIKE searches
+        #ae(filt(None, {'title': 'issue'}, ('+','id'), (None,None)),
+        #    ['1','2','3'])
 
 class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.18 2002-09-25 05:27:29 richard Exp $
+# $Id: rdbms_common.py,v 1.19 2002-09-26 03:04:24 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1458,11 +1458,13 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
 
-        sql = 'update _%s set __retired__=1 where id=%s'%(self.classname,
-            self.db.arg)
+        # use the arg for __retired__ to cope with any odd database type
+        # conversion (hello, sqlite)
+        sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
+            self.db.arg, self.db.arg)
         if __debug__:
             print >>hyperdb.DEBUG, 'retire', (self, sql, nodeid)
-        self.db.cursor.execute(sql, (nodeid,))
+        self.db.cursor.execute(sql, (1, nodeid))
 
     def is_retired(self, nodeid):
         '''Return true if the node is rerired
@@ -1570,10 +1572,11 @@ class Class(hyperdb.Class):
         if not self.key:
             raise TypeError, 'No key property set for class %s'%self.classname
 
-        sql = '''select id from _%s where _%s=%s
-            and __retired__ != '1' '''%(self.classname, self.key,
-            self.db.arg)
-        self.db.sql(sql, (keyvalue,))
+        # use the arg to handle any odd database type conversion (hello,
+        # sqlite)
+        sql = "select id from _%s where _%s=%s and __retired__ <> %s"%(
+            self.classname, self.key, self.db.arg, self.db.arg)
+        self.db.sql(sql, (keyvalue, 1))
 
         # see if there was a result that's not retired
         row = self.db.sql_fetchone()
@@ -1587,7 +1590,8 @@ class Class(hyperdb.Class):
     def find(self, **propspec):
         '''Get the ids of nodes in this class which link to the given nodes.
 
-        'propspec' consists of keyword args propname={nodeid:1,}   
+        'propspec' consists of keyword args propname=nodeid or
+                   propname={nodeid:1, }
         'propname' must be the name of a property in this class, or a
         KeyError is raised.  That property must be a Link or Multilink
         property, or a TypeError is raised.
@@ -1601,17 +1605,51 @@ class Class(hyperdb.Class):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'find', (self, propspec)
+
+        # shortcut
         if not propspec:
             return []
-        queries = []
-        tables = []
+
+        # validate the args
+        props = self.getprops()
+        propspec = propspec.items()
+        for propname, nodeids in propspec:
+            # check the prop is OK
+            prop = props[propname]
+            if not isinstance(prop, Link) and not isinstance(prop, Multilink):
+                raise TypeError, "'%s' not a Link/Multilink property"%propname
+
+        # first, links
+        where = []
         allvalues = ()
-        for prop, values in propspec.items():
-            allvalues += tuple(values.keys())
-            a = self.db.arg
+        a = self.db.arg
+        for prop, values in propspec:
+            if not isinstance(props[prop], hyperdb.Link):
+                continue
+            if type(values) is type(''):
+                allvalues += (values,)
+                where.append('_%s = %s'%(prop, a))
+            else:
+                allvalues += tuple(values.keys())
+                where.append('_%s in (%s)'%(prop, ','.join([a]*len(values))))
+        tables = []
+        if where:
+            tables.append('select id as nodeid from _%s where %s'%(
+                self.classname, ' and '.join(where)))
+
+        # now multilinks
+        for prop, values in propspec:
+            if not isinstance(props[prop], hyperdb.Multilink):
+                continue
+            if type(values) is type(''):
+                allvalues += (values,)
+                s = a
+            else:
+                allvalues += tuple(values.keys())
+                s = ','.join([a]*len(values))
             tables.append('select nodeid from %s_%s where linkid in (%s)'%(
-                self.classname, prop, ','.join([a for x in values.keys()])))
-        sql = '\nintersect\n'.join(tables)
+                self.classname, prop, s))
+        sql = '\nunion\n'.join(tables)
         self.db.sql(sql, allvalues)
         l = [x[0] for x in self.db.sql_fetchall()]
         if __debug__:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.85 2002-09-24 01:59:28 richard Exp $
+#$Id: back_anydbm.py,v 1.86 2002-09-26 03:04:24 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -524,6 +524,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'packjournal', (self, pack_before)
 
+        pack_before = pack_before.serialise()
         for classname in self.getclasses():
             # get the journal db
             db_name = 'journals.%s'%classname
@@ -540,21 +541,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     # unpack the entry
                     (nodeid, date_stamp, self.journaltag, action, 
                         params) = entry
-                    date_stamp = date.Date(date_stamp)
                     # if the entry is after the pack date, _or_ the initial
                     # create entry, then it stays
                     if date_stamp > pack_before or action == 'create':
                         l.append(entry)
-                    elif action == 'set':
-                        # grab the last set entry to keep information on
-                        # activity
-                        last_set_entry = entry
-                if last_set_entry:
-                    date_stamp = last_set_entry[1]
-                    # if the last set entry was made after the pack date
-                    # then it is already in the list
-                    if date_stamp < pack_before:
-                        l.append(last_set_entry)
                 db[key] = marshal.dumps(l)
             if db_type == 'gdbm':
                 db.reorganize()
@@ -1443,14 +1433,17 @@ class Class(hyperdb.Class):
     def find(self, **propspec):
         '''Get the ids of nodes in this class which link to the given nodes.
 
-        'propspec' consists of keyword args propname={nodeid:1,}   
-          'propname' must be the name of a property in this class, or a
-            KeyError is raised.  That property must be a Link or Multilink
-            property, or a TypeError is raised.
+        'propspec' consists of keyword args propname=nodeid or
+                   propname={nodeid:1, }
+        'propname' must be the name of a property in this class, or a
+                   KeyError is raised.  That property must be a Link or
+                   Multilink property, or a TypeError is raised.
 
         Any node in this class whose 'propname' property links to any of the
         nodeids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7, so we have hits on these issues:
+        that "foo" occurs in msg1, msg3 and file7, so we have hits on these
+        issues:
+
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
         propspec = propspec.items()

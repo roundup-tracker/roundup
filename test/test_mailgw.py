@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.31 2002-09-20 05:08:00 richard Exp $
+# $Id: test_mailgw.py,v 1.32 2002-09-26 03:04:24 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -764,6 +764,51 @@ Content-Transfer-Encoding: quoted-printable
 mary <mary@test> added the comment:
 
 A message with first part encoded (encoded oe =F6)
+
+----------
+status: unread -> chatting
+_________________________________________________________________________
+"Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+http://your.tracker.url.example/issue1
+_________________________________________________________________________
+''')
+
+    def testFollowupStupidQuoting(self):
+        self.doNewIssue()
+
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: "[issue1] Testing... "
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        handler.main(message)
+
+        self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@your.tracker.email.domain.example
+TO: chef@bork.bork.bork
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork
+From: "richard" <issue_tracker@your.tracker.email.domain.example>
+Reply-To: "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+Content-Transfer-Encoding: quoted-printable
+
+
+richard <richard@test> added the comment:
+
+This is a followup
+
 
 ----------
 status: unread -> chatting
