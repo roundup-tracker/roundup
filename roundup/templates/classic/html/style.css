@@ -79,6 +79,30 @@ th {
   color: #ffffff;
 }
 
+.msg-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #EE71AC;
+  color: #ffffff;
+}
+
+.file-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #41BE62;
+  color: #ffffff;
+}   
+
+.history-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #739DEE;
+  color: #ffffff;
+}
+
 .list-header {
   background-color: #aaccff;
   color: #000000;

@@ -74,10 +74,6 @@ issueDOTindex = """<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard 
 issueDOTitem = """<!-- dollarId: issue.item,v 1.3 2001/07/30 08:12:17 richard Exp dollar-->
 <table border=0 cellspacing=0 cellpadding=2>
 
-<tr class="strong-header">
-  <td colspan=4>Item Information</td>
-</td>
-
 <tr  bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Title</span></td>
     <td colspan=3 class="form-text"><display call="field('title', size=80)"></td>
@@ -115,28 +111,36 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.3 2001/07/30 08:12:17 richard Ex
     <td colspan=3 class="form-text"><display call="submit()"></td>
 </tr>
 
-<tr class="strong-header">
+<tr class="msg-header">
     <td colspan=4><b>Messages</b></td>
 </tr>
 <property name="messages">
-<tr>            
+<tr>
     <td colspan=4><display call="list('messages')"></td>
 </tr>
 </property>
 
-<tr class="strong-header">
+<tr class="file-header">
   <td colspan=4><b>Files</b></td>
 </tr>
 <tr class="form-help">
  <td colspan=4>
-   <a href="newfile?:multilink=issue<display call="plain('id')">:files">Attach a file to this issue</a>
+   <a href="newfile?:multilink=issue<display
+call="plain('id')">:files">Attach a file to this issue</a>
  </td>
 </tr>
 <property name="files">
- <tr>            
+ <tr>
      <td colspan=4><display call="list('files')"></td>
  </tr>
 </property>
+
+<tr class="history-header">
+    <td colspan=4><b>History</b></td>
+</tr>
+<tr>
+    <td colspan=4><display call="history()"></td>
+</tr>
 
 </table>
 
@@ -273,6 +277,30 @@ th {
   font-size: 12pt;
   font-weight: bold;
   background-color: #000000;
+  color: #ffffff;
+}
+
+.msg-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #EE71AC;
+  color: #ffffff;
+}
+
+.file-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #41BE62;
+  color: #ffffff;
+}   
+
+.history-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #739DEE;
   color: #ffffff;
 }
 
