@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.37.2.1 2002-07-10 06:30:47 richard Exp $
+#$Id: back_anydbm.py,v 1.37.2.2 2002-09-03 06:35:16 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -151,8 +151,8 @@ class Database(FileStorage, hyperdb.Database):
         # new database? let anydbm pick the best dbm
         if not db_type:
             if __debug__:
-                print >>hyperdb.DEBUG, "_opendb anydbm.open(%r, 'n')"%path
-            return anydbm.open(path, 'n')
+                print >>hyperdb.DEBUG, "_opendb anydbm.open(%r, 'c')"%path
+            return anydbm.open(path, 'c')
 
         # open the database with the correct module
         try:
@@ -488,6 +488,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.37.2.1  2002/07/10 06:30:47  richard
+# . #571170 ] gdbm deadlock
+#
 #Revision 1.37  2002/06/20 23:52:35  richard
 #More informative error message
 #

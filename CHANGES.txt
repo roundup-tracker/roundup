@@ -9,6 +9,7 @@ Fixed:
  . #603696 ] Mail followup not inserted
  . #603703 ] way to unassign issues
  . some more fixes to property editing through the web
+ . fixed some more database opening and detection problems
 
 
 2002-07-25 0.4.3
