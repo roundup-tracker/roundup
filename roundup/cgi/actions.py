@@ -435,12 +435,37 @@ class _EditAction(Action):
         return cl.create(**props)
 
 class EditItemAction(_EditAction):
+    def lastUserActivity(self):
+        if self.form.has_key(':lastactivity'):
+            return date.Date(self.form[':lastactivity'].value)
+        elif self.form.has_key('@lastactivity'):
+            return date.Date(self.form['@lastactivity'].value)
+        else:
+            return None
+
+    def lastNodeActivity(self):
+        cl = getattr(self.client.db, self.classname)
+        return cl.get(self.nodeid, 'activity')
+
+    def detectCollision(self, userActivity, nodeActivity):
+        # Result from lastUserActivity may be None. If it is, assume there's no
+        # conflict, or at least not one we can detect.
+        if userActivity:
+            return userActivity < nodeActivity
+
+    def handleCollision(self):
+        self.client.template = 'collision'
+    
     def handle(self):
         """Perform an edit of an item in the database.
 
         See parsePropsFromForm and _editnodes for special variables.
         
         """
+        if self.detectCollision(self.lastUserActivity(), self.lastNodeActivity()):
+            self.handleCollision()
+            return
+
         props, links = self.client.parsePropsFromForm()
 
         # handle the props

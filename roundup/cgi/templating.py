@@ -612,14 +612,17 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
             raise AttributeError, attr
 
     def designator(self):
-        ''' Return this item's designator (classname + id) '''
+        """Return this item's designator (classname + id)."""
         return '%s%s'%(self._classname, self._nodeid)
     
     def submit(self, label="Submit Changes"):
-        ''' Generate a submit button (and action hidden element)
-        '''
-        return self.input(type="hidden",name="@action",value="edit") + '\n' + \
-               self.input(type="submit",name="submit",value=label)
+        """Generate a submit button.
+
+        Also sneak in the lastactivity and action hidden elements.
+        """
+        return self.input(type="hidden", name="@lastactivity", value=date.Date('.')) + '\n' + \
+               self.input(type="hidden", name="@action", value="edit") + '\n' + \
+               self.input(type="submit", name="submit", value=label)
 
     def journal(self, direction='descending'):
         ''' Return a list of HTMLJournalEntry instances.

@@ -1,7 +1,10 @@
+from __future__ import nested_scopes
+
 import unittest
 from cgi import FieldStorage, MiniFieldStorage
 
 from roundup import hyperdb
+from roundup.date import Date, Interval
 from roundup.cgi.actions import *
 from roundup.cgi.exceptions import Redirect, Unauthorised
 
@@ -130,13 +133,43 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
 
         # The single value gets replaced with the tokenized list.
         self.assertEqual([x.value for x in self.form['foo']], ['hello', 'world'])
+
+class CollisionDetectionTestCase(ActionTestCase):
+    def setUp(self):
+        ActionTestCase.setUp(self)
+        self.action = EditItemAction(self.client)
+        self.now = Date('.')
+        
+    def testLastUserActivity(self):
+        self.assertEqual(self.action.lastUserActivity(), None)
+
+        self.client.form.value.append(MiniFieldStorage('@lastactivity', str(self.now)))        
+        self.assertEqual(self.action.lastUserActivity(), self.now)
+
+    def testLastNodeActivity(self):
+        self.action.classname = 'issue'
+        self.action.nodeid = '1'
+
+        def get(nodeid, propname):
+            self.assertEqual(nodeid, '1')
+            self.assertEqual(propname, 'activity')
+            return self.now
+        self.client.db.issue.get = get
+
+        self.assertEqual(self.action.lastNodeActivity(), self.now)
+
+    def testCollision(self):
+        self.failUnless(self.action.detectCollision(self.now, self.now + Interval("1d")))
+        self.failIf(self.action.detectCollision(self.now, self.now - Interval("1d")))
+        self.failIf(self.action.detectCollision(None, self.now))        
         
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(RetireActionTestCase))
     suite.addTest(unittest.makeSuite(StandardSearchActionTestCase))
     suite.addTest(unittest.makeSuite(FakeFilterVarsTestCase))
-    suite.addTest(unittest.makeSuite(ShowActionTestCase))    
+    suite.addTest(unittest.makeSuite(ShowActionTestCase))
+    suite.addTest(unittest.makeSuite(CollisionDetectionTestCase))
     return suite
 
 if __name__ == '__main__':
