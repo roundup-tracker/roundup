@@ -1,4 +1,4 @@
-# $Id: test_db.py,v 1.1 2001-07-27 06:55:07 richard Exp $ 
+# $Id: test_db.py,v 1.2 2001-07-29 04:09:20 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -43,7 +43,7 @@ class DBTestCase(unittest.TestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['fixer', 'nosy', 'status', 'title'])
+        self.assertEqual(keys, ['fixer', 'id', 'nosy', 'status', 'title'])
         self.db.issue.set('5', status='2')
         self.db.issue.get('5', "status")
         self.db.status.get('2', "name")
@@ -157,6 +157,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/27 06:55:07  richard
+# moving tests -> test
+#
 # Revision 1.7  2001/07/27 06:26:43  richard
 # oops - wasn't deleting the test dir after the read-only tests
 #
