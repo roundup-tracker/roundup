@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.15 2002-09-10 00:11:50 richard Exp $
+# $Id: back_gadfly.py,v 1.16 2002-09-11 01:20:09 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -82,7 +82,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # additional transaction support for external files and the like
         self.transactions = []
 
-        db = config.GADFLY_DATABASE
+        db = getattr(config, 'GADFLY_DATABASE', ('database', self.dir))
         if len(db) == 2:
             # ensure files are group readable and writable
             os.umask(0002)
