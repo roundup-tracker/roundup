@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.165 2004-07-21 01:01:44 richard Exp $
+#$Id: back_anydbm.py,v 1.166 2004-07-22 04:47:35 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1653,7 +1653,7 @@ class Class(hyperdb.Class):
                     # get the node value
                     nv = node.get(k, None)
 
-                    match = False
+                    match = 0
 
                     # now apply the property filter
                     if t == LINK:
@@ -1674,7 +1674,7 @@ class Class(hyperdb.Class):
                             # required values
                             for want in v:
                                 if want in nv:
-                                    match = True
+                                    match = 1
                                     break
                     elif t == STRING:
                         if nv is None:
@@ -1687,10 +1687,10 @@ class Class(hyperdb.Class):
                         else:
                             if v.to_value:
                                 if v.from_value <= nv and v.to_value >= nv:
-                                    match = True
+                                    match = 1
                             else:
                                 if v.from_value <= nv:
-                                    match = True
+                                    match = 1
                     elif t == OTHER:
                         # straight value comparison for the other types
                         match = nv in v
