@@ -1,4 +1,4 @@
-# $Id: date.py,v 1.5 2001-07-29 07:01:39 richard Exp $
+# $Id: date.py,v 1.6 2001-07-31 09:54:18 richard Exp $
 
 import time, re, calendar
 
@@ -163,7 +163,7 @@ class Date:
         info = m.groupdict()
 
         # get the current date/time using the offset
-        y,m,d,H,M,S,x,x,x = time.gmtime()
+        y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
 
         # override year, month, day parts
         if info['m'] is not None and info['d'] is not None:
@@ -355,6 +355,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.4  2001/07/25 04:09:34  richard
 # Fixed offset handling (shoulda read the spec a little better)
 #
