@@ -69,12 +69,12 @@ class Unauthorised(Exception):
             'items of class %(class)s') % {
             'action': self.action, 'class': self.klass}
 
-def find_template(dir, name, extension):
+def find_template(dir, name, view):
     ''' Find a template in the nominated dir
     '''
     # find the source
-    if extension:
-        filename = '%s.%s'%(name, extension)
+    if view:
+        filename = '%s.%s'%(name, view)
     else:
         filename = name
 
@@ -90,12 +90,12 @@ def find_template(dir, name, extension):
         if os.path.exists(src):
             return (src, filename)
 
-    # no extension == no generic template is possible
-    if not extension:
+    # no view == no generic template is possible
+    if not view:
         raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
 
     # try for a _generic template
-    generic = '_generic.%s'%extension
+    generic = '_generic.%s'%view
     src = os.path.join(dir, generic)
     if os.path.exists(src):
         return (src, generic)
@@ -107,7 +107,7 @@ def find_template(dir, name, extension):
         return (src, generic)
 
     raise NoTemplate, 'No template file exists for templating "%s" '\
-        'with template "%s" (neither "%s" nor "%s")'%(name, extension,
+        'with template "%s" (neither "%s" nor "%s")'%(name, view,
         filename, generic)
 
 class Templates:
@@ -123,6 +123,7 @@ class Templates:
             # skip subdirs
             if os.path.isdir(filename):
                 continue
+
             # skip files without ".html" or ".xml" extension - .css, .js etc.
             for extension in '.html', '.xml':
                 if filename.endswith(extension):
@@ -130,7 +131,7 @@ class Templates:
             else:
                 continue
 
-            # remove "html" extension
+            # remove extension
             filename = filename[:-len(extension)]
 
             # load the template
