@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.58 2002-02-27 03:23:16 richard Exp $
+# $Id: hyperdb.py,v 1.59 2002-03-12 22:52:26 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -35,30 +35,37 @@ DEBUG = os.environ.get('HYPERDBDEBUG', '')
 class String:
     """An object designating a String property."""
     def __repr__(self):
+        ' more useful for dumps '
         return '<%s>'%self.__class__
 
 class Password:
     """An object designating a Password property."""
     def __repr__(self):
+        ' more useful for dumps '
         return '<%s>'%self.__class__
 
 class Date:
     """An object designating a Date property."""
     def __repr__(self):
+        ' more useful for dumps '
         return '<%s>'%self.__class__
 
 class Interval:
     """An object designating an Interval property."""
     def __repr__(self):
+        ' more useful for dumps '
         return '<%s>'%self.__class__
 
 class Link:
     """An object designating a Link property that links to a
        node in a specified class."""
     def __init__(self, classname, do_journal='no'):
+        ''' Default is to not journal link and unlink events
+        '''
         self.classname = classname
         self.do_journal = do_journal == 'yes'
     def __repr__(self):
+        ' more useful for dumps '
         return '<%s to "%s">'%(self.__class__, self.classname)
 
 class Multilink:
@@ -71,12 +78,17 @@ class Multilink:
                     'link' and 'unlink' events placed in their journal
     """
     def __init__(self, classname, do_journal='no'):
+        ''' Default is to not journal link and unlink events
+        '''
         self.classname = classname
         self.do_journal = do_journal == 'yes'
     def __repr__(self):
+        ' more useful for dumps '
         return '<%s to "%s">'%(self.__class__, self.classname)
 
 class DatabaseError(ValueError):
+    '''Error to be raised when there is some problem in the database code
+    '''
     pass
 
 
@@ -256,6 +268,8 @@ class Class:
         db.addclass(self)
 
     def __repr__(self):
+        '''Slightly more useful representation
+        '''
         return '<hypderdb.Class "%s">'%self.classname
 
     # Editing nodes:
@@ -1025,7 +1039,6 @@ class Class:
                 raise ValueError, key
         self.properties.update(properties)
 
-
 # XXX not in spec
 class Node:
     ''' A convenience wrapper for the given node
@@ -1084,6 +1097,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.58  2002/02/27 03:23:16  richard
+# Ran it through pychecker, made fixes
+#
 # Revision 1.57  2002/02/20 05:23:24  richard
 # Didn't accomodate new values for new properties
 #

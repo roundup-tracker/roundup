@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.111 2002-02-25 04:32:21 richard Exp $
+# $Id: cgi_client.py,v 1.112 2002-03-12 22:52:26 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
-import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
+import os, cgi, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time, random
 
 import roundupdb, htmltemplate, date, hyperdb, password
@@ -74,9 +74,11 @@ class Client:
     def getuid(self):
         return self.db.user.lookup(self.user)
 
-    def header(self, headers={'Content-Type':'text/html'}):
+    def header(self, headers=None):
         '''Put up the appropriate header.
         '''
+	if headers is None:
+	    headers = {'Content-Type':'text/html'}
         if not headers.has_key('Content-Type'):
             headers['Content-Type'] = 'text/html'
         self.request.send_response(200)
@@ -1325,6 +1327,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.111  2002/02/25 04:32:21  richard
+# ahem
+#
 # Revision 1.110  2002/02/21 07:19:08  richard
 # ... and label, width and height control for extra flavour!
 #
