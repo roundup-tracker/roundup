@@ -12,9 +12,14 @@
 ##############################################################################
 
 """Generic Python Expression Handler
+
+Modified for Roundup 0.5 release:
+
+- more informative traceback info
+
 """
 
-__version__='$Revision: 1.2 $'[11:-2]
+__version__='$Revision: 1.3 $'[11:-2]
 
 from TALES import CompilerError
 from string import strip, split, join, replace, lstrip

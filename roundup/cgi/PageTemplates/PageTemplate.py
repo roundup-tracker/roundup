@@ -13,9 +13,15 @@
 """Page Template module
 
 HTML- and XML-based template objects using TAL, TALES, and METAL.
+
+
+Modified for Roundup 0.5 release:
+
+- changed imports to import from roundup.cgi
+
 """
 
-__version__='$Revision: 1.1 $'[11:-2]
+__version__='$Revision: 1.2 $'[11:-2]
 
 import sys
 

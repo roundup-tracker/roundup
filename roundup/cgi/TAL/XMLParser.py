@@ -13,6 +13,11 @@
 ##############################################################################
 """
 Generic expat-based XML parser base class.
+
+Modified for Roundup 0.5 release:
+
+- removed dependency on zLOG
+
 """
 
 class XMLParser:

@@ -33,6 +33,21 @@ BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
-The stylesheet included with this package has been copied from the Zope
-management interface and presumably belongs to Digital Creations.
+PageTemplates Licensing
+-----------------------
+
+Portions of this code (roundup.cgi.PageTemplates, roundup.cgi.TAL and
+roundup.cgi.ZTUtils) have been copied from Zope. They have been modified in
+the following manner:
+
+- removal of unit tests, Zope-specific code and support files from 
+  PageTemplates: PageTemplateFile.py, ZPythonExpr.py, ZRPythonExpr.py,
+  ZopePageTemplate.py, examples, help, tests, CHANGES.txt, HISTORY.txt,
+  version.txt and www. From TAL: DummyEngine.py, HISTORY.txt, CHANGES.txt,
+  benchmark, driver.py, markbench.py, ndiff.py, runtest.py, setpath.py,
+  tests and timer.py. From ZTUtils: SimpleTree.py, Zope.py, CHANGES.txt and
+  HISTORY.txt.
+- editing to remove dependencies on Zope modules (see files for change notes)
+
+The license for this code is in doc/ZPL.txt.
 

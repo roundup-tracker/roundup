@@ -12,8 +12,12 @@
 ##############################################################################
 __doc__='''Package of template utility classes and functions.
 
-$Id: __init__.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
-__version__='$Revision: 1.1 $'[11:-2]
+Modified for Roundup 0.5 release:
+
+- removed Zope imports
+
+$Id: __init__.py,v 1.2 2002-09-07 22:42:47 richard Exp $'''
+__version__='$Revision: 1.2 $'[11:-2]
 
 from Batch import Batch
 from Iterator import Iterator

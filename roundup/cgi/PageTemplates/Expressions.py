@@ -15,9 +15,17 @@
 
 Page Template-specific implementation of TALES, with handlers
 for Python expressions, string literals, and paths.
+
+
+Modified for Roundup 0.5 release:
+
+- Removed all Zope-specific code (doesn't even try to import that stuff now)
+- Removed all Acquisition
+- Made traceback info more informative
+
 """
 
-__version__='$Revision: 1.2 $'[11:-2]
+__version__='$Revision: 1.3 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
