@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.32 2002-09-16 22:37:26 richard Exp $
+# $Id: roundup.cgi,v 1.33 2002-09-23 00:50:32 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -35,6 +35,9 @@ import sys
 # TRACKER_HOMES is a list of instances, in the form
 # "NAME=DIR<sep>NAME2=DIR2<sep>...", where <sep> is the directory path
 # separator (";" on Windows, ":" on Unix). 
+
+# Make sure the NAME part doesn't include any url-unsafe characters like 
+# spaces, as these confuse the cookie handling in browsers like IE.
 
 # ROUNDUP_LOG is the name of the logfile; if it's empty or does not exist,
 # logging is turned off (unless you changed the default below). 

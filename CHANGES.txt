@@ -19,6 +19,7 @@ are given with the most recent entry first.
 - sf 611217 ] menu() has problems when labelprop==None
 - verify contents of tracker module when the tracker is opened
 - performance improvements in *dbm and sq backends
+- mailgw was missing an "import sys"
 
 2002-09-13 0.5.0 beta2
  . all backends now have a .close() method, and it's used everywhere

@@ -19,16 +19,10 @@ def setupSchema(db, module):
     session = module.Class(db, 'session', title=String())
     session.disableJournalling()
     db.post_init()
-    status.create(name="unread")
-    status.create(name="in-progress")
-    status.create(name="testing")
-    status.create(name="resolved")
-    user.create(username='one')
-    user.create(username='two')
     db.commit()
 
 class config:
-    DATABASE='_test_dir'
+    DATABASE='_benchmark'
     GADFLY_DATABASE = ('test', DATABASE)
     MAILHOST = 'localhost'
     MAIL_DOMAIN = 'fill.me.in.'
@@ -48,40 +42,58 @@ def main(backendname, time=time.time, numissues=10):
     except ImportError:
         return
 
-    if os.path.exists(config.DATABASE):
-        shutil.rmtree(config.DATABASE)
-
     times = []
-    db = backend.Database(config, 'test')
-    setupSchema(db, backend)
 
-    # create a whole bunch of stuff
-    for i in range(numissues):
-        db.issue.create(**{'title': 'issue %s'%i})
-        for j in range(10):
-            db.issue.set(str(i+1), status='2', assignedto='2', nosy=[])
-            db.issue.set(str(i+1), status='1', assignedto='1', nosy=['1','2'])
-        db.user.create(**{'username': 'user %s'%i})
-        for j in range(10):
-            db.user.set(str(i+1), assignable=1)
-            db.user.set(str(i+1), assignable=0)
-    db.commit()
+    config.DATABASE = os.path.join('_benchmark', '%s-%s'%(backendname,
+        numissues))
+    if not os.path.exists(config.DATABASE):
+        db = backend.Database(config, 'admin')
+        setupSchema(db, backend)
+        # create a whole bunch of stuff
+        db.user.create(**{'username': 'admin'})
+        db.status.create(name="unread")
+        db.status.create(name="in-progress")
+        db.status.create(name="testing")
+        db.status.create(name="resolved")
+        pc = -1
+        for i in range(numissues):
+            db.user.create(**{'username': 'user %s'%i})
+            for j in range(10):
+                db.user.set(str(i+1), assignable=1)
+                db.user.set(str(i+1), assignable=0)
+            db.issue.create(**{'title': 'issue %s'%i})
+            for j in range(10):
+                db.issue.set(str(i+1), status='2', assignedto='2', nosy=[])
+                db.issue.set(str(i+1), status='1', assignedto='1',
+                    nosy=['1','2'])
+            if (i*100/numissues) != pc:
+                pc = (i*100/numissues)
+                sys.stdout.write("%d%%\r"%pc)
+                sys.stdout.flush()
+            db.commit()
+    else:
+        db = backend.Database(config, 'admin')
+        setupSchema(db, backend)
+
     sys.stdout.write('%7s: %-6d'%(backendname, numissues))
     sys.stdout.flush()
 
     times.append(('start', time()))
 
     # fetch
+    db.clearCache()
     for i in db.issue.list():
         db.issue.get(i, 'title')
     times.append(('fetch', time()))
 
     # journals
+    db.clearCache()
     for i in db.issue.list():
         db.issue.history(i)
     times.append(('journal', time()))
 
     # "calculated" props
+    db.clearCache()
     for i in db.issue.list():
         db.issue.get(i, 'activity')
         db.issue.get(i, 'creator')
@@ -89,15 +101,24 @@ def main(backendname, time=time.time, numissues=10):
     times.append(('jprops', time()))
 
     # lookup
+    db.clearCache()
     for i in range(numissues):
         db.user.lookup('user %s'%i)
     times.append(('lookup', time()))
 
     # filter
+    db.clearCache()
+    for i in range(100):
+        db.issue.filter(None, {'assignedto': '1', 'title':'issue'},
+            ('+', 'activity'), ('+', 'status'))
+    times.append(('filter', time()))
+
+    # filter with multilink
+    db.clearCache()
     for i in range(100):
         db.issue.filter(None, {'nosy': ['1'], 'assignedto': '1',
             'title':'issue'}, ('+', 'activity'), ('+', 'status'))
-    times.append(('filter', time()))
+    times.append(('filtml', time()))
 
     # results
     last = None
@@ -113,11 +134,11 @@ def main(backendname, time=time.time, numissues=10):
 if __name__ == '__main__':
     #      0         1         2         3         4         5         6
     #      01234567890123456789012345678901234567890123456789012345678901234
-    print 'Test name       fetch  journl jprops lookup filter TOTAL '
+    print 'Test name       fetch  journl jprops lookup filter filtml TOTAL '
     for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
         main(name)
     for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
         main(name, numissues=20)
-#    for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
-#        main(name, numissues=100)
+    for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
+        main(name, numissues=100)
 

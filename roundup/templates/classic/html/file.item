@@ -8,7 +8,7 @@ You are not allowed to view this page.
 <input type="hidden" name=":template" value="item">
 <input type="hidden" name=":required" value="name,type">
 
-<input type="hidden" name="multilink"
+<input type="hidden" name=":multilink"
        tal:condition="python:request.form.has_key(':multilink')"
        tal:attributes="value request/form/:multilink/value">
 

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.9 2002-09-20 05:08:00 richard Exp $
+# $Id: rdbms_common.py,v 1.10 2002-09-23 00:50:32 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -43,6 +43,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # open a connection to the database, creating the "conn" attribute
         self.open_connection()
+
+    def clearCache(self):
+        self.cache = {}
+        self.cache_lru = []
 
     def open_connection(self):
         ''' Open a connection to the database, creating it if necessary

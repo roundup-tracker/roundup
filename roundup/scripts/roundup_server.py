@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.10 2002-09-10 03:01:19 richard Exp $
+$Id: roundup_server.py,v 1.11 2002-09-23 00:50:32 richard Exp $
 """
 
 # python version check
@@ -34,7 +34,11 @@ from roundup.i18n import _
 ##  Configuration
 #
 
-# This indicates where the Roundup instance lives
+# This indicates where the Roundup trackers live. They're given as NAME ->
+# TRACKER_HOME, where the NAME part is used in the URL to select the
+# appropriate reacker.
+# Make sure the NAME part doesn't include any url-unsafe characters like 
+# spaces, as these confuse the cookie handling in browsers like IE.
 TRACKER_HOMES = {
     'bar': '/tmp/bar',
 }
@@ -182,6 +186,8 @@ roundup-server [-n hostname] [-p port] [-l file] [-d file] [name=instance home]*
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. For convenience, you may edit the
    TRACKER_HOMES variable in the roundup-server file instead.
+   Make sure the name part doesn't include any url-unsafe characters like 
+   spaces, as these confuse the cookie handling in browsers like IE.
 ''')%locals()
     sys.exit(0)
 
