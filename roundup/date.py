@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.51 2003-03-22 22:43:21 richard Exp $
+# $Id: date.py,v 1.52 2003-04-21 14:29:39 kedder Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -23,6 +23,15 @@ Date, time and time interval handling.
 
 import time, re, calendar, types
 from i18n import _
+
+def _add_granularity(src, order, value = 1):
+    '''Increment first non-None value in src dictionary ordered by 'order'
+    parameter
+    '''
+    for gran in order:
+        if src[gran]:
+            src[gran] = int(src[gran]) + value
+            break
 
 class Date:
     '''
@@ -80,7 +89,7 @@ class Date:
     minute, second) is the serialisation format returned by the serialise()
     method, and is accepted as an argument on instatiation.
     '''
-    def __init__(self, spec='.', offset=0):
+    def __init__(self, spec='.', offset=0, add_granularity=0):
         """Construct a date given a specification and a time zone offset.
 
           'spec' is a full date or a partial form, with an optional
@@ -88,7 +97,7 @@ class Date:
         'offset' is the local time zone offset from GMT in hours.
         """
         if type(spec) == type(''):
-            self.set(spec, offset=offset)
+            self.set(spec, offset=offset, add_granularity=add_granularity)
         else:
             y,m,d,H,M,S,x,x,x = spec
             ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
@@ -102,9 +111,10 @@ class Date:
             (?P<o>.+)?                                     # offset
             ''', re.VERBOSE), serialised_re=re.compile(r'''
             (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)
-            ''', re.VERBOSE)):
+            ''', re.VERBOSE), add_granularity=0):
         ''' set the date to the value in spec
         '''
+
         m = serialised_re.match(spec)
         if m is not None:
             # we're serialised - easy!
@@ -119,6 +129,9 @@ class Date:
                 '[[h]h:mm[:ss]][offset]')
 
         info = m.groupdict()
+
+        if add_granularity:
+            _add_granularity(info, 'SMHdmy')
 
         # get the current date as our default
         y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
@@ -140,6 +153,9 @@ class Date:
             S = 0
             if info['S'] is not None: S = int(info['S'])
 
+        if add_granularity:
+            S = S - 1
+        
         # now handle the adjustment of hour
         ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
         self.year, self.month, self.day, self.hour, self.minute, \
@@ -345,10 +361,10 @@ class Interval:
 
     TODO: more examples, showing the order of addition operation
     '''
-    def __init__(self, spec, sign=1, allowdate=1):
+    def __init__(self, spec, sign=1, allowdate=1, add_granularity=0):
         """Construct an interval given a specification."""
         if type(spec) == type(''):
-            self.set(spec, allowdate)
+            self.set(spec, allowdate=allowdate, add_granularity=add_granularity)
         else:
             if len(spec) == 7:
                 self.sign, self.year, self.month, self.day, self.hour, \
@@ -372,7 +388,8 @@ class Interval:
                  (\d?\d:\d\d)?(:\d\d)?                     # hh:mm:ss
                )?''', re.VERBOSE), serialised_re=re.compile('''
             (?P<s>[+-])?1?(?P<y>([ ]{3}\d|\d{4}))(?P<m>\d{2})(?P<d>\d{2})
-            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE)):
+            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE),
+            add_granularity=0):
         ''' set the date to the value in spec
         '''
         self.year = self.month = self.week = self.day = self.hour = \
@@ -389,6 +406,9 @@ class Interval:
 
         # pull out all the info specified
         info = m.groupdict()
+        if add_granularity:
+            _add_granularity(info, 'SMHdwmy', (info['s']=='-' and -1 or 1))
+
         valid = 0
         for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
                 'H':'hour', 'M':'minute', 'S':'second'}.items():
@@ -654,7 +674,7 @@ class Range:
         <Range from None to 2003-03-09.20:00:00>
 
     """
-    def __init__(self, spec, Type, **params):
+    def __init__(self, spec, Type, allow_granularity=1, **params):
         """Initializes Range of type <Type> from given <spec> string.
         
         Sets two properties - from_value and to_value. None assigned to any of
@@ -666,8 +686,8 @@ class Range:
         
         """
         self.range_type = Type
-        re_range = r'(?:^|(?:from)?(.+?))(?:to(.+?)$|$)'
-        re_geek_range = r'(?:^|(.+?))(?:;(.+?)$|$)'
+        re_range = r'(?:^|from(.+?))(?:to(.+?)$|$)'
+        re_geek_range = r'(?:^|(.+?));(?:(.+?)$|$)'
         # Check which syntax to use
         if  spec.find(';') == -1:
             # Native english
@@ -682,7 +702,11 @@ class Range:
             if self.to_value:
                 self.to_value = Type(self.to_value.strip(), **params)
         else:
-            raise ValueError, "Invalid range"
+            if allow_granularity:
+                self.from_value = Type(spec, **params)
+                self.to_value = Type(spec, add_granularity=1, **params)
+            else:
+                raise ValueError, "Invalid range"
 
     def __str__(self):
         return "from %s to %s" % (self.from_value, self.to_value)
@@ -691,11 +715,16 @@ class Range:
         return "<Range %s>" % self.__str__()
  
 def test_range():
-    rspecs = ("from 2-12 to 4-2", "18:00 TO +2m", "12:00", "tO +3d",
-        "2002-11-10; 2002-12-12", "; 20:00 +1d")
+    rspecs = ("from 2-12 to 4-2", "from 18:00 TO +2m", "12:00;", "tO +3d",
+        "2002-11-10; 2002-12-12", "; 20:00 +1d", '2002-10-12')
+    rispecs = ('from -1w 2d 4:32 to 4d', '-2w 1d')
     for rspec in rspecs:
         print '>>> Range("%s")' % rspec
         print `Range(rspec, Date)`
+        print
+    for rspec in rispecs:
+        print '>>> Range("%s")' % rspec
+        print `Range(rspec, Interval)`
         print
 
 def test():
@@ -705,7 +734,7 @@ def test():
         print `Interval(interval)`
 
     dates = (".", "2000-06-25.19:34:02", ". + 2d", "1997-04-17", "01-25",
-        "08-13.22:13", "14:25")
+        "08-13.22:13", "14:25", '2002-12')
     for date in dates:
         print '>>> Date("%s")'%date
         print `Date(date)`
@@ -716,6 +745,6 @@ def test():
         print `Date(date) + Interval(interval)`
 
 if __name__ == '__main__':
-    test_range()
+    test()
 
 # vim: set filetype=python ts=4 sw=4 et si

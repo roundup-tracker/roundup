@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.85 2003-04-20 11:58:45 kedder Exp $ 
+# $Id: test_db.py,v 1.86 2003-04-21 14:29:40 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -698,7 +698,7 @@ class anydbmDBTestCase(MyTestCase):
         # Lets assume people won't invent a time machine, otherwise this test
         # may fail :)
         ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3'])
-        ae(filt(None, {'deadline': '2003-02-16'}), ['2', '3'])
+        ae(filt(None, {'deadline': '2003-02-16;'}), ['2', '3'])
         # Interval ranges
         ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
         ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])

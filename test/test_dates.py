@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.22 2003-03-19 05:18:11 richard Exp $ 
+# $Id: test_dates.py,v 1.23 2003-04-21 14:29:40 kedder Exp $ 
 
 import unittest, time
 
@@ -244,6 +244,13 @@ class DateTestCase(unittest.TestCase):
         i3 = Interval("3:30")
         l = [i1, i2, i3]; l.sort()
         ae(l, [i1, i3, i2])
+
+    def testGranularity(self):
+        ae = self.assertEqual
+        ae(str(Date('2003-2-12', add_granularity=1)), '2003-02-12.23:59:59')
+        ae(str(Date('2003-1-1.23:00', add_granularity=1)), '2003-01-01.23:00:59')
+        ae(str(Interval('+1w', add_granularity=1)), '+ 14d')
+        ae(str(Interval('-2m 3w', add_granularity=1)), '- 2m 14d')
 
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')
