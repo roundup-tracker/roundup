@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.40 2001-12-14 23:42:57 richard Exp $
+# $Id: hyperdb.py,v 1.41 2001-12-15 23:47:47 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -159,7 +159,7 @@ class Class:
                 if not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
-                    except:
+                    except (TypeError, KeyError):
                         raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, link_class)
                 elif not self.db.hasnode(link_class, value):
@@ -184,7 +184,7 @@ class Class:
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
-                        except:
+                        except (TypeError, KeyError):
                             raise IndexError, 'new property "%s": %s not a %s'%(
                                 key, entry, self.properties[key].classname)
                     l.append(entry)
@@ -330,7 +330,7 @@ class Class:
                 if not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
-                    except:
+                    except (TypeError, KeyError):
                         raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, self.properties[key].classname)
 
@@ -359,7 +359,7 @@ class Class:
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
-                        except:
+                        except (TypeError, KeyError):
                             raise IndexError, 'new property "%s": %s not a %s'%(
                                 key, entry, self.properties[key].classname)
                     l.append(entry)
@@ -599,7 +599,7 @@ class Class:
                     elif not num_re.match(entry):
                         try:
                             entry = link_class.lookup(entry)
-                        except:
+                        except (TypeError,KeyError):
                             raise ValueError, 'property "%s": %s not a %s'%(
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
@@ -615,7 +615,7 @@ class Class:
                     if not num_re.match(entry):
                         try:
                             entry = link_class.lookup(entry)
-                        except:
+                        except (TypeError,KeyError):
                             raise ValueError, 'new property "%s": %s not a %s'%(
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
@@ -723,11 +723,8 @@ class Class:
                     if (isinstance(propclass, String) or
                             isinstance(propclass, Date)):
                         # it might be a string that's really an integer
-                        try:
-                            av = int(av)
-                            bv = int(bv)
-                        except:
-                            pass
+                        av = int(av)
+                        bv = int(bv)
                         if dir == '+':
                             r = cmp(av, bv)
                             if r != 0: return r
@@ -871,6 +868,11 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.40  2001/12/14 23:42:57  richard
+# yuck, a gdbm instance tests false :(
+# I've left the debugging code in - it should be removed one day if we're ever
+# _really_ anal about performace :)
+#
 # Revision 1.39  2001/12/02 05:06:16  richard
 # . We now use weakrefs in the Classes to keep the database reference, so
 #   the close() method on the database is no longer needed.
