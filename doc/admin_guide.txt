@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.5.2.1 $
 
 .. contents::
 
@@ -169,17 +169,22 @@ Windows
 -------
 
 On Windows, the roundup-server program runs as a Windows Service, and 
-therefore may be controlled through the Services control panel.
+therefore may be controlled through the Services control panel. The
+roundup-server program may also control the service directly:
 
-TODO: info how to bring up the services panel.
+**install the service**
+  ``roundup-server -c install``
+**start the service**
+  ``roundup-server -c start``
+**stop the service**
+  ``roundup-server -c stop``
 
-TODO: how to start the server in "service" mode.
+To bring up the services panel:
 
-On windows, use::
-
-   roundup-server -c stop
-
-to stop the running server.
+Windows 2000 and later
+  Start/Control Panel/Administrative Tools/Services
+Windows NT4
+  Start/Control Panel/Services
 
 Running the Mail Gateway Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

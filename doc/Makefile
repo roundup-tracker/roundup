@@ -13,7 +13,7 @@ WEBHT := $(SOURCE:.txt=.ht)
 all: ${COMPILED} ${WEBHT}
 
 website: ${WEBHT}
-	mv *.ht ${WEBDIR}
+	cp *.ht ${WEBDIR}
 
 %.html: %.txt
 	${STXTOHTML} --report=warning -d $< $@
