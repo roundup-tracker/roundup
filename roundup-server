@@ -3,7 +3,7 @@
 
 Stolen from CGIHTTPServer
 
-$Id: roundup-server,v 1.6 2001-07-29 07:01:39 richard Exp $
+$Id: roundup-server,v 1.7 2001-08-03 00:59:34 richard Exp $
 
 """
 import sys
@@ -16,7 +16,7 @@ __version__ = "0.1"
 
 __all__ = ["RoundupRequestHandler"]
 
-import os, urllib, StringIO, traceback, cgi, binascii, string, getopt
+import os, urllib, StringIO, traceback, cgi, binascii, string, getopt, imp
 import BaseHTTPServer
 import SimpleHTTPServer
 
@@ -98,12 +98,8 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         instance = urllib.unquote(l_path[1])
         if self.ROUNDUP_INSTANCE_HOMES.has_key(instance):
             instance_home = self.ROUNDUP_INSTANCE_HOMES[instance]
-            module_path, instance = os.path.split(instance_home)
-            sys.path.insert(0, module_path)
-            try:
-                instance = __import__(instance)
-            finally:
-                del sys.path[0]
+            instance = imp.load_module('instance', None, instance_home,
+                ('', '', 5))
         else:
             raise ValueError, 'No such instance "%s"'%instance
 
@@ -261,6 +257,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.5  2001/07/24 01:07:59  richard
 # Added command-line arg handling to roundup-server so it's more useful
 # out-of-the-box.
