@@ -135,13 +135,14 @@ if __name__ == '__main__':
     #      0         1         2         3         4         5         6
     #      01234567890123456789012345678901234567890123456789012345678901234
     print 'Test name       fetch  journl jprops lookup filter filtml TOTAL '
-    for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
+    for name in 'anydbm metakit sqlite'.split():
         main(name)
-    for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
+    for name in 'anydbm metakit sqlite'.split():
         main(name, numissues=20)
-    for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
+    for name in 'anydbm metakit sqlite'.split():
         main(name, numissues=100)
     # don't even bother benchmarking the dbm backends > 100!
     for name in 'metakit sqlite'.split():
         main(name, numissues=1000)
 
+# vim: set et sts=4 sw=4 :
