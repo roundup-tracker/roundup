@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.70 $
+:Version: $Revision: 1.71 $
 
 .. contents::
 
@@ -259,43 +259,32 @@ Choosing Your Backend
 The actual storage of Roundup tracker information is handled by backends.
 There's several to choose from, each with benefits and limitations:
 
-**anydbm**
-  This backend is guaranteed to work on any system that Python runs on. It
-  will generally choose the best dbm backend that is available on your system
-  (from the list dbhash, gdbm, dbm, dumbdbm). It is the least scaleable of all
-  backends, but performs well enough for a smallish tracker (a couple of
-  thousand issues, under fifty users, ...).
-**bsddb**
-  This effectively the same as anydbm, but uses the bsddb backend. This allows
-  it to gain some performance and scaling benefits.
-**bsddb3**
-  Again, this effectively the same as anydbm, but uses the bsddb3 backend.
-  This allows it to gain some performance and scaling benefits.
-**sqlite**
-  This uses the SQLite_ embedded RDBMS to provide a fast, scaleable backend.
-  There are no limitations, and it's much faster and more scaleable than the
-  dbm backends.
-**mysql**
-  Backend for popular RDBMS MySQL. According to benchmarks, this backend works
-  much faster than any of \*dbm ones, but slightly slower than metakit and
-  sqlite. You must read doc/mysql.txt for additional installation steps and
-  requirements.
+========== =========== ===== ==============================
+Name       Speed       Users   Support
+========== =========== ===== ==============================
+anydbm     Slowest     Few   Always available
+bsddb      Slow        Few   Usually available
+sqlite     Fastest(*)  Few   Needs install (SQLite_)
+metakit    Fastest(*)  Few   Needs install (metakit_)
+postgresql Fast        Many  Needs install/admin (psycopg_)
+mysql      Fast        Many  Needs install/admin (MySQLdb_)
+========== =========== ===== ==============================
+
+**sqlite** and **metakit**
+  These use the embedded database engines SQLite_ and metakit_ to provide
+  very fast backends. They are not suitable for trackers which will have
+  many simultaneous users.
 **postgresql**
-  Backend for popular RDBMS PostgreSQL. According to benchmarks, this
-  backend works much faster than any of \*dbm ones and mysql, but slightly
-  slower than metakit and sqlite. You must read doc/postgresql.txt for
+  Backend for popular RDBMS PostgreSQL. You must read doc/postgresql.txt for
   additional installation steps and requirements.
-**metakit**
-  This backend is implemented over the metakit_ storage system, using Mk4Py as
-  the interface. It scales much better than the dbm backends.
+**mysql**
+  Backend for popular RDBMS MySQL. You must read doc/mysql.txt for additional
+  installation steps and requirements.
 
-You should be wary of using all but the mysql backend with high-volume trackers 
-(requests every second or two) as database locking is done on the whole
-database.
-
-You may set your tracker up with the anydbm backend (which is guaranteed to be
-available) and switch to one of the other backends at any time using the
-instructions in the `administration guide`_.
+You may defer your decision by setting your tracker up with the anydbm
+backend (which is guaranteed to be available) and switching to one of the
+other backends at any time using the instructions in the `administration
+guide`_.
 
 
 Configure a Web Interface
@@ -622,4 +611,6 @@ Next: `User Guide`_
 .. _`administration guide`: admin_guide.html
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _metakit: http://www.equi4.com/metakit/
+.. _Psycopg: http://initd.org/software/initd/psycopg
+.. _MySQLdb: http://sourceforge.net/projects/mysql-python
 
