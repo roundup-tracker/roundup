@@ -42,7 +42,7 @@ from roundup.cgi.TAL.DummyEngine import DummyEngine
 #from ITALES import ITALESEngine
 from roundup.cgi.TAL.TALDefs import TALESError
 
-__version__ = '$Revision: 1.2 $'
+__version__ = '$Revision: 1.3 $'
 
 pot_header = '''\
 # SOME DESCRIPTIVE TITLE.
