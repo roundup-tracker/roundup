@@ -15,11 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_metakit.py,v 1.2 2003-11-14 00:11:19 richard Exp $ 
-
+# $Id: test_metakit.py,v 1.3 2004-01-27 18:16:50 wc2so1 Exp $ 
 import unittest, os, shutil, time, weakref
 
-from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
+from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config, password
 
 from roundup import backends
 
@@ -74,6 +73,13 @@ class metakitDBTest(metakitOpener, DBTest):
         nid = self.db.user.create(username='foo', age=1)
         self.db.user.set(nid, age=None)
         self.assertEqual(self.db.user.get(nid, "age"), 0)
+
+    def testPasswordUnset(self):
+        # XXX: metakit can't unset Numbers (id's) :(
+        x = password.Password('x')
+        nid = self.db.user.create(username='foo', password=x)
+        self.db.user.set(nid, assignable=None)
+        self.assertEqual(self.db.user.get(nid, "assignable"), 0)
 
 class metakitROTest(metakitOpener, ROTest):
     pass
