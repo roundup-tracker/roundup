@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.54 2001-11-07 01:16:12 richard Exp $
+# $Id: cgi_client.py,v 1.55 2001-11-07 02:34:06 jhermann Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -723,7 +723,12 @@ class Client:
             cookie = cookie['roundup_user'].value
             if len(cookie)%4:
               cookie = cookie + '='*(4-len(cookie)%4)
-            user, password = binascii.a2b_base64(cookie).split(':')
+            try:
+                user, password = binascii.a2b_base64(cookie).split(':')
+            except (TypeError, binascii.Error, binascii.Incomplete):
+                # damaged cookie!
+                user, password = 'anonymous', ''
+
             # make sure the user exists
             try:
                 uid = self.db.user.lookup(user)
@@ -950,6 +955,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.54  2001/11/07 01:16:12  richard
+# Remove the '=' padding from cookie value so quoting isn't an issue.
+#
 # Revision 1.53  2001/11/06 23:22:05  jhermann
 # More IE fixes: it does not like quotes around cookie values; in the
 # hope this does not break anything for other browser; if it does, we
