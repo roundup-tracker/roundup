@@ -16,14 +16,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.14 2001-11-13 21:44:44 richard Exp $
+# $Id: roundup-mailgw,v 1.15 2001-11-30 13:16:37 rochecompaan Exp $
 
 import sys, os, re, cStringIO
 if int(sys.version[0]) < 2:
     print "Roundup requires Python 2.0 or newer."
     sys.exit(1)
 
-from mimetools import Message
+from roundup import mailgw
+Message = mailgw.Message
 
 def do_pipe(handler):
     '''Read a message from standard input and pass it to the mail handler.
@@ -168,6 +169,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/11/13 21:44:44  richard
+#  . re-open the database as the author in mail handling
+#
 # Revision 1.13  2001/11/09 01:05:55  richard
 # Fixed bug #479511 ] mailgw to pop once engelbert gruber tested the POP
 # gateway.
