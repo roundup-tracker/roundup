@@ -1163,11 +1163,7 @@ class StringHTMLProperty(HTMLProperty):
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
         '''
-        if self._name == 'id':
-            pass
-        elif self._class
-        else:
-            self.view_check()
+        self.view_check()
 
         if self._value is None:
             return ''
