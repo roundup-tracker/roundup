@@ -2252,6 +2252,14 @@ class Batch(ZTUtils.Batch):
         return Batch(self.client, self._sequence, self._size,
             self.end - self.overlap, 0, self.orphan, self.overlap)
 
+class TemplatingUtil:
+    def __init__(self, utils, callable):
+        self.utils = utils
+        self.callable = callable
+    def __call__(self, *args, **kw):
+        args = (self.utils,)+args
+        return self.callable(*args, **kw)
+
 class TemplatingUtils:
     ''' Utilities for templating
     '''
@@ -2268,5 +2276,14 @@ class TemplatingUtils:
     def html_quote(self, html):
         '''HTML-quote the supplied text.'''
         return cgi.escape(url)
+
+    def __getattr__(self, name):
+        '''Try the tracker's templating_utils.'''
+        if not hasattr(self.client.instance, 'templating_utils'):
+            # backwards-compatibility
+            raise AttributeError, name
+        if not self.client.instance.templating_utils.has_key(name):
+            raise AttributeError, name
+        return TemplatingUtil(self, self.client.instance.templating_utils[name])
 
 # vim: set et sts=4 sw=4 :

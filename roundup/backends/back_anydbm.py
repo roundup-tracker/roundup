@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.168 2004-07-27 01:59:28 richard Exp $
+#$Id: back_anydbm.py,v 1.169 2004-07-27 04:28:39 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2118,18 +2118,22 @@ class FileClass(hyperdb.FileClass, Class):
             content = propvalues['content']
             del propvalues['content']
 
-        # do the database create
+        # do the database update
         propvalues = self.set_inner(itemid, **propvalues)
 
         # do content?
         if content:
             # store and index
             self.db.storefile(self.classname, itemid, None, content)
-            mime_type = propvalues.get('type', self.get(itemid, 'type'))
-            if not mime_type:
+            if self.getprops().has_key('type'):
+                mime_type = propvalues.get('type', self.get(itemid, 'type',
+                    self.default_mime_type))
+            else:
                 mime_type = self.default_mime_type
             self.db.indexer.add_text((self.classname, itemid, 'content'),
                 content, mime_type)
+
+            propvalues['content'] = content
 
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)
