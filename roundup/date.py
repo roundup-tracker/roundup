@@ -1,4 +1,4 @@
-# $Id: date.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+# $Id: date.py,v 1.3 2001-07-23 07:56:05 richard Exp $
 
 import time, re, calendar
 
@@ -56,18 +56,18 @@ class Date:
     '''
     isDate = 1
 
-    def __init__(self, spec='.', offset=0, set=None):
+    def __init__(self, spec='.', offset=0):
         """Construct a date given a specification and a time zone offset.
 
           'spec' is a full date or a partial form, with an optional
-                 added or subtracted interval.
+                 added or subtracted interval. Or a date 9-tuple.
         'offset' is the local time zone offset from GMT in hours.
         """
-        if set is None:
+        if type(spec) == type(''):
             self.set(spec, offset=offset)
         else:
             self.year, self.month, self.day, self.hour, self.minute, \
-                self.second, x, x, x = set
+                self.second, x, x, x = spec
         self.offset = offset
 
     def applyInterval(self, interval):
@@ -90,7 +90,7 @@ class Date:
             self.hour + other.sign * other.hour,
             self.minute + other.sign * other.minute,
             self.second + other.sign * other.second, 0, 0, 0)
-        return Date(set = time.gmtime(calendar.timegm(t)))
+        return Date(time.gmtime(calendar.timegm(t)))
 
     # XXX deviates from spec to allow subtraction of dates as well
     def __sub__(self, other):
@@ -128,7 +128,7 @@ class Date:
              self.hour - other.sign * other.hour,
              self.minute - other.sign * other.minute,
              self.second - other.sign * other.second, 0, 0, 0)
-        return Date(set = time.gmtime(calendar.timegm(t)))
+        return Date(time.gmtime(calendar.timegm(t)))
 
     def __cmp__(self, other):
         """Compare this date to another date."""
@@ -193,6 +193,9 @@ class Date:
         self.year, self.month, self.day, self.hour, self.minute, \
             self.second, x, x, x = time.gmtime(calendar.timegm(t))
 
+    def get_tuple(self):
+        return (self.year, self.month, self.day, self.hour, self.minute,
+            self.second, 0, 0, 0)
 
 class Interval:
     '''
@@ -321,6 +324,10 @@ class Interval:
             return '1/2 an hour'
         return '%s/4 hour'%quart
 
+    def get_tuple(self):
+        return (self.year, self.month, self.day, self.hour, self.minute,
+            self.second)
+
 
 def test():
     intervals = ("  3w  1  d  2:00", " + 2d", "3w")
@@ -344,6 +351,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/22 12:09:32  richard
+# Final commit of Grande Splite
+#
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #

@@ -1,6 +1,8 @@
-#$Id: back_bsddb.py,v 1.1 2001-07-23 07:22:13 richard Exp $
+#$Id: back_bsddb.py,v 1.2 2001-07-23 07:56:05 richard Exp $
 
-import bsddb, os, cPickle
+import bsddb, os, marshal
+# handle the older cPickle'd data
+import cPickle
 from roundup import hyperdb, date
 
 #
@@ -68,11 +70,21 @@ class Database(hyperdb.Database):
         path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
         return bsddb.btopen(path, mode)
 
+    #
+    # Nodes
+    #
     def addnode(self, classname, nodeid, node):
         ''' add the specified node to its class's db
         '''
         db = self.getclassdb(classname, 'c')
-        db[nodeid] = cPickle.dumps(node, 1)
+        # convert the instance data to builtin types
+        properties = self.classes[classname].properties
+        for key in res.keys():
+            if properties[key].isDateType:
+                res[key] = res[key].get_tuple()
+            elif properties[key].isIntervalType:
+                res[key] = res[key].get_tuple()
+        db[nodeid] = marshal.dumps(node, 1)
         db.close()
     setnode = addnode
 
@@ -82,7 +94,21 @@ class Database(hyperdb.Database):
         db = cldb or self.getclassdb(classname)
         if not db.has_key(nodeid):
             raise IndexError, nodeid
-        res = cPickle.loads(db[nodeid])
+        try:
+            res = marshal.loads(db[nodeid])
+            # convert the marshalled data to instances
+            properties = self.classes[classname].properties
+            for key in res.keys():
+                if properties[key].isDateType:
+                    res[key] = date.Date(res[key])
+                elif properties[key].isIntervalType:
+                    res[key] = date.Interval(res[key])
+        except ValueError, message:
+            if str(message) != 'bad marshal data':
+                raise
+            # handle the older cPickle'd data
+            res = cPickle.loads(db[nodeid])
+
         if not cldb: db.close()
         return res
 
@@ -117,15 +143,16 @@ class Database(hyperdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        entry = (nodeid, date.Date(), self.journaltag, action, params)
+        entry = (nodeid, date.Date().journal_tuple(), self.journaltag, action,
+            params)
         db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
         if db.has_key(nodeid):
             s = db[nodeid]
-            l = cPickle.loads(db[nodeid])
+            l = marshal.loads(db[nodeid])
             l.append(entry)
         else:
             l = [entry]
-        db[nodeid] = cPickle.dumps(l)
+        db[nodeid] = marshal.dumps(l)
         db.close()
 
     def getjournal(self, classname, nodeid):
@@ -139,7 +166,12 @@ class Database(hyperdb.Database):
         except bsddb.error, error:
             if error.args[0] != 2: raise
             return []
-        res = cPickle.loads(db[nodeid])
+        journal = marshal.loads(db[nodeid])
+        res = []
+        for entry in journal:
+            (nodeid, date_stamp, self.journaltag, action, params) = entry
+            date_obj = date.Date(set=date_stamp)
+            res.append((nodeid, date_obj, self.journaltag, action, params))
         db.close()
         return res
 
@@ -169,6 +201,10 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.1  2001/07/23 07:22:13  richard
+#*sigh* some databases have _foo.so as their underlying implementation.
+#This time for sure, Rocky.
+#
 #Revision 1.1  2001/07/23 07:15:57  richard
 #Moved the backends into the backends package. Anydbm hasn't been tested at all.
 #
