@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 .. contents::
 
@@ -104,6 +104,46 @@ Searching Page
 --------------
 
 XXX: some information about how searching works
+
+Some fields in the search page (e.g. "Activity" or "Creation date") accept
+ranges of dates. You can specify range of dates in one of two formats:
+
+	1. Native english syntax: 
+		[[From] <value>][ To <value>]
+	   Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
+
+	2. "Geek" syntax:
+		[<value>][; <value>]
+
+Either first or second <value> can be omitted in both syntaxes.
+
+For example:
+
+if you enter string "from 9:00" to "Creation date" field, roundup
+will find  all issues, that were created today since 9 AM.
+
+Searching of "-2m; -1m" on activity field gives you issues, which were
+active between period of time since 2 months up-till month ago.
+
+Other possible examples (consider local time is Sat Mar  8 22:07:48 EET 2003):
+
+	>>> Range("from 2-12 to 4-2")
+	<Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
+	
+	>>> Range("18:00 TO +2m")
+	<Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
+	
+	>>> Range("12:00")
+	<Range from 2003-03-08.12:00:00 to None>
+	
+	>>> Range("tO +3d")
+	<Range from None to 2003-03-11.20:07:48>
+	
+	>>> Range("2002-11-10; 2002-12-12")
+	<Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
+
+	>>> Range("; 20:00 +1d")
+	<Range from None to 2003-03-09.20:00:00>
 
 
 Under the covers

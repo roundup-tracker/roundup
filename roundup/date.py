@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.45 2003-03-06 06:12:30 richard Exp $
+# $Id: date.py,v 1.46 2003-03-08 20:41:45 kedder Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -588,6 +588,79 @@ def fixTimeOverflow(time):
 
     return (sign, y, m, d, H, M, S)
 
+class Range:
+    """
+    Represents range between two values
+    Ranges can be created using one of theese two alternative syntaxes:
+        
+        1. Native english syntax: 
+            [[From] <value>][ To <value>]
+           Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
+
+        2. "Geek" syntax:
+            [<value>][; <value>]
+
+    Either first or second <value> can be omitted in both syntaxes.
+
+    Examples (consider local time is Sat Mar  8 22:07:48 EET 2003):
+        >>> Range("from 2-12 to 4-2")
+        <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
+        
+        >>> Range("18:00 TO +2m")
+        <Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
+        
+        >>> Range("12:00")
+        <Range from 2003-03-08.12:00:00 to None>
+        
+        >>> Range("tO +3d")
+        <Range from None to 2003-03-11.20:07:48>
+        
+        >>> Range("2002-11-10; 2002-12-12")
+        <Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
+        
+        >>> Range("; 20:00 +1d")
+        <Range from None to 2003-03-09.20:00:00>
+
+    """
+    def __init__(self, spec, type, **params):
+        """Initializes Range of type <type> from given <spec> string.
+        
+        Sets two properties - from_value and to_value. None assigned to any of
+        this properties means "infinitum" (-infinitum to from_value and
+        +infinitum to to_value)        
+        """
+        self.range_type = type
+        re_range = r'(?:^|(?:from)?(.+?))(?:to(.+?)$|$)'
+        re_geek_range = r'(?:^|(.+?))(?:;(.+?)$|$)'
+        # Check which syntax to use
+        if  spec.find(';') == -1:
+            # Native english
+            mch_range = re.search(re_range, spec.strip(), re.IGNORECASE)
+        else:
+            # Geek
+            mch_range = re.search(re_geek_range, spec.strip())
+        if mch_range:
+            self.from_value, self.to_value = mch_range.groups()
+            if self.from_value:
+                self.from_value = type(self.from_value.strip(), **params)
+            if self.to_value:
+                self.to_value = type(self.to_value.strip(), **params)
+        else:
+            raise ValueError, "Invalid range"
+
+    def __str__(self):
+        return "from %s to %s" % (self.from_value, self.to_value)
+
+    def __repr__(self):
+        return "<Range %s>" % self.__str__()
+ 
+def test_range():
+    rspecs = ("from 2-12 to 4-2", "18:00 TO +2m", "12:00", "tO +3d",
+        "2002-11-10; 2002-12-12", "; 20:00 +1d")
+    for rspec in rspecs:
+        print '>>> Range("%s")' % rspec
+        print `Range(rspec, Date)`
+        print
 
 def test():
     intervals = ("  3w  1  d  2:00", " + 2d", "3w")
@@ -607,6 +680,6 @@ def test():
         print `Date(date) + Interval(interval)`
 
 if __name__ == '__main__':
-    test()
+    test_range()
 
 # vim: set filetype=python ts=4 sw=4 et si

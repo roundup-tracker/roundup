@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.40 2003-03-06 07:33:29 richard Exp $
+# $Id: rdbms_common.py,v 1.41 2003-03-08 20:41:45 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -34,6 +34,7 @@ from roundup.backends import locking
 from blobfiles import FileStorage
 from roundup.indexer import Indexer
 from sessions import Sessions, OneTimeKeys
+from roundup.date import Range
 
 # number of rows to keep in memory
 ROW_CACHE_SIZE = 100
@@ -1731,6 +1732,8 @@ class Class(hyperdb.Class):
 
         cn = self.classname
 
+        timezone = self.db.getUserTimezone()
+        
         # figure the WHERE clause from the filterspec
         props = self.getprops()
         frum = ['_'+cn]
@@ -1796,8 +1799,18 @@ class Class(hyperdb.Class):
                     where.append('_%s in (%s)'%(k, s))
                     args = args + [date.Date(x).serialise() for x in v]
                 else:
-                    where.append('_%s=%s'%(k, a))
-                    args.append(date.Date(v).serialise())
+                    try:
+                        # Try to filter on range of dates
+                        date_rng = Range(v, date.Date, offset=timezone)
+                        if (date_rng.from_value):
+                            where.append('_%s > %s'%(k, a))                            
+                            args.append(date_rng.from_value.serialise())
+                        if (date_rng.to_value):
+                            where.append('_%s < %s'%(k, a))
+                            args.append(date_rng.to_value.serialise())
+                    except ValueError:
+                        # If range creation fails - ignore that search parameter
+                        pass                        
             elif isinstance(propclass, Interval):
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.109 2003-03-06 07:33:29 richard Exp $
+#$Id: back_anydbm.py,v 1.110 2003-03-08 20:41:45 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -31,6 +31,7 @@ from roundup.indexer import Indexer
 from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
+from roundup.date import Range
 
 #
 # Now the database
@@ -1582,7 +1583,10 @@ class Class(hyperdb.Class):
         LINK = 0
         MULTILINK = 1
         STRING = 2
+        DATE = 3
         OTHER = 6
+        
+        timezone = self.db.getUserTimezone()
         for k, v in filterspec.items():
             propclass = props[k]
             if isinstance(propclass, Link):
@@ -1623,14 +1627,22 @@ class Class(hyperdb.Class):
                 v = v.replace('?', '.')
                 v = v.replace('*', '.*?')
                 l.append((STRING, k, re.compile(v, re.I)))
+            elif isinstance(propclass, Date):
+                try:
+                    date_rng = Range(v, date.Date, offset=timezone)
+                    l.append((DATE, k, date_rng))
+                except ValueError:
+                    # If range creation fails - ignore that search parameter
+                    pass                            
             elif isinstance(propclass, Boolean):
                 if type(v) is type(''):
                     bv = v.lower() in ('yes', 'true', 'on', '1')
                 else:
                     bv = v
                 l.append((OTHER, k, bv))
-            elif isinstance(propclass, Date):
-                l.append((OTHER, k, date.Date(v)))
+            # kedder: dates are filtered by ranges
+            #elif isinstance(propclass, Date):
+            #    l.append((OTHER, k, date.Date(v)))
             elif isinstance(propclass, Interval):
                 l.append((OTHER, k, date.Interval(v)))
             elif isinstance(propclass, Number):
@@ -1680,6 +1692,14 @@ class Class(hyperdb.Class):
                         # RE search
                         if node[k] is None or not v.search(node[k]):
                             break
+                    elif t == DATE:
+                        if node[k] is None: break
+                        if v.to_value:
+                            if not (v.from_value < node[k] and v.to_value > node[k]):
+                                break
+                        else:
+                            if not (v.from_value < node[k]):
+                                break
                     elif t == OTHER:
                         # straight value comparison for the other types
                         if node[k] != v:
