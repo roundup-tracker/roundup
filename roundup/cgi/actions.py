@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.21 2004-03-30 06:43:08 richard Exp $
+#$Id: actions.py,v 1.22 2004-03-31 23:08:39 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -723,6 +723,7 @@ class RegisterAction(Action):
             elif isinstance(proptype, hyperdb.Password):
                 props[propname] = str(value)
         otks = self.db.getOTKManager()
+        otk = ''.join([random.choice(chars) for x in range(32)])
         while otks.exists(otk):
             otk = ''.join([random.choice(chars) for x in range(32)])
         otks.set(otk, **props)
@@ -744,8 +745,8 @@ reply's additional "Re:" is ok),
 
 """ % {'name': props['username'], 'tracker': tracker_name, 'url': self.base,
         'otk': otk, 'tracker_email': tracker_email}
-        if not self.client.standard_message([props['address']], subject, body,
-        tracker_email):
+        if not self.client.standard_message([props['address']], subject,
+                body, tracker_email):
             return
 
         # commit changes to the database

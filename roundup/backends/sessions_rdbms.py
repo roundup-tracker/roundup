@@ -1,4 +1,4 @@
-#$Id: sessions_rdbms.py,v 1.1 2004-03-18 01:58:45 richard Exp $
+#$Id: sessions_rdbms.py,v 1.2 2004-03-31 23:08:39 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -20,6 +20,12 @@ class BasicDatabase:
 
     def clear(self):
         self.cursor.execute('delete from %ss'%self.name)
+
+    def exists(self, infoid):
+        n = self.name
+        self.cursor.execute('select count(*) from %ss where %s_key=%s'%(n,
+            n, self.db.arg), (infoid,))
+        return self.cursor.fetchone()[0]
 
     _marker = []
     def get(self, infoid, value, default=_marker):
