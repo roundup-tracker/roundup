@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.2 2003-01-14 22:21:35 richard Exp $
+# $Id: test_cgi.py,v 1.3 2003-01-15 11:07:45 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
@@ -70,6 +70,8 @@ class FormTestCase(unittest.TestCase):
             makeForm({'title': ''})), {})
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({'title': ' '})), {})
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({'title': ['', '']}))
 
     def testSetString(self):
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
@@ -98,9 +100,13 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({'nosy': '1'})), {'nosy': ['1']})
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'nosy': 'admin'})), {'nosy': ['1']})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({'nosy': ['1','2']})), {'nosy': ['1','2']})
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({'nosy': '1,2'})), {'nosy': ['1','2']})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({'nosy': 'admin,2'})), {'nosy': ['1','2']})
 
     def testEmptyMultilinkSet(self):
         nodeid = self.db.issue.create(nosy=['1','2'])
@@ -110,6 +116,48 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
             makeForm({'nosy': ' '}), nodeid), {'nosy': []})
 
+    def testInvalidMultilinkValue(self):
+# XXX This is not the current behaviour - should we enforce this?
+#        self.assertRaises(IndexError, client.parsePropsFromForm, self.db,
+#            self.db.issue, makeForm({'nosy': '4'}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({'nosy': 'frozzle'}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({'nosy': '1,frozzle'}))
+# XXX need a test for the TypeError (where the ML class doesn't define a key
+
+    def testMultilinkAdd(self):
+        nodeid = self.db.issue.create(nosy=['1'])
+        # do nothing
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':add:nosy': ''}), nodeid), {})
+
+        # do something ;)
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':add:nosy': '2'}), nodeid), {'nosy': ['1','2']})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':add:nosy': '2,mary'}), nodeid), {'nosy': ['1','2','4']})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':add:nosy': ['2','3']}), nodeid), {'nosy': ['1','2','3']})
+
+    def testMultilinkRemove(self):
+        nodeid = self.db.issue.create(nosy=['1','2'])
+        # do nothing
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':remove:nosy': ''}), nodeid), {})
+
+        # do something ;)
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':remove:nosy': '1'}), nodeid), {'nosy': ['2']})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':remove:nosy': 'admin,2'}), nodeid), {'nosy': []})
+        self.assertEqual(client.parsePropsFromForm(self.db, self.db.issue,
+            makeForm({':remove:nosy': ['1','2']}), nodeid), {'nosy': []})
+
+        # remove one that doesn't exist?
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.issue, makeForm({':remove:nosy': '4'}), nodeid)
+
     #
     # Password
     #
@@ -118,6 +166,11 @@ class FormTestCase(unittest.TestCase):
             makeForm({'password': ''})), {})
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.user,
             makeForm({'password': ''})), {})
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.user, makeForm({'password': ['', '']}))
+        self.assertRaises(ValueError, client.parsePropsFromForm, self.db,
+            self.db.user, makeForm({'password': 'foo',
+            'password:confirm': ['', '']}))
 
     def testSetPassword(self):
         self.assertEqual(client.parsePropsFromForm(self.db, self.db.user,

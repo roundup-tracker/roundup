@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.68 2003-01-14 22:21:35 richard Exp $
+# $Id: client.py,v 1.69 2003-01-15 11:07:45 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1242,6 +1242,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 # it's a MiniFieldStorage, but may be a comma-separated list
                 # of values
                 value = [i.strip() for i in value.value.split(',')]
+
+            # filter out the empty bits
+            value = filter(None, value)
         else:
             # multiple values are not OK
             if isinstance(value, type([])):
@@ -1302,12 +1305,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         elif isinstance(proptype, hyperdb.Multilink):
             # perform link class key value lookup if necessary
             link = proptype.classname
+            link_cl = db.classes[link]
             l = []
             for entry in value:
                 if not entry: continue
                 if not num_re.match(entry):
                     try:
-                        entry = db.classes[link].lookup(entry)
+                        entry = link_cl.lookup(entry)
                     except KeyError:
                         raise ValueError, _('property "%(propname)s": '
                             '"%(value)s" not an entry of %(classname)s')%{
@@ -1370,6 +1374,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             # existing may be None, which won't equate to empty strings
             if not existing and not value:
                 continue
+
+            # existing will come out unsorted in some cases
+            if isinstance(proptype, hyperdb.Multilink):
+                existing.sort()
 
             # if changed, set it
             if value != existing:
