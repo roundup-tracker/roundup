@@ -17,8 +17,10 @@ Removed Database.curuserid attribute. Any code referencing this attribute should
 be replaced with a call to Database.getuid().
 
 
+
 Migrating from 0.5 to 0.6
 =========================
+
 
 0.6.0 Configuration
 -------------------
@@ -39,6 +41,15 @@ in a single roundup-server). This change means that you'll need to copy the
 __init__.py from roundup/templates/classic/detectors/__init__.py to your
 <tracker home>/detectors/__init__.py. Don't worry, the "classic" __init__ is a
 one-size-fits-all, so it'll work even if you've added/removed detectors.
+
+0.6.0 Templating changes
+------------------------
+
+The ``user.item`` template (in the tracker home "templates" directory)
+needs to have the following hidden variable added to its form (between the
+``<form...>`` and ``</form>`` tags::
+
+  <input type="hidden" name=":template" value="item">
 
 
 0.6.0 Form handling changes
@@ -80,6 +91,7 @@ user names, keywords, etc)  can be edited by administrator, the others
 is no tool for converting such data, the only solution is to close
 appropriate old issues and create new ones with the same content.
 
+
 0.6.0 User timezone support
 ---------------------------
 
@@ -111,6 +123,7 @@ Timezone should be a positive or negative integer - offset from GMT.
 After providing timezone, roundup will show all dates values, found in web
 and mail interfaces in local time. It will also accept any Date info in
 local time, convert and store it in GMT.
+
 
 0.6.0 Search page structure
 ---------------------------
