@@ -107,7 +107,9 @@ Roundup -- from installation and scripts.
 For The Really Impatient
 ========================
 
-Note: user of the Windows installer may not use the ``demo.py`` script.
+.. note::
+   The Windows installer doesn't include the ``demo.py`` script - you
+   will need to download the source to use it.
 
 If you just want to give Roundup a whirl Right Now, then simply run
 ``python demo.py``. This will set up a simple demo tracker on your
