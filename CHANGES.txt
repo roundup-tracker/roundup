@@ -71,7 +71,7 @@ Fixes:
    message.
 
 
-2001-07-?? - 0.2.1
+2001-07-28 - 0.2.1
 Fixes:
  . Fixed bug in init command - templatebuilder was assuming existence of
    "html" directory in instance home.
