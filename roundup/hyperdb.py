@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+# $Id: hyperdb.py,v 1.3 2001-07-27 05:17:14 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -593,6 +593,7 @@ class Class:
                 db = self.db, cl=self):
             a_id, an = a
             b_id, bn = b
+            # sort by group and then sort
             for list in group, sort:
                 for dir, prop in list:
                     # handle the properties that might be "faked"
@@ -661,7 +662,11 @@ class Class:
                         elif dir == '-':
                             r = cmp(len(bv), len(av))
                             if r != 0: return r
+                # end for dir, prop in list:
+            # end for list in sort, group:
+            # if all else fails, compare the ids
             return cmp(a[0], b[0])
+
         l.sort(sortfun)
         return [i[0] for i in l]
 
@@ -735,6 +740,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/22 12:09:32  richard
+# Final commit of Grande Splite
+#
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
