@@ -31,6 +31,7 @@ Fixed:
 - fixed DateHTMLProperty for invalid date entry (sf bug 986538)
 - fixed external password source example (sf bug 986601)
 - document the STATIC_FILES config var
+- implement the HTTP HEAD command (sf bug 992544)
 
 
 2004-06-24 0.7.5

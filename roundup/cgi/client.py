@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.183 2004-07-13 10:19:13 a1s Exp $
+# $Id: client.py,v 1.184 2004-07-20 02:07:58 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -675,7 +675,8 @@ class Client:
     def write(self, content):
         if not self.headers_done:
             self.header()
-        self.request.wfile.write(content)
+        if self.env['REQUEST_METHOD'] != 'HEAD':
+            self.request.wfile.write(content)
 
     def write_html(self, content):
         if not self.headers_done:
@@ -694,10 +695,17 @@ class Client:
                     'roundup_charset=%s; expires=%s; Path=%s;' % (
                         self.charset, expire, self.cookie_path)
             self.header()
+
+        if self.env['REQUEST_METHOD'] == 'HEAD':
+            # client doesn't care about content
+            return
+
         if self.charset != self.STORAGE_CHARSET:
             # recode output
             content = content.decode(self.STORAGE_CHARSET, 'replace')
             content = content.encode(self.charset, 'xmlcharrefreplace')
+
+        # and write
         self.request.wfile.write(content)
 
     def setHeader(self, header, value):
