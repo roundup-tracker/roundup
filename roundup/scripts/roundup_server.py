@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.76 2005-01-15 06:56:38 richard Exp $
+$Id: roundup_server.py,v 1.77 2005-02-19 10:21:32 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -133,13 +133,17 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def index(self):
         ''' Print up an index of the available trackers
         '''
-        self.send_response(200)
+        keys = self.TRACKER_HOMES.keys()
+        if len(keys) == 1:
+            self.send_response(302)
+            self.send_header('Location', urllib.quote(keys[0]) + '/index')
+        else:
+            self.send_response(200)
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
         w = self.wfile.write
         w(_('<html><head><title>Roundup trackers index</title></head>\n'
             '<body><h1>Roundup trackers index</h1><ol>\n'))
-        keys = self.TRACKER_HOMES.keys()
         keys.sort()
         for tracker in keys:
             w('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n'%{
