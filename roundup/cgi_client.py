@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.70 2001-11-30 00:06:29 richard Exp $
+# $Id: cgi_client.py,v 1.71 2001-11-30 20:28:10 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -332,8 +332,10 @@ class Client:
                     note = self.form['__note']
                     note = note.value
                 if changed or note:
+                    p = self._post_editnode(self.nodeid, changed)
+                    props['messages'] = p['messages']
+                    props['files'] = p['files']
                     cl.set(self.nodeid, **props)
-                    self._post_editnode(self.nodeid, changed)
                     # and some nice feedback for the user
                     message = _('%(changes)s edited ok')%{'changes':
                         ', '.join(changed)}
@@ -499,34 +501,6 @@ class Client:
                     ' the web.\n')%{'classname': cn}
                 m = [summary]
 
-            # figure the changes and add them to the message
-            first = 1
-            for name, prop in props.items():
-                if changes is not None and name not in changes: continue
-                if first:
-                    m.append('\n-------')
-                    first = 0
-                value = cl.get(nid, name, None)
-                if isinstance(prop, hyperdb.Link):
-                    link = self.db.classes[prop.classname]
-                    key = link.labelprop(default_to_id=1)
-                    if value is not None and key:
-                        value = link.get(value, key)
-                    else:
-                        value = '-'
-                elif isinstance(prop, hyperdb.Multilink):
-                    if value is None: value = []
-                    l = []
-                    link = self.db.classes[prop.classname]
-                    key = link.labelprop(default_to_id=1)
-                    for entry in value:
-                        if key:
-                            l.append(link.get(entry, key))
-                        else:
-                            l.append(entry)
-                    value = ', '.join(l)
-                m.append('%s: %s'%(name, value))
-
             # now create the message
             content = '\n'.join(m)
             message_id = self.db.msg.create(author=self.getuid(),
@@ -535,7 +509,7 @@ class Client:
             messages = cl.get(nid, 'messages')
             messages.append(message_id)
             props = {'messages': messages, 'files': files}
-            cl.set(nid, **props)
+            return props
 
     def newnode(self, message=None):
         ''' Add a new node to the database.
@@ -568,7 +542,8 @@ class Client:
             props = {}
             try:
                 nid = self._createnode()
-                self._post_editnode(nid)
+                props = self._post_editnode(nid)
+                cl.set(nid, **props)
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
             except:
@@ -1049,6 +1024,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.70  2001/11/30 00:06:29  richard
+# Converted roundup/cgi_client.py to use _()
+# Added the status file, I18N_PROGRESS.txt
+#
 # Revision 1.69  2001/11/29 23:19:51  richard
 # Removed the "This issue has been edited through the web" when a valid
 # change note is supplied.
