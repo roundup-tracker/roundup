@@ -2,34 +2,15 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2003-??-?? 0.6.0
+Fixed:
 - better hyperlinking in web message texts (sf bug 669777)
-- support setting of properties on message and file through web and
-  email interface (thanks John Rouillard)
-- allow additional control over the roundupdb email sending (explicit
-  cc addresses, different from address and different nosy list property)
-  (thanks John Rouillard)
-- applied patch for nicer history display (sf feature 638280)
-- cleaning old unused sessions only once per hour, not on every cgi 
-  request. It is greatly improves web interface performance, especially
-  on trackers under high load
-- added mysql backend (see doc/mysql.txt for details)
-- fixes to CGI form handling
-- switch metakit to use "compressed" multilink journal change representation
 - fixed bug in metakit unlink journalling
-- metakit now handles "unset" for most types (not Number and Boolean)
-- fixed bug in metakit search-by-ID
 - applied unicode patch. All data is stored in utf-8. Incoming messages
   converted from any encoding to utf-8, outgoing messages are encoded 
   according to rfc2822 (sf bug 568873)
 - fixed cookie path to use TRACKER_WEB (sf bug 667020) (thanks Nathaniel Smith
   for helping chase it down and Luke Opperman for confirming fix)
-- added ability to display localized dates in web interface. User input is
-  convered to GMT (see doc/upgrading.txt).
-- added a form to show a specific issue
 - fixed layout issues with forms in sidebar
-- more proper sorting/grouping on mulitilink properties. Sorting is performed
-  not only by number of links, but also by links itself. This makes usable
-  grouping e.g. by topic multilink
 - fixed templating filter function arguments (sf bug 678911)
 - fixed multiselect in searching (sf bug 676874)
 - fixed parsing of content-disposition filenames (sf bug 675116)
@@ -42,12 +23,36 @@ are given with the most recent entry first.
 - added warning filter for "FutureWarning: hex/oct constants > sys.maxint will
   return positive values..." (literal 0xffff0000 in portalocker.py)
 - fixed ZPT code generating SyntaxWarning for assignment to None
-- add "ago" to intervals in the past (sf bug 679232)
-- clarified licensing
-- another attempt to fix cookie misbehaviour - customise cookie name using
-  tracker name
 - fixed error in indexargs_url (thanks Patrick Ohly)
 - fixed getnode (sf bug 684531)
+- open static files using binary mode (sf bug 693208)
+- fixed deja-vu bug 692910
+- don't display "Editing" on read-only pages (sf bug 651967)
+- re-worked detectors initialisation - woohoo, no more cross-importing!
+- fixed export/import of retired nodes (sf bug 685273)
+
+Feature:
+- support setting of properties on message and file through web and
+  email interface (thanks John Rouillard)
+- allow additional control over the roundupdb email sending (explicit
+  cc addresses, different from address and different nosy list property)
+  (thanks John Rouillard)
+- applied patch for nicer history display (sf feature 638280)
+- cleaning old unused sessions only once per hour, not on every cgi 
+  request. It is greatly improves web interface performance, especially
+  on trackers under high load
+- added mysql backend (see doc/mysql.txt for details)
+- switch metakit to use "compressed" multilink journal change representation
+- metakit now handles "unset" for most types (not Number and Boolean)
+- fixed bug in metakit search-by-ID
+- added ability to display localized dates in web interface. User input is
+  convered to GMT (see doc/upgrading.txt).
+- added a form to show a specific issue
+- more proper sorting/grouping on mulitilink properties. Sorting is performed
+  not only by number of links, but also by links itself. This makes usable
+  grouping e.g. by topic multilink
+- add "ago" to intervals in the past (sf bug 679232)
+- clarified licensing
 - included UN*X manual pages from Bastian Kleineidam
 - implemented extension to form parsing to allow editing of multiple items
   and creation of multiple items (but only one per class)
@@ -56,7 +61,6 @@ are given with the most recent entry first.
   (e.g. images). They are accessible naturally: _file/images/img.gif
 - altered Class.create() and FileClass.create() methods to make "content"
   property available in auditors
-- re-worked detectors initialisation - woohoo, no more cross-importing!
 - can now configure CC to author only for messages creating issues (sf
   feature 625808)
 - registration is now a two-step process, with confirmation from the email
@@ -64,9 +68,6 @@ are given with the most recent entry first.
 - added support for last-modified and if-modified-since headers for static
   file serving
 - added Node.get() method
-- open static files using binary mode (sf bug 693208)
-- fixed deja-vu bug 692910
-- don't display "Editing" on read-only pages (sf bug 651967)
 
 
 2003-??-?? 0.5.6

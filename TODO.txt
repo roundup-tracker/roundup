@@ -7,17 +7,12 @@ done, it's moved to the CHANGES file.
 State   Component Description
 ======= ========= ============================================================
 pending example   meta/parent bug implementation (feature request #506815)
-pending example   replace the "extended" example with a "help desk" one, and
-                  rename "classic" to "bug tracker"
 pending example   script for retrieval of "mbox" archive of all messages
 pending hyperdb   range searching of values (dates in particular).
                   Filter specifies {property: (comparison function, value)}
                   comparison functions: lt, le, eq, ge, gt. eq and
                   [value, value, ...] implies "in"
 pending hyperdb   migrate "id" property to be Number type
-pending hyperdb   multilink sorting by length is dumb
-pending hyperdb   lastchangedby auto-property giving last user to change an
-                  item
 pending tracker   split instance.open() into open() and login()
 pending mailgw    allow commands (feature request #556996)
                   like "help", "dump issue123" (would send all info about

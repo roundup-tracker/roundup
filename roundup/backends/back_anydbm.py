@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.105 2003-02-25 10:19:31 richard Exp $
+#$Id: back_anydbm.py,v 1.106 2003-02-26 23:42:50 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -922,6 +922,10 @@ class Class(hyperdb.Class):
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
             l.append(repr(value))
+
+        # append retired flag
+        l.append(self.is_retired(nodeid))
+
         return l
 
     def import_list(self, propnames, proplist):
@@ -962,6 +966,10 @@ class Class(hyperdb.Class):
                 pwd.unpack(value)
                 value = pwd
             d[propname] = value
+
+        # check retired flag
+        if int(proplist[-1]):
+            d[self.db.RETIRED_FLAG] = 1
 
         # add the node and journal
         self.db.addnode(self.classname, newid, d)
@@ -1325,10 +1333,10 @@ class Class(hyperdb.Class):
 
         self.fireReactors('retire', nodeid, None)
 
-    def is_retired(self, nodeid):
+    def is_retired(self, nodeid, cldb=None):
         '''Return true if the node is retired.
         '''
-        node = self.db.getnode(cn, nodeid, cldb)
+        node = self.db.getnode(self.classname, nodeid, cldb)
         if node.has_key(self.db.RETIRED_FLAG):
             return 1
         return 0

@@ -38,6 +38,8 @@ import locking
 _dbs = {}
 
 def Database(config, journaltag=None):
+    ''' Only have a single instance of the Database class for each instance
+    '''
     db = _dbs.get(config.DATABASE, None)
     if db is None or db._db is None:
         db = _Database(config, journaltag)
@@ -81,8 +83,10 @@ class _Database(hyperdb.Database, roundupdb.Database):
             if self.journaltag is None:
                 return None
 
+            # try to set the curuserid from the journaltag
             try:
-                self.curuserid = x = int(self.classes['user'].lookup(self.journaltag))
+                x = int(self.classes['user'].lookup(self.journaltag))
+                self.curuserid = x
             except KeyError:
                 if self.journaltag == 'admin':
                     self.curuserid = x = 1
@@ -91,6 +95,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
             return x
         elif classname == 'transactions':
             return self.dirty
+        # fall back on the classes
         return self.getclass(classname)
     def getclass(self, classname):
         try:
@@ -100,6 +105,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
     def getclasses(self):
         return self.classes.keys()
     # --- end of ping's spec 
+
     # --- exposed methods
     def commit(self):
         if self.dirty:
@@ -182,9 +188,10 @@ class _Database(hyperdb.Database, roundupdb.Database):
             #usernm = userclass.get(str(row.user), 'username')
             dt = date.Date(time.gmtime(row.date))
             #rslt.append((nodeid, dt, usernm, _actionnames[row.action], params))
-            rslt.append((nodeid, dt, str(row.user), _actionnames[row.action], params))
+            rslt.append((nodeid, dt, str(row.user), _actionnames[row.action],
+                params))
         return rslt
-            
+
     def destroyjournal(self, tablenm, nodeid):
         nodeid = int(nodeid)
         tblid = self.tables.find(name=tablenm)
@@ -215,13 +222,22 @@ class _Database(hyperdb.Database, roundupdb.Database):
 
     # --- internal
     def __open(self):
+        ''' Open the metakit database
+        '''
+        # make the database dir if it doesn't exist
         if not os.path.exists(self.config.DATABASE):
             os.makedirs(self.config.DATABASE)
+
+        # figure the file names
         self.dbnm = db = os.path.join(self.config.DATABASE, 'tracker.mk4')
         lockfilenm = db[:-3]+'lck'
+
+        # get the database lock
         self.lockfile = locking.acquire_lock(lockfilenm)
         self.lockfile.write(str(os.getpid()))
         self.lockfile.flush()
+
+        # see if the schema has changed since last db access
         self.fastopen = 0
         if os.path.exists(db):
             dbtm = os.path.getmtime(db)
@@ -236,18 +252,28 @@ class _Database(hyperdb.Database, roundupdb.Database):
                 else:
                      # can't find schemamod - must be frozen
                     self.fastopen = 1
+
+        # open the db
         db = metakit.storage(db, 1)
         hist = db.view('history')
         tables = db.view('tables')
         if not self.fastopen:
+            # create the database if it's brand new
             if not hist.structure():
                 hist = db.getas('history[tableid:I,nodeid:I,date:I,user:I,action:I,params:B]')
             if not tables.structure():
                 tables = db.getas('tables[name:S]')
             db.commit()
+
+        # we now have an open, initialised database
         self.tables = tables
         self.hist = hist
         return db
+
+    def setid(self, classname, maxid):
+        ''' No-op in metakit
+        '''
+        pass
         
 _STRINGTYPE = type('')
 _LISTTYPE = type([])
@@ -632,10 +658,12 @@ class Class:
         ndx = view.find(id=int(nodeid))
         if ndx < 0:
             raise KeyError, "nodeid %s not found" % nodeid
+
         row = view[ndx]
         oldvalues = self.uncommitted.setdefault(row.id, {})
         oldval = oldvalues['_isdel'] = row._isdel
         row._isdel = 1
+
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, _RETIRE, {})
         if self.keyname:
@@ -645,6 +673,16 @@ class Class:
                 iv.delete(ndx)
         self.db.dirty = 1
         self.fireReactors('retire', nodeid, None)
+
+    def is_retired(self, nodeid):
+        view = self.getview(1)
+        # node must exist & not be retired
+        id = int(nodeid)
+        ndx = view.find(id=id)
+        if ndx < 0:
+            raise IndexError, "%s has no node %s" % (self.classname, nodeid)
+        row = view[ndx]
+        return row._isdel
 
     def history(self, nodeid):
         if not self.do_journal:
@@ -796,6 +834,7 @@ class Class:
                 raise ValueError, "%s is already a property of %s"%(key,
                     self.classname)
         self.ruprops.update(properties)
+        # Class structure has changed
         self.db.fastopen = 0
         view = self.__getview()
         self.db.commit()
@@ -1037,6 +1076,10 @@ class Class:
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
             l.append(repr(value))
+
+        # append retired flag
+        l.append(self.is_retired(nodeid))
+
         return l
         
     def import_list(self, propnames, proplist):
@@ -1064,11 +1107,24 @@ class Class:
                 value = int(calendar.timegm(value))
             elif isinstance(prop, hyperdb.Interval):
                 value = str(date.Interval(value))
+            elif isinstance(prop, hyperdb.Number):
+                value = int(value)
+            elif isinstance(prop, hyperdb.Boolean):
+                value = int(value)
+            elif isinstance(prop, hyperdb.Link):
+                value = int(value)
+            elif isinstance(prop, hyperdb.Multilink):
+                value = map(int, value)
             d[propname] = value
-        view.append(d)
-        creator = d.get('creator', None)
-        creation = d.get('creation', None)
-        self.db.addjournal(self.classname, newid, 'create', {}, creator,
+        # is the item retired?
+        if int(proplist[-1]):
+            d['_isdel'] = 1
+        # XXX this is BROKEN for reasons I don't understand!
+        ndx = view.append(d)
+
+        creator = d.get('creator', 0)
+        creation = d.get('creation', 0)
+        self.db.addjournal(self.classname, newid, _CREATE, {}, creator,
             creation)
         return newid
 
@@ -1101,11 +1157,20 @@ class Class:
         self.rbactions.append(action)
     # --- internal
     def __getview(self):
+        ''' Find the interface for a specific Class in the hyperdb.
+
+            This method checks to see whether the schema has changed and
+            re-works the underlying metakit structure if it has.
+        '''
         db = self.db._db
         view = db.view(self.classname)
         mkprops = view.structure()
+
+        # if we have structure in the database, and the structure hasn't
+        # changed
         if mkprops and self.db.fastopen:
             return view.ordered(1)
+
         # is the definition the same?
         for nm, rutyp in self.ruprops.items():
             for mkprop in mkprops:
@@ -1136,7 +1201,7 @@ class Class:
         return self.db._db.view(self.classname).ordered(1)
     def getindexview(self, RW=0):
         return self.db._db.view("_%s" % self.classname).ordered(1)
-    
+
 def _fetchML(sv):
     l = []
     for row in sv:
@@ -1155,7 +1220,7 @@ def _fetchPW(s):
     return p
 
 def _fetchLink(n):
-    ''' Return None if the string is empty ?otherwise ensure it's a string?
+    ''' Return None if the link is 0 - otherwise strify it.
     '''
     return n and str(n) or None
 

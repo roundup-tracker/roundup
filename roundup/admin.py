@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.38 2003-02-25 10:19:31 richard Exp $
+# $Id: admin.py,v 1.39 2003-02-26 23:42:49 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -922,8 +922,11 @@ Command help:
             propnames.sort()
             print >> f, p.join(propnames)
 
-            # all nodes for this class
-            for nodeid in cl.list():
+            # all nodes for this class (not using list() 'cos it doesn't
+            # include retired nodes)
+
+            for nodeid in self.db.getnodeids(classname):
+                # get the regular props
                 print >>f, p.join(cl.export_list(propnames, nodeid))
         return 0
 

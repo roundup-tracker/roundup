@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.35 2003-02-25 10:19:32 richard Exp $
+# $Id: rdbms_common.py,v 1.36 2003-02-26 23:42:54 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1143,6 +1143,7 @@ class Class(hyperdb.Class):
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
             l.append(repr(value))
+        l.append(self.is_retired(nodeid))
         return l
 
     def import_list(self, propnames, proplist):
@@ -1183,6 +1184,16 @@ class Class(hyperdb.Class):
                 pwd.unpack(value)
                 value = pwd
             d[propname] = value
+
+        # retire?
+        if int(proplist[-1]):
+            # use the arg for __retired__ to cope with any odd database type
+            # conversion (hello, sqlite)
+            sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
+                self.db.arg, self.db.arg)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'retire', (self, sql, newid)
+            self.db.cursor.execute(sql, (1, newid))
 
         # add the node and journal
         self.db.addnode(self.classname, newid, d)
