@@ -68,6 +68,7 @@ Fixed:
 - always honor indexme property on Strings (sf patch 1063711)
 - make hyperdb value parsing errors readable in mailgw errors
 - make anydbm journal export handle removed properties
+- allow use of XML templates again
 
 
 2004-10-15 0.7.8

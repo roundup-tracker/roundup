@@ -83,11 +83,12 @@ def find_template(dir, name, extension):
     if os.path.exists(src):
         return (src, filename)
 
-    # try with a .html extension (new-style)
-    filename = filename + '.html'
-    src = os.path.join(dir, filename)
-    if os.path.exists(src):
-        return (src, filename)
+    # try with a .html or .xml extension (new-style)
+    for extension in '.html', '.xml':
+        filename = filename + extension
+        src = os.path.join(dir, filename)
+        if os.path.exists(src):
+            return (src, filename)
 
     # no extension == no generic template is possible
     if not extension:
@@ -119,14 +120,19 @@ class Templates:
         ''' Go through a directory and precompile all the templates therein
         '''
         for filename in os.listdir(self.dir):
-            # skip files without ".html" extension - .css, .js etc.
-            if not filename.endswith(".html"):
-                continue
             # skip subdirs
             if os.path.isdir(filename):
                 continue
+            # skip files without ".html" or ".xml" extension - .css, .js etc.
+            for extension in '.html', '.xml':
+                if filename.endswith(extension):
+                    break
+            else:
+                continue
+
             # remove "html" extension
-            filename = filename[:-len(".html")]
+            filename = filename[:-len(extension)]
+
             # load the template
             if '.' in filename:
                 name, extension = filename.split('.', 1)
