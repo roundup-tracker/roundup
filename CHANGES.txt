@@ -8,7 +8,7 @@ Removed:
   distribution.
 
 Feature:
-- new instant-gratification Demo Mode in setup
+- new instant-gratification Demo Mode
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
 - allow additional control over the roundupdb email sending (explicit
