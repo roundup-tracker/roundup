@@ -26,7 +26,7 @@
  <th class="header">Group on</th>
 </tr>
 
-<tr tal:define="name string::search_text">
+<tr tal:define="name string:@search_text">
   <th>All text*:</th>
   <td metal:use-macro="search_input"></td>
   <td>&nbsp;</td>
@@ -136,40 +136,40 @@
 
 <tr>
 <th>Pagesize:</th>
-<td><input name=":pagesize" size="3" value="50"
-           tal:attributes="value request/form/:pagesize/value | default"></td>
+<td><input name="@pagesize" size="3" value="50"
+           tal:attributes="value request/form/@pagesize/value | default"></td>
 </tr>
 
 <tr>
 <th>Start With:</th>
-<td><input name=":startwith" size="3" value="0"
-           tal:attributes="value request/form/:startwith/value | default"></td>
+<td><input name="@startwith" size="3" value="0"
+           tal:attributes="value request/form/@startwith/value | default"></td>
 </tr>
 
 <tr>
 <th>Sort Descending:</th>
-<td><input type="checkbox" name=":sortdir"
+<td><input type="checkbox" name="@sortdir"
            tal:attributes="checked python:request.sort[0] == '-' or request.sort[0] is None">
 </td>
 </tr>
 
 <tr>
 <th>Group Descending:</th>
-<td><input type="checkbox" name=":groupdir"
+<td><input type="checkbox" name="@groupdir"
            tal:attributes="checked python:request.group[0] == '-'">
 </td>
 </tr>
 
 <tr>
 <th>Query name**:</th>
-<td><input name=":queryname"
-           tal:attributes="value request/form/:queryname/value | default"></td>
+<td><input name="@queryname"
+           tal:attributes="value request/form/@queryname/value | default"></td>
 </tr>
 
 <tr>
   <td>
    &nbsp;
-   <input type="hidden" name=":action" value="search">
+   <input type="hidden" name="@action" value="search">
   </td>
   <td><input type="submit" value="Search"></td>
 </tr>

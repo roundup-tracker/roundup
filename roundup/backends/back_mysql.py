@@ -53,7 +53,7 @@ class Database(Database):
     mysql_backend = 'InnoDB'
     #mysql_backend = 'BDB'    # much slower, only use if you have no choice
     
-    def open_connection(self):
+    def sql_open_connection(self):
         db = getattr(self.config, 'MYSQL_DATABASE')
         try:
             self.conn = MySQLdb.connect(*db)
@@ -80,9 +80,6 @@ class Database(Database):
             self.sql("CREATE TABLE ids (name varchar(255), num INT) TYPE=%s"%
                 self.mysql_backend)
             self.sql("CREATE INDEX ids_name_idx on ids(name)")
-
-    def close(self):
-        self.conn.close()
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)

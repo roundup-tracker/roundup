@@ -7,7 +7,8 @@ Feature:
 - support setgid and running on port < 1024 (sf patch 777528)
 - using Zope3's test runner now, allowing GC checks, nicer controls and
   coverage analysis
-- added postgresql backend (originally from patch #761740, many changes since)
+- added postgresql backend (originally from sf patch 761740, many changes
+  since)
 - all RDBMS backends now have indexes on several columns
 - Change nosymessage and send_message to accept msgid=None (RFE #707235).
 
@@ -17,18 +18,19 @@ Fixed:
   couple of cases
 - HTML 4.01 validation on the 'classic' backend
 - Messages to the mailgw can be about classes other than issues now.
-- Signature matching is more precise (bug #827775).
-- Anonymous user can no longer edit or view itself (bug #828901).
-- Corrected typo in installation.html (bug #822967).
+- Signature matching is more precise (sf bug 827775).
+- Anonymous user can no longer edit or view itself (sf bug 828901).
+- Corrected typo in installation.html (sf bug 822967).
 - Clarified listTemplates docstring.
 - Print a nicer error message when the address is already in use 
-  (bug #798659).
+  (sf bug 798659).
 - Remove empty lines before sending strings off to the csv parser 
-  (bug #821364).
-- Centralised conversion of user-input data to hyperdb values (bug #802405,
-  bug #817217, rfe #816994)
+  (sf bug 821364).
+- Centralised conversion of user-input data to hyperdb values (sf bug 802405,
+  sf bug 817217, sf rfe 816994)
 - recalculate SHA on template files when installed tracker used as
   template (sf bug 827510)
+- fixed ZRoundup (sf bug 624380)
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.

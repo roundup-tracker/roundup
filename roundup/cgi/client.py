@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.144 2003-11-11 00:35:14 richard Exp $
+# $Id: client.py,v 1.145 2003-11-12 01:00:59 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -422,7 +422,7 @@ class Client:
             else:
                 self.template = ''
             return
-        elif path[0] == '_file':
+        elif path[0] in ('_file', '@@file'):
             raise SendStaticFile, os.path.join(*path[1:])
         else:
             self.classname = path[0]

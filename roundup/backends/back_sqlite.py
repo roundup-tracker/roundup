@@ -1,17 +1,19 @@
-# $Id: back_sqlite.py,v 1.11 2003-11-11 11:19:18 richard Exp $
+# $Id: back_sqlite.py,v 1.12 2003-11-12 01:00:58 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
-import base64, marshal
-from roundup.backends.rdbms_common import *
+import os, base64, marshal
+
+from roundup import hyperdb
+from roundup.backends import rdbms_common
 from roundup.backends import locking
 import sqlite
 
-class Database(Database):
+class Database(rdbms_common.Database):
     # char to use for positional arguments
     arg = '%s'
 
-    def open_connection(self):
+    def sql_open_connection(self):
         # ensure files are group readable and writable
         os.umask(0002)
         db = os.path.join(self.config.DATABASE, 'db')
@@ -34,10 +36,8 @@ class Database(Database):
             self.cursor.execute('create table ids (name varchar, num integer)')
             self.cursor.execute('create index ids_name_idx on ids(name)')
 
-    def close(self):
-        ''' Close off the connection.
-
-            Squash any error caused by us already having closed the
+    def sql_close(self):
+        ''' Squash any error caused by us already having closed the
             connection.
         '''
         try:
@@ -46,54 +46,18 @@ class Database(Database):
             if str(value) != 'close failed - Connection is closed.':
                 raise
 
-        # release the lock too
-        if self.lockfile is not None:
-            locking.release_lock(self.lockfile)
-        if self.lockfile is not None:
-            self.lockfile.close()
-            self.lockfile = None
-
-    def rollback(self):
-        ''' Reverse all actions from the current transaction.
-
-            Undo all the changes made since the database was opened or the
-            last commit() or rollback() was performed.
-
-            Squash any error caused by us having closed the connection (and
+    def sql_rollback(self):
+        ''' Squash any error caused by us having closed the connection (and
             therefore not having anything to roll back)
         '''
-        if __debug__:
-            print >>hyperdb.DEBUG, 'rollback', (self,)
-
-        # roll back
         try:
             self.conn.rollback()
         except sqlite.ProgrammingError, value:
             if str(value) != 'rollback failed - Connection is closed.':
                 raise
 
-        # roll back "other" transaction stuff
-        for method, args in self.transactions:
-            # delete temporary files
-            if method == self.doStoreFile:
-                self.rollbackStoreFile(*args)
-        self.transactions = []
-
-        # clear the cache
-        self.clearCache()
-
     def __repr__(self):
         return '<roundlite 0x%x>'%id(self)
-
-    def sql_fetchone(self):
-        ''' Fetch a single row. If there's nothing to fetch, return None.
-        '''
-        return self.cursor.fetchone()
-
-    def sql_fetchall(self):
-        ''' Fetch a single row. If there's nothing to fetch, return [].
-        '''
-        return self.cursor.fetchall()
 
     def sql_commit(self):
         ''' Actually commit to the database.
@@ -113,86 +77,22 @@ class Database(Database):
                 return 1
         return 0
 
-    def save_dbschema(self, schema):
-        ''' Save the schema definition that the database currently implements
+class sqliteClass:
+    def filter(self, search_matches, filterspec, sort=(None,None),
+            group=(None,None)):
+        ''' If there's NO matches to a fetch, sqlite returns NULL
+            instead of nothing
         '''
-        s = repr(self.database_schema)
-        self.sql('insert into schema values (%s)', (s,))
+        return filter(None, rdbms_common.Class.filter(self, search_matches,
+            filterspec, sort=sort, group=group))
 
-    def load_dbschema(self):
-        ''' Load the schema definition that the database currently implements
-        '''
-        self.cursor.execute('select schema from schema')
-        return eval(self.cursor.fetchone()[0])
+class Class(sqliteClass, rdbms_common.Class):
+    pass
 
-    def save_journal(self, classname, cols, nodeid, journaldate,
-            journaltag, action, params):
-        ''' Save the journal entry to the database
-        '''
-        # make the params db-friendly
-        params = repr(params)
-        entry = (nodeid, journaldate, journaltag, action, params)
+class IssueClass(sqliteClass, rdbms_common.IssueClass):
+    pass
 
-        # do the insert
-        a = self.arg
-        sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(classname,
-            cols, a, a, a, a, a)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'addjournal', (self, sql, entry)
-        self.cursor.execute(sql, entry)
+class FileClass(sqliteClass, rdbms_common.FileClass):
+    pass
 
-    def load_journal(self, classname, cols, nodeid):
-        ''' Load the journal from the database
-        '''
-        # now get the journal entries
-        sql = 'select %s from %s__journal where nodeid=%s'%(cols, classname,
-            self.arg)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'getjournal', (self, sql, nodeid)
-        self.cursor.execute(sql, (nodeid,))
-        res = []
-        for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
-            params = eval(params)
-            res.append((nodeid, date.Date(date_stamp), user, action, params))
-        return res
-
-    def unserialise(self, classname, node):
-        ''' Decode the marshalled node data
-
-            SQLite stringifies _everything_... so we need to re-numberificate
-            Booleans and Numbers.
-        '''
-        if __debug__:
-            print >>hyperdb.DEBUG, 'unserialise', classname, node
-        properties = self.getclass(classname).getprops()
-        d = {}
-        for k, v in node.items():
-            # if the property doesn't exist, or is the "retired" flag then
-            # it won't be in the properties dict
-            if not properties.has_key(k):
-                d[k] = v
-                continue
-
-            # get the property spec
-            prop = properties[k]
-
-            if isinstance(prop, Date) and v is not None:
-                d[k] = date.Date(v)
-            elif isinstance(prop, Interval) and v is not None:
-                d[k] = date.Interval(v)
-            elif isinstance(prop, Password) and v is not None:
-                p = password.Password()
-                p.unpack(v)
-                d[k] = p
-            elif isinstance(prop, Boolean) and v is not None:
-                d[k] = int(v)
-            elif isinstance(prop, Number) and v is not None:
-                # try int first, then assume it's a float
-                try:
-                    d[k] = int(v)
-                except ValueError:
-                    d[k] = float(v)
-            else:
-                d[k] = v
-        return d
 

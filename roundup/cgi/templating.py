@@ -469,14 +469,14 @@ class HTMLClass(HTMLPermissions):
         if property:
             property = '&amp;property=%s'%property
         return '<a class="classhelp" href="javascript:help_window(\'%s?'\
-            ':startwith=0&amp;:template=help&amp;properties=%s%s\', \'%s\', \
+            '@startwith=0&amp;@template=help&amp;properties=%s%s\', \'%s\', \
             \'%s\')">%s</a>'%(self.classname, properties, property, width,
             height, label)
 
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
         '''
-        return '  <input type="hidden" name=":action" value="new">\n'\
+        return '  <input type="hidden" name="@action" value="new">\n'\
         '  <input type="submit" name="submit" value="%s">'%label
 
     def history(self):
@@ -554,7 +554,7 @@ class HTMLItem(HTMLPermissions):
     def submit(self, label="Submit Changes"):
         ''' Generate a submit button (and action hidden element)
         '''
-        return '  <input type="hidden" name=":action" value="edit">\n'\
+        return '  <input type="hidden" name="@action" value="edit">\n'\
         '  <input type="submit" name="submit" value="%s">'%label
 
     def journal(self, direction='descending'):
@@ -773,7 +773,7 @@ class HTMLItem(HTMLPermissions):
         req.classname = self._klass.get(self._nodeid, 'klass')
         name = self._klass.get(self._nodeid, 'name')
         req.updateFromURL(self._klass.get(self._nodeid, 'url') +
-            '&:queryname=%s'%urllib.quote(name))
+            '&@queryname=%s'%urllib.quote(name))
 
         # new template, using the specified classname and request
         pt = Templates(self._db.config.TEMPLATES).get(req.classname, 'search')
@@ -961,9 +961,9 @@ class PasswordHTMLProperty(HTMLProperty):
     def confirm(self, size = 30):
         ''' Render a second form edit field for the property, used for 
             confirmation that the user typed the password correctly. Generates
-            a field with name ":confirm:name".
+            a field with name "@confirm@name".
         '''
-        return '<input type="password" name=":confirm:%s" size="%s">'%(
+        return '<input type="password" name="@confirm@%s" size="%s">'%(
             self._formname, size)
 
 class NumberHTMLProperty(HTMLProperty):

@@ -6,7 +6,7 @@
 <title metal:define-slot="head_title">title goes here</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
 
-<link rel="stylesheet" type="text/css" href="_file/style.css">
+<link rel="stylesheet" type="text/css" href="@@file/style.css">
 
 <script tal:replace="structure request/base_javascript">
 </script>
@@ -27,30 +27,30 @@
    <form method="POST" action="">
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
-    <input type="submit" name=":action" value="login">
+    <input type="submit" name="@action" value="login">
     <span tal:replace="structure request/indexargs_form" />
    </form>
    <a tal:condition="python:request.user.hasPermission('Web Registration')"
-      href="user?:template=register">Register</a>
+      href="user?@template=register">Register</a>
   </p>
 
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
    <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
    <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',
-       {':action':'logout'})">Logout</a>
+       {'@action':'logout'})">Logout</a>
   </p>
 
   <p class="classblock"
        tal:condition="python:request.user.username != 'anonymous'">
    <b>Administration</b><br>
    <a tal:condition="python:request.user.hasPermission('Edit', None)"
-      href="home?:template=classlist">Class List</a><br>
+      href="home?@template=classlist">Class List</a><br>
    <a tal:condition="python:request.user.hasPermission('View', 'user')
                             or request.user.hasPermission('Edit', 'user')"
       href="user" >User List</a><br>
    <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
-      href="user?:template=item">Add User</a>
+      href="user?@template=item">Add User</a>
   </p>
  </td>
  <td>

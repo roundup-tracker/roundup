@@ -30,7 +30,7 @@ You are not allowed to view this page.
  <td tal:content="python:user.address.email() or default">&nbsp;</td>
  <td tal:content="python:user.phone.plain() or default">&nbsp;</td>
  <td tal:condition="context/is_edit_ok">
-  <a tal:attributes="href string:user${user/id}?:action=retire&:template=index">
+  <a tal:attributes="href string:user${user/id}?@action=retire&@template=index">
    retire</a>
  </td>
 </tr>

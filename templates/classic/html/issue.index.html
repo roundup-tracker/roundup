@@ -64,7 +64,7 @@ You are not allowed to view this page.
      <th>
       <a tal:define="prev batch/previous" tal:condition="prev"
          tal:attributes="href python:request.indexargs_href(request.classname,
-         {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
+         {'@startwith':prev.first, '@pagesize':prev.size})">&lt;&lt; previous</a>
       &nbsp;
      </th>
      <th tal:content="python: '%d...%d out of %d'%(batch.start,
@@ -72,7 +72,7 @@ You are not allowed to view this page.
      <th>
       <a tal:define="next batch/next" tal:condition="next"
          tal:attributes="href python:request.indexargs_href(request.classname,
-         {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
+         {'@startwith':next.first, '@pagesize':next.size})">next &gt;&gt;</a>
       &nbsp;
      </th>
     </tr>
@@ -87,7 +87,7 @@ You are not allowed to view this page.
   <tr tal:condition="batch">
    <th>Sort on:</th>
    <td>
-    <select name=":sort">
+    <select name="@sort">
      <option value="">- nothing -</option>
      <option tal:repeat="col context/properties"
              tal:attributes="value col/_name;
@@ -96,14 +96,14 @@ You are not allowed to view this page.
     </select>
    </td>
    <th>Descending:</th>
-   <td><input type="checkbox" name=":sortdir"
+   <td><input type="checkbox" name="@sortdir"
               tal:attributes="checked python:request.sort[0] == '-'"> 
    </td>
   </tr>
   <tr>
    <th>Group on:</th>
    <td>
-    <select name=":group">
+    <select name="@group">
      <option value="">- nothing -</option>
      <option tal:repeat="col context/properties"
              tal:attributes="value col/_name;
@@ -112,7 +112,7 @@ You are not allowed to view this page.
     </select>
    </td>
    <th>Descending:</th>
-   <td><input type="checkbox" name=":groupdir"
+   <td><input type="checkbox" name="@groupdir"
               tal:attributes="checked python:request.group[0] == '-'"> 
    </td>
   </tr>
@@ -128,4 +128,3 @@ You are not allowed to view this page.
 
 </td>
 </tal:block>
-

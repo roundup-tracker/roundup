@@ -35,7 +35,7 @@ You are not allowed to view this page.
       tal:attributes="action context/designator">
 <textarea rows="15" cols="60" name="rows" tal:content="context/csv"></textarea>
 <br>
-<input type="hidden" name=":action" value="editCSV">
+<input type="hidden" name="@action" value="editCSV">
 <input type="submit" value="Edit Items">
 </form>
 </tal:block>

@@ -21,6 +21,29 @@ be replaced with a call to Database.getuid().
 might still need to create an index "create index ids_name_idx on 
 ids(name)".
 
+0.7.0 ZRoundup changes
+----------------------
+
+The templates in your tracker's html directory will need updating if you
+wish to use ZRoundup. If you've not modified those files (or some of them),
+you may just copy the new versions from the Roundup source in the
+templates/classic/html directory.
+
+If you have modified the html files, then you'll need to manually edit them
+to change all occurances of special form variables from using the colon ":"
+special character to the at "@" special character. That is, variables such
+as::
+
+  :action :required :template :remove:messages ...
+
+should become:
+
+  @action @required @template @remove@messages ...
+
+Note that ``tal:`` statements are unaffected. So are TAL expression type
+prefixes such as ``python:`` and ``string:``. Please ask on the
+roundup-users mailing list for help if you're unsure.
+
 
 Migrating from 0.6.x to 0.6.3
 =============================

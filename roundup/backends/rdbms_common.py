@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.67 2003-11-11 11:19:18 richard Exp $
+# $Id: rdbms_common.py,v 1.68 2003-11-12 01:00:58 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -69,13 +69,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.lockfile = None
 
         # open a connection to the database, creating the "conn" attribute
-        self.open_connection()
+        self.sql_open_connection()
 
     def clearCache(self):
         self.cache = {}
         self.cache_lru = []
 
-    def open_connection(self):
+    def sql_open_connection(self):
         ''' Open a connection to the database, creating it if necessary
         '''
         raise NotImplemented
@@ -93,7 +93,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def sql_fetchone(self):
         ''' Fetch a single row. If there's nothing to fetch, return None.
         '''
-        raise NotImplemented
+        return self.cursor.fetchone()
+
+    def sql_fetchall(self):
+        ''' Fetch all rows. If there's nothing to fetch, return [].
+        '''
+        return self.cursor.fetchall()
 
     def sql_stringquote(self, value):
         ''' Quote the string so it's safe to put in the 'sql quotes'
@@ -103,12 +108,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def save_dbschema(self, schema):
         ''' Save the schema definition that the database currently implements
         '''
-        raise NotImplemented
+        s = repr(self.database_schema)
+        self.sql('insert into schema values (%s)', (s,))
 
     def load_dbschema(self):
         ''' Load the schema definition that the database currently implements
         '''
-        raise NotImplemented
+        self.cursor.execute('select schema from schema')
+        return eval(self.cursor.fetchone()[0])
 
     def post_init(self):
         ''' Called once the schema initialisation has finished.
@@ -806,8 +813,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 p = password.Password()
                 p.unpack(v)
                 d[k] = p
-            elif (isinstance(prop, Boolean) or isinstance(prop, Number)) and v is not None:
-                d[k]=float(v)
+            elif isinstance(prop, Boolean) and v is not None:
+                d[k] = int(v)
+            elif isinstance(prop, Number) and v is not None:
+                # try int first, then assume it's a float
+                try:
+                    d[k] = int(v)
+                except ValueError:
+                    d[k] = float(v)
             else:
                 d[k] = v
         return d
@@ -865,12 +878,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.save_journal(classname, cols, nodeid, journaldate,
             journaltag, action, params)
 
-    def save_journal(self, classname, cols, nodeid, journaldate,
-            journaltag, action, params):
-        ''' Save the journal entry to the database
-        '''
-        raise NotImplemented
-
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
@@ -881,10 +888,36 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols = ','.join('nodeid date tag action params'.split())
         return self.load_journal(classname, cols, nodeid)
 
+    def save_journal(self, classname, cols, nodeid, journaldate,
+            journaltag, action, params):
+        ''' Save the journal entry to the database
+        '''
+        # make the params db-friendly
+        params = repr(params)
+        entry = (nodeid, journaldate, journaltag, action, params)
+
+        # do the insert
+        a = self.arg
+        sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(classname,
+            cols, a, a, a, a, a)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'addjournal', (self, sql, entry)
+        self.cursor.execute(sql, entry)
+
     def load_journal(self, classname, cols, nodeid):
         ''' Load the journal from the database
         '''
-        raise NotImplemented
+        # now get the journal entries
+        sql = 'select %s from %s__journal where nodeid=%s'%(cols, classname,
+            self.arg)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'load_journal', (self, sql, nodeid)
+        self.cursor.execute(sql, (nodeid,))
+        res = []
+        for nodeid, date_stamp, user, action, params in self.cursor.fetchall():
+            params = eval(params)
+            res.append((nodeid, date.Date(date_stamp), user, action, params))
+        return res
 
     def pack(self, pack_before):
         ''' Delete all journal entries except "create" before 'pack_before'.
@@ -933,6 +966,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # clear out the transactions
         self.transactions = []
 
+    def sql_rollback(self):
+        self.conn.rollback()
+
     def rollback(self):
         ''' Reverse all actions from the current transaction.
 
@@ -942,8 +978,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'rollback', (self,)
 
-        # roll back
-        self.conn.rollback()
+        self.sql_rollback()
 
         # roll back "other" transaction stuff
         for method, args in self.transactions:
@@ -961,10 +996,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # return the classname, nodeid so we reindex this content
         return (classname, nodeid)
 
+    def sql_close(self):
+        self.conn.close()
+
     def close(self):
         ''' Close off the connection.
         '''
-        self.conn.close()
+        self.sql_close()
         if self.lockfile is not None:
             locking.release_lock(self.lockfile)
         if self.lockfile is not None:
@@ -2061,12 +2099,10 @@ class Class(hyperdb.Class):
         else:
             # psycopg doesn't like empty args
             self.db.cursor.execute(sql)
-        l = self.db.cursor.fetchall()
+        l = self.db.sql_fetchall()
 
         # return the IDs (the first column)
-        # XXX The filter(None, l) bit is sqlite-specific... if there's _NO_
-        # XXX matches to a fetch, it returns NULL instead of nothing!?!
-        return filter(None, [row[0] for row in l])
+        return [row[0] for row in l]
 
     def count(self):
         '''Get the number of nodes in this class.

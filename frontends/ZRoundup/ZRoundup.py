@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.16 2002-10-18 03:34:58 richard Exp $
+# $Id: ZRoundup.py,v 1.17 2003-11-12 01:00:58 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -26,11 +26,6 @@ This means that the regular CGI interface does all authentication quite
 independently of Zope. The roundup code is kept in memory though, and it
 runs in the same server as all your other Zope stuff, so it does have _some_
 advantages over regular CGI :)
-
-It also means that any requests which specify :filter, :columns or :sort
-_must_ be done using a GET, so that this interface can re-parse the
-QUERY_STRING. Zope interprets the ':' as a special character, and the special
-args are lost to it.
 '''
 
 import urlparse
@@ -142,16 +137,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             # the last element is the name
             env['TRACKER_NAME'] = path_components[-1]
 
-        if env['REQUEST_METHOD'] == 'GET':
-            # force roundup to re-parse the request because Zope fiddles
-            # with it and we lose all the :filter, :columns, etc goodness
-            form = None
-        else:
-            # For some reason, CRs are embeded in multiline notes.
-            # It doesn't occur with apache/roundup.cgi, though.
-            form = FormWrapper(self.REQUEST.form)
-
-        print (env['SCRIPT_NAME'], env['PATH_INFO'])
+        form = FormWrapper(self.REQUEST.form)
         return instance.Client(instance, request, env, form)
 
     security.declareProtected('View', 'index_html')
@@ -160,7 +146,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         '''
         # Redirect misdirected requests -- bugs 558867 , 565992
         # PATH_INFO, as defined by the CGI spec, has the *real* request path
-        orig_path = self.REQUEST.environ[ 'PATH_INFO' ]
+        orig_path = self.REQUEST.environ['PATH_INFO']
         if orig_path[-1] != '/' : 
             url = urlparse.urlparse( self.absolute_url() )
             url = list( url ) # make mutable
@@ -179,31 +165,30 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
     def __getitem__(self, item):
         '''All other URL accesses are passed throuh to roundup
         '''
-        return PathElement(self, item)
+        return PathElement(self, item).__of__(self)
 
-class PathElement(Item, Implicit, Persistent):
-    def __init__(self, parent, path):
-        self.parent = parent
+class PathElement(Item, Implicit):
+    def __init__(self, zr, path):
+        self.zr = zr
         self.path = path
 
     def __getitem__(self, item):
         ''' Get a subitem.
         '''
-        return PathElement(self.path + '/' + item)
+        return PathElement(self.zr, self.path + '/' + item).__of__(self)
 
-    def __call__(self, *args, **kw):
+    def index_html(self, REQUEST=None):
         ''' Actually call through to roundup to handle the request.
         '''
-        print '*****', self.path
         try:
-            client = self.parent.roundup_opendb()
+            client = self.zr.roundup_opendb()
             # fake the path that roundup should use
             client.path = self.path
             # and call roundup to do something 
             client.main()
             return ''
         except NotFound:
-            raise 'NotFound', self.REQUEST.URL
+            raise 'NotFound', REQUEST.URL
             pass
         except:
             import traceback

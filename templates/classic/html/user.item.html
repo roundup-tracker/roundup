@@ -72,8 +72,8 @@ You are not allowed to view this page.
  <tr>
   <td>
    &nbsp;
-   <input type="hidden" name=":template" value="item">
-   <input type="hidden" name=":required" value="username,address">
+   <input type="hidden" name="@template" value="item">
+   <input type="hidden" name="@required" value="username,address">
   </td>
   <td tal:content="structure context/submit">submit button here</td>
  </tr>
@@ -90,7 +90,7 @@ You are not allowed to view this page.
    <a tal:attributes="href string:${query/klass}?${query/url}">display</a>   
   </td>
   <td>
-   <a tal:attributes="href string:?:remove:queries=${query/id}&:action=edit">remove</a>
+   <a tal:attributes="href string:?@remove@queries=${query/id}&@action=edit">remove</a>
   </td>
  </tr>
 </table>

@@ -67,21 +67,21 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 <tr>
  <th>Change Note</th>
  <td colspan=3>
-  <textarea tal:content="request/form/:note/value | default"
-            name=":note" wrap="hard" rows="5" cols="80"></textarea>
+  <textarea tal:content="request/form/@note/value | default"
+            name="@note" wrap="hard" rows="5" cols="80"></textarea>
  </td>
 </tr>
 
 <tr>
  <th>File</th>
- <td colspan=3><input type="file" name=":file" size="40"></td>
+ <td colspan=3><input type="file" name="@file" size="40"></td>
 </tr>
 
 <tr>
  <td>
   &nbsp;
-  <input type="hidden" name=":template" value="item">
-  <input type="hidden" name=":required" value="title,priority">
+  <input type="hidden" name="@template" value="item">
+  <input type="hidden" name="@required" value="title,priority">
  </td>
  <td colspan=3 tal:content="structure context/submit">
   submit button will go here
@@ -142,7 +142,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
     <th tal:content="string:Date: ${msg/date}">date</th>
     <th>
      <a tal:condition="context/is_edit_ok"
-        tal:attributes="href string:issue${context/id}?:remove:messages=${msg/id}&:action=edit">remove</a>
+        tal:attributes="href string:issue${context/id}?@remove@messages=${msg/id}&@action=edit">remove</a>
     </th>
    </tr>
    <tr>
