@@ -32,6 +32,7 @@ Feature:
 Fixed:
 - postgres backend open doesn't hide corruption in schema (sf bug 956375)
 - *dbm-style backends nuke() method now clear id counters
+- removed safeget() from the API (sf bug 994750)
 
 
 2004-??-?? 0.7.7

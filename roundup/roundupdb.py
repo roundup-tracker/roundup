@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.113 2004-10-08 01:58:43 richard Exp $
+# $Id: roundupdb.py,v 1.114 2004-10-08 05:44:33 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -169,8 +169,12 @@ class IssueClass:
         list. These recipients will not be included in the To: or Cc:
         address lists.
         """
-        authid = self.db.msg.safeget(msgid, 'author')
-        recipients = self.db.msg.safeget(msgid, 'recipients', [])
+        if msgid is None:
+            authid = '1'
+            recipients = []
+        else:
+            authid = self.db.msg.get(msgid, 'author')
+            recipients = self.db.msg.get(msgid, 'recipients', [])
 
         sendto = []
         bcc_sendto = []
@@ -237,8 +241,12 @@ class IssueClass:
         messages = self.db.msg
         files = self.db.file
 
-        inreplyto = messages.safeget(msgid, 'inreplyto')
-        messageid = messages.safeget(msgid, 'messageid')
+        if msgid is None:
+            inreplyto = None
+            messageid = None
+        else:
+            authid = messages.get(msgid, 'inreplyto')
+            recipients = messages.get(msgid, 'messageid')
 
         # make up a messageid if there isn't one (web edit)
         if not messageid:
@@ -255,11 +263,15 @@ class IssueClass:
         title = self.get(nodeid, 'title') or '%s message copy'%cn
 
         # figure author information
-        authid = messages.safeget(msgid, 'author')
-        authname = users.safeget(authid, 'realname')
+        if msgid is None:
+            authid = '1'
+            authname = 'admin'
+        else:
+            authid = messages.get(msgid, 'author')
+            authname = users.get(authid, 'realname')
         if not authname:
-            authname = users.safeget(authid, 'username', '')
-        authaddr = users.safeget(authid, 'address', '')
+            authname = users.get(authid, 'username', '')
+        authaddr = users.get(authid, 'address', '')
         if authaddr:
             authaddr = " <%s>" % straddr( ('',authaddr) )
 
@@ -281,7 +293,8 @@ class IssueClass:
         m.append('')
 
         # add the content
-        m.append(messages.safeget(msgid, 'content', ''))
+        if msgid is not None:
+            m.append(messages.get(msgid, 'content', ''))
 
         # add the change note
         if note:

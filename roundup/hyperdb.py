@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.103 2004-10-08 00:56:11 richard Exp $
+# $Id: hyperdb.py,v 1.104 2004-10-08 05:44:33 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -553,16 +553,6 @@ class Class:
         '''Add (or refresh) the node to search indexes
         '''
         raise NotImplementedError
-
-    def safeget(self, nodeid, propname, default=None):
-        """Safely get the value of a property on an existing node of this class.
-
-        Return 'default' if the node doesn't exist.
-        """
-        try:
-            return self.get(nodeid, propname)
-        except IndexError:
-            return default
 
     def export_propnames(self):
         '''List the property names for export from this Class.'''

@@ -16,6 +16,13 @@ steps.
 Migrating from 0.7.1 to 0.8.0
 =============================
 
+0.8.0 API changes
+-----------------
+
+Class.safeget() was removed from the API. Test your item ids before calling
+Class.get() instead.
+
+
 0.8.0 new tracker layout
 ------------------------
 
