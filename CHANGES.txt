@@ -66,6 +66,8 @@ Feature:
 - extended date syntax to make range searches even more useful
 - SMTP login and TLS support added (sf bug 710853 with extras ;)
   Note: requires python 2.2+
+- added Windows Service mode for roundup-server when daemonification is
+  attempted on Windows.
 
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages

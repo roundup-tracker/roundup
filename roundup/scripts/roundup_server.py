@@ -16,14 +16,14 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.23 2003-04-24 07:19:02 richard Exp $
+$Id: roundup_server.py,v 1.24 2003-05-09 02:02:40 richard Exp $
 """
 
 # python version check
 from roundup import version_check
 
 import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
-import BaseHTTPServer
+import BaseHTTPServer, socket
 
 # Roundup modules of use here
 from roundup.cgi import cgitb, client
@@ -204,6 +204,99 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         c = tracker.Client(tracker, self, env)
         c.main()
 
+
+try:
+    import win32serviceutil
+except:
+    RoundupService = None
+else:
+    # allow the win32
+    import win32service
+    import win32event
+    from win32event import *
+    from win32file import *
+
+    SvcShutdown = "ServiceShutdown"
+
+    class RoundupService(win32serviceutil.ServiceFramework,
+            BaseHTTPServer.HTTPServer):
+        ''' A Roundup standalone server for Win32 by Ewout Prangsma
+        '''
+        _svc_name_ = "Roundup Bug Tracker"
+        _svc_display_name_ = "Roundup Bug Tracker"
+        address = ('', 8888)
+        def __init__(self, args):
+            win32serviceutil.ServiceFramework.__init__(self, args)
+            BaseHTTPServer.HTTPServer.__init__(self, self.address, 
+                RoundupRequestHandler)
+
+            # Create the necessary NT Event synchronization objects...
+            # hevSvcStop is signaled when the SCM sends us a notification
+            # to shutdown the service.
+            self.hevSvcStop = win32event.CreateEvent(None, 0, 0, None)
+
+            # hevConn is signaled when we have a new incomming connection.
+            self.hevConn    = win32event.CreateEvent(None, 0, 0, None)
+
+            # Hang onto this module for other people to use for logging
+            # purposes.
+            import servicemanager
+            self.servicemanager = servicemanager
+
+        def SvcStop(self):
+            # Before we do anything, tell the SCM we are starting the
+            # stop process.
+            self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+            win32event.SetEvent(self.hevSvcStop)
+
+        def SvcDoRun(self):
+            try:
+                self.serve_forever()
+            except SvcShutdown:
+                pass
+
+        def get_request(self):
+            # Call WSAEventSelect to enable self.socket to be waited on.
+            WSAEventSelect(self.socket, self.hevConn, FD_ACCEPT)
+            while 1:
+                try:
+                    rv = self.socket.accept()
+                except socket.error, why:
+                    if why[0] != WSAEWOULDBLOCK:
+                        raise
+                    # Use WaitForMultipleObjects instead of select() because
+                    # on NT select() is only good for sockets, and not general
+                    # NT synchronization objects.
+                    rc = WaitForMultipleObjects((self.hevSvcStop, self.hevConn),
+                        0, INFINITE)
+                    if rc == WAIT_OBJECT_0:
+                        # self.hevSvcStop was signaled, this means:
+                        # Stop the service!
+                        # So we throw the shutdown exception, which gets
+                        # caught by self.SvcDoRun
+                        raise SvcShutdown
+                    # Otherwise, rc == WAIT_OBJECT_0 + 1 which means
+                    # self.hevConn was signaled, which means when we call 
+                    # self.socket.accept(), we'll have our incoming connection
+                    # socket!
+                    # Loop back to the top, and let that accept do its thing...
+                else:
+                    # yay! we have a connection
+                    # However... the new socket is non-blocking, we need to
+                    # set it back into blocking mode. (The socket that accept()
+                    # returns has the same properties as the listening sockets,
+                    # this includes any properties set by WSAAsyncSelect, or 
+                    # WSAEventSelect, and whether its a blocking socket or not.)
+                    #
+                    # So if you yank the following line, the setblocking() call 
+                    # will be useless. The socket will still be in non-blocking
+                    # mode.
+                    WSAEventSelect(rv[0], self.hevConn, 0)
+                    rv[0].setblocking(1)
+                    break
+            return rv
+
+
 def usage(message=''):
     if message:
         message = _('Error: %(error)s\n\n')%{'error': message}
@@ -213,7 +306,9 @@ roundup-server [-n hostname] [-p port] [-l file] [-d file] [name=tracker home]*
  -n: sets the host name
  -p: sets the port to listen on
  -l: sets a filename to log to (instead of stdout)
- -d: daemonize, and write the server's PID to the nominated file
+ -d: run the server in the background and on UN*X write the server's PID
+     to the nominated file. Note: on Windows the PID argument is needed,
+     but ignored.
 
  name=tracker home
    Sets the tracker home(s) to use. The name is how the tracker is
@@ -340,11 +435,16 @@ def run():
 
     # fork?
     if pidfile:
-        if not hasattr(os, 'fork'):
+        if RoundupService:
+            # don't do any other stuff
+            RoundupService.address = address
+            return win32serviceutil.HandleCommandLine(RoundupService)
+        elif not hasattr(os, 'fork'):
             print "Sorry, you can't run the server as a daemon on this" \
                 'Operating System'
             sys.exit(0)
-        daemonize(pidfile)
+        else:
+            daemonize(pidfile)
 
     # redirect stdout/stderr to our logfile
     if logfile:
