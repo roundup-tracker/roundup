@@ -1,13 +1,13 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.5 2002-09-10 01:07:05 richard Exp $
+# $Id: cgitb.py,v 1.6 2002-09-13 03:31:18 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
 
-import sys, os, types, string, keyword, linecache, tokenize, inspect
+import sys, os, types, string, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback
 
 from roundup.i18n import _
@@ -20,43 +20,55 @@ def breaker():
 def niceDict(indent, dict):
     l = []
     for k,v in dict.items():
-        l.append('%s%s: %r'%(indent,k,v))
+        l.append('<tr><td><strong>%s</strong></td><td>%s</td></tr>'%(k,
+            cgi.escape(repr(v))))
     return '\n'.join(l)
 
 def pt_html(context=5):
-    import cgi
-    etype, evalue = sys.exc_type, sys.exc_value
-    if type(etype) is types.ClassType:
-        etype = etype.__name__
-    pyver = 'Python ' + string.split(sys.version)[0] + '<br>' + sys.executable
-    head = pydoc.html.heading(
-        '<font size=+1><strong>%s</strong>: %s</font>'%(etype, evalue),
-        '#ffffff', '#777777', pyver)
-
-    head = head + _('<p>A problem occurred in your template</p><pre>')
-
-    l = []
+    l = ['<h1>Templating Error</h1>'
+         '<p class="help">Debugging information follows</p>'
+         '<ol>']
+    from roundup.cgi.PageTemplates.Expressions import TraversalError
     for frame, file, lnum, func, lines, index in inspect.trace(context):
         args, varargs, varkw, locals = inspect.getargvalues(frame)
         if locals.has_key('__traceback_info__'):
             ti = locals['__traceback_info__']
-            l.append(str(ti))
+            if isinstance(ti, TraversalError):
+                s = []
+                for name, info in ti.path:
+                    s.append('<li>"%s" (%s)</li>'%(name,cgi.escape(repr(info))))
+                s = '\n'.join(s)
+                l.append('<li>Looking for "%s", current path:<ol>%s</ol></li>'%(
+                    ti.name, s))
+            else:
+                l.append('<li>In %s</li>'%cgi.escape(str(ti)))
         if locals.has_key('__traceback_supplement__'):
             ts = locals['__traceback_supplement__']
             if len(ts) == 2:
                 supp, context = ts
-                l.append('in template %r'%context.id)
+                l.append('<li>A problem occurred in your template "%s"</li>'%
+                    str(context.id))
             elif len(ts) == 3:
                 supp, context, info = ts
-                l.append('in expression %r\n current variables:\n%s\n%s\n'%(info,
-                    niceDict('    ', context.global_vars),
-                    niceDict('    ', context.local_vars)))
-                # context._scope_stack))
+                l.append('''
+<li>While evaluating the %r expression on line %d
+<table class="otherinfo" style="font-size: 90%%">
+ <tr><th colspan="2" class="header">Current variables:</th></tr>
+ %s
+ %s
+</table></li>
+'''%(info, context.position[0], niceDict('    ', context.global_vars),
+     niceDict('    ', context.local_vars)))
 
-    l.append('\n')
-    l.append(''.join(traceback.format_exception(etype, evalue,
-        sys.exc_traceback)))
-    return head + cgi.escape('\n'.join(l)) + '</pre><p>&nbsp;</p>'
+    l.append('''
+</ol>
+<table style="font-size: 80%%; color: gray">
+ <tr><th class="header" align="left">Full traceback:</th></tr>
+ <tr><td><pre>%s</pre></td></tr>
+</table>'''%cgi.escape(''.join(traceback.format_exception(sys.exc_type,
+        sys.exc_value, sys.exc_traceback))))
+    l.append('<p>&nbsp;</p>')
+    return '\n'.join(l)
 
 def html(context=5):
     etype, evalue = sys.exc_type, sys.exc_value

@@ -1,14 +1,9 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
-<tal:block tal:define="
-    editok python:request.user.hasPermission('Edit') or
-           context.id == request.user.id;
-    viewok python:request.user.hasPermission('View')">
-
-<span tal:condition="python:not (viewok or editok)">
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
 You are not allowed to view this page.
 </span>
 
-<tal:block tal:condition="editok">
+<tal:block tal:condition="context/is_edit_ok">
 <p class="form-help">
  You may edit the contents of the <span tal:replace="request/classname" />
  class using this form. Commas, newlines and double quotes (") must be
@@ -35,8 +30,7 @@ You are not allowed to view this page.
 </form>
 </tal:block>
 
-<tal:block tal:condition="python:viewok and not editok">
+<tal:block tal:condition="context/is_only_view_ok">
 view ok
 </tal:block>
 
-</tal:block>

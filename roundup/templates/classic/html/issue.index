@@ -1,5 +1,9 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
-<tal:block tal:define="batch request/batch">
+<tal:block tal:condition="not:context/is_view_ok">
+You are not allowed to view this page.
+</tal:block>
+
+<tal:block tal:define="batch request/batch" tal:condition="context/is_view_ok">
  <table class="list">
   <tr>
    <th tal:condition="request/show/priority">Priority</th>

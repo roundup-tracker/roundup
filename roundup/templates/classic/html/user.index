@@ -1,6 +1,11 @@
 <!-- dollarId: user.index,v 1.3 2002/07/09 05:29:51 richard Exp dollar-->
-<table width="100%" border=0 cellspacing=0 cellpadding=2 class="list">
-<tr class="list-header">
+
+<span tal:condition="not:context/is_view_ok">
+You are not allowed to view this page.
+</span>
+
+<table width="100%" tal:condition="context/is_view_ok" class="list">
+<tr>
  <th>Username</th>
  <th>Real name</th>
  <th>Organisation</th>
@@ -9,13 +14,13 @@
 </tr>
 <tr tal:repeat="user context/list"
     tal:attributes="class python:['row-normal', 'row-alt'][repeat['user'].even()]">
- <td valign="top">
+ <td>
   <a tal:attributes="href string:user${user/id}"
      tal:content="user/username">username</a>
  </td>
- <td valign="top" tal:content="user/realname">realname</td>
- <td valign="top" tal:content="user/organisation">organisation</td>
- <td valign="top" tal:content="python:user.address.email()">address</td>
- <td valign="top" tal:content="user/phone">phone</td>
+ <td tal:content="user/realname">realname</td>
+ <td tal:content="user/organisation">organisation</td>
+ <td tal:content="python:user.address.email()">address</td>
+ <td tal:content="user/phone">phone</td>
 </tr>
 </table>

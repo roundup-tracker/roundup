@@ -155,7 +155,10 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         }
         # add in the item if there is one
         if client.nodeid:
-            c['context'] = HTMLItem(client, classname, client.nodeid)
+            if classname == 'user':
+                c['context'] = HTMLUser(client, classname, client.nodeid)
+            else:
+                c['context'] = HTMLItem(client, classname, client.nodeid)
         else:
             c['context'] = HTMLClass(client, classname)
         return c
@@ -218,15 +221,34 @@ def lookupIds(db, prop, ids, num_re=re.compile('-?\d+')):
             l.append(cl.lookup(entry))
     return l
 
-class HTMLClass:
+class HTMLPermissions:
+    ''' Helpers that provide answers to commonly asked Permission questions.
+    '''
+    def is_edit_ok(self):
+        ''' Is the user allowed to Edit the current class?
+        '''
+        return self._db.security.hasPermission('Edit', self._client.userid,
+            self._classname)
+    def is_view_ok(self):
+        ''' Is the user allowed to View the current class?
+        '''
+        return self._db.security.hasPermission('View', self._client.userid,
+            self._classname)
+    def is_only_view_ok(self):
+        ''' Is the user only allowed to View (ie. not Edit) the current class?
+        '''
+        return self.is_view_ok() and not self.is_edit_ok()
+
+class HTMLClass(HTMLPermissions):
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
     def __init__(self, client, classname):
         self._client = client
         self._db = client.db
 
-        # we want classname to be exposed
-        self.classname = classname
+        # we want classname to be exposed, but _classname gives a
+        # consistent API for extending Class/Item
+        self._classname = self.classname = classname
         if classname is not None:
             self._klass = self._db.getclass(self.classname)
             self._props = self._klass.getprops()
@@ -399,7 +421,7 @@ class HTMLClass:
         # use our fabricated request
         return pt.render(self._client, self.classname, req)
 
-class HTMLItem:
+class HTMLItem(HTMLPermissions):
     ''' Accesses through an *item*
     '''
     def __init__(self, client, classname, nodeid):
@@ -627,6 +649,7 @@ class HTMLUser(HTMLItem):
 
         # used for security checks
         self._security = client.db.security
+
     _marker = []
     def hasPermission(self, role, classname=_marker):
         ''' Determine if the user has the Role.
@@ -637,6 +660,20 @@ class HTMLUser(HTMLItem):
         if classname is self._marker:
             classname = self._default_classname
         return self._security.hasPermission(role, self._nodeid, classname)
+
+    def is_edit_ok(self):
+        ''' Is the user allowed to Edit the current class?
+            Also check whether this is the current user's info.
+        '''
+        return self._db.security.hasPermission('Edit', self._client.userid,
+            self._classname) or self._nodeid == self._client.userid
+
+    def is_view_ok(self):
+        ''' Is the user allowed to View the current class?
+            Also check whether this is the current user's info.
+        '''
+        return self._db.security.hasPermission('Edit', self._client.userid,
+            self._classname) or self._nodeid == self._client.userid
 
 class HTMLProperty:
     ''' String, Number, Date, Interval HTMLProperty

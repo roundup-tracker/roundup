@@ -1,15 +1,10 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
-<tal:block tal:define="
-    editok python:request.user.hasPermission('Edit') or
-           context.id == request.user.id;
-    viewok python:request.user.hasPermission('View')">
-
-<span tal:condition="python:not (viewok or editok)">
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
 You are not allowed to view this page.
 </span>
 
-<tal:block tal:condition="editok">
-<form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
 
 <input type="hidden" name=":required" value="username,address">
 
@@ -36,7 +31,7 @@ You are not allowed to view this page.
  </tr>
  <tr>
   <th>Phone</th>
-  <td tal:content="structure context/phone/field">phone</td>
+  <td tal:content="structure context/phone/field/asdfasdf">phone</td>
  </tr>
  <tr>
   <th>Organisation</th>
@@ -58,26 +53,19 @@ You are not allowed to view this page.
 </table>
 </form>
 
-<tal:block tal:condition="context/id">
- <table class="otherinfo" tal:condition="context/queries">
-  <tr><th colspan="2" class="header">Queries</th></tr>
-  <tr><th>Name</th><th>Display</th></tr>
-  <tr tal:repeat="query context/queries">
-   <td><a tal:attributes="href string:query${query/id}"
-          tal:content="query/name"></a></td>
-   <td>
-    <a tal:attributes="href python:'%s%s'%(query['klass'], query['url'])">display</a>
-   </td>
-  </tr>
- </table>
+<table class="otherinfo" tal:condition="context/queries">
+ <tr><th colspan="2" class="header">Queries</th></tr>
+ <tr><th>Name</th><th>Display</th></tr>
+ <tr tal:repeat="query context/queries">
+  <td><a tal:attributes="href string:query${query/id}"
+         tal:content="query/name"></a></td>
+  <td>
+   <a tal:attributes="href python:'%s%s'%(query['klass'], query['url'])">display</a>
+  </td>
+ </tr>
+</table>
 
- <tal:block tal:replace="structure context/history" />
-
-</tal:block>
-
-</tal:block>
-
-<table class="form" tal:condition="python:viewok and not editok">
+<table class="form" tal:condition="context/is_only_view_ok">
  <tr>
   <th colspan=2 class="header" tal:content="context/realname">realname</th>
  </tr>
@@ -99,5 +87,7 @@ You are not allowed to view this page.
  </tr>
 </table>
 
+<tal:block tal:condition="python:context.id and context.is_view_ok()">
+ <tal:block tal:replace="structure context/history" />
 </tal:block>
 

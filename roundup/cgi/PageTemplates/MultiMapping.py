@@ -22,4 +22,8 @@ class MultiMapping:
         self.stores.append(store)
     def pop(self):
         return self.stores.pop()
-
+    def items(self):
+        l = []
+        for store in self.stores:
+            l = l + store.items()
+        return l

@@ -1,6 +1,10 @@
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
+You are not allowed to view this page.
+</span>
+
 <!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
 
 <input type="hidden" name=":template" value="item">
 <input type="hidden" name=":required" value="title">
@@ -65,11 +69,41 @@
 </tr>
 </table>
 
-<span tal:condition="context/id" tal:content="structure string:Created on
-<b>${context/creation}</b> by <b>${context/creator}</b>, last
-changed <b>${context/activity}</b>.">activity info</span>
+</form>
 
-<tal:block tal:condition="context/id">
+<table class="form" tal:condition="context/is_only_view_ok">
+<tr>
+ <th nowrap>Title</th><td colspan=3 tal:content="context/title">title</td>
+</tr>
+
+<tr>
+ <th nowrap>Priority</th><td tal:content="context/priority">priority</td>
+ <th nowrap>Status</th><td tal:content="context/status">status</td>
+</tr>
+
+<tr>
+ <th nowrap>Superseder</th>
+ <td>
+  <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
+   <br>View: <a tal:attributes="href string:issue${sup/id}"
+                tal:content="sup/id"></a>
+  </span>
+ </td>
+ <th nowrap>Nosy List</th><td><span tal:replace="context/nosy" /></td>
+</tr>
+
+<tr>
+ <th nowrap>Assigned To</th><td tal:content="context/assignedto"></td>
+ <th nowrap>Topics</th><td tal:content="structure context/topic"></td>
+</tr>
+</table>
+
+<tal:block tal:condition="python:context.id and context.is_view_ok()">
+
+ <p tal:content="structure string:Created on
+  <b>${context/creation}</b> by <b>${context/creator}</b>, last
+  changed <b>${context/activity}</b>.">activity info
+ </p>
 
  <table class="messages" tal:condition="context/messages">
   <tr><th colspan=4 class="header">Messages</th></tr>
@@ -102,4 +136,3 @@ changed <b>${context/activity}</b>.">activity info</span>
 
 </tal:block>
 
-</form>

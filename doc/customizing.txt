@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.32 $
+:Version: $Revision: 1.33 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -877,6 +877,8 @@ classhelp   display a link to a javascript popup containing this class'
 submit      generate a submit button (and action hidden element)
 renderWith  render this class with the given template.
 history     returns 'New node - no history' :)
+is_edit_ok  is the user allowed to Edit the current class?
+is_view_ok  is the user allowed to View the current class?
 =========== =============================================================
 
 Note that if you have a property of the same name as one of the above methods,
@@ -910,6 +912,8 @@ renderQueryForm specific to the "query" class - render the search form for
                 the query
 hasPermission   specific to the "user" class - determine whether the user
                 has a Permission
+is_edit_ok      is the user allowed to Edit the current item?
+is_view_ok      is the user allowed to View the current item?
 =============== =============================================================
 
 

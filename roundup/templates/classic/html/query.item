@@ -1,2 +1,7 @@
-<span tal:content="structure context/renderQueryForm" />
+<span tal:condition="not:context/is_edit_ok">
+You are not allowed to view this page.
+</span>
+
+<span tal:condition="context/is_edit_ok"
+      tal:content="structure context/renderQueryForm" />
 

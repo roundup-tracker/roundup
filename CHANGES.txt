@@ -8,6 +8,12 @@ Fixed:
  . switched the default issue item display to only show issue summary
    (add instructions to doc to make it display entire content)
 
+Feature:
+ . added generic item editing
+ . much nicer layout of template rendering errors
+ . added context/is_edit_ok and context/is_view_ok convenience methods and
+   implemented use of them in the classic template
+
 2002-09-11 0.5.0 beta1
 Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)

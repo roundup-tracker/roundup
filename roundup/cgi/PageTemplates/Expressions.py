@@ -25,7 +25,7 @@ Modified for Roundup 0.5 release:
 
 """
 
-__version__='$Revision: 1.5 $'[11:-2]
+__version__='$Revision: 1.6 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
@@ -121,7 +121,7 @@ class SubPathExpr:
                     # of path names.
                     path[i:i+1] = list(val)
         base = self._base
-        __traceback_info__ = 'sub path expression "%s"'%base
+        __traceback_info__ = 'path expression "%s"'%('/'.join(self._path))
         if base == 'CONTEXTS':
             ob = econtext.contexts
         else:
@@ -264,6 +264,10 @@ class DeferExpr:
     def __repr__(self):
         return 'defer:%s' % `self._s`
 
+class TraversalError:
+    def __init__(self, path, name):
+        self.path = path
+        self.name = name
 
 def restrictedTraverse(self, path, securityManager,
                        get=getattr, has=hasattr, N=None, M=[],
@@ -281,8 +285,8 @@ def restrictedTraverse(self, path, securityManager,
     #print 'TRAVERSE', (object, path)
     done = []
     while path:
-        __traceback_info__ = 'Traversed %r\n ... looking for %r'%(done, path)
         name = path.pop()
+        __traceback_info__ = TraversalError(done, name)
 
         if isinstance(name, TupleType):
             object = apply(object, name)
@@ -320,7 +324,7 @@ def restrictedTraverse(self, path, securityManager,
                 raise
         #print '... object is now', `o`
         object = o
-        done.append(o)
+        done.append((name, o))
 
     return object
 
