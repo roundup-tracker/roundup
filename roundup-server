@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.15 2001-10-12 02:23:26 richard Exp $
+$Id: roundup-server,v 1.16 2001-10-27 00:12:21 richard Exp $
 
 """
 import sys
@@ -216,23 +216,24 @@ def main():
             elif opt == '-u': user = arg
             elif opt == '-h': usage()
 
-        # if root, setuid to the running user
-        if not os.getuid() and user is not None:
-            try:
-                import pwd
-            except ImportError:
-                raise ValueError, "Can't change users - no pwd module"
-            try:
-                uid = pwd.getpwnam(user)[2]
-            except KeyError:
-                raise ValueError, "User %s doesn't exist"%user
-            os.setuid(uid)
-        elif os.getuid() and user is not None:
-            print 'WARNING: ignoring "-u" argument, not root'
+        if hasattr(os, 'getuid'):
+            # if root, setuid to the running user
+            if not os.getuid() and user is not None:
+                try:
+                    import pwd
+                except ImportError:
+                    raise ValueError, "Can't change users - no pwd module"
+                try:
+                    uid = pwd.getpwnam(user)[2]
+                except KeyError:
+                    raise ValueError, "User %s doesn't exist"%user
+                os.setuid(uid)
+            elif os.getuid() and user is not None:
+                print 'WARNING: ignoring "-u" argument, not root'
 
-        # People can remove this check if they're really determined
-        if not os.getuid() and user is None:
-            raise ValueError, "Can't run as root!"
+            # People can remove this check if they're really determined
+            if not os.getuid() and user is None:
+                raise ValueError, "Can't run as root!"
 
         # handle instance specs
         if args:
@@ -260,6 +261,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/10/12 02:23:26  richard
+# Didn't clean up after myself :)
+#
 # Revision 1.14  2001/10/12 02:20:32  richard
 # server now handles setuid'ing much better
 #
