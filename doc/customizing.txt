@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.8 $
+:Version: $Revision: 1.161.2.9 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3243,6 +3243,12 @@ Using External User Databases
 Using an external password validation source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note:: You will need to either have an "admin" user in your external
+          password source *or* have one of your regular users have
+          the Admin Role assigned. If you need to assign the Role *after*
+          making the changes below, you may use the ``roundup-admin``
+          program to edit a user's details.
+
 We have a centrally-managed password changing system for our users. This
 results in a UN*X passwd-style file that we use for verification of
 users. Entries in the file consist of ``name:password`` where the
@@ -3259,6 +3265,7 @@ need to override the standard ``verifyPassword`` method defined in
 following is added as ``externalpassword.py`` in the tracker ``extensions``
 directory::
 
+    import os, crypt
     from roundup.cgi.actions import LoginAction    
 
     class ExternalPasswordLoginAction(LoginAction):
@@ -3339,8 +3346,8 @@ tracker we're to work on::
 
 Next we read in the *passwd* file from the tracker home::
 
-    # read in the users
-    file = os.path.join(tracker_home, 'users.passwd')
+    # read in the users from the "passwd.txt" file
+    file = os.path.join(tracker_home, 'passwd.txt')
     users = [x.strip().split(':') for x in open(file).readlines()]
 
 Handle special users (those to ignore in the file, and those who don't
