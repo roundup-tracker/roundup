@@ -22,6 +22,8 @@ This is a bugfix release, fixing:
 - fix port number as int in mysql connection info (sf bug 1082530)
 - fix setup.py to work with <Python2.3 (sf bug 1082801)
 - fix permissions checks in cgi templating (sf bug 1082755)
+- fix "Users may only edit their issues" example in docs
+- handle ~/.my.cnf files for MySQL defaults (sf bug 1096031)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
