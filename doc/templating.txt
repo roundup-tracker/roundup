@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.6 $
+:Version: $Revision: 1.7 $
 
 Current Situation and Issues
 ============================
@@ -89,22 +89,65 @@ Other fun can be had when you start playing with stuff like:
    </tr>
   </table>
 
+PageTemplates in a Nutshell
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PageTemplates consist of three technologies:
+
+TAL - Template Attribute Language
+  This is the syntax which is woven into the HTML using the ``tal:`` tag
+  attributes. A TAL parser pulls out the TAL commands from the attributes
+  runs them using some expression engine.
+
+TALES - TAL Expression Language
+  The expression engine used in this case is TALES, which runs the expressions
+  that form the tag attribute values. TALES expressions come in three
+  flavours:
+
+  Path Expressions - eg. ``foo/bar/frozz``
+   These are object attribute / item accesses. Roughly speaking, the path
+   ``foo/bar/frozz`` is broken into parts ``foo``, ``bar`` and ``frozz``. The
+   ``foo`` part is the root of the expression. We then look for a ``bar``
+   attribute on foo, or failing that, a bar item (as in foo['bar']). If that
+   fails, the path expression fails. When we get to the end, the object we're
+   left with is evaluated to get a string - methods are called, objects are
+   stringified. Path expressions may have an optional ``path:`` prefix, though
+   they are the default expression type, so it's not necessary.
+
+  String Expressions - eg. ``string:hello ${user/name}``
+   These expressions are simple string interpolations (though they can be just
+   plain strings with no interpolation if you want. The expression in the
+   ``${ ... }`` is just a path expression as above.
+
+  Python Expressions - eg. ``python: 1+1``
+   These expressions give the full power of Python. All the "root level"
+   variables are available, so ``python:foo.bar.frozz()`` might be equivalent
+   to ``foo/bar/frozz``, assuming that ``frozz`` is a method.
+
+PageTemplates
+  The PageTemplates module glues together TAL and TALES.
+
 
 Implementation
 ~~~~~~~~~~~~~~
 
 I'm envisaging an infrastructure layer where each template has the following
-variables defined:
+"root level" (that is, driectly accessible in the TALES namespace) variables
+defined:
 
+*user*
+  the current user node as an HTMLItem instance
 *class*
-  the current class of node being displayed
+  the current class of node being displayed as an HTMLClass instance
 *item*
-  the current node from the database, if we're viewing a specific node
+  the current node from the database, if we're viewing a specific node, as an
+  HTMLItem instance
 (*classname*)
   the current node is also available under its classname, so a *user* node
-  would also be available under the name *user*.
+  would also be available under the name *user*. This is also an HTMLItem
+  instance.
 *form*
-  the current CGI form information
+  the current CGI form information as a mapping of form argument name to value
 *instance*
   the current instance
 *db*
@@ -113,6 +156,8 @@ variables defined:
   the current instance config
 *util*
   utility methods
+*modules*
+  Python modules made available (XXX: not sure what's actually in there tho)
 
 Accesses through a class (either through *class* or *db.<classname>*):
 
