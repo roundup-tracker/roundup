@@ -1,0 +1,16 @@
+; This is a sample configuration file for roundup-server. See the
+; admin_guide for information about its contents.
+[server]
+port = 8080
+;hostname = 
+;user = 
+;group = 
+;log_ip = yes
+;pidfile = 
+;logfile = 
+
+
+; Add one of these per tracker being served
+[tracker_url_component]
+home = /path/to/tracker
+

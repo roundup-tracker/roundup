@@ -15,6 +15,7 @@ Feature:
   from Vickenty Fesunov)
 - hide "(list)" popup links when issue is only viewable
 - roundup-server options -g and -u accept both ids and names (sf bug 983769)
+- roundup-server now has a configuration file (-C option)
 - added mod_python interface (see installation.txt)
 
 

@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.12 $
+:Version: $Revision: 1.13 $
 
 .. contents::
 
@@ -66,6 +66,55 @@ Configuration for "BasicLogging" implementation:
 
 In both cases, if no logfile is specified then logging will simply be sent
 to sys.stderr with only logging of ERROR messages.
+
+Configuring roundup-server
+==========================
+
+The basic configuration file layout is as follows (take from the
+``roundup-server.ini.example`` file in the "doc" directory)::
+
+    [server]
+    port = 8080
+    ;hostname = 
+    ;user = 
+    ;group = 
+    ;log_ip = yes
+    ;pidfile = 
+    ;logfile = 
+
+    ; Add one of these per tracker being served
+    [tracker_url_component]
+    home = /path/to/tracker
+
+Values ";commented out" are optional. The meaning of the various options
+are as follows:
+
+**port**
+  Defines the local TCP port to listen for clients on.
+**hostname**
+  Defines the local hostname to listen for clients on. Only required if
+  "localhost" is not sufficient.
+**user** and **group**
+  Defines the Unix user and group to run the server as. Only work if the
+  server is started as root.
+**log_ip**
+  If ``yes`` then we log IP addresses against accesses. If ``no`` then we
+  log the hostname of the client. The latter can be much slower.
+**pidfile**
+  If specified, the server will fork at startup and write its new PID to
+  the file.
+**logfile**
+  Any unhandled exception messages or other output from Roundup will be
+  written to this file. It must be specified if **pidfile** is specified.
+  If per-tracker logging is specified, then very little will be written to
+  this file.
+**example_tracker** sections
+  These are used to specify which Roundup trackers are to be served up by
+  roundup-server. Each tracker has its own ``[section]`` with a single
+  ``home`` value defined pointing to the tracker's home. The section name is
+  used in the URL to select the appropriate reacker. Make sure the name part
+  doesn't include any url-unsafe characters like spaces. Stick to
+  alphanumeric characters and you'll be ok.
 
 
 Users and Security

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.56 2004-07-20 02:07:58 richard Exp $
+$Id: roundup_server.py,v 1.57 2004-07-27 00:45:49 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -26,7 +26,7 @@ from roundup import version_check
 from roundup import __version__ as roundup_version
 
 import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
-import SocketServer, BaseHTTPServer, socket, errno
+import SocketServer, BaseHTTPServer, socket, errno, ConfigParser
 
 # Roundup modules of use here
 from roundup.cgi import cgitb, client
@@ -37,32 +37,6 @@ try:
     import signal
 except:
     signal = None
-
-#
-##  Configuration
-#
-
-# This indicates where the Roundup trackers live. They're given as NAME ->
-# TRACKER_HOME, where the NAME part is used in the URL to select the
-# appropriate reacker.
-# Make sure the NAME part doesn't include any url-unsafe characters like
-# spaces, as these confuse the cookie handling in browsers like IE.
-TRACKER_HOMES = {
-#    'example': '/path/to/example',
-}
-
-ROUNDUP_USER = None
-ROUNDUP_GROUP = None
-ROUNDUP_LOG_IP = 1
-HOSTNAME = ''
-PORT = 8080
-PIDFILE = None
-LOGFILE = None
-
-
-#
-##  end configuration
-#
 
 # "default" favicon.ico
 # generate by using "icotool" and tools/base64
@@ -81,8 +55,8 @@ bn3Zuj8M9Hepux6VfZtW1yA6K7cfGqVu8TL325u+fHTb71QKbk+7TZQ+lTc6RcnpqW8qmVQBoj/g
 '''.strip()))
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    TRACKER_HOMES = TRACKER_HOMES
-    ROUNDUP_USER = ROUNDUP_USER
+    TRACKER_HOMES = {}
+    LOG_IPADDRESS = 1
 
     def run_cgi(self):
         """ Execute the CGI command. Wrap an innner call in an error
@@ -216,7 +190,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         c = tracker.Client(tracker, self, env)
         c.main()
 
-    LOG_IPADDRESS = ROUNDUP_LOG_IP
     def address_string(self):
         if self.LOG_IPADDRESS:
             return self.client_address[0]
@@ -365,6 +338,7 @@ def usage(message=''):
 
 Options:
  -v            prints the Roundup version number and exits
+ -C <fname>    use configuration file
  -n <name>     sets the host name of the Roundup web server instance
  -p <port>     sets the port to listen on (default: %(port)s)
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
@@ -372,22 +346,26 @@ Options:
 %(os_part)s
 
 Examples:
+ roundup-server -C /opt/roundup/etc/roundup-server.ini
+
  roundup-server support=/var/spool/roundup-trackers/support
 
  roundup-server -d /var/run/roundup.pid -l /var/log/roundup.log \\
      support=/var/spool/roundup-trackers/support
+
+Configuration file format:
+   See the "admin_guide" in the Roundup "doc" directory.
 
 How to use "name=tracker home":
    These arguments set the tracker home(s) to use. The name is how the
    tracker is identified in the URL (it's the first part of the URL path).
    The tracker home is the directory that was identified when you did
    "roundup-admin init". You may specify any number of these name=home
-   pairs on the command-line. For convenience, you may edit the
-   TRACKER_HOMES variable in the roundup-server file instead.
-   Make sure the name part doesn't include any url-unsafe characters like
-   spaces, as these confuse the cookie handling in browsers like IE.
+   pairs on the command-line. Make sure the name part doesn't include
+   any url-unsafe characters like spaces, as these confuse IE.
 ''')%locals()
     sys.exit(0)
+
 
 def daemonize(pidfile):
     ''' Turn this process into a daemon.
@@ -424,6 +402,58 @@ def daemonize(pidfile):
     os.dup2(devnull, 1)
     os.dup2(devnull, 2)
 
+def setgid(group):
+    if group is None:
+        return
+    if not hasattr(os, 'setgid'):
+        return
+
+    # if root, setgid to the running user
+    if not os.getuid():
+        print _('WARNING: ignoring "-g" argument, not root')
+        return
+
+    try:
+        import grp
+    except ImportError:
+        raise ValueError, _("Can't change groups - no grp module")
+    try:
+        try:
+            gid = int(group)
+        except ValueError:
+            gid = grp.getgrnam(group)[2]
+        else:
+            grp.getgrgid(gid)
+    except KeyError:
+        raise ValueError,_("Group %(group)s doesn't exist")%locals()
+    os.setgid(gid)
+
+def setuid(user):
+    if not hasattr(os, 'getuid'):
+        return
+
+    # People can remove this check if they're really determined
+    if user is None:
+        raise ValueError, _("Can't run as root!")
+
+    if os.getuid():
+        print _('WARNING: ignoring "-u" argument, not root')
+
+    try:
+        import pwd
+    except ImportError:
+        raise ValueError, _("Can't change users - no pwd module")
+    try:
+        try:
+            uid = int(user)
+        except ValueError:
+            uid = pwd.getpwnam(user)[2]
+        else:
+            pwd.getpwuid(uid)
+    except KeyError:
+        raise ValueError, _("User %(user)s doesn't exist")%locals()
+    os.setuid(uid)
+
 def run(port=PORT, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
@@ -432,16 +462,13 @@ def run(port=PORT, success_message=None):
     if hasattr(socket, 'setdefaulttimeout'):
         socket.setdefaulttimeout(60)
 
-    hostname = HOSTNAME
-    pidfile = PIDFILE
-    logfile = LOGFILE
-    user = ROUNDUP_USER
-    group = ROUNDUP_GROUP
-    svc_args = None
+    undefined = []
+    hostname = pidfile = logfile = user = group = svc_args = log_ip = undefined
+    config = None
 
     try:
         # handle the command-line args
-        options = 'n:p:g:u:d:l:hNv'
+        options = 'n:p:g:u:d:l:C:hNv'
         if RoundupService:
             options += 'c'
 
@@ -450,8 +477,6 @@ def run(port=PORT, success_message=None):
         except getopt.GetoptError, e:
             usage(str(e))
 
-        user = ROUNDUP_USER
-        group = None
         for (opt, arg) in optlist:
             if opt == '-n': hostname = arg
             elif opt == '-v':
@@ -463,8 +488,9 @@ def run(port=PORT, success_message=None):
             elif opt == '-d': pidfile = os.path.abspath(arg)
             elif opt == '-l': logfile = os.path.abspath(arg)
             elif opt == '-h': usage()
-            elif opt == '-N': RoundupRequestHandler.LOG_IPADDRESS = 0
+            elif opt == '-N': log_ip = 0
             elif opt == '-c': svc_args = [opt] + args; args = None
+            elif opt == '-C': config = arg
 
         if svc_args is not None and len(optlist) > 1:
             raise ValueError, _("windows service option must be the only one")
@@ -472,72 +498,53 @@ def run(port=PORT, success_message=None):
         if pidfile and not logfile:
             raise ValueError, _("logfile *must* be specified if pidfile is")
 
+        # handle the config file
+        if config:
+            cfg = ConfigParser.ConfigParser()
+            cfg.read(filename)
+            if port is undefined:
+                port = cfg.get('server', 'port', 8080)
+            if user is undefined and cfg.has_option('server', 'user'):
+                user = cfg.get('server', 'user')
+            if group is undefined and cfg.has_option('server', 'group'):
+                group = cfg.get('server', 'group')
+            if log_ip is undefined and cfg.has_option('server', 'log_ip'):
+                RoundupRequestHandler.LOG_IPADDRESS = cfg.getboolean('server',
+                    'log_ip')
+            if pidfile is undefined and cfg.has_option('server', 'pidfile'):
+                pidfile = cfg.get('server', 'pidfile')
+            if logfile is undefined and cfg.has_option('server', 'logfile'):
+                logfile = cfg.get('server', 'logfile')
+            homes = RoundupRequestHandler.TRACKER_HOMES
+            for section in cfg.sections():
+                if section == 'server':
+                    continue
+                homes[section] = cfg.get(section, 'home')
+
         # obtain server before changing user id - allows to use port <
         # 1024 if started as root
         address = (hostname, port)
-
         try:
             httpd = server_class(address, RoundupRequestHandler)
         except socket.error, e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \
-                      _("Unable to bind to port %s, port already in use." % port)
+                      _("Unable to bind to port %s, port already in use."%port)
             raise
 
-        if group is not None and hasattr(os, 'getuid'):
-            # if root, setgid to the running user
-            if not os.getuid():
-                try:
-                    import grp
-                except ImportError:
-                    raise ValueError, _("Can't change groups - no grp module")
-                try:
-                    try:
-                        gid = int(group)
-                    except ValueError:
-                        gid = grp.getgrnam(group)[2]
-                    else:
-                        grp.getgrgid(gid)
-                except KeyError:
-                    raise ValueError,_("Group %(group)s doesn't exist")%locals()
-                os.setgid(gid)
-            elif os.getuid():
-                print _('WARNING: ignoring "-g" argument, not root')
-
-        if hasattr(os, 'getuid'):
-            # if root, setuid to the running user
-            if not os.getuid() and user is not None:
-                try:
-                    import pwd
-                except ImportError:
-                    raise ValueError, _("Can't change users - no pwd module")
-                try:
-                    try:
-                        uid = int(user)
-                    except ValueError:
-                        uid = pwd.getpwnam(user)[2]
-                    else:
-                        pwd.getpwuid(uid)
-                except KeyError:
-                    raise ValueError, _("User %(user)s doesn't exist")%locals()
-                os.setuid(uid)
-            elif os.getuid() and user is not None:
-                print _('WARNING: ignoring "-u" argument, not root')
-
-            # People can remove this check if they're really determined
-            if not os.getuid() and user is None:
-                raise ValueError, _("Can't run as root!")
+        # change user and/or group
+        setgid(group)
+        setuid(user)
 
         # handle tracker specs
         if args:
-            d = {}
             for arg in args:
                 try:
                     name, home = arg.split('=')
                 except ValueError:
                     raise ValueError, _("Instances must be name=home")
-                d[name] = os.path.abspath(home)
-            RoundupRequestHandler.TRACKER_HOMES = d
+                home = os.path.abspath(home)
+                RoundupRequestHandler.TRACKER_HOMES[name] = home
     except SystemExit:
         raise
     except ValueError:
@@ -549,6 +556,7 @@ def run(port=PORT, success_message=None):
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
 
+    # fork the server from our parent if a pidfile is specified
     if pidfile:
         if not hasattr(os, 'fork'):
             print _("Sorry, you can't run the server as a daemon"
