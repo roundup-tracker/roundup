@@ -58,10 +58,14 @@ Index views may be modified by the following arguments:
 3. Design
 =========
 This software was written according to the specification found at
+
  http://software-carpentry.codesourcery.com/entries/second-round/track/Roundup/
 
-... with some modifications. I've marked these in the source with 'XXX'
-comments when I remember to.
+a copy of the spec is distributed with roundup as doc/spec.html.
+
+
+There have been some modifications. I've marked these in the source with
+'XXX' comments when I remember to.
 
 In short:
  Class.find() - may match multiple properties, uses keyword args.
