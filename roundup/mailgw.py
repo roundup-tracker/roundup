@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.23 2001-10-21 04:00:20 richard Exp $
+$Id: mailgw.py,v 1.24 2001-10-23 22:57:52 richard Exp $
 '''
 
 
@@ -374,7 +374,8 @@ Subject was: "%s"
                 except KeyError:
                     pass
                 else:
-                    if not props['status'] or props['status'] == unread_id:
+                    if (not props.has_key('status') or
+                            props['status'] == unread_id):
                         props['status'] = chatting_id
 
             cl.set(nodeid, **props)
@@ -431,6 +432,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/10/21 04:00:20  richard
+# MailGW now moves 'unread' to 'chatting' on receiving e-mail for an issue.
+#
 # Revision 1.22  2001/10/21 03:35:13  richard
 # bug #473125: Paragraph in e-mails
 #
