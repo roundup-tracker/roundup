@@ -1,10 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-??-?? 0.?.?
+2002-??-?? 0.4.3
 Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
+ . bsddb3 backend should use 'c' for create, not 'n' for nuke
 
 
 2002-06-24 0.4.2
