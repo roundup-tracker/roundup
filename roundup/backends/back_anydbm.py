@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146 2004-05-05 01:52:34 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.1 2004-05-12 22:28:21 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1763,6 +1763,11 @@ class Class(hyperdb.Class):
                             # the node doesn't have a value for this property
                             if isinstance(propclass, Multilink): v = []
                             else: v = None
+                            entry.insert(0, v)
+                            continue
+
+                        # missing (None) values are always sorted first
+                        if v is None:
                             entry.insert(0, v)
                             continue
 

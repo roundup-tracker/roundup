@@ -3,7 +3,8 @@ are given with the most recent entry first.
 
 2004-05-?? 0.7.2
 Fixed:
-- fixed anydbm sorting with None values (sf bug 952853)
+- anydbm sorting with None values (sf bug 952853)
+- roundup-server -g option not recognised (sf bug 952310)
 
 
 2004-05-07 0.7.1

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.46.2.1 2004-05-09 23:41:13 richard Exp $
+$Id: roundup_server.py,v 1.46.2.2 2004-05-12 22:31:37 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -434,7 +434,7 @@ def run(port=PORT, success_message=None):
 
     try:
         # handle the command-line args
-        options = 'n:p:u:d:l:hNv'
+        options = 'n:p:g:u:d:l:hNv'
         if RoundupService:
             options += 'c'
 
