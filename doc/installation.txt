@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.55 $
+:Version: $Revision: 1.55.2.1 $
 
 .. contents::
 
@@ -280,6 +280,9 @@ A benefit of using the cgi-bin approach is that it's the easiest way to
 restrict access to your tracker to only use HTTPS. Access will be slower
 than through the `stand-alone web server`_ though.
 
+Note that if your Python isn't install as "python" then you'll need to edit
+the ``roundup.cgi`` script to fix the first line.
+
 If you're using IIS on a Windows platform, you'll need to run this command
 for the cgi to work (it turns on the PATH_INFO cgi variable)::
 
@@ -482,7 +485,7 @@ On Windows 2000 and later:
 6) Choose "Environmental Variables"
 7) Add: "<dir>\Scripts" to the "Path" environmental variable.
 
-Where <dir> in 7) is the root directory (e.g., C:\Python22\Scripts)
+Where <dir> in 7) is the root directory (e.g., ``C:\Python22\Scripts``)
 of your Python installation.
 
 I understand that in XP, 2) above is not needed as "Control
