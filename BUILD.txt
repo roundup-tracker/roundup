@@ -21,9 +21,10 @@ running:
 7.  python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
-8.  unpack the new dist file in /tmp and a) run_test, and b) demo.py
-9.  Generate gpg signature with "gpg -a --detach-sign" and upload to
-    mechanicalcat.net
+8.  unpack the new dist file in /tmp then a) run_test.py and b) demo.py
+    with all available Python versions.
+9.  generate gpg signature with "gpg -a --detach-sign" and upload to
+    Sourceforge.
 10. PyPI registration
 11. tag the CVS for the release, eg. "cvs tag -R release-0-6-3"
 
