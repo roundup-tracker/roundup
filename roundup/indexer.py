@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.3 2002-07-08 06:58:15 richard Exp $
+#$Id: indexer.py,v 1.4 2002-07-09 03:02:52 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -23,112 +23,44 @@ messages and text files possible.
 import os, shutil, re, mimetypes, marshal, zlib, errno
 
 class Indexer:
-    ''' Indexes messages and files.
-
-        This implements a new splitter based on re.findall '\w+' and the
-        add_othertext method.
+    ''' Indexes information from roundup's hyperdb to allow efficient
+        searching.
     '''
     def __init__(self, db_path):
         indexdb_path = os.path.join(db_path, 'indexes')
-
-        # see if we need to reindex because of a change in code
-        if (os.path.exists(indexdb_path) and
-                not os.path.exists(os.path.join(indexdb_path, 'version'))):
-            shutil.rmtree(indexdb_path)
-
-        # see if the index exists
-        index_exists = 0
-        if not os.path.exists(indexdb_path):
-            os.makedirs(indexdb_path)
-            os.chmod(indexdb_path, 0775)
-            open(os.path.join(indexdb_path, 'version'), 'w').write('1\n')
-        else:
-            index_exists = 1
-
-        # save off the path to the indexdb
         self.indexdb = os.path.join(indexdb_path, 'index.db')
         self.reindex = 0
         self.casesensitive = 0
         self.quiet = 9
 
-        if not index_exists:
-            # index everything
-            files_path = os.path.join(db_path, 'files')
-            self.add_files(dir=files_path)
-            self.save_index()
+        # see if we need to reindex because of a change in code
+        if (not os.path.exists(indexdb_path) or
+                not os.path.exists(os.path.join(indexdb_path, 'version'))):
+            # TODO: if the version file exists (in the future) we'll want to
+            # check the value in it - for now the file itself is a flag
+            if os.path.exists(indexdb_path):
+                shutil.rmtree(indexdb_path)
+            os.makedirs(indexdb_path)
+            os.chmod(indexdb_path, 0775)
+            open(os.path.join(indexdb_path, 'version'), 'w').write('1\n')
 
-    # override add_files so it's a little smarter about file types
-    def add_files(self, dir):
-        if not hasattr(self, 'files'):
-            self.load_index()
-        os.path.walk(dir, self.walk_add_file, None)
-        # Rebuild the fileid index
-        self.fileids = {}
-        for fname in self.files.keys():
-            fileid = self.files[fname][0]
-            self.fileids[fileid] = fname
+            # we need to reindex
+            self.reindex = 1
+        else:
+            self.reindex = 0
 
-    # override add_file so it can be a little smarter about determining the
-    # file type
-    def walk_add_file(self, arg, dname, names, ftype=None):
-        for name in names:
-            name = os.path.join(dname, name)
-            if os.path.isfile(name):
-                self.add_file(name)
-            elif os.path.isdir(name):
-                os.path.walk(name, self.walk_add_file, None)
-    def add_file(self, fname, ftype=None):
-        ''' Index the contents of a regular file
+    def should_reindex(self):
+        '''Should we reindex?
         '''
-        if not hasattr(self, 'files'):
-            self.load_index()
-        # Is file eligible for (re)indexing?
-        if self.files.has_key(fname):
-            if self.reindex:
-                # Reindexing enabled, cleanup dicts
-                self.purge_entry(fname, self.files, self.words)
-            else:
-                # DO NOT reindex this file
-                if self.quiet < 5:
-                    print "Skipping", fname
-                return 0
+        return self.reindex
 
-        # guess the file type
-        if ftype is None:
-            ftype = mimetypes.guess_type(fname)
-
-        # read in the file
-        text = open(fname).read()
-        if self.quiet < 5: print "Indexing", fname
-        words = self.splitter(text, ftype)
-
-        # Find new file index, and assign it to filename
-        # (_TOP uses trick of negative to avoid conflict with file index)
-        self.files['_TOP'] = (self.files['_TOP'][0]-1, None)
-        file_index =  abs(self.files['_TOP'][0])
-        self.files[fname] = (file_index, len(words))
-
-        filedict = {}
-        for word in words:
-            if filedict.has_key(word):
-                filedict[word] = filedict[word]+1
-            else:
-                filedict[word] = 1
-
-        for word in filedict.keys():
-            if self.words.has_key(word):
-                entry = self.words[word]
-            else:
-                entry = {}
-            entry[file_index] = filedict[word]
-            self.words[word] = entry
-
-    # NOTE: this method signature deviates from the one specified in
-    # indexer - I'm not entirely sure where it was expected to the text
-    # from otherwise...
-    def add_othertext(self, identifier, text):
-        ''' Add some text associated with the identifier
+    def add_text(self, identifier, text, mime_type='text/plain'):
+        ''' Add some text associated with the (classname, nodeid, property)
+            identifier.
         '''
+        # make sure the index is loaded
+        self.load_index()
+
         # Is file eligible for (re)indexing?
         if self.files.has_key(identifier):
             # Reindexing enabled, cleanup dicts
@@ -141,7 +73,7 @@ class Indexer:
                 return 0
 
         # split into words
-        words = self.splitter(text, 'text/plain')
+        words = self.splitter(text, mime_type)
 
         # Find new file index, and assign it to identifier
         # (_TOP uses trick of negative to avoid conflict with file index)
@@ -174,7 +106,7 @@ class Indexer:
     def splitter(self, text, ftype):
         ''' Split the contents of a text string into a list of 'words'
         '''
-        if ftype in ('text/plain', 'message/rfc822'):
+        if ftype == 'text/plain':
             words = self.text_splitter(text, self.casesensitive)
         else:
             return []
@@ -193,37 +125,49 @@ class Indexer:
         # place
         return re.findall(r'\b\w{2,25}\b', text)
 
-    def search(self, search_terms, klass):
-        ''' display search results
+    def search(self, search_terms, klass, ignore={},
+            dre=re.compile(r'([^\d]+)(\d+)')):
+        ''' Display search results looking for [search, terms] associated
+            with the hyperdb Class "klass". Ignore hits on {class: property}.
+
+            "dre" is a helper, not an argument.
         '''
+        # do the index lookup
         hits = self.find(search_terms)
-        links = []
-        nodeids = {}
+        if not hits:
+            return {}
+
+        # this is specific to "issue" klass ... eugh
         designator_propname = {'msg': 'messages', 'file': 'files'}
-        if hits:
-            hitcount = len(hits)
-            # build a dictionary of nodes and their associated messages
-            # and files
-            for hit in hits.keys():
-                filename = hits[hit].split('/')[-1]
-                for designator, propname in designator_propname.items():
-                    if not filename.startswith(designator):
-                        continue
-                    nodeid = filename[len(designator):]
-                    result = apply(klass.find, (), {propname:nodeid})
-                    if not result:
-                        continue
 
-                    id = str(result[0])
-                    if not nodeids.has_key(id):
-                        nodeids[id] = {}
+        # build a dictionary of nodes and their associated messages
+        # and files
+        nodeids = {}
+        for classname, nodeid, property in hits.values():
+            # skip this result if we don't care about this class/property
+            if ignore.has_key((classname, property)):
+                continue
 
-                    node_dict = nodeids[id]
-                    if not node_dict.has_key(propname):
-                        node_dict[propname] = [nodeid]
-                    elif node_dict.has_key(propname):
-                        node_dict[propname].append(nodeid)
+            # if it's a property on klass, it's easy
+            if classname == klass.classname:
+                if not nodeids.has_key(nodeid):
+                    nodeids[nodeid] = {}
+                continue
 
+            # it's a linked class - find the klass entries that are
+            # linked to it
+            linkprop = designator_propname[classname]
+            for resid in klass.find(**{linkprop: nodeid}):
+                resid = str(resid)
+                if not nodeids.has_key(id):
+                    nodeids[resid] = {}
+
+                # update the links for this klass nodeid
+                node_dict = nodeids[resid]
+                if not node_dict.has_key(linkprop):
+                    node_dict[linkprop] = [nodeid]
+                elif node_dict.has_key(linkprop):
+                    node_dict[linkprop].append(nodeid)
         return nodeids
 
     # we override this to ignore not 2 < word < 25 and also to fix a bug -
@@ -303,6 +247,9 @@ class Indexer:
         self.fileids = db['FILEIDS']
 
     def save_index(self):
+        # make sure we're loaded
+        self.load_index()
+
         # brutal space saver... delete all the small segments
         for segment in self.segments:
             try:
@@ -354,6 +301,15 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.3  2002/07/08 06:58:15  richard
+#cleaned up the indexer code:
+# - it splits more words out (much simpler, faster splitter)
+# - removed code we'll never use (roundup.roundup_indexer has the full
+#   implementation, and replaces roundup.indexer)
+# - only index text/plain and rfc822/message (ideas for other text formats to
+#   index are welcome)
+# - added simple unit test for indexer. Needs more tests for regression.
+#
 #Revision 1.2  2002/05/25 07:16:24  rochecompaan
 #Merged search_indexing-branch with HEAD
 #

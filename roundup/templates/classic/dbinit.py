@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.17 2002-05-24 04:03:23 richard Exp $
+# $Id: dbinit.py,v 1.18 2002-07-09 03:02:53 richard Exp $
 
 import os
 
@@ -101,6 +101,8 @@ def open(name=None):
     import detectors
     detectors.init(db)
 
+    # schema is set up - run any post-initialisation
+    db.post_init()
     return db
  
 def init(adminpw): 
@@ -141,6 +143,10 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/05/24 04:03:23  richard
+# Added commentage to the dbinit files to help people with their
+# customisation.
+#
 # Revision 1.16  2002/02/16 08:06:14  richard
 # Removed the key property restriction on title of the classic issue class.
 #

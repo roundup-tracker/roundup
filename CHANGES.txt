@@ -12,6 +12,19 @@ Fixed:
    - only index text/plain and rfc822/message (ideas for other text formats to
      index are welcome)
    - added simple unit test for indexer. Needs more tests for regression.
+   - all String properties may now be indexed too. Currently there's a bit of
+     "issue" specific code in the actual searching which needs to be
+     addressed. In a nutshell:
+     + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+           file = FileClass(db, "file", name=String(), type=String(),
+               comment=String(indexme="yes"))
+     + the comment will then be indexed and be searchable, with the results
+       related back to the issue that the file is linked to
+   - as a result of this work, the FileClass has a default MIME type that may
+     be overridden in a subclass, or by the use of a "type" property as is
+     done in the default templates.
+   - the regeneration of the indexes (if necessary) is done once the schema is
+     set up in the dbinit.
  . made the unit tests run again - they were quite b0rken
 
 

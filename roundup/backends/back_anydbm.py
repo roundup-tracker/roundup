@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.38 2002-07-08 06:58:15 richard Exp $
+#$Id: back_anydbm.py,v 1.39 2002-07-09 03:02:52 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -65,6 +65,16 @@ class Database(FileStorage, hyperdb.Database):
         self.indexer = Indexer(self.dir)
         # ensure files are group readable and writable
         os.umask(0002)
+
+    def post_init(self):
+        """Called once the schema initialisation has finished."""
+        # reindex the db if necessary
+        if not self.indexer.should_reindex():
+            return
+        for klass in self.classes.values():
+            for nodeid in klass.list():
+                klass.index(nodeid)
+        self.indexer.save_index()
 
     def __repr__(self):
         return '<back_anydbm instance at %x>'%id(self) 
@@ -409,14 +419,23 @@ class Database(FileStorage, hyperdb.Database):
         self.databases = {}
 
         # now, do all the transactions
+        reindex = {}
         for method, args in self.transactions:
-            method(*args)
+            reindex[method(*args)] = 1
 
         # now close all the database files
         for db in self.databases.values():
             db.close()
         del self.databases
         # TODO: unlock the DB
+
+        # reindex the nodes that request it
+        for classname, nodeid in filter(None, reindex.keys()):
+            print >>hyperdb.DEBUG, 'commit.reindex', (classname, nodeid)
+            self.getclass(classname).index(nodeid)
+
+        # save the indexer state
+        self.indexer.save_index()
 
         # all transactions committed, back to normal
         self.cache = {}
@@ -438,6 +457,9 @@ class Database(FileStorage, hyperdb.Database):
 
         # now save the marshalled data
         db[nodeid] = marshal.dumps(self.serialise(classname, node))
+
+        # return the classname, nodeid so we reindex this content
+        return (classname, nodeid)
 
     def _doSaveJournal(self, classname, nodeid, action, params):
         # serialise first
@@ -477,8 +499,7 @@ class Database(FileStorage, hyperdb.Database):
         for method, args in self.transactions:
             # delete temporary files
             if method == self._doStoreFile:
-                if os.path.exists(args[0]+".tmp"):
-                    os.remove(args[0]+".tmp")
+                self._rollbackStoreFile(*args)
         self.cache = {}
         self.dirtynodes = {}
         self.newnodes = {}
@@ -486,6 +507,15 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.38  2002/07/08 06:58:15  richard
+#cleaned up the indexer code:
+# - it splits more words out (much simpler, faster splitter)
+# - removed code we'll never use (roundup.roundup_indexer has the full
+#   implementation, and replaces roundup.indexer)
+# - only index text/plain and rfc822/message (ideas for other text formats to
+#   index are welcome)
+# - added simple unit test for indexer. Needs more tests for regression.
+#
 #Revision 1.37  2002/06/20 23:52:35  richard
 #More informative error message
 #

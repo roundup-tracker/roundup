@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.5 2002-07-08 06:58:15 richard Exp $
+#$Id: blobfiles.py,v 1.6 2002-07-09 03:02:52 richard Exp $
 '''
 This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
@@ -74,12 +74,19 @@ class FileStorage:
            None, in which case the filename does not indicate which property
            is being saved.
         '''
+        # determine the name of the file to write to
         name = self.filename(classname, nodeid, property)
+
+        # make sure the file storage dir exists
         if not os.path.exists(os.path.dirname(name)):
             os.makedirs(os.path.dirname(name))
-        open(name + '.tmp', 'wb').write(content)
-        self.transactions.append((self._doStoreFile, (name, )))
 
+        # open the temp file for writing
+        open(name + '.tmp', 'wb').write(content)
+
+        # save off the commit action
+        self.transactions.append((self._doStoreFile, (classname, nodeid,
+            property)))
 
     def getfile(self, classname, nodeid, property):
         '''Get the content of the file in the database.
@@ -88,6 +95,7 @@ class FileStorage:
         try:
             return open(filename, 'rb').read()
         except:
+            # now try the temp pre-commit filename
             try:
                 return open(filename+'.tmp', 'rb').read()
             except:
@@ -101,15 +109,36 @@ class FileStorage:
         files_dir = os.path.join(self.dir, 'files')
         return files_in_dir(files_dir)
 
-    def _doStoreFile(self, name, **databases):
+    def _doStoreFile(self, classname, nodeid, property, **databases):
         '''Store the file as part of a transaction commit.
         '''
+        # determine the name of the file to write to
+        name = self.filename(classname, nodeid, property)
+
         # the file is currently ".tmp" - move it to its real name to commit
         os.rename(name+".tmp", name)
-        self.indexer.add_file(name)
-        self.indexer.save_index()
+
+        # return the classname, nodeid so we reindex this content
+        return (classname, nodeid)
+
+    def _rollbackStoreFile(self, classname, nodeid, property, **databases):
+        '''Remove the temp file as a part of a rollback
+        '''
+        # determine the name of the file to delete
+        name = self.filename(classname, nodeid, property)
+        if os.path.exists(name+".tmp"):
+            os.remove(name+".tmp")
 
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/07/08 06:58:15  richard
+# cleaned up the indexer code:
+#  - it splits more words out (much simpler, faster splitter)
+#  - removed code we'll never use (roundup.roundup_indexer has the full
+#    implementation, and replaces roundup.indexer)
+#  - only index text/plain and rfc822/message (ideas for other text formats to
+#    index are welcome)
+#  - added simple unit test for indexer. Needs more tests for regression.
+#
 # Revision 1.4  2002/06/19 03:07:19  richard
 # Moved the file storage commit into blobfiles where it belongs.
 #

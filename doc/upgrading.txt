@@ -7,6 +7,17 @@ accordingly.
 
 .. contents::
 
+Migrating from 0.4.x to 0.5.0
+=============================
+
+0.5.0 Configuration
+-------------------
+
+TODO: mention stuff about indexing
+TODO: mention that the dbinit needs the db.post_init() method call for
+reindexing
+
+
 Migrating from 0.4.1 to 0.4.2
 =============================
 

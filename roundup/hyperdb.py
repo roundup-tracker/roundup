@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.70 2002-06-27 12:06:20 gmcm Exp $
+# $Id: hyperdb.py,v 1.71 2002-07-09 03:02:52 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -56,6 +56,8 @@ del Sink
 #
 class String:
     """An object designating a String property."""
+    def __init__(self, indexme='no'):
+        self.indexme = indexme == 'yes'
     def __repr__(self):
         ' more useful for dumps '
         return '<%s>'%self.__class__
@@ -155,6 +157,10 @@ transaction.
         None, the database is opened in read-only mode: the Class.create(),
         Class.set(), and Class.retire() methods are disabled.
         """
+        raise NotImplementedError
+
+    def post_init(self):
+        """Called once the schema initialisation has finished."""
         raise NotImplementedError
 
     def __getattr__(self, classname):
@@ -1111,6 +1117,16 @@ class Class:
                 raise ValueError, key
         self.properties.update(properties)
 
+    def index(self, nodeid):
+        '''Add (or refresh) the node to search indexes
+        '''
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if isinstance(propclass, String) and propclass.indexme:
+                # and index them under (classname, nodeid, property)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                    str(self.get(nodeid, prop)))
+
 # XXX not in spec
 class Node:
     ''' A convenience wrapper for the given node
@@ -1169,6 +1185,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.70  2002/06/27 12:06:20  gmcm
+# Improve an error message.
+#
 # Revision 1.69  2002/06/17 23:15:29  richard
 # Can debug to stdout now
 #

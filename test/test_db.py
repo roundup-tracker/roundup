@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.23 2002-06-20 23:51:48 richard Exp $ 
+# $Id: test_db.py,v 1.24 2002-07-09 03:02:53 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -23,14 +23,18 @@ from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, Class, DatabaseError
 from roundup.roundupdb import FileClass
 from roundup import date, password
+from roundup.indexer import Indexer
 
 def setupSchema(db, create):
     status = Class(db, "status", name=String())
     status.setkey("name")
     user = Class(db, "user", username=String(), password=Password())
-    file = FileClass(db, "file", name=String(), type=String())
-    issue = Class(db, "issue", title=String(), status=Link("status"),
-        nosy=Multilink("user"), deadline=Date(), foo=Interval())
+    file = FileClass(db, "file", name=String(), type=String(),
+        comment=String(indexme="yes"))
+    issue = Class(db, "issue", title=String(indexme="yes"),
+        status=Link("status"), nosy=Multilink("user"), deadline=Date(),
+        foo=Interval(), files=Multilink("file"))
+    db.post_init()
     if create:
         status.create(name="unread")
         status.create(name="in-progress")
@@ -112,8 +116,8 @@ class anydbmDBTestCase(MyTestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['deadline', 'fixer', 'foo', 'id', 'nosy',
-            'status', 'title'])
+        self.assertEqual(keys, ['deadline', 'files', 'fixer', 'foo', 'id',
+            'nosy', 'status', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRetire(self):
@@ -246,7 +250,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(action, 'create')
         keys = params.keys()
         keys.sort()
-        self.assertEqual(keys, ['deadline', 'fixer', 'foo', 'nosy', 
+        self.assertEqual(keys, ['deadline', 'files', 'fixer', 'foo', 'nosy', 
             'status', 'title'])
         self.assertEqual(None,params['deadline'])
         self.assertEqual(None,params['fixer'])
@@ -296,6 +300,22 @@ class anydbmDBTestCase(MyTestCase):
         id2 = self.db2.issue.create(title="eggs", status='2')
         self.assertNotEqual(id1, id2)
 
+    def testSearching(self):
+        self.db.file.create(content='hello', type="text/plain")
+        self.db.file.create(content='world', type="text/frozz",
+            comment='blah blah')
+        self.db.issue.create(files=['1', '2'], title="flebble plop")
+        self.db.issue.create(title="flebble frooz")
+        self.db.commit()
+        self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
+            {'1': {'files': ['1']}})
+        self.assertEquals(self.db.indexer.search(['world'], self.db.issue), {})
+        self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
+            {'2': {}})
+        self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
+            {'2': {}, '1': {}})
+        self.assertEquals(self.db.indexer.search(['blah'], self.db.issue),
+            {'1': {'files': ['2']}})
 
 class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
@@ -399,6 +419,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/06/20 23:51:48  richard
+# Cleaned up the hyperdb tests
+#
 # Revision 1.22  2002/05/21 05:52:11  richard
 # Well whadya know, bsddb3 works again.
 # The backend is implemented _exactly_ the same as bsddb - so there's no

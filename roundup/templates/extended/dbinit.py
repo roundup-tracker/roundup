@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.21 2002-05-24 04:03:23 richard Exp $
+# $Id: dbinit.py,v 1.22 2002-07-09 03:02:53 richard Exp $
 
 import os
 
@@ -131,6 +131,8 @@ def open(name=None):
     import detectors
     detectors.init(db)
 
+    # schema is set up - run any post-initialisation
+    db.post_init()
     return db
  
 def init(adminpw): 
@@ -193,6 +195,10 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/05/24 04:03:23  richard
+# Added commentage to the dbinit files to help people with their
+# customisation.
+#
 # Revision 1.20  2002/02/15 07:08:44  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.
