@@ -93,6 +93,7 @@ roundupdb:
   . split the file storage into multiple dirs?
 roundup-mailgw:
   . errors as attachments
+  . limits on the e-mail addresses that may use the mail gateway
 roundup-server:
   . check the source file timestamps before reloading
 cgi_client

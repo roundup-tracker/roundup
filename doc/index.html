@@ -32,6 +32,7 @@
     </ul>
 <li><a href="#custom">Customising Roundup</a>
     <ul>
+        <li><a href="#config">Instance Configuration</a>
         <li><a href="#custinst">Instance Schema</a>
         <li><a href="#custweb">Web Interface</a>
     </ul>
@@ -125,25 +126,26 @@ asked a series of questions:
     <li>Administration user "admin" password.
 </ol>
 
-Roundup is configurable using a localconfig.py file in the instance home.
-It may have the following variable declarations:
+Roundup is configurable using an instance_config.py file in the instance home.
+It should be edited before roundup is used, and may have the following
+variable declarations:
   
 <ol>
     <li>MAILHOST
     <br>The SMTP mail host that roundup will use to send mail
     <li>MAIL_DOMAIN
     <br>The domain name used for email addresses
+    <li>ISSUE_TRACKER_WEB
+    <br>The web address of the issue tracker's web interface
 </ol>
 
-Any further configuration should be possible by editing the instance home's
-__init__.py directly.
 <p>
 The email addresses used by the system by default are:
 
 <ol>
-    <li>issue_tracker@MAIL_DOMAIN
+    <li>ISSUE_TRACKER_EMAIL - issue_tracker@MAIL_DOMAIN
     <br>submissions of issues
-    <li>roundup-admin@MAIL_DOMAIN
+    <li>ADMIN_EMAIL - roundup-admin@MAIL_DOMAIN
     <br>roundup's internal use (problems, etc)
 </ol>
 
@@ -268,18 +270,18 @@ Usage:
 <table border=1 cellspacing=0>
 <tr><th colspan=2>Command Help</th></tr>
 <tr><td valign=top><strong>history</strong></td>
-    <td><tt>history designator</tt><br>
+    <td><tt>history designator</tt><p>
     Lists the journal entries for the node identified by the designator.
 </td></tr>
     
 <tr><td valign=top><strong>find</strong></td>
-    <td><tt>find classname propname=value ...</tt><br>
+    <td><tt>find classname propname=value ...</tt><p>
     Find the nodes of the given class with a given property value. The
     value may be either the nodeid of the linked node, or its key value.
 </td></tr>
     
 <tr><td valign=top><strong>list</strong></td>
-    <td><tt>list classname [property]</tt><br>
+    <td><tt>list classname [property]</tt><p>
     Lists all instances of the given class along. If the property is not
     specified, the  "label" property is used. The label property is tried
     in order: the key, "name", "title" and then the first property,
@@ -287,42 +289,42 @@ Usage:
 </td></tr>
     
 <tr><td valign=top><strong>retire</strong></td>
-    <td><tt>retire designator[,designator]*</tt><br>
+    <td><tt>retire designator[,designator]*</tt><p>
     This action indicates that a particular node is not to be retrieved by
     the list or find commands, and its key value may be re-used.
 </td></tr>
     
 <tr><td valign=top><strong>create</strong></td>
-    <td><tt>create classname property=value ...</tt><br>
+    <td><tt>create classname property=value ...</tt><p>
     This creates a new entry of the given class using the property
     name=value arguments provided on the command line after the "create"
     command.
 </td></tr>
     
 <tr><td valign=top><strong>get</strong></td>
-    <td><tt>get property designator[,designator]*</tt><br>
+    <td><tt>get property designator[,designator]*</tt><p>
     Retrieves the property value of the nodes specified by the designators.
 </td></tr>
     
 <tr><td valign=top><strong>spec</strong></td>
-    <td><tt>spec classname</tt><br>
+    <td><tt>spec classname</tt><p>
     This lists the properties for a given class.
 </td></tr>
     
 <tr><td valign=top><strong>set</strong></td>
-    <td><tt>set designator[,designator]* propname=value ...</tt><br>
+    <td><tt>set designator[,designator]* propname=value ...</tt><p>
     Sets the property to the value for all designators given.
 </td></tr>
     
 <tr><td valign=top><strong>init</strong></td>
-    <td><tt>init [template [backend [admin password]]]</tt><br>
+    <td><tt>init [template [backend [admin password]]]</tt><p>
     The command will prompt for the instance home directory (if not supplied
     through INSTANCE_HOME or the -i option. The template, backend and admin
     password may be specified on the command-line as arguments, in that order.
 </td></tr>
     
 <tr><td valign=top><strong>freshen</strong></td>
-    <td><tt>freshen</tt><br>
+    <td><tt>freshen</tt><p>
         <strong>**DO NOT USE**</strong>
         <p>
     This currently kills databases!!!!
@@ -334,12 +336,12 @@ Usage:
 </td></tr>
 
 <tr><td><strong>help</strong></td>
-    <td><tt>help [command]</tt><br>
+    <td><tt>help [command]</tt><p>
     Short help about roundup-admin or the specific command.
     </td></tr>
 
 <tr><td><strong>morehelp</strong></td>
-    <td><tt>morehelp</tt><br>
+    <td><tt>morehelp</tt><p>
     All available help from the roundup-admin tool.
     </td></tr>
 </table>
@@ -459,12 +461,12 @@ explanatory message given in the exception.
 
 Instances have the following structure:
 <table>
-    <tr><td valign=top><strong>dbinit.py</strong></td>
-        <td>Holds the instance schema</td></tr>
     <tr><td valign=top><strong>instance_config.py</strong></td>
-        <td>Holds the basic instance configuration</td></tr>
+    <td>Holds the basic <a href="#config">instance configuration</a></td></tr>
+    <tr><td valign=top><strong>dbinit.py</strong></td>
+    	<td>Holds the <a href="#custinst">instance schema</a></td></tr>
     <tr><td valign=top><strong>interfaces.py</strong></td>
-        <td>Defines the Web and E-Mail interfaces for the instance</td></tr>
+    <td>Defines the <a href="#custweb">Web</a> and E-Mail interfaces for the instance</td></tr>
     <tr><td valign=top><strong>select_db.py</strong></td>
         <td>Selects the database back-end for the instance</td></tr>
     <tr><td valign=top><strong>db/</strong></td>
@@ -474,8 +476,57 @@ Instances have the following structure:
     <tr><td valign=top><strong>detectors/</strong></td>
         <td>Auditors and reactors for this instance</td></tr>
     <tr><td valign=top><strong>html/</strong></td>
-        <td>Web interface templates, images and style sheets</td></tr>
+    <td>Web interface <a href="#custweb">templates</a>, images and style sheets</td></tr>
 </table>
+
+<h2><a name="config">Instance Configuration</a></h2>
+The <tt>instance_config.py</tt> located in your instance home contains the
+basic configuration for the web and e-mail components of roundup's
+interfaces. This file is a Python module. The default
+<tt>instance_config.py</tt> is given below - as you can see, the
+MAIL_DOMAIN must be edited before any interaction with the instance is
+attempted.
+
+<p>
+<pre>
+MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
+HTTP_PORT=0
+
+# roundup home is this package's directory
+INSTANCE_HOME=os.path.split(__file__)[0]
+
+# The SMTP mail host that roundup will use to send mail
+if not MAILHOST:
+    MAILHOST = 'localhost'
+
+# The domain name used for email addresses.
+if not MAIL_DOMAIN:
+    MAIL_DOMAIN = 'fill.me.in.'
+
+# the next two are only used for the standalone HTTP server.
+if not HTTP_HOST:
+    HTTP_HOST = ''
+if not HTTP_PORT:
+    HTTP_PORT = 9080
+
+# This is the directory that the database is going to be stored in
+DATABASE = os.path.join(INSTANCE_HOME, 'db')
+
+# This is the directory that the HTML templates reside in
+TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
+
+# The email address that mail to roundup should go to
+ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+
+# The web address that the instance is viewable at
+ISSUE_TRACKER_WEB = 'http://some.useful.url/'
+
+# The email address that roundup will complain to if it runs into trouble
+ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+
+# Somewhere for roundup to log stuff internally sent to stdout or stderr
+LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
+</pre>
 
 <h2><a name="custinst">Instance Schema</a></h2>
 An instance schema defines what data is stored in the instance's database.
@@ -987,7 +1038,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.6 2001-10-01 04:58:33 richard Exp $
+$Id: index.html,v 1.7 2001-10-01 06:30:23 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
