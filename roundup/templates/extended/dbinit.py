@@ -1,9 +1,9 @@
-# $Id: dbinit.py,v 1.4 2001-07-23 08:45:28 richard Exp $
+# $Id: dbinit.py,v 1.5 2001-07-23 23:20:35 richard Exp $
 
 import os
 
 import instance_config
-from roundup import roundupdb, cgi_client, mailgw 
+from roundup import roundupdb
 import select_db
 from roundup.roundupdb import Class, FileClass
 
@@ -21,21 +21,6 @@ class IssueClass(roundupdb.IssueClass):
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
 
- 
-class Client(cgi_client.Client): 
-    ''' derives basic mail gateway implementation from the standard module, 
-        with any specific extensions 
-    ''' 
-    TEMPLATES = instance_config.TEMPLATES
-    pass 
- 
-class MailGW(mailgw.MailGW): 
-    ''' derives basic mail gateway implementation from the standard module, 
-        with any specific extensions 
-    ''' 
-    ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
-    ADMIN_EMAIL = instance_config.ADMIN_EMAIL
-    MAILHOST = instance_config.MAILHOST
  
 def open(name=None):
     ''' as from the roundupdb method openDB 
@@ -171,6 +156,11 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/23 08:45:28  richard
+# ok, so now "./roundup-admin init" will ask questions in an attempt to get a
+# workable instance_home set up :)
+# _and_ anydbm has had its first test :)
+#
 # Revision 1.3  2001/07/23 07:14:41  richard
 # Moved the database backends off into backends.
 #
