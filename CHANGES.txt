@@ -17,6 +17,7 @@ Fixed:
 - fixed lookup of "missing" Link values for new props in anydbm backend
 - allow list of values for id, Number and Boolean filtering in anydbm
   backend
+- fixed some more mysql 0.6->0.7 upgrade bugs (sf bug 950410)
 
 
 2004-06-10 0.7.4

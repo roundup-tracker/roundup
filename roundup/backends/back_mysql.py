@@ -140,8 +140,8 @@ class Database(Database):
         except MySQLdb.OperationalError, message:
             raise DatabaseError, message
         cursor = conn.cursor()
-        cursor.execute("SET AUTOCOMMIT=0")
-        cursor.execute("BEGIN")
+        cursor.execute("SET AUTOCOMMIT=OFF")
+        cursor.execute("START TRANSACTION")
         return (conn, cursor)
     
     def open_connection(self):
@@ -251,6 +251,8 @@ class Database(Database):
             # unserialise the old data
             olddata = []
             propnames = propnames + ['id', '__retired__']
+            cols = []
+            first = True
             for entry in self.cursor.fetchall():
                 l = []
                 olddata.append(l)
@@ -259,8 +261,12 @@ class Database(Database):
                     v = entry[i]
 
                     if name in ('id', '__retired__'):
+                        if first:
+                            cols.append(name)
                         l.append(int(v))
                         continue
+                    if first:
+                        cols.append('_' + name)
                     prop = properties[name]
                     if isinstance(prop, Date) and v is not None:
                         v = date.Date(v)
@@ -282,10 +288,13 @@ class Database(Database):
 
                     # Intervals store the seconds value too
                     if isinstance(prop, Interval):
+                        if first:
+                            cols.append('__' + name + '_int__')
                         if v is not None:
                             l.append(v.as_seconds())
                         else:
                             l.append(e)
+                first = False
 
             self.drop_class_table_indexes(cn, old_spec[0])
 
@@ -296,8 +305,9 @@ class Database(Database):
             self.create_class_table(klass)
 
             # do the insert of the old data
-            args = ','.join([self.arg for x in fetch])
-            sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
+            args = ','.join([self.arg for x in cols])
+            cols = ','.join(cols)
+            sql = 'insert into _%s (%s) values (%s)'%(cn, cols, args)
             if __debug__:
                 print >>hyperdb.DEBUG, 'migration', (self, sql)
             for entry in olddata:
@@ -492,6 +502,20 @@ class Database(Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql, vals)
         self.cursor.execute(sql, vals)
+
+    def sql_commit(self):
+        ''' Actually commit to the database.
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, '+++ commit database connection +++'
+        self.conn.commit()
+
+        # open a new cursor for subsequent work
+        self.cursor = self.conn.cursor()
+
+        # make sure we're in a new transaction and not autocommitting
+        self.cursor.execute("SET AUTOCOMMIT=OFF")
+        self.cursor.execute("START TRANSACTION")
 
 class MysqlClass:
     # we're overriding this method for ONE missing bit of functionality.
