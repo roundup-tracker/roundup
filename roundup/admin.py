@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.16 2002-07-09 04:19:09 richard Exp $
+# $Id: admin.py,v 1.17 2002-07-14 06:05:50 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -956,9 +956,7 @@ Date format is "YYYY-MM-DD" eg:
             raise ValueError, _('Invalid format')
         m = m.groupdict()
         if m['period']:
-            # TODO: need to fix date module.  one should be able to say
-            # pack_before = date.Date(". - %s"%value)
-            pack_before = date.Date(".") + date.Interval("- %s"%value)
+            pack_before = date.Date(". - %s"%value)
         elif m['date']:
             pack_before = date.Date(value)
         self.db.pack(pack_before)
@@ -1125,6 +1123,11 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/07/09 04:19:09  richard
+# Added reindex command to roundup-admin.
+# Fixed reindex on first access.
+# Also fixed reindexing of entries that change.
+#
 # Revision 1.15  2002/06/17 23:14:44  richard
 # . #569415 ] {version}
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.21 2002-05-15 06:32:46 richard Exp $
+# $Id: date.py,v 1.22 2002-07-14 06:05:50 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -91,29 +91,17 @@ class Date:
             self.year, self.month, self.day, self.hour, self.minute, \
                 self.second, x, x, x = time.gmtime(ts)
 
-    def applyInterval(self, interval):
-        ''' Apply the interval to this date
+    def addInterval(self, interval):
+        ''' Add the interval to this date, returning the date tuple
         '''
-        t = (self.year + interval.year,
-             self.month + interval.month,
-             self.day + interval.day,
-             self.hour + interval.hour,
-             self.minute + interval.minute,
-             self.second + interval.second, 0, 0, 0)
-        self.year, self.month, self.day, self.hour, self.minute, \
-            self.second, x, x, x = time.gmtime(calendar.timegm(t))
-
-    def __add__(self, other):
-        """Add an interval to this date to produce another date.
-        """
         # do the basic calc
-        sign = other.sign
-        year = self.year + sign * other.year
-        month = self.month + sign * other.month
-        day = self.day + sign * other.day
-        hour = self.hour + sign * other.hour
-        minute = self.minute + sign * other.minute
-        second = self.second + sign * other.second
+        sign = interval.sign
+        year = self.year + sign * interval.year
+        month = self.month + sign * interval.month
+        day = self.day + sign * interval.day
+        hour = self.hour + sign * interval.hour
+        minute = self.minute + sign * interval.minute
+        second = self.second + sign * interval.second
 
         # now cope with under- and over-flow
         # first do the time
@@ -148,8 +136,18 @@ class Date:
             # re-figure the number of days for this month
             if month == 2 and calendar.isleap(year): month_days = 29
             else: month_days = mdays[month]
+        return (year, month, day, hour, minute, second, 0, 0, 0)
 
-        return Date((year, month, day, hour, minute, second, 0, 0, 0))
+    def applyInterval(self, interval):
+        ''' Apply the interval to this date
+        '''
+        self.year, self.month, self.day, self.hour, self.minute, \
+            self.second, x, x, x = self.addInterval(interval)
+
+    def __add__(self, interval):
+        """Add an interval to this date to produce another date.
+        """
+        return Date(self.addInterval(interval))
 
     # XXX deviates from spec to allow subtraction of dates as well
     def __sub__(self, other):
@@ -440,6 +438,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/05/15 06:32:46  richard
+#  . reverting to dates for intervals > 2 months sucks
+#
 # Revision 1.20  2002/02/21 23:34:51  richard
 # Oops, there's 24 hours in a day, and subtraction of intervals now works
 # properly.

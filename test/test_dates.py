@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.11 2002-02-21 23:34:52 richard Exp $ 
+# $Id: test_dates.py,v 1.12 2002-07-14 06:05:50 richard Exp $ 
 
 import unittest, time
 
@@ -74,7 +74,11 @@ class DateTestCase(unittest.TestCase):
         # now check calculations
         date = Date('2000-01-01') + Interval('- 2y 2m')
         ae(str(date), '1997-11-01.00:00:00')
+        date = Date('2000-01-01 - 2y 2m')
+        ae(str(date), '1997-11-01.00:00:00')
         date = Date('2000-01-01') + Interval('2m')
+        ae(str(date), '2000-03-01.00:00:00')
+        date = Date('2000-01-01 + 2m')
         ae(str(date), '2000-03-01.00:00:00')
 
         date = Date('2000-01-01') + Interval('60d')
@@ -150,6 +154,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/02/21 23:34:52  richard
+# Oops, there's 24 hours in a day, and subtraction of intervals now works
+# properly.
+#
 # Revision 1.10  2002/02/21 23:11:45  richard
 #  . fixed some problems in date calculations (calendar.py doesn't handle over-
 #    and under-flow). Also, hour/minute/second intervals may now be more than
