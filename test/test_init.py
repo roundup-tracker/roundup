@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.20 2002-09-24 01:59:44 richard Exp $
+# $Id: test_init.py,v 1.21 2003-02-28 03:33:25 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -43,7 +43,8 @@ class ClassicTestCase(MyTestCase):
         ae = self.assertEqual
 
         # create the instance
-        init.install(self.dirname, 'classic', self.backend)
+        init.install(self.dirname, 'classic')
+        init.write_select_db(self.dirname, self.backend)
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package

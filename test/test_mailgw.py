@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.39 2003-02-06 05:43:49 richard Exp $
+# $Id: test_mailgw.py,v 1.40 2003-02-28 03:33:25 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -68,7 +68,8 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        init.install(self.dirname, 'classic', 'anydbm')
+        init.install(self.dirname, 'classic')
+        init.write_select_db(self.dirname, 'anydbm')
         init.initialise(self.dirname, 'sekrit')
         # check we can load the package
         self.instance = instance.open(self.dirname)
