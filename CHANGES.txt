@@ -18,6 +18,7 @@ Fixed:
 - added "download_url" method to generate a correctly quoted URL for file
   download links (sf bug 927745)
 - all uses of TRACKER_WEB now ensure it ends with a '/'
+- roundup-admin install checks for existing tracker in target home
 
 
 2004-03-27 0.7.0b2

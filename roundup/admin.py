@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.65 2004-04-03 21:32:24 richard Exp $
+# $Id: admin.py,v 1.66 2004-04-05 06:24:06 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -356,10 +356,22 @@ Command help:
             raise UsageError, _('Not enough arguments supplied')
 
         # make sure the tracker home can be created
+        tracker_home = os.path.abspath(tracker_home)
         parent = os.path.split(tracker_home)[0]
         if not os.path.exists(parent):
             raise UsageError, _('Instance home parent directory "%(parent)s"'
                 ' does not exist')%locals()
+
+        if os.path.exists(os.path.join(tracker_home, 'config.py')):
+            print _('WARNING: There appears to be a tracker in '
+                '"%(tracker_home)s"!')%locals()
+            print _('If you re-install it, you will lose all the data!')
+            ok = raw_input(_('Erase it? Y/N: ')).strip()
+            if ok.strip().lower() != 'y':
+                return 0
+
+            # clear it out so the install isn't confused
+            shutil.rmtree(tracker_home)
 
         # select template
         templates = self.listTemplates()
@@ -439,8 +451,8 @@ Command help:
         if db_exists:
             print _('WARNING: The database is already initialised!')
             print _('If you re-initialise it, you will lose all the data!')
-            ok = raw_input(_('Erase it? Y/[N]: ')).strip()
-            if ok.lower() != 'y':
+            ok = raw_input(_('Erase it? Y/N: ')).strip()
+            if ok.strip().lower() != 'y':
                 return 0
 
             # Get a database backend in use by tracker
