@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.77.2.3 2005-02-25 17:20:42 a1s Exp $
+# $Id: date.py,v 1.77.2.4 2005-03-03 04:47:35 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -135,6 +135,7 @@ class Date:
         elif have_datetime and isinstance(spec, datetime.datetime):
             # Python 2.3+ datetime object
             y,m,d,H,M,S,x,x,x = spec.timetuple()
+            if y < 1970: raise ValueError, 'year must be > 1970'
             S += spec.microsecond/1000000.
             spec = (y,m,d,H,M,S,x,x,x)
         elif hasattr(spec, 'tuple'):
@@ -143,6 +144,7 @@ class Date:
             spec = spec.get_tuple()
         try:
             y,m,d,H,M,S,x,x,x = spec
+            if y < 1970: raise ValueError, 'year must be > 1970'
             frac = S - int(S)
             ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
             self.year, self.month, self.day, self.hour, self.minute, \
@@ -195,6 +197,7 @@ class Date:
         if info['y'] is not None or info['a'] is not None:
             if info['y'] is not None:
                 y = int(info['y'])
+                if y < 1970: raise ValueError, 'year must be > 1970'
                 m,d = (1,1)
                 if info['m'] is not None:
                     m = int(info['m'])

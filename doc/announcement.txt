@@ -1,23 +1,22 @@
-I'm proud to release this 8th major feature release of Roundup. 
+Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces. It is based on the winning design
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-First up, big thanks go to alexander smishlajev who has done some really
-good work getting the i18n and new configuration components of this release
-going.
+This 0.8.2 release adds one feature and fixes some bugs:
 
-Please note that Roundup now requires Python 2.3 or later. Please continue
-to use 0.7 if you require Python 2.1 compatibility.
+Feature:
+- roundup-server automatically redirects from trackers list
+  to the tracker page if there is only one tracker
 
-Version 0.8 introduces far too many features to list here so I've put
-together a What's New page:
-
-  http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
-
-This 0.8.1 release fixes some bugs:
-
-- fixed broken csv import in roundup.admin module
-- fixed braino in HTMLClass.filter() (sf bug 1124213)
-- change ZTUtils Iterator to always iter() its sequence argument
-- replaced MutlilinkIterator with multilinkGenerator (thanks Bob Ippolito)
+Fixed:
+- added content to ZRoundup refresh.txt file (sf bug 1147622)
+- fix invalid reference to csv.colon_separated
+- correct URL to What's New in setup.py meta-data
+- change AUTOCOMMIT=OFF to AUTOCOMMIT=0 for MySQL (sf bug 1143707)
+- compile message objects in 'setup.py build'
+- use backend datatype for journal timestamps in RDBMSes
+- fixes to the "Using an external password validation source"
+  customisation example (sf bugs 1153640 and 1155108)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
@@ -38,13 +37,6 @@ Mailing lists - the place to ask questions:
 
 About Roundup
 =============
-
-Roundup is a simple-to-use and -install issue-tracking system with
-command-line, web and e-mail interfaces. It is based on the winning design
-from Ka-Ping Yee in the Software Carpentry "Track" design competition.
-
-Note: Ping is not responsible for this project. The contact for this
-project is richard@users.sourceforge.net.
 
 Roundup manages a number of issues (with flexible properties such as
 "description", "priority", and so on) and provides the ability to:

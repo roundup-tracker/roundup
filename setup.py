@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.77.2.5 2005-03-01 14:41:56 a1s Exp $
+# $Id: setup.py,v 1.77.2.6 2005-03-03 04:47:35 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -322,24 +322,24 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
+This 0.8.2 release adds one feature and fixes some bugs:
+
+Feature:
+- roundup-server automatically redirects from trackers list
+  to the tracker page if there is only one tracker
+
+Fixed:
+- added content to ZRoundup refresh.txt file (sf bug 1147622)
+- fix invalid reference to csv.colon_separated
+- correct URL to What's New in setup.py meta-data
+- change AUTOCOMMIT=OFF to AUTOCOMMIT=0 for MySQL (sf bug 1143707)
+- compile message objects in 'setup.py build'
+- use backend datatype for journal timestamps in RDBMSes
+- fixes to the "Using an external password validation source"
+  customisation example (sf bugs 1153640 and 1155108)
+
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
-
-This release introduces far too many features to list here so I've put
-together a What's New page:
-
-  http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
-
-Some highlights:
-
-- added postgresql backend
-- trackers using postgresql or mysql backends may have many users
-- new "actor" automatic property (user who caused the last "activity")
-- RDBMS backends have data typed columns and indexes on several columns
-- registration may be concluded by replying to the confirmation email
-- HTML templating permission checks are greatly simplified
-- database exports now include full journals
-- IMAP support in the mail gateway
 ''',
         'author': "Richard Jones",
         'author_email': "richard@users.sourceforge.net",
@@ -347,7 +347,7 @@ Some highlights:
         'download_url': 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         'packages': packagelist,
         'classifiers': [
-            'Development Status :: 4 - Beta',
+            'Development Status :: 5 - Stable',
             'Environment :: Console',
             'Environment :: Web Environment',
             'Intended Audience :: End Users/Desktop',
