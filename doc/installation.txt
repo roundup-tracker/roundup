@@ -90,23 +90,6 @@ Download the latest version from http://roundup.sf.net/.
 If you're using WinZIP's "classic" interface, make sure the "Use
 folder names" check box is checked before you extract the files.
 
-Testing your Python
--------------------
-
-.. note::
-   The ``run_tests.py`` script is packaged in Roundup's source distribution
-   - users of the Windows installer, other binary distributions or
-   pre-installed Roundup will need to download the source to use it.
-
-Once you've unpacked roundup's source, run ``python run_tests.py`` in the
-source directory and make sure there are no errors. If there are errors,
-please let us know!
-
-If the above fails, you may be using the wrong version of python. Try
-``python2 run_tests.py``. If that works, you will need to substitute
-``python2`` for ``python`` in all further commands you use in relation to
-Roundup -- from installation and scripts.
-
 
 For The Really Impatient
 ========================
@@ -758,6 +741,24 @@ Solaris
 You'll need to build Python.
 
 Make sure you read the instructions under `UNIX environment steps`_.
+
+
+Problems? Testing your Python...
+================================
+
+.. note::
+   The ``run_tests.py`` script is packaged in Roundup's source distribution
+   - users of the Windows installer, other binary distributions or
+   pre-installed Roundup will need to download the source to use it.
+
+Once you've unpacked roundup's source, run ``python run_tests.py`` in the
+source directory and make sure there are no errors. If there are errors,
+please let us know!
+
+If the above fails, you may be using the wrong version of python. Try
+``python2 run_tests.py``. If that works, you will need to substitute
+``python2`` for ``python`` in all further commands you use in relation to
+Roundup -- from installation and scripts.
 
 
 -------------------------------------------------------------------------------
