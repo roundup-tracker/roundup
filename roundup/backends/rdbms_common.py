@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.27 2004-11-10 22:26:07 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.28 2004-11-25 23:46:22 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2670,10 +2670,8 @@ class FileClass(hyperdb.FileClass, Class):
         if content:
             # store and index
             self.db.storefile(self.classname, itemid, None, content)
-            if self.getprops().has_key('type'):
-                mime_type = propvalues.get('type', self.get(itemid, 'type',
-                    self.default_mime_type))
-            else:
+            mime_type = propvalues.get('type', self.get(itemid, 'type'))
+            if not mime_type:
                 mime_type = self.default_mime_type
             self.db.indexer.add_text((self.classname, itemid, 'content'),
                 content, mime_type)
