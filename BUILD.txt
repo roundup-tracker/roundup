@@ -8,7 +8,8 @@ This means that we only need to ever build source releases. This is done by
 running:
 
 1. Edit roundup/__init__.py and doc/announcement.txt to reflect the new
-   version and appropriate announcements.
+   version and appropriate announcements. Add truncated announcement to
+   setup.py description field.
 2. python setup.py clean --all
 3. Edit setup.py to ensure that all information therein (version, contact
    information etc) is correct.
@@ -25,13 +26,6 @@ So, those commands in a nice, cut'n'pasteable form::
  python setup.py clean --all
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
- python2.3 setup.py register
-
-or, for the sad RedHat users::
-
- python2 setup.py clean --all
- python2 setup.py sdist --manifest-only
- python2 setup.py sdist --quiet
  python2.3 setup.py register
 
 

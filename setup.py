@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.51 2003-05-09 05:04:33 richard Exp $
+# $Id: setup.py,v 1.52 2003-05-09 05:28:42 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -180,6 +180,39 @@ def main():
         name = "roundup", 
         version = __version__,
         description = "Roundup issue tracking system.",
+        long_description = 
+'''Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces. It is based on the winning design
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
+This release has all the bugfixes from the latest 0.5 maintnenance release
+plus lots of new goodies including:
+
+- new instant-gratification Demo Mode ("python demo.py" :)
+- added mysql backend (see doc/mysql.txt for details)
+- web interface cleanups including nicer history display, nicer index
+  navigation and nicer popup list windows
+- searching of date ranges
+- better international support, including utf-8 email handling and ability
+  to display localized dates in web interface.
+- more documentation including revamped design document, unix manual pages
+  and some FAQ entries
+- significantly more powerful form handling allowing editing of multiple
+  items
+  and creation of multiple items
+- tracker templates can contain subdirectories and static files (e.g.
+  images)
+  and we may now distribute templates separately from Roundup. Template
+  HTML files now have a .html extension too.
+- user registration is now a two-step process, with confirmation from the email
+  address supplied in the registration form, and we also have a password reset
+  feature for forgotten password / login
+- Windows Service mode for roundup-server when daemonification is attempted
+  on Windows.
+- fixed issues with dumb email or web clients
+- lots more little tweaks and back-end work...
+- email system handles more SMTP and POP features (TLS, APOP, ...)
+''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
         url = 'http://sourceforge.net/projects/roundup/',
