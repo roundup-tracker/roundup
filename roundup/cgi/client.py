@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.14 2004-02-26 22:20:43 richard Exp $
+# $Id: client.py,v 1.130.2.15 2004-03-24 20:31:43 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -794,6 +794,7 @@ To complete your registration of the user "%(name)s" with %(tracker)s,
 please visit the following URL:
 
    %(url)s?@action=confrego&otk=%(otk)s
+
 '''%{'name': props['username'], 'tracker': tracker_name, 'url': self.base,
                 'otk': otk}
         if not self.sendEmail(props['address'], subject, body):

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.5.2.2 2004-01-08 21:24:46 richard Exp $
+# $Id: demo.py,v 1.5.2.3 2004-03-24 20:31:43 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -21,7 +21,7 @@ def install_demo(home):
     except os.error, error:
         if error.errno != errno.ENOENT:
             raise
-    init.write_select_db(home, 'anydbm')
+    init.write_select_db(home, 'sqlite')
 
     # figure basic params for server
     hostname = socket.gethostname()
@@ -49,6 +49,13 @@ def install_demo(home):
     s = f.read().replace('http://tracker.example/cgi-bin/roundup.cgi/bugs/',
         url)
     f.close()
+    s = s + """
+MYSQL_DBHOST = 'localhost'
+MYSQL_DBUSER = 'rounduptest'
+MYSQL_DBPASSWORD = 'rounduptest'
+MYSQL_DBNAME = 'rounduptest'
+MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
+"""
     f = open(os.path.join(home, 'config.py'), 'w')
     f.write(s)
     f.close()
