@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.5 2002-05-14 23:36:25 richard Exp $
+# $Id: ZRoundup.py,v 1.6 2002-06-12 00:59:44 dman13 Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -123,8 +123,23 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         instance = roundup.instance.open(self.instance_home)
         request = RequestWrapper(self.REQUEST['RESPONSE'])
         env = self.REQUEST.environ
-        env['SCRIPT_NAME'] = '/'.join(self.getPhysicalPath()[:-1])
-        env['INSTANCE_NAME'] = self.id
+
+        # figure out the path components to set
+        import urlparse
+        path = urlparse.urlparse( self.absolute_url() )[2]
+        path_components = path.split( '/' )
+                                                
+        # special case when roundup is '/' in this virtual host,
+        if path == "/" :
+            env['SCRIPT_NAME'] = "/"
+            env['INSTANCE_NAME'] = ''
+        else :
+            # all but the last element is the path
+            env['SCRIPT_NAME'] = '/'.join( path_components[:-1] )
+            # the last element is the name
+            env['INSTANCE_NAME'] = path_components[-1]
+        del path_components , path
+
         if env['REQUEST_METHOD'] == 'GET':
             # force roundup to re-parse the request because Zope fiddles
             # with it and we lose all the :filter, :columns, etc goodness
@@ -169,6 +184,10 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/05/14 23:36:25  richard
+#  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
+#    (thanks dman)
+#
 # Revision 1.4  2002/01/10 03:38:16  richard
 # reformatting for 80 cols
 #
