@@ -16,10 +16,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.22 2001-12-13 00:20:01 richard Exp $
+# $Id: roundup.cgi,v 1.23 2002-01-05 02:19:03 richard Exp $
 
 # python version check
 from roundup import version_check
+from roundup.i18n import _
 
 #
 ##  Configuration
@@ -68,7 +69,7 @@ try:
     from roundup import cgitb
 except:
     print "Content-Type: text/html\n"
-    print "Failed to import cgitb.<pre>"
+    print _("Failed to import cgitb.<pre>")
     s = StringIO.StringIO()
     traceback.print_exc(None, s)
     print cgi.escape(s.getvalue()), "</pre>"
@@ -161,15 +162,15 @@ def main(out, err):
         request.send_header('Content-Type', 'text/html')
         request.end_headers()
         w = request.write
-        w('<html><head><title>Roundup instances index</title></head>\n')
-        w('<body><h1>Roundup instances index</h1><ol>\n')
+        w(_('<html><head><title>Roundup instances index</title></head>\n'))
+        w(_('<body><h1>Roundup instances index</h1><ol>\n'))
         homes = ROUNDUP_INSTANCE_HOMES.keys()
         homes.sort()
         for instance in homes:
-            w('<li><a href="%s/%s/index">%s</a>\n'%(
-                os.environ['SCRIPT_NAME'], urllib.quote(instance),
-                cgi.escape(instance)))
-        w('</ol></body></html>')
+            w(_('<li><a href="%(instance_url)s/index">%(instance_name)s</a>\n')%{
+                'instance_url': os.environ['SCRIPT_NAME']+'/'+urllib.quote(instance),
+                'instance_name': cgi.escape(instance)})
+        w(_('</ol></body></html>'))
 
 #
 # Now do the actual CGI handling
@@ -196,6 +197,10 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/12/13 00:20:01  richard
+#  . Centralised the python version check code, bumped version to 2.1.1 (really
+#    needs to be 2.1.2, but that isn't released yet :)
+#
 # Revision 1.21  2001/12/02 05:06:16  richard
 # . We now use weakrefs in the Classes to keep the database reference, so
 #   the close() method on the database is no longer needed.

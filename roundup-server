@@ -18,10 +18,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-Based on CGIHTTPServer in the Python library.
-
-$Id: roundup-server,v 1.23 2001-12-15 23:47:07 richard Exp $
-
+$Id: roundup-server,v 1.24 2002-01-05 02:19:03 richard Exp $
 """
 
 # python version check
@@ -33,6 +30,7 @@ import BaseHTTPServer
 # Roundup modules of use here
 from roundup import cgitb, cgi_client
 import roundup.instance
+from roundup.i18n import _
 
 #
 ##  Configuration
@@ -103,12 +101,13 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
         w = self.wfile.write
-        w('<html><head><title>Roundup instances index</title></head>\n')
-        w('<body><h1>Roundup instances index</h1><ol>\n')
+        w(_('<html><head><title>Roundup instances index</title></head>\n'))
+        w(_('<body><h1>Roundup instances index</h1><ol>\n'))
         for instance in self.ROUNDUP_INSTANCE_HOMES.keys():
-            w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
-                cgi.escape(instance)))
-        w('</ol></body></html>')
+            w(_('<li><a href="%(instance_url)s/index">%(instance_name)s</a>\n')%{
+                'instance_url': urllib.quote(instance),
+                'instance_name': cgi.escape(instance)})
+        w(_('</ol></body></html>'))
 
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
@@ -167,8 +166,9 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         client.main()
 
 def usage(message=''):
-    if message: message = 'Error: %s\n\n'%message
-    print '''%sUsage:
+    if message:
+        message = _('Error: %(error)s\n\n')%{'error': message}
+    print _('''%(message)sUsage:
 roundup-server [-n hostname] [-p port] [name=instance home]*
 
  -n: sets the host name
@@ -181,7 +181,7 @@ roundup-server [-n hostname] [-p port] [name=instance home]*
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. For convenience, you may edit the
    ROUNDUP_INSTANCE_HOMES variable in the roundup-server file instead.
-'''%message
+'''%locals()
     sys.exit(0)
 
 def main():
@@ -207,18 +207,18 @@ def main():
                 try:
                     import pwd
                 except ImportError:
-                    raise ValueError, "Can't change users - no pwd module"
+                    raise ValueError, _("Can't change users - no pwd module")
                 try:
                     uid = pwd.getpwnam(user)[2]
                 except KeyError:
-                    raise ValueError, "User %s doesn't exist"%user
+                    raise ValueError, _("User %(user)s doesn't exist")%locals()
                 os.setuid(uid)
             elif os.getuid() and user is not None:
-                print 'WARNING: ignoring "-u" argument, not root'
+                print _('WARNING: ignoring "-u" argument, not root')
 
             # People can remove this check if they're really determined
             if not os.getuid() and user is None:
-                raise ValueError, "Can't run as root!"
+                raise ValueError, _("Can't run as root!")
 
         # handle instance specs
         if args:
@@ -227,7 +227,7 @@ def main():
 		try:
                     name, home = arg.split('=')
                 except ValueError:
-                    raise ValueError, "Instances must be name=home"
+                    raise ValueError, _("Instances must be name=home")
                 d[name] = home
             RoundupRequestHandler.ROUNDUP_INSTANCE_HOMES = d
     except SystemExit:
@@ -240,7 +240,7 @@ def main():
     sys.argv = sys.argv[:1]
     address = (hostname, port)
     httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
-    print 'Roundup server started on', address
+    print _('Roundup server started on %(address)s')%locals()
     httpd.serve_forever()
 
 if __name__ == '__main__':
@@ -248,6 +248,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/12/15 23:47:07  richard
+# sys module went away...
+#
 # Revision 1.22  2001/12/13 00:20:01  richard
 #  . Centralised the python version check code, bumped version to 2.1.1 (really
 #    needs to be 2.1.2, but that isn't released yet :)
