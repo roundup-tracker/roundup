@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.68 $
+:Version: $Revision: 1.69 $
 
 .. contents::
 
@@ -43,6 +43,38 @@ If you're on windows, you will either need to be using the ActiveState python
 distribution (at http://www.activestate.com/Products/ActivePython/), or you'll
 have to install the win32all package separately (get it from
 http://starship.python.net/crew/mhammond/win32/).
+
+Non-Python2.3 users may need to `install the "CSV" module`_.
+
+Install the "CSV" module
+------------------------
+
+Note: CSV stands for Comma-Separated-Value. These files are used by all
+      manner of programs (eg. spreadsheets) to exchange data.
+
+The "CSV" module is required if you wish to import or export data in the
+tracker, or if you wish to use the online generic class editing facility.
+
+If you're using a version of Python older than 2.3, then you will need to
+install the "CSV" module from `Object Craft`_. Users of Python2.3 and later
+don't need to. If you have a C compiler installed, then download the source
+and follow their installation instructions (simply ``python setup.py
+install``.)
+
+If you're on Windows and don't have a C compiler, then you'll need to
+download the pre-compiled ``csv.pyd`` file and install it. To install, just
+copy it to your Python installation in the ``lib\site-packages`` directory.
+For Python 2.2, this would be::
+
+   c:\python22\lib\site-packages
+
+Once the CSV module is installed, you *must* restart roundup-server if it
+is already running, or the new module won't be detected.
+
+If you're on some other platform and don't have a C compiler, you'll need
+to ask for help on the roundup-users mailing list.
+
+.. _`Object Craft`: http://object-craft.com.au/
 
 
 Getting Roundup
@@ -441,6 +473,7 @@ Additional Language Codecs
 If you intend to send messages to Roundup that use Chinese, Japanese or
 Korean encodings the you'll need to obtain CJKCodecs from
 http://cjkpython.berlios.de/
+
 
 
 Maintenance

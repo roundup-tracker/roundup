@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.117 $
+:Version: $Revision: 1.118 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2923,18 +2923,17 @@ vacation". Not very useful, and relatively easy to stop.
    consists of::
 
     def nosyreaction(db, cl, nodeid, oldvalues):
+        users = db.user
+        messages = db.msg
         # send a copy of all new messages to the nosy list
         for msgid in determineNewMessages(cl, nodeid, oldvalues):
             try:
-                users = db.user
-                messages = db.msg
-
                 # figure the recipient ids
                 sendto = []
-                r = {}
+                seen_message = {}
                 recipients = messages.get(msgid, 'recipients')
                 for recipid in messages.get(msgid, 'recipients'):
-                    r[recipid] = 1
+                    seen_message[recipid] = 1
 
                 # figure the author's id, and indicate they've received
                 # the message
@@ -2945,7 +2944,7 @@ vacation". Not very useful, and relatively easy to stop.
                 if (db.config.MESSAGES_TO_AUTHOR == 'yes' and
                         users.get(authid, 'username') != 'anonymous'):
                     sendto.append(authid)
-                r[authid] = 1
+                seen_message[authid] = 1
 
                 # now figure the nosy people who weren't recipients
                 nosy = cl.get(nodeid, 'nosy')
@@ -2956,7 +2955,7 @@ vacation". Not very useful, and relatively easy to stop.
                     if users.get(nosyid, 'username') == 'anonymous':
                         continue
                     # make sure they haven't seen the message already
-                    if not r.has_key(nosyid):
+                    if not seen_message.has_key(nosyid):
                         # send it to them
                         sendto.append(nosyid)
                         recipients.append(nosyid)
