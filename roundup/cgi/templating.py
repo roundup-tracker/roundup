@@ -1,4 +1,4 @@
-import sys, cgi, urllib, os, re
+import sys, cgi, urllib, os, re, os.path
 
 from roundup import hyperdb, date
 from roundup.i18n import _
@@ -232,7 +232,7 @@ class HTMLClass:
 
         # use the specified template
         name = self.classname + '.' + name
-        pt.write(open('/tmp/test/html/%s'%name).read())
+        pt.write(open(os.path.join(self.db.config.TEMPLATES, name)).read())
         pt.id = name
 
         # XXX handle PT rendering errors here nicely

@@ -1,10 +1,10 @@
-# $Id: client.py,v 1.5 2002-09-01 23:57:53 richard Exp $
+# $Id: client.py,v 1.6 2002-09-02 07:46:55 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
-import os, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
+import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random
 
 from roundup import roundupdb, date, hyperdb, password
@@ -275,7 +275,7 @@ class Client:
         # we just want to serve up the file named
         mt = mimetypes.guess_type(str(file))[0]
         self.header({'Content-Type': mt})
-        self.write(open('/tmp/test/html/%s'%file).read())
+        self.write(open(os.path.join(self.instance.TEMPLATES, file)).read())
 
     def template(self, name, **kwargs):
         ''' Return a PageTemplate for the named page
@@ -283,7 +283,7 @@ class Client:
         pt = RoundupPageTemplate(self)
         # make errors nicer
         pt.id = name
-        pt.write(open('/tmp/test/html/%s'%name).read())
+        pt.write(open(os.path.join(self.instance.TEMPLATES, name)).read())
         # XXX handle PT rendering errors here nicely
         try:
             return pt.render(**kwargs)

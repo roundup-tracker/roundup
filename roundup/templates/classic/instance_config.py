@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.20 2002-08-16 04:28:41 richard Exp $
+# $Id: instance_config.py,v 1.21 2002-09-02 07:46:55 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -97,77 +97,11 @@ EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
 #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
-# Define what index links are available in the header, and what their
-# labels are. Each key is used to look up one of the index specifications
-# below - so 'DEFAULT' will use 'DEFAULT_INDEX'.
-# Where the FILTERSPEC has 'assignedto' with a value of None, it will be
-# replaced by the id of the logged-in user.
-HEADER_INDEX_LINKS = ['DEFAULT', 'UNASSIGNED', 'USER']
-
-# list the classes that users are able to add nodes to
-HEADER_ADD_LINKS = ['issue']
-
-# list the classes that users can search
-HEADER_SEARCH_LINKS = ['issue']
-
-# list search filters per class
-SEARCH_FILTERS = ['ISSUE_FILTER', 'SUPPORT_FILTER']
-
-# Now the DEFAULT display specification. TODO: describe format
-DEFAULT_INDEX = {
-  'LABEL': 'All Issues',
-  'CLASS': 'issue',
-  'SORT': ['-activity'],
-  'GROUP': ['priority'],
-  'FILTER': ['status'],
-  'COLUMNS': ['id','activity','title','creator','assignedto'],
-  'FILTERSPEC': {
-    'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-  },
-}
-
-# The "unsassigned issues" index
-UNASSIGNED_INDEX = {
-  'LABEL': 'Unassigned Issues',
-  'CLASS': 'issue',
-  'SORT': ['-activity'],
-  'GROUP': ['priority'],
-  'FILTER': ['status', 'assignedto'],
-  'COLUMNS': ['id','activity','title','creator','status'],
-  'FILTERSPEC': {
-    'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-    'assignedto': ['-1'],
-  },
-}
-
-# The "my issues" index -- note that the user's id will replace the
-# 'CURRENT USER' value of the "assignedto" filterspec
-USER_INDEX = {
-  'LABEL': 'My Issues',
-  'CLASS': 'issue',
-  'SORT': ['-activity'],
-  'GROUP': ['priority'],
-  'FILTER': ['status', 'assignedto'],
-  'COLUMNS': ['id','activity','title','creator','status'],
-  'FILTERSPEC': {
-    'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-    'assignedto': 'CURRENT USER',
-  },
-}
-
-ISSUE_FILTER = {
-  'CLASS': 'issue',
-  'FILTER': ['status', 'priority', 'assignedto', 'creator']
-}
-
-SUPPORT_FILTER = {
-  'CLASS': 'issue',
-  'FILTER': ['status', 'priority', 'assignedto', 'creator']
-}
-
-
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/08/16 04:28:41  richard
+# removed old, unused config vars
+#
 # Revision 1.19  2002/07/26 08:26:59  richard
 # Very close now. The cgi and mailgw now use the new security API. The two
 # templates have been migrated to that setup. Lots of unit tests. Still some
