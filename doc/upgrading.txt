@@ -13,6 +13,20 @@ steps.
 
 .. contents::
 
+Migrating from 0.7.0 to 0.7.2
+=============================
+
+0.7.2 DEFAULT_TIMEZONE is now required
+--------------------------------------
+
+The DEFAULT_TIMEZONE configuration variable is now required. Add the
+following to your tracker's ``config.py`` file::
+
+    # You may specify a different default timezone, for use when users do not
+    # choose their own in their settings.
+    DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
+
+
 Migrating from 0.7.0 to 0.7.1
 =============================
 
