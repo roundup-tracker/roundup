@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.35 2004-10-16 12:52:53 a1s Exp $
+# $Id: back_sqlite.py,v 1.36 2004-10-31 09:57:10 a1s Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -55,6 +55,21 @@ class Database(rdbms_common.Database):
         hyperdb.Multilink : lambda x: x,    # used in journal marshalling
     }
 
+    def sqlite_busy_handler(self, data, table, count):
+        """invoked whenever SQLite tries to access a database that is locked"""
+        if count == 1:
+            # use a 30 second timeout (extraordinarily generous)
+            # for handling locked database
+            self._busy_handler_endtime = time.time() + 30
+        elif time.time() > self._busy_handler_endtime:
+            # timeout expired - no more retries
+            return 0
+        # sleep adaptively as retry count grows,
+        # starting from about half a second
+        time_to_sleep = 0.01 * (2 << min(5, count))
+        time.sleep(time_to_sleep)
+        return 1
+
     def sql_open_connection(self):
         '''Open a standard, non-autocommitting connection.
 
@@ -70,7 +85,7 @@ class Database(rdbms_common.Database):
         conn = sqlite.connect(db=db)
         # set a 30 second timeout (extraordinarily generous) for handling
         # locked database
-        conn.db.sqlite_busy_timeout(30 * 1000)
+        conn.db.sqlite_busy_handler(self.sqlite_busy_handler)
         cursor = conn.cursor()
         return (conn, cursor)
 
