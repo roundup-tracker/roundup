@@ -1,5 +1,5 @@
 =====================================================
-SC-Track Roundup 0.5 beta1 - an issue tracking system
+SC-Track Roundup 0.5 beta2 - an issue tracking system
 =====================================================
 
 Note: This is the first of two beta releases of the newest version of Roundup.
@@ -9,6 +9,17 @@ you have one, and run 0.5 on a copy of the database. If you are upgrading from
 
 Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
 requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
+
+This beta release fixes the following specific problems:
+ . all backends now have a .close() method, and it's used everywhere
+ . fixed bug in detectors __init__
+ . switched the default issue item display to only show issue summary
+   (added instructions to doc to make it display entire content)
+ . MANIFEST.in was missing a lot of template files
+ . added generic item editing
+ . much nicer layout of template rendering errors
+ . added context/is_edit_ok and context/is_view_ok convenience methods and
+   implemented use of them in the classic template
 
 A lot has been done since 0.4:
 
