@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.74 2004-07-04 05:07:19 richard Exp $
+# $Id: date.py,v 1.75 2004-09-29 07:27:08 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -24,6 +24,12 @@ __docformat__ = 'restructuredtext'
 import time, re, calendar
 from types import *
 import i18n
+
+try:
+    import datetime
+    have_datetime = 1
+except:
+    have_datetime = 0
 
 def _add_granularity(src, order, value = 1):
     '''Increment first non-None value in src dictionary ordered by 'order'
@@ -126,6 +132,11 @@ class Date:
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
+        elif have_datetime and isinstance(spec, datetime.datetime):
+            # Python 2.3+ datetime object
+            y,m,d,H,M,S,x,x,x = spec.timetuple()
+            S += spec.microsecond/1000000.
+            spec = (y,m,d,H,M,S,x,x,x)
         elif hasattr(spec, 'tuple'):
             spec = spec.tuple()
         elif isinstance(spec, Date):
