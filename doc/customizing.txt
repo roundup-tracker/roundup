@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.85 $
+:Version: $Revision: 1.86 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -88,19 +88,19 @@ The configuration variables available are:
 **MAILHOST** - ``'localhost'``
  The SMTP mail host that roundup will use to send e-mail.
 
-**MAILUSER - ``()``
+**MAILUSER** - ``()``
  If your SMTP mail host requires a username and password for access, then
  specify them here. eg. ``MAILUSER = ('username', 'password')``
 
-**MAILHOST_TLS - ``'no'``
+**MAILHOST_TLS** - ``'no'``
  If your SMTP mail host provides or requires TLS (Transport Layer
  Security) then set ``MAILHOST_TLS = 'yes'``
 
-**MAILHOST_TLS_KEYFILE - ``''``
+**MAILHOST_TLS_KEYFILE** - ``''``
  If you're using TLS, you may also set MAILHOST_TLS_KEYFILE to the name of
  a PEM formatted file that contains your private key.
 
-**MAILHOST_TLS_CERTFILE - ``''``
+**MAILHOST_TLS_CERTFILE** - ``''``
  If you're using TLS and have specified a MAILHOST_TLS_KEYFILE, you may
  also set MAILHOST_TLS_CERTFILE to the name of a PEM formatted certificate
  chain file.

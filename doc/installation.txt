@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.50 $
+:Version: $Revision: 1.51 $
 
 .. contents::
 
@@ -241,7 +241,7 @@ There's several to choose from, each with benefits and limitations:
   dbm backends.
 **mysql**
   Backend for popular RDBMS MySQL. According to benchmarks, this backend works
-  much faster than any of *dbm ones, but slightly slower than metakit and
+  much faster than any of \*dbm ones, but slightly slower than metakit and
   sqlite. A good scalability is not a property of this backend for now,
   though. For more info on backend installation see doc/mysql.txt. 
 **metakit**
