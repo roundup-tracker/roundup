@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.49 2002-01-16 07:02:57 richard Exp $
+# $Id: hyperdb.py,v 1.50 2002-01-19 13:16:04 rochecompaan Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -54,8 +54,9 @@ class Interval:
 class Link:
     """An object designating a Link property that links to a
        node in a specified class."""
-    def __init__(self, classname):
+    def __init__(self, classname, do_journal='no'):
         self.classname = classname
+        self.do_journal = do_journal == 'yes'
     def __repr__(self):
         return '<%s to "%s">'%(self.__class__, self.classname)
 
@@ -63,8 +64,9 @@ class Multilink:
     """An object designating a Multilink property that links
        to nodes in a specified class.
     """
-    def __init__(self, classname):
+    def __init__(self, classname, do_journal='no'):
         self.classname = classname
+        self.do_journal = do_journal == 'yes'
     def __repr__(self):
         return '<%s to "%s">'%(self.__class__, self.classname)
 
@@ -309,8 +311,9 @@ class Class:
                 propvalues[key] = value
 
                 # register the link with the newly linked node
-                self.db.addjournal(link_class, value, 'link',
-                    (self.classname, newid, key))
+                if self.properties[key].do_journal:
+                    self.db.addjournal(link_class, value, 'link',
+                        (self.classname, newid, key))
 
             elif isinstance(prop, Multilink):
                 if type(value) != type([]):
@@ -336,8 +339,9 @@ class Class:
                     if not self.db.hasnode(link_class, id):
                         raise IndexError, '%s has no node %s'%(link_class, id)
                     # register the link with the newly linked node
-                    self.db.addjournal(link_class, id, 'link',
-                        (self.classname, newid, key))
+                    if self.properties[key].do_journal:
+                        self.db.addjournal(link_class, id, 'link',
+                            (self.classname, newid, key))
 
             elif isinstance(prop, String):
                 if type(value) != type(''):
@@ -505,15 +509,16 @@ class Class:
                 if not self.db.hasnode(link_class, value):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
-                # register the unlink with the old linked node
-                if node[key] is not None:
-                    self.db.addjournal(link_class, node[key], 'unlink',
-                        (self.classname, nodeid, key))
+                if self.properties[key].do_journal:
+                    # register the unlink with the old linked node
+                    if node[key] is not None:
+                        self.db.addjournal(link_class, node[key], 'unlink',
+                            (self.classname, nodeid, key))
 
-                # register the link with the newly linked node
-                if value is not None:
-                    self.db.addjournal(link_class, value, 'link',
-                        (self.classname, nodeid, key))
+                    # register the link with the newly linked node
+                    if value is not None:
+                        self.db.addjournal(link_class, value, 'link',
+                            (self.classname, nodeid, key))
 
             elif isinstance(prop, Multilink):
                 if type(value) != type([]):
@@ -543,19 +548,22 @@ class Class:
                     if id in value:
                         continue
                     # register the unlink with the old linked node
-                    self.db.addjournal(link_class, id, 'unlink',
-                        (self.classname, nodeid, key))
+                    if self.properties[key].do_journal:
+                        self.db.addjournal(link_class, id, 'unlink',
+                            (self.classname, nodeid, key))
                     l.remove(id)
 
                 # handle additions
                 for id in value:
                     if not self.db.hasnode(link_class, id):
-                        raise IndexError, '%s has no node %s'%(link_class, id)
+                        raise IndexError, '%s has no node %s'%(
+                            link_class, id)
                     if id in l:
                         continue
                     # register the link with the newly linked node
-                    self.db.addjournal(link_class, id, 'link',
-                        (self.classname, nodeid, key))
+                    if self.properties[key].do_journal:
+                        self.db.addjournal(link_class, id, 'link',
+                            (self.classname, nodeid, key))
                     l.append(id)
 
             elif isinstance(prop, String):
@@ -1047,6 +1055,10 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2002/01/16 07:02:57  richard
+#  . lots of date/interval related changes:
+#    - more relaxed date format for input
+#
 # Revision 1.48  2002/01/14 06:32:34  richard
 #  . #502951 ] adding new properties to old database
 #

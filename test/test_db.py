@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.14 2002-01-16 07:02:57 richard Exp $ 
+# $Id: test_db.py,v 1.15 2002-01-19 13:16:04 rochecompaan Exp $ 
 
 import unittest, os, shutil
 
@@ -190,6 +190,55 @@ class anydbmDBTestCase(MyTestCase):
         ar(IndexError, self.db.issue.set, '1', title='foo', status='1',
             nosy=['10'])
 
+    def testJournals(self):
+        self.db.issue.addprop(fixer=Link("user", do_journal='yes'))
+        self.db.user.create(username="mary")
+        self.db.user.create(username="pete")
+        self.db.issue.create(title="spam", status='1')
+        self.db.commit()
+
+        # journal entry for issue create
+        journal = self.db.getjournal('issue', '1')
+        self.assertEqual(1, len(journal))
+        (nodeid, date_stamp, journaltag, action, params) = journal[0]
+        self.assertEqual(nodeid, '1')
+        self.assertEqual(journaltag, 'test')
+        self.assertEqual(action, 'create')
+        keys = params.keys()
+        keys.sort()
+        self.assertEqual(keys, ['deadline', 'fixer', 'foo', 'nosy', 
+            'status', 'title'])
+        self.assertEqual(None,params['deadline'])
+        self.assertEqual(None,params['fixer'])
+        self.assertEqual(None,params['foo'])
+        self.assertEqual([],params['nosy'])
+        self.assertEqual('1',params['status'])
+        self.assertEqual('spam',params['title'])
+
+        # journal entry for link
+        journal = self.db.getjournal('user', '1')
+        self.assertEqual(1, len(journal))
+        self.db.issue.set('1', fixer='1')
+        self.db.commit()
+        journal = self.db.getjournal('user', '1')
+        self.assertEqual(2, len(journal))
+        (nodeid, date_stamp, journaltag, action, params) = journal[1]
+        self.assertEqual('1', nodeid)
+        self.assertEqual('test', journaltag)
+        self.assertEqual('link', action)
+        self.assertEqual(('issue', '1', 'fixer'), params)
+
+        # journal entry for unlink
+        self.db.issue.set('1', fixer='2')
+        self.db.commit()
+        journal = self.db.getjournal('user', '1')
+        self.assertEqual(3, len(journal))
+        (nodeid, date_stamp, journaltag, action, params) = journal[2]
+        self.assertEqual('1', nodeid)
+        self.assertEqual('test', journaltag)
+        self.assertEqual('unlink', action)
+        self.assertEqual(('issue', '1', 'fixer'), params)
+
     def testRetire(self):
         pass
 
@@ -285,6 +334,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/01/16 07:02:57  richard
+#  . lots of date/interval related changes:
+#    - more relaxed date format for input
+#
 # Revision 1.13  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
