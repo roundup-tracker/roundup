@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.1 2002-09-18 05:07:47 richard Exp $
+# $Id: rdbms_common.py,v 1.2 2002-09-18 07:04:38 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -70,23 +70,27 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             attribute actually matches the schema in the database.
         '''
         # now detect changes in the schema
+        save = 0
         for classname, spec in self.classes.items():
             if self.database_schema.has_key(classname):
                 dbspec = self.database_schema[classname]
-                self.update_class(spec, dbspec)
-                self.database_schema[classname] = spec.schema()
+                if self.update_class(spec, dbspec):
+                    self.database_schema[classname] = spec.schema()
+                    save = 1
             else:
                 self.create_class(spec)
                 self.database_schema[classname] = spec.schema()
+                save = 1
 
         for classname in self.database_schema.keys():
             if not self.classes.has_key(classname):
                 self.drop_class(classname)
 
         # update the database version of the schema
-        cursor = self.conn.cursor()
-        self.sql(cursor, 'delete from schema')
-        self.save_dbschema(cursor, self.database_schema)
+        if save:
+            cursor = self.conn.cursor()
+            self.sql(cursor, 'delete from schema')
+            self.save_dbschema(cursor, self.database_schema)
 
         # reindex the db if necessary
         if self.indexer.should_reindex():
@@ -126,7 +130,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         spec_schema = spec.schema()
         if spec_schema == dbspec:
-            return
+            # no save needed for this one
+            return 0
         if __debug__:
             print >>hyperdb.DEBUG, 'update_class FIRING'
 
@@ -244,6 +249,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 qs = ','.join([self.arg for x in cols])
                 sql = 'insert into _%s values (%s)'%(cn, s)
                 cursor.execute(sql, olddata)
+        return 1
 
     def create_class_table(self, cursor, spec):
         ''' create the class table for the given spec
@@ -1590,6 +1596,7 @@ class Class(hyperdb.Class):
         frum = ['_'+cn]
         where = []
         args = []
+        a = self.db.arg
         for k, v in filterspec.items():
             propclass = props[k]
             if isinstance(propclass, Multilink):
@@ -1605,17 +1612,17 @@ class Class(hyperdb.Class):
                     args.append(v)
             else:
                 if isinstance(v, type([])):
-                    s = ','.join([self.arg for x in v])
+                    s = ','.join([a for x in v])
                     where.append('_%s in (%s)'%(k, s))
                     args = args + v
                 else:
-                    where.append('_%s=%s'%(k, self.arg))
+                    where.append('_%s=%s'%(k, a))
                     args.append(v)
 
         # add results of full text search
         if search_matches is not None:
             v = search_matches.keys()
-            s = ','.join([self.arg for x in v])
+            s = ','.join([a for x in v])
             where.append('id in (%s)'%s)
             args = args + v
 
@@ -1623,12 +1630,25 @@ class Class(hyperdb.Class):
         orderby = []
         ordercols = []
         if sort[0] is not None and sort[1] is not None:
-            if sort[0] != '-':
-                orderby.append('_'+sort[1])
-                ordercols.append(sort[1])
+            direction, colname = sort
+            if direction != '-':
+                if colname == 'activity':
+                    orderby.append('activity')
+                    ordercols.append('max(%s__journal.date) as activity'%cn)
+                    frum.append('%s__journal'%cn)
+                    where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
+                else:
+                    orderby.append('_'+colname)
+                    ordercols.append('_'+colname)
             else:
-                orderby.append('_'+sort[1]+' desc')
-                ordercols.append(sort[1])
+                if colname == 'activity':
+                    orderby.append('activity desc')
+                    ordercols.append('max(%s__journal.date) as activity'%cn)
+                    frum.append('%s__journal'%cn)
+                    where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
+                else:
+                    orderby.append('_'+colname+' desc')
+                    ordercols.append('_'+colname)
 
         # figure the group by clause
         groupby = []
@@ -1636,10 +1656,10 @@ class Class(hyperdb.Class):
         if group[0] is not None and group[1] is not None:
             if group[0] != '-':
                 groupby.append('_'+group[1])
-                groupcols.append(group[1])
+                groupcols.append('_'+group[1])
             else:
                 groupby.append('_'+group[1]+' desc')
-                groupcols.append(group[1])
+                groupcols.append('_'+group[1])
 
         # construct the SQL
         frum = ','.join(frum)
@@ -1650,7 +1670,7 @@ class Class(hyperdb.Class):
             order = ' order by %s'%(','.join(orderby))
         else:
             order = ''
-        if groupby:
+        if 0: #groupby:
             cols = cols + groupcols
             group = ' group by %s'%(','.join(groupby))
         else:
@@ -1660,9 +1680,12 @@ class Class(hyperdb.Class):
             group)
         args = tuple(args)
         if __debug__:
-            print >>hyperdb.DEBUG, 'find', (self, sql, args)
+            print >>hyperdb.DEBUG, 'filter', (self, sql, args)
         cursor = self.db.conn.cursor()
         cursor.execute(sql, args)
+
+        # return the IDs
+        return [row[0] for row in cursor.fetchall()]
 
     def count(self):
         '''Get the number of nodes in this class.

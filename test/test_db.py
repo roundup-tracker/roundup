@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.48 2002-09-18 05:07:48 richard Exp $ 
+# $Id: test_db.py,v 1.49 2002-09-18 07:04:39 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -143,21 +143,18 @@ class anydbmDBTestCase(MyTestCase):
 
     def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
-        self.db.user.create(username='foo2', assignable=0)
-        a = self.db.user.get(userid, 'assignable')
+        self.assertEqual(1, self.db.user.get(userid, 'assignable'))
         self.db.user.set(userid, assignable=0)
-        self.assertNotEqual(self.db.user.get(userid, 'assignable'), a)
-        self.db.user.set(userid, assignable=0)
-        self.db.user.set(userid, assignable=1)
-        self.db.user.set('1', assignable=None)
+        self.assertEqual(self.db.user.get(userid, 'assignable'), 0)
+        self.db.user.set(userid, assignable=None)
         self.assertEqual(self.db.user.get('1', "assignable"), None)
 
     def testNumberChange(self):
-        self.db.user.create(username='foo', age='1')
-        a = self.db.user.get('1', 'age')
-        self.db.user.set('1', age='3')
-        self.assertNotEqual(self.db.user.get('1', 'age'), a)
-        self.db.user.set('1', age='1.0')
+        self.db.user.create(username='foo', age=1)
+        self.assertEqual(1, self.db.user.get('1', 'age'))
+        self.db.user.set('1', age=3)
+        self.assertNotEqual(self.db.user.get('1', 'age'), 1)
+        self.db.user.set('1', age=1.0)
         self.db.user.set('1', age=None)
         self.assertEqual(self.db.user.get('1', "age"), None)
 
@@ -681,7 +678,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-    #return unittest.TestSuite(l)
+#    return unittest.TestSuite(l)
 
     try:
         import bsddb
