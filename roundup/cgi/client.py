@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.72 2003-01-20 23:05:19 richard Exp $
+# $Id: client.py,v 1.73 2003-01-24 06:21:17 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -89,8 +89,12 @@ class Client:
         # save off the path
         self.path = env['PATH_INFO']
 
-        # this is the base URL for this instance
+        # this is the base URL for this tracker
         self.base = self.instance.config.TRACKER_WEB
+
+        # this is the "cookie path" for this tracker (ie. the path part of
+        # the "base" url)
+        self.cookie_path = urlparse.urlparse(self.base)[2]
 
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
@@ -480,10 +484,9 @@ class Client:
         expire = Cookie._getdate(86400*365)
 
         # generate the cookie path - make sure it has a trailing '/'
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
-            ''))
         self.additional_headers['Set-Cookie'] = \
-          'roundup_user_2=%s; expires=%s; Path=%s;'%(self.session, expire, path)
+          'roundup_user_2=%s; expires=%s; Path=%s;'%(self.session, expire,
+            self.cookie_path)
 
     def make_user_anonymous(self):
         ''' Make us anonymous
@@ -578,10 +581,9 @@ class Client:
 
         # construct the logout cookie
         now = Cookie._getdate()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
-            ''))
         self.additional_headers['Set-Cookie'] = \
-           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)
+           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
+            self.cookie_path)
 
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
