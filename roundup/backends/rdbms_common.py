@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.20 2004-10-07 06:33:57 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.21 2004-10-08 00:21:31 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -403,11 +403,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if isinstance(prop, Multilink):
                 self.create_multilink_table(spec, propname)
             else:
-                sql = 'alter table _%s add column _%s varchar(255)'%(
-                    spec.classname, propname)
+                # add the column
+                coltype = self.hyperdb_to_sql_datatypes[prop.__class__]
+                sql = 'alter table _%s add column _%s %s'%(
+                    spec.classname, propname, coltype)
                 if __debug__:
                     print >>hyperdb.DEBUG, 'update_class', (self, sql)
                 self.cursor.execute(sql)
+
+                # extra Interval column
+                if isinstance(prop, Interval):
+                    sql = 'alter table _%s add column __%s_int__ BIGINT'%(
+                        spec.classname, propname)
+                    if __debug__:
+                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                    self.cursor.execute(sql)
 
                 # if the new column is a key prop, we need an index!
                 if new_spec[0] == propname:
