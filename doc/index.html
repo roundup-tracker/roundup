@@ -19,7 +19,7 @@
     <ul>
         <li><a href="#instance">The Instance</a>
         <li><a href="#startcmd">Command Line Tool</a>
-        <li><a href="#startweb">E-Mail Interface</a>
+        <li><a href="#startmail">E-Mail Interface</a>
         <li><a href="#startweb">Web Interface</a>
         <li><a href="#users">Users and Access Control</a> (Users and permissions, Adding users)
         <li><a href="#issues">Issues</a>
@@ -156,7 +156,7 @@ The email addresses used by the system by default are:
     <br>roundup's internal use (problems, etc)
 </ol>
 
-<h2><a name="startweb">E-Mail Interface</a></h2>
+<h2><a name="startmail">E-Mail Interface</a></h2>
 
 <h3>Setup 1: As a mail alias pipe process</h3>
 Set up a mail alias called "issue_tracker" as (include the quote marks):
@@ -179,17 +179,23 @@ To test the mail gateway on unix systems, try:
 </blockquote>
 
 
-<h3>Setup 2: As a regular cron job</h3>
-
+<h3>Setup 2: As a regular cron job using a mailbox source</h3>
 Set the roundup-mailgw up to run every 10 minutes or so. For example:
 <blockquote>
- <tt>10 * * * * /usr/local/bin/roundup-mailgw &lt;instance_home&gt; &lt;mail_spool_file&gt;</tt>
+ <tt>10 * * * * /usr/local/bin/roundup-mailgw &lt;instance_home&gt; mailbox &lt;mail_spool_file&gt;</tt>
 </blockquote>
-
 Where the mail_spool_file argument is the location of the roundup
 submission user's mail spool. On most systems, the spool for a user
 "issue_tracker" will be "/var/mail/issue_tracker".
 
+<h3>Setup 3: As a regular cron job using a POP source</h3>
+To retrieve from a POP mailbox, use a similar cron entry to the mailbox
+one:
+<blockquote>
+ <tt>10 * * * * /usr/local/bin/roundup-mailgw &lt;instance_home&gt; pop &lt;pop_spec&gt;</tt>
+</blockquote>
+where pop_spec is "username:password@server" that specifies the roundup
+submission user's POP account name, password and server.
 
 <h2><a name="startweb">Web Interface</a></h2>
 This software will work through apache or stand-alone.
@@ -197,12 +203,12 @@ This software will work through apache or stand-alone.
 <strong>Stand-alone:</strong>
 <ol>
     <li>Edit roundup-server at the top - ROUNDUP_INSTANCE_HOMES needs to know
-    about your instance. *** command-line option
+    about your instance. You may also specify the values for
+    ROUNDUP_INSTANCE_HOMES on the command-line using "name=home" pairs.
     <li><tt>roundup-server [hostname port]</tt>   (hostname may be "")
     <li>Load up the page <tt>/&lt;instance name&gt;/index</tt> where
      instance name is the
      name you nominated in <tt>ROUNDUP_INSTANCE_HOMES</tt>.
-*** command-line option
 </ol>
 
 <strong>Apache:</strong>
@@ -1279,7 +1285,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.22 2001-12-17 03:52:47 richard Exp $
+$Id: index.html,v 1.23 2001-12-31 03:07:04 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
