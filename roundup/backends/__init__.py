@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.20 2002-10-07 00:52:51 richard Exp $
+# $Id: __init__.py,v 1.20.2.1 2003-04-24 06:58:05 richard Exp $
 
 ''' Container for the hyperdb storage backend implementations.
 
@@ -68,7 +68,7 @@ else:
 try:
     import bsddb
 except ImportError, message:
-    if str(message) != 'No module named bsddb': raise
+    if not str(message).startswith('No module named'): raise
 else:
     import back_bsddb
     bsddb = back_bsddb
