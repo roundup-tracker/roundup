@@ -253,8 +253,13 @@ class HTMLDatabase:
         # check to see if we're actually accessing an item
         m = desre.match(item)
         if m:
-            self._client.db.getclass(m.group('cl'))
-            return HTMLItem(self._client, m.group('cl'), m.group('id'))
+            cl = m.group('cl')
+            self._client.db.getclass(cl)
+            if cl == 'user':
+                klass = HTMLUser
+            else:
+                klass = HTMLItem
+            return klass(self._client, cl, m.group('id'))
         else:
             self._client.db.getclass(item)
             if item == 'user':
