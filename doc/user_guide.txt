@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.21 $
+:Version: $Revision: 1.22 $
 
 .. contents::
 
@@ -24,6 +24,7 @@ the number to create a unique label, so that user 1 (who, incidentally, is
 *always* the "admin" user) is referred to as "user1".  Issue number 315 is
 referred to as "issue315". We call that label the item's *designator*.
 
+
 Accessing the Tracker
 ---------------------
 
@@ -35,6 +36,21 @@ You may access your tracker through one of three ways:
 
 The last is usually only used by administrators. Most users will use the web
 and email interfaces. All three are explained below.
+
+
+Issue life cycles in Roundup
+----------------------------
+
+New issues may be submitted via the web or email.
+
+By default, the issue will have the status "unread". If another message is
+received for the issue, its status will change to "chatting". 
+
+The "home" page for a tracker will generally display all issues which are
+not "resolved.
+
+If an issue is closed, and a new message is received then it'll be reopened
+to the state of "chatting".
 
 
 Entering values in your Tracker
@@ -278,8 +294,9 @@ E-Mail Gateway
 E-mail sent to Roundup is examined for several pieces of information:
 
 1. `subject-line information`_ identifying the purpose of the e-mail
-2. `e-mail message content`_ which is to be extracted
-3. e-mail attachments which should be associated with the message
+2. `sender identification`_ using the sender of the message
+3. `e-mail message content`_ which is to be extracted
+4. e-mail attachments which should be associated with the message
 
 Subject-line information
 ------------------------
@@ -350,6 +367,18 @@ Automatic Properties
  When a message is is received for a resolved issue, the issue status is
  automatically reset to "chatting" to indicate new information has been
  received.
+
+
+Sender identification
+---------------------
+
+If the sender of an email is unknown to Roundup (looking up both user
+primary email addresses and their alternate addresses) then a new user will
+be created. The new user will have their username set to the "user" part of
+"user@domain" in their email address. Their password will be completely
+randomised, and they'll have to visit the web interface to have it
+changed. Note that some sites don't allow web access by users who register
+via email like this.
 
 
 E-Mail Message Content
