@@ -62,6 +62,7 @@ Fixed:
 - don't display "Editing" on read-only pages (sf bug 651967)
 - re-worked detectors initialisation - woohoo, no more cross-importing!
 - fixed export/import of retired nodes (sf bug 685273)
+- remember the display template specified during edit (sf bug 701815)
 
 
 2003-??-?? 0.5.7

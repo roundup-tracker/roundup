@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.105 2003-03-17 04:26:24 richard Exp $
+# $Id: client.py,v 1.106 2003-03-17 04:46:20 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -842,9 +842,9 @@ please visit the following URL:
         # nice message
         message = _('You are now registered, welcome!')
 
-        # redirect to the item's edit page
-        raise Redirect, '%suser%s?@ok_message=%s'%(
-            self.base, self.userid,  urllib.quote(message))
+        # redirect to the user's page
+        raise Redirect, '%suser%s?@ok_message=%s&@template=%s'%(self.base,
+            self.userid, urllib.quote(message), urllib.quote(self.template))
 
     def passResetAction(self):
         ''' Handle password reset requests.
@@ -959,8 +959,9 @@ You should then receive another email with the new password.
         self.db.commit()
 
         # redirect to the item's edit page
-        raise Redirect, '%s%s%s?@ok_message=%s'%(self.base, self.classname,
-            self.nodeid,  urllib.quote(message))
+        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
+            self.classname, self.nodeid, urllib.quote(message),
+            urllib.quote(self.template))
 
     def editItemPermission(self, props):
         ''' Determine whether the user has permission to edit this item.
@@ -1012,11 +1013,10 @@ You should then receive another email with the new password.
         # commit now that all the tricky stuff is done
         self.db.commit()
 
-        print '%s%s%s?@ok_message=%s'%(self.base, self.classname,
-            self.nodeid, urllib.quote(messages))
         # redirect to the new item's page
-        raise Redirect, '%s%s%s?@ok_message=%s'%(self.base, self.classname,
-            self.nodeid, urllib.quote(messages))
+        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
+            self.classname, self.nodeid, urllib.quote(messages),
+            urllib.quote(self.template))
 
     def newItemPermission(self, props):
         ''' Determine whether the user has permission to create (edit) this
