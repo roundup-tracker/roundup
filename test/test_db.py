@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.61 2002-10-10 08:04:46 richard Exp $ 
+# $Id: test_db.py,v 1.62 2002-11-06 11:45:25 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -406,13 +406,7 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(action, 'create')
         keys = params.keys()
         keys.sort()
-        self.assertEqual(keys, ['assignedto', 'deadline', 'files',
-            'foo', 'messages', 'nosy', 'status', 'superseder', 'title'])
-        self.assertEqual(None,params['deadline'])
-        self.assertEqual(None,params['foo'])
-        self.assertEqual([],params['nosy'])
-        self.assertEqual('1',params['status'])
-        self.assertEqual('spam',params['title'])
+        self.assertEqual(keys, [])
 
         # journal entry for link
         journal = self.db.getjournal('user', '1')
