@@ -2,7 +2,8 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-10-?? - 0.3.0
-Added:
+Feature:
+ . Hyperdatabase sorts strings-that-look-like-numbers as numbers now.
  Admin Tool (roundup-admin):
   . Interactive mode for running multiple (independant at present) commands.
   . Tabular display of nodes.

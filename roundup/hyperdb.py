@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.26 2001-10-16 03:48:01 richard Exp $
+# $Id: hyperdb.py,v 1.27 2001-10-20 23:44:27 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -697,6 +697,12 @@ class Class:
                             bv = bn[prop] = bv.lower()
                     if (isinstance(propclass, String) or
                             isinstance(propclass, Date)):
+                        # it might be a string that's really an integer
+                        try:
+                            av = int(av)
+                            bv = int(bv)
+                        except:
+                            pass
                         if dir == '+':
                             r = cmp(av, bv)
                             if r != 0: return r
@@ -840,6 +846,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2001/10/16 03:48:01  richard
+# admin tool now complains if a "find" is attempted with a non-link property.
+#
 # Revision 1.25  2001/10/11 00:17:51  richard
 # Reverted a change in hyperdb so the default value for missing property
 # values in a create() is None and not '' (the empty string.) This obviously
