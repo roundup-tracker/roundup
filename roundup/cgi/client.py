@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.57 2002-11-28 07:02:48 richard Exp $
+# $Id: client.py,v 1.58 2002-11-28 07:08:39 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1220,12 +1220,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             if value:
                 value = date.Date(value)
             else:
-                continue
+                value = None
         elif isinstance(proptype, hyperdb.Interval):
             if value:
                 value = date.Interval(value)
             else:
-                continue
+                value = None
         elif isinstance(proptype, hyperdb.Link):
             # see if it's the "no selection" choice
             if value == '-1':
