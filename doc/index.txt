@@ -50,6 +50,7 @@ implement this system on their time.
 Thanks also to the many people on the mailing list, in the sourceforge
 project and those who just report bugs:
 Anthony Baxter,
+Cameron Blackwood,
 Jeff Blaine,
 Duncan Booth,
 Seb Brezel,
