@@ -79,6 +79,7 @@ Fixed:
 - *dbm-style backends nuke() method now clear id counters
 - removed safeget() from the API (sf bug 994750)
 - demo tracker is always set up on localhost (sf bug 1049101)
+- relaxed URL designator syntax to allow issue[0]*1 (sf bug 1054523)
 
 
 2004-??-?? 0.7.12
