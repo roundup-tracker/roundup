@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.9 2004-07-11 14:16:26 a1s Exp $
+# $Id: i18n.py,v 1.10 2004-07-14 07:27:21 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -133,6 +133,18 @@ def get_translation(language=None, domain=DOMAIN,
         try:
             _fallback = find_translation(domain=domain, languages=["en"],
                 class_=translation_class)
+            # gettext.translation returns a cached translation
+            # even if it is not of the desired class.
+            # This is a quick-and-dirty solution for this problem.
+            # It works with current codebase, because all translators
+            # inherit from respective base translation classes
+            # defined in the gettext module, i.e. have same internal data.
+            # The cached instance is not affected by this hack,
+            # 'cause gettext made a copy for us.
+            # XXX Consider making a copy of gettext.translation function
+            # with class bug fixed...
+            if _fallback.__class__ != translation_class:
+                _fallback.__class__ = translation_class
         except IOError:
             # no .mo files found
             _fallback = None
@@ -140,6 +152,9 @@ def get_translation(language=None, domain=DOMAIN,
     try:
         _translation = find_translation(domain=domain, languages=_languages,
             class_=translation_class)
+        # XXX See the comment after first find_translation() call
+        if _translation.__class__ != translation_class:
+            _translation.__class__ = translation_class
     except IOError:
         _translation = None
     # see what's found
