@@ -17,6 +17,7 @@ from __future__ import nested_scopes
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
 
 from roundup import hyperdb, date, rcsv
+from roundup import i18n
 from roundup.i18n import _
 
 try:
@@ -33,10 +34,42 @@ except ImportError:
     StructuredText = None
 
 # bring in the templating support
-from roundup.cgi.PageTemplates import PageTemplate
+from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
 from roundup.cgi.PageTemplates.Expressions import getEngine
-from roundup.cgi.TAL.TALInterpreter import TALInterpreter
+from roundup.cgi.TAL import TALInterpreter
 from roundup.cgi import ZTUtils
+
+### i18n services
+
+class StaticTranslationService:
+
+    """Translation service for application default language
+
+    This service uses "static" translation, with single domain
+    and target language, initialized from OS environment when
+    roundup.i18n is loaded.
+
+    'domain' and 'target_language' parameters to 'translate()'
+    are ignored.
+
+    Returned strings are always utf8-encoded.
+
+    """
+
+    OUTPUT_ENCODING = "utf-8"
+
+    def translate(self, domain, msgid, mapping=None,
+        context=None, target_language=None, default=None
+    ):
+        _msg = i18n.ugettext(msgid).encode(self.OUTPUT_ENCODING)
+        #print ("TRANSLATE", msgid, _msg, mapping, context)
+        _msg = TALInterpreter.interpolate(_msg, mapping)
+        return _msg
+
+GlobalTranslationService.setGlobalTranslationService(
+    StaticTranslationService())
+
+### templating
 
 class NoTemplate(Exception):
     pass
@@ -242,7 +275,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
 
         # and go
         output = StringIO.StringIO()
-        TALInterpreter(self._v_program, self.macros,
+        TALInterpreter.TALInterpreter(self._v_program, self.macros,
             getEngine().getContext(c), output, tal=1, strictinsert=0)()
         return output.getvalue()
 
