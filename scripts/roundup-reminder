@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.1 2002-04-15 06:37:31 richard Exp $
+# $Id: roundup-reminder,v 1.2 2002-05-09 02:52:56 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -103,6 +103,16 @@ for user_id in db.user.list():
         print >>body, '%-11s %-4s %-9s %-52s'%(creation, issue_id,
             timeliness, title)
 
+    # some help to finish off
+    print >>body, '''
+To view or respond to any of the issues listed above, visit the URL
+
+   %s
+
+and click on "My Issues". Do NOT respond to this message.
+'''%db.config.ISSUE_TRACKER_WEB
+
+
     # now the HTML one
     part = writer.nextpart()
     body = part.startbody('text/html')
@@ -129,6 +139,10 @@ for user_id in db.user.list():
     <td>%s</td></tr>'''%(colour, creation, issue_id, timeliness, title)
     print >>body, '</table>'
 
+    print >>body, '''<p>To view or respond to any of the issues listed
+        above, simply click on the issue ID. Do <b>not</b> respond to
+        this message.</p>'''
+
     # finish of the multipart
     writer.lastpart()
 
@@ -138,5 +152,10 @@ for user_id in db.user.list():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/04/15 06:37:31  richard
+# Here's a cron-job reminder script that we're going to be using here at
+# ekit. Might be useful for other people. Could use some work making it more
+# general and easier to customise.
+#
 #
 #
