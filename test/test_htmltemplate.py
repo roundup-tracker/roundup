@@ -8,9 +8,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.6 2002-01-23 05:47:57 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.7 2002-01-23 20:09:41 jhermann Exp $ 
 
-import unittest, cgi
+import unittest, cgi, time
 
 from roundup import date, password
 from roundup.htmltemplate import TemplateFunctions
@@ -237,7 +237,7 @@ class NodeCase(unittest.TestCase):
     def testReldate_date(self):
         self.assertEqual(self.tf.do_reldate('date'), '- 2y 1m')
         self.assertEqual(self.tf.do_reldate('date', pretty=1),
-            ' 1 January 2000')
+            ' 1 %s 2000' % time.strftime('%B', time.localtime(0)))
 
 #    def do_download(self, property):
     def testDownload_novalue(self):
@@ -314,6 +314,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2002/01/23 05:47:57  richard
+# more HTML template cleanup and unit tests
+#
 # Revision 1.5  2002/01/23 05:10:28  richard
 # More HTML template cleanup and unit tests.
 #  - download() now implemented correctly, replacing link(is_download=1) [fixed in the
