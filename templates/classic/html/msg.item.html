@@ -5,12 +5,10 @@
 <span tal:condition="context/id" tal:replace="string:Message ${context/id}" />
 <tal:x tal:condition="not:context/id">New Message</tal:x> 
 </title> 
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1">
   Message<span tal:replace="context/id" />
    <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
- </h2>
-</td>
+ </span>
 <td class="content" metal:fill-slot="content">
 <table class="form">
 

@@ -20,7 +20,7 @@
                    batch python:utils.Batch(context.list(), 500, start);
                    props python:request.form['properties'].value.split(',')">
      
-     <div id="classhelp-controls" tal:condition="python:start==0">
+     <div id="classhelp-controls">
        <!--input type="button" name="btn_clear" 
               value="Clear" onClick="clearList()"/ -->
        <input type="text" name="text_preview" size="24" class="preview"
@@ -41,7 +41,6 @@
              <td>
                  <input type="checkbox" name="check" 
                  onclick="updatePreview();"
-                 tal:condition="python:start==0"
                  tal:attributes="value attr; id string:id_$attr" />
              </td>
              <td tal:repeat="prop props">
@@ -60,14 +59,14 @@
       <tr class="navigation">
        <th>
         <a tal:define="prev batch/previous" tal:condition="prev"
-           tal:attributes="href string:${request/classname}?@template=help&@startwith=${prev/first}&properties=${request/form/properties/value}">&lt;&lt; previous</a>
+            tal:attributes="href string:${request/classname}?@template=help&@startwith=${prev/first}&property=${request/form/property/value}&properties=${request/form/properties/value}">&lt;&lt; previous</a>
         &nbsp;
        </th>
        <th tal:content="python: '%d...%d out of %d'%(batch.start,
                batch.start+batch.length-1, batch.sequence_length)">current</th>
        <th>
         <a tal:define="next batch/next" tal:condition="next"
-           tal:attributes="href string:${request/classname}?@template=help&@startwith=${next/first}&properties=${request/form/properties/value}">next &gt;&gt;</a>
+            tal:attributes="href string:${request/classname}?@template=help&@startwith=${next/first}&property=${request/form/property/value}&properties=${request/form/properties/value}">next &gt;&gt;</a>
         &nbsp;
        </th>
       </tr>

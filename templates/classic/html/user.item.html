@@ -6,12 +6,10 @@
       tal:replace="string:User ${context/id}: ${context/username}" />
 <tal:x tal:condition="not:context/id">New User</tal:x> 
 </title> 
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1">
   User<span tal:replace="context/id" />
    <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
- </h2>
-</td>
+ </span>
 
 <td class="content" metal:fill-slot="content">
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">

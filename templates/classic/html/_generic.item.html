@@ -1,9 +1,8 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title"
        tal:content="python:context._classname.capitalize()+' editing'"></title>
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2 tal:content="python:context._classname.capitalize()+' editing'"></h2>
-</td>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+      tal:content="python:context._classname.capitalize()+' editing'"></span>
 <td class="content" metal:fill-slot="content">
 
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">

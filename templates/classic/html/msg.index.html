@@ -2,9 +2,7 @@
 <title metal:fill-slot="head_title"> 
  <span tal:replace="config/TRACKER_NAME" />: List of messages
 </title> 
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2>Message listing</h2>
-</td>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1">Message listing</span>
 <td class="content" metal:fill-slot="content">
 <table class="messages" tal:condition="request/filter">
  <tr><th colspan=2 class="header">Messages</th></tr>

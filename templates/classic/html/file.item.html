@@ -1,8 +1,6 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">File display</title>
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2>File display</h2>
-</td>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1">File display</span>
 
 <td class="content" metal:fill-slot="content">
 

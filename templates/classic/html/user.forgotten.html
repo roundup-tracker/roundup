@@ -1,9 +1,7 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">Password reset request</title>
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2>Password reset request</h2>
-</td>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1">Password reset request</span>
 <td class="content" metal:fill-slot="content">
 
 <p>You have two options if you have forgotten your password. If you 
