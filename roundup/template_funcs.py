@@ -1,5 +1,5 @@
 # 
-# $Id: template_funcs.py,v 1.2 2002-08-15 00:40:10 richard Exp $
+# $Id: template_funcs.py,v 1.3 2002-08-19 00:22:47 richard Exp $
 #
 import hyperdb, date, password
 from i18n import _
@@ -618,25 +618,34 @@ def do_history(client, classname, cl, props, nodeid, filterspec,
                             len(args[k]) > 0:
                         ml = []
                         for linkid in args[k]:
-                            label = classname + linkid
-                            # if we have a label property, try to use it
-                            # TODO: test for node existence even when
-                            # there's no labelprop!
-                            try:
-                                if labelprop is not None:
-                                    label = linkcl.get(linkid, labelprop)
-                            except IndexError:
-                                comments['no_link'] = _('''<strike>The
-                                    linked node no longer
-                                    exists</strike>''')
-                                ml.append('<strike>%s</strike>'%label)
+                            if isinstance(linkid, type(())):
+                                sublabel = linkid[0] + ' '
+                                linkids = linkid[1]
                             else:
-                                if hrefable:
-                                    ml.append('<a href="%s%s">%s</a>'%(
-                                        classname, linkid, label))
+                                sublabel = ''
+                                linkids = [linkid]
+                            subml = []
+                            for linkid in linkids:
+                                label = classname + linkid
+                                # if we have a label property, try to use it
+                                # TODO: test for node existence even when
+                                # there's no labelprop!
+                                try:
+                                    if labelprop is not None:
+                                        label = linkcl.get(linkid, labelprop)
+                                except IndexError:
+                                    comments['no_link'] = _('''<strike>The
+                                        linked node no longer
+                                        exists</strike>''')
+                                    subml.append('<strike>%s</strike>'%label)
                                 else:
-                                    ml.append(label)
-                        cell.append('%s:\n  %s'%(k, ',\n  '.join(ml)))
+                                    if hrefable:
+                                        subml.append('<a href="%s%s">%s</a>'%(
+                                            classname, linkid, label))
+                                    else:
+                                        subml.append(label)
+                            ml.append(sublabel + ', '.join(subml))
+                        cell.append('%s:\n  %s'%(k, ', '.join(ml)))
                     elif isinstance(prop, hyperdb.Link) and args[k]:
                         label = classname + args[k]
                         # if we have a label property, try to use it
@@ -809,6 +818,9 @@ def do_remove(client, classname, cl, props, nodeid, filterspec):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/08/15 00:40:10  richard
+# cleanup
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
