@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.60 2004-09-21 08:01:15 a1s Exp $
+$Id: roundup_server.py,v 1.61 2004-09-21 08:16:50 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -499,7 +499,7 @@ def run(port=undefined, success_message=None):
             elif opt == '-c': svc_args = [opt] + args; args = None
             elif opt == '-C': config = arg
 
-        if svc_args is not None and len(optlist) > 1:
+        if svc_args and len(optlist) > 1:
             raise ValueError, _("windows service option must be the only one")
 
         if pidfile and not logfile:
