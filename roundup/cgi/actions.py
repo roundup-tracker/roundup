@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.22 2004-03-31 23:08:39 richard Exp $
+#$Id: actions.py,v 1.23 2004-04-05 06:13:42 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -77,7 +77,7 @@ class ShowAction(Action):
             d = {'input': n, 'classname': t}
             raise SeriousError, _(
                 '"%(input)s" is not an ID (%(classname)s ID required)')%d
-        url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
+        url = '%s%s%s'%(self.base, t, n)
         raise Redirect, url
 
 class RetireAction(Action):

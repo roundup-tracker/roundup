@@ -17,6 +17,7 @@ Fixed:
 - export and import now include journals (incompatible with export < 0.7)
 - added "download_url" method to generate a correctly quoted URL for file
   download links (sf bug 927745)
+- all uses of TRACKER_WEB now ensure it ends with a '/'
 
 
 2004-03-27 0.7.0b2

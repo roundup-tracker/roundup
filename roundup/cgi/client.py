@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.169 2004-03-26 05:16:03 richard Exp $
+# $Id: client.py,v 1.170 2004-04-05 06:13:42 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -108,6 +108,10 @@ class Client:
 
         # this is the base URL for this tracker
         self.base = self.instance.config.TRACKER_WEB
+
+        # check the tracker_we setting
+        if not self.base.endswith('/'):
+            self.base = self.base + '/'
 
         # this is the "cookie path" for this tracker (ie. the path part of
         # the "base" url)
