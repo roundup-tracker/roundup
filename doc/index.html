@@ -751,6 +751,10 @@ MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
 </pre>
 
 <h2><a name="custinst">Instance Schema</a></h2>
+<b>Note:</b> if you modify the schema, you'll most likely need to
+<a href="#schemarepurcussions">
+web interface to reflect your changes</a>.
+<p>
 An instance schema defines what data is stored in the instance's database.
 The two schemas shipped with Roundup turn it into a typical software bug
 tracker (the extended schema allowing for support issues as well as bugs).
@@ -917,6 +921,20 @@ Most customisation of the web view can be done by modifying the templates
 in the instance html directory. These are divided into index, item and
 newitem views. The newitem view is optional - the item view will be used if
 the newitem view doesn't exist.
+
+<h3><a name="schemarepurcussions">Repurcussions of changing the instance schema</a></h3>
+
+If you choose to <a href="custinst">change the instance schema</a> you will need to
+ensure the web interface knows about it:
+<ol>
+<li>Index, item and filter pages for the relevant classes may need to have properties
+added or removed,
+<li>The default page header relies on the existence of, and some values of the
+priority, status, assignedto and activity classes. If you change any of these (specifically
+if you remove any of the classes or their default values) you will need to implement your
+own pagehead() method in your instance's interfaces.py module.
+</ol>
+
 
 <h3>Displaying Properties</h3>
 
@@ -1285,8 +1303,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.25 2002-01-16 03:04:03 richard Exp $
+$Id: index.html,v 1.26 2002-01-16 04:54:27 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
-
