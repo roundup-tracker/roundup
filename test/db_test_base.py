@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.46 2004-09-26 13:25:55 a1s Exp $
+# $Id: db_test_base.py,v 1.47 2004-09-28 10:29:37 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -32,6 +32,8 @@ config.RDBMS_HOST = "localhost"
 config.RDBMS_USER = "rounduptest"
 config.RDBMS_PASSWORD = "rounduptest"
 config.logging = MockNull()
+# MAIL_DOMAIN is required for config.save()
+config.MAIL_DOMAIN = "localhost"
 
 def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
@@ -1341,7 +1343,6 @@ class RDBMSTest:
 class ClassicInitTest(unittest.TestCase):
     count = 0
     db = None
-    extra_config = ''
 
     def setUp(self):
         ClassicInitTest.count = ClassicInitTest.count + 1
@@ -1357,13 +1358,7 @@ class ClassicInitTest(unittest.TestCase):
         # create the instance
         init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, self.backend)
-
-        if self.extra_config:
-            f = open(os.path.join(self.dirname, 'config.py'), 'a')
-            try:
-                f.write(self.extra_config)
-            finally:
-                f.close()
+        config.save(os.path.join(self.dirname, 'config.ini'))
 
         # check we can load the package
         tracker = instance.open(self.dirname)
