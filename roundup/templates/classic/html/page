@@ -51,7 +51,8 @@
    <tal:block tal:condition="python:request.user.username != 'anonymous'">
     <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,priority&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
     <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
-    <a href="?:action=logout">Logout</a>
+    <a tal:attributes="href python:request.indexargs_href(request.url,
+        {':action':'logout'})">Logout</a>
    </tal:block>
   </p>
  </td>

@@ -851,10 +851,24 @@ def handleListCGIValue(value):
     else:
         return value.value.split(',')
 
-# XXX This is starting to look a lot (in data terms) like the client object
-# itself!
 class HTMLRequest:
     ''' The *request*, holding the CGI form and environment.
+
+        "form" the CGI form as a cgi.FieldStorage
+        "env" the CGI environment variables
+        "url" the current URL path for this request
+        "base" the base URL for this instance
+        "user" a HTMLUser instance for this user
+        "classname" the current classname (possibly None)
+        "template_type" the current template type (suffix, also possibly None)
+
+        Index args:
+        "columns" dictionary of the columns to display in an index page
+        "sort" index sort column (direction, column name)
+        "group" index grouping property (direction, column name)
+        "filter" properties to filter the index on
+        "filterspec" values to filter the index on
+        "search_text" text to perform a full-text search on for an index
 
     '''
     def __init__(self, client):
@@ -864,6 +878,7 @@ class HTMLRequest:
         self.form = client.form
         self.env = client.env
         self.base = client.base
+        self.url = client.url
         self.user = HTMLUser(client)
 
         # store the current class name and action
@@ -933,6 +948,7 @@ class HTMLRequest:
         d['env'] = e
         return '''
 form: %(form)s
+url: %(url)r
 base: %(base)r
 classname: %(classname)r
 template_type: %(template_type)r
@@ -971,6 +987,7 @@ env: %(env)s
         return '\n'.join(l)
 
     def indexargs_href(self, url, args):
+        ''' embed the current index args in a URL '''
         l = ['%s=%s'%(k,v) for k,v in args.items()]
         if self.columns:
             l.append(':columns=%s'%(','.join(self.columns.keys())))
@@ -1040,6 +1057,9 @@ function help_window(helpurl, width, height) {
         # return the batch object
         return Batch(self.client, self.classname, l, size, start)
 
+
+# extend the standard ZTUtils Batch object to remove dependency on
+# Acquisition and add a couple of useful methods
 class Batch(ZTUtils.Batch):
     def __init__(self, client, classname, l, size, start, end=0, orphan=0, overlap=0):
         self.client = client

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.3 2002-09-01 12:18:40 richard Exp $
+# $Id: client.py,v 1.4 2002-09-01 22:09:20 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -60,6 +60,11 @@ class Client:
 
     Once a user logs in, they are assigned a session. The Client instance
     keeps the nodeid of the session as the "session" attribute.
+
+    Client attributes:
+        "url" is the current url path
+        "path" is the PATH_INFO inside the instance
+        "base" is the base URL for the instance
     '''
 
     def __init__(self, instance, request, env, form=None):
@@ -67,14 +72,19 @@ class Client:
         self.instance = instance
         self.request = request
         self.env = env
+
         self.path = env['PATH_INFO']
         self.split_path = self.path.split('/')
         self.instance_path_name = env['INSTANCE_NAME']
+
+        # this is the base URL for this instance
         url = self.env['SCRIPT_NAME'] + '/' + self.instance_path_name
-        machine = self.env['SERVER_NAME']
-        port = self.env['SERVER_PORT']
-        if port != '80': machine = machine + ':' + port
         self.base = urlparse.urlunparse(('http', env['HTTP_HOST'], url,
+            None, None, None))
+
+        # request.path is the full request path
+        x, x, path, x, x, x = urlparse.urlparse(request.path)
+        self.url = urlparse.urlunparse(('http', env['HTTP_HOST'], path,
             None, None, None))
 
         if form is None:
