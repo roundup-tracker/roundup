@@ -954,9 +954,6 @@ class LinkHTMLProperty(HTMLProperty):
         # sort function
         sortfunc = make_sort_function(self._db, self._prop.classname)
 
-        # force the value to be a single choice
-        if isinstance(value, type('')):
-            value = value[0]
         linkcl = self._db.getclass(self._prop.classname)
         l = ['<select name="%s">'%self._name]
         k = linkcl.labelprop(1)
