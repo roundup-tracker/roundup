@@ -1,8 +1,8 @@
-#$Id: actions.py,v 1.15 2004-03-26 00:44:11 richard Exp $
+#$Id: actions.py,v 1.16 2004-03-26 00:46:33 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
-from roundup import hyperdb, token, date, password, rcsv
+from roundup import hyperdb, token, date, password, rcsv, exceptions
 from roundup.i18n import _
 from roundup.cgi import templating
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError
@@ -471,7 +471,7 @@ class EditItemAction(_EditAction):
         # handle the props
         try:
             message = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError), message:
+        except (ValueError, KeyError, IndexError, exceptions.Reject), message:
             self.client.error_message.append(_('Apply Error: ') + str(message))
             return
 
@@ -511,7 +511,7 @@ class NewItemAction(_EditAction):
             # when it hits the None element, it'll set self.nodeid
             messages = self._editnodes(props, links)
 
-        except (ValueError, KeyError, IndexError), message:
+        except (ValueError, KeyError, IndexError, exceptions.Reject), message:
             # these errors might just be indicative of user dumbness
             self.client.error_message.append(_('Error: ') + str(message))
             return
