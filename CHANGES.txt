@@ -12,6 +12,7 @@ are given with the most recent entry first.
   (multipart/alternative, "fw" and content-type "name")
 - fire auditors and reactors in rdbms retire (thanks Sheila King)
 - better match for mailgw help "command" text
+- handle :add: better in cgi form parsing (sf bug 663235)
 
 
 2002-12-11 0.5.3

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.63 2002-12-15 23:55:33 richard Exp $
+# $Id: client.py,v 1.64 2003-01-08 04:33:56 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1188,7 +1188,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
         # does the property exist?
         if not properties.has_key(propname):
-            if mlaction != 'set':
+            if mlaction == 'remove':
                 raise ValueError, 'You have submitted a remove action for'\
                     ' the property "%s" which doesn\'t exist'%propname
             continue
@@ -1198,8 +1198,18 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         # of MiniFieldStorages.
         value = form[key]
 
-        # make sure non-multilinks only get one value
-        if not isinstance(proptype, hyperdb.Multilink):
+        # handle unpacking of the MiniFieldStorage / list form value
+        if isinstance(proptype, hyperdb.Multilink):
+            # multiple values are OK
+            if isinstance(value, type([])):
+                # it's a list of MiniFieldStorages
+                value = [i.value.strip() for i in value]
+            else:
+                # it's a MiniFieldStorage, but may be a comma-separated list
+                # of values
+                value = [i.strip() for i in value.value.split(',')]
+        else:
+            # multiple values are not OK
             if isinstance(value, type([])):
                 raise ValueError, 'You have submitted more than one value'\
                     ' for the %s property'%propname
@@ -1258,16 +1268,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             'for property "%(propname)s": %(message)s')%{
                             'propname': propname, 'message': message}
         elif isinstance(proptype, hyperdb.Multilink):
-            if isinstance(value, type([])):
-                # it's a list of MiniFieldStorages
-                value = [i.value.strip() for i in value]
-            else:
-                # it's a MiniFieldStorage, but may be a comma-separated list
-                # of values
-                value = [i.strip() for i in value.value.split(',')]
+            # perform link class key value lookup if necessary
             link = proptype.classname
             l = []
-            for entry in map(str, value):
+            for entry in value:
                 if entry == '': continue
                 if not num_re.match(entry):
                     try:
