@@ -44,6 +44,8 @@ def connection_dict(config, dbnamestr=None):
     if d.has_key('password'):
         d['passwd'] = d['password']
         del d['password']
+    if d.has_key('port'):
+        d['port'] = int(d['port'])
     return d
 
 def db_nuke(config):
