@@ -17,16 +17,17 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.66 2004-10-18 07:43:58 a1s Exp $
+$Id: roundup_server.py,v 1.67 2004-10-29 13:41:25 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
+
+import socket
+import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
+import SocketServer, BaseHTTPServer, socket, errno, ConfigParser
 
 # python version check
 from roundup import configuration, version_check
 from roundup import __version__ as roundup_version
-
-import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
-import SocketServer, BaseHTTPServer, socket, errno, ConfigParser
 
 # Roundup modules of use here
 from roundup.cgi import cgitb, client
@@ -55,6 +56,18 @@ bn3Zuj8M9Hepux6VfZtW1yA6K7cfGqVu8TL325u+fHTb71QKbk+7TZQ+lTc6RcnpqW8qmVQBoj/g
 '''.strip()))
 
 DEFAULT_PORT = 8080
+
+# See what types of multiprocess server are available
+MULTIPROCESS_TYPES = ["none"]
+try:
+    import thread
+except ImportError:
+    pass
+else:
+    MULTIPROCESS_TYPES.append("thread")
+if hasattr(os, 'fork'):
+    MULTIPROCESS_TYPES.append("fork")
+DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = {}
@@ -216,12 +229,200 @@ def error():
     exc_type, exc_value = sys.exc_info()[:2]
     return _('Error: %s: %s' % (exc_type, exc_value))
 
-# See whether we can use the forking server
-if hasattr(os, 'fork'):
-    class server_class(SocketServer.ForkingMixIn, BaseHTTPServer.HTTPServer):
-        pass
-else:
-    server_class = BaseHTTPServer.HTTPServer
+def setgid(group):
+    if group is None:
+        return
+    if not hasattr(os, 'setgid'):
+        return
+
+    # if root, setgid to the running user
+    if not os.getuid():
+        print _('WARNING: ignoring "-g" argument, not root')
+        return
+
+    try:
+        import grp
+    except ImportError:
+        raise ValueError, _("Can't change groups - no grp module")
+    try:
+        try:
+            gid = int(group)
+        except ValueError:
+            gid = grp.getgrnam(group)[2]
+        else:
+            grp.getgrgid(gid)
+    except KeyError:
+        raise ValueError,_("Group %(group)s doesn't exist")%locals()
+    os.setgid(gid)
+
+def setuid(user):
+    if not hasattr(os, 'getuid'):
+        return
+
+    # People can remove this check if they're really determined
+    if user is None:
+        if os.getuid():
+            return
+        raise ValueError, _("Can't run as root!")
+
+    if os.getuid():
+        print _('WARNING: ignoring "-u" argument, not root')
+
+    try:
+        import pwd
+    except ImportError:
+        raise ValueError, _("Can't change users - no pwd module")
+    try:
+        try:
+            uid = int(user)
+        except ValueError:
+            uid = pwd.getpwnam(user)[2]
+        else:
+            pwd.getpwuid(uid)
+    except KeyError:
+        raise ValueError, _("User %(user)s doesn't exist")%locals()
+    os.setuid(uid)
+
+class TrackerHomeOption(configuration.FilePathOption):
+
+    # Tracker homes do not need any description strings
+    def format(self):
+        return "%(name)s = %(value)s\n" % {
+                "name": self.setting,
+                "value": self.value2str(self._value),
+            }
+
+class ServerConfig(configuration.Config):
+
+    SETTINGS = (
+            ("main", (
+            (configuration.Option, "host", "",
+                "Host name of the Roundup web server instance.\n"
+                "If empty, listen on all network interfaces."),
+            (configuration.IntegerNumberOption, "port", DEFAULT_PORT,
+                "Port to listen on."),
+            (configuration.NullableOption, "user", "",
+                "User ID as which the server will answer requests.\n"
+                "In order to use this option, "
+                "the server must be run initially as root.\n"
+                "Availability: Unix."),
+            (configuration.NullableOption, "group", "",
+                "Group ID as which the server will answer requests.\n"
+                "In order to use this option, "
+                "the server must be run initially as root.\n"
+                "Availability: Unix."),
+            (configuration.BooleanOption, "log_hostnames", "no",
+                "Log client machine names instead of IP addresses "
+                "(much slower)"),
+            (configuration.NullableFilePathOption, "pidfile", "",
+                "File to which the server records "
+                "the process id of the daemon.\n"
+                "If this option is not set, "
+                "the server will run in foreground\n"),
+            (configuration.NullableFilePathOption, "logfile", "",
+                "Log file path.  If unset, log to stderr."),
+            (configuration.Option, "multiprocess", DEFAULT_MULTIPROCESS,
+                "Set processing of each request in separate subprocess.\n"
+                "Allowed values: %s." % ", ".join(MULTIPROCESS_TYPES)),
+        )),
+        ("trackers", (), "Roundup trackers to serve.\n"
+            "Each option in this section defines single Roundup tracker.\n"
+            "Option name identifies the tracker and will appear in the URL.\n"
+            "Option value is tracker home directory path.\n"
+            "The path may be either absolute or relative\n"
+            "to the directory containig this config file."),
+    )
+
+    # options recognized by config
+    OPTIONS = {
+        "host": "n:",
+        "port": "p:",
+        "group": "g:",
+        "user": "u:",
+        "logfile": "l:",
+        "pidfile": "d:",
+        "log_hostnames": "N",
+        "multiprocess": "t:",
+    }
+
+    def __init__(self, config_file=None):
+        configuration.Config.__init__(self, config_file, self.SETTINGS)
+
+    def _adjust_options(self, config):
+        """Add options for tracker homes"""
+        # return early if there are no tracker definitions.
+        # trackers must be specified on the command line.
+        if not config.has_section("trackers"):
+            return
+        # config defaults appear in all sections.
+        # filter them out.
+        defaults = config.defaults().keys()
+        for name in config.options("trackers"):
+            if name not in defaults:
+                self.add_option(TrackerHomeOption(self, "trackers", name))
+
+    def getopt(self, args, short_options="", long_options=(),
+        config_load_options=("C", "config"), **options
+    ):
+        options.update(self.OPTIONS)
+        return configuration.Config.getopt(self, args,
+            short_options, long_options, **options)
+
+    def _get_name(self):
+        return "Roundup server"
+
+    def trackers(self):
+        """Return tracker definitions as a list of (name, home) pairs"""
+        trackers = []
+        for option in self._get_section_options("trackers"):
+            trackers.append((option, os.path.abspath(
+                self["TRACKERS_" + option.upper()])))
+        return trackers
+
+    def get_server(self):
+        """Return HTTP server object to run"""
+        # redirect stdout/stderr to our logfile
+        # this is done early to have following messages go to this logfile
+        if self.LOGFILE:
+            # appending, unbuffered
+            sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 0)
+        # we don't want the cgi module interpreting the command-line args ;)
+        sys.argv = sys.argv[:1]
+        # build customized request handler class
+        class RequestHandler(RoundupRequestHandler):
+            LOG_IPADDRESS = not self.LOG_HOSTNAMES
+            TRACKER_HOMES = dict(self.trackers())
+        # obtain request server class
+        if self.MULTIPROCESS not in MULTIPROCESS_TYPES:
+            print _("Multiprocess mode \"%s\" is not available, "
+                "switching to single-process") % self.MULTIPROCESS
+            self.MULTIPROCESS = "none"
+            server_class = BaseHTTPServer.HTTPServer
+        elif self.MULTIPROCESS == "fork":
+            class server_class(SocketServer.ForkingMixIn,
+                BaseHTTPServer.HTTPServer):
+                    pass
+        elif self.MULTIPROCESS == "thread":
+            class server_class(SocketServer.ThreadingMixIn,
+                BaseHTTPServer.HTTPServer):
+                    pass
+        else:
+            server_class = BaseHTTPServer.HTTPServer
+        # obtain server before changing user id - allows to
+        # use port < 1024 if started as root
+        try:
+            httpd = server_class((self.HOST, self.PORT), RequestHandler)
+        except socket.error, e:
+            if e[0] == errno.EADDRINUSE:
+                raise socket.error, \
+                    _("Unable to bind to port %s, port already in use.") \
+                    % self.PORT
+            raise
+        # change user and/or group
+        setgid(self.GROUP)
+        setuid(self.USER)
+        # return the server
+        return httpd
 
 try:
     import win32serviceutil
@@ -407,163 +608,30 @@ def daemonize(pidfile):
     os.dup2(devnull, 1)
     os.dup2(devnull, 2)
 
-def setgid(group):
-    if group is None:
-        return
-    if not hasattr(os, 'setgid'):
-        return
-
-    # if root, setgid to the running user
-    if not os.getuid():
-        print _('WARNING: ignoring "-g" argument, not root')
-        return
-
-    try:
-        import grp
-    except ImportError:
-        raise ValueError, _("Can't change groups - no grp module")
-    try:
-        try:
-            gid = int(group)
-        except ValueError:
-            gid = grp.getgrnam(group)[2]
-        else:
-            grp.getgrgid(gid)
-    except KeyError:
-        raise ValueError,_("Group %(group)s doesn't exist")%locals()
-    os.setgid(gid)
-
-def setuid(user):
-    if not hasattr(os, 'getuid'):
-        return
-
-    # People can remove this check if they're really determined
-    if user is None:
-        if os.getuid():
-            return
-        raise ValueError, _("Can't run as root!")
-
-    if os.getuid():
-        print _('WARNING: ignoring "-u" argument, not root')
-
-    try:
-        import pwd
-    except ImportError:
-        raise ValueError, _("Can't change users - no pwd module")
-    try:
-        try:
-            uid = int(user)
-        except ValueError:
-            uid = pwd.getpwnam(user)[2]
-        else:
-            pwd.getpwuid(uid)
-    except KeyError:
-        raise ValueError, _("User %(user)s doesn't exist")%locals()
-    os.setuid(uid)
-
-class TrackerHomeOption(configuration.FilePathOption):
-
-    # Tracker homes do not need any description strings
-    def format(self):
-        return "%(name)s = %(value)s\n" % {
-                "name": self.setting,
-                "value": self.value2str(self._value),
-            }
-
-class ServerConfig(configuration.Config):
-
-    SETTINGS = (
-            ("main", (
-            (configuration.Option, "host", "",
-                "Host name of the Roundup web server instance.\n"
-                "If empty, listen on all network interfaces."),
-            (configuration.IntegerNumberOption, "port", DEFAULT_PORT,
-                "Port to listen on."),
-            (configuration.NullableOption, "user", "",
-                "User ID as which the server will answer requests.\n"
-                "In order to use this option, "
-                "the server must be run initially as root.\n"
-                "Availability: Unix."),
-            (configuration.NullableOption, "group", "",
-                "Group ID as which the server will answer requests.\n"
-                "In order to use this option, "
-                "the server must be run initially as root.\n"
-                "Availability: Unix."),
-            (configuration.BooleanOption, "log_hostnames", "no",
-                "Log client machine names instead of IP addresses "
-                "(much slower)"),
-            (configuration.NullableFilePathOption, "pidfile", "",
-                "File to which the server records "
-                "the process id of the daemon.\n"
-                "If this option is not set, "
-                "the server will run in foreground\n"),
-            (configuration.NullableFilePathOption, "logfile", "",
-                "Log file path.  If unset, log to stderr."),
-        )),
-        ("trackers", (), "Roundup trackers to serve.\n"
-            "Each option in this section defines single Roundup tracker.\n"
-            "Option name identifies the tracker and will appear in the URL.\n"
-            "Option value is tracker home directory path.\n"
-            "The path may be either absolute or relative\n"
-            "to the directory containig this config file."),
-    )
-
-    def __init__(self, config_file=None):
-        configuration.Config.__init__(self, config_file, self.SETTINGS)
-
-    def _adjust_options(self, config):
-        """Add options for tracker homes"""
-        # return early if there are no tracker definitions.
-        # trackers must be specified on the command line.
-        if not config.has_section("trackers"):
-            return
-        # config defaults appear in all sections.
-        # filter them out.
-        defaults = config.defaults().keys()
-        for name in config.options("trackers"):
-            if name not in defaults:
-                self.add_option(TrackerHomeOption(self, "trackers", name))
-
-    def _get_name(self):
-        return "Roundup server"
-
-    def trackers(self):
-        """Return tracker definitions as a list of (name, home) pairs"""
-        trackers = []
-        for option in self._get_section_options("trackers"):
-            trackers.append((option, self["TRACKERS_" + option.upper()]))
-        return trackers
-
 undefined = []
 def run(port=undefined, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
     # time out after a minute if we can
-    import socket
     if hasattr(socket, 'setdefaulttimeout'):
         socket.setdefaulttimeout(60)
 
     config = ServerConfig()
-
-    options = "hvS"
+    # additional options
+    short_options = "hvS"
     if RoundupService:
-        options += 'c'
+        short_options += 'c'
     try:
         (optlist, args) = config.getopt(sys.argv[1:],
-            options, ("help", "version", "save-config",),
-            host="n:", port="p:", group="g:", user="u:",
-            logfile="l:", pidfile="d:", log_hostnames="N")
+            short_options, ("help", "version", "save-config",))
     except (getopt.GetoptError, configuration.ConfigurationError), e:
         usage(str(e))
         return
 
     # if running in windows service mode, don't do any other stuff
     if ("-c", "") in optlist:
-        RoundupService.address = (config.HOST, config.PORT)
-        # XXX why the 1st argument to the service is "-c"
-        #   instead of the script name???
         return win32serviceutil.HandleCommandLine(RoundupService,
-            argv=["-c"] + args)
+            argv=sys.argv[:1] + args)
 
     # add tracker names from command line.
     # this is done early to let '--save-config' handle the trackers.
@@ -590,34 +658,9 @@ def run(port=undefined, success_message=None):
         # any of the above options prevent server from running
         return
 
-    RoundupRequestHandler.LOG_IPADDRESS = not config.LOG_HOSTNAMES
-
     # port number in function arguments overrides config and command line
     if port is not undefined:
         config.PORT = port
-
-    # obtain server before changing user id - allows
-    # to use port < 1024 if started as root
-    try:
-        httpd = server_class((config.HOST, config.PORT), RoundupRequestHandler)
-    except socket.error, e:
-        if e[0] == errno.EADDRINUSE:
-            raise socket.error, \
-                _("Unable to bind to port %s, port already in use.") \
-                % config.PORT
-        raise
-
-    # change user and/or group
-    setgid(config.GROUP)
-    setuid(config.USER)
-
-    # apply tracker specs
-    for (name, home) in config.trackers():
-        home = os.path.abspath(home)
-        RoundupRequestHandler.TRACKER_HOMES[name] = home
-
-    # we don't want the cgi module interpreting the command-line args ;)
-    sys.argv = sys.argv[:1]
 
     # fork the server from our parent if a pidfile is specified
     if config.PIDFILE:
@@ -628,10 +671,8 @@ def run(port=undefined, success_message=None):
         else:
             daemonize(config.PIDFILE)
 
-    # redirect stdout/stderr to our logfile
-    if config.LOGFILE:
-        # appending, unbuffered
-        sys.stdout = sys.stderr = open(config.LOGFILE, 'a', 0)
+    # create the server
+    httpd = config.get_server()
 
     if success_message:
         print success_message
