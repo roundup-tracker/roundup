@@ -49,6 +49,7 @@ implement this system on their time.
 
 Thanks also to the many people on the mailing list, in the sourceforge
 project and those who just report bugs:
+Thomas Arendsen Hein,
 Anthony Baxter,
 Cameron Blackwood,
 Jeff Blaine,
@@ -66,7 +67,6 @@ Johannes Gijsbers,
 Gus Gollings,
 Dan Grassi,
 Engelbert Gruber,
-Thomas Arendsen Hein,
 Juergen Hermann,
 Tobias Hunger,
 James Kew,

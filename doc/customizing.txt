@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.105 $
+:Version: $Revision: 1.106 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -180,6 +180,11 @@ The configuration variables available are:
  Default class to use in the mailgw if one isn't supplied in email
  subjects. To disable, comment out the variable below or leave it blank.
 
+**HTML_VERSION** -  ``'html4'`` or ``'xhtml'``
+ HTML version to generate. The templates are html4 by default. If you
+ wish to make them xhtml, then you'll need to change this var to 'xhtml'
+ too so all auto-generated HTML is compliant.
+
 The default config.py is given below - as you
 can see, the MAIL_DOMAIN must be edited before any interaction with the
 tracker is attempted.::
@@ -254,6 +259,11 @@ tracker is attempted.::
     # blank. Examples:
     MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
+    # HTML version to generate. The templates are html4 by default. If you
+    # wish to make them xhtml, then you'll need to change this var to 'xhtml'
+    # too so all auto-generated HTML is compliant.
+    HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
 
     # 
     # SECURITY DEFINITIONS
@@ -1053,6 +1063,10 @@ returning.
 
 Default templates
 -----------------
+
+The default templates are html4 compliant. If you wish to change them to be
+xhtml compliant, you'll need to change the ``HTML_VERSION`` configuration
+variable in ``config.py`` to ``'xhtml'`` instead of ``'html4'``.
 
 Most customisation of the web view can be done by modifying the
 templates in the tracker ``'html'`` directory. There are several types

@@ -24,6 +24,14 @@ from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from roundup.cgi import ZTUtils
 
+def input_html4(**attrs):
+    """Generate an 'input' (html4) element with given attributes"""
+    return '<input %s>'%' '.join(['%s="%s"'%item for item in attrs.items()])
+
+def input_xhtml(**attrs):
+    """Generate an 'input' (xhtml) element with given attributes"""
+    return '<input %s/>'%' '.join(['%s="%s"'%item for item in attrs.items()])
+
 class NoTemplate(Exception):
     pass
 
@@ -295,6 +303,14 @@ class HTMLClass(HTMLPermissions):
         self._klass = self._db.getclass(self.classname)
         self._props = self._klass.getprops()
 
+        html_version = 'html4'
+        if hasattr(self._client.instance.config, 'HTML_VERSION'):
+            html_version = self._client.instance.config.HTML_VERSION
+        if html_version == 'xhtml':
+            self.input = input_xhtml
+        else:
+            self.input = input_html4
+
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
 
@@ -478,8 +494,8 @@ class HTMLClass(HTMLPermissions):
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
         '''
-        return '  <input type="hidden" name="@action" value="new">\n'\
-        '  <input type="submit" name="submit" value="%s">'%label
+        return self.input(type="hidden",name="@action",value="new") + '\n' + \
+               self.input(type="submit",name="submit",value=label)
 
     def history(self):
         return 'New node - no history'
@@ -556,8 +572,8 @@ class HTMLItem(HTMLPermissions):
     def submit(self, label="Submit Changes"):
         ''' Generate a submit button (and action hidden element)
         '''
-        return '  <input type="hidden" name="@action" value="edit">\n'\
-        '  <input type="submit" name="submit" value="%s">'%label
+        return self.input(type="hidden",name="@action",value="edit") + '\n' + \
+               self.input(type="submit",name="submit",value=label)
 
     def journal(self, direction='descending'):
         ''' Return a list of HTMLJournalEntry instances.
@@ -844,6 +860,15 @@ class HTMLProperty:
             self._formname = '%s%s@%s'%(classname, nodeid, name)
         else:
             self._formname = name
+
+        html_version = 'html4'
+        if hasattr(self._client.instance.config, 'HTML_VERSION'):
+            html_version = self._client.instance.config.HTML_VERSION
+        if html_version == 'xhtml':
+            self.input = input_xhtml
+        else:
+            self.input = input_html4
+        
     def __repr__(self):
         return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._formname,
             self._prop, self._value)
@@ -918,7 +943,7 @@ class StringHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
+        return self.input(name=self._formname,value=value,size=size)
 
     def multiline(self, escape=0, rows=5, cols=40):
         ''' Render a multiline form edit field for the property
@@ -958,15 +983,15 @@ class PasswordHTMLProperty(HTMLProperty):
     def field(self, size = 30):
         ''' Render a form edit field for the property.
         '''
-        return '<input type="password" name="%s" size="%s">'%(self._formname, size)
+        return self.input(type="password", name=self._formname, size=size)
 
     def confirm(self, size = 30):
         ''' Render a second form edit field for the property, used for 
             confirmation that the user typed the password correctly. Generates
             a field with name "@confirm@name".
         '''
-        return '<input type="password" name="@confirm@%s" size="%s">'%(
-            self._formname, size)
+        return self.input(type="password", name="@confirm@%s"%self._formname,
+            size=size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
@@ -982,7 +1007,7 @@ class NumberHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
+        return self.input(name=self._formname,value=value,size=size)
 
     def __int__(self):
         ''' Return an int of me
@@ -1007,14 +1032,16 @@ class BooleanHTMLProperty(HTMLProperty):
         ''' Render a form edit field for the property
         '''
         checked = self._value and "checked" or ""
-        s = '<input type="radio" name="%s" value="yes" %s>Yes'%(self._formname,
-            checked)
-        if checked:
-            checked = ""
+        if self._value:
+            s = self.input(type="radio",name=self._formname,value="yes",checked="checked")
+            s += 'Yes'
+            s +=self.input(type="radio",name=self._formname,value="no")
+            s += 'No'
         else:
-            checked = "checked"
-        s += '<input type="radio" name="%s" value="no" %s>No'%(self._formname,
-            checked)
+            s = self.input(type="radio",name=self._formname,value="yes")
+            s += 'Yes'
+            s +=self.input(type="radio",name=self._formname,value="no",checked="checked")
+            s += 'No'
         return s
 
 class DateHTMLProperty(HTMLProperty):
@@ -1042,7 +1069,7 @@ class DateHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value.local(self._db.getUserTimezone())))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
+        return self.input(name=self._formname,value=value,size=size)
 
     def reldate(self, pretty=1):
         ''' Render the interval between the date and now.
@@ -1099,7 +1126,7 @@ class IntervalHTMLProperty(HTMLProperty):
         else:
             value = cgi.escape(str(self._value))
             value = '&quot;'.join(value.split('"'))
-        return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
+        return self.input(name=self._formname,value=value,size=size)
 
 class LinkHTMLProperty(HTMLProperty):
     ''' Link HTMLProperty
@@ -1155,7 +1182,7 @@ class LinkHTMLProperty(HTMLProperty):
         l = ['<select name="%s">'%self._formname]
         k = linkcl.labelprop(1)
         if self._value is None:
-            s = 'selected '
+            s = 'selected="selected" '
         else:
             s = ''
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
@@ -1171,7 +1198,7 @@ class LinkHTMLProperty(HTMLProperty):
             # figure if this option is selected
             s = ''
             if optionid == self._value:
-                s = 'selected '
+                s = 'selected="selected" '
 
             # figure the label
             if showid:
@@ -1200,7 +1227,7 @@ class LinkHTMLProperty(HTMLProperty):
         k = linkcl.labelprop(1)
         s = ''
         if value is None:
-            s = 'selected '
+            s = 'selected="selected" '
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
         if linkcl.getprops().has_key('order'):  
             sort_on = ('+', 'order')
@@ -1219,7 +1246,7 @@ class LinkHTMLProperty(HTMLProperty):
             # figure if this option is selected
             s = ''
             if value in [optionid, option]:
-                s = 'selected '
+                s = 'selected="selected" '
 
             # figure the label
             if showid:
@@ -1315,7 +1342,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             k = linkcl.labelprop(1)
             value = [linkcl.get(v, k) for v in value]
         value = cgi.escape(','.join(value))
-        return '<input name="%s" size="%s" value="%s">'%(self._formname, size, value)
+        return self.input(name=self._formname,size=size,value=value)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             **conditions):
@@ -1342,7 +1369,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             # figure if this option is selected
             s = ''
             if optionid in value or option in value:
-                s = 'selected '
+                s = 'selected="selected" '
 
             # figure the label
             if showid:
@@ -1450,6 +1477,14 @@ class HTMLRequest:
 
         # the special char to use for special vars
         self.special_char = '@'
+
+        html_version = 'html4'
+        if hasattr(self.client.instance.config, 'HTML_VERSION'):
+            html_version = self.client.instance.config.HTML_VERSION
+        if html_version == 'xhtml':
+            self.input = input_xhtml
+        else:
+            self.input = input_html4
 
         self._post_init()
 
@@ -1603,7 +1638,7 @@ env: %(env)s
         ''' return the current index args as form elements '''
         l = []
         sc = self.special_char
-        s = '<input type="hidden" name="%s" value="%s">'
+        s = self.input(type="hidden",name="%s",value="%s")
         if columns and self.columns:
             l.append(s%(sc+'columns', ','.join(self.columns)))
         if sort and self.sort[1] is not None:

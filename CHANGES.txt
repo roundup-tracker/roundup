@@ -21,6 +21,8 @@ Feature:
   828963)
 - ignore incoming email with "Precedence: bulk" (sf patch 843489)
 - use HTTP 'Content-Length' header (modified sf patch 844577)
+- HTML generated is now HTML4 (or optionally XHTML) compliant (sf feature
+  814314 and sf patch 834620)
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB

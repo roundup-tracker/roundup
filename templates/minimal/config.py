@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.2 2003-04-24 07:20:00 richard Exp $
+# $Id: config.py,v 1.3 2003-12-06 00:00:54 richard Exp $
 
 import os
 
@@ -109,5 +109,10 @@ EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 # Examples:
 MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
 #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
+# HTML version to generate. The templates are html4 by default. If you
+# wish to make them xhtml, then you'll need to change this var to 'xhtml'
+# too so all auto-generated HTML is compliant.
+HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
 
 # vim: set filetype=python ts=4 sw=4 et si
