@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: roundup.cgi,v 1.7 2001-08-03 01:28:33 richard Exp $
+# $Id: roundup.cgi,v 1.8 2001-08-05 07:43:52 richard Exp $
 
 # python version check
 import sys
@@ -86,13 +86,14 @@ def main(instance, out):
 out, err = sys.stdout, sys.stderr
 try:
     sys.stdout = sys.stderr = LOG
-    import os, string, imp
+    import os, string
+    import roundup.instance
     path = string.split(os.environ['PATH_INFO'], '/')
     instance = path[1]
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
     if ROUNDUP_INSTANCE_HOMES.has_key(instance):
         instance_home = ROUNDUP_INSTANCE_HOMES[instance]
-        instance = imp.load_package('instance', instance_home)
+        instance = roundup.instance.open(instance_home)
     else:
         raise ValueError, 'No such instance "%s"'%instance
     main(instance, out)
@@ -105,6 +106,9 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/08/03 01:28:33  richard
+# Used the much nicer load_package, pointed out by Steve Majewski.
+#
 # Revision 1.6  2001/08/03 00:59:34  richard
 # Instance import now imports the instance using imp.load_module so that
 # we can have instance homes of "roundup" or other existing python package

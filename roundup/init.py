@@ -1,6 +1,8 @@
-# $Id: init.py,v 1.11 2001-08-04 22:42:43 richard Exp $
+# $Id: init.py,v 1.12 2001-08-05 07:43:52 richard Exp $
 
-import os, shutil, sys, errno, imp
+import os, shutil, sys, errno
+
+import roundup.instance
 
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copy2().
@@ -50,11 +52,14 @@ from roundup.backends.back_%s import Database'''%backend
     open(os.path.join(instance_home, 'select_db.py'), 'w').write(db)
 
     # now import the instance and call its init
-    instance = imp.load_package('instance', instance_home)
+    instance = roundup.instance.open(instance_home)
     instance.init(adminpw)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/04 22:42:43  richard
+# Fixed sf.net bug #447671 - typo
+#
 # Revision 1.10  2001/08/03 01:28:33  richard
 # Used the much nicer load_package, pointed out by Steve Majewski.
 #
