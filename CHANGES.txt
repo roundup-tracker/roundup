@@ -30,7 +30,7 @@ are given with the most recent entry first.
   (multipart/alternative, "fw" and content-type "name")
 - fire auditors and reactors in rdbms retire (thanks Sheila King)
 - better match for mailgw help "command" text
-- handle :add: better in cgi form parsing (sf bug 6632.35)
+- handle :add: better in cgi form parsing (sf bug 663235)
 - handle all-whitespace multilink values in forms (sf bug 663855)
 - fixed searching on date / interval fields (sf bug 658157)
 - fixed form elements names in search form to allow grouping and sorting 
