@@ -5,8 +5,8 @@
       <meta http-equiv="Content-Type"
        tal:attributes="content string:text/html;; charset=${request/client/charset}" />
       <tal:block tal:condition="python:request.form.has_key('property')">
-      <title i18n:translate=""><span i18n:name="property"
-       tal:replace="property" /> help - <span i18n:name="tracker"
+      <title i18n:translate=""><tal:x i18n:name="property"
+       tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
        tal:replace="config/TRACKER_NAME" /></title>
       <script language="Javascript" type="text/javascript"
           tal:content="structure string:
@@ -39,7 +39,7 @@
      <table class="classhelp">
        <tr>
            <th>&nbsp;<b>x</b></th>
-           <th tal:repeat="prop props" tal:content="prop"></th>
+           <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
        </tr>
        <tr tal:repeat="item batch">
            <tal:block tal:define="attr python:item[props[0]]">
@@ -57,7 +57,7 @@
        </tr>
        <tr>
            <th>&nbsp;<b>x</b></th>
-           <th tal:repeat="prop props" tal:content="prop"></th>
+           <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
        </tr>
      </table>
      <table width="100%">
