@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2004-06-11 22:18+0300\n"
+"POT-Creation-Date: 2004-06-15 12:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -370,8 +370,7 @@ msgstr ""
 msgid "%(key)s: %(value)s (key property)"
 msgstr ""
 
-# ../roundup/admin.py:693 :720
-#: ../roundup/admin.py:693 ../roundup/admin.py:720
+#: ../roundup/admin.py:693
 #, python-format
 msgid "%(key)s: %(value)s"
 msgstr ""
@@ -384,6 +383,11 @@ msgid ""
 "        This lists the properties and their associated values for the given\n"
 "        node.\n"
 "        "
+msgstr ""
+
+#: ../roundup/admin.py:720
+#, python-format
+msgid "%(key)s: %(value)r"
 msgstr ""
 
 #: ../roundup/admin.py:723
@@ -803,77 +807,133 @@ msgstr ""
 msgid "<em>undefined</em>"
 msgstr ""
 
-#: ../roundup/cgi/client.py:260
+#: ../roundup/cgi/client.py:276
 msgid "Form Error: "
 msgstr ""
 
-#: ../roundup/cgi/client.py:310
+#: ../roundup/cgi/client.py:326
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr ""
 
-#: ../roundup/cgi/form_parser.py:386
+#: ../roundup/cgi/form_parser.py:283
+#, python-format
+msgid "link \"%(key)s\" value \"%(value)s\" not a designator"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:290
+#, python-format
+msgid "%(class)s %(property)s is not a link or multilink property"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:312
+#, python-format
+msgid ""
+"You have submitted a %(action)s action for the property \"%(property)s\" "
+"which doesn't exist"
+msgstr ""
+
+# ../roundup/cgi/form_parser.py:331 :357
+#: ../roundup/cgi/form_parser.py:331 ../roundup/cgi/form_parser.py:357
+#, python-format
+msgid "You have submitted more than one value for the %s property"
+msgstr ""
+
+# ../roundup/cgi/form_parser.py:354 :360
+#: ../roundup/cgi/form_parser.py:354 ../roundup/cgi/form_parser.py:360
+msgid "Password and confirmation text do not match"
+msgstr ""
+
+#: ../roundup/cgi/form_parser.py:395
 #, python-format
 msgid "property \"%(propname)s\": \"%(value)s\" not currently in list"
 msgstr ""
 
-#: ../roundup/cgi/form_parser.py:517
+#: ../roundup/cgi/form_parser.py:509
+#, python-format
+msgid "Required %(class)s property %(property)s not supplied"
+msgid_plural "Required %(class)s properties %(property)s not supplied"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../roundup/cgi/form_parser.py:526
 msgid "File is empty"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:785
+#: ../roundup/cgi/templating.py:98
+#, python-format
+msgid "You are not allowed to %(action)s items of class %(class)s"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:649
+msgid "(list)"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:677
+msgid "Submit New Entry"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:689
+msgid "New node - no history"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:770
+msgid "Submit Changes"
+msgstr ""
+
+#: ../roundup/cgi/templating.py:791
 msgid "History"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:787
+#: ../roundup/cgi/templating.py:793
 msgid "<th>Date</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:788
+#: ../roundup/cgi/templating.py:794
 msgid "<th>User</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:789
+#: ../roundup/cgi/templating.py:795
 msgid "<th>Action</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:790
+#: ../roundup/cgi/templating.py:796
 msgid "<th>Args</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:852
+#: ../roundup/cgi/templating.py:858
 msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:853
+#: ../roundup/cgi/templating.py:859
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:866
+#: ../roundup/cgi/templating.py:872
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-# ../roundup/cgi/templating.py:899 :920
-#: ../roundup/cgi/templating.py:899 ../roundup/cgi/templating.py:920
+# ../roundup/cgi/templating.py:905 :926
+#: ../roundup/cgi/templating.py:905 ../roundup/cgi/templating.py:926
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:980
+#: ../roundup/cgi/templating.py:986
 msgid ""
 "<strong><em>This event is not handled by the history display!</em></strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:992
+#: ../roundup/cgi/templating.py:998
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1273
+#: ../roundup/cgi/templating.py:1279
 msgid "*encrypted*"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1595
+#: ../roundup/cgi/templating.py:1601
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""
@@ -1291,6 +1351,11 @@ msgid ""
 "appending them to the table - put an X in the id column. </p>"
 msgstr ""
 
+#: ../templates/classic/html/_generic.index.html:44
+#: ../templates/minimal/html/_generic.index.html:44
+msgid "Edit Items"
+msgstr ""
+
 #: ../templates/classic/html/file.index.html:4
 msgid "List of files - ${tracker}"
 msgstr ""
@@ -1381,6 +1446,7 @@ msgid "Topic"
 msgstr ""
 
 #: ../templates/classic/html/issue.index.html:23
+#: ../templates/classic/html/issue.item.html:33
 msgid "Title"
 msgstr ""
 
@@ -1417,6 +1483,10 @@ msgstr ""
 
 #: ../templates/classic/html/issue.index.html:114
 msgid "Group on:"
+msgstr ""
+
+#: ../templates/classic/html/issue.index.html:130
+msgid "Redisplay"
 msgstr ""
 
 #: ../templates/classic/html/issue.item.html:7
@@ -1558,6 +1628,10 @@ msgstr ""
 msgid "Creator:"
 msgstr ""
 
+#: ../templates/classic/html/issue.search.html:77
+msgid "created by me"
+msgstr ""
+
 #: ../templates/classic/html/issue.search.html:86
 msgid "Activity:"
 msgstr ""
@@ -1566,39 +1640,65 @@ msgstr ""
 msgid "Actor:"
 msgstr ""
 
+#: ../templates/classic/html/issue.search.html:96
+msgid "done by me"
+msgstr ""
+
 #: ../templates/classic/html/issue.search.html:107
 msgid "Priority:"
+msgstr ""
+
+#: ../templates/classic/html/issue.search.html:109
+#: ../templates/classic/html/issue.search.html:125
+msgid "not selected"
 msgstr ""
 
 #: ../templates/classic/html/issue.search.html:120
 msgid "Status:"
 msgstr ""
 
+#: ../templates/classic/html/issue.search.html:123
+msgid "not resolved"
+msgstr ""
+
 #: ../templates/classic/html/issue.search.html:137
 msgid "Assigned to:"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:150
+#: ../templates/classic/html/issue.search.html:140
+msgid "assigned to me"
+msgstr ""
+
+#: ../templates/classic/html/issue.search.html:142
+msgid "unassigned"
+msgstr ""
+
+#: ../templates/classic/html/issue.search.html:152
 msgid "Pagesize:"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:156
+#: ../templates/classic/html/issue.search.html:158
 msgid "Start With:"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:162
+#: ../templates/classic/html/issue.search.html:164
 msgid "Sort Descending:"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:169
+#: ../templates/classic/html/issue.search.html:171
 msgid "Group Descending:"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:176
+#: ../templates/classic/html/issue.search.html:178
 msgid "Query name**:"
 msgstr ""
 
-#: ../templates/classic/html/issue.search.html:190
+#: ../templates/classic/html/issue.search.html:188
+#: ../templates/classic/html/page.html:46
+msgid "Search"
+msgstr ""
+
+#: ../templates/classic/html/issue.search.html:192
 msgid ""
 "*: The \"all text\" field will look in message bodies and issue titles<br> "
 "**: If you supply a name, the query will be saved off and available as a link "
@@ -1696,10 +1796,6 @@ msgstr ""
 msgid "Show All"
 msgstr ""
 
-#: ../templates/classic/html/page.html:46
-msgid "Search"
-msgstr ""
-
 #: ../templates/classic/html/page.html:47
 msgid "Show issue:"
 msgstr ""
@@ -1713,75 +1809,77 @@ msgid "Edit Existing"
 msgstr ""
 
 #: ../templates/classic/html/page.html:64
-#: ../templates/minimal/html/page.html:47
+#: ../templates/minimal/html/page.html:48
 msgid "Administration"
 msgstr ""
 
 #: ../templates/classic/html/page.html:66
-#: ../templates/minimal/html/page.html:48
+#: ../templates/minimal/html/page.html:49
 msgid "Class List"
 msgstr ""
 
 #: ../templates/classic/html/page.html:68
-#: ../templates/minimal/html/page.html:50
+#: ../templates/minimal/html/page.html:51
 msgid "User List"
 msgstr ""
 
 #: ../templates/classic/html/page.html:71
-#: ../templates/minimal/html/page.html:53
+#: ../templates/minimal/html/page.html:54
 msgid "Add User"
 msgstr ""
 
 #: ../templates/classic/html/page.html:78
+#: ../templates/classic/html/page.html:82
+#: ../templates/minimal/html/page.html:30
 msgid "Login"
 msgstr ""
 
-#: ../templates/classic/html/page.html:83
+#: ../templates/classic/html/page.html:84
 #: ../templates/classic/html/user.register.html:70
-#: ../templates/minimal/html/page.html:32
+#: ../templates/minimal/html/page.html:33
 #: ../templates/minimal/html/user.register.html:58
 msgid "Register"
 msgstr ""
 
-#: ../templates/classic/html/page.html:86
+#: ../templates/classic/html/page.html:87
 msgid "Lost&nbsp;your&nbsp;login?"
 msgstr ""
 
-#: ../templates/classic/html/page.html:91
+#: ../templates/classic/html/page.html:92
 msgid "Hello, ${user}"
 msgstr ""
 
-#: ../templates/classic/html/page.html:93
+#: ../templates/classic/html/page.html:94
 msgid "My Issues"
 msgstr ""
 
-#: ../templates/classic/html/page.html:94
-#: ../templates/minimal/html/page.html:39
+#: ../templates/classic/html/page.html:95
+#: ../templates/minimal/html/page.html:40
 msgid "My Details"
 msgstr ""
 
-#: ../templates/classic/html/page.html:96
-#: ../templates/minimal/html/page.html:41
+#: ../templates/classic/html/page.html:97
+#: ../templates/minimal/html/page.html:42
 msgid "Logout"
 msgstr ""
 
-#: ../templates/classic/html/page.html:100
+#: ../templates/classic/html/page.html:101
 msgid "Help"
 msgstr ""
 
-#: ../templates/classic/html/page.html:101
+#: ../templates/classic/html/page.html:102
 msgid "Roundup docs"
 msgstr ""
 
-#: ../templates/classic/html/page.html:152
+#: ../templates/classic/html/page.html:153
 msgid "don't care"
 msgstr ""
 
-#: ../templates/classic/html/page.html:154
+#: ../templates/classic/html/page.html:155
 msgid "------------"
 msgstr ""
 
-#: ../templates/classic/html/page.html:172
+#: ../templates/classic/html/page.html:173
 msgid "no value"
 msgstr ""
 
@@ -2061,7 +2159,7 @@ msgstr ""
 msgid "Please log in or register."
 msgstr ""
 
-#: ../templates/minimal/html/page.html:37
+#: ../templates/minimal/html/page.html:38
 msgid "Hello,<br>${user}"
 msgstr ""
 
