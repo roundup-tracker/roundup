@@ -224,6 +224,10 @@ def context(client, template=None, classname=None, request=None):
     *false*
       Logical False value.
 
+    *i18n*
+      Internationalization service, providing string translation
+      methods ``gettext`` and ``ngettext``.
+
     """
     # construct the TemplatingUtils class
     utils = TemplatingUtils
