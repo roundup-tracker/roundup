@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.128 2004-07-28 05:00:32 richard Exp $
+# $Id: rdbms_common.py,v 1.129 2004-09-26 14:03:49 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1434,7 +1434,9 @@ class Class(hyperdb.Class):
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
 
-        if not d.has_key(propname):
+        # XXX may it be that propname is valid property name
+        #    (above error is not raised) and not d.has_key(propname)???
+        if (not d.has_key(propname)) or (d[propname] is None):
             if default is self._marker:
                 if isinstance(prop, Multilink):
                     return []
