@@ -19,7 +19,7 @@ Modified for Roundup 0.5 release:
 
 """
 
-__version__='$Revision: 1.3 $'[11:-2]
+__version__='$Revision: 1.4 $'[11:-2]
 
 from TALES import CompilerError
 from string import strip, split, join, replace, lstrip
@@ -53,7 +53,7 @@ class PythonExpr:
         # Bind template variables
         names = {}
         vars = econtext.vars
-        getType = econtext._engine.getTypes().get
+        getType = econtext.getCompiler().getTypes().get
         for vname in self._f_varnames:
             has, val = vars.has_get(vname)
             if not has:
@@ -83,5 +83,5 @@ class ExprTypeProxy:
         self._econtext = econtext
     def __call__(self, text):
         return self._handler(self._name, text,
-                             self._econtext._engine)(self._econtext)
+                             self._econtext.getCompiler())(self._econtext)
 
