@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.25 $
+:Version: $Revision: 1.26 $
 
 .. contents::
 
@@ -13,6 +13,13 @@ Overview
 Broken out separately, there are several conceptual pieces to a
 Roundup installation:
 
+Roundup trackers
+ Trackers consist of issues (be they bug reports or otherwise), tracker
+ configuration file(s), web HTML files etc. Roundup trackers are initialised
+ with a "Template" which defines the fields usable/assignable on a
+ per-issue basis.  Descriptions of the provided templates are given in
+ `choosing your template`_.
+
 Roundup support code
  Installed into your Python install's lib directory
 
@@ -20,61 +27,6 @@ Roundup scripts
  These include the email gateway, the roundup
  HTTP server, the roundup administration command-line interface, etc.
 
-Roundup trackers
- Trackers consist of core support files, issues
- (be they bug reports or otherwise), tracker configuration file(s),
- etc.  Roundup trackers also adhere to a specific "Template" which
- defines the fields usable/assignable on a per-issue basis.  A
- description of the provided templates follows.
-
-Classic Template
-----------------
-
-The classic template is the one defined in the `Roundup Specification`_. It
-holds issues which have priorities and statuses. Each issue may also have a
-set of messages which are disseminated to the issue's list of nosy users.
-
-
-Backends
---------
-
-The actual storage of Roundup tracker information is handled by backends.
-There's several to choose from, each with benefits and limitations:
-
-**anydbm**
-  This backend is guaranteed to work on any system that Python runs on. It
-  will generally choose the best dbm backend that is available on your system
-  (from the list dbhash, gdbm, dbm, dumbdbm). It is the least scaleable of all
-  backends, but performs well enough for a smallish tracker (a couple of
-  thousand issues, under fifty users, ...).
-**bsddb**
-  This effectively the same as anydbm, but uses the bsddb backend. This allows
-  it to gain some performance and scaling benefits.
-**bsddb3**
-  Again, this effectively the same as anydbm, but uses the bsddb3 backend.
-  This allows it to gain some performance and scaling benefits.
-**sqlite**
-  This uses the SQLite embedded RDBMS to provide a fast, scaleable backend.
-  There are no limitations, and it's much faster and more scaleable than the
-  dbm backends.
-**gadfly**
-  This is a proof-of-concept relational database backend, not really intended
-  for actual production use, although it can be. It uses the Gadfly RDBMS
-  to store data. It is unable to perform string searches due to gadfly not
-  having a LIKE operation. It should scale well, assuming a client/server
-  setup is used.
-**metakit**
-  This backend is implemented over the metakit storage system, using Mk4Py as
-  the interface. It scales much better than the dbm backends, but has some
-  missing features:
-
-  - you may not unset properties once they are set
-  - journal retrieval is not implemented 
-
-
-Note: you may set your tracker up with the anydbm backend (which is guaranteed
-to be available) and switch to one of the other backends at any time using the
-instructions in the `maintenance documentation`_.
 
 Prerequisites
 =============
@@ -153,11 +105,14 @@ Basic Installation Steps
 
    c.  ``roundup-admin install``
 
-      You will be asked a series of questions.  A description of
-      the Roundup-provided templates can be found under the Overview_::
+      You will be asked a series of questions.  Descriptions of the provided
+      templates can be found in `choosing your template`_ below.  Descriptions
+      of the available backends can be found in `choosing your backend`_
+      below.  The questions will be something like (you may have more
+      templates or backends available):
 
           Enter tracker home: /opt/roundup/trackers/support
-          Templates: classic, extended
+          Templates: classic
           Select template [classic]: classic
           Back ends: anydbm, bsddb
           Select backend [anydbm]: anydbm
@@ -181,6 +136,54 @@ Basic Installation Steps
 3. XXX Set up the CGI interface
 
 4. XXX Set up the mail gateway
+
+
+Choosing Your Template
+----------------------
+
+Classic Template
+~~~~~~~~~~~~~~~~
+
+The classic template is the one defined in the `Roundup Specification`_. It
+holds issues which have priorities and statuses. Each issue may also have a
+set of messages which are disseminated to the issue's list of nosy users.
+
+
+Choosing Your Backend
+---------------------
+
+The actual storage of Roundup tracker information is handled by backends.
+There's several to choose from, each with benefits and limitations:
+
+**anydbm**
+  This backend is guaranteed to work on any system that Python runs on. It
+  will generally choose the best dbm backend that is available on your system
+  (from the list dbhash, gdbm, dbm, dumbdbm). It is the least scaleable of all
+  backends, but performs well enough for a smallish tracker (a couple of
+  thousand issues, under fifty users, ...).
+**bsddb**
+  This effectively the same as anydbm, but uses the bsddb backend. This allows
+  it to gain some performance and scaling benefits.
+**bsddb3**
+  Again, this effectively the same as anydbm, but uses the bsddb3 backend.
+  This allows it to gain some performance and scaling benefits.
+**sqlite**
+  This uses the SQLite embedded RDBMS to provide a fast, scaleable backend.
+  There are no limitations, and it's much faster and more scaleable than the
+  dbm backends.
+**metakit**
+  This backend is implemented over the metakit storage system, using Mk4Py as
+  the interface. It scales much better than the dbm backends.
+**gadfly**
+  This is a proof-of-concept relational database backend, not really intended
+  for actual production use, although it can be. It uses the Gadfly RDBMS
+  to store data. It is unable to perform string searches due to gadfly not
+  having a LIKE operation. It should scale well, assuming a client/server
+  setup is used. It's much slower than even the dbm backends.
+
+Note: you may set your tracker up with the anydbm backend (which is guaranteed
+to be available) and switch to one of the other backends at any time using the
+instructions in the `maintenance documentation`_.
 
 
 Shared Environment Steps
