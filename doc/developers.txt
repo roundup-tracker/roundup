@@ -1,0 +1,58 @@
+Developing Roundup
+==================
+
+:Version: $Revision: 1.1 $
+
+Note: the intended audience of this document is the developers of the core
+Roundup code. If you just wish to alter some behaviour of your Roundup
+installation, see `customising roundup`_.
+
+.. contents::
+
+Getting Started
+---------------
+
+Anyone wishing to help in the development of Roundup must read `Roundup's
+Design Document`_.
+
+All development is coordinated through two resources:
+
+- roundup-dev mailing list at
+  http://lists.sourceforge.net/mailman/listinfo/roundup-devel
+- Sourceforge's issue trackers at
+  https://sourceforge.net/tracker/?group_id=31577
+
+Small Changes
+-------------
+
+Most small changes can be submitted through the Feature tracker, with patches
+attached that give context diffs of the affected source.
+
+
+CVS Access
+----------
+
+To get CVS access, contact richard@users.sourceforge.net.
+
+Developers with CVS access should follow these simple guidelines:
+
+- subscribe to roundup-checkins to receive checkin notifications from the
+  other developers with CVS access
+- discuss any changes with the other developers on roundup-dev. If nothing
+  else, this makes sure there's no rude shocks
+- run pychecker over changed code
+- write unit tests for changes you make (where possible), and ensure that
+  all unit tests run before committing changes
+
+The administrators of the project reserve the right to boot developers who
+consistently check in code which is either broken or takes the codebase in
+directions that have not been agreed to.
+
+
+-----------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
+.. _`Customising Roundup`: customizing.html
+.. _`Roundup's Design Document`: spec.html

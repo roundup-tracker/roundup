@@ -1,6 +1,0 @@
-Acknowledgements
-================
-
-Go Ping, you rock! Also, go Bizar Software for letting me implement this system on their time.
- 
- 

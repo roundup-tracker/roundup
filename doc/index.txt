@@ -1,4 +1,6 @@
-*Roundup: an Issue-Tracking System for Knowledge Workers*
+=======================================================
+Roundup: an Issue-Tracking System for Knowledge Workers
+=======================================================
 
 Contents
 ========
@@ -9,6 +11,7 @@ Contents
 - `User Guide`_
 - `Customising Roundup`_
 - `Roundup's Design Document`_
+- `Developing Roundup`_
 - Contact_
 - Acknowledgements_
 - License_
@@ -18,6 +21,7 @@ Contents
 .. _`Getting Started`: getting_started.html
 .. _`User Guide`: user_guide.html
 .. _`Customising Roundup`: customizing.html
+.. _`Developing Roundup`: developers.html
 .. _`Roundup's Design Document`: spec.html
 
 

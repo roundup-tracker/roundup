@@ -1,9 +1,12 @@
 Roundup FAQ
 ===========
 
-:Date: $Date: 2002-03-13 23:00:48 $
+:Version: $Revision: 1.8 $
 
 NOTE: This is just a grabbag, most of this should go into documentation.
+
+.. contents::
+
 
 Changing HTML layout
 --------------------
@@ -122,4 +125,10 @@ directly to the roundup-mailgw script as the roundup user.::
 
 If that doesn't raise any errors, the problem is the permissions of the
 MTA. 
+
+-----------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
 

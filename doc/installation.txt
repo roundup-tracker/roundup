@@ -1,21 +1,10 @@
 Installing Roundup
 ==================
 
-`Table of contents`_
+:Version: $Revision: 1.2 $
 
-- Overview_
+.. contents::
 
-  - `Classic Template`_
-  - `Extended Template`_
-
-- Prerequisites_
-
-  - `Testing your Python`_
-
-- `Getting Roundup`_
-- `Installation`_
-- `Further Reading`_
-- `Platform-Specific Notes`_
 
 Overview
 ========
@@ -213,6 +202,8 @@ Python 2.1.1 as shipped with SuSE7.3 might be missing module
 
 -------------------------------------------------------------------------------
 
+Back to `Table of Contents`_
+
 Next: `Getting Started`_
 
 .. _`table of contents`: index.html
@@ -220,4 +211,3 @@ Next: `Getting Started`_
 .. _`roundup specification`: spec.html
 .. _`customising roundup`: customizing.html
 
-$Id: installation.txt,v 1.1 2002-03-13 23:00:48 richard Exp $

@@ -1,6 +1,11 @@
 Getting Started
 ===============
 
+:Version: $Revision: 1.2 $
+
+.. contents::
+
+
 The following instructions assume that you have installed roundup. If you
 haven't, you may still proceed - just run the commands as
 "``PYTHONPATH=. python roundup/scripts/roundup_admin.py``" for
@@ -255,4 +260,12 @@ To add issues, use one of the following interfaces:
    automatically created a new issue in the database using the contents of
    the e-mail.
 
+-----------------
+
+Back to `Table of Contents`_
+
+Next: `User Guide`_
+
+.. _`table of contents`: index.html
+.. _`user guide`: user_guide.html
 

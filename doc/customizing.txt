@@ -1,6 +1,11 @@
 Customising Roundup
 ===================
 
+:Version: $Revision: 1.4 $
+
+.. contents::
+
+
 Instances have the following structure:
 
 +-------------------+--------------------------------------------------------+
@@ -585,4 +590,9 @@ eliminate sections of the spool section if the property has no entries::
       </tr>
      </property>
 
+-----------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
 

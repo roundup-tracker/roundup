@@ -1,6 +1,10 @@
 User Guide
 ==========
 
+:Version: $Revision: 1.2 $
+
+.. contents::
+
 Command Line Tool
 -----------------
 
@@ -273,4 +277,10 @@ the message, so multiple copies of a message are never sent to the same user.
 The journal recorded by the hyperdatabase on the "recipients" property then
 provides a log of when the message was sent to whom.
 
+
+-----------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
 
