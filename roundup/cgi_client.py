@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.135 2002-07-10 00:22:34 richard Exp $
+# $Id: cgi_client.py,v 1.136 2002-07-10 06:51:08 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1454,10 +1454,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if type(value) != type([]):
+            if hasattr(value, 'value'):
+                # Quite likely to be a FormItem instance
+                value = value.value
+            if not isinstance(value, type([])):
                 value = [i.strip() for i in value.value.split(',')]
             else:
-                value = [i.value.strip() for i in value]
+                value = [i.strip() for i in value]
             link = cl.properties[key].classname
             l = []
             for entry in map(str, value):
@@ -1491,6 +1494,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.135  2002/07/10 00:22:34  richard
+#  . switched to using a session-based web login
+#
 # Revision 1.134  2002/07/09 04:19:09  richard
 # Added reindex command to roundup-admin.
 # Fixed reindex on first access.
