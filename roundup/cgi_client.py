@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.75 2001-12-04 01:25:08 richard Exp $
+# $Id: cgi_client.py,v 1.76 2001-12-05 14:26:44 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -313,7 +313,7 @@ class Client:
                     self.nodeid)
 
                 # set status to chatting if 'unread' or 'resolved'
-                if 'status' not in changed:
+                if 'status' not in changed.keys():
                     try:
                         # determine the id of 'unread','resolved' and 'chatting'
                         unread_id = self.db.status.lookup('unread')
@@ -326,18 +326,21 @@ class Client:
                                 props['status'] == unread_id or
                                 props['status'] == resolved_id):
                             props['status'] = chatting_id
-                            changed.append('status')
+                            changed['status'] = chatting_id
+
+                # get the change note
+                change_note = cl.generateChangeNote(self.nodeid, changed)
 
                 # make the changes
                 cl.set(self.nodeid, **props)
 
                 # handle linked nodes and change message generation
-                self._post_editnode(self.nodeid, changed)
+                self._post_editnode(self.nodeid, change_note)
 
                 # and some nice feedback for the user
                 if changed:
                     message = _('%(changes)s edited ok')%{'changes':
-                        ', '.join(changed)}
+                        ', '.join(changed.keys())}
                 else:
                     message = _('nothing changed')
             except:
@@ -395,10 +398,10 @@ class Client:
                         del props['password']
                         del changed[changed.index('password')]
                 user.set(self.nodeid, **props)
-                self._post_editnode(self.nodeid, changed)
+                self._post_editnode(self.nodeid)
                 # and some feedback for the user
                 message = _('%(changes)s edited ok')%{'changes':
-                    ', '.join(changed)}
+                    ', '.join(changed.keys())}
             except:
                 self.db.rollback()
                 s = StringIO.StringIO()
@@ -437,9 +440,19 @@ class Client:
         '''
         cl = self.db.classes[self.classname]
         props, dummy = parsePropsFromForm(self.db, cl, self.form)
+
+        # set status to 'unread' if not specified - a status of '- no
+        # selection -' doesn't make sense
+        if not props.has_key('status'):
+            try:
+                unread_id = self.db.status.lookup('unread')
+            except KeyError:
+                pass
+            else:
+                props['status'] = unread_id
         return cl.create(**props)
 
-    def _post_editnode(self, nid, changes=None):
+    def _post_editnode(self, nid, change_note=None):
         ''' do the linking and message sending part of the node creation
         '''
         cn = self.classname
@@ -479,8 +492,6 @@ class Client:
                     name=file.filename, content=file.file.read()))
                 # and save the reference
                 cl.set(nid, files=files)
-                if changes is not None and 'file' not in changes:
-                    changes.append('file')
 
         #
         # generate an edit message
@@ -513,7 +524,8 @@ class Client:
                 ' the web.\n')%{'classname': cn}
             m = [summary]
 
-        # TODO: append the change note!
+        # append the change note
+        m.append(change_note)
 
         # now create the message
         content = '\n'.join(m)
@@ -1002,7 +1014,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
     '''
     props = {}
-    changed = []
+    changed = {}
     keys = form.keys()
     num_re = re.compile('^\d+$')
     for key in keys:
@@ -1042,6 +1054,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
             link = cl.properties[key].classname
             l = []
             for entry in map(str, value):
+                if entry == '': continue
                 if not num_re.match(entry):
                     try:
                         entry = db.classes[link].lookup(entry)
@@ -1065,12 +1078,16 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
         # if changed, set it
         if nodeid and value != existing:
-            changed.append(key)
+            changed[key] = value
             props[key] = value
     return props, changed
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.75  2001/12/04 01:25:08  richard
+# Added some rollbacks where we were catching exceptions that would otherwise
+# have stopped committing.
+#
 # Revision 1.74  2001/12/02 05:06:16  richard
 # . We now use weakrefs in the Classes to keep the database reference, so
 #   the close() method on the database is no longer needed.

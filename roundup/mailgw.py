@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.39 2001-12-02 05:06:16 richard Exp $
+$Id: mailgw.py,v 1.40 2001-12-05 14:26:44 rochecompaan Exp $
 '''
 
 
@@ -342,9 +342,26 @@ Error was: %s
 Subject was: "%s"
 '''%(key, message, subject)
                 elif isinstance(proptype, hyperdb.Link):
-                    props[key] = value.strip()
+                    link = self.db.classes[proptype.classname]
+                    propkey = link.labelprop(default_to_id=1)
+                    try:
+                        props[key] = link.get(value.strip(), propkey)
+                    except:
+                        props[key] = link.lookup(value.strip())
                 elif isinstance(proptype, hyperdb.Multilink):
-                    props[key] = [x.strip() for x in value.split(',')]
+                    link = self.db.classes[proptype.classname]
+                    propkey = link.labelprop(default_to_id=1)
+                    l = [x.strip() for x in value.split(',')]
+                    for item in l:
+                        try:
+                            v = link.get(item, propkey)
+                        except:
+                            v = link.lookup(item)
+                        if props.has_key(key):
+                            props[key].append(v)
+                        else:
+                            props[key] = [v]
+
 
         #
         # handle the users
@@ -459,20 +476,6 @@ not find a text/plain part to use.
             # the newly created "msg" node is added to the "messages" property
             # for that item, and any new "file" nodes are added to the "files" 
             # property for the item. 
-            message_id = self.db.msg.create(author=author,
-                recipients=recipients, date=date.Date('.'), summary=summary,
-                content=content, files=files)
-            try:
-                messages = cl.get(nodeid, 'messages')
-            except IndexError:
-                raise MailUsageError, '''
-The node specified by the designator in the subject of your message ("%s")
-does not exist.
-
-Subject was: "%s"
-'''%(nodeid, subject)
-            messages.append(message_id)
-            props['messages'] = messages
 
             # if the message is currently 'unread' or 'resolved', then set
             # it to 'chatting'
@@ -490,22 +493,43 @@ Subject was: "%s"
                             props['status'] == resolved_id):
                         props['status'] = chatting_id
 
-            # add nosy in arguments to issue's nosy list, don't replace
-            if props.has_key('nosy'):
-                n = {}
-                for nid in cl.get(nodeid, 'nosy'):
-                    n[nid] = 1
-                for value in props['nosy']:
-                    if self.db.hasnode('user', value):
-                        nid = value
-                    else:
-                        try:
-                            nid = self.db.user.lookup(value)
-                        except:
-                            continue
-                    if n.has_key(nid): continue
-                    n[nid] = 1
-                props['nosy'] = n.keys()
+            # add nosy in arguments to issue's nosy list
+            if not props.has_key('nosy'): props['nosy'] = []
+            n = {}
+            for nid in cl.get(nodeid, 'nosy'):
+                n[nid] = 1
+            for value in props['nosy']:
+                if self.db.hasnode('user', value):
+                    nid = value
+                else: 
+                    continue
+                if n.has_key(nid): continue
+                n[nid] = 1
+            props['nosy'] = n.keys()
+            try:
+                assignedto = self.db.user.lookup(props['assignedto'])
+                if assignedto not in props['nosy']:
+                    props['nosy'].append(assignedto)
+            except:
+                pass
+                
+            change_note = cl.generateChangeNote(nodeid, props)
+            content += change_note
+            
+            message_id = self.db.msg.create(author=author,
+                recipients=recipients, date=date.Date('.'), summary=summary,
+                content=content, files=files)
+            try:
+                messages = cl.get(nodeid, 'messages')
+            except IndexError:
+                raise MailUsageError, '''
+The node specified by the designator in the subject of your message ("%s")
+does not exist.
+
+Subject was: "%s"
+'''%(nodeid, subject)
+            messages.append(message_id)
+            props['messages'] = messages
 
             # now apply the changes
             try:
@@ -542,9 +566,22 @@ There was a problem with the message you sent:
 
             # pre-load the messages list and nosy list
             props['messages'] = [message_id]
-            props['nosy'] = props.get('nosy', []) + recipients
-            props['nosy'].append(author)
-            props['nosy'].sort()
+            nosy = props.get('nosy', [])
+            n = {}
+            for value in nosy:
+                if self.db.hasnode('user', value):
+                    nid = value
+                else:
+                    try:
+                        nid = self.db.user.lookup(value)
+                    except:
+                        continue
+                if n.has_key(nid): continue
+                n[nid] = 1
+            props['nosy'] = n.keys() + recipients
+            if not n.has_key(author):
+                props['nosy'].append(author)
+                n[author] = 1
 
             # and attempt to create the new node
             try:
@@ -598,6 +635,20 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2001/12/02 05:06:16  richard
+# . We now use weakrefs in the Classes to keep the database reference, so
+#   the close() method on the database is no longer needed.
+#   I bumped the minimum python requirement up to 2.1 accordingly.
+# . #487480 ] roundup-server
+# . #487476 ] INSTALL.txt
+#
+# I also cleaned up the change message / post-edit stuff in the cgi client.
+# There's now a clearly marked "TODO: append the change note" where I believe
+# the change note should be added there. The "changes" list will obviously
+# have to be modified to be a dict of the changes, or somesuch.
+#
+# More testing needed.
+#
 # Revision 1.38  2001/12/01 07:17:50  richard
 # . We now have basic transaction support! Information is only written to
 #   the database when the commit() method is called. Only the anydbm
