@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.131 2003-11-14 00:11:18 richard Exp $
+#$Id: back_anydbm.py,v 1.132 2003-11-16 18:41:40 jlgijsbers Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1093,17 +1093,6 @@ class Class(hyperdb.Class):
             return d[propname][:]
 
         return d[propname]
-
-    # not in spec
-    def getnode(self, nodeid, cache=1):
-        ''' Return a convenience wrapper for the node.
-
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
-
-        'cache' exists for backwards compatibility, and is not used.
-        '''
-        return Node(self, nodeid)
 
     def set(self, nodeid, **propvalues):
         '''Modify a property on an existing node of this class.

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.91 2003-11-11 00:35:13 richard Exp $
+# $Id: hyperdb.py,v 1.92 2003-11-16 18:41:40 jlgijsbers Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -163,8 +163,7 @@ transaction.
 Implementation
 --------------
 
-All methods except __repr__ and getnode must be implemented by a
-concrete backend Class.
+All methods except __repr__ must be implemented by a concrete backend Database.
 
 '''
 
@@ -374,6 +373,7 @@ class Class:
         """
         raise NotImplementedError
 
+    # not in spec
     def getnode(self, nodeid, cache=1):
         ''' Return a convenience wrapper for the node.
 

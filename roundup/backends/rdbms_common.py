@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.70 2003-11-14 00:11:19 richard Exp $
+# $Id: rdbms_common.py,v 1.71 2003-11-16 18:41:40 jlgijsbers Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1372,16 +1372,6 @@ class Class(hyperdb.Class):
             return d[propname][:]
 
         return d[propname]
-
-    def getnode(self, nodeid, cache=1):
-        ''' Return a convenience wrapper for the node.
-
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
-
-        'cache' exists for backwards compatibility, and is not used.
-        '''
-        return Node(self, nodeid)
 
     def set(self, nodeid, **propvalues):
         '''Modify a property on an existing node of this class.
