@@ -8,7 +8,10 @@ Feature:
      better configuration system.
  . Alternate email addresses are now available for users. See the MIGRATION
    file for info on how to activate the feature.
-
+ . Added simple editing for classes that don't define a templated interface.
+   - access using the admin "class list" interface
+   - limited to admin-only
+   - requires the csv module from object-craft (url given if it's missing)
 
 Fixed:
  . Clean up mail handling, multipart handling.
@@ -25,6 +28,7 @@ Fixed:
  . #516854 ] "My Issues" and redisplay
  . #517906 ] Attribute order in "View customisation"
  . #514854 ] History: "User" is always ticket creator
+ . wasn't handling cvs parser feeding correctly
 
 
 2002-01-24 - 0.4.0

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.76 2002-02-16 09:10:52 richard Exp $
+# $Id: htmltemplate.py,v 1.77 2002-02-20 05:05:29 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -32,6 +32,9 @@ try:
     from StructuredText.StructuredText import HTML as StructuredText
 except ImportError:
     StructuredText = None
+
+class MissingTemplateError(ValueError):
+    pass
 
 class TemplateFunctions:
     def __init__(self):
@@ -714,8 +717,12 @@ class IndexTemplate(TemplateFunctions):
 
         # XXX deviate from spec here ...
         # load the index section template and figure the default columns from it
-        template = open(os.path.join(self.templates,
-            self.classname+'.index')).read()
+        try:
+            template = open(os.path.join(self.templates,
+                self.classname+'.index')).read()
+        except IOError, error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+            raise MissingTemplateError, self.classname+'.index'
         all_columns = self.col_re.findall(template)
         if not columns:
             columns = []
@@ -1070,6 +1077,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.76  2002/02/16 09:10:52  richard
+# oops
+#
 # Revision 1.75  2002/02/16 08:43:23  richard
 #  . #517906 ] Attribute order in "View customisation"
 #

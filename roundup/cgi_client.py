@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.102 2002-02-15 07:08:44 richard Exp $
+# $Id: cgi_client.py,v 1.103 2002-02-20 05:05:28 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -298,9 +298,87 @@ function submit_once() {
             show_customization = self.customization_widget()
 
         index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
-        index.render(filterspec, filter, columns, sort, group,
-            show_customization=show_customization)
+        try:
+            index.render(filterspec, filter, columns, sort, group,
+                show_customization=show_customization)
+        except htmltemplate.MissingTemplateError:
+            self.basicClassEditPage()
         self.pagefoot()
+
+    def basicClassEditPage(self):
+        '''Display a basic edit page that allows simple editing of the
+           nodes of the current class
+        '''
+        if self.user != 'admin':
+            raise Unauthorised
+        w = self.write
+        cn = self.classname
+        cl = self.db.classes[cn]
+        props = ['id'] + cl.getprops(protected=0).keys()
+
+        # get the CSV module
+        try:
+            import csv
+        except ImportError:
+            w(_('Sorry, you need the csv module to use this function.<br>\n'
+                'Get it from: <a href="http://www.object-craft.com.au/projects/csv/">http://www.object-craft.com.au/projects/csv/'))
+            return
+
+        # do the edit
+        if self.form.has_key('rows'):
+            rows = self.form['rows'].value.splitlines()
+            p = csv.parser()
+            idlessprops = props[1:]
+            found = {}
+            for row in rows:
+                values = p.parse(row)
+                # not a complete row, keep going
+                if not values: continue
+
+                # extract the nodeid
+                nodeid, values = values[0], values[1:]
+                found[nodeid] = 1
+
+                # extract the new values
+                d = {}
+                for name, value in zip(idlessprops, values):
+                    d[name] = value.strip()
+
+                # perform the edit
+                if cl.hasnode(nodeid):
+                    # edit existing
+                    cl.set(nodeid, **d)
+                else:
+                    # new node
+                    found[cl.create(**d)] = 1
+
+            # retire the removed entries
+            for nodeid in cl.list():
+                if not found.has_key(nodeid):
+                    cl.retire(nodeid)
+
+        w(_('''<p class="form-help">You may edit the contents of the
+        "%(classname)s" class using this form.</p>
+        <p class="form-help">Remove entries by deleting their line. Add
+        new entries by appending
+        them to the table - put an X in the id column.</p>''')%{'classname':cn})
+
+        l = []
+        for name in props:
+            l.append(name)
+        w('<tt>')
+        w(', '.join(l) + '\n')
+        w('</tt>')
+
+        w('<form onSubmit="return submit_once()" method="POST">')
+	w('<textarea name="rows" cols=80 rows=15>')
+        for nodeid in cl.list():
+            l = []
+            for name in props:
+                l.append(cgi.escape(str(cl.get(nodeid, name))))
+            w(', '.join(l) + '\n')
+
+        w(_('</textarea><br><input type="submit" value="Save Changes"></form>'))
 
     def shownode(self, message=None):
         ''' display an item
@@ -744,7 +822,8 @@ function submit_once() {
             self.write('<table border=0 cellspacing=0 cellpadding=2>\n')
             for cn in classnames:
                 cl = self.db.getclass(cn)
-                self.write('<tr class="list-header"><th colspan=2 align=left>%s</th></tr>'%cn.capitalize())
+                self.write('<tr class="list-header"><th colspan=2 align=left>'
+                    '<a href="%s">%s</a></th></tr>'%(cn, cn.capitalize()))
                 for key, value in cl.properties.items():
                     if value is None: value = ''
                     else: value = str(value)
@@ -1012,6 +1091,8 @@ function submit_once() {
         if action == 'logout':
             self.logout()
             return
+
+        # see if we're to display an existing node
         m = dre.match(action)
         if m:
             self.classname = m.group(1)
@@ -1030,6 +1111,8 @@ function submit_once() {
                 raise NotFound
             func()
             return
+
+        # see if we're to put up the new node page
         m = nre.match(action)
         if m:
             self.classname = m.group(1)
@@ -1039,6 +1122,8 @@ function submit_once() {
                 raise NotFound
             func()
             return
+
+        # otherwise, display the named class
         self.classname = action
         try:
             self.db.getclass(self.classname)
@@ -1202,6 +1287,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.102  2002/02/15 07:08:44  richard
+#  . Alternate email addresses are now available for users. See the MIGRATION
+#    file for info on how to activate the feature.
+#
 # Revision 1.101  2002/02/14 23:39:18  richard
 # . All forms now have "double-submit" protection when Javascript is enabled
 #   on the client-side.

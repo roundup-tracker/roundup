@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.55 2002-02-15 07:27:12 richard Exp $
+# $Id: hyperdb.py,v 1.56 2002-02-20 05:05:28 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -490,6 +490,7 @@ class Class:
         if node.has_key(self.db.RETIRED_FLAG):
             raise IndexError
         num_re = re.compile('^\d+$')
+        set = {}
         for key, value in propvalues.items():
             # check to make sure we're not duplicating an existing key
             if key == self.key and node[key] != value:
@@ -505,6 +506,13 @@ class Class:
             # the writeable properties.
             prop = self.properties[key]
 
+            # if the value's the same as the existing value, no sense in
+            # doing anything
+            if value == node[key]:
+                del propvalues[key]
+                continue
+
+            # do stuff based on the prop type
             if isinstance(prop, Link):
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
@@ -598,6 +606,11 @@ class Class:
 
             node[key] = value
 
+        # nothing to do?
+        if not propvalues:
+            return
+
+        # do the set, and journal it
         self.db.setnode(self.classname, nodeid, node)
         self.db.addjournal(self.classname, nodeid, 'set', propvalues)
 
@@ -633,6 +646,10 @@ class Class:
         return self.db.getjournal(self.classname, nodeid)
 
     # Locating nodes:
+    def hasnode(self, nodeid):
+        '''Determine if the given nodeid actually exists
+        '''
+        return self.db.hasnode(self.classname, nodeid)
 
     def setkey(self, propname):
         """Select a String property of this class to be the key property.
@@ -1066,6 +1083,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.55  2002/02/15 07:27:12  richard
+# Oops, precedences around the way w0rng.
+#
 # Revision 1.54  2002/02/15 07:08:44  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.
