@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.126.2.2 2004-01-07 22:44:44 richard Exp $
+$Id: mailgw.py,v 1.126.2.3 2004-03-24 22:27:39 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -765,10 +765,10 @@ Subject was: "%s"
         #   flagging.
         # multipart/form-data:
         #   For web forms only.
+        content = None
         if content_type == 'multipart/mixed':
             # skip over the intro to the first boundary
             part = message.getPart()
-            content = None
             while 1:
                 # get the next part
                 part = message.getPart()
@@ -814,42 +814,19 @@ Subject was: "%s"
                     # this is just an attachment
                     data = self.get_part_data_decoded(part) 
                     attachments.append((name, part.gettype(), data))
-            if content is None:
-                raise MailUsageError, '''
-Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part to use.
-'''
 
-        elif content_type[:10] == 'multipart/':
-            # skip over the intro to the first boundary
-            message.getPart()
-            content = None
-            while 1:
-                # get the next part
-                part = message.getPart()
-                if part is None:
-                    break
-                # parse it
-                if part.gettype() == 'text/plain' and not content:
-                    content = self.get_part_data_decoded(part) 
-            if content is None:
-                raise MailUsageError, '''
-Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part to use.
-'''
+        elif content_type == 'text/plain':
+            content = self.get_part_data_decoded(message) 
 
-        elif content_type != 'text/plain':
+        if content is None:
             raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
 '''
-
-        else:
-            content = self.get_part_data_decoded(message) 
  
         # figure how much we should muck around with the email body
-        keep_citations = getattr(self.instance.config, 'EMAIL_KEEP_QUOTED_TEXT',
-            'no') == 'yes'
+        keep_citations = getattr(self.instance.config,
+            'EMAIL_KEEP_QUOTED_TEXT', 'no') == 'yes'
         keep_body = getattr(self.instance.config, 'EMAIL_LEAVE_BODY_UNCHANGED',
             'no') == 'yes'
 
