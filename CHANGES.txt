@@ -8,6 +8,7 @@ Fixed:
 - missing CRLF var in rfc822.py (sf patch 949471)
 - fix user creation page
 - have roundup server pass though the cause of a "403 Forbidden" response
+- fix schema mutation in sqlite backends (thanks Tamer Fahmy)
 
 
 2004-05-06 0.7.0
