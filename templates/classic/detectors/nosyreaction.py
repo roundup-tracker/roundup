@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.3 2005-04-04 07:22:12 richard Exp $
+#$Id: nosyreaction.py,v 1.4 2005-04-04 08:47:14 richard Exp $
 
 import sets
 
@@ -141,4 +141,3 @@ def init(db):
     db.issue.audit('set', updatenosy)
 
 # vim: set filetype=python ts=4 sw=4 et si
-#SHA: 509a13c8501bbdf8d171ddab4e91c4ff0b9da957
