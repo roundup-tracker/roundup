@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.27.2.7 2003-03-14 02:52:03 richard Exp $
+# $Id: rdbms_common.py,v 1.27.2.8 2003-03-24 04:53:14 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1666,7 +1666,7 @@ class Class(hyperdb.Class):
             args.append(requirements[propname].lower())
 
         # generate the where clause
-        s = ' and '.join(['_%s=%s'%(col, self.db.arg) for col in where])
+        s = ' and '.join(['lower(_%s)=%s'%(col, self.db.arg) for col in where])
         sql = 'select id from _%s where %s'%(self.classname, s)
         self.db.sql(sql, tuple(args))
         l = [x[0] for x in self.db.sql_fetchall()]

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.37.2.1 2003-02-06 05:44:49 richard Exp $
+# $Id: test_mailgw.py,v 1.37.2.2 2003-03-24 04:53:15 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -122,7 +122,7 @@ This is a test submission of a new issue.
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
-From: Chef <chef@bork.bork.bork>
+From: Chef <Chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
 Message-Id: <dummy_test_message_id>
@@ -143,7 +143,7 @@ This is a test submission of a new issue.
     def testAlternateAddress(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
-From: John Doe <john.doe@test>
+From: john doe <John.Doe@test>
 To: issue_tracker@your.tracker.email.domain.example
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
