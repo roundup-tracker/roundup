@@ -20,6 +20,8 @@ Feature:
       if there are unsaved changes. A "rollback" removes all changes made
       during the session (up to the last commit).
  . Added the "display" command to the admin tool - displays a node's values
+ . Message author's name appears in From: instead of roundup instance name
+   (which still appears in the Reply-To:)
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
@@ -39,6 +41,8 @@ Fixed:
  . we were assuming database files created by anydbm had the same name, but
    this is not the case for dbm. We now perform a much better check _and_
    cope with the anydbm implementation module changing too!
+ . envelope-from is now set to the roundup-admin and not roundup itself so
+   delivery reports aren't sent to roundup (thanks Patrick Ohly)
 
 
 2001-11-23 - 0.3.0 

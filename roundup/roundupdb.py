@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.29 2001-12-11 04:50:49 richard Exp $
+# $Id: roundupdb.py,v 1.30 2001-12-12 21:47:45 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -356,8 +356,7 @@ class IssueClass(Class):
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', '%s <%s>'%(self.INSTANCE_NAME,
-            self.ISSUE_TRACKER_EMAIL))
+        writer.addheader('From', '%s <%s>'%(authname, self.ISSUE_TRACKER_EMAIL))
         writer.addheader('Reply-To', '%s <%s>'%(self.INSTANCE_NAME,
             self.ISSUE_TRACKER_EMAIL))
         writer.addheader('MIME-Version', '1.0')
@@ -399,7 +398,9 @@ class IssueClass(Class):
         # now try to send the message
         try:
             smtp = smtplib.SMTP(self.MAILHOST)
-            smtp.sendmail(self.ISSUE_TRACKER_EMAIL, sendto, message.getvalue())
+            # send the message as admin so bounces are sent there instead
+            # of to roundup
+            smtp.sendmail(self.ADMIN_EMAIL, sendto, message.getvalue())
         except socket.error, value:
             raise MessageSendError, \
                 "Couldn't send confirmation email: mailhost %s"%value
@@ -491,6 +492,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2001/12/11 04:50:49  richard
+# fixed the order of the blank line and '-------' line
+#
 # Revision 1.28  2001/12/10 22:20:01  richard
 # Enabled transaction support in the bsddb backend. It uses the anydbm code
 # where possible, only replacing methods where the db is opened (it uses the
