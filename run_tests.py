@@ -176,17 +176,17 @@ class ImmediateTestResult(unittest._TextTestResult):
     __super_startTest = unittest._TextTestResult.startTest
     __super_printErrors = unittest._TextTestResult.printErrors
 
-    def __init__(self, stream, descriptions, verbosity, debug=False,
-                 count=None, progress=False):
+    def __init__(self, stream, descriptions, verbosity, debug=0,
+                 count=None, progress=0):
         self.__super_init(stream, descriptions, verbosity)
         self._debug = debug
         self._progress = progress
-        self._progressWithNames = False
+        self._progressWithNames = 0
         self._count = count
         self._testtimes = {}
         if progress and verbosity == 1:
-            self.dots = False
-            self._progressWithNames = True
+            self.dots = 0
+            self._progressWithNames = 1
             self._lastWidth = 0
             self._maxWidth = 80
             try:
@@ -344,9 +344,9 @@ class PathInit:
         if self.inplace is None:
             # Need to figure it out
             if os.path.isdir(os.path.join("build", "lib.%s" % PLAT_SPEC)):
-                self.inplace = False
+                self.inplace = 0
             else:
-                self.inplace = True
+                self.inplace = 1
         # Calculate which directories we're going to add to sys.path, and cd
         # to the appropriate working directory
         org_cwd = os.getcwd()
@@ -381,7 +381,7 @@ class PathInit:
 
 def match(rx, s):
     if not rx:
-        return True
+        return 1
     if rx[0] == "!":
         return re.search(rx[1:], s) is None
     else:
@@ -625,20 +625,21 @@ def main(module_filter, test_filter, libdir):
     global pathinit
     pathinit = PathInit(build, build_inplace, libdir)
 
-    # Initialize the logging module.
+# No logging module in py 2.1
+#    # Initialize the logging module.
 
-    import logging.config
-    logging.basicConfig()
+#    import logging.config
+#    logging.basicConfig()
 
-    level = os.getenv("LOGGING")
-    if level:
-        level = int(level)
-    else:
-        level = logging.CRITICAL
-    logging.root.setLevel(level)
+#    level = os.getenv("LOGGING")
+#    if level:
+#        level = int(level)
+#    else:
+#        level = logging.CRITICAL
+#    logging.root.setLevel(level)
 
-    if os.path.exists(logini):
-        logging.config.fileConfig(logini)
+#    if os.path.exists(logini):
+#        logging.config.fileConfig(logini)
 
     files = find_tests(module_filter)
     files.sort()
@@ -649,7 +650,7 @@ def main(module_filter, test_filter, libdir):
         if REFCOUNT:
             rc = sys.gettotalrefcount()
             track = TrackRefs()
-        while True:
+        while 1:
             runner(files, test_filter, debug)
             gc.collect()
             if gc.garbage:
@@ -692,24 +693,24 @@ def process_args(argv=None):
     module_filter = None
     test_filter = None
     VERBOSE = 1
-    LOOP = False
-    GUI = False
-    TRACE = False
-    REFCOUNT = False
-    debug = False # Don't collect test results; simply let tests crash
-    debugger = False
-    build = False
-    build_inplace = False
+    LOOP = 0
+    GUI = 0
+    TRACE = 0
+    REFCOUNT = 0
+    debug = 0 # Don't collect test results; simply let tests crash
+    debugger = 0
+    build = 0
+    build_inplace = 0
     gcthresh = None
     gcdebug = 0
     gcflags = []
     level = 1
     libdir = '.'
-    progress = False
+    progress = 0
     timesfn = None
     timetests = 0
     keepStaleBytecode = 0
-    functional = False
+    functional = 0
     test_dir = None
 
     try:
@@ -728,21 +729,21 @@ def process_args(argv=None):
             level = 0
             os.environ["COMPLAIN_IF_TESTS_MISSED"]='1'
         elif k in ("-b", "--build"):
-            build = True
+            build = 1
         elif k == "-B":
-             build = build_inplace = True
+             build = build_inplace = 1
         elif k == "-c":
             # make sure you have a recent version of pychecker
             if not os.environ.get("PYCHECKER"):
                 os.environ["PYCHECKER"] = "-q"
             import pychecker.checker
         elif k == "-d":
-            debug = True
+            debug = 1
         elif k == "-D":
-            debug = True
-            debugger = True
+            debug = 1
+            debugger = 1
         elif k == "-f":
-            functional = True
+            functional = 1
         elif k in ("-h", "--help"):
             print __doc__
             sys.exit(0)
@@ -762,14 +763,14 @@ def process_args(argv=None):
         elif k == "-m":
             GUI = "minimal"
         elif k == "-p":
-            progress = True
+            progress = 1
         elif k == "-r":
             if hasattr(sys, "gettotalrefcount"):
-                REFCOUNT = True
+                REFCOUNT = 1
             else:
                 print "-r ignored, because it needs a debug build of Python"
         elif k == "-T":
-            TRACE = True
+            TRACE = 1
         elif k == "-t":
             if not timetests:
                 timetests = 50
@@ -785,14 +786,6 @@ def process_args(argv=None):
                 timesfn = v
         elif k == '--dir':
             test_dir = v
-
-    if sys.version_info < ( 2,2,3 ):
-	print """\
-	ERROR: Your python version is not supported by Zope3.
-	Zope3 needs either Python2.3 or Python2.2.3 or greater.
-	In particular, Zope3 on Python2.2.2 is a recipe for
-	pain. You are running:""" + sys.version
-	sys.exit(1)
 
     if gcthresh is not None:
         if gcthresh == 0:
@@ -864,7 +857,7 @@ def process_args(argv=None):
             ignoremods = ["os", "posixpath", "stat"]
             tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix],
                                  ignoremods=ignoremods,
-                                 trace=False, count=True)
+                                 trace=0, count=1)
 
             tracer.runctx("main(module_filter, test_filter, libdir)",
                           globals=globals(), locals=vars())
@@ -875,7 +868,7 @@ def process_args(argv=None):
             cPickle.dump(r, f)
             f.close()
             print path
-            r.write_results(show_missing=True, summary=True, coverdir=coverdir)
+            r.write_results(show_missing=1, summary=1, coverdir=coverdir)
         else:
             bad = main(module_filter, test_filter, libdir)
             if bad:
