@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.30 2001-12-12 21:47:45 richard Exp $
+# $Id: roundupdb.py,v 1.31 2001-12-15 19:24:39 rochecompaan Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -268,7 +268,7 @@ class IssueClass(Class):
         appended to the "messages" field of the specified issue.
         """
 
-    def sendmessage(self, nodeid, msgid):
+    def sendmessage(self, nodeid, msgid, change_note):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -344,6 +344,10 @@ class IssueClass(Class):
         # add the content
         m.append(self.db.msg.get(msgid, 'content'))
 
+        # add the change note
+        if change_note:
+            m.append(change_note)
+
         # put in roundup's signature
         if self.EMAIL_SIGNATURE_POSITION == 'bottom':
             m.append(self.email_signature(nodeid, msgid))
@@ -416,7 +420,7 @@ class IssueClass(Class):
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)
 
-    def generateChangeNote(self, nodeid, newvalues):
+    def generateChangeNote(self, nodeid, oldvalues):
         """Generate a change note that lists property changes
         """
         cn = self.classname
@@ -425,26 +429,25 @@ class IssueClass(Class):
         props = cl.getprops(protected=0)
 
         # determine what changed
-        for key in newvalues.keys():
+        for key in oldvalues.keys():
             if key in ['files','messages']: continue
-            new_value = newvalues[key]
+            new_value = cl.get(nodeid, key)
             # the old value might be non existent
             try:
-                old_value = cl.get(nodeid, key)
-                if type(old_value) is type([]):
-                    old_value.sort()
+                old_value = oldvalues[key]
+                if type(new_value) is type([]):
                     new_value.sort()
-                if old_value != new_value:
-                    changed[key] = new_value
+                    old_value.sort()
+                if new_value != old_value:
+                    changed[key] = old_value
             except:
                 changed[key] = new_value
 
         # list the changes
         m = []
-        for propname, value in changed.items():
+        for propname, oldvalue in changed.items():
             prop = cl.properties[propname]
-            oldvalue = cl.get(nodeid, propname, None)
-            change = '%s -> %s'%(oldvalue, value)
+            value = cl.get(nodeid, propname, None)
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]
                 key = link.labelprop(default_to_id=1)
@@ -484,6 +487,8 @@ class IssueClass(Class):
                         l.append(entry)
                 if l:
                     change += ' -%s'%(', '.join(l))
+            else:
+                change = '%s -> %s'%(oldvalue, value)
             m.append('%s: %s'%(propname, change))
         if m:
             m.insert(0, '----------')
@@ -492,6 +497,12 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2001/12/12 21:47:45  richard
+#  . Message author's name appears in From: instead of roundup instance name
+#    (which still appears in the Reply-To:)
+#  . envelope-from is now set to the roundup-admin and not roundup itself so
+#    delivery reports aren't sent to roundup (thanks Patrick Ohly)
+#
 # Revision 1.29  2001/12/11 04:50:49  richard
 # fixed the order of the blank line and '-------' line
 #

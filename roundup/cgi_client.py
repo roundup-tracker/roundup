@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.81 2001-12-12 23:55:00 richard Exp $
+# $Id: cgi_client.py,v 1.82 2001-12-15 19:24:39 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -314,32 +314,10 @@ class Client:
             try:
                 props, changed = parsePropsFromForm(self.db, cl, self.form,
                     self.nodeid)
-
-                # set status to chatting if 'unread' or 'resolved'
-                if not changed.has_key('status'):
-                    try:
-                        # determine the id of 'unread','resolved' and 'chatting'
-                        unread_id = self.db.status.lookup('unread')
-                        resolved_id = self.db.status.lookup('resolved')
-                        chatting_id = self.db.status.lookup('chatting')
-                    except KeyError:
-                        pass
-                    else:
-                        if (not props.has_key('status') or
-                                props['status'] == unread_id or
-                                props['status'] == resolved_id):
-                            props['status'] = chatting_id
-                            changed['status'] = chatting_id
-
-                # get the change note
-                change_note = cl.generateChangeNote(self.nodeid, changed)
-
-                # make the changes
-                cl.set(self.nodeid, **props)
-
-                # handle linked nodes and change message generation
-                self._post_editnode(self.nodeid, change_note)
-
+                # make changes to the node
+                self._changenode(props)
+                # handle linked nodes 
+                self._post_editnode(self.nodeid)
                 # and some nice feedback for the user
                 if changed:
                     message = _('%(changes)s edited ok')%{'changes':
@@ -455,10 +433,101 @@ class Client:
                 pass
             else:
                 props['status'] = unread_id
+        # add assignedto to the nosy list
+        if props.has_key('assignedto'):
+            assignedto_id = props['assignedto']
+            if props.has_key('nosy') and not assignedto_id in props['nosy']:
+                props['nosy'].append(assignedto_id)
+            else:
+                props['nosy'] = [assignedto_id]
+        # check for messages
+        message = self._handle_message()
+        if message:
+            props['messages'] = [message]
+        # create the node and return it's id
         return cl.create(**props)
 
-    def _post_editnode(self, nid, change_note=''):
-        ''' do the linking and message sending part of the node creation
+    def _changenode(self, props):
+        ''' change the node based on the contents of the form
+        '''
+        cl = self.db.classes[self.classname]
+        # set status to chatting if 'unread' or 'resolved'
+        try:
+            # determine the id of 'unread','resolved' and 'chatting'
+            unread_id = self.db.status.lookup('unread')
+            resolved_id = self.db.status.lookup('resolved')
+            chatting_id = self.db.status.lookup('chatting')
+        except KeyError:
+            pass
+        else:
+            if (props['status'] == unread_id or props['status'] == resolved_id):
+                props['status'] = chatting_id
+        # add assignedto to the nosy list
+        if props.has_key('assignedto'):
+            assignedto_id = props['assignedto']
+            if not assignedto_id in props['nosy']:
+                props['nosy'].append(assignedto_id)
+        # create the message
+        message = self._handle_message()
+        if message:
+            props['messages'] = cl.get(self.nodeid, 'messages') + [message]
+        # make the changes
+        cl.set(self.nodeid, **props)
+
+    def _handle_message(self):
+        ''' generate and edit message '''
+
+        # handle file attachments 
+        files = []
+        if self.form.has_key('__file'):
+            file = self.form['__file']
+            if file.filename:
+                mime_type = mimetypes.guess_type(file.filename)[0]
+                if not mime_type:
+                    mime_type = "application/octet-stream"
+                # create the new file entry
+                files.append(self.db.file.create(type=mime_type,
+                    name=file.filename, content=file.file.read()))
+
+        # we don't want to do a message if none of the following is true...
+        cn = self.classname
+        cl = self.db.classes[self.classname]
+        props = cl.getprops()
+        note = None
+        if self.form.has_key('__note'):
+            note = self.form['__note'].value
+        if not props.has_key('messages'):
+            return
+        if not isinstance(props['messages'], hyperdb.Multilink):
+            return
+        if not props['messages'].classname == 'msg':
+            return
+        if not (self.form.has_key('nosy') or note):
+            return
+
+        # handle the note
+        if note:
+            if '\n' in note:
+                summary = re.split(r'\n\r?', note)[0]
+            else:
+                summary = note
+            m = ['%s\n'%note]
+        else:
+            summary = _('This %(classname)s has been edited through'
+                ' the web.\n')%{'classname': cn}
+            m = [summary]
+
+        # now create the message
+        content = '\n'.join(m)
+        message_id = self.db.msg.create(author=self.getuid(),
+            recipients=[], date=date.Date('.'), summary=summary,
+            content=content, files=files)
+
+        # update the messages property
+        return message_id
+
+    def _post_editnode(self, nid):
+        ''' do the linking part of the node creation
         '''
         cn = self.classname
         cl = self.db.classes[cn]
@@ -483,65 +552,6 @@ class Client:
                     link, nodeid = roundupdb.splitDesignator(designator)
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
-
-        # handle file attachments
-        files = cl.get(nid, 'files')
-        if self.form.has_key('__file'):
-            file = self.form['__file']
-            if file.filename:
-                mime_type = mimetypes.guess_type(file.filename)[0]
-                if not mime_type:
-                    mime_type = "application/octet-stream"
-                # create the new file entry
-                files.append(self.db.file.create(type=mime_type,
-                    name=file.filename, content=file.file.read()))
-                # and save the reference
-                cl.set(nid, files=files)
-
-        #
-        # generate an edit message
-        #
-
-        # we don't want to do a message if none of the following is true...
-        props = cl.getprops()
-        note = None
-        if self.form.has_key('__note'):
-            note = self.form['__note'].value
-        if not props.has_key('messages'):
-            return
-        if not isinstance(props['messages'], hyperdb.Multilink):
-            return
-        if not props['messages'].classname == 'msg':
-            return
-        if not (len(cl.get(nid, 'nosy', [])) or note):
-            return
-
-        # handle the note
-        if note:
-            if '\n' in note:
-                summary = re.split(r'\n\r?', note)[0]
-            else:
-                summary = note
-            m = ['%s\n'%note]
-        else:
-            summary = _('This %(classname)s has been edited through'
-                ' the web.\n')%{'classname': cn}
-            m = [summary]
-
-        # append the change note
-        if change_note:
-            m.append(change_note)
-
-        # now create the message
-        content = '\n'.join(m)
-        message_id = self.db.msg.create(author=self.getuid(),
-            recipients=[], date=date.Date('.'), summary=summary,
-            content=content, files=files)
-
-        # update the messages property
-        messages = cl.get(nid, 'messages')
-        messages.append(message_id)
-        cl.set(nid, messages=messages, files=files)
 
     def newnode(self, message=None):
         ''' Add a new node to the database.
@@ -574,7 +584,7 @@ class Client:
             props = {}
             try:
                 nid = self._createnode()
-                # handle linked nodes and change message generation
+                # handle linked nodes 
                 self._post_editnode(nid)
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
@@ -1090,6 +1100,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.81  2001/12/12 23:55:00  richard
+# Fixed some problems with user editing
+#
 # Revision 1.80  2001/12/12 23:27:14  richard
 # Added a Zope frontend for roundup.
 #

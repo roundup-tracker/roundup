@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.41 2001-12-10 00:57:38 richard Exp $
+$Id: mailgw.py,v 1.42 2001-12-15 19:24:39 rochecompaan Exp $
 '''
 
 
@@ -506,6 +506,7 @@ not find a text/plain part to use.
                 if n.has_key(nid): continue
                 n[nid] = 1
             props['nosy'] = n.keys()
+            # add assignedto to the nosy list
             try:
                 assignedto = self.db.user.lookup(props['assignedto'])
                 if assignedto not in props['nosy']:
@@ -513,9 +514,6 @@ not find a text/plain part to use.
             except:
                 pass
                 
-            change_note = cl.generateChangeNote(nodeid, props)
-            content += change_note
-            
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files)
@@ -572,16 +570,21 @@ There was a problem with the message you sent:
                 if self.db.hasnode('user', value):
                     nid = value
                 else:
-                    try:
-                        nid = self.db.user.lookup(value)
-                    except:
-                        continue
+                    continue
                 if n.has_key(nid): continue
                 n[nid] = 1
             props['nosy'] = n.keys() + recipients
+            # add the author to the nosy list
             if not n.has_key(author):
                 props['nosy'].append(author)
                 n[author] = 1
+            # add assignedto to the nosy list
+            try:
+                assignedto = self.db.user.lookup(props['assignedto'])
+                if not n.has_key(assignedto):
+                    props['nosy'].append(assignedto)
+            except:
+                pass
 
             # and attempt to create the new node
             try:
@@ -620,21 +623,35 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         if not section:
             continue
         lines = eol.split(section)
-        if lines[0] and lines[0][0] in '>|':
-            continue
-        if len(lines) > 1 and lines[1] and lines[1][0] in '>|':
-            continue
         if not summary:
             summary = lines[0]
             l.append(section)
             continue
-        if signature.match(lines[0]):
-            break
+        # TODO: write better pattern for matching signature - it
+        # currently truncates messages with dashes in
+        #if signature.match(lines[0]):
+        #    break
         l.append(section)
     return summary, '\n\n'.join(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/12/15 06:51:04  roche
+# Merge with CVS
+#
+# Revision 1.1.1.11  2001/12/13 07:05:43  roche
+# update from cvs
+#
+# Revision 1.41  2001/12/10 00:57:38  richard
+# From CHANGES:
+#  . Added the "display" command to the admin tool - displays a node's values
+#  . #489760 ] [issue] only subject
+#  . fixed the doc/index.html to include the quoting in the mail alias.
+#
+# Also:
+#  . fixed roundup-admin so it works with transactions
+#  . disabled the back_anydbm module if anydbm tries to use dumbdbm
+#
 # Revision 1.40  2001/12/05 14:26:44  rochecompaan
 # Removed generation of change note from "sendmessage" in roundupdb.py.
 # The change note is now generated when the message is created.
