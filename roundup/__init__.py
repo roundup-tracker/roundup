@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.9.2.1 2002-09-02 21:49:04 richard Exp $
+# $Id: __init__.py,v 1.9.2.2 2002-09-03 03:09:30 richard Exp $
 
 __doc__ = '''
 This is a simple-to-use and -install issue-tracking system with
@@ -65,10 +65,13 @@ written by Ka-Ping Yee in the "doc" directory. If nothing else, it has a
 much prettier cake :)
 '''
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9.2.1  2002/09/02 21:49:04  richard
+# backported fix to CGI form handling from 0.5
+#
 # Revision 1.9  2002/06/24 01:09:33  richard
 # Modifications for the final 0.4.2 release.
 #

@@ -1,25 +1,23 @@
 =================================================
-SC-Track Roundup 0.4.3 - an issue tracking system
+SC-Track Roundup 0.4.4 - an issue tracking system
 =================================================
 
 Note: If you have an existing roundup installation, make a backup of your
 database. Make sure you read doc/upgrading.txt!
+
+This is probably the last 0.4 maintenance release, since I hope to release
+the first 0.5 beta next week :)
 
 Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
 requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
 
 This is a bugfix release, fixing:
 
- . sf bug #576086: dumb copying mistake (frontends/ZRoundup.py)
- . installation instructions now mention "python2" in "testing your python".
- . bsddb3 backend should use 'c' for create, not 'n' for nuke
- . sf bug #571170: gdbm deadlock
- . sf bug #576241: MultiLink problems in parsePropsFromForm
- . sf bug #516854: "My Issues" and redisplay
- . htmltemplate do_menu with additional properties had problems when they
-   weren't set
- . sf bug #562686: email attachments from outlook express
- . sf bug #535868: Anonymous User Login
+ . sf bug #596155: bug with multilink
+ . sf bug #600699: documentation in doc/getting_started.txt
+ . sf bug #600700: doc/upgrading.txt: no info about 0.4.3
+ . sf bug #603696: Mail followup not inserted
+ . sf bug #603703: way to unassign issues
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/

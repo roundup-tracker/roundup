@@ -10,8 +10,8 @@ want it to stay that way, too.
 This means that we only need to ever build source releases. This is done by
 running:
 
-  0. Edit setup.py and doc/announcement.txt to reflect the new version and
-     appropriate announcments.
+  0. Edit roundup/__init__.py, doc/upgrading.txt and doc/announcement.txt to
+     reflect the new version and appropriate announcments.
   1. python setup.py clean --all
   2. Edit setup.py to ensure that all information therein (version, contact
      information etc) is correct.
