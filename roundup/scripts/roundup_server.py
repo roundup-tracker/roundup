@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.52 2004-06-21 04:42:11 richard Exp $
+$Id: roundup_server.py,v 1.53 2004-07-02 08:52:00 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -345,14 +345,15 @@ def usage(message=''):
     if RoundupService:
         os_part = \
 ""''' -c <Command>  Windows Service options.
-               If you want to run the server as a Windows Service, you must
-               configure the rest of the options by changing the constants
-               of this program.  You will at least configure one tracker in
-               the TRACKER_HOMES variable.  This option is mutually exclusive
-               from the rest.  Typing "roundup-server -c help" shows Windows
-               Services specifics.'''
+               If you want to run the server as a Windows Service, you
+               must configure the rest of the options by changing the
+               constants of this program.  You will at least configure
+               one tracker in the TRACKER_HOMES variable.  This option
+               is mutually exclusive from the rest.  Typing
+               "roundup-server -c help" shows Windows Services
+               specifics.'''
     else:
-        os_part = ''' -u <UID>      runs the Roundup web server as this UID
+        os_part = ""''' -u <UID>      runs the Roundup web server as this UID
  -g <GID>      runs the Roundup web server as this GID
  -d <PIDfile>  run the server in the background and write the server's PID
                to the file indicated by PIDfile. The -l option *must* be
