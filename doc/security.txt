@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.8 $
+:Version: $Revision: 1.9 $
 
 Current situation
 =================
@@ -260,7 +260,8 @@ The htmltemplate will implement a new tag, <permission> which has the form::
 where the require attribute gives a comma-separated list of permission names
 which are required, and the node attribute gives a comma-separated list of
 node properties whose value must match the current user's id. Either of these
-tests must pass or the permission check will fail.
+tests must pass or the permission check will fail. The section of html within
+the side of the ``<else>`` that fails is remove from processing.
 
 
 Authentication of Users
@@ -286,6 +287,7 @@ The CGI interface must be changed to:
   real credentials (username/password) around for each request (this means
   sessions and hence a session database)
 - use the new logical control mechanisms
+
   - implement the permission module
   - implement a Role editing interface for users
   - implement htmltemplate tests on permissions
@@ -298,6 +300,7 @@ The mail gateway must be changed to:
 
 - use digital signatures
 - use the new logical control mechanisms
+
   - switch all code over from using config vars for permission checks to using
     permissions
 
