@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.70 2003-01-15 11:14:01 richard Exp $
+# $Id: client.py,v 1.71 2003-01-15 22:39:07 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1221,9 +1221,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
         # does the property exist?
         if not properties.has_key(propname):
-            if mlaction == 'remove':
-                raise ValueError, 'You have submitted a remove action for'\
-                    ' the property "%s" which doesn\'t exist'%propname
+            if mlaction != 'set':
+                raise ValueError, 'You have submitted a %s action for'\
+                    ' the property "%s" which doesn\'t exist'%(mlaction,
+                    propname)
             continue
         proptype = properties[propname]
 
@@ -1281,7 +1282,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 value = None
         elif isinstance(proptype, hyperdb.Link):
             # see if it's the "no selection" choice
-            if value == '-1':
+            if value == '-1' or not value:
                 # if we're creating, just don't include this property
                 if not nodeid:
                     continue

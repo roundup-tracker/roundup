@@ -475,7 +475,8 @@ class Class:
                         if self.do_journal and prop.do_journal:
                             self.db.addjournal(link_class, id, _LINK,
                                 (self.classname, str(row.id), key))
-                            
+
+                # perform the modifications on the actual property value
                 sv = getattr(row, key)
                 i = 0
                 while i < len(sv):
@@ -485,7 +486,17 @@ class Class:
                         i += 1
                 for id in adds:
                     sv.append(fid=int(id))
-                changes[key] = oldvalue
+
+                # figure the journal entry
+                l = []
+                if adds:
+                    l.append(('+', adds))
+                if rmvd:
+                    l.append(('-', rmvd))
+                if l:
+                    changes[key] = tuple(l)
+                #changes[key] = oldvalue
+
                 if not rmvd and not adds:
                     del propvalues[key]
                     
