@@ -9,6 +9,7 @@ Fixed:
 - removed Boolean from source to make py <2.3 happy (sf bug 938790)
 - fix nested scope bug in rdbms multilink sorting
 - re-seed the random number generator for each request
+- postgresql backend altered to not use popen (thanks Georges Martin)
 
 
 2004-04-18 0.7.0b3

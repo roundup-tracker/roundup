@@ -18,51 +18,56 @@ def db_create(config):
     """Clear all database contents and drop database itself"""
     if __debug__:
         print >> hyperdb.DEBUG, '+++ create database +++'
-    name = config.POSTGRESQL_DATABASE['database']
-    n = 0
-    while n < 10:
-        cout,cin = popen2.popen4('createdb %s'%name)
-        cin.close()
-        response = cout.read().split('\n')[0]
-        if response.find('FATAL') != -1:
-            raise RuntimeError, response
-        elif response.find('ERROR') != -1:
-            if not response.find('is being accessed by other users') != -1:
-                raise RuntimeError, response
-            if __debug__:
-                print >> hyperdb.DEBUG, '+++ SLEEPING +++'
-            time.sleep(1)
-            n += 1
-            continue
-        return
-    raise RuntimeError, '10 attempts to create database failed'
+    command = 'CREATE DATABASE %s'%config.POSTGRESQL_DATABASE['database']
+    db_command(config, command)
 
 def db_nuke(config, fail_ok=0):
     """Clear all database contents and drop database itself"""
     if __debug__:
         print >> hyperdb.DEBUG, '+++ nuke database +++'
-    name = config.POSTGRESQL_DATABASE['database']
-    n = 0
-    if os.path.exists(config.DATABASE):
-        shutil.rmtree(config.DATABASE)
-    while n < 10:
-        cout,cin = popen2.popen4('dropdb %s'%name)
-        cin.close()
-        response = cout.read().split('\n')[0]
-        if response.endswith('does not exist') and fail_ok:
-            return
-        elif response.find('FATAL') != -1:
+    command = 'DROP DATABASE %s'% config.POSTGRESQL_DATABASE['database']
+    db_command(config, command)
+
+def db_command(config, command):
+    '''Perform some sort of database-level command. Retry 10 times if we
+    fail by conflicting with another user.
+    '''
+    template1 = config.POSTGRESQL_DATABASE.copy()
+    template1['database'] = 'template1'
+    
+    try:
+        conn = psycopg.connect(**template1)
+    except psycopg.OperationalError, message:
+        raise hyperdb.DatabaseError, message
+    
+    conn.set_isolation_level(0)
+    cursor = conn.cursor()
+    try:
+        for n in range(10):
+            if pg_command(cursor, command):
+                return
+    finally:
+        conn.close()
+    raise RuntimeError, '10 attempts to create database failed'
+
+def pg_command(cursor, command):
+    '''Execute the postgresql command, which may be blocked by some other
+    user connecting to the database, and return a true value if it succeeds.
+    '''
+    try:
+        cursor.execute(command)
+    except psycopg.ProgrammingError, err:
+        response = str(err).split('\n')[0]
+        if response.find('FATAL') != -1:
             raise RuntimeError, response
         elif response.find('ERROR') != -1:
-            if not response.find('is being accessed by other users') != -1:
+            if response.find('is being accessed by other users') == -1:
                 raise RuntimeError, response
             if __debug__:
                 print >> hyperdb.DEBUG, '+++ SLEEPING +++'
             time.sleep(1)
-            n += 1
-            continue
-        return
-    raise RuntimeError, '10 attempts to nuke database failed'
+            return 0
+    return 1
 
 def db_exists(config):
     """Check if database already exists"""
