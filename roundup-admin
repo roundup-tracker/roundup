@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.58 2001-12-31 05:12:52 richard Exp $
+# $Id: roundup-admin,v 1.59 2001-12-31 05:20:34 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -636,10 +636,17 @@ Command help:
         if len(args) > 1:
             prop_names = args[1].split(',')
             all_props = cl.getprops()
-            for prop_name in prop_names:
-                if not all_props.has_key(prop_name):
+            for spec in prop_names:
+                if ':' in spec:
+                    try:
+                        name, width = spec.split(':')
+                    except (ValueError, TypeError):
+                        raise UsageError, '"%s" not name:width'%spec
+                else:
+                    name = spec
+                if not all_props.has_key(name):
                     raise UsageError, '%s has no property "%s"'%(classname,
-                        prop_name)
+                        name)
         else:
             prop_names = cl.getprops().keys()
 
@@ -651,12 +658,12 @@ Command help:
                     name, width = spec.split(':')
                 except (ValueError, TypeError):
                     raise UsageError, '"%s" not name:width'%spec
-                props.append((spec, int(width)))
+                props.append((name, int(width)))
             else:
                 props.append((spec, len(spec)))
 
         # now display the heading
-        print ' '.join([name.capitalize() for name, width in props])
+        print ' '.join([name.capitalize().ljust(width) for name,width in props])
 
         # and the table data
         for nodeid in cl.list():
@@ -1012,6 +1019,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.58  2001/12/31 05:12:52  richard
+# actually handle the advertised <cr> response to "commit y/N?"
+#
 # Revision 1.57  2001/12/31 05:12:01  richard
 # added some quoting instructions to roundup-admin
 #

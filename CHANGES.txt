@@ -47,6 +47,7 @@ Fixed:
  . envelope-from is now set to the roundup-admin and not roundup itself so
    delivery reports aren't sent to roundup (thanks Patrick Ohly)
  . #495400 ] entering blanks
+ . #496360 ] table width does not work
 
 2001-11-23 - 0.3.0 
 Feature:
