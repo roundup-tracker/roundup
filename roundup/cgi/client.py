@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.174 2004-05-02 23:16:05 richard Exp $
+# $Id: client.py,v 1.175 2004-05-04 00:02:18 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -478,7 +478,7 @@ class Client:
 
         self._serve_file(lmt, mime_type, content)
 
-    def _serve_file(self, last_modified, mime_type, content):
+    def _serve_file(self, lmt, mime_type, content):
         ''' guts of serve_file() and serve_static_file()
         '''
         ims = None
@@ -497,7 +497,7 @@ class Client:
         # spit out headers
         self.additional_headers['Content-Type'] = mime_type
         self.additional_headers['Content-Length'] = len(content)
-        lmt = rfc822.formatdate(last_modified)
+        lmt = rfc822.formatdate(lmt)
         self.additional_headers['Last-Modifed'] = lmt
         self.write(content)
 

@@ -13,6 +13,7 @@ Fixed:
 - fixed journal marshalling in RDBMS backends (sf bug 943627)
 - fixed handling of key values starting with numbers (sf bug 941363)
 - fixed journal "param" column size in RDBMS backends
+- fixed static file serving
 
 
 2004-04-18 0.7.0b3
