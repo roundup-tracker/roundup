@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.2 2003-11-02 08:44:17 richard Exp $ 
+# $Id: db_test_base.py,v 1.3 2003-11-05 01:38:52 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time
 
@@ -956,7 +956,6 @@ class SchemaTest(MyTestCase):
 
         # confirm journal's ok
         self.db.getjournal('a', aid)
-        self.db.getjournal('b', bid)
 
 
 class ClassicInitTest(unittest.TestCase):
