@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.139 2003-09-10 13:04:05 jlgijsbers Exp $
+# $Id: client.py,v 1.140 2003-09-24 14:53:58 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -31,7 +31,6 @@ class  NotModified(HTTPException):
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-# XXX actually _use_ FormError
 class FormError(ValueError):
     ''' An "expected" exception occurred during form parsing.
         - ie. something we know can go wrong, and don't want to alarm the
@@ -280,6 +279,9 @@ class Client:
         except NotFound:
             # pass through
             raise
+        except FormError, e:
+            self.error_message.append(_('Form Error: ') + str(e))
+            self.write(self.renderContext())
         except:
             # everything else
             self.write(cgitb.html())
@@ -726,12 +728,7 @@ class Client:
 
         return 1 on successful login
         '''
-        # parse the props from the form
-        try:
-            props = self.parsePropsFromForm()[0][('user', None)]
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
+        props = self.parsePropsFromForm()[0][('user', None)]
 
         # make sure we're allowed to register
         if not self.registerPermission(props):
@@ -934,12 +931,7 @@ You should then receive another email with the new password.
 
            See parsePropsFromForm and _editnodes for special variables
         '''
-        # parse the props from the form
-        try:
-            props, links = self.parsePropsFromForm()
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Parse Error: ') + str(message))
-            return
+        props, links = self.parsePropsFromForm()
 
         # handle the props
         try:
@@ -955,6 +947,8 @@ You should then receive another email with the new password.
         raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
             self.classname, self.nodeid, urllib.quote(message),
             urllib.quote(self.template))
+
+    newItemAction = editItemAction
 
     def editItemPermission(self, props):
         ''' Determine whether the user has permission to edit this item.
@@ -979,37 +973,6 @@ You should then receive another email with the new password.
         if self.db.security.hasPermission('Edit', self.userid, self.classname):
             return 1
         return 0
-
-    def newItemAction(self):
-        ''' Add a new item to the database.
-
-            This follows the same form as the editItemAction, with the same
-            special form values.
-        '''
-        # parse the props from the form
-        try:
-            props, links = self.parsePropsFromForm()
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
-
-        # handle the props - edit or create
-        try:
-            # when it hits the None element, it'll set self.nodeid
-            messages = self._editnodes(props, links)
-
-        except (ValueError, KeyError, IndexError), message:
-            # these errors might just be indicative of user dumbness
-            self.error_message.append(_('Error: ') + str(message))
-            return
-
-        # commit now that all the tricky stuff is done
-        self.db.commit()
-
-        # redirect to the new item's page
-        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
-            self.classname, self.nodeid, urllib.quote(messages),
-            urllib.quote(self.template))
 
     def newItemPermission(self, props):
         ''' Determine whether the user has permission to create (edit) this
@@ -1632,14 +1595,14 @@ You should then receive another email with the new password.
                 for entry in extractFormList(form[key]):
                     m = self.FV_DESIGNATOR.match(entry)
                     if not m:
-                        raise ValueError, \
+                        raise FormError, \
                             'link "%s" value "%s" not a designator'%(key, entry)
                     value.append((m.group(1), m.group(2)))
 
                 # make sure the link property is valid
                 if (not isinstance(propdef[propname], hyperdb.Multilink) and
                         not isinstance(propdef[propname], hyperdb.Link)):
-                    raise ValueError, '%s %s is not a link or '\
+                    raise FormError, '%s %s is not a link or '\
                         'multilink property'%(cn, propname)
 
                 all_links.append((cn, nodeid, propname, value))
@@ -1660,7 +1623,7 @@ You should then receive another email with the new password.
             # does the property exist?
             if not propdef.has_key(propname):
                 if mlaction != 'set':
-                    raise ValueError, 'You have submitted a %s action for'\
+                    raise FormError, 'You have submitted a %s action for'\
                         ' the property "%s" which doesn\'t exist'%(mlaction,
                         propname)
                 # the form element is probably just something we don't care
@@ -1678,7 +1641,7 @@ You should then receive another email with the new password.
             else:
                 # multiple values are not OK
                 if isinstance(value, type([])):
-                    raise ValueError, 'You have submitted more than one value'\
+                    raise FormError, 'You have submitted more than one value'\
                         ' for the %s property'%propname
                 # value might be a file upload...
                 if not hasattr(value, 'filename') or value.filename is None:
@@ -1701,13 +1664,13 @@ You should then receive another email with the new password.
                         confirm = form[key]
                         break
                 else:
-                    raise ValueError, 'Password and confirmation text do '\
+                    raise FormError, 'Password and confirmation text do '\
                         'not match'
                 if isinstance(confirm, type([])):
-                    raise ValueError, 'You have submitted more than one value'\
+                    raise FormError, 'You have submitted more than one value'\
                         ' for the %s property'%propname
                 if value != confirm.value:
-                    raise ValueError, 'Password and confirmation text do '\
+                    raise FormError, 'Password and confirmation text do '\
                         'not match'
                 value = password.Password(value)
 
@@ -1725,12 +1688,12 @@ You should then receive another email with the new password.
                         try:
                             value = db.classes[link].lookup(value)
                         except KeyError:
-                            raise ValueError, _('property "%(propname)s": '
+                            raise FormError, _('property "%(propname)s": '
                                 '%(value)s not a %(classname)s')%{
                                 'propname': propname, 'value': value,
                                 'classname': link}
                         except TypeError, message:
-                            raise ValueError, _('you may only enter ID values '
+                            raise FormError, _('you may only enter ID values '
                                 'for property "%(propname)s": %(message)s')%{
                                 'propname': propname, 'message': message}
             elif isinstance(proptype, hyperdb.Multilink):
@@ -1744,12 +1707,12 @@ You should then receive another email with the new password.
                         try:
                             entry = link_cl.lookup(entry)
                         except KeyError:
-                            raise ValueError, _('property "%(propname)s": '
+                            raise FormError, _('property "%(propname)s": '
                                 '"%(value)s" not an entry of %(classname)s')%{
                                 'propname': propname, 'value': entry,
                                 'classname': link}
                         except TypeError, message:
-                            raise ValueError, _('you may only enter ID values '
+                            raise FormError, _('you may only enter ID values '
                                 'for property "%(propname)s": %(message)s')%{
                                 'propname': propname, 'message': message}
                     l.append(entry)
@@ -1775,7 +1738,7 @@ You should then receive another email with the new password.
                             try:
                                 existing.remove(entry)
                             except ValueError:
-                                raise ValueError, _('property "%(propname)s": '
+                                raise FormError, _('property "%(propname)s": '
                                     '"%(value)s" not currently in list')%{
                                     'propname': propname, 'value': entry}
                     else:
@@ -1826,7 +1789,7 @@ You should then receive another email with the new password.
                     elif isinstance(proptype, hyperdb.Number):
                         value = float(value)
                 except ValueError, msg:
-                    raise ValueError, _('Error with %s property: %s')%(
+                    raise FormError, _('Error with %s property: %s')%(
                         propname, msg)
 
             # register that we got this property
@@ -1842,6 +1805,8 @@ You should then receive another email with the new password.
                     # no existing value
                     if not propdef.has_key(propname):
                         raise
+                except IndexError, message:
+                    raise FormError(str(message))
 
                 # make sure the existing multilink is sorted
                 if isinstance(proptype, hyperdb.Multilink):
@@ -1898,7 +1863,7 @@ You should then receive another email with the new password.
             s.append('Required %s %s %s not supplied'%(thing[0], p,
                 ', '.join(required)))
         if s:
-            raise ValueError, '\n'.join(s)
+            raise FormError, '\n'.join(s)
 
         # When creating a FileClass node, it should have a non-empty content
         # property to be created. When editing a FileClass node, it should
@@ -1910,7 +1875,7 @@ You should then receive another email with the new password.
                       if not props.get('content', ''):
                             del all_props[(cn, id)]
                 elif props.has_key('content') and not props['content']:
-                      raise ValueError, _('File is empty')
+                      raise FormError, _('File is empty')
         return all_props, all_links
 
 def fixNewlines(text):
