@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.145 2003-11-12 01:00:59 richard Exp $
+# $Id: client.py,v 1.146 2003-11-13 05:56:48 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1471,7 +1471,7 @@ You should then receive another email with the new password.
                 This is equivalent to::
 
                     @link@messages=msg-1
-                    @msg-1@content=value
+                    msg-1@content=value
 
                 except that in addition, the "author" and "date"
                 properties of "msg-1" are set to the userid of the
@@ -1481,7 +1481,7 @@ You should then receive another email with the new password.
                 This is equivalent to::
 
                     @link@files=file-1
-                    @file-1@content=value
+                    file-1@content=value
 
                 The String content value is handled as described above for
                 file uploads.

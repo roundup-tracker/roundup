@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.104 $
+:Version: $Revision: 1.105 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1023,7 +1023,7 @@ Two special form values are supported for backwards compatibility:
     This is equivalent to::
 
         @link@messages=msg-1
-        @msg-1@content=value
+        msg-1@content=value
 
     except that in addition, the "author" and "date" properties of
     "msg-1" are set to the userid of the submitter, and the current
@@ -1033,7 +1033,7 @@ Two special form values are supported for backwards compatibility:
     This is equivalent to::
 
         @link@files=file-1
-        @file-1@content=value
+        file-1@content=value
 
     The String content value is handled as described above for file
     uploads.
