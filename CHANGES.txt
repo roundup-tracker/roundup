@@ -1,21 +1,18 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-01-?? - 0.4.0
+2002-01-24 - 0.4.0
 Feature:
  . much nicer history display (actualy real handling of property types etc)
  . journal entries for link and mutlilink properties can be switched on or 
    off
  . properties in change note are now sorted
- . the mail gateway now responds with an error message when invalid values 
-   for arguments are specified for link or mutlilink properties. 
- . modified unit test to check nosy and assignedto when specified as 
-   arguments
  . you can now use the roundup-admin tool pack the database
- . unit tests for html templating (and re-enabled the listbox field for
-   multilinks)
 
 Fixed:
+ . the mail gateway now responds with an error message when invalid values 
+   for arguments are specified for link or mutlilink properties
+ . modified unit test to check nosy and assignedto when specified as arguments
  . handle attachments with no name (eg tnef)
  . fixed setting nosy as argument in subject line
  . fixed back_bsddb so it passed the journal tests
@@ -23,6 +20,8 @@ Fixed:
  . we'll actually distribute the frontends directory now, as advertised...
  . handle stripping of "AW:" from subject line
  . htmltemplate list() wasn't sorting...
+ . unit tests for html templating (and re-enabled the listbox field for
+   multilinks)
  . allow abbreviation of "help" in admin tool too.
  . run_tests testReldate_date failed if LANG is 'german'
  . mailgw failures (unexpected ones) are forwarded to the roundup admin

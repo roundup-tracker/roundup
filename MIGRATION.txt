@@ -59,8 +59,8 @@ to:
 Configuration
 -------------
 INSTANCE_NAME and EMAIL_SIGNATURE_POSITION have been added to the
-instance_config.py. Simplest solution is to copy the default values from
-template in the core source.
+instance_config.py. The simplest solution is to copy the default values
+from template in the core source.
 
 The mail gateway now checks ANONYMOUS_REGISTER to see if unknown users are to
 be automatically registered with the tracker. If it is set to "deny" then
@@ -80,6 +80,13 @@ Nosy reactor
 The nosy reactor has also changed - copy the nosyreactor.py file from the core
 source roundup/templates/[schema]/detectors/nosyreactor.py to your instance
 home "detectors" directory.
+
+
+HTML templating
+---------------
+The field() function was incorrectly implemented - links and multilinks now
+display as text fields when rendered using field(). To display a menu (drop-
+down or select box) you need to use the menu() function.
 
 
 
