@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.182 2005-01-06 17:41:10 a1s Exp $
+#$Id: back_anydbm.py,v 1.183 2005-02-13 22:36:59 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1612,15 +1612,12 @@ class Class(hyperdb.Class):
             elif isinstance(propclass, hyperdb.String) and k != 'id':
                 if type(v) is not type([]):
                     v = [v]
-                m = []
                 for v in v:
                     # simple glob searching
                     v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
                     v = v.replace('?', '.')
                     v = v.replace('*', '.*?')
-                    m.append(v)
-                m = re.compile('(%s)'%('|'.join(m)), re.I)
-                l.append((STRING, k, m))
+                    l.append((STRING, k, re.compile(v, re.I)))
             elif isinstance(propclass, hyperdb.Date):
                 try:
                     date_rng = date.Range(v, date.Date, offset=timezone)

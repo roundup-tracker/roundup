@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.54 2005-02-13 21:15:04 richard Exp $
+#$Id: back_mysql.py,v 1.55 2005-02-13 22:37:00 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -573,7 +573,7 @@ class MysqlClass:
 
                 # now add to the where clause
                 where.append('('
-                    +' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
+                    +' and '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
                     +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):

@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.89 2005-01-09 19:01:09 jlgijsbers Exp $
+# $Id: back_metakit.py,v 1.90 2005-02-13 22:37:00 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1212,7 +1212,7 @@ class Class(hyperdb.Class):
         where = {'_isdel':0}
         wherehigh = {}
         mlcriteria = {}
-        regexes = {}
+        regexes = []
         orcriteria = {}
         for propname, value in filterspec.items():
             prop = self.ruprops.get(propname, None)
@@ -1258,14 +1258,12 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.String):
                 if type(value) is not type([]):
                     value = [value]
-                m = []
                 for v in value:
                     # simple glob searching
                     v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
                     v = v.replace('?', '.')
                     v = v.replace('*', '.*?')
-                    m.append(v)
-                regexes[propname] = re.compile('(%s)'%('|'.join(m)), re.I)
+                    regexes.append((propname, re.compile(v, re.I)))
             elif propname == 'id':
                 where[propname] = int(value)
             elif isinstance(prop, hyperdb.Boolean):
@@ -1353,7 +1351,7 @@ class Class(hyperdb.Class):
 
         if regexes:
             def ff(row, r=regexes):
-                for propname, regex in r.items():
+                for propname, regex in r:
                     val = str(getattr(row, propname))
                     if not regex.search(val):
                         return 0
