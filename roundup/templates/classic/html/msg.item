@@ -1,4 +1,10 @@
 <!-- dollarId: msg.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">Message editing</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>Message editing</h2>
+</td>
+<td class="content" metal:fill-slot="content">
 <table class="form">
 
 <tr>
@@ -40,3 +46,6 @@
 </table>
 
 <tal:block tal:replace="structure context/history" />
+</td>
+
+</tal:block>

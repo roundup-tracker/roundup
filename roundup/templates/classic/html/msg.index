@@ -1,3 +1,9 @@
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">Message listing</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>Message listing</h2>
+</td>
+<td class="content" metal:fill-slot="content">
 <table class="messages" tal:condition="request/filter">
  <tr><th colspan=2 class="header">Messages</th></tr>
  <tal:block tal:repeat="msg context/list">
@@ -10,3 +16,6 @@
   </tr>
  </tal:block>
 </table>
+</td>
+
+</tal:block>

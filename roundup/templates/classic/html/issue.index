@@ -1,4 +1,11 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">List of issues</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>List of issues</h2>
+</td>
+<td class="content" metal:fill-slot="content">
+
 <tal:block tal:condition="not:context/is_view_ok">
 You are not allowed to view this page.
 </tal:block>
@@ -96,5 +103,8 @@ You are not allowed to view this page.
  </table>
 </form>
 
+</tal:block>
+
+</td>
 </tal:block>
 

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.41 2002-09-24 02:00:09 richard Exp $
+# $Id: client.py,v 1.42 2002-09-25 02:10:25 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -10,7 +10,7 @@ import binascii, Cookie, time, random
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
 
-from roundup.cgi.templating import getTemplate, HTMLRequest, NoTemplate
+from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
 
 from roundup.cgi.PageTemplates import PageTemplate
@@ -152,14 +152,8 @@ class Client:
             self.additional_headers['Pragma'] = 'no-cache'
             self.additional_headers['Expires'] = 'Thu, 1 Jan 1970 00:00:00 GMT'
 
-            if self.form.has_key(':contentonly'):
-                # just the content
-                self.write(self.content())
-            else:
-                # render the content inside the page template
-                self.write(self.renderTemplate('page', '',
-                    ok_message=self.ok_message,
-                    error_message=self.error_message))
+            # render the content
+            self.write(self.renderContext())
         except Redirect, url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
@@ -333,38 +327,26 @@ class Client:
         self.write(open(os.path.join(self.instance.config.TEMPLATES,
             file)).read())
 
-    def renderTemplate(self, name, extension, **kwargs):
+    def renderContext(self):
         ''' Return a PageTemplate for the named page
         '''
-        pt = getTemplate(self.instance.config.TEMPLATES, name, extension)
+        name = self.classname
+        extension = self.template
+        pt = Templates(self.instance.config.TEMPLATES).get(name, extension)
+
         # catch errors so we can handle PT rendering errors more nicely
+        args = {
+            'ok_message': self.ok_message,
+            'error_message': self.error_message
+        }
         try:
             # let the template render figure stuff out
-            return pt.render(self, None, None, **kwargs)
-        except PageTemplate.PTRuntimeError, message:
-            return '<strong>%s</strong><ol><li>%s</ol>'%(message,
-                '<li>'.join([cgi.escape(x) for x in pt._v_errors]))
+            return pt.render(self, None, None, **args)
         except NoTemplate, message:
             return '<strong>%s</strong>'%message
         except:
             # everything else
             return cgitb.pt_html()
-
-    def content(self):
-        ''' Callback used by the page template to render the content of 
-            the page.
-
-            If we don't have a specific class to display, that is none was
-            determined in determine_context(), then we display a "home"
-            template.
-        '''
-        # now render the page content using the template we determined in
-        # determine_context
-        if self.classname is None:
-            name = 'home'
-        else:
-            name = self.classname
-        return self.renderTemplate(self.classname, self.template)
 
     # these are the actions that are available
     actions = (

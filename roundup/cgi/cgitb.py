@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.6 2002-09-13 03:31:18 richard Exp $
+# $Id: cgitb.py,v 1.7 2002-09-25 02:10:25 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -29,7 +29,9 @@ def pt_html(context=5):
          '<p class="help">Debugging information follows</p>'
          '<ol>']
     from roundup.cgi.PageTemplates.Expressions import TraversalError
-    for frame, file, lnum, func, lines, index in inspect.trace(context):
+    t = inspect.trace(context)
+    t.reverse()
+    for frame, file, lnum, func, lines, index in t:
         args, varargs, varkw, locals = inspect.getargvalues(frame)
         if locals.has_key('__traceback_info__'):
             ti = locals['__traceback_info__']
@@ -46,8 +48,11 @@ def pt_html(context=5):
             ts = locals['__traceback_supplement__']
             if len(ts) == 2:
                 supp, context = ts
-                l.append('<li>A problem occurred in your template "%s"</li>'%
-                    str(context.id))
+                s = 'A problem occurred in your template "%s".'%str(context.id)
+                if context._v_errors:
+                    s = s + '<br>' + '<br>'.join(
+                        [cgi.escape(x) for x in context._v_errors])
+                l.append('<li>%s</li>'%s)
             elif len(ts) == 3:
                 supp, context, info = ts
                 l.append('''

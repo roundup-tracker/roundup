@@ -21,7 +21,7 @@ Modified for Roundup 0.5 release:
 
 """
 
-__version__='$Revision: 1.2 $'[11:-2]
+__version__='$Revision: 1.3 $'[11:-2]
 
 import sys
 
@@ -32,7 +32,6 @@ from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from Expressions import getEngine
 from string import join, strip, rstrip, split, replace, lower, find
 from cStringIO import StringIO
-from ComputedAttribute import ComputedAttribute
 
 class PageTemplate:
     "Page Templates using TAL, TALES, and METAL"
@@ -47,10 +46,6 @@ class PageTemplate:
     id = '(unknown)'
     _text = ''
     _error_start = '<!-- Page Template Diagnostics'
-
-    def macros(self):
-        return self.pt_macros()
-    macros = ComputedAttribute(macros, 1)
 
     def pt_edit(self, text, content_type):
         if content_type:
@@ -120,10 +115,15 @@ class PageTemplate:
     def pt_macros(self):
         if not self._v_cooked:
             self._cook()
+        __traceback_supplement__ = (PageTemplateTracebackSupplement, self)
         if self._v_errors:
-            __traceback_supplement__ = (PageTemplateTracebackSupplement, self)
             raise PTRuntimeError, 'Page Template %s has errors.' % self.id
         return self._v_macros
+
+    def __getattr__(self, name):
+        if name == 'macros':
+            return self.pt_macros()
+        raise AttributeError, name
 
     def pt_source_file(self):
         return None  # Unknown.

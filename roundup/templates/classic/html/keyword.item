@@ -1,4 +1,10 @@
 <!-- dollarId: keyword.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">Keyword editing</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>Keyword editing</h2>
+</td>
+<td class="content" metal:fill-slot="content">
 
 <table class="otherinfo" tal:define="keywords db/keyword/list"
        tal:condition="keywords">
@@ -41,3 +47,6 @@
   </tr>
  </table>
 </form>
+</td>
+
+</tal:block>

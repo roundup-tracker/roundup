@@ -1,8 +1,15 @@
+<!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">Issue editing</title>
+<td class="page-header-top" metal:fill-slot="body_title"><h2>Issue Editing</h2>
+</td>
+
+<td class="content" metal:fill-slot="content">
+
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
 You are not allowed to view this page.
 </span>
 
-<!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data" tal:condition="context/is_edit_ok">
 
@@ -136,3 +143,6 @@ You are not allowed to view this page.
 
 </tal:block>
 
+</td>
+
+</tal:block>

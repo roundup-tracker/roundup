@@ -1,3 +1,9 @@
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">Issue searching</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>Issue searching</h2>
+</td>
+<td class="content" metal:fill-slot="content">
 
 <form method="GET" tal:attributes="action request/classname">
 <input type="hidden" name=":action" value="search">
@@ -173,3 +179,6 @@
 </table>
 
 </form>
+</td>
+
+</tal:block>

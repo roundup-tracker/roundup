@@ -1,4 +1,12 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title"
+       tal:content="string:Registering with ${db/config/TRACKER_NAME}"></title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2 tal:content="string:Registering with ${db/config/TRACKER_NAME}"></h2>
+</td>
+<td class="content" metal:fill-slot="content">
+
 <tal:block tal:define=" editok python:request.user.username=='anonymous' and
            request.user.hasPermission('Web Registration')">
 
@@ -69,3 +77,6 @@ You are not allowed to view this page.
 
 </tal:block>
 
+</td>
+
+</tal:block>

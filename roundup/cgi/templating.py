@@ -22,111 +22,88 @@ from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from roundup.cgi import ZTUtils
 
-# XXX WAH pagetemplates aren't pickleable :(
-#def getTemplate(dir, name, classname=None, request=None):
-#    ''' Interface to get a template, possibly loading a compiled template.
-#    '''
-#    # source
-#    src = os.path.join(dir, name)
-#
-#    # see if we can get a compile from the template"c" directory (most
-#    # likely is "htmlc"
-#    split = list(os.path.split(dir))
-#    split[-1] = split[-1] + 'c'
-#    cdir = os.path.join(*split)
-#    split.append(name)
-#    cpl = os.path.join(*split)
-#
-#    # ok, now see if the source is newer than the compiled (or if the
-#    # compiled even exists)
-#    MTIME = os.path.stat.ST_MTIME
-#    if (not os.path.exists(cpl) or os.stat(cpl)[MTIME] < os.stat(src)[MTIME]):
-#        # nope, we need to compile
-#        pt = RoundupPageTemplate()
-#        pt.write(open(src).read())
-#        pt.id = name
-#
-#        # save off the compiled template
-#        if not os.path.exists(cdir):
-#            os.makedirs(cdir)
-#        f = open(cpl, 'wb')
-#        pickle.dump(pt, f)
-#        f.close()
-#    else:
-#        # yay, use the compiled template
-#        f = open(cpl, 'rb')
-#        pt = pickle.load(f)
-#    return pt
-
-templates = {}
-
 class NoTemplate(Exception):
     pass
 
-def precompileTemplates(dir):
-    ''' Go through a directory and precompile all the templates therein
-    '''
-    for filename in os.listdir(dir):
-        if os.path.isdir(filename): continue
-        if '.' in filename:
-            name, extension = filename.split('.')
-            getTemplate(dir, name, extension)
+class Templates:
+    templates = {}
+
+    def __init__(self, dir):
+        self.dir = dir
+
+    def precompileTemplates(self):
+        ''' Go through a directory and precompile all the templates therein
+        '''
+        for filename in os.listdir(self.dir):
+            if os.path.isdir(filename): continue
+            if '.' in filename:
+                name, extension = filename.split('.')
+                self.getTemplate(name, extension)
+            else:
+                self.getTemplate(filename, None)
+
+    def get(self, name, extension):
+        ''' Interface to get a template, possibly loading a compiled template.
+
+            "name" and "extension" indicate the template we're after, which in
+            most cases will be "name.extension". If "extension" is None, then
+            we look for a template just called "name" with no extension.
+
+            If the file "name.extension" doesn't exist, we look for
+            "_generic.extension" as a fallback.
+        '''
+        # default the name to "home"
+        if name is None:
+            name = 'home'
+
+        # find the source, figure the time it was last modified
+        if extension:
+            filename = '%s.%s'%(name, extension)
         else:
-            getTemplate(dir, filename, None)
-
-def getTemplate(dir, name, extension, classname=None, request=None):
-    ''' Interface to get a template, possibly loading a compiled template.
-
-        "name" and "extension" indicate the template we're after, which in
-        most cases will be "name.extension". If "extension" is None, then
-        we look for a template just called "name" with no extension.
-
-        If the file "name.extension" doesn't exist, we look for
-        "_generic.extension" as a fallback.
-    '''
-    # default the name to "home"
-    if name is None:
-        name = 'home'
-
-    # find the source, figure the time it was last modified
-    if extension:
-        filename = '%s.%s'%(name, extension)
-    else:
-        filename = name
-    src = os.path.join(dir, filename)
-    try:
-        stime = os.stat(src)[os.path.stat.ST_MTIME]
-    except os.error, error:
-        if error.errno != errno.ENOENT:
-            raise
-        if not extension:
-            raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
-
-        # try for a generic template
-        generic = '_generic.%s'%extension
-        src = os.path.join(dir, generic)
+            filename = name
+        src = os.path.join(self.dir, filename)
         try:
             stime = os.stat(src)[os.path.stat.ST_MTIME]
         except os.error, error:
             if error.errno != errno.ENOENT:
                 raise
-            # nicer error
-            raise NoTemplate, 'No template file exists for templating '\
-                '"%s" with template "%s" (neither "%s" nor "%s")'%(name,
-                extension, filename, generic)
-        filename = generic
+            if not extension:
+                raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
 
-    key = (dir, filename)
-    if templates.has_key(key) and stime < templates[key].mtime:
-        # compiled template is up to date
-        return templates[key]
+            # try for a generic template
+            generic = '_generic.%s'%extension
+            src = os.path.join(self.dir, generic)
+            try:
+                stime = os.stat(src)[os.path.stat.ST_MTIME]
+            except os.error, error:
+                if error.errno != errno.ENOENT:
+                    raise
+                # nicer error
+                raise NoTemplate, 'No template file exists for templating '\
+                    '"%s" with template "%s" (neither "%s" nor "%s")'%(name,
+                    extension, filename, generic)
+            filename = generic
 
-    # compile the template
-    templates[key] = pt = RoundupPageTemplate()
-    pt.write(open(src).read())
-    pt.id = filename
-    pt.mtime = time.time()
-    return pt
+        if self.templates.has_key(filename) and \
+                stime < self.templates[filename].mtime:
+            # compiled template is up to date
+            return self.templates[filename]
+
+        # compile the template
+        self.templates[filename] = pt = RoundupPageTemplate()
+        pt.write(open(src).read())
+        pt.id = filename
+        pt.mtime = time.time()
+        return pt
+
+    def __getitem__(self, name):
+        name, extension = os.path.splitext(name)
+        if extension:
+            extension = extension[1:]
+        try:
+            return self.get(name, extension)
+        except NoTemplate, message:
+            raise KeyError, message
 
 class RoundupPageTemplate(PageTemplate.PageTemplate):
     ''' A Roundup-specific PageTemplate.
@@ -149,8 +126,8 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
            - methods for easy filterspec link generation
            - *user*, the current user node as an HTMLItem instance
            - *form*, the current CGI form information as a FieldStorage
-        *instance*
-          The current instance
+        *tracker*
+          The current tracker
         *db*
           The current database, through which db.config may be reached.
     '''
@@ -159,10 +136,10 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
              'options': {},
              'nothing': None,
              'request': request,
-             'content': client.content,
              'db': HTMLDatabase(client),
-             'instance': client.instance,
+             'tracker': client.instance,
              'utils': TemplatingUtils(client),
+             'templates': Templates(client.instance.config.TEMPLATES),
         }
         # add in the item if there is one
         if client.nodeid:
@@ -170,7 +147,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
                 c['context'] = HTMLUser(client, classname, client.nodeid)
             else:
                 c['context'] = HTMLItem(client, classname, client.nodeid)
-        else:
+        elif client.db.classes.has_key(classname):
             c['context'] = HTMLClass(client, classname)
         return c
 
@@ -194,7 +171,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
 
         # and go
         output = StringIO.StringIO()
-        TALInterpreter(self._v_program, self._v_macros,
+        TALInterpreter(self._v_program, self.macros,
             getEngine().getContext(c), output, tal=1, strictinsert=0)()
         return output.getvalue()
 
@@ -260,9 +237,8 @@ class HTMLClass(HTMLPermissions):
         # we want classname to be exposed, but _classname gives a
         # consistent API for extending Class/Item
         self._classname = self.classname = classname
-        if classname is not None:
-            self._klass = self._db.getclass(self.classname)
-            self._props = self._klass.getprops()
+        self._klass = self._db.getclass(self.classname)
+        self._props = self._klass.getprops()
 
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
@@ -426,8 +402,8 @@ class HTMLClass(HTMLPermissions):
             properties.sort()
             properties = ','.join(properties)
         return '<a href="javascript:help_window(\'%s?:template=help&' \
-            ':contentonly=1&properties=%s\', \'%s\', \'%s\')"><b>'\
-            '(%s)</b></a>'%(self.classname, properties, width, height, label)
+            'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(
+            self.classname, properties, width, height, label)
 
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
@@ -447,7 +423,7 @@ class HTMLClass(HTMLPermissions):
         req.update(kwargs)
 
         # new template, using the specified classname and request
-        pt = getTemplate(self._db.config.TEMPLATES, self.classname, name)
+        pt = Templates(self._db.config.TEMPLATES).get(self.classname, name)
 
         # use our fabricated request
         return pt.render(self._client, self.classname, req)
@@ -1440,7 +1416,7 @@ function submit_once() {
 }
 
 function help_window(helpurl, width, height) {
-    HelpWin = window.open('%s/' + helpurl, 'RoundupHelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
+    HelpWin = window.open('%s' + helpurl, 'RoundupHelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
 }
 </script>
 '''%self.base

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.88 2002-09-20 23:20:57 richard Exp $
+$Id: mailgw.py,v 1.89 2002-09-25 02:10:24 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -500,6 +500,7 @@ Unknown address: %s
 
         # reopen the database as the author
         username = self.db.user.get(author, 'username')
+        self.db.close()
         self.db = self.instance.open(username)
 
         # re-get the class with the new database connection

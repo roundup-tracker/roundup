@@ -1,10 +1,28 @@
 <!-- dollarId: file.index,v 1.4 2002/01/23 05:10:27 richard Exp dollar-->
-<tr tal:repeat="file context/list">
- <td tal:condition="display/properties/name">
-  <a href="" tal:attributes="href string:file${file/id}/${file/name}">dld link</a>
- </td>
- <td tal:condition="request/properties/type" tal:content="file/type">content type</td>
- <td tal:condition="request/properties/creator" tal:content="file/creator/name">creator's name</td>
- <td tal:condition="request/properties/creation" tal:content="file/creation">creation date</td>
-</tr>
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">List of files</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>List of files</h2>
+</td>
+<td class="content" metal:fill-slot="content">
 
+<table class="otherinfo">
+<tr><th style="padding-right: 10">Download</th>
+    <th style="padding-right: 10">Content Type</th>
+    <th style="padding-right: 10">Uploaded By</th>
+    <th style="padding-right: 10">Date</th>
+</tr>
+<tr tal:repeat="file context/list">
+ <td>
+  <a tal:attributes="href string:file${file/id}/${file/name}"
+     tal:content="file/name">dld link</a>
+ </td>
+ <td tal:content="file/type">content type</td>
+ <td tal:content="file/creator">creator's name</td>
+ <td tal:content="file/creation">creation date</td>
+</tr>
+</table>
+
+</td>
+
+</tal:block>

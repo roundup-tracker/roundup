@@ -1,3 +1,9 @@
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">List of classes</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>List of classes</h2>
+</td>
+<td class="content" metal:fill-slot="content">
 <table class="classlist">
 
 <tal:block tal:repeat="cl db/classes">
@@ -14,3 +20,6 @@
 </tal:block>
 
 </table>
+</td>
+
+</tal:block>

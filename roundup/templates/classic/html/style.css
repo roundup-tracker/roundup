@@ -3,22 +3,10 @@ body.body {
   font-family: sans-serif, Arial, Helvetica;
   color: #333333;
 }
+a[href]:hover { color:blue; text-decoration: underline; }
+a[href]:link { color:blue; text-decoration: none; }
+a[href] { color:blue; text-decoration: none; }
 
-/* generic hyperlink style */
-a[href]:hover {
- text-decoration: underline;
- color: blue;
-}
-a[href]:link {
- text-decoration: none;
- color: blue;
-}
-a[href] {
- text-decoration: none;
- color: blue;
-}
-
-/* main page body container */
 table.body {
   border: 0;
   padding: 0;
@@ -27,41 +15,38 @@ table.body {
 }
 
 td.page-header-left {
-  background-color: #cccc88;
   padding: 5px;
+  border-bottom: 1px solid #444444;
 }
 
 td.page-header-top {
-  background-color: #cccc88;
-  border-bottom: 1px solid #dddd99;
+  border-bottom: 1px solid #444444;
   padding: 5px;
 }
 
 td.sidebar {
-  background-color: #cccc88;
-  border-right: 1px solid #dddd99;
-  border-bottom: 1px solid #dddd99;
-  padding: 0px;
+  padding: 1 0 0 1;
 }
 
 td.sidebar p.classblock {
   padding: 0 5 0 5;
-  border-top: 1px solid #dddd99;
-  border-bottom: 1px solid #dddd99;
+  margin: 1 1 1 1;
+  border: 1px solid #444444;
+  background-color: #eeeeee;
 }
 
 td.sidebar p.userblock {
   padding: 0 5 0 5;
-  background-color: #dddd99;
-  border-top: 1px solid #ffffbb;
-  border-bottom: 1px solid #ffffbb;
+  margin: 1 1 1 1;
+  border: 1px solid #444444;
+  background-color: #eeeeff;
 }
 
 td.content {
-  padding: 1px;
+  padding: 1 5 1 5;
+  vertical-align: top;
 }
 
-/* feedback - ok and error messages */
 p.ok-message {
   background-color: #22bb22;
   padding: 5 5 5 5;
@@ -127,11 +112,12 @@ table.list th {
   background-color: #eeeeff;
   border-right: 1px solid #404070;
   border-top: 1px solid #404070;
+  border-bottom: 1px solid #404070;
   vertical-align: top;
 }
-table.list th a:hover { color: #404070 }
-table.list th a:link { color: #404070 }
-table.list th a { color: #404070 }
+table.list th a[href]:hover { color: #404070 }
+table.list th a[href]:link { color: #404070 }
+table.list th a[href] { color: #404070 }
 table.list th.group {
   background-color: #f4f4ff;
   text-align: center;
@@ -190,11 +176,6 @@ table.messages th {
 }
 
 table.messages td {
-  text-align: left;
-  empty-cells: show;
-}
-
-table.messages td.content {
   font-family: monospace;
   background-color: #efefef;
   border-top: 1px solid #afafaf;

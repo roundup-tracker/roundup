@@ -1,3 +1,11 @@
+<tal:block metal:use-macro="templates/page/macros/page">
+<title metal:fill-slot="head_title">File display</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>File display</h2>
+</td>
+
+<td class="content" metal:fill-slot="content">
+
 <span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
 You are not allowed to view this page.
 </span>
@@ -49,4 +57,6 @@ You are not allowed to view this page.
 
 <tal:block tal:condition="python:context.id and context.is_view_ok()"
            tal:replace="structure context/history" />
+</td>
 
+</tal:block>

@@ -1,6 +1,6 @@
-<html tal:define="title request/description">
+<html metal:define-macro="page">
 <head>
-<title tal:content="title">title goes here</title>
+<title metal:define-slot="head_title">title goes here</title>
 
 <link rel="stylesheet" type="text/css" href="_file/style.css">
 
@@ -14,9 +14,7 @@
 
 <tr>
  <td class="page-header-left">&nbsp;</td>
- <td class="page-header-top">
-  <h2 tal:content="title">name</h2>
- </td>
+ <td class="page-header-top" metal:define-slot="body_title"><h2>name</h2></td>
 </tr>
 
 <tr>
@@ -36,14 +34,17 @@
       href="issue?:template=item">Create New<br></a>
    <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1">Show Unassigned</a><br>
    <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
-   <a href="issue?:template=search">Search Issues</a>
+   <a href="issue?:template=search">Search</a>
   </p>
 
   <p class="classblock"
      tal:condition="python:request.user.hasPermission('View', 'keyword')">
    <b>Keywords</b><br>
    <a tal:condition="python:request.user.hasPermission('Edit', 'keyword')"
-      href="keyword?:template=item">New Keyword<br></a>
+      href="keyword?:template=item">Create New<br></a>
+   <a tal:condition="python:request.user.hasPermission('Edit', 'keyword') and
+                            len(db.keyword.list())"
+      href="keyword?:template=item">Edit Existing<br></a>
   </p>
 
   <p class="classblock"
@@ -80,9 +81,7 @@
  </td>
 </tr>
 <tr>
- <td width="100%" valign="top" tal:content="structure content" class="content">
-   The page content goes here.
- </td>
+ <td class="content" metal:define-slot="content">Page content goes here</td>
 </tr>
 
 </table>
