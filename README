@@ -11,6 +11,8 @@ The stylesheet included with this package has been copied from the Zope
 management interface and presumably belongs to Digital Creations.
 
 
+TODO: Instructions need re-writing!!
+
 
 2. Installation
 ===============
@@ -44,24 +46,17 @@ Both need the bsddb module.
 
 2.1 Initial Setup
 -----------------
- 1. Make a directory in /home/httpd/html called 'roundup'.
- 2. Copy the tar file's contents there.
- 3. Edit config.py
- 4. "python roundup.py init" to initialise the database (by default, it
-    goes in a directory called 'db' in the current directory). Choose a
-    sensible admin password.
- 5. "chmod -R a+rw db"
 
 
 2.2 Mail
 --------
 Set up a mail alias called "issue_tracker" as:
-  "|/usr/bin/python /home/httpd/html/roundup/roundup-mailgw.py"
+  "|/usr/bin/python /home/httpd/html/roundup/roundup-mailgw <instance_home>"
 
 In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
 so sendmail will accept the pipe command. In that case, symlink
 /etc/smrsh/python to /usr/bin/python and change the command to:
-  "|python /home/httpd/html/roundup/roundup-mailgw.py"
+  "|python /home/httpd/html/roundup/roundup-mailgw <instance_home>"
 
 
 2.3 Web Interface

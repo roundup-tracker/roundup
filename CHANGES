@@ -55,3 +55,7 @@
    quoted.
  . Fixed a bug in the hyperdb filter - wrong variable names in the error
    message.
+ . Major reshuffle of code to allow multiple roundup instances and a
+   single, site-packages -based installation. Also allows multiple database
+   back-ends.
+
