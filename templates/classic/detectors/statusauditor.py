@@ -18,11 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: statusauditor.py,v 1.3 2003-09-04 00:47:01 richard Exp $
+#$Id: statusauditor.py,v 1.4 2003-10-24 15:51:43 jlgijsbers Exp $
 
 def chatty(db, cl, nodeid, newvalues):
-    ''' If the issue is currently 'unread', 'resolved' or 'done-cbb', then set
-        it to 'chatting'
+    ''' If the issue is currently 'unread', 'resolved', 'done-cbb' or None,
+        then set it to 'chatting'
     '''
     # don't fire if there's no new message (ie. chat)
     if not newvalues.has_key('messages'):
@@ -55,7 +55,7 @@ def chatty(db, cl, nodeid, newvalues):
 
     # ok, there's no explicit change, so check if we are in a state that
     # should be changed
-    if current_status in fromstates:
+    if current_status in fromstates + [None]:
         # yep, we're now chatting
         newvalues['status'] = chatting_id
 
