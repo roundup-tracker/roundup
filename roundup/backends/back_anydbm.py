@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.8 2004-06-13 00:40:55 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.9 2004-06-13 01:11:23 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1654,15 +1654,26 @@ class Class(hyperdb.Class):
                     pass
                 
             elif isinstance(propclass, Boolean):
-                if type(v) is type(''):
-                    bv = v.lower() in ('yes', 'true', 'on', '1')
-                else:
-                    bv = v
+                if type(v) != type([]):
+                    v = v.split(',')
+                bv = []
+                for val in v:
+                    if type(val) is type(''):
+                        bv.append(val.lower() in ('yes', 'true', 'on', '1'))
+                    else:
+                        bv.append(val)
                 l.append((OTHER, k, bv))
+
+            elif k == 'id':
+                if type(v) != type([]):
+                    v = v.split(',')
+                l.append((OTHER, k, [str(int(val)) for val in v]))
+
             elif isinstance(propclass, Number):
-                l.append((OTHER, k, float(v)))
-            else:
-                l.append((OTHER, k, v))
+                if type(v) != type([]):
+                    v = v.split(',')
+                l.append((OTHER, k, [float(val) for val in v]))
+
         filterspec = l
 
         # now, find all the nodes that are active and pass filtering
@@ -1678,7 +1689,7 @@ class Class(hyperdb.Class):
                 # apply filter
                 for t, k, v in filterspec:
                     # handle the id prop
-                    if k == 'id' and v == nodeid:
+                    if k == 'id' and nodeid in v:
                         continue
 
                     # make sure the node has the property
@@ -1726,7 +1737,7 @@ class Class(hyperdb.Class):
                                 break
                     elif t == OTHER:
                         # straight value comparison for the other types
-                        if node[k] != v:
+                        if node[k] not in v:
                             break
                 else:
                     matches.append([nodeid, node])
