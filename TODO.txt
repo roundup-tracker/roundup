@@ -43,6 +43,7 @@ pending  web: Quick help links next to the property labels giving a
               description of the property. Combine with help for the actual
               form element too, eg. how to use the nosy list edit box.
 pending  web: feature request #507842
+pending  web: clicking on a group header should filter for that type of entry
 
 ongoing  any bugs
 
