@@ -621,6 +621,18 @@ ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 
 # Somewhere for roundup to log stuff internally sent to stdout or stderr
 LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
+
+# Where to place the web filtering HTML on the index page
+FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
+
+# Deny or allow anonymous access to the web interface
+ANONYMOUS_ACCESS = 'deny'
+
+# Deny or allow anonymous users to register through the web interface
+ANONYMOUS_REGISTER = 'deny'
+
+# Send nosy messages to the author of the message
+MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
 </pre>
 
 <h2><a name="custinst">Instance Schema</a></h2>
@@ -1158,7 +1170,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.16 2001-10-22 03:25:01 richard Exp $
+$Id: index.html,v 1.17 2001-10-30 00:58:12 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
