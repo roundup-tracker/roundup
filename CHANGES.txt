@@ -20,6 +20,8 @@ Fixed:
 - consistent text searching behaviour (AND everywhere) (sf bug 1101036)
 - fix handling of invalid date input (sf bug 1102165)
 - retain Boolean selections in edit error handling (sf bug 1101492)
+- fix initialisation of logging module from config file (sf bug 1108577)
+- removed rlog module (py 2.3 is minimum version now)
 
 
 2005-01-13 0.8.0b2

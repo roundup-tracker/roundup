@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.36.2.2 2005-01-04 01:33:03 richard Exp $
+# $Id: back_sqlite.py,v 1.36.2.3 2005-02-14 02:55:31 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -9,7 +9,7 @@ for the columns, but sqlite IGNORES these specifications.
 '''
 __docformat__ = 'restructuredtext'
 
-import os, base64, marshal, shutil, time
+import os, base64, marshal, shutil, time, logging
 
 from roundup import hyperdb, date, password
 from roundup.backends import locking
@@ -85,7 +85,7 @@ class Database(rdbms_common.Database):
             os.makedirs(self.config.DATABASE)
 
         db = os.path.join(self.config.DATABASE, 'db')
-        self.config.logging.getLogger('hyperdb').info('open database %r'%db)
+        logging.getLogger('hyperdb').info('open database %r'%db)
         conn = sqlite.connect(db=db)
         # set a 30 second timeout (extraordinarily generous) for handling
         # locked database
@@ -159,7 +159,7 @@ class Database(rdbms_common.Database):
             # no changes
             return 0
 
-        self.config.logging.getLogger('hyperdb').info('update_class %s'%spec.classname)
+        logging.getLogger('hyperdb').info('update_class %s'%spec.classname)
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.142.2.4 2005-02-13 22:40:53 richard Exp $
+# $Id: rdbms_common.py,v 1.142.2.5 2005-02-14 02:55:31 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -29,7 +29,7 @@ allows us to upgrade the database schema when necessary. See upgrade_db().
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import sys, os, time, re, errno, weakref, copy
+import sys, os, time, re, errno, weakref, copy, logging
 
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security
@@ -128,7 +128,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Execute the sql with the optional args.
         '''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('SQL %r %r'%(sql, args))
+            logging.getLogger('hyperdb').debug('SQL %r %r'%(sql, args))
         if args:
             self.cursor.execute(sql, args)
         else:
@@ -225,7 +225,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         if version < 2:
             if __debug__:
-                self.config.logging.getLogger('hyperdb').info('upgrade to version 2')
+                logging.getLogger('hyperdb').info('upgrade to version 2')
             # change the schema structure
             self.database_schema = {'tables': self.database_schema}
 
@@ -239,7 +239,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         if version < 3:
             if __debug__:
-                self.config.logging.getLogger('hyperdb').info('upgrade to version 3')
+                logging.getLogger('hyperdb').info('upgrade to version 3')
             self.fix_version_2_tables()
 
         if version < 4:
@@ -380,7 +380,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # no changes
             return 0
 
-        logger = self.config.logging.getLogger('hyperdb')
+        logger = logging.getLogger('hyperdb')
         logger.info('update_class %s'%spec.classname)
 
         logger.debug('old_spec %r'%(old_spec,))
@@ -668,7 +668,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Note: I don't commit here, which is different behaviour to the
               "nuke from orbit" behaviour in the dbs.
         '''
-        self.config.logging.getLogger('hyperdb').info('clear')
+        logging.getLogger('hyperdb').info('clear')
         for cn in self.classes.keys():
             sql = 'delete from _%s'%cn
             self.sql(sql)
@@ -693,7 +693,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Add the specified node to its class's db.
         '''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('addnode %s%s %r'%(classname,
+            logging.getLogger('hyperdb').debug('addnode %s%s %r'%(classname,
                 nodeid, node))
 
         # determine the column definitions and multilink tables
@@ -768,7 +768,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Change the specified node.
         '''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('setnode %s%s %r'
+            logging.getLogger('hyperdb').debug('setnode %s%s %r'
                 % (classname, nodeid, values))
 
         # clear this node out of the cache if it's in there
@@ -953,7 +953,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''Remove a node from the database. Called exclusively by the
            destroy() method on Class.
         '''
-        self.config.logging.getLogger('hyperdb').info('destroynode %s%s'%(classname, nodeid))
+        logging.getLogger('hyperdb').info('destroynode %s%s'%(classname, nodeid))
 
         # make sure the node exists
         if not self.hasnode(classname, nodeid):
@@ -1022,7 +1022,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols = 'nodeid,date,tag,action,params'
 
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(classname,
+            logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(classname,
                 nodeid, journaldate, journaltag, action, params))
 
         # make the journalled data marshallable
@@ -1049,7 +1049,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         dc = self.hyperdb_to_sql_value[hyperdb.Date]
         for nodeid, journaldate, journaltag, action, params in journal:
             if __debug__:
-                self.config.logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(
+                logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(
                     classname, nodeid, journaldate, journaltag, action,
                     params))
 
@@ -1151,7 +1151,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def sql_commit(self):
         ''' Actually commit to the database.
         '''
-        self.config.logging.getLogger('hyperdb').info('commit')
+        logging.getLogger('hyperdb').info('commit')
         self.conn.commit()
 
         # open a new cursor for subsequent work
@@ -1185,7 +1185,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Undo all the changes made since the database was opened or the last
         commit() or rollback() was performed.
         '''
-        self.config.logging.getLogger('hyperdb').info('rollback')
+        logging.getLogger('hyperdb').info('rollback')
 
         self.sql_rollback()
 
@@ -1200,7 +1200,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.clearCache()
 
     def sql_close(self):
-        self.config.logging.getLogger('hyperdb').info('close')
+        logging.getLogger('hyperdb').info('close')
         self.conn.close()
 
     def close(self):

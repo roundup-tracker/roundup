@@ -10,6 +10,7 @@ __docformat__ = 'restructuredtext'
 
 import os, shutil, popen2, time
 import psycopg
+import logging
 
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common
@@ -26,13 +27,13 @@ def connection_dict(config, dbnamestr=None):
 def db_create(config):
     """Clear all database contents and drop database itself"""
     command = 'CREATE DATABASE %s'%config.RDBMS_NAME
-    config.logging.getLogger('hyperdb').info(command)
+    logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
 def db_nuke(config, fail_ok=0):
     """Clear all database contents and drop database itself"""
     command = 'DROP DATABASE %s'% config.RDBMS_NAME
-    config.logging.getLogger('hyperdb').info(command)
+    logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
     if os.path.exists(config.DATABASE):
@@ -95,8 +96,7 @@ class Database(rdbms_common.Database):
 
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
-        self.config.logging.getLogger('hyperdb').info('open database %r'%(
-            db['database'],))
+        logging.getLogger('hyperdb').info('open database %r'%db['database'])
         try:
             conn = psycopg.connect(**db)
         except psycopg.OperationalError, message:
