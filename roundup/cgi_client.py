@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.145 2002-07-26 08:26:59 richard Exp $
+# $Id: cgi_client.py,v 1.146 2002-07-30 05:27:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -231,7 +231,6 @@ function help_window(helpurl, width, height) {
             user_info = _('''
 <a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
 ''')%locals()
-
 
         # figure the "add class" links
         if hasattr(self.instance, 'HEADER_ADD_LINKS'):
@@ -572,7 +571,8 @@ function help_window(helpurl, width, height) {
         '''
         userid = self.db.user.lookup(self.user)
         if not self.db.security.hasPermission('Edit', userid):
-            raise Unauthorised
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': self.classname}
         w = self.write
         cn = self.classname
         cl = self.db.classes[cn]
@@ -951,7 +951,8 @@ function help_window(helpurl, width, height) {
         cn = self.classname
         userid = self.db.user.lookup(self.user)
         if not self.db.security.hasPermission('View', userid, cn):
-            raise Unauthorised
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': self.classname}
         cl = self.db.classes[cn]
         if self.form.has_key(':multilink'):
             link = self.form[':multilink'].value
@@ -965,7 +966,8 @@ function help_window(helpurl, width, height) {
         if [i for i in keys if i[0] != ':']:
             # no dice if you can't edit!
             if not self.db.security.hasPermission('Edit', userid, cn):
-                raise Unauthorised
+                raise Unauthorised, _("You do not have permission to access"\
+                            " %(action)s.")%{'action': 'new'+self.classname}
             props = {}
             try:
                 nid = self._createnode()
@@ -1008,7 +1010,8 @@ function help_window(helpurl, width, height) {
         '''
         userid = self.db.user.lookup(self.user)
         if not self.db.security.hasPermission('Edit', userid, 'user'):
-            raise Unauthorised
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': 'newuser'}
 
         cn = self.classname
         cl = self.db.classes[cn]
@@ -1046,7 +1049,8 @@ function help_window(helpurl, width, height) {
         '''
         userid = self.db.user.lookup(self.user)
         if not self.db.security.hasPermission('Edit', userid, 'file'):
-            raise Unauthorised
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': 'newfile'}
         cn = self.classname
         cl = self.db.classes[cn]
         props = parsePropsFromForm(self.db, cl, self.form)
@@ -1095,14 +1099,19 @@ function help_window(helpurl, width, height) {
         user = self.db.user
 
         # get the username of the node being edited
-        node_user = user.get(self.nodeid, 'username')
+        try:
+            node_user = user.get(self.nodeid, 'username')
+        except IndexError:
+            raise NotFound, 'user%s'%self.nodeid
 
         # ok, so we need to be able to edit everything, or be this node's
         # user
         userid = self.db.user.lookup(self.user)
         if (not self.db.security.hasPermission('Edit', userid)
                 and self.user != node_user):
-            raise Unauthorised
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': self.classname +
+                        str(self.nodeid)}
         
         #
         # perform any editing
@@ -1152,7 +1161,10 @@ function help_window(helpurl, width, height) {
         '''
         nodeid = self.nodeid
         cl = self.db.classes[self.classname]
-        mime_type = cl.get(nodeid, 'type')
+        try:
+            mime_type = cl.get(nodeid, 'type')
+        except IndexError:
+            raise NotFound, 'file%s'%nodeid
         if mime_type == 'message/rfc822':
             mime_type = 'text/plain'
         self.header(headers={'Content-Type': mime_type})
@@ -1166,8 +1178,8 @@ function help_window(helpurl, width, height) {
         ''' display a list of all the classes in the database
         '''
         userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid):
-            raise Unauthorised
+        raise Unauthorised, _("You do not have permission to access"\
+                    " %(action)s.")%{'action': 'all classes'}
 
         self.pagehead(_('Table of classes'), message)
         classnames = self.db.classes.keys()
@@ -1188,7 +1200,9 @@ function help_window(helpurl, width, height) {
     def login(self, message=None, newuser_form=None, action='index'):
         '''Display a login page.
         '''
-        self.pagehead(_('Login to roundup'), message)
+        self.pagehead(_('Login to roundup'))
+        if message:
+            self.write('<p class="system-msg">%s</p>'%message)
         self.write(_('''
 <table>
 <tr><td colspan=2 class="strong-header">Existing User Login</td></tr>
@@ -1289,7 +1303,8 @@ function help_window(helpurl, width, height) {
         # make sure we're allowed to register
         userid = self.db.user.lookup(self.user)
         if not self.db.security.hasPermission('Web Registration', userid):
-            raise Unauthorised
+            raise Unauthorised, _("You do not have permission to access"\
+                        " %(action)s.")%{'action': 'registration'}
 
         # re-open the database as "admin"
         self.opendb('admin')
@@ -1387,12 +1402,18 @@ function help_window(helpurl, width, height) {
         self.desired_action = None
         try:
             self.main_action()
-        except Unauthorised:
+        except Unauthorised, message:
             self.header(response=403)
             if self.desired_action is None or self.desired_action == 'login':
-                self.login()             # go to the index after login
+                if not message:
+                    message=_("You do not have permission.")
+                # go to the index after login
+                self.login(message=message)
             else:
-                self.login(action=self.desired_action)
+                if not message:
+                    message=_("You do not have permission to access"\
+                        " %(action)s.")%{'action': self.desired_action}
+                self.login(action=self.desired_action, message=message)
 
     def main_action(self):
         '''Wrap the database accesses so we can close the database cleanly
@@ -1668,6 +1689,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.145  2002/07/26 08:26:59  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.144  2002/07/25 07:14:05  richard
 # Bugger it. Here's the current shape of the new security implementation.
 # Still to do:

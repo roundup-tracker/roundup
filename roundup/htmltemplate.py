@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.106 2002-07-30 02:41:04 richard Exp $
+# $Id: htmltemplate.py,v 1.107 2002-07-30 05:27:30 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -38,7 +38,7 @@ a template function, add a test for all data types or the angry pink bunny
 will hunt you down.
 """
 
-import os, re, StringIO, urllib, cgi, errno, types, urllib
+import sys, os, re, StringIO, urllib, cgi, errno, types, urllib
 
 import hyperdb, date
 from i18n import _
@@ -895,10 +895,16 @@ class TemplateFunctions:
         else:
             if l:
                 # there were tests, and we didn't fail any of them so we're OK
-                return self.execute_template(ok)
+                if ok:
+                    return self.execute_template(ok)
+                else:
+                    return ''
 
         # nope, fail
-        return self.execute_template(fail)
+        if fail:
+            return self.execute_template(fail)
+        else:
+            return ''
 
 #
 #   INDEX TEMPLATES
@@ -1353,7 +1359,15 @@ class ItemTemplate(TemplateFunctions):
         w('<form onSubmit="return submit_once()" action="%s%s" method="POST" enctype="multipart/form-data">'%(
             self.classname, nodeid))
         s = open(os.path.join(self.templates, self.classname+'.item')).read()
-        w(self.execute_template(s))
+        try:
+            w(self.execute_template(s))
+        except:
+            etype = sys.exc_type
+            if type(etype) is types.ClassType:
+                etype = etype.__name__
+            w('<p class="system-msg">%s: %s</p>'%(etype, sys.exc_value))
+            # make sure we don't commit any changes
+            self.db.rollback()
         w('</form>')
         
         self.clear()
@@ -1419,6 +1433,10 @@ class NewItemTemplate(ItemTemplate):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.106  2002/07/30 02:41:04  richard
+# Removed the confusing, ugly two-column sorting stuff. Column heading clicks
+# now only sort on one column. Nice and simple and obvious.
+#
 # Revision 1.105  2002/07/26 08:26:59  richard
 # Very close now. The cgi and mailgw now use the new security API. The two
 # templates have been migrated to that setup. Lots of unit tests. Still some
