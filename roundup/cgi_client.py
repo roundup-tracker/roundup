@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.33 2001-10-17 00:18:41 richard Exp $
+# $Id: cgi_client.py,v 1.34 2001-10-20 11:58:48 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -492,8 +492,13 @@ class Client:
 ''')
 
     def login_action(self, message=None):
+        if not self.form.has_key('__login_name'):
+            return self.login(message='Username required')
         self.user = self.form['__login_name'].value
-        password = self.form['__login_password'].value
+        if self.form.has_key('__login_password'):
+            password = self.form['__login_password'].value
+        else:
+            password = ''
         # make sure the user exists
         try:
             uid = self.db.user.lookup(self.user)
@@ -771,6 +776,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2001/10/17 00:18:41  richard
+# Manually constructing cookie headers now.
+#
 # Revision 1.32  2001/10/16 03:36:21  richard
 # CGI interface wasn't handling checkboxes at all.
 #

@@ -13,6 +13,8 @@ Fixed:
  . CGI interface wasn't handling checkboxes at all.
  . Fixed quopri usage in mailgw from bug reports on mailing list.
  . Remove the "freshen" command from the roundup-admin tool.
+ . Catch errors in login - no username or password supplied.
+ . Fixed editing of password (Password property type) thanks Roch'e Compaan.
 
 2001-10-11 - 0.3.0 pre 2
 Fixed:

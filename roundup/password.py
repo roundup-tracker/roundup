@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.2 2001-10-09 23:58:10 richard Exp $
+# $Id: password.py,v 1.3 2001-10-20 11:58:48 richard Exp $
 
 import sha, re
 
@@ -82,11 +82,18 @@ class Password:
         '''Sets encrypts plaintext.'''
         self.password = encodePassword(plaintext, self.scheme)
 
-    def __cmp__(self, plaintext):
-        '''Compare this password against the plaintext.'''
+    def __cmp__(self, other):
+        '''Compare this password against another password.'''
+        # check to see if we're comparing instances
+        if isinstance(other, Password):
+            if self.scheme != other.scheme:
+                return
+            return cmp(self.password, other.password)
+
+        # assume password is plaintext
         if self.password is None:
             raise ValueError, 'Password not set'
-        return cmp(self.password, encodePassword(plaintext, self.scheme))
+        return cmp(self.password, encodePassword(other, self.scheme))
 
     def __str__(self):
         '''Stringify the encrypted password for database storage.'''
@@ -106,6 +113,12 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/10/09 23:58:10  richard
+# Moved the data stringification up into the hyperdb.Class class' get, set
+# and create methods. This means that the data is also stringified for the
+# journal call, and removes duplication of code from the backends. The
+# backend code now only sees strings.
+#
 # Revision 1.1  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.
