@@ -313,6 +313,20 @@ class HTMLClass(HTMLPermissions):
         except KeyError:
             raise AttributeError, attr
 
+    def getItem(self, itemid, num_re=re.compile('\d+')):
+        ''' Get an item of this class by its item id.
+        '''
+        # make sure we're looking at an itemid
+        if not num_re.match(itemid):
+            itemid = self._klass.lookup(itemid)
+
+        if self.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+
+        return klass(self._client, self.classname, itemid)
+
     def properties(self):
         ''' Return HTMLProperty for all of this class' properties.
         '''
@@ -1160,17 +1174,30 @@ def make_sort_function(db, classname):
         return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
     return sortfunc
 
-def handleListCGIValue(value):
+def handleListCGIValue(klass, value, num_re=re.compile('\d+')):
     ''' Value is either a single item or a list of items. Each item has a
         .value that we're actually interested in.
     '''
     if isinstance(value, type([])):
-        return [value.value for value in value]
+        l = [value.value for value in value]
     else:
         value = value.value.strip()
         if not value:
             return []
-        return value.split(',')
+        l = value.split(',')
+
+    if klass is None:
+        return l
+
+    # otherwise, try to make sure the values are itemids of the given class
+    r = []
+    for itemid in l:
+        # make sure we're looking at an itemid
+        if not num_re.match(itemid):
+            itemid = self._klass.lookup(itemid)
+        else:
+            r.append(itemid)
+    return r
 
 class ShowDict:
     ''' A convenience access to the :columns index parameters
@@ -1224,7 +1251,7 @@ class HTMLRequest:
         # extract the index display information from the form
         self.columns = []
         if self.form.has_key(':columns'):
-            self.columns = handleListCGIValue(self.form[':columns'])
+            self.columns = handleListCGIValue(None, self.form[':columns'])
         self.show = ShowDict(self.columns)
 
         # sorting
@@ -1254,15 +1281,17 @@ class HTMLRequest:
         if self.form.has_key(':filter'):
             self.filter = handleListCGIValue(self.form[':filter'])
         self.filterspec = {}
+        db = self.client.db
         if self.classname is not None:
-            props = self.client.db.getclass(self.classname).getprops()
+            props = db.getclass(self.classname).getprops()
             for name in self.filter:
                 if self.form.has_key(name):
                     prop = props[name]
                     fv = self.form[name]
                     if (isinstance(prop, hyperdb.Link) or
                             isinstance(prop, hyperdb.Multilink)):
-                        self.filterspec[name] = handleListCGIValue(fv)
+                        cl = db.getclass(prop.classname)
+                        self.filterspec[name] = handleListCGIValue(cl, fv)
                     else:
                         self.filterspec[name] = fv.value
 
