@@ -1,4 +1,5 @@
 import re
+from string import letters, digits
 from binascii import b2a_base64, a2b_base64
 
 ecre = re.compile(r'''
@@ -11,7 +12,7 @@ ecre = re.compile(r'''
   \?=                   # literal ?=
   ''', re.VERBOSE | re.IGNORECASE)
 
-hqre = re.compile(r'^[-a-zA-Z0-9!*+/\[\]., ]+$')
+hqre = re.compile(r'^[A-z0-9!"#$%%&\'()*+,-./:;<=>?@\[\]^_`{|}~ ]+$')
 
 def base64_decode(s, convert_eols=None):
     """Decode a raw base64 string.

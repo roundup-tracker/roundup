@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.45 2003-04-27 02:16:47 richard Exp $
+# $Id: test_mailgw.py,v 1.46 2003-05-06 21:49:20 kedder Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 import rfc822
@@ -22,7 +22,7 @@ import rfc822
 #    import rfc822 as email
 
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress
-from roundup import init, instance
+from roundup import init, instance, rfc2822
 
 # TODO: make this output only enough equal lines for context, not all of
 # them
@@ -951,6 +951,13 @@ This is a followup
     def testUserCreate(self):
         i = uidFromAddress(self.db, ('', 'user@foo.com'), 1)
         self.assertNotEqual(uidFromAddress(self.db, ('', 'user@bar.com'), 1), i)
+
+    def testRFC2822(self):
+        ascii_header = "[issue243] This is a \"test\" - with 'quotation' marks"
+        unicode_header = '[issue244] \xd0\xb0\xd0\xbd\xd0\xb4\xd1\x80\xd0\xb5\xd0\xb9'
+        unicode_encoded = '=?utf-8?q?[issue244]_=D0=B0=D0=BD=D0=B4=D1=80=D0=B5=D0=B9?='
+        self.assertEqual(rfc2822.encode_header(ascii_header), ascii_header)
+        self.assertEqual(rfc2822.encode_header(unicode_header), unicode_encoded)
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),
