@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.16 2004-07-03 23:08:44 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.17 2004-07-19 00:38:54 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2064,7 +2064,7 @@ class Class(hyperdb.Class):
         property value to match is a list, any one of the values in the
         list may match for that property to match.
         '''
-        # just don't bother if the full-text search matched diddly
+        # we can't match anything if search_matches is empty
         if search_matches == {}:
             return []
 
