@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.4 2004-06-08 05:34:21 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.5 2004-06-09 06:37:22 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1656,7 +1656,7 @@ class Class(hyperdb.Class):
                     bv = v
                 l.append((OTHER, k, bv))
             elif isinstance(propclass, Number):
-                l.append((OTHER, k, int(v)))
+                l.append((OTHER, k, float(v)))
             else:
                 l.append((OTHER, k, v))
         filterspec = l
