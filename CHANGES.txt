@@ -20,6 +20,8 @@ are given with the most recent entry first.
 - documented dependency on Active State (sf bug 623959)
 - ensured there's no zero-length files in source (sf bug 633622)
 - added ID to the search page (sf bug 631601)
+- fixed filtering by id in anydbm
+- show issue ID in the headings (sf bug 631598)
 
 
 2002-10-16 0.5.1

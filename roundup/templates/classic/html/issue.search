@@ -58,8 +58,8 @@
 <tr>
  <th>ID:</th>
  <td><input name="id"></td>
- <td><input type="checkbox" name=":columns" value="title" checked></td>
- <td><input type="radio" name=":sort" value="title"></td>
+ <td><input type="checkbox" name=":columns" value="id" checked></td>
+ <td><input type="radio" name=":sort" value="id"></td>
  <td>&nbsp;</td>
 </tr>
 

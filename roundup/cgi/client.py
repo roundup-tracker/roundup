@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.55 2002-10-18 03:34:58 richard Exp $
+# $Id: client.py,v 1.56 2002-11-06 05:39:50 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1188,8 +1188,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         # Get the form value. This value may be a MiniFieldStorage or a list
         # of MiniFieldStorages.
         value = form[key]
-
-        print (mlaction, propname, value)
 
         # make sure non-multilinks only get one value
         if not isinstance(proptype, hyperdb.Multilink):

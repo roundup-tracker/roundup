@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.90 2002-10-31 04:03:48 richard Exp $
+#$Id: back_anydbm.py,v 1.91 2002-11-06 05:39:49 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1591,7 +1591,7 @@ class Class(hyperdb.Class):
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
                 l.append((MULTILINK, k, u))
-            elif isinstance(propclass, String):
+            elif isinstance(propclass, String) and k != 'id':
                 # simple glob searching
                 v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
                 v = v.replace('?', '.')
@@ -1612,6 +1612,7 @@ class Class(hyperdb.Class):
         # now, find all the nodes that are active and pass filtering
         l = []
         cldb = self.db.getclassdb(cn)
+        print filterspec
         try:
             # TODO: only full-scan once (use items())
             for nodeid in self.db.getnodeids(cn, cldb):
@@ -1620,6 +1621,10 @@ class Class(hyperdb.Class):
                     continue
                 # apply filter
                 for t, k, v in filterspec:
+                    # handle the id prop
+                    if k == 'id' and v == nodeid:
+                        continue
+
                     # make sure the node has the property
                     if not node.has_key(k):
                         # this node doesn't have this property, so reject it
