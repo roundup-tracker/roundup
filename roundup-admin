@@ -1,5 +1,5 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.6 2001-07-30 00:57:51 richard Exp $
+# $Id: roundup-admin,v 1.7 2001-07-30 01:28:46 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -92,17 +92,12 @@ def do_init(instance_home, args):
     through INSTANCE_HOME or the -i option. The template, backend and admin
     password may be specified on the command-line as arguments, in that order.
     '''
-    if len(argv) > n:
-        template = argv[n]
-        backend = argv[n+1]
-    else:
-        template = backend = ''
-
     # select template
     import roundup.templates
     templates = roundup.templates.listTemplates()
-    print 'Templates:', ', '.join(templates)
-    template = len(args) and args[0] or ''
+    template = len(args) > 1 and args[1] or ''
+    if template not in templates:
+        print 'Templates:', ', '.join(templates)
     while template not in templates:
         template = raw_input('Select template [classic]: ').strip()
         if not template:
@@ -110,13 +105,15 @@ def do_init(instance_home, args):
 
     import roundup.backends
     backends = roundup.backends.__all__
-    backend = len(args) > 1 and args[1] or ''
+    backend = len(args) > 2 and args[2] or ''
+    if backend not in backends:
+        print 'Back ends:', ', '.join(backends)
     while backend not in backends:
         backend = raw_input('Select backend [anydbm]: ').strip()
         if not backend:
             backend = 'anydbm'
-    if len(args) > 2:
-        adminpw = confirm = args[2]
+    if len(args) > 3:
+        adminpw = confirm = args[3]
     else:
         adminpw = ''
         confirm = 'x'
@@ -392,6 +389,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/30 00:57:51  richard
+# Now uses getopt, much improved command-line parsing. Much fuller help. Much
+# better internal structure. It's just BETTER. :)
+#
 # Revision 1.5  2001/07/30 00:04:48  richard
 # Made the "init" prompting more friendly.
 #
