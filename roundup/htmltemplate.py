@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.74 2002-02-16 08:39:42 richard Exp $
+# $Id: htmltemplate.py,v 1.75 2002-02-16 08:43:23 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -851,9 +851,11 @@ class IndexTemplate(TemplateFunctions):
             show_customization )
         w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
         names = []
-        for name in self.properties.keys():
-            if name in all_filters or name in all_columns:
+        seen = []
+        for name in all_filters + all_columns:
+            if self.properties.has_key(name) and not seen.has_key(name):
                 names.append(name)
+            seen[name] = 1
         if show_customization:
             action = '-'
         else:
@@ -1068,6 +1070,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.74  2002/02/16 08:39:42  richard
+#  . #516854 ] "My Issues" and redisplay
+#
 # Revision 1.73  2002/02/15 07:08:44  richard
 #  . Alternate email addresses are now available for users. See the MIGRATION
 #    file for info on how to activate the feature.
