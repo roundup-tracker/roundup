@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.49 $
+:Version: $Revision: 1.50 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2117,6 +2117,45 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
 4. Use the usual "new" action as the :action on the final page, and you're
    done (the standard context/submit method can do this for you).
+
+
+Using an external password validation source
+--------------------------------------------
+
+We have a centrally-managed password changing system for our users. This
+results in a UN*X passwd-style file that we use for verification of users.
+Entries in the file consist of ``name:password`` where the password is
+encrypted using the standard UN*X ``crypt()`` function (see the ``crypt``
+module in your Python distribution). An example entry would be::
+
+    admin:aamrgyQfDFSHw
+
+Each user of Roundup must still have their information stored in the Roundup
+database - we just use the passwd file to check their password. To do this, we
+add the following code to our ``Client`` class in the tracker home
+``interfaces.py`` module::
+
+    def verifyPassword(self, userid, password):
+        # get the user's username
+        username = self.db.user.get(userid, 'username')
+
+        # the passwords are stored in the "passwd.txt" file in the tracker
+        # home
+        file = os.path.join(self.db.config.TRACKER_HOME, 'passwd.txt')
+
+        # see if we can find a match
+        for ent in [line.strip().split(':') for line in open(file).readlines()]:
+            if ent[0] == username:
+                return crypt.crypt(password, ent[1][:2]) == ent[1]
+
+        # user doesn't exist in the file
+        return 0
+
+What this does is look through the file, line by line, looking for a name that
+matches.
+
+We also remove the redundant password fields from the ``user.item`` template.
+
 
 -------------------
 

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.5 2002-09-24 01:59:28 richard Exp $
+# $Id: back_sqlite.py,v 1.6 2002-09-27 01:04:38 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -24,6 +24,45 @@ class Database(Database):
             self.database_schema = {}
             self.cursor.execute('create table schema (schema varchar)')
             self.cursor.execute('create table ids (name varchar, num integer)')
+
+    def close(self):
+        ''' Close off the connection.
+
+            Squash any error caused by us already having closed the
+            connection.
+        '''
+        try:
+            self.conn.close()
+        except sqlite.ProgrammingError, value:
+            if str(value) != 'close failed - Connection is closed.':
+                raise
+
+
+    def rollback(self):
+        ''' Reverse all actions from the current transaction.
+
+            Undo all the changes made since the database was opened or the
+            last commit() or rollback() was performed.
+
+            Squash any error caused by us having closed the connection (and
+            therefore not having anything to roll back)
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'rollback', (self,)
+
+        # roll back
+        try:
+            self.conn.rollback()
+        except sqlite.ProgrammingError, value:
+            if str(value) != 'rollback failed - Connection is closed.':
+                raise
+
+        # roll back "other" transaction stuff
+        for method, args in self.transactions:
+            # delete temporary files
+            if method == self.doStoreFile:
+                self.rollbackStoreFile(*args)
+        self.transactions = []
 
     def __repr__(self):
         return '<roundlite 0x%x>'%id(self)

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.47 2002-09-26 23:59:08 richard Exp $
+# $Id: client.py,v 1.48 2002-09-27 01:04:38 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -485,22 +485,23 @@ class Client:
             self.error_message.append(_('Username required'))
             return
 
+        # get the login info
         self.user = self.form['__login_name'].value
-        # re-open the database for real, using the user
-        self.opendb(self.user)
         if self.form.has_key('__login_password'):
             password = self.form['__login_password'].value
         else:
             password = ''
+
         # make sure the user exists
         try:
             self.userid = self.db.user.lookup(self.user)
         except KeyError:
             name = self.user
-            self.make_user_anonymous()
             self.error_message.append(_('No such user "%(name)s"')%locals())
+            self.make_user_anonymous()
             return
 
+        # verify the password
         if not self.verifyPassword(self.userid, password):
             self.make_user_anonymous()
             self.error_message.append(_('Incorrect password'))
@@ -510,6 +511,9 @@ class Client:
         if not self.loginPermission():
             self.make_user_anonymous()
             raise Unauthorised, _("You do not have permission to login")
+
+        # now we're OK, re-open the database for real, using the user
+        self.opendb(self.user)
 
         # set the session cookie
         self.set_cookie(self.user)
