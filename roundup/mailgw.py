@@ -72,13 +72,16 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.11 2001-08-08 00:08:03 richard Exp $
+$Id: mailgw.py,v 1.12 2001-08-08 01:27:00 richard Exp $
 '''
 
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import traceback
 import date
+
+class MailUsageError(ValueError):
+    pass
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -121,8 +124,17 @@ class MailGW:
         '''
         # ok, figure the subject, author, recipients and content-type
         message = Message(fp)
+        m = []
         try:
             self.handle_message(message)
+        except MailUsageError, value:
+            # bounce the message back to the sender with the usage message
+            fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+            sendto = [message.getaddrlist('from')[0][1]]
+            m = ['Subject: Failed issue tracker submission', '']
+            m.append(str(value))
+            m.append('\nMail Gateway Help\n=================')
+            m.append(fulldoc)
         except:
             # bounce the message back to the sender with the error message
             sendto = [message.getaddrlist('from')[0][1]]
@@ -140,6 +152,7 @@ class MailGW:
             except:
                 pass
             m.append(fp.read())
+        if m:
             try:
                 smtp = smtplib.SMTP(self.MAILHOST)
                 smtp.sendmail(self.ADMIN_EMAIL, sendto, '\n'.join(m))
@@ -157,12 +170,33 @@ class MailGW:
         subject = message.getheader('subject')
         m = subject_re.match(subject)
         if not m:
-            raise ValueError, 'No [designator] found in subject "%s"'%subject
+            raise MailUsageError, '''
+The message you sent to roundup did not contain a properly formed subject
+line. The subject must contain a class name or designator to indicate the
+"topic" of the message. For example:
+    Subject: [issue] This is a new issue
+      - this will create a new issue in the tracker with the title "This is
+        a new issue".
+    Subject: [issue1234] This is a followup to issue 1234
+      - this will append the message's contents to the existing issue 1234
+        in the tracker.
+
+Subject was: "%s"
+'''%subject
         classname = m.group('classname')
         nodeid = m.group('nodeid')
         title = m.group('title').strip()
         subject_args = m.group('args')
-        cl = self.db.getclass(classname)
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise MailUsageError, '''
+The class name you identified in the subject line ("%s") does not exist in the
+database.
+
+Valid class names are: %s
+Subject was: "%s"
+'''%(classname, ', '.join(self.db.getclasses()), subject)
         properties = cl.getprops()
         props = {}
         args = m.group('args')
@@ -171,8 +205,20 @@ class MailGW:
                 try:
                     key, value = prop.split('=')
                 except ValueError, message:
-                    raise ValueError, 'Args list not of form [arg=value,value,...;arg=value,value,value..]  (specific exception message was "%s")'%message
-                type =  properties[key]
+                    raise MailUsageError, '''
+Subject argument list not of form [arg=value,value,...;arg=value,value...]
+   (specific exception message was "%s")
+
+Subject was: "%s"
+'''%(message, subject)
+                try:
+                    type =  properties[key]
+                except KeyError:
+                    raise MailUsageError, '''
+Subject argument list refers to an invalid property: "%s"
+
+Subject was: "%s"
+'''%(key, subject)
                 if type.isStringType:
                     props[key] = value 
                 elif type.isDateType:
@@ -237,7 +283,10 @@ class MailGW:
                     attachments.append((name, part.gettype(), data))
 
             if content is None:
-                raise ValueError, 'No text/plain part found'
+                raise MailUsageError, '''
+Roundup requires the submission to be plain text. The message parser could
+not find a text/plain part o use.
+'''
 
         elif content_type[:10] == 'multipart/':
             # skip over the intro to the first boundary
@@ -253,10 +302,16 @@ class MailGW:
                     # this one's our content
                     content = part.fp.read()
             if content is None:
-                raise ValueError, 'No text/plain part found'
+                raise MailUsageError, '''
+Roundup requires the submission to be plain text. The message parser could
+not find a text/plain part o use.
+'''
 
         elif content_type != 'text/plain':
-            raise ValueError, 'No text/plain part found'
+            raise MailUsageError, '''
+Roundup requires the submission to be plain text. The message parser could
+not find a text/plain part o use.
+'''
 
         else:
             content = message.fp.read()
@@ -278,7 +333,15 @@ class MailGW:
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files)
-            messages = cl.get(nodeid, 'messages')
+            try:
+                messages = cl.get(nodeid, 'messages')
+            except IndexError:
+                raise MailUsageError, '''
+The node specified by the designator in the subject of your message ("%s")
+does not exist.
+
+Subject was: "%s"
+'''%(nodeid, subject)
             messages.append(message_id)
             props['messages'] = messages
             cl.set(nodeid, **props)
@@ -335,6 +398,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/08 00:08:03  richard
+# oops ;)
+#
 # Revision 1.10  2001/08/07 00:24:42  richard
 # stupid typo
 #
