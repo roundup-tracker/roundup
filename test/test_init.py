@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.19 2002-09-18 05:07:49 richard Exp $
+# $Id: test_init.py,v 1.20 2002-09-24 01:59:44 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -88,35 +88,17 @@ def suite():
         unittest.makeSuite(ClassicTestCase, 'test'),
     ]
 
-    try:
-        import bsddb
+    from roundup import backends
+    if hasattr(backends, 'bsddb'):
         l.append(unittest.makeSuite(bsddbClassicTestCase, 'test'))
-    except:
-        print 'bsddb module not found, skipping bsddb init test'
-
-    try:
-        import bsddb3
+    if hasattr(backends, 'bsddb3'):
         l.append(unittest.makeSuite(bsddb3ClassicTestCase, 'test'))
-    except:
-        print 'bsddb3 module not found, skipping bsddb3 init test'
-
-    try:
-        import metakit
+    if hasattr(backends, 'metakit'):
         l.append(unittest.makeSuite(metakitClassicTestCase, 'test'))
-    except:
-        print 'metakit module not found, skipping metakit init test'
-
-    try:
-        import gadfly
+    if hasattr(backends, 'gadfly'):
         l.append(unittest.makeSuite(gadflyClassicTestCase, 'test'))
-    except:
-        print 'gadfly module not found, skipping gadfly init test'
-
-    try:
-        import sqlite
+    if hasattr(backends, 'sqlite'):
         l.append(unittest.makeSuite(sqliteClassicTestCase, 'test'))
-    except:
-        print 'sqlite module not found, skipping sqlite init test'
 
     return unittest.TestSuite(l)
 

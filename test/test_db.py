@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.54 2002-09-23 06:48:35 richard Exp $ 
+# $Id: test_db.py,v 1.55 2002-09-24 01:59:44 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -487,6 +487,17 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
 
+    def testStringFind(self):
+        ids = []
+        ids.append(self.db.issue.create(title="spam"))
+        self.db.issue.create(title="not spam")
+        ids.append(self.db.issue.create(title="spam"))
+        ids.sort()
+        got = self.db.issue.stringFind(title='spam')
+        got.sort()
+        self.assertEqual(got, ids)
+        self.assertEqual(self.db.issue.stringFind(title='fubar'), [])
+
     def filteringSetup(self):
         for user in (
                 {'username': 'bleep'},
@@ -719,42 +730,28 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-    return unittest.TestSuite(l)
+#    return unittest.TestSuite(l)
 
-    try:
-        import gadfly
+    from roundup import backends
+    if hasattr(backends, 'gadfly'):
         l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
         l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
-    except:
-        print 'gadfly module not found, skipping gadfly DBTestCase'
 
-    try:
-        import sqlite
+    if hasattr(backends, 'sqlite'):
         l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
         l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
-    except:
-        print 'sqlite module not found, skipping gadfly DBTestCase'
 
-    try:
-        import bsddb
+    if hasattr(backends, 'bsddb'):
         l.append(unittest.makeSuite(bsddbDBTestCase, 'test'))
         l.append(unittest.makeSuite(bsddbReadOnlyDBTestCase, 'test'))
-    except:
-        print 'bsddb module not found, skipping bsddb DBTestCase'
 
-    try:
-        import bsddb3
+    if hasattr(backends, 'bsddb3'):
         l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
         l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
-    except:
-        print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
 
-    try:
-        import metakit
+    if hasattr(backends, 'metakit'):
         l.append(unittest.makeSuite(metakitDBTestCase, 'test'))
         l.append(unittest.makeSuite(metakitReadOnlyDBTestCase, 'test'))
-    except:
-        print 'metakit module not found, skipping metakit DBTestCase'
 
     return unittest.TestSuite(l)
 

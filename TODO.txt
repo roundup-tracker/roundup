@@ -14,7 +14,6 @@ pending hyperdb   range searching of values (dates in particular).
                   Filter specifies {property: (comparison function, value)}
                   comparison functions: lt, le, eq, ge, gt. eq and
                   [value, value, ...] implies "in"
-pending hyperdb   make creator, creation and activity available pre-commit
 pending hyperdb   migrate "id" property to be Number type
 pending tracker   split instance.open() into open() and login()
 pending mailgw    allow commands (feature request #556996)
@@ -43,7 +42,7 @@ pending web       Quick help links next to the property labels giving a
                   form element too, eg. how to use the nosy list edit box.
 pending web       clicking on a group header should filter for that type of
                   entry
-pending web       re-enable auth by basic http auth
+pending web       re-enable auth basic http auth
 pending web       search "refinement" - pre-fill the search page with the
                   current search parameters
 pending web       UNIX init.d script for roundup-server
@@ -52,6 +51,6 @@ pending web       allow multilink selections to select a "none" element to allow
 
 bug     mailgw    some f*ked mailers QUOTE their Re; "Re: "[issue1] bla blah""
 bug     docs      need to mention somewhere how sorting works
-bug     import    import isn't setting the journal props correctly
+bug     roles     giving a user a Role that doesn't exist breaks stuff
 ======= ========= =============================================================
 
