@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2003-07-?? 0.5.9
 - backported XSS message cleaning fix (sf bug 757128)
 - only clean sessions once per hour (backport from trunk)
+- remember the session db type (much faster session db opening)
 - backported last-modified and if-modified-since header support for static
   files (ie. style.css etc.) from HEAD
 
