@@ -44,6 +44,7 @@ Fixed:
 - fix roundup-server log and PID file paths to be absolute
 - fix initialisation of roundup-server in daemon mode so initialisation
   errors are visible
+- fix: 'Logout' link was enabled on issue index page only
 - have Permissions only test the check function if itemid is suppled
 - modify cgi templating system to check item-level permissions in listings
 - enable batching in message and file listings
@@ -61,6 +62,7 @@ Fixed:
 - removed rlog module (py 2.3 is minimum version now)
 - fixed class "help" listing paging (sf bug 1106329)
 - nicer error looking up values of None (response to sf bug 1108697)
+- added "imapServer.py" script (sf patch 934567)
 - fallback for (list) popups if javascript disabled (sf patch 1101626)
 
 
