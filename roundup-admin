@@ -16,14 +16,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.38 2001-11-05 23:45:40 richard Exp $
+# $Id: roundup-admin,v 1.39 2001-11-08 04:29:59 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
     print 'Roundup requires python 2.0 or later.'
     sys.exit(1)
 
-import string, os, getpass, getopt, re
+import string, os, getpass, getopt, re, UserDict
 try:
     import csv
 except ImportError:
@@ -31,10 +31,29 @@ except ImportError:
 from roundup import date, hyperdb, roundupdb, init, password
 import roundup.instance
 
+class CommandDict(UserDict.UserDict):
+    '''Simple dictionary that lets us do lookups using partial keys.
+
+    Original code submitted by Engelbert Gruber.
+    '''
+    _marker = []
+    def get(self, key, default=_marker):
+        d = self.data.get(key, default)
+        if d is not default: return [(key, d)]
+        keylist = self.data.keys()
+        keylist.sort()
+        l = []
+        for ki in keylist:
+            if ki.startswith(key):
+                l.append((ki, self.data[ki]))
+        if not l and default is self._marker:
+            raise KeyError, key
+        return l
+
 class AdminTool:
 
     def __init__(self):
-        self.commands = {}
+        self.commands = CommandDict()
         for k in AdminTool.__dict__.keys():
             if k[:3] == 'do_':
                 self.commands[k[3:]] = getattr(self, k)
@@ -131,13 +150,22 @@ Command help:
         initopts  -- init command options
         all       -- all available help
         '''
-        help = self.help.get(args[0], None)
-        if help:
-            help()
+        topic = args[0]
+
+        # try help_ methods
+        if self.help.has_key(topic):
+            self.help[topic]()
             return
-        help = self.commands.get(args[0], None)
-        if help:
-            # display the help, removing the docsring indent
+
+        # try command docstrings
+        try:
+            l = self.commands.get(topic)
+        except KeyError:
+            print 'Sorry, no help for "%s"'%topic
+            return
+
+        # display the help for each match, removing the docsring indent
+        for name, help in l:
             lines = nl_re.split(help.__doc__)
             print lines[0]
             indent = indent_re.match(lines[1])
@@ -147,8 +175,6 @@ Command help:
                     print line[indent:]
                 else:
                     print line
-        else:
-            print 'Sorry, no help for "%s"'%args[0]
 
     def help_initopts(self):
         import roundup.templates
@@ -601,6 +627,21 @@ Command help:
             self.help_all()
             return 0
 
+        # figure what the command is
+        try:
+            functions = self.commands.get(command)
+        except KeyError:
+            # not a valid command
+            print 'Unknown command "%s" ("help commands" for a list)'%command
+            return 1
+
+        # check for multiple matches
+        if len(functions) > 1:
+            print 'Multiple commands match "%s": %s'%(command,
+                ', '.join([i[0] for i in functions]))
+            return 1
+        command, function = functions[0]
+
         # make sure we have an instance_home
         while not self.instance_home:
             self.instance_home = raw_input('Enter instance home: ').strip()
@@ -608,13 +649,6 @@ Command help:
         # before we open the db, we may be doing an init
         if command == 'init':
             return self.do_init(self.instance_home, args)
-
-        function = self.commands.get(command, None)
-
-        # not a valid command
-        if function is None:
-            print 'Unknown command "%s" ("help commands" for a list)'%command
-            return 1
 
         # get the instance
         instance = roundup.instance.open(self.instance_home)
@@ -687,6 +721,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2001/11/05 23:45:40  richard
+# Fixed newuser_action so it sets the cookie with the unencrypted password.
+# Also made it present nicer error messages (not tracebacks).
+#
 # Revision 1.37  2001/10/23 01:00:18  richard
 # Re-enabled login and registration access after lopping them off via
 # disabling access for anonymous users.

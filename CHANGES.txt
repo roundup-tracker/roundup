@@ -9,6 +9,7 @@ Feature:
  . Added Structured Text rendering to htmltemplate, thanks Brad Clements.
  . Added CGI configuration via env vars (see roundup.cgi for details)
  . "roundup.cgi" is now installed to "<python-prefix>/share/roundup/cgi-bin"
+ . roundup-admin now accepts abbreviated commands (eg. l = li = lis = list)
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
