@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.87 2003-03-17 22:03:03 kedder Exp $
+# $Id: hyperdb.py,v 1.87.2.1 2003-09-04 23:09:48 richard Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -245,6 +245,8 @@ concrete backend Class.
 
     def getnode(self, classname, nodeid, db=None, cache=1):
         '''Get a node from the database.
+
+        'cache' exists for backwards compatibility, and is not used.
         '''
         raise NotImplementedError
 
@@ -365,10 +367,7 @@ class Class:
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
 
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
+        'cache' exists for backwards compatibility, and is not used.
         """
         raise NotImplementedError
 
@@ -378,12 +377,9 @@ class Class:
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
 
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
+        'cache' exists for backwards compatibility, and is not used.
         '''
-        return Node(self, nodeid, cache=cache)
+        return Node(self, nodeid)
 
     def set(self, nodeid, **propvalues):
         """Modify a property on an existing node of this class.
@@ -580,18 +576,17 @@ class Node:
     def __init__(self, cl, nodeid, cache=1):
         self.__dict__['cl'] = cl
         self.__dict__['nodeid'] = nodeid
-        self.__dict__['cache'] = cache
     def keys(self, protected=1):
         return self.cl.getprops(protected=protected).keys()
     def values(self, protected=1):
         l = []
         for name in self.cl.getprops(protected=protected).keys():
-            l.append(self.cl.get(self.nodeid, name, cache=self.cache))
+            l.append(self.cl.get(self.nodeid, name))
         return l
     def items(self, protected=1):
         l = []
         for name in self.cl.getprops(protected=protected).keys():
-            l.append((name, self.cl.get(self.nodeid, name, cache=self.cache)))
+            l.append((name, self.cl.get(self.nodeid, name)))
         return l
     def has_key(self, name):
         return self.cl.getprops().has_key(name)
@@ -604,7 +599,7 @@ class Node:
         if self.__dict__.has_key(name):
             return self.__dict__[name]
         try:
-            return self.cl.get(self.nodeid, name, cache=self.cache)
+            return self.cl.get(self.nodeid, name)
         except KeyError, value:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
@@ -612,7 +607,7 @@ class Node:
         # nope, no such attribute
         raise AttributeError, str(value)
     def __getitem__(self, name):
-        return self.cl.get(self.nodeid, name, cache=self.cache)
+        return self.cl.get(self.nodeid, name)
     def __setattr__(self, name, value):
         try:
             return self.cl.set(self.nodeid, **{name: value})

@@ -15,21 +15,46 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.9 2002-09-20 01:20:31 richard Exp $
+# $Id: instance.py,v 1.9.4.1 2003-09-04 23:09:48 richard Exp $
 
 __doc__ = '''
 Tracker handling (open tracker).
 
-Currently this module provides one function: open. This function opens
-a tracker. Note that trackers used to be called instances.
+Backwards compatibility for the old-style "imported" trackers.
 '''
 
-import imp, os
+import os
+
+class Vars:
+    ''' I'm just a container '''
+
+class Tracker:
+    def __init__(self, tracker_home):
+        self.tracker_home = tracker_home
+        self.select_db = self._load_python('select_db.py')
+        self.config = self._load_config('config.py')
+        raise NotImplemented, 'this is *so* not finished'
+        self.init =  XXX
+        self.Client = XXX
+        self.MailGW = XXX
+
+    def open(self):
+        return self._load_config('schema.py').db
+        self._load_config('security.py', db=db)
+
+
+    def __load_python(self, file):
+        file = os.path.join(tracker_home, file)
+        vars = Vars()
+        execfile(file, vars.__dict__)
+        return vars
+
 
 class TrackerError(Exception):
     pass
 
-class Opener:
+
+class OldStyleTrackers:
     def __init__(self):
         self.number = 0
         self.trackers = {}
@@ -39,6 +64,7 @@ class Opener:
 
             Raise ValueError if the tracker home doesn't exist.
         '''
+        import imp
         # sanity check existence of tracker home
         if not os.path.exists(tracker_home):
             raise ValueError, 'no such directory: "%s"'%tracker_home
@@ -67,11 +93,12 @@ class Opener:
 
         return tracker
 
-opener = Opener()
-open = opener.open
+OldStyleTrackers = OldStyleTrackers()
+def open(tracker_home):
+    if os.path.exists(os.path.join(tracker_home, 'dbinit.py')):
+        # user should upgrade...
+        return OldStyleTrackers.open(tracker_home)
 
-del Opener
-del opener
-
+    return Tracker(tracker_home)
 
 # vim: set filetype=python ts=4 sw=4 et si

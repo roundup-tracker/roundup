@@ -53,6 +53,7 @@ function trim(value) {
 
 function updateList() {
   // write back to opener window
+  if (document.frm_help.check==undefined) { return; }
   var list = new Array();
   for (box=0; box < document.frm_help.check.length; box++) {
       if (document.frm_help.check[box].checked) {
@@ -64,6 +65,7 @@ function updateList() {
 
 function updatePreview() {
   // add new checkbox selections to preview
+  if (document.frm_help.check==undefined) { return; }
   var list = new Array();
   for (box=0; box < document.frm_help.check.length; box++) {
       if (document.frm_help.check[box].checked) {
@@ -76,6 +78,7 @@ function updatePreview() {
 
 function clearList() {
   // uncheck all checkboxes
+  if (document.frm_help.check==undefined) { return; }
   for (box=0; box < document.frm_help.check.length; box++) {
       document.frm_help.check[box].checked = false;
   }
@@ -83,6 +86,7 @@ function clearList() {
 
 function reviseList(vals) {
   // update the checkboxes based on the preview field
+  if (document.frm_help.check==undefined) { return; }
   var to_check;
   var list = vals.split(",");
    for (box=0; box < document.frm_help.check.length; box++) {
@@ -100,6 +104,7 @@ function reviseList(vals) {
 
 function resetList() {
   // reset preview and check boxes to initial values
+  if (document.frm_help.check==undefined) { return; }
   var to_check;
   var list = original_field.split(',');
   writePreview(list);
