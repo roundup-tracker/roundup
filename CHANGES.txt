@@ -49,16 +49,18 @@ Fixed:
 
 Cleanup:
 - replace curuserid attribute on Database with the extended getuid() method.
-- extract a new 'mailer' module for sending mail.
-- extract a '_send_mail' method for testing mail sending.
-- simplify backend importing.
-- use roundup_server in demo.py.
-- implement newItemAction using editItemAction.
-- use FormError in client.py, moving the handling up to inner_main().
-- implemented semantic comparison of Message objects in test_mailgw. 
+- extract a new 'mailer' module for sending mail
+- extract a '_send_mail' method for testing mail sending
+- simplify backend importing
+- use roundup_server in demo.py
+- implement newItemAction using editItemAction
+- use FormError in client.py, moving the handling up to inner_main()
+- implemented semantic comparison of Message objects in test_mailgw
+- tidied up forms in default stylesheet
+- force textareas to use monospace fonts, lessening surprise on the user
 
 
-2003-??-?? 0.6.4
+2003-12-17 0.6.4
 Fixed:
 - fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
 - fixed date arithmetic to limit hours-per-day to 24, not 60

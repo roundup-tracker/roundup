@@ -39,8 +39,13 @@ td.sidebar {
   padding: 1 0 0 1;
   white-space: nowrap;
 }
-td.sidebar form {
+
+form {
      margin: 0 0 0 0;
+}
+
+textarea {
+    font-family: monospace;
 }
 
 td.sidebar p.classblock {
