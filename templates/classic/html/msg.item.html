@@ -1,9 +1,9 @@
 <!-- dollarId: msg.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title"> 
-<span tal:replace="config/TRACKER_NAME" />: 
 <span tal:condition="context/id" tal:replace="string:Message ${context/id}" />
 <tal:x tal:condition="not:context/id">New Message</tal:x> 
+- <span tal:replace="config/TRACKER_NAME" />
 </title> 
 <span metal:fill-slot="body_title" tal:omit-tag="python:1">
   Message<span tal:replace="context/id" />

@@ -1,13 +1,14 @@
 <!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title"> 
-<span tal:replace="config/TRACKER_NAME" />: 
-<span tal:condition="context/id"
-       tal:replace="string:Issue ${context/id}: ${context/title}" />
+<tal:x condition="context/id"
+       replace="string:Issue ${context/id}: ${context/title}" />
+<tal:x condition="not:context/id">New Issue</tal:x>
+- <tal:x replace="config/TRACKER_NAME" />
 </title> 
 <span metal:fill-slot="body_title" tal:omit-tag="python:1">
  <tal:x tal:condition="not:context/id">New</tal:x> 
-  Issue<span tal:replace="context/id" />
+  Issue<tal:x replace="context/id" />
    <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
  </span>
 

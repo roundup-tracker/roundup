@@ -7,6 +7,7 @@ Feature:
 - added url_quote and html_quote methods to the utils object
 - added isset method to HTMLProperty
 - database export now exports full journals too
+- tracker name at end of page title (sf rfe 926840)
 
 Fixed:
 - web CSV export was busted (as was any action returning a result)
