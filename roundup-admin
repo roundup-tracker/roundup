@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.57 2001-12-31 05:12:01 richard Exp $
+# $Id: roundup-admin,v 1.58 2001-12-31 05:12:52 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -967,7 +967,7 @@ Command help:
         # exit.. check for transactions
         if self.db and self.db.transactions:
             commit = raw_input("There are unsaved changes. Commit them (y/N)? ")
-            if commit[0].lower() == 'y':
+            if commit and commit[0].lower() == 'y':
                 self.db.commit()
         return 0
 
@@ -1012,6 +1012,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.57  2001/12/31 05:12:01  richard
+# added some quoting instructions to roundup-admin
+#
 # Revision 1.56  2001/12/31 05:09:20  richard
 # Added better tokenising to roundup-admin - handles spaces and stuff. Can
 # use quoting or backslashes. See the roundup.token pydoc.
