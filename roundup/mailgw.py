@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.126.2.3 2004-03-24 22:27:39 richard Exp $
+$Id: mailgw.py,v 1.126.2.4 2004-04-10 22:10:48 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -385,7 +385,9 @@ class MailGW:
                 subject='Badly formed message from mail gateway')
 
         # now send the message
-        if SENDMAILDEBUG:
+        if SENDMAILDEBUG == 'stdout':
+            print m.getvalue()
+        elif SENDMAILDEBUG:
             open(SENDMAILDEBUG, 'a').write('From: %s\nTo: %s\n%s\n'%(
                 self.instance.config.ADMIN_EMAIL, ', '.join(sendto),
                     m.getvalue()))
