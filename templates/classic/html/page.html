@@ -88,7 +88,7 @@
                             or request.user.hasPermission('Edit', 'user')">
     <a href="user"  i18n:translate="">User List</a><br>
    </span>
-   <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
+   <a tal:condition="python:request.user.hasPermission('Create', 'user')"
       href="user?@template=item" i18n:translate="">Add User</a>
   </p>
 

@@ -1,12 +1,16 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2005-01-?? 0.8.0
+2005-01-?? 0.8.0b3
 Fixed:
 - fix roundup-server log and PID file paths to be absolute
 - fix initialisation of roundup-server in daemon mode so initialisation
   errors are visible
 - fix: 'Logout' link was enabled on issue index page only
+- have Permissions only test the check function if itemid is suppled
+- modify index templates to check for row-level Permission
+- more documentation of security mechanisms
+- better unit tests for security mechanisms
 
 
 2005-01-13 0.8.0b2

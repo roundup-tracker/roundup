@@ -66,6 +66,19 @@ only specific properties on items.
 Permissions may also have code attached which is executed to check whether
 the Permission is valid for the current user and item.
 
+Permissions are now automatically checked when information is rendered
+through the web. This includes:
+
+1. View checks for properties when being rendered via the ``plain()`` or
+   similar methods. If the check fails, the text "[hidden]" will be
+   displayed.
+2. Edit checks for properties when the edit field is being rendered via
+   the ``field()`` or similar methods. If the check fails, the property
+   will be rendered via the ``plain()`` method (see point 1. for additional
+   checking performed)
+3. View checks are performed in index pages for each item being displayed
+   such that if the user does not have permission, the row is not rendered.
+
 
 Extending Roundup
 =================
@@ -133,7 +146,6 @@ Templating
   We relaxed hyperlinking in web interface (accept "issue123" or "Issue 123")
 
   The listing popup may be used in query forms.
-
 
 Standard templates
   We hide "(list)" popup links when issue is only viewable

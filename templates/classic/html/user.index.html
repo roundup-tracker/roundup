@@ -18,7 +18,8 @@
  <th i18n:translate="">Phone number</th>
  <th tal:condition="context/is_edit_ok" i18n:translate="">Retire</th>
 </tr>
-<tr tal:repeat="user context/list"
+<tal:block repeat="user context/list">
+<tr tal:condition="user/is_view_ok"
     tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
  <td>
   <a tal:attributes="href string:user${user/id}"
@@ -33,6 +34,7 @@
    i18n:translate="">retire</a>
  </td>
 </tr>
+</tal:block>
 </table>
 </td>
 

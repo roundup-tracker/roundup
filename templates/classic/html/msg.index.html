@@ -8,6 +8,7 @@
 <table class="messages" tal:condition="request/filter">
  <tr><th colspan=2 class="header" i18n:translate="">Messages</th></tr>
  <tal:block tal:repeat="msg context/list">
+ <tal:block tal:condition="msg/is_view_ok">
   <tr>
    <th tal:content="string:Author: ${msg/author}">author</th>
    <th tal:content="string:Date: ${msg/date}">date</th>
@@ -15,6 +16,7 @@
   <tr>
    <td colspan="2"><pre tal:content="msg/content">content</pre></td>
   </tr>
+ </tal:block>
  </tal:block>
 </table>
 </td>

@@ -22,6 +22,11 @@
   replace="context/id" i18n:name="id" /> Editing</span>
 </tal:block>
 <td class="content" metal:fill-slot="content">
+
+<p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
+    allowed to view this page.</p>
+
+<div tal:condition="context/is_view_ok">
 <table class="form">
 
 <tr>
@@ -66,6 +71,8 @@
 </table>
 
 <tal:block tal:replace="structure context/history" />
+
+</div>
 </td>
 
 </tal:block>

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.4 $
+:Version: $Revision: 1.161.2.5 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -50,6 +50,7 @@ detectors/          Auditors and reactors for this tracker
 extensions/         Additional web actions and templating utilities.
 html/               Web interface templates, images and style sheets         
 =================== ======================================================== 
+
 
 Tracker Configuration
 =====================
@@ -853,6 +854,29 @@ Put together, these settings appear in the tracker's ``schema.py`` file::
     #   db.security.addPermissionToRole('Anonymous', p)
     #   p = db.security.getPermission('Edit', cl)
     #   db.security.addPermissionToRole('Anonymous', p)
+
+
+Automatic Permission Checks
+---------------------------
+
+Permissions are automatically checked when information is rendered
+through the web. This includes:
+
+1. View checks for properties when being rendered via the ``plain()`` or
+   similar methods. If the check fails, the text "[hidden]" will be
+   displayed.
+2. Edit checks for properties when the edit field is being rendered via
+   the ``field()`` or similar methods. If the check fails, the property
+   will be rendered via the ``plain()`` method (see point 1. for subsequent
+   checking performed)
+3. View checks are performed in index pages for each item being displayed
+   such that if the user does not have permission, the row is not rendered.
+4. View checks are performed at the top of item pages for the Item being
+   displayed. If the user does not have permission, the text "You are not
+   allowed to view this page." will be displayed.
+5. View checks are performed at the top of index pages for the Class being
+   displayed. If the user does not have permission, the text "You are not
+   allowed to view this page." will be displayed.
 
 
 New User Roles

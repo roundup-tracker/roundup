@@ -6,12 +6,11 @@
 
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
- tal:omit-tag="python:1" i18n:translate=""
->You are not allowed to view this page.</span>
+<p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
+    allowed to view this page.</p>
 
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+      enctype="multipart/form-data" tal:condition="context/is_view_ok"
       tal:attributes="action context/designator">
 
 <table class="form">
@@ -42,19 +41,8 @@
  tal:attributes="href string:file${context/id}/${context/name}"
  i18n:translate="">download</a>
 
-<table class="form" tal:condition="context/is_only_view_ok">
- <tr>
-  <th i18n:translate="">Name</th>
-  <td tal:content="context/name"></td>
- </tr>
- <tr>
-  <th i18n:translate="">Content Type</th>
-  <td tal:content="context/type"></td>
- </tr>
-</table>
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
 
-<tal:block tal:condition="python:context.id and context.is_view_ok()"
-           tal:replace="structure context/history" />
 </td>
 
 </tal:block>
