@@ -38,6 +38,9 @@ td.sidebar {
     td.sidebar {
         display: none;
     }
+    .index-controls {
+        display: none;
+    }
 }
 
 td.page-header-top {

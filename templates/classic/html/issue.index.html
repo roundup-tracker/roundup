@@ -85,7 +85,8 @@ You are not allowed to view this page.
 <a tal:attributes="href python:request.indexargs_url('issue',
             {'@action':'export_csv'})">Download as CSV</a>
 
-<form method="GET" id="index-controls" tal:attributes="action request/classname">
+<form method="GET" class="index-controls"
+    tal:attributes="action request/classname">
  
  <table class="form">
   <tr tal:condition="batch">
