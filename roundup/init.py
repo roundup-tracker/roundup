@@ -1,6 +1,6 @@
-# $Id: init.py,v 1.6 2001-07-24 11:18:25 anthonybaxter Exp $
+# $Id: init.py,v 1.7 2001-07-28 07:59:53 richard Exp $
 
-import os, shutil, sys
+import os, shutil, sys, errno
 
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copy2().
@@ -19,7 +19,7 @@ def copytree(src, dst, symlinks=0):
     try:
         os.mkdir(dst)
     except OSError, error:
-        if error.errno != 17: raise
+        if error.errno != errno.EEXIST: raise
     for name in names:
         srcname = os.path.join(src, name)
         dstname = os.path.join(dst, name)
@@ -57,6 +57,9 @@ from roundup.backends.back_%s import Database'''%backend
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/24 11:18:25  anthonybaxter
+# oops. left a print in
+#
 # Revision 1.5  2001/07/24 10:54:11  anthonybaxter
 # oops. Html.
 #

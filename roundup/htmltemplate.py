@@ -1,6 +1,6 @@
-# $Id: htmltemplate.py,v 1.3 2001-07-25 03:39:47 richard Exp $
+# $Id: htmltemplate.py,v 1.4 2001-07-28 07:59:53 richard Exp $
 
-import os, re, StringIO, urllib, cgi
+import os, re, StringIO, urllib, cgi, errno
 
 import hyperdb, date
 
@@ -514,7 +514,7 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         template = open(os.path.join(templates, classname+'.filter')).read()
         all_filters = col_re.findall(template)
     except IOError, error:
-        if error.errno != 2: raise
+        if error.errno != errno.ENOENT: raise
         template = None
         all_filters = []
     if template and filter:
@@ -795,6 +795,12 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/25 03:39:47  richard
+# Hrm - displaying links to classes that don't specify a key property. I've
+# got it defaulting to 'name', then 'title' and then a "random" property (first
+# one returned by getprops().keys().
+# Needs to be moved onto the Class I think...
+#
 # Revision 1.2  2001/07/22 12:09:32  richard
 # Final commit of Grande Splite
 #
