@@ -1,66 +1,62 @@
-a:hover {  
-  font-family: Verdana, Helvetica, sans-serif; 
-  text-decoration: underline;
-  color: #333333; 
+.body {
+  font-family: sans-serif, Arial, Helvetica;
 }
-
-a:link {
-  font-family: Verdana, Helvetica, sans-serif; 
-  text-decoration: none;
-  color: #000099;
-}
-
-a {
-  font-family: Verdana, Helvetica, sans-serif; 
-  text-decoration: none;
-  color: #000099;
-}
+a:hover { text-decoration: underline; }
+a:link { text-decoration: none; }
+a { text-decoration: none; }
 
 p {
-  font-family: Verdana, Helvetica, sans-serif;
   color: #333333;
 }
 
-th {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-weight: bold;
-  color: #333333;
-}
-
-.form-help {
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #333333;
-}
-
-.location-bar {
+td.sidebar {
+  font-family: sans-serif, Arial, Helvetica;
   background-color: #efefef;
   border: none;
+  padding: 5px;
+}
+
+.page-header {
+  font-family: sans-serif, Arial, Helvetica;
+  background-color: #efefef;
+  border: none;
+  padding: 5px;
 }
 
 .strong-header {
-  font-family: Verdana, Helvetica, sans-serif;
+  font-family: sans-serif, Arial, Helvetica;
   font-weight: bold;
   background-color: #000000;
   color: #ffffff;
 }
 
-.file-header {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-weight: bold;
-  background-color: #41BE62;
-  color: #ffffff;
-}   
-
-.history-header {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-weight: bold;
-  background-color: #739DEE;
-  color: #ffffff;
+td.content {
+  padding: 1px;
+/*
+  border: 1px solid black;
+*/
 }
 
+table.list td {
+  border: 0 2 0 2;
+  border-left: 1px solid #404070;
+  border-right: 1px solid #404070;
+}
+/*
+WAAAAAAH nothing seems to support last-child :(
+table.list td:first-child {
+  border-left: 2px solid #404070;
+}
+table.list td:last-child {
+  border-right: 2px solid #404070;
+}
+*/
+table.list tr:last-child td {
+  border-bottom: 2px solid #404070;
+}
 .list-header {
-  background-color: #efefff;
-  color: #000000;
+  background-color: #404070;
+  color: white;
   border: none;
 }
 
@@ -73,49 +69,23 @@ th {
   border: none;
 }
 
-.row-hilite {
+.row-alt {
   background-color: #efefef;
   border: none;
 }
 
-.row-unread {
-  background-color: #ffddd9;
-  border: none;
-}
+.file-header {
+  font-family: sans-serif, Arial, Helvetica;
+  font-weight: bold;
+  background-color: #41BE62;
+  color: #ffffff;
+}   
 
-.row-in-progress {
-  background-color: #94ce9c;
-  border: none;
-}
-
-.row-resolved {
-  background-color: #aaccff;
-  border: none;
-}
-
-.row-done-cbb {
-  background-color: #aaccff;
-  border: none;
-}
-
-.row-testing {
-  background-color: #c6ddff;
-  border: none;
-}
-
-.row-need-eg {
-  background-color: #ffc7c0;
-  border: none;
-}
-
-.row-chatting {
-  background-color: #ffe3c0;
-  border: none;
-}
-
-.row-deferred {
-  background-color: #cccccc;
-  border: none;
+.history-header {
+  font-family: sans-serif, Arial, Helvetica;
+  font-weight: bold;
+  background-color: #739DEE;
+  color: #ffffff;
 }
 
 .msg-header {
@@ -131,16 +101,22 @@ th {
   color: #000000;
 }
 
-.system-msg {
-  background-color: #ffffff;
-  border:  1px solid #000000;
-  margin-bottom: 6px;
-  margin-top: 6px;
-  padding: 4px;
-  width: 100%;
-  color: #660033;
+p.ok-message {
+  background-color: #22bb22;
+  padding: 5 5 5 5;
+  color: white;
+  font-weight: bold;
+}
+p.error-message {
+  background-color: #bb2222;
+  padding: 5 5 5 5;
+  color: white;
+  font-weight: bold;
 }
 
+tr.form td {
+  background-color: #f0f0f0;
+}
 .form-title {
   font-weight: bold;
   color: #333333;

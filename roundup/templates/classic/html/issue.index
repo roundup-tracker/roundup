@@ -1,21 +1,53 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
-<tr class="row-<display call="plain('status')">">
-    <property name="id">
-        <td valign="top"><display call="plain('id')"></td>
-    </property>
-    <property name="activity">
-        <td valign="top"><display call="reldate('activity', pretty=1)"></td>
-    </property>
-    <property name="priority">
-        <td valign="top"><display call="plain('priority')"></td>
-    </property>
-    <property name="title">
-        <td valign="top"><display call="link('title')"></td>
-    </property>
-    <property name="status">
-        <td valign="top"><display call="plain('status')"></td>
-    </property>
-    <property name="assignedto">
-        <td valign="top"><display call="link('assignedto')"></td>
-    </property>
-</tr>
+<tal:block tal:define="batch request/batch">
+ <table width="100%" border=0 cellspacing=0 cellpadding=2 class="list">
+ <tr class="list-header">
+  <th align="left" tal:condition="exists:request/columns/id">ID</th>
+  <th align="left" tal:condition="exists:request/columns/activity">Activity</th>
+  <th align="left" tal:condition="exists:request/columns/priority">Priority</th>
+  <th align="left" tal:condition="exists:request/columns/title">Title</th>
+  <th align="left" tal:condition="exists:request/columns/status">Status</th>
+  <th align="left" tal:condition="exists:request/columns/assignedto">Assigned To</th>
+ </tr>
+ <tr tal:repeat="i batch"
+    tal:attributes="class python:['row-normal', 'row-alt'][repeat['i'].even()]">
+  <td valign="top" tal:condition="exists:request/columns/id"
+     tal:content="i/id"></td>
+  <td valign="top" tal:condition="exists:request/columns/activity"
+     tal:content="i/activity/reldate"></td>
+  <td valign="top" tal:condition="exists:request/columns/priority"
+     tal:content="i/priority"></td>
+  <td valign="top" tal:condition="exists:request/columns/title">
+   <a tal:attributes="href string:issue${i/id}"
+      tal:content="python:i.title.value or '[no title]'">title</a>
+  </td>
+  <td valign="top" tal:condition="exists:request/columns/status"
+      tal:content="i/status"></td>
+  <td valign="top" tal:condition="exists:request/columns/assignedto"
+      tal:content="i/assignedto/username | default"></td>
+ </tr>
+ </table>
+ <table width="100%" border=0 cellspacing=0 cellpadding=2>
+  <tr class="list-header">
+   <td width="50%" align="left">
+<a tal:define="prev batch/previous" tal:condition="prev"
+   tal:attributes="href python:request.indexargs_href(request.classname,
+    {':startwith':prev.start, ':pagesize':prev.size})">&lt;&lt; previous</a>
+   </td><td width="50%" align="right">
+<a tal:define="next batch/next" tal:condition="next"
+   tal:attributes="href python:request.indexargs_href(request.classname,
+    {':startwith':next.start, ':pagesize':next.size})">next &gt;&gt;</a>
+  </tr>
+  <tr class="list-header" tal:condition="batch">
+   <td colspan="2">
+    <form method="GET" tal:attributes="action request/classname">
+    <span tal:replace="structure request/indexargs_form" />
+    Pagesize: <input type="text" name=":pagesize" size="3" value="50">
+    Starting at: <input type="text" name=":startwith" size="3" value="0">
+    <input type="submit" value="Redisplay">
+    </form>
+   </td>
+  </tr>
+ </table>
+</tal:block>
+

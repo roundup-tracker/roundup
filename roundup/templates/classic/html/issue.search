@@ -1,0 +1,41 @@
+
+<form method="GET" tal:attributes="action request/classname">
+
+Columns you may display:
+<tal:block
+  tal:repeat="n python:'id activity priority title status assignedto'.split()">
+  <span tal:content="n">name</span>
+  <input type="checkbox" name=":columns"
+       tal:attributes="value n;
+                       checked python:request.columns.has_key(n)">
+</tal:block>
+<br>
+Sort on: <input type="radio" name=":sort" tal:repeat="n request/sort"
+       tal:attributes="value n;
+                       checked python:n in request.sort">
+<br>
+Group on:
+<input type="radio" name=":group" tal:repeat="n request/group"
+       tal:attributes="value n;
+                       checked python:n in request.group">
+<br>
+<input type="hidden" name=":action" value="searchform">
+<br>
+
+<tal:block tal:repeat="n python:request.filterspec.keys()">
+ Filter: <input tal:repeat="v python:request.filterspec[n]"
+                tal:attributes="name n; value v">
+</tal:block>
+
+<br>
+Pagesize:
+ <input type="text" name=":pagesize" size="3" value="50">
+
+<br>
+Start With:
+<input type="text" name=":startwith" size="3" value="0">
+
+<br>
+<input type="submit" value="Search">
+
+</form>

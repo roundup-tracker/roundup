@@ -1,92 +1,114 @@
 <!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data">
 <table border=0 cellspacing=0 cellpadding=2>
 
-<tr  bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Title</span></td>
-    <td colspan=3 class="form-text"><display call="field('title', size=80)"></td>
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">Title</span></td>
+ <td colspan=3 class="form-text" tal:content="structure python:issue.title.field(size=60)">title</td>
 </tr>
 
-<tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Created</span></td>
-    <td class="form-text"><display call="reldate('creation', pretty=1)">
-        (<display call="plain('creator')">)</td>
-    <td width=1% nowrap align=right><span class="form-label">Last activity</span></td>
-    <td class="form-text"><display call="reldate('activity', pretty=1)"></td>
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">Created</span></td>
+ <td class="form-text" tal:content="string:${issue/creation} (${issue/creator/username})">creation (creator)</td>
+ <td width=1% nowrap align=right><span class="form-label">Last activity</span></td>
+ <td class="form-text" tal:content="issue/activity">activity</td>
 </tr>
 
-<tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Priority</span></td>
-    <td class="form-text"><display call="menu('priority')"></td>
-    <td width=1% nowrap align=right><span class="form-label">Status</span></td>
-    <td class="form-text"><display call="menu('status')"></td>
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">Priority</span></td>
+ <td class="form-text" tal:content="structure issue/priority/menu">priority</td>
+ <td width=1% nowrap align=right><span class="form-label">Status</span></td>
+ <td class="form-text" tal:content="structure issue/status/menu">status</td>
 </tr>
 
-<tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Superseder</span></td>
-    <td class="form-text">
-     <display call="field('superseder', showid=1)">
-     <display call="classhelp('issue', 'id,title', label='list', width=500)">
-     <property name="superseder">
-      <br>View: <display call="link('superseder', showid=1)">
-     </property>
-    </td>
-    <td width=1% nowrap align=right><span class="form-label">Nosy List</span></td>
-    <td class="form-text"><display call="field('nosy')">
-     <display call="classhelp('user', 'username,realname,address,phone', label='list', width=500)"></td>
-</tr>
-
-<tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
-    <td class="form-text"><display call="menu('assignedto')"></td>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-</tr>
-
-<tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Change Note</span></td>
-    <td colspan=3 class="form-text"><display call="note()"></td>
-</tr>
-
-<tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">File</span></td>
-    <td colspan=3 class="form-text"><input type="file" name="__file" size="80"></td>
-</tr>
-
-<tr bgcolor="ffffea">
-    <td>&nbsp;</td>
-    <td colspan=3 class="form-text"><display call="submit()"></td>
-</tr>
-
-<tr class="msg-header">
-    <td colspan=4><b>Messages</b></td>
-</tr>
-<property name="messages">
-<tr>
-    <td colspan=4><display call="list('messages')"></td>
-</tr>
-</property>
-
-<tr class="file-header">
-  <td colspan=4><b>Files</b></td>
-</tr>
-<tr class="form-help">
- <td colspan=4>
-  <display call="href('id', 'newfile?:multilink=issue', ':files',
-    'Attach a file to this issue')">
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">Superseder</span></td>
+ <td class="form-text">
+  <span tal:replace="structure python:issue.superseder.field(showid=1)" />
+  <span tal:replace="structure python:db.issue.classhelp('id,title', label='list', width=500)" />
+  <span tal:condition="issue/superseder">
+   <br>View: <span tal:replace="structure python:issue.superseder.link(showid=1)" />
+  </span>
+ </td>
+ <td width=1% nowrap align=right><span class="form-label">Nosy List</span></td>
+ <td class="form-text">
+  <span tal:replace="structure issue/nosy/field" />
+  <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone', label='list', width=500)" />
  </td>
 </tr>
-<property name="files">
- <tr>
-     <td colspan=4><display call="list('files')"></td>
- </tr>
-</property>
 
-<tr class="history-header">
-    <td colspan=4><b>History</b></td>
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
+ <td class="form-text" tal:content="structure issue/assignedto/menu">assignedto</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
 </tr>
-<tr>
-    <td colspan=4><display call="history()"></td>
+
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">Change Note</span></td>
+ <td colspan=3 class="form-text"><textarea name="__note" wrap="hard" rows="5" cols="60"></textarea></td>
+</tr>
+
+<tr class="form">
+ <td width=1% nowrap align=right><span class="form-label">File</span></td>
+ <td colspan=3 class="form-text"><input type="file" name="__file" size="60"></td>
+</tr>
+
+<tr class="form">
+ <td>&nbsp;</td>
+ <td colspan=3 class="form-text" tal:condition="exists:item">
+  <input type="hidden" name=":action" value="edit">
+  <input type="submit" name="submit" value="Submit Changes">
+ </td>
+ <td colspan=3 class="form-text" tal:condition="not:exists:item">
+  <input type="hidden" name=":action" value="new">
+  <input type="submit" name="submit" value="Submit New Entry">
+ </td>
 </tr>
 
 </table>
 
+<table width="100%" cellspacing=0 cellpadding=0 border=0 tal:condition="exists:item">
+ <tr class="msg-header">
+  <td colspan=2><b>Messages</b></td>
+ </tr>
+ <tal:block tal:condition="issue/messages" tal:repeat="msg issue/messages">
+  <tr>
+   <td class="msg-header" tal:content="msg/date">date</td>
+   <td class="msg-header" tal:content="msg/author">author</td>
+  </tr>
+  <tr>
+   <td class="msg-content" colspan="2" tal:content="msg/content">content</td>
+  </tr>
+ </tal:block>
+
+ <tr class="file-header">
+  <td colspan="2"><b>Files</b></td>
+ </tr>
+ <tal:block tal:condition="issue/files">
+  <tr>
+   <td class="file-header">File name</td>
+   <td class="file-header">Uploaded</td>
+  </tr>
+  <tr tal:repeat="file issue/files">
+   <td>
+    <a href="" tal:attributes="href string:file${file/id}/${file/name}"
+       tal:content="file/name">dld link</a>
+   </td>
+   <td>
+    <span tal:content="file/creator/username">creator's name</span>,
+    <span tal:content="file/creation">creation date</span>
+   </td>
+  </tr>
+ </tal:block>
+
+ <tr class="history-header">
+  <td colspan="2"><b>History</b></td>
+ </tr>
+ <tr>
+  <td colspan="2" tal:content="structure issue/history">history</td>
+ </tr>
+</table>
+
+</form>

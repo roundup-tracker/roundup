@@ -1,4 +1,4 @@
-<!-- $Id: msg.index,v 1.3 2002-05-22 00:32:34 richard Exp $-->
+<!-- dollarId: msg.index,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
 <tr class="row-hilite">
     <td><display call="link('date')"></td>
     <td><display call="plain('author')"></td>

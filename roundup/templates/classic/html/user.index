@@ -1,18 +1,21 @@
-<!-- $Id: user.index,v 1.3 2002-07-09 05:29:51 richard Exp $-->
-<tr>
-    <property name="username">
-        <td><display call="link('username')"></td>
-    </property>
-    <property name="realname">
-        <td><display call="plain('realname')"></td>
-    </property>
-    <property name="organisation">
-        <td><display call="plain('organisation')"></td>
-    </property>
-    <property name="address">
-        <td><display call="email('address')"></td>
-    </property>
-    <property name="phone">
-        <td><display call="plain('phone')"></td>
-    </property>
+<!-- dollarId: user.index,v 1.3 2002/07/09 05:29:51 richard Exp dollar-->
+<table width="100%" border=0 cellspacing=0 cellpadding=2 class="list">
+<tr class="list-header">
+ <th>Username</th>
+ <th>Real name</th>
+ <th>Organisation</th>
+ <th>Email address</th>
+ <th>Phone number</th>
 </tr>
+<tr tal:repeat="u user/list"
+    tal:attributes="class python:['row-normal', 'row-alt'][repeat['u'].even()]">
+ <td valign="top">
+  <a tal:attributes="href string:user${u/id}"
+     tal:content="u/username">username</a>
+ </td>
+ <td valign="top" tal:content="u/realname">realname</td>
+ <td valign="top" tal:content="u/organisation">organisation</td>
+ <td valign="top" tal:content="python:u.address.email()">address</td>
+ <td valign="top" tal:content="u/phone">phone</td>
+</tr>
+</table>

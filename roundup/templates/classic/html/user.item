@@ -1,81 +1,101 @@
-<!-- $Id: user.item,v 1.7 2002-08-16 04:29:04 richard Exp $-->
-<require permission="Edit" id="$userid">
+<!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
+<tal:block tal:define="editok python:request.user.hasPermission('Edit') or
+                              user.id == request.user.id;
+                       viewok python:request.user.hasPermission('View')">
 
- <table border=0 cellspacing=0 cellpadding=2>
+<span tal:condition="python:not (viewok or editok)">
+You are not allowed to view this page.
+</span>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="editok">
+
+<table border=0 cellspacing=0 cellpadding=2>
  <tr class="strong-header">
   <td colspan=2>Your Details</td>
- </td>
- <tr  bgcolor="ffffea">
+ </tr>
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">Name</span></td>
-  <td class="form-text"><display call="field('realname', size=40)"></td>
+  <td class="form-text" tal:content="structure user/realname/field">realname</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">Login Name</span></td>
-  <td class="form-text"><display call="field('username', size=40)"></td>
+  <td class="form-text" tal:content="structure user/username/field">username</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">Login Password</span></td>
-  <td class="form-text"><display call="field('password', size=10)"></td>
+  <td class="form-text" tal:content="structure user/password/field">password</td>
  </tr>
- <require permission="Web Roles">
-  <tr bgcolor="ffffea">
+ <tr tal:condition="python:request.user.hasPermission('Web Roles')" class="form">
   <td width=1% nowrap align=right><span class="form-label">Roles</span></td>
-  <td class="form-text"><display call="field('roles', size=40)"></td>
-  </tr>
- </require>
- <tr  bgcolor="ffffea">
+  <td class="form-text" tal:content="structure user/roles/field">roles</td>
+ </tr>
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">Phone</span></td>
-  <td class="form-text"><display call="field('phone', size=40)"></td>
+  <td class="form-text" tal:content="structure user/phone/field">phone</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">Organisation</span></td>
-  <td class="form-text"><display call="field('organisation', size=40)"></td>
+  <td class="form-text" tal:content="structure user/organisation/field">organisation</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">E-mail address</span></td>
-  <td class="form-text"><display call="field('address', size=40)"></td>
+  <td class="form-text" tal:content="structure user/address/field">address</td>
  </tr>
- <tr bgcolor="ffffea">
+ <tr class="form">
   <td width=1% nowrap align=right><span class="form-label">Alternate
    E-mail addresses</span><br>
   <span class="form-help">One address per line</span></td>
-  <td class="form-text"><display call="multiline('alternate_addresses')"></td>
+  <td class="form-text" tal:content="structure user/alternate_addresses/multiline">alternate_addresses</td>
  </tr>
 
- <tr bgcolor="ffffea">
+ <tr class="form">
   <td>&nbsp;</td>
-  <td class="form-text"><display call="submit()"></td>
+  <td colspan=3 class="form-text" tal:condition="exists:item">
+   <input type="hidden" name=":action" value="edit">
+   <input type="submit" name="submit" value="Submit Changes">
+  </td>
+  <td colspan=3 class="form-text" tal:condition="not:exists:item">
+   <input type="hidden" name=":action" value="new">
+   <input type="submit" name="submit" value="Submit New Entry">
+  </td>
  </tr>
 
  <tr class="strong-header"><td colspan=2><b>Queries</b></td></tr>
- <tr><td colspan=2><display call="list('queries')"></td></tr>
+ <tr class="form" tal:repeat="query user/queries">
+  <td colspan=2 tal:content="query">query</td>
+ </tr>
 
  <tr class="strong-header"><td colspan=2><b>History</b></td></tr>
- <tr><td colspan=2><display call="history()"></td></tr>
- </table>
+ <tr>
+  <td colspan="2" tal:content="structure user/history">history</td>
+ </tr>
+</table>
 
-<else>
+</form>
 
- <table border=0 cellspacing=0 cellpadding=2>
+<table border=0 cellspacing=0 cellpadding=2
+       tal:condition="python:viewok and not editok">
  <tr class="strong-header">
-  <td colspan=2><display call="plain('realname')"></td>
- </td>
- <tr  bgcolor="ffffea">
+  <td colspan=2 tal:content="user/realname">realname</td>
+ </tr>
+ <tr>
   <td width=1% nowrap align=right><span class="form-label">Login Name</span></td>
-  <td class="form-text"><display call="plain('username')"></td>
+  <td class="form-text" tal:content="user/username">username</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr>
   <td width=1% nowrap align=right><span class="form-label">Phone</span></td>
-  <td class="form-text"><display call="plain('phone')"></td>
+  <td class="form-text" tal:content="user/phone">phone</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr>
   <td width=1% nowrap align=right><span class="form-label">Organisation</span></td>
-  <td class="form-text"><display call="plain('organisation')"></td>
+  <td class="form-text" tal:content="user/organisation">organisation</td>
  </tr>
- <tr  bgcolor="ffffea">
+ <tr>
   <td width=1% nowrap align=right><span class="form-label">E-mail address</span></td>
-  <td class="form-text"><display call="email('address')"></td>
+  <td class="form-text" tal:content="user/address/email">address</td>
  </tr>
- </table>
+</table>
 
-</require>
+</tal:block>
+

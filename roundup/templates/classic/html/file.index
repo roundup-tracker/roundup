@@ -1,15 +1,10 @@
-<!-- $Id: file.index,v 1.4 2002-01-23 05:10:27 richard Exp $-->
-<tr>
-    <property name="name">
-        <td><display call="download('name')"></td>
-    </property>
-    <property name="type">
-        <td><display call="plain('type')"></td>
-    </property>
-    <property name="creator">
-        <td><display call="plain('creator')"></td>
-    </property>
-    <property name="creation">
-        <td><display call="plain('creation')"></td>
-    </property>
+<!-- dollarId: file.index,v 1.4 2002/01/23 05:10:27 richard Exp dollar-->
+<tr tal:repeat="file class/list">
+ <td tal:condition="display/properties/name">
+  <a href="" tal:attributes="href string:file${file/id}/${file/name}">dld link</a>
+ </td>
+ <td tal:condition="request/properties/type" tal:content="file/type">content type</td>
+ <td tal:condition="request/properties/creator" tal:content="file/creator/name">creator's name</td>
+ <td tal:condition="request/properties/creation" tal:content="file/creation">creation date</td>
 </tr>
+
