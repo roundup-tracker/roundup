@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.142 2003-10-22 16:47:55 jlgijsbers Exp $
+# $Id: client.py,v 1.143 2003-10-24 09:32:19 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -970,7 +970,8 @@ You should then receive another email with the new password.
                     'user'):
                 return 0
             # if the item being edited is the current user, we're ok
-            if self.nodeid == self.userid:
+            if (self.nodeid == self.userid
+                and self.db.user.get(self.nodeid, 'username') != 'anonymous'):
                 return 1
         if self.db.security.hasPermission('Edit', self.userid, self.classname):
             return 1

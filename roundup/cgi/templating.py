@@ -807,14 +807,16 @@ class HTMLUser(HTMLItem):
             Also check whether this is the current user's info.
         '''
         return self._db.security.hasPermission('Edit', self._client.userid,
-            self._classname) or self._nodeid == self._client.userid
+            self._classname) or (self._nodeid == self._client.userid and
+            self._db.user.get(self._client.userid, 'username') != 'anonymous')
 
     def is_view_ok(self):
         ''' Is the user allowed to View the current class?
             Also check whether this is the current user's info.
         '''
         return self._db.security.hasPermission('Edit', self._client.userid,
-            self._classname) or self._nodeid == self._client.userid
+            self._classname) or (self._nodeid == self._client.userid and
+            self._db.user.get(self._client.userid, 'username') != 'anonymous')
 
 class HTMLProperty:
     ''' String, Number, Date, Interval HTMLProperty
