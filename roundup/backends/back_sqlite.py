@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.21 2004-03-26 05:16:03 richard Exp $
+# $Id: back_sqlite.py,v 1.22 2004-03-26 06:38:10 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -113,7 +113,6 @@ class Database(rdbms_common.Database):
         # detect multilinks that have been removed, and drop their table
         old_has = {}
         for name, prop in old_spec[1]:
-            print (name, prop)
             old_has[name] = 1
             if new_has(name) or not isinstance(prop, hyperdb.Multilink):
                 continue
