@@ -8,6 +8,7 @@ Feature:
  . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
  . Added Structured Text rendering to htmltemplate, thanks Brad Clements.
  . Added CGI configuration via env vars (see roundup.cgi for details)
+ . "roundup.cgi" is now installed to "<python-prefix>/share/roundup/cgi-bin"
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
