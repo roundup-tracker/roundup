@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.60 2005-02-14 02:48:12 richard Exp $
+# $Id: db_test_base.py,v 1.61 2005-03-29 16:33:49 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -38,8 +38,8 @@ config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
 # uncomment the following to have excessive debug output from test cases
 # FIXME: tracker logging level should be increased by -v arguments
 #   to 'run_tests.py' script
-config.LOGGING_FILENAME = "/tmp/logfile"
-config.LOGGING_LEVEL = "DEBUG"
+#config.LOGGING_FILENAME = "/tmp/logfile"
+#config.LOGGING_LEVEL = "DEBUG"
 config.init_logging()
 
 def setupTracker(dirname, backend="anydbm"):
