@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.23 2001-11-27 03:17:13 richard Exp $
+# $Id: roundupdb.py,v 1.24 2001-11-30 11:29:04 rochecompaan Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -268,7 +268,7 @@ class IssueClass(Class):
         appended to the "messages" field of the specified issue.
         """
 
-    def sendmessage(self, nodeid, msgid):
+    def sendmessage(self, nodeid, msgid, oldvalues):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -326,26 +326,33 @@ class IssueClass(Class):
             authaddr = ' <%s>'%authaddr
         else:
             authaddr = ''
+
+        # get the change note
+        if oldvalues:
+            change_note = self.generateChangeNote(nodeid, oldvalues)
+        else:
+            change_note = ''
+
         # make the message body
         m = ['']
 
         # put in roundup's signature
         if self.EMAIL_SIGNATURE_POSITION == 'top':
-            m.append(self.email_signature(nodeid, msgid))
+            m.append(self.email_signature(nodeid, msgid, change_note))
 
         # add author information
-        if len(self.db.issue.get(nodeid, 'messages')) == 1:
-            m.append("New submission from %s%s:"%(authname, authaddr))
-        else:
+        if oldvalues:
             m.append("%s%s added the comment:"%(authname, authaddr))
+        else:
+            m.append("New submission from %s%s:"%(authname, authaddr))
         m.append('')
 
         # add the content
         m.append(self.db.msg.get(msgid, 'content'))
 
-        # "list information" footer
+        # put in roundup's signature
         if self.EMAIL_SIGNATURE_POSITION == 'bottom':
-            m.append(self.email_signature(nodeid, msgid))
+            m.append(self.email_signature(nodeid, msgid, change_note))
 
         # get the files for this message
         files = self.db.msg.get(msgid, 'files')
@@ -406,16 +413,90 @@ class IssueClass(Class):
             raise MessageSendError, \
                 "Couldn't send confirmation email: %s"%value
 
-    def email_signature(self, nodeid, msgid):
+    def email_signature(self, nodeid, msgid, change_note):
         ''' Add a signature to the e-mail with some useful information
         '''
         web = self.ISSUE_TRACKER_WEB + 'issue'+ nodeid
         email = '"%s" <%s>'%(self.INSTANCE_NAME, self.ISSUE_TRACKER_EMAIL)
         line = '_' * max(len(web), len(email))
-        return '%s\n%s\n%s\n%s'%(line, email, web, line)
+        return '%s\n%s\n%s\n%s\n%s'%(line, email, web, change_note, line)
+
+    def generateChangeNote(self, nodeid, oldvalues):
+        """Generate a change note that lists property changes
+        """
+        cn = self.classname
+        cl = self.db.classes[cn]
+        changed = {}
+        props = cl.getprops(protected=0)
+
+        # determine what changed
+        for key in props.keys():
+            if key in ['files','messages']: continue
+            new_value = cl.get(nodeid, key)
+            # the old value might be non existent
+            try:
+                old_value = oldvalues[key]
+                if type(old_value) is type([]):
+                    old_value.sort()
+                    new_value.sort()
+                if old_value != new_value:
+                    changed[key] = old_value
+            except:
+                old_value = None
+                changed[key] = old_value
+
+        # list the changes
+        m = []
+        for propname, oldvalue in changed.items():
+            prop = cl.properties[propname]
+            value = cl.get(nodeid, propname, None)
+            change = '%s -> %s'%(oldvalue, value)
+            if isinstance(prop, hyperdb.Link):
+                link = self.db.classes[prop.classname]
+                key = link.labelprop(default_to_id=1)
+                if key:
+                    if value:
+                        value = link.get(value, key)
+                    else:
+                        value = ''
+                    if oldvalue:
+                        oldvalue = link.get(oldvalue, key)
+                    else:
+                        oldvalue = ''
+                change = '%s -> %s'%(oldvalue, value)
+            elif isinstance(prop, hyperdb.Multilink):
+                if value is None: value = []
+                l = []
+                link = self.db.classes[prop.classname]
+                key = link.labelprop(default_to_id=1)
+                if oldvalue is None: oldvalue = []
+                # check for additions
+                for entry in value:
+                    if entry in oldvalue: continue
+                    if key:
+                        l.append(link.get(entry, key))
+                    else:
+                        l.append(entry)
+                if l:
+                    change = '+%s'%(', '.join(l))
+                    l = []
+                # check for removals
+                for entry in oldvalue:
+                    if entry in value: continue
+                    if key:
+                        l.append(link.get(entry, key))
+                    else:
+                        l.append(entry)
+                if l:
+                    change = change + ' -%s'%(', '.join(l))
+            m.append('%s: %s'%(propname, change))
+        return '\n'.join(m)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/11/27 03:17:13  richard
+# oops
+#
 # Revision 1.22  2001/11/27 03:00:50  richard
 # couple of bugfixes from latest patch integration
 #

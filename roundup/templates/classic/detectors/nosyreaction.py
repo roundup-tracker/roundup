@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.6 2001-11-26 22:55:56 richard Exp $
+#$Id: nosyreaction.py,v 1.7 2001-11-30 11:29:04 rochecompaan Exp $
 
 from roundup import roundupdb
 
@@ -54,7 +54,7 @@ def nosyreaction(db, cl, nodeid, oldvalues):
     # send a copy to the nosy list
     for msgid in messages:
         try:
-            cl.sendmessage(nodeid, msgid)
+            cl.sendmessage(nodeid, msgid, oldvalues)
         except roundupdb.MessageSendError, message:
             raise roundupdb.DetectorError, message
 
@@ -89,6 +89,18 @@ def init(db):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.6  2001/11/26 22:55:56  richard
+#Feature:
+# . Added INSTANCE_NAME to configuration - used in web and email to identify
+#   the instance.
+# . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#   signature info in e-mails.
+# . Some more flexibility in the mail gateway and more error handling.
+# . Login now takes you to the page you back to the were denied access to.
+#
+#Fixed:
+# . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 #Revision 1.5  2001/11/12 22:01:07  richard
 #Fixed issues with nosy reaction and author copies.
 #
