@@ -329,7 +329,6 @@ class Database(Database):
                     self.cursor.fetchall():
                 nodeid = int(nodeid)
                 journaldate = date.Date(journaldate)
-                params = eval(params)
                 olddata.append((nodeid, journaldate, journaltag, action,
                     params))
 
@@ -342,8 +341,9 @@ class Database(Database):
 
             # re-create journal table
             self.create_journal_table(klass)
+            dc = self.hyperdb_to_sql_value[hyperdb.Date]
             for nodeid, journaldate, journaltag, action, params in olddata:
-                self.save_journal(cn, cols, nodeid, journaldate,
+                self.save_journal(cn, cols, nodeid, dc(journaldate),
                     journaltag, action, params)
 
             # make sure the normal schema update code doesn't try to
