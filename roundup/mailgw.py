@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.38 2001-12-01 07:17:50 richard Exp $
+$Id: mailgw.py,v 1.39 2001-12-02 05:06:16 richard Exp $
 '''
 
 
@@ -352,10 +352,7 @@ Subject was: "%s"
         author = self.db.uidFromAddress(message.getaddrlist('from')[0])
         # reopen the database as the author
         username = self.db.user.get(author, 'username')
-        self.db.close()
         self.db = self.instance.open(username)
-
-        self.handle_message(author, username, 
 
         # re-get the class with the new database connection
         cl = self.db.getclass(classname)
@@ -601,6 +598,15 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2001/12/01 07:17:50  richard
+# . We now have basic transaction support! Information is only written to
+#   the database when the commit() method is called. Only the anydbm
+#   backend is modified in this way - neither of the bsddb backends have been.
+#   The mail, admin and cgi interfaces all use commit (except the admin tool
+#   doesn't have a commit command, so interactive users can't commit...)
+# . Fixed login/registration forwarding the user to the right page (or not,
+#   on a failure)
+#
 # Revision 1.37  2001/11/28 21:55:35  richard
 #  . login_action and newuser_action return values were being ignored
 #  . Woohoo! Found that bloody re-login bug that was killing the mail

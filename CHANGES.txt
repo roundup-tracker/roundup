@@ -14,6 +14,7 @@ Feature:
    the database when the commit() method is called. Only the anydbm backend
    is modified in this way - neither of the bsddb backends have been.
 
+
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
  . login_action and newuser_action return values were being ignored
@@ -21,6 +22,10 @@ Fixed:
    gateway.
  . Fixed login/registration forwarding the user to the right page (or not,
    on a failure)
+ . We now use weakrefs in the Classes to keep the database reference, so
+   the close() method on the database is no longer needed.
+ . #487480 ] roundup-server
+ . #487476 ] INSTALL.txt
 
 
 2001-11-23 - 0.3.0 

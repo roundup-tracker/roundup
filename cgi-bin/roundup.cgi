@@ -16,13 +16,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.20 2001-11-26 22:55:56 richard Exp $
+# $Id: roundup.cgi,v 1.21 2001-12-02 05:06:16 richard Exp $
 
 # python version check
 import sys
-if int(sys.version[0]) < 2:
+if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1):
     print "Content-Type: text/plain\n"
-    print "Roundup requires Python 2.0 or newer."
+    print "Roundup requires Python 2.1 or newer."
     sys.exit(0)
 
 #
@@ -200,6 +200,18 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.19  2001/11/22 00:25:10  richard
 # quick fix for file uploads on windows in roundup.cgi
 #

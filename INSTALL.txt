@@ -64,7 +64,7 @@ It may have the following variable declarations:
   MAIL_DOMAIN - The domain name used for email addresses
 
 Any further configuration should be possible by editing the instance home's
-__init__.py directly.
+instance_config.py directly.
 
 The email addresses used by the system by default are:
 

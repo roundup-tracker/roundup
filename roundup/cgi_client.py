@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.73 2001-12-01 07:17:50 richard Exp $
+# $Id: cgi_client.py,v 1.74 2001-12-02 05:06:16 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -327,16 +327,15 @@ class Client:
                                 props['status'] == resolved_id):
                             props['status'] = chatting_id
                             changed.append('status')
-                note = None
-                if self.form.has_key('__note'):
-                    note = self.form['__note']
-                    note = note.value
-                if changed or note:
-                    p = self._post_editnode(self.nodeid, changed)
-                    props['messages'] = p['messages']
-                    props['files'] = p['files']
-                    cl.set(self.nodeid, **props)
-                    # and some nice feedback for the user
+
+                # make the changes
+                cl.set(self.nodeid, **props)
+
+                # handle linked nodes and change message generation
+                self._post_editnode(self.nodeid, changed)
+
+                # and some nice feedback for the user
+                if changed:
                     message = _('%(changes)s edited ok')%{'changes':
                         ', '.join(changed)}
                 else:
@@ -476,40 +475,54 @@ class Client:
                 # create the new file entry
                 files.append(self.db.file.create(type=mime_type,
                     name=file.filename, content=file.file.read()))
+                # and save the reference
+                cl.set(nid, files=files)
+                if changes is not None and 'file' not in changes:
+                    changes.append('file')
 
+        #
         # generate an edit message
-        # don't bother if there's no messages or nosy list 
+        #
+
+        # we don't want to do a message if none of the following is true...
         props = cl.getprops()
         note = None
         if self.form.has_key('__note'):
             note = self.form['__note']
             note = note.value
-        send = len(cl.get(nid, 'nosy', [])) or note
-        if (send and props.has_key('messages') and
-                isinstance(props['messages'], hyperdb.Multilink) and
-                props['messages'].classname == 'msg'):
+        if not props.has_key('messages'):
+            return
+        if not isinstance(props['messages'], hyperdb.Multilink):
+            return
+        if not props['messages'].classname == 'msg':
+            return
+        if not (len(cl.get(nid, 'nosy', [])) or note):
+            return
 
-            # handle the note
-            if note:
-                if '\n' in note:
-                    summary = re.split(r'\n\r?', note)[0]
-                else:
-                    summary = note
-                m = ['%s\n'%note]
+        # handle the note
+        if note:
+            if '\n' in note:
+                summary = re.split(r'\n\r?', note)[0]
             else:
-                summary = _('This %(classname)s has been edited through'
-                    ' the web.\n')%{'classname': cn}
-                m = [summary]
+                summary = note
+            m = ['%s\n'%note]
+        else:
+            summary = _('This %(classname)s has been edited through'
+                ' the web.\n')%{'classname': cn}
+            m = [summary]
 
-            # now create the message
-            content = '\n'.join(m)
-            message_id = self.db.msg.create(author=self.getuid(),
-                recipients=[], date=date.Date('.'), summary=summary,
-                content=content, files=files)
-            messages = cl.get(nid, 'messages')
-            messages.append(message_id)
-            props = {'messages': messages, 'files': files}
-            return props
+        # TODO: append the change note!
+
+        # now create the message
+        content = '\n'.join(m)
+        message_id = self.db.msg.create(author=self.getuid(),
+            recipients=[], date=date.Date('.'), summary=summary,
+            content=content, files=files)
+
+        # update the messages property
+        messages = cl.get(nid, 'messages')
+        messages.append(message_id)
+        cl.set(nid, messages=messages, files=files)
 
     def newnode(self, message=None):
         ''' Add a new node to the database.
@@ -542,8 +555,8 @@ class Client:
             props = {}
             try:
                 nid = self._createnode()
-                props = self._post_editnode(nid)
-                cl.set(nid, **props)
+                # handle linked nodes and change message generation
+                self._post_editnode(nid)
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
             except:
@@ -579,8 +592,11 @@ class Client:
                 mime_type = mimetypes.guess_type(file.filename)[0]
                 if not mime_type:
                     mime_type = "application/octet-stream"
-                self._post_editnode(cl.create(content=file.file.read(),
-                    type=mime_type, name=file.filename))
+                # save the file
+                nid = cl.create(content=file.file.read(), type=mime_type,
+                    name=file.filename)
+                # handle linked nodes
+                self._post_editnode(nid)
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
             except:
@@ -713,7 +729,6 @@ class Client:
         return 1 on successful login
         '''
         # re-open the database as "admin"
-        self.db.close()
         self.db = self.instance.open('admin')
 
         # TODO: pre-check the required fields and username key property
@@ -767,25 +782,6 @@ class Client:
         '''
         # determine the uid to use
         self.db = self.instance.open('admin')
-        try:
-            self.main_user()
-        finally:
-            self.db.close()
-
-        # re-open the database for real, using the user
-        self.db = self.instance.open(self.user)
-        try:
-            self.main_action()
-        except:
-            self.db.close()
-            raise
-        self.db.commit()
-        self.db.close()
-
-
-    def main_user(self):
-        '''Figure out who the user is
-        '''
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
         if (cookie.has_key('roundup_user') and
@@ -814,11 +810,9 @@ class Client:
         else:
             self.user = user
 
+        # re-open the database for real, using the user
+        self.db = self.instance.open(self.user)
 
-    def main_action(self):
-        '''Check for appropriate access permission, and then perform the
-        action the users specifies
-        '''
         # now figure which function to call
         path = self.split_path
 
@@ -873,6 +867,9 @@ class Client:
 
         # just a regular action
         self.do_action(action)
+
+        # commit all changes to the database
+        self.db.commit()
 
     def do_action(self, action, dre=re.compile(r'([^\d]+)(\d+)'),
             nre=re.compile(r'new(\w+)')):
@@ -1071,6 +1068,15 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.73  2001/12/01 07:17:50  richard
+# . We now have basic transaction support! Information is only written to
+#   the database when the commit() method is called. Only the anydbm
+#   backend is modified in this way - neither of the bsddb backends have been.
+#   The mail, admin and cgi interfaces all use commit (except the admin tool
+#   doesn't have a commit command, so interactive users can't commit...)
+# . Fixed login/registration forwarding the user to the right page (or not,
+#   on a failure)
+#
 # Revision 1.72  2001/11/30 20:47:58  rochecompaan
 # Links in page header are now consistent with default sort order.
 #

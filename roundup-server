@@ -20,13 +20,12 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.20 2001-11-26 22:55:56 richard Exp $
+$Id: roundup-server,v 1.21 2001-12-02 05:06:16 richard Exp $
 
 """
 import sys
-if int(sys.version[0]) < 2:
-    print "Content-Type: text/plain\n"
-    print "Roundup requires Python 2.0 or newer."
+if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1):
+    print "Roundup requires Python 2.1 or newer."
     sys.exit(0)
 
 import os, urllib, StringIO, traceback, cgi, binascii, string, getopt, imp
@@ -77,17 +76,18 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         except cgi_client.NotFound:
             self.send_error(404, self.path)
         except cgi_client.Unauthorised:
-            self.wfile.write('Content-Type: text/html\n')
-            self.wfile.write('Status: 403\n\n')
-            self.wfile.write('You are not authorised to access this URL.')
+            self.send_error(403, self.path)
         except:
+            # it'd be nice to be able to detect if these are going to have
+            # any effect...
+            self.send_response(400)
+            self.send_header('Content-Type', 'text/html')
+            self.end_headers()
             try:
                 reload(cgitb)
-                self.wfile.write("Content-Type: text/html\n\n")
                 self.wfile.write(cgitb.breaker())
                 self.wfile.write(cgitb.html())
             except:
-                self.wfile.write("Content-Type: text/html\n\n")
                 self.wfile.write("<pre>")
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
@@ -100,8 +100,10 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def index(self):
         ''' Print up an index of the available instances
         '''
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html')
+        self.end_headers()
         w = self.wfile.write
-        w("Content-Type: text/html\n\n")
         w('<html><head><title>Roundup instances index</title></head>\n')
         w('<body><h1>Roundup instances index</h1><ol>\n')
         for instance in self.ROUNDUP_INSTANCE_HOMES.keys():
@@ -160,21 +162,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['SERVER_PORT'] = str(self.server.server_port)
 
         decoded_query = query.replace('+', ' ')
-
-        # reload all modules
-        # TODO check for file timestamp changes and dependencies
-        #reload(date)
-        #reload(hyperdb)
-        #reload(roundupdb)
-        #reload(htmltemplate)
-        #reload(cgi_client)
-        #sys.path.insert(0, module_path)
-        #try:
-        #    reload(instance)
-        #finally:
-        #    del sys.path[0]
-
-        self.send_response(200, "Script output follows")
 
         # do the roundup thang
         client = instance.Client(instance, self, env)
@@ -262,6 +249,18 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.19  2001/11/12 22:51:04  jhermann
 # Fixed option & associated error handling
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.12 2001-12-01 07:17:50 richard Exp $
+#$Id: back_anydbm.py,v 1.13 2001-12-02 05:06:16 richard Exp $
 
 import anydbm, os, marshal
 from roundup import hyperdb, date, password
@@ -134,7 +134,6 @@ class Database(hyperdb.Database):
         if not db.has_key(nodeid):
             raise IndexError, nodeid
         res = marshal.loads(db[nodeid])
-        if not cldb: db.close()
         cache[nodeid] = res
         return res
 
@@ -149,7 +148,6 @@ class Database(hyperdb.Database):
         # not in the cache - check the database
         db = cldb or self.getclassdb(classname)
         res = db.has_key(nodeid)
-        if not cldb: db.close()
         return res
 
     def countnodes(self, classname, cldb=None):
@@ -159,7 +157,6 @@ class Database(hyperdb.Database):
         # and count those in the DB
         db = cldb or self.getclassdb(classname)
         count = count + len(db.keys())
-        if not cldb: db.close()
         return count
 
     def getnodeids(self, classname, cldb=None):
@@ -168,7 +165,6 @@ class Database(hyperdb.Database):
 
         db = cldb or self.getclassdb(classname)
         res = res + db.keys()
-        if not cldb: db.close()
         return res
 
     #
@@ -202,16 +198,7 @@ class Database(hyperdb.Database):
             (nodeid, date_stamp, self.journaltag, action, params) = entry
             date_obj = date.Date(date_stamp)
             res.append((nodeid, date_obj, self.journaltag, action, params))
-        db.close()
         return res
-
-    def close(self):
-        ''' Close the Database.
-        
-            Commit all data to the database and release circular refs so
-            the database is closed cleanly.
-        '''
-        self.classes = {}
 
 
     #
@@ -222,7 +209,6 @@ class Database(hyperdb.Database):
         '''
         # lock the DB
         for method, args in self.transactions:
-            print method.__name__, args
             # TODO: optimise this, duh!
             method(*args)
         # unlock the DB
@@ -262,6 +248,15 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.12  2001/12/01 07:17:50  richard
+#. We now have basic transaction support! Information is only written to
+#  the database when the commit() method is called. Only the anydbm
+#  backend is modified in this way - neither of the bsddb backends have been.
+#  The mail, admin and cgi interfaces all use commit (except the admin tool
+#  doesn't have a commit command, so interactive users can't commit...)
+#. Fixed login/registration forwarding the user to the right page (or not,
+#  on a failure)
+#
 #Revision 1.11  2001/11/21 02:34:18  richard
 #Added a target version field to the extended issue schema
 #

@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.38 2001-12-01 07:17:50 richard Exp $
+# $Id: hyperdb.py,v 1.39 2001-12-02 05:06:16 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
 """
 
 # standard python modules
-import cPickle, re, string
+import cPickle, re, string, weakref
 
 # roundup modules
 import date, password
@@ -96,7 +96,7 @@ class Class:
         """
         self.classname = classname
         self.properties = properties
-        self.db = db
+        self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
         self.key = ''
 
         # do the db-related init stuff
@@ -495,7 +495,6 @@ class Class:
                 continue
             if node[self.key] == keyvalue:
                 return nodeid
-        cldb.close()
         raise KeyError, keyvalue
 
     # XXX: change from spec - allows multiple props to match
@@ -532,7 +531,6 @@ class Class:
                     l.append(id)
                 elif isinstance(prop, Multilink) and nodeid in property:
                     l.append(id)
-        cldb.close()
         return l
 
     def stringFind(self, **requirements):
@@ -559,7 +557,6 @@ class Class:
                     break
             else:
                 l.append(nodeid)
-        cldb.close()
         return l
 
     def list(self):
@@ -573,7 +570,6 @@ class Class:
                 continue
             l.append(nodeid)
         l.sort()
-        cldb.close()
         return l
 
     # XXX not in spec
@@ -666,7 +662,6 @@ class Class:
             else:
                 l.append((nodeid, node))
         l.sort()
-        cldb.close()
 
         # optimise sort
         m = []
@@ -873,6 +868,15 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2001/12/01 07:17:50  richard
+# . We now have basic transaction support! Information is only written to
+#   the database when the commit() method is called. Only the anydbm
+#   backend is modified in this way - neither of the bsddb backends have been.
+#   The mail, admin and cgi interfaces all use commit (except the admin tool
+#   doesn't have a commit command, so interactive users can't commit...)
+# . Fixed login/registration forwarding the user to the right page (or not,
+#   on a failure)
+#
 # Revision 1.37  2001/11/28 21:55:35  richard
 #  . login_action and newuser_action return values were being ignored
 #  . Woohoo! Found that bloody re-login bug that was killing the mail

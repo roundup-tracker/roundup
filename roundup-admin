@@ -16,11 +16,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.49 2001-12-01 07:17:50 richard Exp $
+# $Id: roundup-admin,v 1.50 2001-12-02 05:06:16 richard Exp $
 
 import sys
-if int(sys.version[0]) < 2:
-    print 'Roundup requires python 2.0 or later.'
+if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1):
+    print 'Roundup requires python 2.1 or later.'
     sys.exit(1)
 
 import string, os, getpass, getopt, re, UserDict
@@ -614,6 +614,32 @@ Command help:
             raise UsageError, 'no such %s node "%s"'%(classname, nodeid)
         return 0
 
+    def do_commit(self, args):
+        '''Usage: commit
+        Commit all changes made to the database.
+
+        The changes made during an interactive session are not
+        automatically written to the database - they must be committed
+        using this command.
+
+        One-off commands on the command-line are automatically committed if
+        they are successful.
+        '''
+        self.db.commit()
+        return 0
+
+    def do_rollback(self, args):
+        '''Usage: rollback
+        Undo all changes that are pending commit to the database.
+
+        The changes made during an interactive session are not
+        automatically written to the database - they must be committed
+        manually. This command undoes all those changes, so a commit
+        immediately after would make no changes to the database.
+        '''
+        self.db.commit()
+        return 0
+
     def do_retire(self, args):
         '''Usage: retire designator[,designator]*
         Retire the node specified by designator.
@@ -883,7 +909,6 @@ Command help:
         else:
             ret = self.run_command(args)
             if self.db: self.db.commit()
-        if self.db: self.db.close()
         return ret
 
 
@@ -893,6 +918,15 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2001/12/01 07:17:50  richard
+# . We now have basic transaction support! Information is only written to
+#   the database when the commit() method is called. Only the anydbm
+#   backend is modified in this way - neither of the bsddb backends have been.
+#   The mail, admin and cgi interfaces all use commit (except the admin tool
+#   doesn't have a commit command, so interactive users can't commit...)
+# . Fixed login/registration forwarding the user to the right page (or not,
+#   on a failure)
+#
 # Revision 1.48  2001/11/27 22:32:03  richard
 # typo
 #
