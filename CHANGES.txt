@@ -10,6 +10,7 @@ Feature:
  . you can now use the roundup-admin tool pack the database
 
 Fixed:
+ . respect encodings in non multipart messages.
  . makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace does it.
  . preamble in tepmlateBuilder mentioned htmldata
  . mailgw checks encoding on first part too.

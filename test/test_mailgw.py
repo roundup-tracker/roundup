@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.8 2002-02-04 09:40:21 grubert Exp $
+# $Id: test_mailgw.py,v 1.9 2002-02-05 14:15:29 grubert Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -188,6 +188,51 @@ http://some.useful.url/issue1
 ___________________________________________________
 ''', 'Generated message not correct')
 
+    def testEnc01(self):
+        self.testNewIssue()
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: mary <mary@test>
+To: issue_tracker@fill.me.in.
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: [issue1] Testing...
+Content-Type: text/plain;
+        charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+A message with encoding (encoded oe =F6)
+
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+        message_data = open(os.environ['SENDMAILDEBUG']).read()
+        self.assertEqual(message_data,
+'''FROM: roundup-admin@fill.me.in.
+TO: chef@bork.bork.bork, richard@test
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, richard@test
+From: mary <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+
+
+mary <mary@test> added the comment:
+
+A message with encoding (encoded oe ö)
+
+----------
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+''', 'Generated message not correct')
+
+
     def testMultipartEnc01(self):
         self.testNewIssue()
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -251,6 +296,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/02/04 09:40:21  grubert
+#  . add test for multipart messages with first part being encoded.
+#
 # Revision 1.7  2002/01/22 11:54:45  rochecompaan
 # Fixed status change in mail gateway.
 #
