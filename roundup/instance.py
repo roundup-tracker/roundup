@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.18 2004-07-27 02:30:31 richard Exp $
+# $Id: instance.py,v 1.19 2004-07-27 11:34:11 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -34,7 +34,7 @@ class Vars:
 class Tracker:
     def __init__(self, tracker_home):
         self.tracker_home = tracker_home
-        self.config = configuration.Config(tracker_home)
+        self.config = configuration.CoreConfig(tracker_home)
         self.cgi_actions = {}
         self.templating_utils = {}
 
@@ -148,7 +148,7 @@ class OldStyleTrackers:
                     'Required tracker attribute "%s" missing'%required
 
         # load and apply the config
-        tracker.config = configuration.Config(tracker_home)
+        tracker.config = configuration.CoreConfig(tracker_home)
         # FIXME! dbinit does "import config".
         #   What would be the upgrade plan for existing trackers?
         tracker.dbinit.config = tracker.config
