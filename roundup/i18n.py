@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.10 2004-07-14 07:27:21 a1s Exp $
+# $Id: i18n.py,v 1.11 2004-10-23 14:03:34 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -38,48 +38,19 @@ the dynamic portion of a message really means.
 __docformat__ = 'restructuredtext'
 
 import errno
+import gettext as gettext_module
+import os
+
+from roundup import msgfmt
 
 # Roundup text domain
 DOMAIN = "roundup"
 
-# first, we try to import gettext; this probably never fails, but we make
-# sure we survive this anyway
-try:
-    import gettext as gettext_module
-except ImportError:
-    gettext_module = None
-
-# use or emulate features of gettext_module
-if not gettext_module:
-    # no gettext engine available.
-    # implement emulation for Translations class
-    # and find_translation() function
-    class RoundupNullTranslations:
-        """Dummy Translations class
-
-        Only methods used by Roundup are implemented.
-
-        """
-        def add_fallback(self, fallback):
-            pass
-        def gettext(self, text):
-            return text
-        def ugettext(self, text):
-            return unicode(text)
-        def ngettext(self, singular, plural, count):
-            if count == 1: return singular
-            return plural
-        def ungettext(self, singular, plural, count):
-            return unicode(self.ngettext(singular, plural, count))
-
-    RoundupTranslations = RoundupNullTranslations
-
-    def find_translation(domain, localedir=None, languages=None, class_=None):
-        """Always raise IOError (no message catalogs available)"""
-        raise IOError(errno.ENOENT,
-            "No translation file found for domain", domain)
-
-elif not hasattr(gettext_module.GNUTranslations, "ngettext"):
+if hasattr(gettext_module.GNUTranslations, "ngettext"):
+    # gettext_module has everything needed
+    RoundupNullTranslations = gettext_module.NullTranslations
+    RoundupTranslations = gettext_module.GNUTranslations
+else:
     # prior to 2.3, there was no plural forms.  mix simple emulation in
     class PluralFormsMixIn:
         def ngettext(self, singular, plural, count):
@@ -102,16 +73,84 @@ elif not hasattr(gettext_module.GNUTranslations, "ngettext"):
         gettext_module.GNUTranslations, PluralFormsMixIn
     ):
         pass
-    # lookup function is available
-    find_translation = gettext_module.translation
-else:
-    # gettext_module has everything needed
-    RoundupNullTranslations = gettext_module.NullTranslations
-    RoundupTranslations = gettext_module.GNUTranslations
-    find_translation = gettext_module.translation
 
+def find_locales(language=None):
+    """Return normalized list of locale names to try for given language
 
-def get_translation(language=None, domain=DOMAIN,
+    If language is None, use OS environment variables as a starting point
+
+    """
+    # body of this function is borrowed from gettext_module.find()
+    if language is None:
+        languages = []
+        for envar in ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG'):
+            val = os.environ.get(envar)
+            if val:
+                languages = val.split(':')
+                break
+    else:
+        languages = [language]
+    # now normalize and expand the languages
+    nelangs = []
+    for lang in languages:
+        for nelang in gettext_module._expand_lang(lang):
+            if nelang not in nelangs:
+                nelangs.append(nelang)
+    return nelangs
+
+def get_mofile(languages, localedir, domain=None):
+    """Return the first of .mo files found in localedir for languages
+
+    Parameters:
+        languages:
+            list of locale names to try
+        localedir:
+            path to directory containing locale files.
+            Usually this is either gettext_module._default_localedir
+            or 'locale' subdirectory in the tracker home.
+        domain:
+            optional name of messages domain.
+            If omitted or None, work with simplified
+            locale directory, as used in tracker homes:
+            message catalogs are kept in files locale.po
+            instead of locale/LC_MESSAGES/domain.po
+
+    Return the path of the first .mo file found.
+    If nothing found, return None.
+
+    Automatically compile .po files if necessary.
+
+    """
+    for locale in languages:
+        if locale == "C":
+            break
+        if domain:
+            basename = os.path.join(localedir, locale, "LC_MESSAGES", domain)
+        else:
+            basename = os.path.join(localedir, locale)
+        # look for message catalog files, check timestamps
+        mofile = basename + ".mo"
+        if os.path.isfile(mofile):
+            motime = os.path.getmtime(mofile)
+        else:
+            motime = 0
+        pofile = basename + ".po"
+        if os.path.isfile(pofile):
+            potime = os.path.getmtime(pofile)
+        else:
+            potime = 0
+        # see what we've found
+        if motime < potime:
+            # compile
+            msgfmt.make(pofile, mofile)
+        elif motime == 0:
+            # no files found - proceed to the next locale name
+            continue
+        # .mo file found or made
+        return mofile
+    return None
+
+def get_translation(language=None, tracker_home=None,
     translation_class=RoundupTranslations,
     null_translation_class=RoundupNullTranslations
 ):
@@ -120,51 +159,37 @@ def get_translation(language=None, domain=DOMAIN,
     Arguments 'translation_class' and 'null_translation_class'
     specify the classes that are instantiated for existing
     and non-existing translations, respectively.
+
     """
-    if language:
-        _languages = [language]
+    mofiles = []
+    # locale directory paths
+    system_locale = gettext_module._default_localedir
+    if tracker_home is not None:
+        tracker_locale = os.path.join(tracker_home, "locale")
     else:
-        # use OS environment
-        _languages = None
-    # except for english ("en") language, add english fallback if available
-    if language == "en":
-        _fallback = None
+        tracker_locale = None
+    # get the list of locales
+    locales = find_locales(language)
+    # add mofiles found in the tracker, then in the system locale directory
+    if tracker_locale:
+        mofiles.append(get_mofile(locales, tracker_locale))
+    mofiles.append(get_mofile(locales, system_locale, DOMAIN))
+    # we want to fall back to english unless english is selected language
+    if "en" not in locales:
+        locales = find_locales("en")
+        # add mofiles found in the tracker, then in the system locale directory
+        if tracker_locale:
+            mofiles.append(get_mofile(locales, tracker_locale))
+        mofiles.append(get_mofile(locales, system_locale, DOMAIN))
+    # filter out elements that are not found
+    mofiles = filter(None, mofiles)
+    if mofiles:
+        translator = translation_class(open(mofiles[0], "rb"))
+        for mofile in mofiles:
+            translator.add_fallback(translation_class(open(mofile, "rb")))
     else:
-        try:
-            _fallback = find_translation(domain=domain, languages=["en"],
-                class_=translation_class)
-            # gettext.translation returns a cached translation
-            # even if it is not of the desired class.
-            # This is a quick-and-dirty solution for this problem.
-            # It works with current codebase, because all translators
-            # inherit from respective base translation classes
-            # defined in the gettext module, i.e. have same internal data.
-            # The cached instance is not affected by this hack,
-            # 'cause gettext made a copy for us.
-            # XXX Consider making a copy of gettext.translation function
-            # with class bug fixed...
-            if _fallback.__class__ != translation_class:
-                _fallback.__class__ = translation_class
-        except IOError:
-            # no .mo files found
-            _fallback = None
-    # get the translation
-    try:
-        _translation = find_translation(domain=domain, languages=_languages,
-            class_=translation_class)
-        # XXX See the comment after first find_translation() call
-        if _translation.__class__ != translation_class:
-            _translation.__class__ = translation_class
-    except IOError:
-        _translation = None
-    # see what's found
-    if _translation and _fallback:
-        _translation.add_fallback(_fallback)
-    elif _fallback:
-        _translation = _fallback
-    elif not _translation:
-        _translation = null_translation_class()
-    return _translation
+        translator = null_translation_class()
+    return translator
 
 # static translations object
 translation = get_translation()
