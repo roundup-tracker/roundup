@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.122 2002-05-22 04:12:05 richard Exp $
+# $Id: cgi_client.py,v 1.123 2002-05-22 05:04:13 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -582,6 +582,8 @@ function help_window(helpurl, width, height) {
         ''' add the assignedto value from the props to the nosy list
         '''
         # get the properties definition and make some checks
+        if not props.has_key('assignedto'):
+            return
         cl = self.db.classes[self.classname]
         propdef = cl.getprops()
         if not propdef.has_key('assignedto') or not propdef.has_key('nosy'):
@@ -1395,6 +1397,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.122  2002/05/22 04:12:05  richard
+#  . applied patch #558876 ] cgi client customization
+#    ... with significant additions and modifications ;)
+#    - extended handling of ML assignedto to all places it's handled
+#    - added more NotFound info
+#
 # Revision 1.121  2002/05/21 06:08:10  richard
 # Handle migration
 #
