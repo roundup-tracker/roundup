@@ -1,6 +1,7 @@
-# $Id: config.py,v 1.5 2001-07-19 06:27:07 anthonybaxter Exp $
+# $Id: config.py,v 1.6 2001-07-19 10:43:01 anthonybaxter Exp $
 
-ROUNDUP_HOME=MAIL_DOMAIN=MAILHOST=None
+ROUNDUP_HOME=MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
+HTTP_PORT=0
 
 try:
     from localconfig import *
@@ -21,6 +22,12 @@ if not MAILHOST:
 if not MAIL_DOMAIN:
     MAIL_DOMAIN = 'bizarsoftware.com.au'
 
+# the next two are only used for the standalone HTTP server.
+if not HTTP_HOST:
+    HTTP_HOST = ''
+if not HTTP_PORT:
+    HTTP_PORT = 9080
+
 # This is the directory that the database is going to be stored in
 DATABASE = os.path.join(ROUNDUP_HOME, 'db')
 
@@ -37,6 +44,13 @@ del os
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/19 06:27:07  anthonybaxter
+# fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
+# my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
+# strings in a commit message. I'm a twonk.
+#
+# Also broke the help string in two.
+#
 # Revision 1.4  2001/07/19 05:52:22  anthonybaxter
 # Added CVS keywords Id and Log to all python files.
 #

@@ -3,7 +3,7 @@
 
 Stolen from CGIHTTPServer
 
-$Id: server.py,v 1.3 2001-07-19 06:27:07 anthonybaxter Exp $
+$Id: server.py,v 1.4 2001-07-19 10:43:01 anthonybaxter Exp $
 
 """
 import sys
@@ -144,14 +144,25 @@ def nobody_uid():
         nobody = 1 + max(map(lambda x: x[2], pwd.getpwall()))
     return nobody
 
-if __name__ == '__main__':
-    address = ('dirk.adroit', 9080)
+def main():
+    from config import HTTP_HOST, HTTP_PORT
+    address = (HTTP_HOST, HTTP_PORT)
     httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
     print 'Roundup server started on', address
     httpd.serve_forever()
 
+if __name__ == '__main__':
+    main()
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/19 06:27:07  anthonybaxter
+# fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
+# my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
+# strings in a commit message. I'm a twonk.
+#
+# Also broke the help string in two.
+#
 # Revision 1.2  2001/07/19 05:52:22  anthonybaxter
 # Added CVS keywords Id and Log to all python files.
 #
