@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.78 $
+:Version: $Revision: 1.79 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2893,6 +2893,136 @@ achieve this::
    </tal:block>
   </tal:block>
  </table>
+
+
+Blocking issues that depend on other issues
+-------------------------------------------
+
+We needed the ability to mark certain issues as "blockers" - that is,
+they can't be resolved until another issue (the blocker) they rely on
+is resolved. To achieve this:
+
+1. Create a new property on the issue Class, ``blockers=Multilink("issue")``.
+   Edit your tracker's dbinit.py file. Where the "issue" class is defined,
+   something like::
+
+    issue = IssueClass(db, "issue", 
+                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    priority=Link("priority"), status=Link("status"))
+
+   add the blockers entry like so::
+
+    issue = IssueClass(db, "issue", 
+                    blockers=Multilink("issue"),
+                    assignedto=Link("user"), topic=Multilink("keyword"),
+                    priority=Link("priority"), status=Link("status"))
+
+2. Add the new "blockers" property to the issue.item edit page, using
+   something like:
+
+    <th nowrap>Waiting On</th>
+    <td>
+     <span tal:replace="structure python:context.blockers.field(showid=1,
+                                  size=20)" />
+     <span tal:replace="structure python:db.issue.classhelp('id,title')" />
+     <span tal:condition="context/blockers" tal:repeat="blk context/blockers">
+      <br>View: <a tal:attributes="href string:issue${blk/id}"
+                   tal:content="blk/id"></a>
+     </span>
+
+   You'll need to fiddle with your item page layout to find an appropriate
+   place to put it - I'll leave that fun part up to you. Just make sure it
+   appears in the first table, possibly somewhere near the "superseders"
+   field.
+
+3. Create a new detector module (attached) which enforces the rules:
+
+   - issues may not be resolved if they have blockers
+   - when a blocker is resolved, it's removed from issues it blocks
+
+   The contents of the detector should be something like this::
+
+    def blockresolution(db, cl, nodeid, newvalues):
+        ''' If the issue has blockers, don't allow it to be resolved.
+        '''
+        if nodeid is None:
+            blockers = []
+        else:
+            blockers = cl.get(nodeid, 'blockers')
+        blockers = newvalues.get('blockers', blockers)
+
+        # don't do anything if there's no blockers or the status hasn't changed
+        if not blockers or not newvalues.has_key('status'):
+            return
+
+        # get the resolved state ID
+        resolved_id = db.status.lookup('resolved')
+
+        # format the info
+        u = db.config.TRACKER_WEB
+        s = ', '.join(['<a href="%sissue%s">%s</a>'%(u,id,id) for id in blockers])
+        if len(blockers) == 1:
+            s = 'issue %s is'%s
+        else:
+            s = 'issues %s are'%s
+
+        # ok, see if we're trying to resolve
+        if newvalues['status'] == resolved_id:
+            raise ValueError, "This issue can't be resolved until %s resolved."%s
+
+    def resolveblockers(db, cl, nodeid, newvalues):
+        ''' When we resolve an issue that's a blocker, remove it from the
+            blockers list of the issue(s) it blocks.
+        '''
+        if not newvalues.has_key('status'):
+            return
+
+        # get the resolved state ID
+        resolved_id = db.status.lookup('resolved')
+
+        # interesting?
+        if newvalues['status'] != resolved_id:
+            return
+
+        # yes - find all the blocked issues, if any, and remove me from their
+        # blockers list
+        issues = cl.find(blockers=nodeid)
+        for issueid in issues:
+            blockers = cl.get(issueid, 'blockers')
+            if nodeid in blockers:
+                blockers.remove(nodeid)
+                cl.set(issueid, blockers=blockers)
+
+
+    def init(db):
+        # might, in an obscure situation, happen in a create
+        db.issue.audit('create', blockresolution)
+        db.issue.audit('set', blockresolution)
+
+        # can only happen on a set
+        db.issue.react('set', resolveblockers)
+
+   Put the above code in a file called "blockers.py" in your tracker's
+   "detectors" directory.
+
+4. Finally, and this is an optional step, modify the tracker web page URLs
+   so they filter out issues with any blockers. You do this by adding an
+   additional filter on "blockers" for the value "-1". For example, the
+   existing "Show All" link in the "page" template (in the tracker's
+   "html" directory) looks like this::
+
+     <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
+
+   modify it to add the "blockers" info to the URL (note, both the
+   ":filter" *and* "blockers" values must be specified)::
+
+     <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers@blockers=-1&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
+
+That's it. You should now be able to se blockers on your issues. Note that
+if you want to know whether an issue has any other issues dependent on it
+(ie. it's in their blockers list) you can look at the journal history
+at the bottom of the issue page - look for a "link" event to another
+issue's "blockers" property.
 
 
 -------------------
