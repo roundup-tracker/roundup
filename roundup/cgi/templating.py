@@ -277,7 +277,7 @@ class HTMLClass:
             raise AttributeError, attr
 
     def properties(self):
-        ''' Return HTMLProperty for all props
+        ''' Return HTMLProperty for all of this class' properties.
         '''
         l = []
         for name, prop in self._props.items():
@@ -291,6 +291,8 @@ class HTMLClass:
         return l
 
     def list(self):
+        ''' List all items in this class.
+        '''
         if self.classname == 'user':
             klass = HTMLUser
         else:
@@ -635,7 +637,7 @@ class HTMLUser(HTMLItem):
 class HTMLProperty:
     ''' String, Number, Date, Interval HTMLProperty
 
-        Hase useful attributes:
+        Has useful attributes:
 
          _name  the name of the property
          _value the value of the property if any
@@ -660,6 +662,8 @@ class HTMLProperty:
 
 class StringHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
+        ''' Render a "plain" representation of the property
+        '''
         if self._value is None:
             return ''
         if escape:
@@ -667,12 +671,18 @@ class StringHTMLProperty(HTMLProperty):
         return str(self._value)
 
     def stext(self, escape=0):
+        ''' Render the value of the property as StructuredText.
+
+            This requires the StructureText module to be installed separately.
+        '''
         s = self.plain(escape=escape)
         if not StructuredText:
             return s
         return StructuredText(s,level=1,header=0)
 
     def field(self, size = 30):
+        ''' Render a form edit field for the property
+        '''
         if self._value is None:
             value = ''
         else:
@@ -681,6 +691,8 @@ class StringHTMLProperty(HTMLProperty):
         return '<input name="%s" value="%s" size="%s">'%(self._name, value, size)
 
     def multiline(self, escape=0, rows=5, cols=40):
+        ''' Render a multiline form edit field for the property
+        '''
         if self._value is None:
             value = ''
         else:
@@ -690,7 +702,8 @@ class StringHTMLProperty(HTMLProperty):
             self._name, rows, cols, value)
 
     def email(self, escape=1):
-        ''' fudge email '''
+        ''' Render the value of the property as an obscured email address
+        '''
         if self._value is None: value = ''
         else: value = str(self._value)
         value = value.replace('@', ' at ')
@@ -701,18 +714,26 @@ class StringHTMLProperty(HTMLProperty):
 
 class PasswordHTMLProperty(HTMLProperty):
     def plain(self):
+        ''' Render a "plain" representation of the property
+        '''
         if self._value is None:
             return ''
         return _('*encrypted*')
 
     def field(self, size = 30):
+        ''' Render a form edit field for the property
+        '''
         return '<input type="password" name="%s" size="%s">'%(self._name, size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
+        ''' Render a "plain" representation of the property
+        '''
         return str(self._value)
 
     def field(self, size = 30):
+        ''' Render a form edit field for the property
+        '''
         if self._value is None:
             value = ''
         else:
@@ -722,11 +743,15 @@ class NumberHTMLProperty(HTMLProperty):
 
 class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
+        ''' Render a "plain" representation of the property
+        '''
         if self.value is None:
             return ''
         return self._value and "Yes" or "No"
 
     def field(self):
+        ''' Render a form edit field for the property
+        '''
         checked = self._value and "checked" or ""
         s = '<input type="radio" name="%s" value="yes" %s>Yes'%(self._name,
             checked)
@@ -740,11 +765,15 @@ class BooleanHTMLProperty(HTMLProperty):
 
 class DateHTMLProperty(HTMLProperty):
     def plain(self):
+        ''' Render a "plain" representation of the property
+        '''
         if self._value is None:
             return ''
         return str(self._value)
 
     def field(self, size = 30):
+        ''' Render a form edit field for the property
+        '''
         if self._value is None:
             value = ''
         else:
@@ -764,6 +793,8 @@ class DateHTMLProperty(HTMLProperty):
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
+        ''' Render a "plain" representation of the property
+        '''
         if self._value is None:
             return ''
         return str(self._value)
@@ -772,6 +803,8 @@ class IntervalHTMLProperty(HTMLProperty):
         return self._value.pretty()
 
     def field(self, size = 30):
+        ''' Render a form edit field for the property
+        '''
         if self._value is None:
             value = ''
         else:
@@ -802,6 +835,8 @@ class LinkHTMLProperty(HTMLProperty):
         return getattr(i, attr)
 
     def plain(self, escape=0):
+        ''' Render a "plain" representation of the property
+        '''
         if self._value is None:
             return ''
         linkcl = self._db.classes[self._prop.classname]
@@ -812,6 +847,8 @@ class LinkHTMLProperty(HTMLProperty):
         return value
 
     def field(self):
+        ''' Render a form edit field for the property
+        '''
         linkcl = self._db.getclass(self._prop.classname)
         if linkcl.getprops().has_key('order'):  
             sort_on = 'order'  
@@ -928,6 +965,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         return [klass(self._client, self._prop.classname, value) for value in l]
 
     def plain(self, escape=0):
+        ''' Render a "plain" representation of the property
+        '''
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
         labels = []
@@ -939,6 +978,8 @@ class MultilinkHTMLProperty(HTMLProperty):
         return value
 
     def field(self, size=30, showid=0):
+        ''' Render a form edit field for the property
+        '''
         sortfunc = make_sort_function(self._db, self._prop.classname)
         linkcl = self._db.getclass(self._prop.classname)
         value = self._value[:]
@@ -1168,7 +1209,12 @@ class HTMLRequest:
             if self.client.nodeid:
                 s.append('- %s%s'%(self.classname, self.client.nodeid))
             else:
-                s.append('- index of '+self.classname)
+                if self.template == 'item':
+                    s.append('- new %s'%self.classname)
+                elif self.template == 'index':
+                    s.append('- %s index'%self.classname)
+                else:
+                    s.append('- %s %s'%(self.classname, self.template))
         else:
             s.append('- home')
         return ' '.join(s)

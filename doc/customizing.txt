@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.28 $
+:Version: $Revision: 1.29 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -778,9 +778,8 @@ The following variables are available to templates.
 .. taken from roundup.cgi.templating.RoundupPageTemplate docstring
 
 *context*
-  The current context. This is either None, a wrapper around a
-  hyperdb class (an HTMLClass) or a wrapper around a hyperdb item (an
-  HTMLItem).
+  The current context. This is either None, a
+  `hyperdb class wrapper`_ or a `hyperdb item wrapper`_
 *request*
   Includes information about the current request, including:
    - the url
@@ -818,6 +817,9 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
+*utils*
+  This variable makes available some utility functions like batching.
+
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -825,8 +827,10 @@ The *context* variable is one of three things based on the current context
 (see `determining web context`_ for how we figure this out):
 
 1. if we're looking at a "home" page, then it's None
-2. if we're looking at a specific hyperdb class, it's an HTMLClass instance
-3. if we're looking at a specific hyperdb item, it's an HTMLItem instance
+2. if we're looking at a specific hyperdb class, it's a
+   `hyperdb class wrapper`_.
+3. if we're looking at a specific hyperdb item, it's a
+   `hyperdb item wrapper`_.
 
 If the context is not None, we can access the properties of the class or item.
 The only real difference between cases 2 and 3 above are:
@@ -838,9 +842,127 @@ The only real difference between cases 2 and 3 above are:
    a real, or true value in the third. Thus we can determine whether we're
    looking at a real item from the hyperdb by testing "context/id".
 
+Hyperdb class wrapper
+:::::::::::::::::::::
+
+Note: this is implemented by the roundup.cgi.templating.HTMLClass class.
+
+This wrapper object provides access to a hyperb class. It is used primarily
+in both index view and new item views, but it's also usable anywhere else that
+you wish to access information about a class, or the items of a class, when
+you don't have a specific item of that class in mind.
+
+We allow access to properties. There will be no "id" property. The value
+accessed through the property will be the current value of the same name from
+the CGI form.
+
+There are several methods available on these wrapper objects:
+
+=========== =============================================================
+Method      Description
+=========== =============================================================
+properties  return a `hyperdb property wrapper`_ for all of this class'
+            properties.
+list        lists all of the active (not retired) items in the class.
+csv         return the items of this class as a chunk of CSV text.
+propnames   lists the names of the properties of this class.
+filter      lists of items from this class, filtered and sorted
+            by the current *request* filterspec/filter/sort/group args
+classhelp   display a link to a javascript popup containing this class'
+            "help" template.
+submit      generate a submit button (and action hidden element)
+renderWith  render this class with the given template.
+history     returns 'New node - no history' :)
+=========== =============================================================
+
+Note that if you have a property of the same name as one of the above methods,
+you'll need to access it using a python "item access" expression. For example::
+
+   python:context['list']
+
+will access the "list" property, rather than the list method.
+
+
+Hyperdb item wrapper
+::::::::::::::::::::
+
+Note: this is implemented by the roundup.cgi.templating.HTMLItem class.
+
+This wrapper object provides access to a hyperb item.
+
+We allow access to properties. There will be no "id" property. The value
+accessed through the property will be the current value of the same name from
+the CGI form.
+
+There are several methods available on these wrapper objects:
+
+=============== =============================================================
+Method          Description
+=============== =============================================================
+submit          generate a submit button (and action hidden element)
+journal         return the journal of the current item (**not implemented**)
+history         render the journal of the current item as HTML
+renderQueryForm specific to the "query" class - render the search form for
+                the query
+hasPermission   specific to the "user" class - determine whether the user
+                has a Permission
+=============== =============================================================
+
+
+Note that if you have a property of the same name as one of the above methods,
+you'll need to access it using a python "item access" expression. For example::
+
+   python:context['journal']
+
+will access the "journal" property, rather than the journal method.
+
+
+Hyperdb property wrapper
+::::::::::::::::::::::::
+
+Note: this is implemented by subclasses roundup.cgi.templating.HTMLProperty
+class (HTMLStringProperty, HTMLNumberProperty, and so on).
+
+This wrapper object provides access to a single property of a class. Its
+value may be either:
+
+1. if accessed through a `hyperdb item wrapper`_, then it's a value from the
+   hyperdb
+2. if access through a `hyperdb class wrapper`_, then it's a value from the
+   CGI form
+
+
+The property wrapper has some useful attributes:
+
+=============== =============================================================
+Attribute       Description
+=============== =============================================================
+_name           the name of the property
+_value          the value of the property if any
+=============== =============================================================
+
+There are several methods available on these wrapper objects:
+
+=========== =============================================================
+Method      Description
+=========== =============================================================
+plain       render a "plain" representation of the property
+field       render a form edit field for the property
+stext       specific to String properties - render the value of the
+            property as StructuredText (requires the StructureText module
+            to be installed separately)
+multiline   specific to String properties - render a multiline form edit
+            field for the property
+email       specific to String properties - render the value of the 
+            property as an obscured email address
+=========== =============================================================
+
+XXX do the other properties
 
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
+
+Note: this is implemented by the roundup.cgi.templating.HTMLRequest class.
 
 The request variable is packed with information about the current request.
 
@@ -873,6 +995,19 @@ filter      properties to filter the index on
 filterspec  values to filter the index on
 search_text text to perform a full-text search on for an index
 =========== ================================================================
+
+The db variable
+~~~~~~~~~~~~~~~
+
+Note: this is implemented by the roundup.cgi.templating.HTMLDatabase class.
+
+Allows access to all hyperdb classes as attributes of this variable. If you
+want access to the "user" class, for example, you would use::
+
+  db/user
+  python:db.user
+
+The access results in a `hyperdb class wrapper`_.
 
 
 Displaying Properties
