@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.54 2004-11-12 04:07:05 richard Exp $
+# $Id: db_test_base.py,v 1.55 2004-11-26 00:01:04 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -804,10 +804,12 @@ class DBTest(MyTestCase):
 
     def testFindMultipleLink(self):
         one, two, three, four = self._find_test_setup()
-        self.assertEqual(self.db.issue.find(status={'1':1, '3':1}),
-            [one, three, four])
-        self.assertEqual(self.db.issue.find(assignedto={None:1, '1':1}),
-            [one, three, four])
+        l = self.db.issue.find(status={'1':1, '3':1})
+        l.sort()
+        self.assertEqual(l, [one, three, four])
+        l = self.db.issue.find(assignedto={None:1, '1':1})
+        l.sort()
+        self.assertEqual(l, [one, three, four])
 
     def testFindMultilink(self):
         one, two, three, four = self._find_test_setup()
