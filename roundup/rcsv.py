@@ -5,6 +5,7 @@ needed by Roundup using the Python 2.3 csv module.
 """
 
 from roundup.i18n import _
+from cStringIO import StringIO
 error = """Sorry, you need a module compatible with the csv module.
 Either upgrade your Python to 2.3 or later, or get and install
 the csv module from:
@@ -15,7 +16,7 @@ These two csv modules are different but Roundup can use either.
 try:
     import csv
     try:
-        reader = csv.reader
+        _reader = csv.reader
         writer = csv.writer
         excel = csv.excel
         error = ''
@@ -25,7 +26,7 @@ try:
             pass
         if hasattr(csv, 'parser'):
             error = ''
-            def reader(fileobj, dialect=excel):
+            def _reader(fileobj, dialect=excel):
                 # note real readers take an iterable but 2.1 doesn't
                 # support iterable access to file objects.
                 result = []
@@ -63,6 +64,9 @@ class colon_separated(excel):
 class comma_separated(excel):
     delimiter = ',' 
 
+def reader(fileobject, dialect=excel):
+    csv_lines = [line for line in fileobject.readlines() if line.strip()]
+    return _reader(StringIO(''.join(csv_lines)), dialect)
 
 if __name__ == "__main__":
     f=open('testme.txt', 'r')
