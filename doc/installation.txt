@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.35 $
+:Version: $Revision: 1.36 $
 
 .. contents::
 
@@ -157,9 +157,9 @@ Basic Installation Steps
 
 3. At this point, your tracker is set up, but doesn't have a nice user
    interface. To set that up, we need to `configure a web interface`_ and
-   optionally `configure an email interface`_. To quickly test the web
-   interface, assuming ``TRACKER_WEB`` is set to
-   ``'http://localhost:8080/support/'``::
+   optionally `configure an email interface`_. If you want to try your
+   new tracker out, assuming ``TRACKER_WEB`` is set to
+   ``'http://localhost:8080/support/'``, run::
 
      roundup-server -p 8080 support=/opt/roundup/trackers/support
 
