@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.211 2004-12-03 22:19:41 richard Exp $
+# $Id: client.py,v 1.212 2005-01-05 22:00:39 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -270,7 +270,12 @@ class Client:
                 self.response_code = 302
             self.write_html('Redirecting to <a href="%s">%s</a>'%(url, url))
         except SendFile, designator:
-            self.serve_file(designator)
+            try:
+                self.serve_file(designator)
+            except NotModified:
+                # send the 304 response
+                self.request.send_response(304)
+                self.request.end_headers()
         except SendStaticFile, file:
             try:
                 self.serve_static_file(str(file))
