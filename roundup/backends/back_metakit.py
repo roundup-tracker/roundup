@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.8 2004-07-20 23:27:02 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.9 2005-02-14 00:08:04 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -759,7 +759,10 @@ class Class(hyperdb.Class):
                     setattr(row, key, 0)
                 else:
                     setattr(row, key, int(calendar.timegm(value.get_tuple())))
-                changes[key] = str(oldvalue)
+                if oldvalue is None:
+                    changes[key] = oldvalue
+                else:
+                    changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
 
             elif isinstance(prop, hyperdb.Interval):
