@@ -539,23 +539,25 @@ class MysqlClass:
                     self.db.sql('select nodeid from %s'%tn)
                     s = ','.join([x[0] for x in self.db.sql_fetchall()])
 
-                    where.append('id not in (%s)'%s)
+                    where.append('_%s.id not in (%s)'%(cn, s))
                 elif isinstance(v, type([])):
                     frum.append(tn)
                     s = ','.join([a for x in v])
-                    where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
+                    where.append('_%s.id=%s.nodeid and %s.linkid in (%s)'%(cn,
+                        tn, tn, s))
                     args = args + v
                 else:
                     frum.append(tn)
-                    where.append('id=%s.nodeid and %s.linkid=%s'%(tn, tn, a))
+                    where.append('_%s.id=%s.nodeid and %s.linkid=%s'%(cn, tn,
+                        tn, a))
                     args.append(v)
             elif k == 'id':
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('%s in (%s)'%(k, s))
+                    where.append('_%s.%s in (%s)'%(cn, k, s))
                     args = args + v
                 else:
-                    where.append('%s=%s'%(k, a))
+                    where.append('_%s.%s=%s'%(cn, k, a))
                     args.append(v)
             elif isinstance(propclass, String):
                 if not isinstance(v, type([])):
@@ -567,44 +569,45 @@ class MysqlClass:
                 v = ['%%'+self.db.sql_stringquote(s)+'%%' for s in v]
 
                 # now add to the where clause
-                where.append(' or '.join(["_%s LIKE '%s'"%(k, s) for s in v]))
+                where.append(' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s)
+                    for s in v]))
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
                 if isinstance(v, type([])):
                     if '-1' in v:
                         v = v[:]
                         v.remove('-1')
-                        xtra = ' or _%s is NULL'%k
+                        xtra = ' or _%s._%s is NULL'%(cn, k)
                     else:
                         xtra = ''
                     if v:
                         s = ','.join([a for x in v])
-                        where.append('(_%s in (%s)%s)'%(k, s, xtra))
+                        where.append('(_%s._%s in (%s)%s)'%(cn, k, s, xtra))
                         args = args + v
                     else:
-                        where.append('_%s is NULL'%k)
+                        where.append('_%s._%s is NULL'%(cn, k))
                 else:
                     if v == '-1':
                         v = None
-                        where.append('_%s is NULL'%k)
+                        where.append('_%s._%s is NULL'%(cn, k))
                     else:
-                        where.append('_%s=%s'%(k, a))
+                        where.append('_%s._%s=%s'%(cn, k, a))
                         args.append(v)
             elif isinstance(propclass, Date):
                 dc = self.db.hyperdb_to_sql_value[hyperdb.Date]
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s in (%s)'%(k, s))
+                    where.append('_%s._%s in (%s)'%(cn, k, s))
                     args = args + [dc(date.Date(x)) for x in v]
                 else:
                     try:
                         # Try to filter on range of dates
                         date_rng = Range(v, date.Date, offset=timezone)
                         if date_rng.from_value:
-                            where.append('_%s >= %s'%(k, a))                            
+                            where.append('_%s._%s >= %s'%(cn, k, a))
                             args.append(dc(date_rng.from_value))
                         if date_rng.to_value:
-                            where.append('_%s <= %s'%(k, a))
+                            where.append('_%s._%s <= %s'%(cn, k, a))
                             args.append(dc(date_rng.to_value))
                     except ValueError:
                         # If range creation fails - ignore that search parameter
@@ -613,17 +616,17 @@ class MysqlClass:
                 # filter using the __<prop>_int__ column
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('__%s_int__ in (%s)'%(k, s))
+                    where.append('_%s.__%s_int__ in (%s)'%(cn, k, s))
                     args = args + [date.Interval(x).as_seconds() for x in v]
                 else:
                     try:
                         # Try to filter on range of intervals
                         date_rng = Range(v, date.Interval)
                         if date_rng.from_value:
-                            where.append('__%s_int__ >= %s'%(k, a))
+                            where.append('_%s.__%s_int__ >= %s'%(cn, k, a))
                             args.append(date_rng.from_value.as_seconds())
                         if date_rng.to_value:
-                            where.append('__%s_int__ <= %s'%(k, a))
+                            where.append('_%s.__%s_int__ <= %s'%(cn, k, a))
                             args.append(date_rng.to_value.as_seconds())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
@@ -631,10 +634,10 @@ class MysqlClass:
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s in (%s)'%(k, s))
+                    where.append('_%s._%s in (%s)'%(cn, k, s))
                     args = args + v
                 else:
-                    where.append('_%s=%s'%(k, a))
+                    where.append('_%s._%s=%s'%(cn, k, a))
                     args.append(v)
 
         # don't match retired nodes
@@ -644,7 +647,7 @@ class MysqlClass:
         if search_matches is not None:
             v = search_matches.keys()
             s = ','.join([a for x in v])
-            where.append('id in (%s)'%s)
+            where.append('_%s.id in (%s)'%(cn, s))
             args = args + v
 
         # "grouping" is just the first-order sorting in the SQL fetch
@@ -672,9 +675,9 @@ class MysqlClass:
                         ordercols.append(tn + '._order')
                         o = tn + '._order'
                 elif prop == 'id':
-                    o = 'id'
+                    o = '_%s.id'%cn
                 else:
-                    o = '_'+prop
+                    o = '_%s._%s'%(cn, prop)
                     ordercols.append(o)
                 if sdir == '-':
                     o += ' desc'
