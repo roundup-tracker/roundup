@@ -1,8 +1,8 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2002-07-25 07:14:05 $
-:version: $Revision: 1.6 $
+:date: $Date: 2002-07-29 00:54:28 $
+:version: $Revision: 1.7 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -115,6 +115,10 @@ p.topic-title {
   font-weight: bold }
 
 dd p:first-child {
+  margin-top: 0px;
+}
+
+dd ul:first-child {
   margin-top: 0px;
 }
 

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 .. contents::
 
@@ -514,13 +514,35 @@ Create a node in the database. This is generally used to create nodes in the
 
 
 Detectors - adding behaviour to your tracker
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------
 .. _`detectors`:
+
+The detectors in your instance fire before (*auditors*) and after (*reactors*)
+changes to the contents of your database. They are Python modules that sit in
+your instance's ``detectors`` directory. You will have some installed by
+default - have a look. You can write new detectors or modify the existing
+ones. The existing detectors installed for you are:
+
+**nosyreaction.py**
+  This provides the automatic nosy list maintenance and email sending. The nosy
+  reactor (``nosyreaction``) fires when new messages are added to issues.
+  The nosy auditor (``updatenosy``) fires when issues are changed and figures
+  what changes need to be made to the nosy list (like adding new authors etc)
+**statusauditor.py**
+  This provides the ``chatty`` auditor which changes the issue status from
+  ``unread`` or ``closed`` to ``chatting`` if new messages appear. It also
+  provides the ``presetunread`` auditor which pre-sets the status to
+  ``unread`` on new nodes if the status isn't explicitly defined.
+
+See the detectors section in the `design document`__ for details of the
+interface for detectors.
+
+__ spec.html
 
 Sample additional detectors that have been found useful will appear in the
 ``detectors`` directory of the Roundup distribution:
 
-newissuecopy.py
+**newissuecopy.py**
   This detector sends an email to a team address whenever a new issue is
   created. The address is hard-coded into the detector, so edit it before you
   use it (look for the text 'team@team.host') or you'll get email errors!

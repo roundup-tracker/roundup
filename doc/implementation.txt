@@ -2,7 +2,7 @@
 Implementation notes
 ====================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 [see also the roundup package docstring]
 
@@ -24,7 +24,7 @@ In short:
     "superseder" multilink (since it can only link to one thing, and we'd
     want bugs to link to support and vice-versa).
 
- templates - the call="link()" is handled by special-case mechanisms in my
+ template - the call="link()" is handled by special-case mechanisms in my
     top-level CGI handler. In a nutshell, the handler looks for a method on
     itself called 'index%s' or 'item%s' where %s is a class. Most items
     pass on to the templating mechanism, but the file class _always_ does
@@ -44,7 +44,8 @@ In short:
 
  template - menu() and field() look awfully similar now .... ;)
 
- roundup.py - the command-line tool has a lot more commands at its disposal
+ roundup_admin.py - the command-line tool has a lot more commands at its
+    disposal
 
 -----------------
 

@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.13 $
+:Version: $Revision: 1.14 $
 
 Current situation
 =================
@@ -43,7 +43,7 @@ Issues
 5. The command-line tool has no logical controls.
 6. The anonymous control needs revising - there should only be one way to be
    an anonymous user, not two (currently there is user==None and
-   user=='anonymous).
+   user=='anonymous').
 
 
 Possible approaches
@@ -131,66 +131,53 @@ Individual assignment of Permission to User is unwieldy. The concept of a
 Role, which encompasses several Permissions and may be assigned to many Users,
 is quite well developed in many projects. Roundup will take this path, and
 allow the multiple assignment of Roles to Users, and multiple Permissions to
-Roles. These definitions will be stored in the hyperdb. They don't need to be
-pushed to the actual database though.
+Roles. These definitions are not persistent - they're defined when the
+application initialises.
 
 There will be two levels of Permission. The Class level permissions define
 logical permissions associated with all nodes of a particular class (or all
 classes). The Node level permissions define logical permissions associated
 with specific nodes by way of their user-linked properties.
 
-A security module defines::
+The security module defines::
 
-    class InMemoryClass(hyperdb.Class):
-        ''' Just be an in-memory class
-        '''
-        def __init__(self, db, classname, **properties):
-            ''' Set up an in-memory store for the nodes of this class
-            '''
-
-        def create(self, **propvalues):
-            ''' Create a new node in the in-memory store
-            '''
-
-        def get(self, nodeid, propname, default=_marker, cache=1):
-            ''' Get the node from the in-memory store
-            '''
-
-        def set(self, *args):
-            ''' Set values on the node
-            '''
-
-    class PermissionClass(InMemoryClass):
-        ''' Include the default attributes:
-            - name (String)
-            - klass (String)
-            - description (String)
+    class Permission:
+        ''' Defines a Permission with the attributes
+            - name
+            - description
+            - klass (optional)
 
             The klass may be unset, indicating that this permission is not
-            locked to a particular class. That means there may be multiple
+            locked to a particular hyperdb class. There may be multiple
             Permissions for the same name for different classes.
         '''
 
-    class RoleClass(InMemoryClass):
-        ''' Include the default attributes:
-            - name (String, key)
-            - description (String)
-            - permissions (PermissionClass Multilink)
+    class Role:
+        ''' Defines a Role with the attributes
+            - name
+            - description
+            - permissions
         '''
 
     class Security:
         def __init__(self, db):
-            ''' Initialise the permission and role classes, and add in the
+            ''' Initialise the permission and role stores, and add in the
                 base roles (for admin user).
             '''
 
-        def hasPermission(self, db, classname, permission, userid):
-            ''' Look through all the Roles, and hence Permissions, and see if
-                "permission" is there for the specified classname.
+        def getPermission(self, permission, classname=None):
+            ''' Find the Permission matching the name and for the class, if the
+                classname is specified.
 
+                Raise ValueError if there is no exact match.
             '''
 
-        def hasNodePermission(self, db, classname, nodeid, **propspec):
+        def hasPermission(self, permission, userid, classname=None):
+            ''' Look through all the Roles, and hence Permissions, and see if
+                "permission" is there for the specified classname.
+            '''
+
+        def hasNodePermission(self, classname, nodeid, **propspec):
             ''' Check the named properties of the given node to see if the
                 userid appears in them. If it does, then the user is granted
                 this permission check.
@@ -212,10 +199,10 @@ A security module defines::
             ''' Create a new Role with the properties defined in 'propspec'
             '''
 
-        def addPermissionToRole(self, rolename, permissionid):
+        def addPermissionToRole(self, rolename, permission):
             ''' Add the permission to the role's permission list.
 
-                'rolename' is the name of the role to add 'permissionid'.
+                'rolename' is the name of the role to add permission to.
             '''
 
 Modules such as ``cgi_client.py`` and ``mailgw.py`` define their own
@@ -248,10 +235,8 @@ The instance dbinit module then has in ``open()``::
 In the dbinit ``init()``::
 
     # create the two default users
-    r = db.getclass('role').lookup('Admin')
     user.create(username="admin", password=Password(adminpw),
                 address=instance_config.ADMIN_EMAIL, roles='Admin')
-    r = db.getclass('role').lookup('Anonymous')
     user.create(username="anonymous", roles='Anonymous')
 
 Then in the code that matters, calls to ``hasPermission`` and
@@ -337,8 +322,8 @@ Anonymous Users
 ---------------
 
 The "anonymous" user must always exist, and defines the access permissions for
-anonymous users. The three ANONYMOUS_ configuration variables are subsumed by
-this new functionality.
+anonymous users. The three ``ANONYMOUS_`` configuration variables are
+subsumed by this new functionality.
 
 
 Action
