@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.12 2004-03-19 04:47:59 richard Exp $
+#$Id: blobfiles.py,v 1.13 2004-06-24 06:39:07 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -23,7 +23,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 
-def files_in_dir(dir):       
+def files_in_dir(dir):
     if not os.path.exists(dir):
         return 0
     num_files = 0

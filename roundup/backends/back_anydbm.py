@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.156 2004-06-21 05:44:16 richard Exp $
+#$Id: back_anydbm.py,v 1.157 2004-06-24 06:39:07 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2118,25 +2118,6 @@ class FileClass(Class, hyperdb.FileClass):
         self.db.storefile(self.classname, newid, None, content)
         return newid
 
-    def import_list(self, propnames, proplist):
-        ''' Trap the "content" property...
-        '''
-        # dupe this list so we don't affect others
-        propnames = propnames[:]
-
-        # extract the "content" property from the proplist
-        i = propnames.index('content')
-        content = eval(proplist[i])
-        del propnames[i]
-        del proplist[i]
-
-        # do the normal import
-        newid = Class.import_list(self, propnames, proplist)
-
-        # save off the "content" file
-        self.db.storefile(self.classname, newid, None, content)
-        return newid
-
     def get(self, nodeid, propname, default=_marker, cache=1):
         ''' Trap the content propname and get it from the file
 
@@ -2193,7 +2174,6 @@ class FileClass(Class, hyperdb.FileClass):
         d = Class.getprops(self, protected=protected).copy()
         d['content'] = hyperdb.String()
         return d
-
 
 # deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
