@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.129 2002-06-20 23:52:11 richard Exp $
+# $Id: cgi_client.py,v 1.129.2.1 2002-07-10 06:50:49 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1338,10 +1338,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                             'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if type(value) != type([]):
-                value = [i.strip() for i in value.value.split(',')]
+            if hasattr(value,'value'):
+                # Quite likely to be a FormItem instance
+                value = value.value
+            if not isinstance(value, type([])):
+                value = [i.strip() for i in value.split(',')]
             else:
-                value = [i.value.strip() for i in value]
+                value = [i.strip() for i in value]
             link = cl.properties[key].classname
             l = []
             for entry in map(str, value):
@@ -1375,6 +1378,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.129  2002/06/20 23:52:11  richard
+# Better handling of unauth attempt to edit stuff
+#
 # Revision 1.128  2002/06/12 21:28:25  gmcm
 # Allow form to set user-properties on a Fileclass.
 # Don't assume that a Fileclass is named "files".
