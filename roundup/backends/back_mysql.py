@@ -145,7 +145,7 @@ class Database(Database):
         except MySQLdb.OperationalError, message:
             raise DatabaseError, message
         cursor = conn.cursor()
-        cursor.execute("SET AUTOCOMMIT=OFF")
+        cursor.execute("SET AUTOCOMMIT=0")
         cursor.execute("START TRANSACTION")
         return (conn, cursor)
 
@@ -481,7 +481,7 @@ class Database(Database):
         self.cursor = self.conn.cursor()
 
         # make sure we're in a new transaction and not autocommitting
-        self.sql("SET AUTOCOMMIT=OFF")
+        self.sql("SET AUTOCOMMIT=0")
         self.sql("START TRANSACTION")
 
 class MysqlClass:
