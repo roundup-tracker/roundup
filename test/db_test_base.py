@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.8 2003-11-14 00:11:19 richard Exp $ 
+# $Id: db_test_base.py,v 1.9 2003-11-16 19:59:06 jlgijsbers Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -797,6 +797,18 @@ class DBTest(MyTestCase):
         # make sure the retired items are actually imported
         ae(self.db.user.get('3', 'username'), 'blop')
         ae(self.db.issue.get('2', 'title'), 'issue two')
+
+    def testSafeGet(self):
+        # existent nodeid, existent property
+        self.assertEqual(self.db.user.safeget('1', 'username'), 'admin')
+        # existent nodeid, nonexistent property
+        self.assertEqual(self.db.user.safeget('1', 'nonexistent'), None)
+        # nonexistent nodeid, existent property
+        self.assertEqual(self.db.user.safeget('999', 'username'), None)
+        # nonexistent nodeid, nonexistent property
+        self.assertEqual(self.db.user.safeget('999', 'nonexistent'), None)
+        # different default
+        self.assertEqual(self.db.issue.safeget('999', 'nosy', []), [])
 
 class ROTest(MyTestCase):
     def setUp(self):

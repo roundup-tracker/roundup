@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.93 2003-11-06 19:01:57 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.94 2003-11-16 19:59:09 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -133,10 +133,8 @@ class IssueClass:
         If 'msgid' is None, the message gets sent only to the nosy
         list, and it's called a 'System Message'.
         """
-        authid, recipients = None, []
-        if msgid:
-            authid = self.db.msg.get(msgid, 'author')
-            recipients = self.db.msg.get(msgid, 'recipients')
+        authid = self.db.msg.safeget(msgid, 'author')
+        recipients = self.db.msg.safeget(msgid, 'recipients', [])
         
         sendto = []
         seen_message = dict([(recipient, 1) for recipient in recipients])
@@ -192,36 +190,30 @@ class IssueClass:
         users = self.db.user
         messages = self.db.msg
         files = self.db.file
+       
+        inreplyto = messages.safeget(msgid, 'inreplyto')
+        messageid = messages.safeget(msgid, 'messageid')
 
-        inreplyto, messageid = None, None
-        if msgid:
-            inreplyto = messages.get(msgid, 'inreplyto')
-            messageid = messages.get(msgid, 'messageid')
-
-            # make up a messageid if there isn't one (web edit)
-            if not messageid:
-                # this is an old message that didn't get a messageid, so
-                # create one
-                messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                                               self.classname, nodeid,
-                                               self.db.config.MAIL_DOMAIN)
-                messages.set(msgid, messageid=messageid)
+        # make up a messageid if there isn't one (web edit)
+        if not messageid:
+            # this is an old message that didn't get a messageid, so
+            # create one
+            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
+                                           self.classname, nodeid,
+                                           self.db.config.MAIL_DOMAIN)
+            messages.set(msgid, messageid=messageid)
 
         # send an email to the people who missed out
         cn = self.classname
         title = self.get(nodeid, 'title') or '%s message copy'%cn
 
-        authid, authname, authaddr = None, '', ''
-        if msgid:
-            authid = messages.get(msgid, 'author')
-            authname = users.get(authid, 'realname')
-            if not authname:
-                authname = users.get(authid, 'username')
-            authaddr = users.get(authid, 'address')
-            if authaddr:
-                authaddr = " <%s>" % straddr( ('',authaddr) )
-            else:
-                authaddr = ''
+        authid = messages.safeget(msgid, 'author')
+        authname = users.safeget(authid, 'realname')
+        if not authname:
+            authname = users.safeget(authid, 'username', '')
+        authaddr = users.safeget(authid, 'address', '')
+        if authaddr:
+            authaddr = " <%s>" % straddr( ('',authaddr) )
 
         # make the message body
         m = ['']
@@ -241,8 +233,7 @@ class IssueClass:
         m.append('')
 
         # add the content
-        if msgid:
-            m.append(messages.get(msgid, 'content'))
+        m.append(messages.safeget(msgid, 'content', ''))
 
         # add the change note
         if note:

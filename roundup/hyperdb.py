@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.92 2003-11-16 18:41:40 jlgijsbers Exp $
+# $Id: hyperdb.py,v 1.93 2003-11-16 19:59:10 jlgijsbers Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -571,6 +571,12 @@ class Class:
         '''Add (or refresh) the node to search indexes
         '''
         raise NotImplementedError
+
+    def safeget(self, nodeid, propname, default=None):
+        try:
+            return self.get(nodeid, propname)
+        except (KeyError, IndexError):
+            return default            
 
 class HyperdbValueError(ValueError):
     ''' Error converting a raw value into a Hyperdb value '''
