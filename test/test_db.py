@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.90.2.2 2003-11-14 02:47:56 richard Exp $ 
+# $Id: test_db.py,v 1.90.2.3 2004-03-12 00:28:31 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -814,18 +814,17 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 class mysqlDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import mysql
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
+        mysql.db_nuke(config)
+
         # open database for testing
+        os.makedirs(config.DATABASE + '/files')
         self.db = mysql.Database(config, 'admin')       
         setupSchema(self.db, 1, mysql)
-         
+
     def tearDown(self):
         from roundup.backends import mysql
         self.db.close()
-        mysql.Database.nuke(config)
+        mysql.db_nuke(config)
 
 class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -840,7 +839,7 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def tearDown(self):
         from roundup.backends import mysql
         self.db.close()
-        mysql.Database.nuke(config)
+        mysql.db_nuke(config)
 
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
@@ -953,14 +952,6 @@ def suite():
             # Check if we can run mysql tests
             import MySQLdb
             db = mysql.Database(nodbconfig, 'admin')
-            db.conn.select_db(config.MYSQL_DBNAME)
-            db.sql("SHOW TABLES");
-            tables = db.sql_fetchall()
-            if 0: #tables:
-                # Database should be empty. We don't dare to delete any data
-                raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
-            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
             db.close()
         except (MySQLdb.ProgrammingError, DatabaseError), msg:
             print "Warning! Mysql tests will not be performed", msg

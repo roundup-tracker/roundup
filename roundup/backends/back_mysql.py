@@ -8,48 +8,82 @@
 # Mysql backend for roundup
 #
 
+from roundup import hyperdb
 from roundup.backends.rdbms_common import *
 from roundup.backends import rdbms_common
 import MySQLdb
 import os, shutil
 from MySQLdb.constants import ER
 
-class Maintenance:
-    """ Database maintenance functions """
-    def db_nuke(self, config):
-        """Clear all database contents and drop database itself"""
-        db = Database(config, 'admin')
+def db_nuke(config):
+    """Clear all database contents and drop database itself"""
+    if db_exists(config):
+        conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+            config.MYSQL_DBPASSWORD)
         try:
-            db.sql_commit()
-            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
-        finally:
-            db.close()
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        
-    def db_exists(self, config):
-        """Check if database already exists"""
-        # Yes, this is a hack, but we must must open connection without
-        # selecting a database to prevent creation of some tables
-        config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)        
-        db = Database(config, 'admin')
+            conn.select_db(config.MYSQL_DBNAME)
+        except:
+            # no, it doesn't exist
+            pass
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SHOW TABLES")
+            tables = cursor.fetchall()
+            for table in tables:
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'DROP TABLE %s'%table[0]
+                cursor.execute("DROP TABLE %s"%table[0])
+            if __debug__:
+                print >>hyperdb.DEBUG, "DROP DATABASE %s"%config.MYSQL_DBNAME
+            cursor.execute("DROP DATABASE %s"%config.MYSQL_DBNAME)
+            conn.commit()
+        conn.close()
+
+    if os.path.exists(config.DATABASE):
+        shutil.rmtree(config.DATABASE)
+
+def db_create(config):
+    """Create the database."""
+    conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+        config.MYSQL_DBPASSWORD)
+    cursor = conn.cursor()
+    if __debug__:
+        print >>hyperdb.DEBUG, "CREATE DATABASE %s"%config.MYSQL_DBNAME
+    cursor.execute("CREATE DATABASE %s"%config.MYSQL_DBNAME)
+    conn.commit()
+    conn.close()
+
+def db_exists(config):
+    """Check if database already exists."""
+    conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+        config.MYSQL_DBPASSWORD)
+#    tables = None
+    try:
         try:
-            db.conn.select_db(config.MYSQL_DBNAME)
-            config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-                config.MYSQL_DBPASSWORD, config.MYSQL_DBNAME)
-            db.sql("SHOW TABLES")
-            tables = db.sql_fetchall()
-        finally:
-            db.close()
-        if tables or os.path.exists(config.DATABASE):
-            return 1
-        return 0        
+            conn.select_db(config.MYSQL_DBNAME)
+#            cursor = conn.cursor()
+#            cursor.execute("SHOW TABLES")
+#            tables = cursor.fetchall()
+#            if __debug__:
+#                print >>hyperdb.DEBUG, "tables %s"%(tables,)
+        except MySQLdb.OperationalError:
+            if __debug__:
+                print >>hyperdb.DEBUG, "no database '%s'"%config.MYSQL_DBNAME
+            return 0
+    finally:
+        conn.close()
+    if __debug__:
+        print >>hyperdb.DEBUG, "database '%s' exists"%config.MYSQL_DBNAME
+    return 1
 
 class Database(Database):
     arg = '%s'
     
     def open_connection(self):
+        # make sure the database actually exists
+        if not db_exists(self.config):
+            db_create(self.config)
+
         db = getattr(self.config, 'MYSQL_DATABASE')
         try:
             self.conn = MySQLdb.connect(*db)
@@ -142,9 +176,6 @@ class Database(Database):
           print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
 
-    # Static methods
-    nuke = Maintenance().db_nuke
-    exists = Maintenance().db_exists
 
 class MysqlClass:
     def find(self, **propspec):
