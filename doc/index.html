@@ -433,7 +433,21 @@ If either the name or password is not supplied, they are obtained from the
 command-line. 
 
 <h2><a name="web">Web Interface</a></h2>
-T.B.D.
+Index views may be modified by the following arguments:
+<pre>
+    :sort    - sort by prop name, optionally preceeded with '-'
+             to give descending or nothing for ascending sorting.
+    :group   - group by prop name, optionally preceeded with '-' or
+             to sort in descending or nothing for ascending order.
+    :filter  - selects which props should be displayed in the filter
+             section. Default is all.
+    :columns - selects the columns that should be displayed.
+             Default is all.
+    propname - selects the values the node properties given by propname
+             must have (very basic search/filter).
+</pre>
+
+<strong>Not sure what to put in here...</strong>
 
 <h2><a name="mail">E-Mail Gateway</a></h2>
 
@@ -1071,7 +1085,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.8 2001-10-05 02:44:06 richard Exp $
+$Id: index.html,v 1.9 2001-10-05 07:42:46 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>

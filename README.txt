@@ -33,43 +33,7 @@ For installation notes, please see the file INSTALL.TXT
 
 3. Usage
 ========
-The system is designed to accessed through the command-line, e-mail or web
-interface. Roundup has some useful doucmentation in its docstrings, so
-"pydoc roundup" will give useful information.
-
-3.1 Command-line
-----------------
-The command-line tool is called "roundup-admin" and is used for most low-level
-database manipulations such as:
- . creating a database instance
- . redefining the list of products ("create" and "retire" commands)
- . adding users manually, or setting their passwords ("create" and "set")
- . other stuff - run it with no arguments to get a better description of
-   what it does.
-
-
-3.2 E-mail
-----------
-See the docstring at the start of the roundup/mailgw.py source file.
-Use "pydoc roundup.mailgw".
-
-
-3.3 Web
--------
-Hopefully, this interface is pretty self-explanatory...
-
-Index views may be modified by the following arguments:
-    :sort    - sort by prop name, optionally preceeded with '-'
-	     to give descending or nothing for ascending sorting.
-    :group   - group by prop name, optionally preceeded with '-' or
-	     to sort in descending or nothing for ascending order.
-    :filter  - selects which props should be displayed in the filter
-	     section. Default is all.
-    :columns - selects the columns that should be displayed.
-	     Default is all.
-    propname - selects the values the node properties given by propname
-             must have (very basic search/filter).
-
+See the index.html file in the "doc" directory.
 
 
 3. Design
