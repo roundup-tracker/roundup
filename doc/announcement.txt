@@ -1,9 +1,9 @@
             Roundup 0.4.0b1 - an issue tracking system
 
-If you are upgrading from pre-0.3.0, please read MIGRATION.txt.
+If you are upgrading please read MIGRATION.txt.
 
-Roundup requires python 2.1.1 for correct operation. Support for dumbdbm has
-been disabled until python 2.1.2 and 2.2 are released.
+Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
+requires python 2.1.2 or 2.2.
 
 Big stuff in this release:
   - Use of transactions to prevent partial data commits
