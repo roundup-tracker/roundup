@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.163 $
+:Version: $Revision: 1.164 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3931,10 +3931,10 @@ First up, we create the new Role and Permission structure in
     def own_issue(db, userid, itemid):
         '''Determine whether the userid matches the creator of the issue.'''
         return userid == db.issue.get(itemid, 'creator')
-    p = db.security.addPermission(name='Edit Own Issues', klass='issue',
+    p = db.security.addPermission(name='Edit', klass='issue',
         code=own_issue, description='Can only edit own issues')
     db.security.addPermissionToRole('Provisional User', p)
-    p = db.security.addPermission(name='View Own Issues', klass='issue',
+    p = db.security.addPermission(name='View', klass='issue',
         code=own_issue, description='Can only view own issues')
     db.security.addPermissionToRole('Provisional User', p)
 
