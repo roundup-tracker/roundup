@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.10 2002-06-11 04:59:14 richard Exp $
+# $Id: test_init.py,v 1.11 2002-07-11 01:12:34 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -119,6 +119,11 @@ class bsddb3ClassicTestCase(ClassicTestCase):
 class bsddb3ExtendedTestCase(ExtendedTestCase):
     backend = 'bsddb3'
 
+class metakitClassicTestCase(ClassicTestCase):
+    backend = 'metakit'
+class metakitExtendedTestCase(ExtendedTestCase):
+    backend = 'metakit'
+
 def suite():
     l = [unittest.makeSuite(ClassicTestCase, 'test'),
          unittest.makeSuite(ExtendedTestCase, 'test')]
@@ -136,10 +141,20 @@ def suite():
     except:
         print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
 
+    try:
+        import metakit
+        l.append(unittest.makeSuite(metakitClassicTestCase, 'test'))
+        l.append(unittest.makeSuite(metakitExtendedTestCase, 'test'))
+    except:
+        print 'metakit module not found, skipping bsddb3 DBTestCase'
+
     return unittest.TestSuite(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/06/11 04:59:14  richard
+# enabled testing of bsddb in test_init
+#
 # Revision 1.9  2002/05/23 04:26:05  richard
 # 'I must run unit tests before committing\n' * 100
 #
