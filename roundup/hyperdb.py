@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.86 2003-02-26 04:55:57 richard Exp $
+# $Id: hyperdb.py,v 1.87 2003-03-17 22:03:03 kedder Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -416,6 +416,13 @@ class Class:
         """
         raise NotImplementedError
 
+    def restore(self, nodeid):
+        '''Restpre a retired node.
+
+        Make node available for all operations like it was before retirement.
+        '''
+        raise NotImplementedError
+    
     def is_retired(self, nodeid):
         '''Return true if the node is rerired
         '''

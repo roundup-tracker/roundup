@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.77 2003-03-16 22:24:56 kedder Exp $ 
+# $Id: test_db.py,v 1.78 2003-03-17 22:03:08 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -273,6 +273,8 @@ class anydbmDBTestCase(MyTestCase):
         # use the key again now that the old is retired
         newid2 = self.db.user.create(username="spam")
         self.assertNotEqual(newid, newid2)
+        # try to restore old node. this shouldn't succeed!
+        self.assertRaises(KeyError, self.db.user.restore, newid)
 
     def testRetire(self):
         self.db.issue.create(title="spam", status='1')
@@ -926,7 +928,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-#    return unittest.TestSuite(l)
+    #return unittest.TestSuite(l)
 
     from roundup import backends
     p = []

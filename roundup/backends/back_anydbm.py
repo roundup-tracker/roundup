@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.112 2003-03-16 22:24:54 kedder Exp $
+#$Id: back_anydbm.py,v 1.113 2003-03-17 22:03:04 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1328,9 +1328,18 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
 
-        self.fireAuditors('restore', nodeid, None)
-
         node = self.db.getnode(self.classname, nodeid)
+        # check if key property was overrided
+        key = self.getkey()
+        try:
+            id = self.lookup(node[key])
+        except KeyError:
+            pass
+        else:
+            raise KeyError, "Key property (%s) of retired node clashes with \
+                existing one (%s)" % (key, node[key])
+        # Now we can safely restore node
+        self.fireAuditors('restore', nodeid, None)
         del node[self.db.RETIRED_FLAG]
         self.db.setnode(self.classname, nodeid, node)
         if self.do_journal:

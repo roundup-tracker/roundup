@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.44 2003-03-16 22:24:55 kedder Exp $
+# $Id: rdbms_common.py,v 1.45 2003-03-17 22:03:08 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1486,8 +1486,18 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
 
-        self.fireAuditors('restore', nodeid, None)
+        node = self.db.getnode(self.classname, nodeid)
+        # check if key property was overrided
+        key = self.getkey()
+        try:
+            id = self.lookup(node[key])
+        except KeyError:
+            pass
+        else:
+            raise KeyError, "Key property (%s) of retired node clashes with \
+                existing one (%s)" % (key, node[key])
 
+        self.fireAuditors('restore', nodeid, None)
         # use the arg for __retired__ to cope with any odd database type
         # conversion (hello, sqlite)
         sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,

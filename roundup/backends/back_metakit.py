@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.42 2003-03-16 22:24:54 kedder Exp $
+# $Id: back_metakit.py,v 1.43 2003-03-17 22:03:04 kedder Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -684,6 +684,18 @@ class Class:
         '''
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
+
+        # check if key property was overrided
+        key = self.getkey()
+        keyvalue = self.get(nodeid, key)
+        try:
+            id = self.lookup(keyvalue)
+        except KeyError:
+            pass
+        else:
+            raise KeyError, "Key property (%s) of retired node clashes with \
+                existing one (%s)" % (key, keyvalue)
+        # Now we can safely restore node
         self.fireAuditors('restore', nodeid, None)
         view = self.getview(1)
         ndx = view.find(id=int(nodeid))
