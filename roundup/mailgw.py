@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.90 2002-09-25 05:13:34 richard Exp $
+$Id: mailgw.py,v 1.91 2002-09-26 00:01:51 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -131,8 +131,8 @@ class Message(mimetools.Message):
         return Message(s)
 
 subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re|aw)\s*\W?\s*)*'
-    r'\s*(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
-    r'\s*(?P<title>[^[]+)?(\[(?P<args>.+?)\])?', re.I)
+    r'\s*(P<quote>")?(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
+    r'\s*(?P<title>[^[]+)?"?(\[(?P<args>.+?)\])?', re.I)
 
 class MailGW:
     def __init__(self, instance, db):
@@ -434,6 +434,11 @@ Subject was: "%s"
             title = title.strip()
         else:
             title = ''
+
+        # strip off the quotes that dumb emailers put around the subject, like
+        #      Re: "[issue1] bla blah"
+        if m.group('quote') and title.endswith('"'):
+            title = title[:-1]
 
         # but we do need either a title or a nodeid...
         if nodeid is None and not title:
