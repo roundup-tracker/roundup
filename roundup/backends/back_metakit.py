@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.46 2003-04-20 11:58:45 kedder Exp $
+# $Id: back_metakit.py,v 1.47 2003-05-09 01:47:50 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -944,11 +944,16 @@ class Class:
                 else:
                     orcriteria[propname] = u
             elif isinstance(prop, hyperdb.String):
-                # simple glob searching
-                v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', value)
-                v = v.replace('?', '.')
-                v = v.replace('*', '.*?')
-                regexes[propname] = re.compile(v, re.I)
+                if type(value) is not type([]):
+                    value = [value]
+                m = []
+                for v in value:
+                    # simple glob searching
+                    v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
+                    v = v.replace('?', '.')
+                    v = v.replace('*', '.*?')
+                    m.append(v)
+                regexes[propname] = re.compile('(%s)'%('|'.join(m)), re.I)
             elif propname == 'id':
                 where[propname] = int(value)
             elif isinstance(prop, hyperdb.Boolean):

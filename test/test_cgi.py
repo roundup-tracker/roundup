@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.15 2003-04-17 06:51:44 richard Exp $
+# $Id: test_cgi.py,v 1.16 2003-05-09 01:47:50 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -232,6 +232,17 @@ class FormTestCase(unittest.TestCase):
             ({('issue', None): {'nosy': ['1','2']}}, []))
         self.assertEqual(self.parseForm({'nosy': 'admin,2'}, 'issue'),
             ({('issue', None): {'nosy': ['1','2']}}, []))
+
+    def testMixedMultilink(self):
+        form = cgi.FieldStorage()
+        form.list.append(cgi.MiniFieldStorage('nosy', '1,2'))
+        form.list.append(cgi.MiniFieldStorage('nosy', '3'))
+        cl = client.Client(self.instance, None, {'PATH_INFO':'/'}, form)
+        cl.classname = 'issue'
+        cl.nodeid = None
+        cl.db = self.db
+        self.assertEqual(cl.parsePropsFromForm(), 
+            ({('issue', None): {'nosy': ['1','2', '3']}}, []))
 
     def testEmptyMultilinkSet(self):
         nodeid = self.db.issue.create(nosy=['1','2'])

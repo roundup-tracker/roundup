@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.114 2003-04-24 07:19:59 richard Exp $
+# $Id: client.py,v 1.115 2003-05-09 01:47:50 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1283,15 +1283,17 @@ You should then receive another email with the new password.
             return 0
         return 1
 
-    def searchAction(self):
+    def searchAction(self, wcre=re.compile(r'[\s,]+')):
         ''' Mangle some of the form variables.
 
             Set the form ":filter" variable based on the values of the
             filter variables - if they're set to anything other than
             "dontcare" then add them to :filter.
 
-            Also handle the ":queryname" variable and save off the query to
+            Handle the ":queryname" variable and save off the query to
             the user's query list.
+
+            Split any String query values on whitespace and comma.
         '''
         # generic edit is per-class only
         if not self.searchPermission():
@@ -1319,6 +1321,15 @@ You should then receive another email with the new password.
             else:
                 if not self.form[key].value:
                     continue
+                if isinstance(props[key], hyperdb.String):
+                    v = self.form[key].value
+                    l = wcre.split(v)
+                    if len(l) > 1:
+                        self.form.value.remove(self.form[key])
+                        # replace the single value with the split list
+                        for v in l:
+                            self.form.value.append(cgi.MiniFieldStorage(key, v))
+
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
         # handle saving the query params
@@ -1857,18 +1868,20 @@ def extractFormList(value):
     ''' Extract a list of values from the form value.
 
         It may be one of:
-         [MiniFieldStorage, MiniFieldStorage, ...]
+         [MiniFieldStorage('value'), MiniFieldStorage('value','value',...), ...]
          MiniFieldStorage('value,value,...')
          MiniFieldStorage('value')
     '''
     # multiple values are OK
     if isinstance(value, type([])):
-        # it's a list of MiniFieldStorages
-        value = [i.value.strip() for i in value]
+        # it's a list of MiniFieldStorages - join then into
+        values = ','.join([i.value.strip() for i in value])
     else:
         # it's a MiniFieldStorage, but may be a comma-separated list
         # of values
-        value = [i.strip() for i in value.value.split(',')]
+        values = value.value
+
+    value = [i.strip() for i in values.split(',')]
 
     # filter out the empty bits
     return filter(None, value)

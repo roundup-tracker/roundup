@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.120 2003-04-22 20:53:54 kedder Exp $
+#$Id: back_anydbm.py,v 1.121 2003-05-09 01:47:50 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1685,11 +1685,17 @@ class Class(hyperdb.Class):
                 u.sort()
                 l.append((MULTILINK, k, u))
             elif isinstance(propclass, String) and k != 'id':
-                # simple glob searching
-                v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
-                v = v.replace('?', '.')
-                v = v.replace('*', '.*?')
-                l.append((STRING, k, re.compile(v, re.I)))
+                if type(v) is not type([]):
+                    v = [v]
+                m = []
+                for v in v:
+                    # simple glob searching
+                    v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
+                    v = v.replace('?', '.')
+                    v = v.replace('*', '.*?')
+                    m.append(v)
+                m = re.compile('(%s)'%('|'.join(m)), re.I)
+                l.append((STRING, k, m))
             elif isinstance(propclass, Date):
                 try:
                     date_rng = Range(v, date.Date, offset=timezone)
@@ -1761,11 +1767,14 @@ class Class(hyperdb.Class):
                             continue
                         break
                     elif t == STRING:
+                        if node[k] is None:
+                            break
                         # RE search
-                        if node[k] is None or not v.search(node[k]):
+                        if not v.search(node[k]):
                             break
                     elif t == DATE or t == INTERVAL:
-                        if node[k] is None: break
+                        if node[k] is None:
+                            break
                         if v.to_value:
                             if not (v.from_value <= node[k] and v.to_value >= node[k]):
                                 break

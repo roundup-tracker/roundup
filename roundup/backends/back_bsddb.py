@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.25 2003-03-26 11:19:28 richard Exp $
+#$Id: back_bsddb.py,v 1.26 2003-05-09 01:47:50 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
@@ -74,6 +74,9 @@ class Database(Database):
     #
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
+
+            Raise IndexError if the node doesn't exist (as per history()'s
+            API)
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'getjournal', (self, classname, nodeid)
@@ -114,10 +117,8 @@ class Database(Database):
         db.close()
 
         # add all the saved journal entries for this node
-        for entry in journal:
-            (nodeid, date_stamp, user, action, params) = entry
-            date_obj = date.Date(date_stamp)
-            res.append((nodeid, date_obj, user, action, params))
+        for nodeid, date_stamp, user, action, params in journal:
+            res.append((nodeid, date.Date(date_stamp), user, action, params))
         return res
 
     def getCachedJournalDB(self, classname):

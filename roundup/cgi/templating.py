@@ -1457,13 +1457,17 @@ class HTMLRequest:
         if self.classname is not None:
             props = db.getclass(self.classname).getprops()
             for name in self.filter:
-                if self.form.has_key(name):
-                    prop = props[name]
-                    fv = self.form[name]
-                    if (isinstance(prop, hyperdb.Link) or
-                            isinstance(prop, hyperdb.Multilink)):
-                        self.filterspec[name] = lookupIds(db, prop,
-                            handleListCGIValue(fv))
+                if not self.form.has_key(name):
+                    continue
+                prop = props[name]
+                fv = self.form[name]
+                if (isinstance(prop, hyperdb.Link) or
+                        isinstance(prop, hyperdb.Multilink)):
+                    self.filterspec[name] = lookupIds(db, prop,
+                        handleListCGIValue(fv))
+                else:
+                    if isinstance(fv, type([])):
+                        self.filterspec[name] = [v.value for v in fv]
                     else:
                         self.filterspec[name] = fv.value
 

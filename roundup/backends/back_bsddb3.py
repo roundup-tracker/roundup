@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.18 2002-10-03 06:56:29 richard Exp $
+#$Id: back_bsddb3.py,v 1.19 2003-05-09 01:47:50 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB3.
 '''
@@ -74,7 +74,31 @@ class Database(Database):
     #
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
+
+            Raise IndexError if the node doesn't exist (as per history()'s
+            API)
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'getjournal', (self, classname, nodeid)
+
+        # our journal result
+        res = []
+
+        # add any journal entries for transactions not committed to the
+        # database
+        for method, args in self.transactions:
+            if method != self.doSaveJournal:
+                continue
+            (cache_classname, cache_nodeid, cache_action, cache_params,
+                cache_creator, cache_creation) = args
+            if cache_classname == classname and cache_nodeid == nodeid:
+                if not cache_creator:
+                    cache_creator = self.curuserid
+                if not cache_creation:
+                    cache_creation = date.Date()
+                res.append((cache_nodeid, cache_creation, cache_creator,
+                    cache_action, cache_params))
+
         # attempt to open the journal - in some rare cases, the journal may
         # not exist
         try:
@@ -84,14 +108,17 @@ class Database(Database):
             raise IndexError, 'no such %s %s'%(classname, nodeid)
         # more handling of bad journals
         if not db.has_key(nodeid):
+            db.close()
+            if res:
+                # we have some unsaved journal entries, be happy!
+                return res
             raise IndexError, 'no such %s %s'%(classname, nodeid)
         journal = marshal.loads(db[nodeid])
-        res = []
-        for entry in journal:
-            (nodeid, date_stamp, user, action, params) = entry
-            date_obj = date.Date(date_stamp)
-            res.append((nodeid, date_obj, user, action, params))
         db.close()
+
+        # add all the saved journal entries for this node
+        for nodeid, date_stamp, user, action, params in journal:
+            res.append((nodeid, date.Date(date_stamp), user, action, params))
         return res
 
     def getCachedJournalDB(self, classname):
