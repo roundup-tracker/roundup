@@ -7,6 +7,7 @@ State   Description
 pending example: meta/parent bug implementation (feature request #506815)
 pending example: replace the "extended" example with a "help desk" one, and
                  rename "classic" to "bug tracker"
+pending example: script for retrieval of "mbox" archive of all messages
 pending hyperdb: write a backend for gadfly
 pending hyperdb: range searching of values (dates in particular)
         - filter specifies {property: (comparison function, value)}
@@ -47,7 +48,6 @@ pending web: have index page handle mid-page errors better so header and
              footer are still visible
 pending web: re-work cgi interface to abstract out the explicit "issue"
              interface
-pending admin/web?: retrieval of "mbox" archive of all messages
 
 ongoing  any bugs
 
