@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.7 2004-05-22 14:40:17 a1s Exp $
+# $Id: i18n.py,v 1.8 2004-05-22 14:55:07 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -88,12 +88,12 @@ elif not hasattr(gettext_module.GNUTranslations, "ngettext"):
             else:
                 _msg = plural
             return self.gettext(_msg)
-        def ngettext(self, singular, plural, count):
+        def ungettext(self, singular, plural, count):
             if count == 1:
                 _msg = singular
             else:
                 _msg = plural
-            return self.gettext(_msg)
+            return self.ugettext(_msg)
     class RoundupNullTranslations(
         gettext_module.NullTranslations, PluralFormsMixIn
     ):
@@ -119,12 +119,15 @@ def get_translation(language=None, domain=DOMAIN):
         # use OS environment
         _languages = None
     # except for english ("en") language, add english fallback if available
-    try:
-        _fallback = translation(domain=domain, languages=["en"],
-            class_=RoundupTranslations)
-    except IOError:
-        # no .mo files found
+    if language == "en":
         _fallback = None
+    else:
+        try:
+            _fallback = translation(domain=domain, languages=["en"],
+                class_=RoundupTranslations)
+        except IOError:
+            # no .mo files found
+            _fallback = None
     # get the translation
     try:
         _translation = translation(domain=domain, languages=_languages,
