@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.30 2004-11-10 08:58:47 a1s Exp $
+# $Id: instance.py,v 1.31 2004-11-11 12:02:30 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -56,6 +56,13 @@ class Tracker:
             # initialize tracker extensions
             for extension in self.get_extensions('extensions'):
                 extension(self)
+            # load database schema
+            schemafilename = os.path.join(self.tracker_home, 'schema.py')
+            # Note: can't use built-in open()
+            #   because of the global function with the same name
+            schemafile = file(schemafilename, 'rt')
+            self.schema = compile(schemafile.read(), schemafilename, 'exec')
+            schemafile.close()
             # load database detectors
             self.detectors = self.get_extensions('detectors')
             # db_open is set to True after first open()
@@ -88,17 +95,20 @@ class Tracker:
             'Number': hyperdb.Number,
             'db': backend.Database(self.config, name)
         }
-        self._load_python('schema.py', vars)
-        db = vars['db']
 
         if self.optimize:
+            # execute preloaded schema object
+            exec(self.schema, vars)
             # use preloaded detectors
             detectors = self.detectors
         else:
+            # execute the schema file
+            self._load_python('schema.py', vars)
             # reload extensions and detectors
             for extension in self.get_extensions('extensions'):
                 extension(self)
             detectors = self.get_extensions('detectors')
+        db = vars['db']
         # apply the detectors
         for detector in detectors:
             detector(db)
