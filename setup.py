@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: setup.py,v 1.13 2001-08-03 07:18:57 richard Exp $
+# $Id: setup.py,v 1.14 2001-08-06 23:57:20 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -8,14 +8,9 @@ from glob import glob
 import os
 from roundup.templatebuilder import makeHtmlBase
 
-try:
-    import unittest
-except:
-    print 'Skipping unit tests (no unittest module found)'
-else:
-    print 'Running unit tests...'
-    import test
-    test.go()
+print 'Running unit tests...'
+import test
+test.go()
 
 templates = 'classic', 'extended'
 packagelist = [ 'roundup', 'roundup.backends', 'roundup.templates' ]
@@ -41,6 +36,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/08/03 07:18:57  richard
+# updated version number for 0.2.6
+#
 # Revision 1.12  2001/08/03 02:51:06  richard
 # detect unit tests
 #
