@@ -1,15 +1,64 @@
+2001-07-27 17:30  richard
+
+	* BUILD.txt: minor notes
+
+2001-07-27 17:27  richard
+
+	* BUILD.txt, README.txt: Added build instructions, changed my
+	e-mail address in the docs to the sourceforge address.
+
+2001-07-27 17:20  richard
+
+	* Makefile, setup.cfg, setup.py: Makefile is now obsolete - setup
+	does what it used to do.
+
+2001-07-27 17:18  richard
+
+	* MANIFEST.in: Added the distutils manifest template (for
+	"documentation", see distutils.filelist).  Has no facility for
+	comments, so no ID or LOG for this baby.
+
+2001-07-27 17:16  richard
+
+	* test/: README.TXT, README.txt: rename for consistency
+
+2001-07-27 17:04  richard
+
+	* INSTALL.TXT, CHANGES.txt, INSTALL.txt, README.TXT, README.txt:
+	name changes to make distutils happy
+
+2001-07-27 16:56  richard
+
+	* setup.cfg, setup.py: Added scripts to the setup and added the
+	config so the default script install dir is /usr/local/bin.
+
+2001-07-27 16:55  richard
+
+	* test/: README.TXT, __init__.py, test_dates.py, test_db.py,
+	test_schema.py: moving tests -> test
+
+2001-07-27 16:25  richard
+
+	* roundup/hyperdb.py: Fixed some of the exceptions so they're the
+	right type.  Removed the str()-ification of node ids so we don't
+	mask oopsy errors any more.
+
+2001-07-27 15:17  richard
+
+	* roundup/hyperdb.py: just some comments
+
+2001-07-26 17:14  richard
+
+	* setup.py: Made setup.py executable, added id and log.
+
+2001-07-26 16:47  richard
+
+	* INSTALL.TXT: Updated for new installation procedure
+
 2001-07-25 14:19  anthonybaxter
 
 	* setup.py: first cut at setup.py - installs the package, but not
 	the bin/cgi-bin yet
-
-2001-07-25 14:10  richard
-
-	* tests/__init__.py: added date test suite
-
-2001-07-25 14:10  richard
-
-	* tests/test_dates.py: Date test suite
 
 2001-07-25 14:09  richard
 
@@ -19,10 +68,6 @@
 2001-07-25 13:40  richard
 
 	* README.TXT: added note about the spec
-
-2001-07-25 13:40  richard
-
-	* tests/test_db.py: Fixed an oops
 
 2001-07-25 13:39  richard
 
@@ -37,9 +82,8 @@
 	doc/images/logo-codesourcery-medium.gif,
 	doc/images/logo-software-carpentry-standard.gif,
 	roundup/backends/back_anydbm.py,
-	roundup/templates/extended/dbinit.py, tests/test_db.py,
-	tests/test_schema.py: Added the Roundup spec to the new
-	documentation directory.
+	roundup/templates/extended/dbinit.py: Added the Roundup spec to the
+	new documentation directory.
 
 2001-07-24 21:18  anthonybaxter
 
@@ -61,11 +105,6 @@
 	
 	__init__.py magic was needed for the rather high levels of wierd
 	import magic.  Reducing level of import magic == (good, future)
-
-2001-07-24 15:22  richard
-
-	* tests/: README.TXT, __init__.py, test_db.py, test_schema.py:
-	Added some unit tests
 
 2001-07-24 14:26  anthonybaxter
 
@@ -344,7 +383,7 @@
 
 	* cgitb.py, config.py, date.py, hyperdb.py, roundup-mailgw.py,
 	roundup.py, roundup_cgi.py, roundupdb.py, server.py, template.py:
-	Added CVS keywords $Id: ChangeLog,v 1.4 2001-07-25 04:21:24 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
+	Added CVS keywords $Id: ChangeLog,v 1.5 2001-07-27 07:31:22 anthonybaxter Exp $ and $Log: not supported by cvs2svn $ to all python files.
 
 2001-07-19 15:46  anthonybaxter
 
