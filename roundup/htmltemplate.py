@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.45 2001-11-22 15:46:42 jhermann Exp $
+# $Id: htmltemplate.py,v 1.46 2001-11-24 00:53:12 jhermann Exp $
 
 __doc__ = """
 Template engine.
@@ -850,7 +850,7 @@ class NewItemTemplate(TemplateFunctions):
         c = self.classname
         try:
             s = open(os.path.join(self.templates, c+'.newitem')).read()
-        except:
+        except IOError:
             s = open(os.path.join(self.templates, c+'.item')).read()
         w('<form action="new%s" method="POST" enctype="multipart/form-data">'%c)
         for key in form.keys():
@@ -865,6 +865,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.45  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.44  2001/11/21 23:35:45  jhermann
 # Added globbing for win32, and sample marking in a 2nd file to test it
 #
