@@ -27,6 +27,7 @@ Fixed:
 - grouping (and sorting) by multilink in RDBMS backends (sf bug 655702)
 - roundup scripts may now be asked for their version (sf rfe 798657)
 - sqlite backend had stopped using the global lock
+- better check for anonymous viewing of user items (sf bug 933510)
 
 
 2004-03-27 0.7.0b2

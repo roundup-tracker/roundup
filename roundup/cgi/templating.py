@@ -945,9 +945,10 @@ class HTMLUserPermission:
         if getattr(self, '_nodeid', None) == userid and not is_anonymous:
             return 1
 
-        # may anonymous users register?
-        if (is_anonymous and s.hasPermission('Web Registration', userid,
-                self._classname)):
+        # may anonymous users register? (so, they need to be anonymous,
+        # need the Web Rego permission, and not trying to view an item)
+        rego = s.hasPermission('Web Registration', userid, self._classname)
+        if is_anonymous and rego and getattr(self, '_nodeid', None) is None:
             return 1
 
         # nope, no access here

@@ -1,5 +1,8 @@
 This file contains items that need doing before the next release:
 
+. make Intervals store timestamps, not strings
+
+
 Optionally:
 - have rdbms backends look up the journal for actor if it's not set
 - migrate to numeric ID values (fixes bug 817217)
