@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.149 2005-02-14 02:48:11 richard Exp $
+# $Id: rdbms_common.py,v 1.150 2005-03-02 14:03:44 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -532,8 +532,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cols = ','.join(['%s varchar'%x
             for x in 'nodeid date tag action params'.split()])
         sql = '''create table %s__journal (
-            nodeid integer, date timestamp, tag varchar(255),
-            action varchar(255), params text)'''%spec.classname
+            nodeid integer, date %s, tag varchar(255),
+            action varchar(255), params text)''' % (spec.classname,
+            self.hyperdb_to_sql_datatypes[hyperdb.Date])
         self.sql(sql)
         self.create_journal_table_indexes(spec)
 
