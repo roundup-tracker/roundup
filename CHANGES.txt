@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2001-??-?? - 0.2.9
+ . Generation of links to Link/Multilink in indexes. (thanks Hubert Hoegl)
+ . AssignedTo wasn't in the "classic" schema's item page.
+
+
 2001-08-30 - 0.2.8
 Fixed:
  . Missing import in mailgw.
