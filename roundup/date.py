@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.54 2003-04-23 11:48:05 richard Exp $
+# $Id: date.py,v 1.55 2003-11-03 10:23:05 anthonybaxter Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -204,22 +204,26 @@ class Date:
             if month > 12: year += 1; month -= 12
 
         # now do the days, now that we know what month we're in
-        mdays = calendar.mdays
-        if month == 2 and calendar.isleap(year): month_days = 29
-        else: month_days = mdays[month]
-        while month < 1 or month > 12 or day < 0 or day > month_days:
+        def get_mdays(year,month):
+            if month == 2 and calendar.isleap(year): return 29
+            else: return calendar.mdays[month]
+            
+        while month < 1 or month > 12 or day < 0 or day > get_mdays(year,month):
             # now to day under/over
-            if day < 0: month -= 1; day += month_days
-            elif day > month_days: month += 1; day -= month_days
+            if day < 0: 
+                # When going backwards, decrement month, then increment days
+                month -= 1
+                day += get_mdays(year,month)
+            elif day > get_mdays(year,month): 
+                # When going forwards, decrement days, then increment month
+                day -= get_mdays(year,month)
+                month += 1
 
             # possibly fix up the month so we're within range
             while month < 1 or month > 12:
-                if month < 1: year -= 1; month += 12
+                if month < 1: year -= 1; month += 12 ; day += 31
                 if month > 12: year += 1; month -= 12
 
-            # re-figure the number of days for this month
-            if month == 2 and calendar.isleap(year): month_days = 29
-            else: month_days = mdays[month]
         return (year, month, day, hour, minute, second, 0, 0, 0)
 
     def applyInterval(self, interval):

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.26 2003-11-02 09:27:50 richard Exp $ 
+# $Id: test_dates.py,v 1.27 2003-11-03 10:23:06 anthonybaxter Exp $ 
 
 import unittest, time
 
@@ -205,7 +205,7 @@ class DateTestCase(unittest.TestCase):
         self.assertEqual(str(then), '2004-02-28.00:00:00')
         now = Date('2003-03-01.00:00:00')
         then = now - Interval('1d')
-        self.assertEqual(str(then), '2003-02-08.00:00:00')
+        self.assertEqual(str(then), '2003-02-28.00:00:00')
         now = Date('2003-03-01.00:00:00')
         then = now - Interval('59d')
         self.assertEqual(str(then), '2003-01-01.00:00:00')
@@ -219,10 +219,10 @@ class DateTestCase(unittest.TestCase):
         then = now + Interval('2d')
         self.assertEqual(str(then), '2004-01-01.00:00:00')
         now = Date('2003-01-01.00:00:00')
-        then = now + Interval('364d')
+        then = now + Interval('365d')
         self.assertEqual(str(then), '2004-01-01.00:00:00')
         now = Date('2004-01-01.00:00:00')
-        then = now + Interval('365d')
+        then = now + Interval('366d')
         self.assertEqual(str(then), '2005-01-01.00:00:00')
 
     def testIntervalSubtractYearBoundary(self):
