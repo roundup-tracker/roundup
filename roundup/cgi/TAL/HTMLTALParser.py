@@ -11,9 +11,9 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
+"""Parse HTML and compile to TALInterpreter intermediate code.
 """
-Parse HTML and compile to TALInterpreter intermediate code.
-"""
+__docformat__ = 'restructuredtext'
 
 import sys
 import string

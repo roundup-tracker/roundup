@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.74 2004-01-20 05:55:51 richard Exp $
+# $Id: rdbms_common.py,v 1.75 2004-02-11 23:55:09 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -20,6 +20,7 @@ probably a bit of work to be done if a database is used that actually
 honors column typing, since the initial databases don't (sqlite stores
 everything as a string.)
 '''
+__docformat__ = 'restructuredtext'
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -490,10 +491,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             raise KeyError, 'There is no class called "%s"'%classname
 
     def clear(self):
-        ''' Delete all database contents.
+        '''Delete all database contents.
 
-            Note: I don't commit here, which is different behaviour to the
-            "nuke from orbit" behaviour in the *dbms.
+        Note: I don't commit here, which is different behaviour to the
+              "nuke from orbit" behaviour in the dbs.
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'clear', (self,)
@@ -1649,8 +1650,11 @@ class Class(hyperdb.Class):
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
                  deleted
+
         WARNING: use retire() instead
+
         WARNING: the properties of this node will not be available ever again
+
         WARNING: really, use retire() instead
 
         Well, I think that's enough warnings. This method exists mostly to
@@ -1706,14 +1710,15 @@ class Class(hyperdb.Class):
         return self.key
 
     def labelprop(self, default_to_id=0):
-        ''' Return the property name for a label for the given node.
+        '''Return the property name for a label for the given node.
 
         This method attempts to generate a consistent label for the node.
         It tries the following in order:
-            1. key property
-            2. "name" property
-            3. "title" property
-            4. first property from the sorted property name list
+
+        1. key property
+        2. "name" property
+        3. "title" property
+        4. first property from the sorted property name list
         '''
         k = self.getkey()
         if  k:
@@ -1897,18 +1902,20 @@ class Class(hyperdb.Class):
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
-        ''' Return a list of the ids of the active nodes in this class that
-            match the 'filter' spec, sorted by the group spec and then the
-            sort spec
+        '''Return a list of the ids of the active nodes in this class that
+        match the 'filter' spec, sorted by the group spec and then the
+        sort spec
 
-            "filterspec" is {propname: value(s)}
-            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
-                               and prop is a prop name or None
-            "search_matches" is {nodeid: marker}
+        "filterspec" is {propname: value(s)}
 
-            The filter must match all properties specificed - but if the
-            property value to match is a list, any one of the values in the
-            list may match for that property to match.
+        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+        and prop is a prop name or None
+
+        "search_matches" is {nodeid: marker}
+
+        The filter must match all properties specificed - but if the
+        property value to match is a list, any one of the values in the
+        list may match for that property to match.
         '''
         # just don't bother if the full-text search matched diddly
         if search_matches == {}:

@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.11 2003-12-06 02:46:34 richard Exp $
+# $Id: instance.py,v 1.12 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = '''
-Tracker handling (open tracker).
+'''Tracker handling (open tracker).
 
 Backwards compatibility for the old-style "imported" trackers.
 '''
+__docformat__ = 'restructuredtext'
 
 import os
 

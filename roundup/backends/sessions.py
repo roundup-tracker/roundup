@@ -1,12 +1,11 @@
-#$Id: sessions.py,v 1.6 2003-09-05 21:05:18 jlgijsbers Exp $
-"""
-This module defines a very basic store that's used by the CGI interface
+#$Id: sessions.py,v 1.7 2004-02-11 23:55:09 richard Exp $
+"""This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
 Yes, it's called "sessions" - because originally it only defined a session
 class. It's now also used for One Time Key handling too.
-
 """
+__docformat__ = 'restructuredtext'
 
 import anydbm, whichdb, os, marshal
 

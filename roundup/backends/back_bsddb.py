@@ -15,10 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.28 2003-11-14 00:11:18 richard Exp $
+#$Id: back_bsddb.py,v 1.29 2004-02-11 23:55:08 richard Exp $
+'''This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
-This module defines a backend that saves the hyperdatabase in BSDDB.
-'''
+__docformat__ = 'restructuredtext'
 
 import bsddb, os, marshal
 from roundup import hyperdb, date

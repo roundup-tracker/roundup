@@ -16,7 +16,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: version_check.py,v 1.3 2002-09-10 00:18:20 richard Exp $
+# $Id: version_check.py,v 1.4 2004-02-11 23:55:08 richard Exp $
+
+"""Enforces the minimum Python version that Roundup requires.
+"""
+__docformat__ = 'restructuredtext'
 
 import sys
 if not hasattr(sys, 'version_info') or sys.version_info[:3] < (2,1,1):

@@ -5,8 +5,9 @@
 # under the same terms as Python, so long as this copyright message and
 # disclaimer are retained in their original form.
 #
-# psycopg backend for roundup
-#
+'''Postgresql backend via psycopg for Roundup.'''
+__docformat__ = 'restructuredtext'
+
 
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common

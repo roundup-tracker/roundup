@@ -11,9 +11,9 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
+"""Code generator for TALInterpreter intermediate code.
 """
-Code generator for TALInterpreter intermediate code.
-"""
+__docformat__ = 'restructuredtext'
 
 import string
 import re

@@ -1,11 +1,11 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.9 2003-12-05 03:36:34 richard Exp $
+# $Id: cgitb.py,v 1.10 2004-02-11 23:55:09 richard Exp $
 
-__doc__ = """
-Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
+"""Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
+__docformat__ = 'restructuredtext'
 
 import sys, os, types, string, keyword, linecache, tokenize, inspect, cgi
 import pydoc, traceback

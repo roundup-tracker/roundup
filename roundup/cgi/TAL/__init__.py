@@ -11,4 +11,5 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
-""" Template Attribute Language package """
+"""Template Attribute Language package """
+__docformat__ = 'restructuredtext'

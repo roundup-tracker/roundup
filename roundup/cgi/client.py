@@ -1,8 +1,8 @@
-# $Id: client.py,v 1.155 2004-02-11 21:34:31 jlgijsbers Exp $
+# $Id: client.py,v 1.156 2004-02-11 23:55:09 richard Exp $
 
-__doc__ = """
-WWW request handler (also used in the stand-alone server).
+"""WWW request handler (also used in the stand-alone server).
 """
+__docformat__ = 'restructuredtext'
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, stat, rfc822
@@ -16,10 +16,10 @@ from roundup.cgi.form_parser import FormParser
 from roundup.mailer import Mailer, MessageSendError
 
 def initialiseSecurity(security):
-    ''' Create some Permissions and Roles on the security object
+    '''Create some Permissions and Roles on the security object
 
-        This function is directly invoked by security.Security.__init__()
-        as a part of the Security object instantiation.
+    This function is directly invoked by security.Security.__init__()
+    as a part of the Security object instantiation.
     '''
     security.addPermission(name="Web Registration",
         description="User may register through the web")
@@ -46,28 +46,30 @@ def clean_message_callback(match, ok={'a':1,'i':1,'b':1,'br':1}):
     return '&lt;%s&gt;'%match.group(2)
 
 class Client:
-    ''' Instantiate to handle one CGI request.
+    '''Instantiate to handle one CGI request.
 
     See inner_main for request processing.
 
     Client attributes at instantiation:
-        "path" is the PATH_INFO inside the instance (with no leading '/')
-        "base" is the base URL for the instance
-        "form" is the cgi form, an instance of FieldStorage from the standard
-               cgi module
-        "additional_headers" is a dictionary of additional HTTP headers that
-               should be sent to the client
-        "response_code" is the HTTP response code to send to the client
+
+    - "path" is the PATH_INFO inside the instance (with no leading '/')
+    - "base" is the base URL for the instance
+    - "form" is the cgi form, an instance of FieldStorage from the standard
+      cgi module
+    - "additional_headers" is a dictionary of additional HTTP headers that
+      should be sent to the client
+    - "response_code" is the HTTP response code to send to the client
 
     During the processing of a request, the following attributes are used:
-        "error_message" holds a list of error messages
-        "ok_message" holds a list of OK messages
-        "session" is the current user session id
-        "user" is the current user's name
-        "userid" is the current user's id
-        "template" is the current :template context
-        "classname" is the current class context name
-        "nodeid" is the current context item id
+
+    - "error_message" holds a list of error messages
+    - "ok_message" holds a list of OK messages
+    - "session" is the current user session id
+    - "user" is the current user's name
+    - "userid" is the current user's id
+    - "template" is the current :template context
+    - "classname" is the current class context name
+    - "nodeid" is the current context item id
 
     User Identification:
      If the user has no login cookie, then they are anonymous and are logged
@@ -76,7 +78,6 @@ class Client:
 
      Once a user logs in, they are assigned a session. The Client instance
      keeps the nodeid of the session as the "session" attribute.
-
 
     Special form variables:
      Note that in various places throughout this code, special form
@@ -146,32 +147,34 @@ class Client:
                 self.db.close()
 
     def inner_main(self):
-        ''' Process a request.
+        '''Process a request.
 
-            The most common requests are handled like so:
-            1. figure out who we are, defaulting to the "anonymous" user
-               see determine_user
-            2. figure out what the request is for - the context
-               see determine_context
-            3. handle any requested action (item edit, search, ...)
-               see handle_action
-            4. render a template, resulting in HTML output
+        The most common requests are handled like so:
 
-            In some situations, exceptions occur:
-            - HTTP Redirect  (generally raised by an action)
-            - SendFile       (generally raised by determine_context)
-              serve up a FileClass "content" property
-            - SendStaticFile (generally raised by determine_context)
-              serve up a file from the tracker "html" directory
-            - Unauthorised   (generally raised by an action)
-              the action is cancelled, the request is rendered and an error
-              message is displayed indicating that permission was not
-              granted for the action to take place
-            - templating.Unauthorised   (templating action not permitted)
-              raised by an attempted rendering of a template when the user
-              doesn't have permission
-            - NotFound       (raised wherever it needs to be)
-              percolates up to the CGI interface that called the client
+        1. figure out who we are, defaulting to the "anonymous" user
+           see determine_user
+        2. figure out what the request is for - the context
+           see determine_context
+        3. handle any requested action (item edit, search, ...)
+           see handle_action
+        4. render a template, resulting in HTML output
+
+        In some situations, exceptions occur:
+
+        - HTTP Redirect  (generally raised by an action)
+        - SendFile       (generally raised by determine_context)
+          serve up a FileClass "content" property
+        - SendStaticFile (generally raised by determine_context)
+          serve up a file from the tracker "html" directory
+        - Unauthorised   (generally raised by an action)
+          the action is cancelled, the request is rendered and an error
+          message is displayed indicating that permission was not
+          granted for the action to take place
+        - templating.Unauthorised   (templating action not permitted)
+          raised by an attempted rendering of a template when the user
+          doesn't have permission
+        - NotFound       (raised wherever it needs to be)
+          percolates up to the CGI interface that called the client
         '''
         self.ok_message = []
         self.error_message = []
@@ -262,22 +265,25 @@ class Client:
             sessions.set('last_clean', last_use=time.time())
 
     def determine_user(self):
-        '''Determine who the user is.
+        ''' Determine who the user is
         '''
-        # open the database as admin
+        # determine the uid to use
         self.opendb('admin')
 
-        # clean age sessions
-        self.clean_sessions()
-
         # make sure we have the session Class
+        self.clean_sessions()
         sessions = self.db.sessions
 
-        # look up the user session cookie
-        cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
-        user = 'anonymous'
+        # first up, try the REMOTE_USER var (from HTTP Basic Auth handled
+        # by a front-end HTTP server)
+        try:
+            user = os.getenv('REMOTE_USER')
+        except KeyError:
+            pass
 
-        # bump the "revision" of the cookie since the format changed
+        # look up the user session cookie (may override the REMOTE_USER)
+        cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
+        user = 'anonymous'
         if (cookie.has_key(self.cookie_name) and
                 cookie[self.cookie_name].value != 'deleted'):
 
@@ -290,7 +296,8 @@ class Client:
                 sessions.commit()
                 user = sessions.get(self.session, 'user')
             except KeyError:
-                user = 'anonymous'
+                # not valid, ignore id
+                pass
 
         # sanity check on the user still being valid, getting the userid
         # at the same time
@@ -309,40 +316,43 @@ class Client:
         self.opendb(self.user)
 
     def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
-        """ Determine the context of this page from the URL:
+        """Determine the context of this page from the URL:
 
-            The URL path after the instance identifier is examined. The path
-            is generally only one entry long.
+        The URL path after the instance identifier is examined. The path
+        is generally only one entry long.
 
-            - if there is no path, then we are in the "home" context.
-            * if the path is "_file", then the additional path entry
-              specifies the filename of a static file we're to serve up
-              from the instance "html" directory. Raises a SendStaticFile
-              exception.
-            - if there is something in the path (eg "issue"), it identifies
-              the tracker class we're to display.
-            - if the path is an item designator (eg "issue123"), then we're
-              to display a specific item.
-            * if the path starts with an item designator and is longer than
-              one entry, then we're assumed to be handling an item of a
-              FileClass, and the extra path information gives the filename
-              that the client is going to label the download with (ie
-              "file123/image.png" is nicer to download than "file123"). This
-              raises a SendFile exception.
+        - if there is no path, then we are in the "home" context.
+        - if the path is "_file", then the additional path entry
+          specifies the filename of a static file we're to serve up
+          from the instance "html" directory. Raises a SendStaticFile
+          exception.(*)
+        - if there is something in the path (eg "issue"), it identifies
+          the tracker class we're to display.
+        - if the path is an item designator (eg "issue123"), then we're
+          to display a specific item.
+        - if the path starts with an item designator and is longer than
+          one entry, then we're assumed to be handling an item of a
+          FileClass, and the extra path information gives the filename
+          that the client is going to label the download with (ie
+          "file123/image.png" is nicer to download than "file123"). This
+          raises a SendFile exception.(*)
 
-            Both of the "*" types of contexts stop before we bother to
-            determine the template we're going to use. That's because they
-            don't actually use templates.
+        Both of the "*" types of contexts stop before we bother to
+        determine the template we're going to use. That's because they
+        don't actually use templates.
 
-            The template used is specified by the :template CGI variable,
-            which defaults to:
+        The template used is specified by the :template CGI variable,
+        which defaults to:
 
-             only classname suplied:          "index"
-             full item designator supplied:   "item"
+        - only classname suplied:          "index"
+        - full item designator supplied:   "item"
 
-            We set:
+        We set:
+
              self.classname  - the class to display, can be None
+
              self.template   - the template to render the current context with
+
              self.nodeid     - the nodeid of the class we're displaying
         """
         # default the optional variables

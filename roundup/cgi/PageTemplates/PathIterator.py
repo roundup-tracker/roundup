@@ -16,8 +16,9 @@
 A TALES Iterator with the ability to use first() and last() on
 subpaths of elements.
 """
+__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.1 $'[11:-2]
+__version__='$Revision: 1.2 $'[11:-2]
 
 import TALES
 from Expressions import restrictedTraverse, Undefs, getSecurityManager

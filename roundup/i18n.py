@@ -15,12 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: i18n.py,v 1.3 2002-09-10 00:18:20 richard Exp $
+# $Id: i18n.py,v 1.4 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = """
+"""
 RoundUp Internationalization (I18N)
 
-To use this module, the following code should be used:
+To use this module, the following code should be used::
 
     from roundup.i18n import _
     ...
@@ -28,14 +28,14 @@ To use this module, the following code should be used:
 
 Note that to enable re-ordering of inserted texts in formatting strings
 (which can easily happen if a sentence has to be re-ordered due to
-grammatical changes), translatable formats should use named format specs:
+grammatical changes), translatable formats should use named format specs::
 
     ... _('Index of %(classname)s') % {'classname': cn} ...
 
 Also, this eases the job of translators since they have some context what
 the dynamic portion of a message really means.
-
 """
+__docformat__ = 'restructuredtext'
 
 # first, we try to import gettext; this probably never fails, but we make
 # sure we survive this anyway

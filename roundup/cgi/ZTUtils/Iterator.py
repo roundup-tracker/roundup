@@ -18,8 +18,9 @@ The Iterator() function accepts either a sequence or a Python
 iterator.  The next() method fetches the next item, and returns
 true if it succeeds.
 
-$Id: Iterator.py,v 1.2 2002-09-26 21:54:17 richard Exp $'''
-__version__='$Revision: 1.2 $'[11:-2]
+$Id: Iterator.py,v 1.3 2004-02-11 23:55:09 richard Exp $'''
+__docformat__ = 'restructuredtext'
+__version__='$Revision: 1.3 $'[11:-2]
 
 import string
 

@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.10 2003-12-05 03:28:38 richard Exp $
-'''
-This module exports file storage for roundup backends.
+#$Id: blobfiles.py,v 1.11 2004-02-11 23:55:09 richard Exp $
+'''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
+__docformat__ = 'restructuredtext'
 
 import os
 

@@ -11,9 +11,9 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
+"""Parse XML and compile to TALInterpreter intermediate code.
 """
-Parse XML and compile to TALInterpreter intermediate code.
-"""
+__docformat__ = 'restructuredtext'
 
 import string
 from XMLParser import XMLParser

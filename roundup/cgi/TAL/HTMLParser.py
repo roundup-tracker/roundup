@@ -1,4 +1,5 @@
 """A parser for HTML and XHTML."""
+__docformat__ = 'restructuredtext'
 
 # This file is based on sgmllib.py, but the API is slightly different.
 

@@ -11,9 +11,9 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
+"""Common definitions used by TAL and METAL compilation an transformation.
 """
-Common definitions used by TAL and METAL compilation an transformation.
-"""
+__docformat__ = 'restructuredtext'
 
 from types import ListType, TupleType
 

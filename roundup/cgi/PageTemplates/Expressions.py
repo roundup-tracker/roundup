@@ -24,8 +24,9 @@ Modified for Roundup 0.5 release:
 - Made traceback info more informative
 
 """
+__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.8 $'[11:-2]
+__version__='$Revision: 1.9 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \

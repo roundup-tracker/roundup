@@ -1,4 +1,6 @@
-"""Shared support for scanning document type declarations in HTML and XHTML."""
+"""Shared support for scanning document type declarations in HTML and XHTML.
+"""
+__docformat__ = 'restructuredtext'
 
 import re
 import string

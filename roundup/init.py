@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.28 2003-11-13 04:12:10 richard Exp $
+# $Id: init.py,v 1.29 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = """
-Init (create) a roundup instance.
+"""Init (create) a roundup instance.
 """
+__docformat__ = 'restructuredtext'
 
 import os, sys, errno, rfc822
 
@@ -57,31 +57,32 @@ def copytree(src, dst, symlinks=0):
 def install(instance_home, template):
     '''Install an instance using the named template and backend.
 
-    instance_home - the directory to place the instance data in
-    template      - the directory holding the template to use in creating
-                    the instance data
+    'instance_home'
+       the directory to place the instance data in
+    'template'
+       the directory holding the template to use in creating the instance data
 
     The instance_home directory will be created using the files found in
     the named template (roundup.templates.<name>). A standard instance_home
     contains:
-        . config.py
-          - simple configuration of things like the email address for the
-            mail gateway, the mail domain, the mail host, ...
-        . dbinit.py and select_db.py
-          - defines the schema for the hyperdatabase and indicates which
-            backend to use.
-        . interfaces.py
-          - defines the CGI Client and mail gateway MailGW classes that are
-            used by roundup.cgi, roundup-server and roundup-mailgw.
-        . __init__.py
-          - ties together all the instance information into one interface
-        . db/
-          - the actual database that stores the instance's data
-        . html/
-          - the html templates that are used by the CGI Client
-        . detectors/
-          - the auditor and reactor modules for this instance
 
+    config.py
+      simple configuration of things like the email address for the
+      mail gateway, the mail domain, the mail host, ...
+    dbinit.py and select_db.py
+      defines the schema for the hyperdatabase and indicates which
+      backend to use.
+    interfaces.py
+      defines the CGI Client and mail gateway MailGW classes that are
+      used by roundup.cgi, roundup-server and roundup-mailgw.
+    __init__.py
+      ties together all the instance information into one interface
+    db/
+      the actual database that stores the instance's data
+    html/
+      the html templates that are used by the CGI Client
+    detectors/
+      the auditor and reactor modules for this instance
     '''
     # At the moment, it's just a copy
     copytree(template, instance_home)

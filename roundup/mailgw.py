@@ -16,8 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""
-An e-mail gateway for Roundup.
+"""An e-mail gateway for Roundup.
 
 Incoming messages are examined for multiple parts:
  . In a multipart/mixed message or part, each subpart is extracted and
@@ -73,8 +72,9 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.142 2004-01-20 00:06:09 richard Exp $
+$Id: mailgw.py,v 1.143 2004-02-11 23:55:08 richard Exp $
 """
+__docformat__ = 'restructuredtext'
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys

@@ -1,110 +1,45 @@
-# $Id: back_metakit.py,v 1.57 2004-01-27 18:10:48 wc2so1 Exp $
+# $Id: back_metakit.py,v 1.58 2004-02-11 23:55:08 richard Exp $
+'''Metakit backend for Roundup, originally by Gordon McMillan.
+
+Known Current Bugs:
+
+- You can't change a class' key properly. This shouldn't be too hard to fix.
+- Some unit tests are overridden.
+
+Notes by Richard:
+
+This backend has some behaviour specific to metakit:
+
+- there's no concept of an explicit "unset" in metakit, so all types
+  have some "unset" value:
+
+  ========= ===== ======================================================
+  Type      Value Action when fetching from mk
+  ========= ===== ======================================================
+  Strings   ''    convert to None
+  Date      0     (seconds since 1970-01-01.00:00:00) convert to None
+  Interval  ''    convert to None
+  Number    0     ambiguious :( - do nothing (see BACKWARDS_COMPATIBLE)
+  Boolean   0     ambiguious :( - do nothing (see BACKWARDS_COMPATABILE)
+  Link      0     convert to None
+  Multilink []    actually, mk can handle this one ;)
+  Password  ''    convert to None
+  ========= ===== ======================================================
+
+  The get/set routines handle these values accordingly by converting
+  to/from None where they can. The Number/Boolean types are not able
+  to handle an "unset" at all, so they default the "unset" to 0.
+- Metakit relies in reference counting to close the database, there is
+  no explicit close call.  This can cause issues if a metakit
+  database is referenced multiple times, one might not actually be
+  closing the db.                                    
+- probably a bunch of stuff that I'm not aware of yet because I haven't
+  fully read through the source. One of these days....
 '''
-   Metakit backend for Roundup, originally by Gordon McMillan.
-
-   Notes by Richard:
-
-   This backend has some behaviour specific to metakit:
-
-    - there's no concept of an explicit "unset" in metakit, so all types
-      have some "unset" value:
-
-      ========= ===== ====================================================
-      Type      Value Action when fetching from mk
-      ========= ===== ====================================================
-      Strings   ''    convert to None
-      Date      0     (seconds since 1970-01-01.00:00:00) convert to None
-      Interval  ''    convert to None
-      Number    0     ambiguious :( - do nothing (see BACKWARDS_COMPATIBLE)
-      Boolean   0     ambiguious :( - do nothing (see BACKWARDS_COMPATABILE)
-      Link      0     convert to None
-      Multilink []    actually, mk can handle this one ;)
-      Password  ''    convert to None
-      ========= ===== ====================================================
-
-      The get/set routines handle these values accordingly by converting
-      to/from None where they can. The Number/Boolean types are not able
-      to handle an "unset" at all, so they default the "unset" to 0.
-
-    Metakit relies in reference counting to close the database, there is
-    no explicit close call.  This can cause issues if a metakit
-    database is referenced multiple times, one might not actually be
-    closing the db.                                    
-    
-    - probably a bunch of stuff that I'm not aware of yet because I haven't
-      fully read through the source. One of these days....
-'''
-# Enable this flag to break backwards compatibility (i.e. can't read old databases)
-#  but comply with more roundup features, like adding NULL support.
+__docformat__ = 'restructuredtext'
+# Enable this flag to break backwards compatibility (i.e. can't read old
+# databases) but comply with more roundup features, like adding NULL support.
 BACKWARDS_COMPATIBLE = True
-
-# Changes to version 1.55:
-# 1 Added an explicit close to the Indexer class.  This was handled
-#   by garbage collection before.
-#
-# 2  Added an MKBackendError exception that gets thrown on some metakit errors.
-#   Should there be a general rdbms exception?
-#      
-# 3 Added a sanity check when creating metakit tables in __getview
-#   There are some test cases that create columns of the same name
-#   with different metakit types.  This can cause crashing issues with
-#   older version of metakit.  We catch these before hand and raise
-#   an exception.
-#
-# 4 metakit db's cannot be weakref'd so this was removed
-#
-# 5 fixed a metakit.append, metakit must append lists, objects or
-#   dictionaries, it can't handle scalars.
-#   sv.append(int(entry))
-#    became
-#   sv.append((int(entry),))
-#
-# 6 To make it easier to compare to the other backends
-#  Class.keyname is changed to Class.key
-#
-# 7 Fixed Class.lookup, sometimes it would claim that a valid
-#  row was not valid (an _isdel row _property of 0 would
-#  be reported as 1) This is because metakit's view.find
-#  operation was returning bad results.  This should be
-#  view.select or view.find on a single property.
-#
-# 8 calling create with no parameters raises a value error
-#  I'm not sure if this is appropriate, but it fixes
-#  a regression test :)
-#
-# 9 The get method was only converting results for commited
-#   values.  uncommited values were not being converted
-#   using the metakit conversion table
-#
-# 10 Added a check to the Class.__init__ to raise a ValueError
-#    if the database already has a class of the same name.
-#
-# 11 Boolean and Number types can now have null values.  This
-#    is a backwards incompatible fix in that old databases
-#    won't work correctly.
-#
-#    The fix is simple.  For a boolean column, 0 is now None
-#                                              1 is False (returns 0)
-#                                              2 is True (returns 1)
-#                        For a numeric column, 0 is now None
-#                                              values 0 get returned as value-1
-#                                              values < 0 get returned as value
-#   Set the BACKWARDS_COMPATIBLE flag to False to enable this fix.
-#
-# 12 Enumerated READ and READWRITE for the getview and getindexedview
-#    These will probably be removed because they are not used
-#
-# Changed to 1.56
-#
-# 13 worked-around a current metakit bug, so retiring properties now
-#    works correctly.
-#    metakit 2.9.2 has a bug when using "find" on ordered views,
-#     using multiple arguments for find doesn't work.
-#
-# Known Current Bugs:
-#    You can't change a class' key properly.
-#    This shouldn't be too hard to fix.
-#
 
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit
@@ -940,18 +875,19 @@ class Class(hyperdb.Class):
     def find(self, **propspec):
         """Get the ids of nodes in this class which link to the given nodes.
 
-        'propspec' consists of keyword args propname={nodeid:1,}   
-        'propname' must be the name of a property in this class, or a
-                   KeyError is raised.  That property must be a Link or
-                   Multilink property, or a TypeError is raised.
+        'propspec'
+             consists of keyword args propname={nodeid:1,}   
+        'propname'
+             must be the name of a property in this class, or a
+             KeyError is raised.  That property must be a Link or
+             Multilink property, or a TypeError is raised.
 
         Any node in this class whose propname property links to any of the
         nodeids will be returned. Used by the full text indexing, which knows
         that "foo" occurs in msg1, msg3 and file7; so we have hits on these
-        issues:
+        issues::
 
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
-
         """
         propspec = propspec.items()
         for propname, nodeid in propspec:
@@ -1249,14 +1185,15 @@ class Class(hyperdb.Class):
         return int(nodeid) < self.maxid
     
     def labelprop(self, default_to_id=0):
-        ''' Return the property name for a label for the given node.
+        '''Return the property name for a label for the given node.
 
         This method attempts to generate a consistent label for the node.
         It tries the following in order:
-            1. key property
-            2. "name" property
-            3. "title" property
-            4. first property from the sorted property name list
+
+        1. key property
+        2. "name" property
+        3. "title" property
+        4. first property from the sorted property name list
         '''
         k = self.getkey()
         if  k:

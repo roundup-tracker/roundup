@@ -18,8 +18,9 @@ Modified for Roundup 0.5 release:
 
 - changed imports to import from roundup.cgi
 """
+__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.5 $'[11:-2]
+__version__='$Revision: 1.6 $'[11:-2]
 
 import re, sys
 from roundup.cgi import ZTUtils

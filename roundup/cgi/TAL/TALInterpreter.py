@@ -11,9 +11,9 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
+"""Interpreter for a pre-compiled TAL program.
 """
-Interpreter for a pre-compiled TAL program.
-"""
+__docformat__ = 'restructuredtext'
 
 import sys
 import getopt

@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.26 2004-01-20 00:05:07 richard Exp $
+# $Id: __init__.py,v 1.27 2004-02-11 23:55:08 richard Exp $
 
-''' Roundup - issue tracking for knowledge workers.
+'''Roundup - issue tracking for knowledge workers.
 
 This is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces.
@@ -43,11 +43,11 @@ Roundup's structure is that of a cake::
  |                             Storage Layer                               |
   -------------------------------------------------------------------------
 
-The first layer represents the users (chocolate).
-The second layer is the Roundup interface to the users (vanilla).
-The third and fourth layers are the internal Roundup database storage
-  mechanisms (strawberry).
-The final, lowest layer is the underlying database storage (rum).
+1. The first layer represents the users (chocolate).
+2. The second layer is the Roundup interface to the users (vanilla).
+3. The third and fourth layers are the internal Roundup database storage
+   mechanisms (strawberry).
+4. The final, lowest layer is the underlying database storage (rum).
 
 These are implemented in the code in the following manner::
 
@@ -66,6 +66,7 @@ For more information, see the original overview and specification documents
 written by Ka-Ping Yee in the "doc" directory. If nothing else, it has a
 much prettier cake :)
 '''
+__docformat__ = 'restructuredtext'
 
 __version__ = '0.7.0b1'
 

@@ -1,3 +1,7 @@
+"""Handle the security declarations used in Roundup trackers.
+"""
+__docformat__ = 'restructuredtext'
+
 import weakref
 
 from roundup import hyperdb

@@ -1,3 +1,7 @@
+"""Implements the API used in the HTML templating for the web interface.
+"""
+__docformat__ = 'restructuredtext'
+
 from __future__ import nested_scopes
 
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
@@ -143,35 +147,37 @@ class Templates:
             raise KeyError, message
 
 class RoundupPageTemplate(PageTemplate.PageTemplate):
-    ''' A Roundup-specific PageTemplate.
+    '''A Roundup-specific PageTemplate.
 
-        Interrogate the client to set up the various template variables to
-        be available:
+    Interrogate the client to set up the various template variables to
+    be available:
 
-        *context*
-         this is one of three things:
-         1. None - we're viewing a "home" page
-         2. The current class of item being displayed. This is an HTMLClass
-            instance.
-         3. The current item from the database, if we're viewing a specific
-            item, as an HTMLItem instance.
-        *request*
-          Includes information about the current request, including:
-           - the url
-           - the current index information (``filterspec``, ``filter`` args,
-             ``properties``, etc) parsed out of the form. 
-           - methods for easy filterspec link generation
-           - *user*, the current user node as an HTMLItem instance
-           - *form*, the current CGI form information as a FieldStorage
-        *config*
-          The current tracker config.
-        *db*
-          The current database, used to access arbitrary database items.
-        *utils*
-          This is a special class that has its base in the TemplatingUtils
-          class in this file. If the tracker interfaces module defines a
-          TemplatingUtils class then it is mixed in, overriding the methods
-          in the base class.
+    *context*
+     this is one of three things:
+
+     1. None - we're viewing a "home" page
+     2. The current class of item being displayed. This is an HTMLClass
+        instance.
+     3. The current item from the database, if we're viewing a specific
+        item, as an HTMLItem instance.
+    *request*
+      Includes information about the current request, including:
+
+       - the url
+       - the current index information (``filterspec``, ``filter`` args,
+         ``properties``, etc) parsed out of the form. 
+       - methods for easy filterspec link generation
+       - *user*, the current user node as an HTMLItem instance
+       - *form*, the current CGI form information as a FieldStorage
+    *config*
+      The current tracker config.
+    *db*
+      The current database, used to access arbitrary database items.
+    *utils*
+      This is a special class that has its base in the TemplatingUtils
+      class in this file. If the tracker interfaces module defines a
+      TemplatingUtils class then it is mixed in, overriding the methods
+      in the base class.
     '''
     def getContext(self, client, classname, request):
         # construct the TemplatingUtils class
@@ -962,11 +968,11 @@ class StringHTMLProperty(HTMLProperty):
         return self.plain(hyperlink=1)
 
     def plain(self, escape=0, hyperlink=0):
-        ''' Render a "plain" representation of the property
+        '''Render a "plain" representation of the property
             
-            "escape" turns on/off HTML quoting
-            "hyperlink" turns on/off in-text hyperlinking of URLs, email
-                addresses and designators
+        - "escape" turns on/off HTML quoting
+        - "hyperlink" turns on/off in-text hyperlinking of URLs, email
+          addresses and designators
         '''
         self.view_check()
 
@@ -1441,7 +1447,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 
     def __contains__(self, value):
         ''' Support the "in" operator. We have to make sure the passed-in
-            value is a string first, not a *HTMLProperty.
+            value is a string first, not a HTMLProperty.
         '''
         return str(value) in self._value
 
@@ -1601,25 +1607,25 @@ class ShowDict:
         return self.columns.has_key(name)
 
 class HTMLRequest(HTMLInputMixin):
-    ''' The *request*, holding the CGI form and environment.
+    '''The *request*, holding the CGI form and environment.
 
-        "form" the CGI form as a cgi.FieldStorage
-        "env" the CGI environment variables
-        "base" the base URL for this instance
-        "user" a HTMLUser instance for this user
-        "classname" the current classname (possibly None)
-        "template" the current template (suffix, also possibly None)
+    - "form" the CGI form as a cgi.FieldStorage
+    - "env" the CGI environment variables
+    - "base" the base URL for this instance
+    - "user" a HTMLUser instance for this user
+    - "classname" the current classname (possibly None)
+    - "template" the current template (suffix, also possibly None)
 
-        Index args:
-        "columns" dictionary of the columns to display in an index page
-        "show" a convenience access to columns - request/show/colname will
-               be true if the columns should be displayed, false otherwise
-        "sort" index sort column (direction, column name)
-        "group" index grouping property (direction, column name)
-        "filter" properties to filter the index on
-        "filterspec" values to filter the index on
-        "search_text" text to perform a full-text search on for an index
+    Index args:
 
+    - "columns" dictionary of the columns to display in an index page
+    - "show" a convenience access to columns - request/show/colname will
+      be true if the columns should be displayed, false otherwise
+    - "sort" index sort column (direction, column name)
+    - "group" index grouping property (direction, column name)
+    - "filter" properties to filter the index on
+    - "filterspec" values to filter the index on
+    - "search_text" text to perform a full-text search on for an index
     '''
     def __init__(self, client):
         # _client is needed by HTMLInputMixin

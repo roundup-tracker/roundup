@@ -1,1 +1,2 @@
-' CGI interface modules '
+''' CGI interface modules '''
+__docformat__ = 'restructuredtext'

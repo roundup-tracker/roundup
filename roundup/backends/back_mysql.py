@@ -5,8 +5,9 @@
 # under the same terms as Python, so long as this copyright message and
 # disclaimer are retained in their original form.
 #
-# Mysql backend for roundup
-#
+
+'''This module defines a backend implementation for MySQL.'''
+__docformat__ = 'restructuredtext'
 
 from roundup.backends.rdbms_common import *
 from roundup.backends import rdbms_common
@@ -208,18 +209,20 @@ class MysqlClass:
     # look for "I can't believe it's not a toy RDBMS" below
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
-        ''' Return a list of the ids of the active nodes in this class that
-            match the 'filter' spec, sorted by the group spec and then the
-            sort spec
+        '''Return a list of the ids of the active nodes in this class that
+        match the 'filter' spec, sorted by the group spec and then the
+        sort spec
 
-            "filterspec" is {propname: value(s)}
-            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
-                               and prop is a prop name or None
-            "search_matches" is {nodeid: marker}
+        "filterspec" is {propname: value(s)}
 
-            The filter must match all properties specificed - but if the
-            property value to match is a list, any one of the values in the
-            list may match for that property to match.
+        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+        and prop is a prop name or None
+
+        "search_matches" is {nodeid: marker}
+
+        The filter must match all properties specificed - but if the
+        property value to match is a list, any one of the values in the
+        list may match for that property to match.
         '''
         # just don't bother if the full-text search matched diddly
         if search_matches == {}:

@@ -14,24 +14,27 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.17 2004-01-20 03:58:38 richard Exp $
-'''
-This module provides an indexer class, RoundupIndexer, that stores text
+#$Id: indexer.py,v 1.18 2004-02-11 23:55:08 richard Exp $
+'''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
 '''
+__docformat__ = 'restructuredtext'
+
 import os, shutil, re, mimetypes, marshal, zlib, errno
 from hyperdb import Link, Multilink
 
 class Indexer:
-    ''' Indexes information from roundup's hyperdb to allow efficient
-        searching.
+    '''Indexes information from roundup's hyperdb to allow efficient
+    searching.
 
-        Three structures are created by the indexer:
+    Three structures are created by the indexer::
+
           files   {identifier: (fileid, wordcount)}
           words   {word: {fileid: count}}
           fileids {fileid: identifier}
-        where identifier is (classname, nodeid, propertyname)
+
+    where identifier is (classname, nodeid, propertyname)
     '''
     def __init__(self, db_path):
         self.indexdb_path = os.path.join(db_path, 'indexes')
@@ -69,8 +72,8 @@ class Indexer:
         return self.reindex
 
     def add_text(self, identifier, text, mime_type='text/plain'):
-        ''' Add some text associated with the (classname, nodeid, property)
-            identifier.
+        '''Add some text associated with the (classname, nodeid, property)
+        identifier.
         '''
         # make sure the index is loaded
         self.load_index()
@@ -114,7 +117,7 @@ class Indexer:
         self.changed = 1
 
     def splitter(self, text, ftype):
-        ''' Split the contents of a text string into a list of 'words'
+        '''Split the contents of a text string into a list of 'words'
         '''
         if ftype == 'text/plain':
             words = self.text_splitter(text)
@@ -136,10 +139,10 @@ class Indexer:
 
     def search(self, search_terms, klass, ignore={},
             dre=re.compile(r'([^\d]+)(\d+)')):
-        ''' Display search results looking for [search, terms] associated
-            with the hyperdb Class "klass". Ignore hits on {class: property}.
+        '''Display search results looking for [search, terms] associated
+        with the hyperdb Class "klass". Ignore hits on {class: property}.
 
-            "dre" is a helper, not an argument.
+        "dre" is a helper, not an argument.
         '''
         # do the index lookup
         hits = self.find(search_terms)
@@ -201,7 +204,7 @@ class Indexer:
     # we override this to ignore not 2 < word < 25 and also to fix a bug -
     # the (fail) case.
     def find(self, wordlist):
-        ''' Locate files that match ALL the words in wordlist
+        '''Locate files that match ALL the words in wordlist
         '''
         if not hasattr(self, 'words'):
             self.load_index()
@@ -315,7 +318,7 @@ class Indexer:
         self.changed = 0
 
     def purge_entry(self, identifier):
-        ''' Remove a file from file index and word index
+        '''Remove a file from file index and word index
         '''
         self.load_index()
 

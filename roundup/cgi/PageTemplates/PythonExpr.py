@@ -18,8 +18,9 @@ Modified for Roundup 0.5 release:
 - more informative traceback info
 
 """
+__docformat__ = 'restructuredtext'
 
-__version__='$Revision: 1.4 $'[11:-2]
+__version__='$Revision: 1.5 $'[11:-2]
 
 from TALES import CompilerError
 from string import strip, split, join, replace, lstrip

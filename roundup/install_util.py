@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.9 2003-11-11 22:37:25 richard Exp $
+# $Id: install_util.py,v 1.10 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = """
-Support module to generate and check fingerprints of installed files.
+"""Support module to generate and check fingerprints of installed files.
 """
+__docformat__ = 'restructuredtext'
 
 import os, sha, shutil
 

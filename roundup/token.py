@@ -8,23 +8,25 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # 
-# $Id: token.py,v 1.3 2002-09-10 00:18:20 richard Exp $
+# $Id: token.py,v 1.4 2004-02-11 23:55:08 richard Exp $
 #
 
-__doc__ = """
-This module provides the tokeniser used by roundup-admin.
+"""This module provides the tokeniser used by roundup-admin.
 """
+__docformat__ = 'restructuredtext'
 
 def token_split(s, whitespace=' \r\n\t', quotes='\'"',
         escaped={'r':'\r', 'n':'\n', 't':'\t'}):
-    '''Split the string up into tokens. An occurence of a ' or " in the
-       input will cause the splitter to ignore whitespace until a matching
-       quote char is found. Embedded non-matching quote chars are also
-       skipped.
-       Whitespace and quoting characters may be escaped using a backslash.
-       \r, \n and \t are converted to carriage-return, newline and tab.
-       All other backslashed characters are left as-is.
-       Valid:
+    '''Split the string up into tokens. An occurence of a ``'`` or ``"`` in
+    the input will cause the splitter to ignore whitespace until a matching
+    quote char is found. Embedded non-matching quote chars are also skipped.
+
+    Whitespace and quoting characters may be escaped using a backslash.
+    ``\r``, ``\n`` and ``\t`` are converted to carriage-return, newline and
+    tab.  All other backslashed characters are left as-is.
+
+    Valid examples::
+
            hello world      (2 tokens: hello, world)
            "hello world"    (1 token: hello world)
            "Roch'e" Compaan (2 tokens: Roch'e Compaan)
@@ -33,7 +35,9 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
            \\               (1 token: \)
            \n               (1 token: a newline)
            \o               (1 token: \o)
-       Invalid:
+
+    Invalid examples::
+
            "hello world     (no matching quote)
            Roch'e Compaan   (no matching quote)
     '''

@@ -14,10 +14,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-""" HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.36 2003-12-06 02:46:34 richard Exp $
+"""Command-line script that runs a server over roundup.cgi.client.
+
+$Id: roundup_server.py,v 1.37 2004-02-11 23:55:10 richard Exp $
 """
+__docformat__ = 'restructuredtext'
 
 # python version check
 from roundup import version_check

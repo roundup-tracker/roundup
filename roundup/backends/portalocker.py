@@ -2,11 +2,11 @@
 #                  Requires python 1.5.2 or better.
 
 # ID line added by richard for Roundup file tracking
-# $Id: portalocker.py,v 1.7 2003-08-26 00:29:20 richard Exp $
+# $Id: portalocker.py,v 1.8 2004-02-11 23:55:09 richard Exp $
 
-""" Cross-platform (posix/nt) API for flock-style file locking.
+"""Cross-platform (posix/nt) API for flock-style file locking.
 
-Synopsis:
+Synopsis::
 
    import portalocker
    file = open("somefile", "r+")
@@ -15,18 +15,18 @@ Synopsis:
    file.write("foo")
    file.close()
 
-If you know what you're doing, you may choose to
+If you know what you're doing, you may choose to::
 
    portalocker.unlock(file)
 
 before closing the file, but why?
 
-Methods:
+Methods::
 
    lock( file, flags )
    unlock( file )
 
-Constants:
+Constants::
 
    LOCK_EX
    LOCK_SH
@@ -36,10 +36,12 @@ I learned the win32 technique for locking files from sample code
 provided by John Nielsen <nielsenjf@my-deja.com> in the documentation
 that accompanies the win32 modules.
 
-Author: Jonathan Feinberg <jdf@pobox.com>
-Version: Id: portalocker.py,v 1.3 2001/05/29 18:47:55 Administrator Exp 
-         **un-cvsified by richard so the version doesn't change**
+:Author: Jonathan Feinberg <jdf@pobox.com>
+:Version: Id: portalocker.py,v 1.3 2001/05/29 18:47:55 Administrator Exp 
+          **un-cvsified by richard so the version doesn't change**
 """
+__docformat__ = 'restructuredtext'
+
 import os
 
 if os.name == 'nt':

@@ -1,8 +1,7 @@
-"""
-Supplies a Python-2.3 Object Craft csv module work-alike to the extent
+"""Supplies a Python-2.3 Object Craft csv module work-alike to the extent
 needed by Roundup using the Python 2.3 csv module.
-
 """
+__docformat__ = 'restructuredtext'
 
 from roundup.i18n import _
 from cStringIO import StringIO

@@ -15,7 +15,8 @@ __doc__='''Package wrapper for Page Templates
 This wrapper allows the Page Template modules to be segregated in a
 separate package.
 
-$Id: __init__.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
+$Id: __init__.py,v 1.2 2004-02-11 23:55:09 richard Exp $'''
+__docformat__ = 'restructuredtext'
 __version__='$$'[11:-2]
 
 

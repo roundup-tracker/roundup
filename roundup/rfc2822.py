@@ -1,3 +1,7 @@
+"""Some rfc822 functions taken from the new (python2.3) "email" module.
+"""
+__docformat__ = 'restructuredtext'
+
 import re
 from string import letters, digits
 from binascii import b2a_base64, a2b_base64
@@ -37,7 +41,8 @@ def base64_decode(s, convert_eols=None):
     return dec
 
 def unquote_match(match):
-    """Turn a match in the form =AB to the ASCII character with value 0xab
+    """Turn a match in the form ``=AB`` to the ASCII character with value
+    0xab.
 
     Taken from 'email' module
     """
@@ -45,7 +50,7 @@ def unquote_match(match):
     return chr(int(s[1:3], 16))
 
 def qp_decode(s):
-    """Decode a string encoded with RFC 2045 MIME header `Q' encoding.
+    """Decode a string encoded with RFC 2045 MIME header 'Q' encoding.
 
     This function does not parse a full MIME header value encoded with
     quoted-printable (like =?iso-8895-1?q?Hello_World?=) -- please use

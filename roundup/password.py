@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.10 2003-11-11 00:35:13 richard Exp $
+# $Id: password.py,v 1.11 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = """
-Password handling (encoding, decoding).
+"""Password handling (encoding, decoding).
 """
+__docformat__ = 'restructuredtext'
 
 import sha, re, string, random
 try:

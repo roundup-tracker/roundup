@@ -1,5 +1,7 @@
-"""Sending Roundup-specific mail over SMTP."""
-# $Id: mailer.py,v 1.4 2004-01-20 00:05:46 richard Exp $
+"""Sending Roundup-specific mail over SMTP.
+"""
+__docformat__ = 'restructuredtext'
+# $Id: mailer.py,v 1.5 2004-02-11 23:55:08 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 

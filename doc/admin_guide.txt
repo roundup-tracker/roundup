@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.1 $
+:Version: $Revision: 1.2 $
 
 .. contents::
 
@@ -23,7 +23,7 @@ There's two "installations" that we talk about when using Roundup:
    Support files
      <python dir>\share\roundup\...
 
-   and on *nix (eg. Linux):
+   and on Unix-like systems (eg. Linux):
 
    Scripts
      <python root>/bin/...
@@ -84,7 +84,7 @@ Maintenance of Roundup can involve one of the following:
 1. `tracker backup`_ 
 2. `software upgrade`_
 3. `migrating backends`_
-3. `moving a tracker`_
+4. `moving a tracker`_
 
 
 Tracker Backup

@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.134 2003-12-10 01:40:51 richard Exp $
-'''
-This module defines a backend that saves the hyperdatabase in a database
-chosen by anydbm. It is guaranteed to always be available in python
+#$Id: back_anydbm.py,v 1.135 2004-02-11 23:55:08 richard Exp $
+'''This module defines a backend that saves the hyperdatabase in a
+database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
 serious bugs, and is not available)
 '''
+__docformat__ = 'restructuredtext'
 
 try:
     import anydbm, sys
@@ -50,10 +50,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     '''A database for storing records containing flexible data types.
 
     Transaction stuff TODO:
-        . check the timestamp of the class file and nuke the cache if it's
-          modified. Do some sort of conflict checking on the dirty stuff.
-        . perhaps detect write collisions (related to above)?
-
+    
+    - check the timestamp of the class file and nuke the cache if it's
+      modified. Do some sort of conflict checking on the dirty stuff.
+    - perhaps detect write collisions (related to above)?
     '''
     def __init__(self, config, journaltag=None):
         '''Open a hyperdatabase given a specifier to some storage.
@@ -92,14 +92,15 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.lockfile.flush()
 
     def post_init(self):
-        ''' Called once the schema initialisation has finished.
+        '''Called once the schema initialisation has finished.
         '''
         # reindex the db if necessary
         if self.indexer.should_reindex():
             self.reindex()
 
     def refresh_database(self):
-        "Rebuild the database"
+        """Rebuild the database
+        """
         self.reindex()
 
     def reindex(self):
@@ -1366,8 +1367,11 @@ class Class(hyperdb.Class):
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
                  deleted
+
         WARNING: use retire() instead
+
         WARNING: the properties of this node will not be available ever again
+
         WARNING: really, use retire() instead
 
         Well, I think that's enough warnings. This method exists mostly to
@@ -1418,14 +1422,15 @@ class Class(hyperdb.Class):
         return self.key
 
     def labelprop(self, default_to_id=0):
-        ''' Return the property name for a label for the given node.
+        '''Return the property name for a label for the given node.
 
         This method attempts to generate a consistent label for the node.
         It tries the following in order:
-            1. key property
-            2. "name" property
-            3. "title" property
-            4. first property from the sorted property name list
+
+        1. key property
+        2. "name" property
+        3. "title" property
+        4. first property from the sorted property name list
         '''
         k = self.getkey()
         if  k:
@@ -1597,21 +1602,23 @@ class Class(hyperdb.Class):
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None), num_re = re.compile('^\d+$')):
-        ''' Return a list of the ids of the active nodes in this class that
-            match the 'filter' spec, sorted by the group spec and then the
-            sort spec.
+        """Return a list of the ids of the active nodes in this class that
+        match the 'filter' spec, sorted by the group spec and then the
+        sort spec.
 
-            "filterspec" is {propname: value(s)}
-            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
-                               and prop is a prop name or None
-            "search_matches" is {nodeid: marker}
+        "filterspec" is {propname: value(s)}
 
-            The filter must match all properties specificed - but if the
-            property value to match is a list, any one of the values in the
-            list may match for that property to match. Unless the property
-            is a Multilink, in which case the item's property list must
-            match the filterspec list.
-        '''
+        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+        and prop is a prop name or None
+
+        "search_matches" is {nodeid: marker}
+
+        The filter must match all properties specificed - but if the
+        property value to match is a list, any one of the values in the
+        list may match for that property to match. Unless the property
+        is a Multilink, in which case the item's property list must
+        match the filterspec list.
+        """
         cn = self.classname
 
         # optimise filterspec

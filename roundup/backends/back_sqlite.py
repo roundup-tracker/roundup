@@ -1,7 +1,10 @@
-# $Id: back_sqlite.py,v 1.12 2003-11-12 01:00:58 richard Exp $
-__doc__ = '''
+# $Id: back_sqlite.py,v 1.13 2004-02-11 23:55:09 richard Exp $
+'''Implements a backend for SQLite.
+
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
+__docformat__ = 'restructuredtext'
+
 import os, base64, marshal
 
 from roundup import hyperdb

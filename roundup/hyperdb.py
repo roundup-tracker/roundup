@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.95 2003-11-16 22:56:46 jlgijsbers Exp $
+# $Id: hyperdb.py,v 1.96 2004-02-11 23:55:08 richard Exp $
 
+"""Hyperdatabase implementation, especially field types.
 """
-Hyperdatabase implementation, especially field types.
-"""
+__docformat__ = 'restructuredtext'
 
 # standard python modules
 import sys, os, time, re
@@ -250,19 +250,19 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         '''
         return node
 
-    def getnode(self, classname, nodeid, db=None, cache=1):
+    def getnode(self, classname, nodeid):
         '''Get a node from the database.
 
         'cache' exists for backwards compatibility, and is not used.
         '''
         raise NotImplementedError
 
-    def hasnode(self, classname, nodeid, db=None):
+    def hasnode(self, classname, nodeid):
         '''Determine if the database has a given node.
         '''
         raise NotImplementedError
 
-    def countnodes(self, classname, db=None):
+    def countnodes(self, classname):
         '''Count the number of nodes that exist for a particular Class.
         '''
         raise NotImplementedError
@@ -374,7 +374,7 @@ class Class:
         raise NotImplementedError
 
     # not in spec
-    def getnode(self, nodeid, cache=1):
+    def getnode(self, nodeid):
         ''' Return a convenience wrapper for the node.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -384,7 +384,7 @@ class Class:
         '''
         return Node(self, nodeid)
 
-    def getnodeids(self, db=None):
+    def getnodeids(self, retired=None):
         '''Retrieve all the ids of the nodes for a particular Class.
         '''
         raise NotImplementedError
@@ -438,8 +438,11 @@ class Class:
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
                  deleted
+
         WARNING: use retire() instead
+
         WARNING: the properties of this node will not be available ever again
+
         WARNING: really, use retire() instead
 
         Well, I think that's enough warnings. This method exists mostly to
@@ -485,15 +488,16 @@ class Class:
         raise NotImplementedError
 
     def labelprop(self, default_to_id=0):
-        ''' Return the property name for a label for the given node.
+        """Return the property name for a label for the given node.
 
         This method attempts to generate a consistent label for the node.
         It tries the following in order:
-            1. key property
-            2. "name" property
-            3. "title" property
-            4. first property from the sorted property name list
-        '''
+
+        1. key property
+        2. "name" property
+        3. "title" property
+        4. first property from the sorted property name list
+        """
         raise NotImplementedError
 
     def lookup(self, keyvalue):
@@ -525,19 +529,21 @@ class Class:
 
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
-        ''' Return a list of the ids of the active nodes in this class that
-            match the 'filter' spec, sorted by the group spec and then the
-            sort spec.
+        """Return a list of the ids of the active nodes in this class that
+        match the 'filter' spec, sorted by the group spec and then the
+        sort spec.
 
-            "filterspec" is {propname: value(s)}
-            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
-                               and prop is a prop name or None
-            "search_matches" is {nodeid: marker}
+        "filterspec" is {propname: value(s)}
 
-            The filter must match all properties specificed - but if the
-            property value to match is a list, any one of the values in the
-            list may match for that property to match.
-        '''
+        "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+        and prop is a prop name or None
+
+        "search_matches" is {nodeid: marker}
+
+        The filter must match all properties specificed - but if the
+        property value to match is a list, any one of the values in the
+        list may match for that property to match.
+        """
         raise NotImplementedError
 
     def count(self):

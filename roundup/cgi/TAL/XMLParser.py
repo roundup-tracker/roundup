@@ -11,14 +11,14 @@
 # FOR A PARTICULAR PURPOSE
 # 
 ##############################################################################
-"""
-Generic expat-based XML parser base class.
+"""Generic expat-based XML parser base class.
 
 Modified for Roundup 0.5 release:
 
 - removed dependency on zLOG
 
 """
+__docformat__ = 'restructuredtext'
 
 class XMLParser:
 

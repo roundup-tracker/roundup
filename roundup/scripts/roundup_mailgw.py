@@ -14,7 +14,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.10 2003-04-24 04:27:32 richard Exp $
+# $Id: roundup_mailgw.py,v 1.11 2004-02-11 23:55:10 richard Exp $
+
+"""Command-line script stub that calls the roundup.mailgw.
+"""
+__docformat__ = 'restructuredtext'
 
 # python version check
 from roundup import version_check

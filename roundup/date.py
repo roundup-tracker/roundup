@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.59 2003-12-05 03:28:38 richard Exp $
+# $Id: date.py,v 1.60 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = """
-Date, time and time interval handling.
+"""Date, time and time interval handling.
 """
+__docformat__ = 'restructuredtext'
 
 import time, re, calendar, types
 from i18n import _
@@ -51,6 +51,7 @@ class Date:
     care of these conversions. In the following examples, suppose that yyyy
     is the current year, mm is the current month, and dd is the current day
     of the month; and suppose that the user is on Eastern Standard Time.
+    Examples::
 
       "2000-04-17" means <Date 2000-04-17.00:00:00>
       "01-25" means <Date yyyy-01-25.00:00:00>
@@ -69,9 +70,8 @@ class Date:
     separately. For example, when evaluating "2000-06-25 + 1m 10d", we
     first add one month to get 2000-07-25, then add 10 days to get
     2000-08-04 (rather than trying to decide whether 1m 10d means 38 or 40
-    or 41 days).
+    or 41 days).  Example usage::
 
-    Example usage:
         >>> Date(".")
         <Date 2000-06-26.00:34:02>
         >>> _.local(-5)
@@ -95,9 +95,11 @@ class Date:
     def __init__(self, spec='.', offset=0, add_granularity=0):
         """Construct a date given a specification and a time zone offset.
 
-          'spec' is a full date or a partial form, with an optional
-                 added or subtracted interval. Or a date 9-tuple.
-        'offset' is the local time zone offset from GMT in hours.
+        'spec'
+           is a full date or a partial form, with an optional added or
+           subtracted interval. Or a date 9-tuple.
+        'offset'
+           is the local time zone offset from GMT in hours.
         """
         if type(spec) == type(''):
             self.set(spec, offset=offset, add_granularity=add_granularity)
@@ -660,20 +662,24 @@ def fixTimeOverflow(time):
     return (sign, y, m, d, H, M, S)
 
 class Range:
-    """
-    Represents range between two values
+    """Represents range between two values
     Ranges can be created using one of theese two alternative syntaxes:
         
-        1. Native english syntax: 
-            [[From] <value>][ To <value>]
-           Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
+    1. Native english syntax::
 
-        2. "Geek" syntax:
-            [<value>][; <value>]
+            [[From] <value>][ To <value>]
+
+       Keywords "From" and "To" are case insensitive. Keyword "From" is
+       optional.
+
+    2. "Geek" syntax::
+
+          [<value>][; <value>]
 
     Either first or second <value> can be omitted in both syntaxes.
 
-    Examples (consider local time is Sat Mar  8 22:07:48 EET 2003):
+    Examples (consider local time is Sat Mar  8 22:07:48 EET 2003)::
+
         >>> Range("from 2-12 to 4-2")
         <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
         

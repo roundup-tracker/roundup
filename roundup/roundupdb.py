@@ -15,11 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.96 2003-12-05 04:43:30 richard Exp $
+# $Id: roundupdb.py,v 1.97 2004-02-11 23:55:08 richard Exp $
 
-__doc__ = """
-Extending hyperdb with types specific to issue-tracking.
+"""Extending hyperdb with types specific to issue-tracking.
 """
+__docformat__ = 'restructuredtext'
+
 from __future__ import nested_scopes
 
 import re, os, smtplib, socket, time, random
@@ -95,15 +96,16 @@ class DetectorError(RuntimeError):
 
 # deviation from spec - was called IssueClass
 class IssueClass:
-    """ This class is intended to be mixed-in with a hyperdb backend
-        implementation. The backend should provide a mechanism that
-        enforces the title, messages, files, nosy and superseder
-        properties:
-            properties['title'] = hyperdb.String(indexme='yes')
-            properties['messages'] = hyperdb.Multilink("msg")
-            properties['files'] = hyperdb.Multilink("file")
-            properties['nosy'] = hyperdb.Multilink("user")
-            properties['superseder'] = hyperdb.Multilink(classname)
+    """This class is intended to be mixed-in with a hyperdb backend
+    implementation. The backend should provide a mechanism that
+    enforces the title, messages, files, nosy and superseder
+    properties:
+
+    - title = hyperdb.String(indexme='yes')
+    - messages = hyperdb.Multilink("msg")
+    - files = hyperdb.Multilink("file")
+    - nosy = hyperdb.Multilink("user")
+    - superseder = hyperdb.Multilink(classname)
     """
 
     # New methods:
