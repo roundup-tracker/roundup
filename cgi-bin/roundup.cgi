@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.17 2001-11-06 21:51:19 richard Exp $
+# $Id: roundup.cgi,v 1.18 2001-11-06 22:10:11 jhermann Exp $
 
 # python version check
 import sys
@@ -29,6 +29,21 @@ if int(sys.version[0]) < 2:
 ##  Configuration
 #
 
+# Configuration can also be provided through the OS environment (or via
+# the Apache "SetEnv" configuration directive). If the variables
+# documented below are set, they _override_ any configuation defaults
+# given in this file. 
+
+# ROUNDUP_INSTANCE_HOMES is a list of instances, in the form
+# "NAME=DIR<sep>NAME2=DIR2<sep>...", where <sep> is the directory path
+# separator (";" on Windows, ":" on Unix). 
+
+# ROUNDUP_LOG is the name of the logfile; if it's empty or does not exist,
+# logging is turned off (unless you changed the default below). 
+
+# ROUNDUP_DEBUG is a debug level, currently only 0 (OFF) and 1 (ON) are
+# used in the code. Higher numbers means more debugging output. 
+
 # This indicates where the Roundup instance lives
 ROUNDUP_INSTANCE_HOMES = {
     'demo': '/var/roundup/instances/demo',
@@ -39,12 +54,15 @@ ROUNDUP_INSTANCE_HOMES = {
 class DevNull:
     def write(self, info):
         pass
+    def close():
+        pass
 #LOG = open('/var/log/roundup.cgi.log', 'a')
 LOG = DevNull()
 
 #
 ##  end configuration
 #
+
 
 #
 # Set up the error handler
@@ -59,18 +77,53 @@ except:
     traceback.print_exc(None, s)
     print cgi.escape(s.getvalue()), "</pre>"
 
+
+#
+# Check environment for config items
+#
+def checkconfig():
+    import os, string
+    global ROUNDUP_INSTANCE_HOMES, LOG
+
+    homes = os.environ.get('ROUNDUP_INSTANCE_HOMES', '')
+    if homes:
+        ROUNDUP_INSTANCE_HOMES = {}
+        for home in string.split(homes, os.pathsep):
+            try:
+                name, dir = string.split(home, '=', 1)
+            except ValueError:
+                # ignore invalid definitions
+                continue
+            if name and dir:
+                ROUNDUP_INSTANCE_HOMES[name] = dir
+                
+    logname = os.environ.get('ROUNDUP_LOG', '')
+    if logname:
+        LOG = open(logname, 'a')
+
+    # ROUNDUP_DEBUG is checked directly in "roundup.cgi_client"
+
+
+#
+# Provide interface to CGI HTTP response handling
+#
 class RequestWrapper:
     '''Used to make the CGI server look like a BaseHTTPRequestHandler
     '''
     def __init__(self, wfile):
         self.wfile = wfile
+    def write(self, data):
+        self.wfile.write(data)
     def send_response(self, code):
-        self.wfile.write('Status: %s\r\n'%code)
+        self.write('Status: %s\r\n'%code)
     def send_header(self, keyword, value):
-        self.wfile.write("%s: %s\r\n" % (keyword, value))
+        self.write("%s: %s\r\n" % (keyword, value))
     def end_headers(self):
-        self.wfile.write("\r\n")
+        self.write("\r\n")
 
+#
+# Main CGI handler
+#
 def main(out, err):
     import os, string
     import roundup.instance
@@ -104,7 +157,9 @@ def main(out, err):
         w = request.wfile.write
         w('<html><head><title>Roundup instances index</title></head>\n')
         w('<body><h1>Roundup instances index</h1><ol>\n')
-        for instance in ROUNDUP_INSTANCE_HOMES.keys():
+        homes = ROUNDUP_INSTANCE_HOMES.keys()
+        homes.sort()
+        for instance in homes:
             w('<li><a href="%s/%s/index">%s</a>\n'%(
                 os.environ['SCRIPT_NAME'], urllib.quote(instance),
                 cgi.escape(instance)))
@@ -112,9 +167,10 @@ def main(out, err):
 
 #
 # Now do the actual CGI handling
-# 
+#
 out, err = sys.stdout, sys.stderr
 try:
+    checkconfig()
     sys.stdout = sys.stderr = LOG
     main(out, err)
 except SystemExit:
@@ -125,9 +181,13 @@ except:
     cgitb.handler()
 sys.stdout.flush()
 sys.stdout, sys.stderr = out, err
+LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/11/06 21:51:19  richard
+# Fixed HTTP headers for top-level index in CGI script
+#
 # Revision 1.16  2001/11/01 22:04:37  richard
 # Started work on supporting a pop3-fetching server
 # Fixed bugs:
