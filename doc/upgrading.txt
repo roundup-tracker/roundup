@@ -23,6 +23,12 @@ Migrating from 0.5 to 0.6
 
      "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
+0.6.0 Form handling changes
+---------------------------
+
+XXX Form handling changed significantly! Document it!
+
+
 0.6.0 Multilingual character set support
 ----------------------------------------
 
