@@ -1,24 +1,2 @@
-<table class="form">
-<tr>
-  <th>Class</th>
-  <td tal:content="structure context/klass/field"></td>
-</tr>
-
-<tr>
-  <th>Name</th>
-  <td tal:content="structure context/name/field"></td>
-</tr>
-
-<tr>
-  <td colspan=2>
-   hrm. filterspec here...
-   <display call="filterspec('klass','url')">
-  </td>
-</tr>
-
-<tr>
-  <td>&nbsp;</td>
-  <td tal:content="structure context/submit">submit button here</td>
-</tr>
-</table>
+<span tal:content="structure context/renderQueryForm" />
 

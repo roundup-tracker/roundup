@@ -360,13 +360,8 @@ class HTMLClass:
         # new template, using the specified classname and request
         pt = getTemplate(self._db.config.TEMPLATES, self.classname, name)
 
-        # XXX handle PT rendering errors here nicely
-        try:
-            # use our fabricated request
-            return pt.render(self._client, self.classname, req)
-        except PageTemplate.PTRuntimeError, message:
-            return '<strong>%s</strong><ol>%s</ol>'%(message,
-                cgi.escape('<li>'.join(pt._v_errors)))
+        # use our fabricated request
+        return pt.render(self._client, self.classname, req)
 
 class HTMLItem:
     ''' Accesses through an *item*
@@ -567,6 +562,20 @@ class HTMLItem:
             l.append('<tr><td colspan=4>%s</td></tr>'%entry)
         l.append('</table>')
         return '\n'.join(l)
+
+    def renderQueryForm(self):
+        ''' Render this item, which is a query, as a search form.
+        '''
+        # create a new request and override the specified args
+        req = HTMLRequest(self._client)
+        req.classname = self._klass.get(self._nodeid, 'klass')
+        req.updateFromURL(self._klass.get(self._nodeid, 'url'))
+
+        # new template, using the specified classname and request
+        pt = getTemplate(self._db.config.TEMPLATES, req.classname, 'search')
+
+        # use our fabricated request
+        return pt.render(self._client, req.classname, req)
 
 class HTMLUser(HTMLItem):
     ''' Accesses through the *user* (a special case of item)
@@ -1035,6 +1044,11 @@ class HTMLRequest:
         self.classname = client.classname
         self.template = client.template
 
+        self._post_init()
+
+    def _post_init(self):
+        ''' Set attributes based on self.form
+        '''
         # extract the index display information from the form
         self.columns = []
         if self.form.has_key(':columns'):
@@ -1096,7 +1110,25 @@ class HTMLRequest:
         else:
             self.startwith = 0
 
+    def updateFromURL(self, url):
+        ''' Parse the URL for query args, and update my attributes using the
+            values.
+        ''' 
+        self.form = {}
+        for name, value in cgi.parse_qsl(url):
+            if self.form.has_key(name):
+                if isinstance(self.form[name], type([])):
+                    self.form[name].append(cgi.MiniFieldStorage(name, value))
+                else:
+                    self.form[name] = [self.form[name],
+                        cgi.MiniFieldStorage(name, value)]
+            else:
+                self.form[name] = cgi.MiniFieldStorage(name, value)
+        self._post_init()
+
     def update(self, kwargs):
+        ''' Update my attributes using the keyword args
+        '''
         self.__dict__.update(kwargs)
         if kwargs.has_key('columns'):
             self.show = ShowDict(self.columns)
