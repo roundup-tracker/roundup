@@ -216,3 +216,24 @@ table.otherinfo th {
   text-align: left;
 }
 
+
+/* style for class list */
+table.classlist {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
+
+table.classlist th.header{
+  padding-top: 10px;
+  border-bottom: 1px solid gray;
+  font-weight: bold;
+  background-color: white;
+  color: #707040;
+}
+
+table.classlist th {
+  font-weight: bold;
+  text-align: left;
+}
+

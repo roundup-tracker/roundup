@@ -1,14 +1,14 @@
-<table border=0 cellspacing=0 cellpadding=2>
+<table class="classlist">
 
 <tal:block tal:repeat="cl db/classes">
- <tr class="list-header">
-  <th colspan="2" align="left">
+ <tr>
+  <th class="header" colspan="2" align="left">
    <a tal:attributes="href string:${cl/classname}"
       tal:content="python:cl.classname.capitalize()">classname</a>
   </th>
  </tr>
  <tr tal:repeat="prop cl/properties">
-  <th align="left" tal:content="prop/name">name</th>
+  <th tal:content="prop/name">name</th>
   <td tal:content="prop/prop">type</td>
  </tr>
 </tal:block>
