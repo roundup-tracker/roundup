@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.24 $
+:Version: $Revision: 1.25 $
 
 .. contents::
 
@@ -43,7 +43,7 @@ There's several to choose from, each with benefits and limitations:
 
 **anydbm**
   This backend is guaranteed to work on any system that Python runs on. It
-  will generally choose the best *dbm backend that is available on your system
+  will generally choose the best dbm backend that is available on your system
   (from the list dbhash, gdbm, dbm, dumbdbm). It is the least scaleable of all
   backends, but performs well enough for a smallish tracker (a couple of
   thousand issues, under fifty users, ...).
@@ -55,7 +55,8 @@ There's several to choose from, each with benefits and limitations:
   This allows it to gain some performance and scaling benefits.
 **sqlite**
   This uses the SQLite embedded RDBMS to provide a fast, scaleable backend.
-  There are no limitations.
+  There are no limitations, and it's much faster and more scaleable than the
+  dbm backends.
 **gadfly**
   This is a proof-of-concept relational database backend, not really intended
   for actual production use, although it can be. It uses the Gadfly RDBMS
@@ -64,12 +65,16 @@ There's several to choose from, each with benefits and limitations:
   setup is used.
 **metakit**
   This backend is implemented over the metakit storage system, using Mk4Py as
-  the interface. It scales much better than the *dbm backends, but has some
+  the interface. It scales much better than the dbm backends, but has some
   missing features:
 
   - you may not unset properties once they are set
   - journal retrieval is not implemented 
 
+
+Note: you may set your tracker up with the anydbm backend (which is guaranteed
+to be available) and switch to one of the other backends at any time using the
+instructions in the `maintenance documentation`_.
 
 Prerequisites
 =============
@@ -314,4 +319,5 @@ Next: `Getting Started`_
 .. _`roundup specification`: spec.html
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
+.. _`maintenance documentation`: maintenance.html
 

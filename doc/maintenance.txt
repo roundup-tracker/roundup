@@ -1,0 +1,67 @@
+============================
+Maintaining Roundup Trackers
+============================
+
+:Version: $Revision: 1.1 $
+
+.. contents::
+   :depth: 1
+
+Tasks
+=====
+
+Maintenance of Roundup can involve one of the following:
+
+1. `tracker backup`_ 
+2. `software upgrade`_
+3. `migrating backends`_
+
+
+Tracker Backup
+==============
+
+Stop the web and email frontends and to copy the contents of the tracker home
+directory to some other place using standard backup tools.
+
+Software Upgrade
+================
+
+Always make a backup of your tracker before upgrading software. Steps you may
+take:
+
+1. ensure that the unit tests run on your system
+2. copy your tracker home to a new directory
+3. follow the steps in the upgrading documentation for the new version of
+   the software
+4. test each of the admin tool, web interface and mail gateway using the new
+   version of the software
+5. stop the production web and email frontends
+6. perform the upgrade steps on the existing tracker directory
+7. upgrade the software
+8. restart your tracker
+
+Migrating Backends
+==================
+
+
+1. stop the existing tracker web and email frontends (preventing changes)
+2. use the roundup-admin tool "export" command to export the contents of
+   your tracker to disk
+3. copy the tracker home to a new directory
+4. change the backend used in the tracker home ``select_db.py`` file
+5. delete the "db" directory from the new directory
+6. use the roundup-admin "import" command to import the previous export with
+   the new tracker home
+7. test each of the admin tool, web interface and mail gateway using the new
+   backend
+8. move the old tracker home out of the way (rename to "tracker.old") and 
+   move the new tracker home into its place
+9. restart web and email frontends
+
+
+-------------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
+

@@ -99,7 +99,7 @@ class Security:
         if roles is None:
             return 0
         for rolename in roles.split(','):
-            if not rolename:
+            if not rolename or not self.role.has_key(rolename):
                 continue
             # for each of the user's Roles, check the permissions
             for perm in self.role[rolename].permissions:

@@ -33,6 +33,9 @@ are given with the most recent entry first.
 - #614188 ] Exception in mailgw.py
 - #613310 ] traceback on onexistant items
 - #613291 ] typos in nosy list
+- handle stupid mailers that QUOTE their Re; 'Re: "[issue1] bla blah"'
+- giving a user a Role that doesn't exist doesn't break stuff any more
+- revamped user guide, customisation guide, added maintenance guide
 
 
 2002-09-13 0.5.0 beta2

@@ -54,8 +54,6 @@ pending web       automagically link designators
 pending web       add checkbox-based removal/addition for multilink entries
                   (eg "add me"/"remove me" for nosy list)
 
-bug     mailgw    some f*ked mailers QUOTE their Re; "Re: "[issue1] bla blah""
 bug     docs      need to mention somewhere how sorting works
-bug     roles     giving a user a Role that doesn't exist breaks stuff
 ======= ========= =============================================================
 

@@ -9,6 +9,7 @@ Contents
 - Installation_ and `Getting Started`_ (and Upgrading_)
 - `User Guide`_
 - `Customising Roundup`_
+- `Maintaining Roundup Trackers`_
 - `Roundup's Design`_ (original_)
 - `Developing Roundup`_
 - Contact_
@@ -21,6 +22,7 @@ Contents
 .. _`Getting Started`: getting_started.html
 .. _`User Guide`: user_guide.html
 .. _`Customising Roundup`: customizing.html
+.. _`Maintaining Roundup Trackers`: maintenance.html
 .. _`Developing Roundup`: developers.html
 .. _`Roundup's Design`: design.html
 .. _original: spec.html
@@ -69,6 +71,7 @@ Engelbert Gruber,
 Juergen Hermann,
 Gordon McMillan,
 Patrick Ohly,
+Dougal Scott,
 Stefan Seefeld.
 
 
