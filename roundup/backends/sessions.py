@@ -1,12 +1,12 @@
-#$Id: sessions.py,v 1.5 2003-06-24 06:47:44 anthonybaxter Exp $
-'''
+#$Id: sessions.py,v 1.6 2003-09-05 21:05:18 jlgijsbers Exp $
+"""
 This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
 Yes, it's called "sessions" - because originally it only defined a session
 class. It's now also used for One Time Key handling too.
 
-'''
+"""
 
 import anydbm, whichdb, os, marshal
 
