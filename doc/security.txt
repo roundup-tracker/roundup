@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.12 $
+:Version: $Revision: 1.13 $
 
 Current situation
 =================
@@ -184,7 +184,7 @@ A security module defines::
                 base roles (for admin user).
             '''
 
-        def hasClassPermission(self, db, classname, permission, userid):
+        def hasPermission(self, db, classname, permission, userid):
             ''' Look through all the Roles, and hence Permissions, and see if
                 "permission" is there for the specified classname.
 
@@ -241,26 +241,24 @@ The instance dbinit module then has in ``open()``::
     ei = db.security.addPermission(name="Edit", klass="issue",
                     description="User is allowed to edit issues")
     db.security.addPermissionToRole('User', ei)
-    ai = db.security.addPermission(name="Assign", klass="issue",
-                    description="User may be assigned to issues")
-    db.security.addPermissionToRole('User', ei)
+    ai = db.security.addPermission(name="View", klass="issue",
+                    description="User is allowed to access issues")
+    db.security.addPermissionToRole('User', ai)
 
 In the dbinit ``init()``::
 
+    # create the two default users
     r = db.getclass('role').lookup('Admin')
     user.create(username="admin", password=Password(adminpw),
-                address=instance_config.ADMIN_EMAIL, roles=[r])
+                address=instance_config.ADMIN_EMAIL, roles='Admin')
+    r = db.getclass('role').lookup('Anonymous')
+    user.create(username="anonymous", roles='Anonymous')
 
-    # choose your anonymous user access permission here
-    #r = db.getclass('role').lookup('No Rego')
-    r = db.getclass('role').lookup('User')
-    user.create(username="anonymous", roles=[r])
-
-Then in the code that matters, calls to ``hasClassPermission`` and
+Then in the code that matters, calls to ``hasPermission`` and
 ``hasNodePermission`` are made to determine if the user has permission
 to perform some action::
 
-    if db.security.hasClassPermission('issue', 'Edit', userid):
+    if db.security.hasPermission('issue', 'Edit', userid):
         # all ok
 
     if db.security.hasNodePermission('issue', nodeid, assignedto=userid):
@@ -279,7 +277,7 @@ which has the form::
 where:
 
 - the permission attribute gives a comma-separated list of permission names.
-  These are checked in turn using ``hasClassPermission`` and requires one to
+  These are checked in turn using ``hasPermission`` and requires one to
   be OK.
 - the other attributes are lookups on the node using ``hasNodePermission``. If
   the attribute value is "$userid" then the current user's userid is tested.
@@ -293,8 +291,7 @@ Implementation as shipped
 A set of Permissions are built in to the security module by default:
 
 - Edit (everything)
-- Access (everything)
-- Assign (everything)
+- View (everything)
 
 The default interfaces define:
 
@@ -303,7 +300,7 @@ The default interfaces define:
 
 These are hooked into the default Roles:
 
-- Admin (Edit everything, Access everything, Assign everything)
+- Admin (Edit everything, View everything)
 - User ()
 - Anonymous (Web Registration, Email Registration)
 
@@ -311,10 +308,16 @@ And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
 gets the "Anonymous" assigned when the database is initialised on installation.
 The two default schemas then define:
 
-- Edit issue, Access issue (both)
-- Edit support, Access support (extended only)
+- Edit issue, View issue (both)
+- Edit file, View file (both)
+- Edit msg, View msg (both)
+- Edit support, View support (extended only)
 
-and assign those Permissions to the "User" Role.
+and assign those Permissions to the "User" Role. New users are assigned the
+Roles defined in the config file as:
+
+- NEW_WEB_USER_ROLES
+- NEW_EMAIL_USER_ROLES
 
 
 Authentication of Users
@@ -354,6 +357,7 @@ The CGI interface must be changed to:
   - implement htmltemplate tests on permissions
   - switch all code over from using config vars for permission checks to using
     permissions
+  - change all explicit admin user checks for Role checks
   - include config vars for initial Roles for anonymous web, new web and new
     email users
 

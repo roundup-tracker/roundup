@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.23 2002-07-14 02:02:43 richard Exp $
+# $Id: test_mailgw.py,v 1.24 2002-07-26 08:27:00 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -20,7 +20,7 @@ import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 #except ImportError :
 #    import rfc822 as email
 
-from roundup.mailgw import MailGW
+from roundup.mailgw import MailGW, Unauthorized
 from roundup import init, instance
 
 # TODO: make this output only enough equal lines for context, not all of
@@ -113,7 +113,7 @@ This is a test submission of a new issue.
             self.assertEqual('no error', error)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
-        self.assertEqual(l, ['2', '3'])
+        self.assertEqual(l, ['3', '4'])
 
     def testNewIssue(self):
         self.doNewIssue()
@@ -138,7 +138,7 @@ This is a test submission of a new issue.
             self.assertEqual('no error', error)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
-        self.assertEqual(l, ['2', '3'])
+        self.assertEqual(l, ['3', '4'])
 
     def testAlternateAddress(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -295,7 +295,7 @@ This is a followup
         handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
-        self.assertEqual(l, ['2', '3', '4', '5'])
+        self.assertEqual(l, ['3', '4', '5', '6'])
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -626,10 +626,48 @@ Subject: [issue1] Testing... [nosy=-richard]
         handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
-        self.assertEqual(l, ['2'])
+        self.assertEqual(l, ['3'])
 
         # NO NOSY MESSAGE SHOULD BE SENT!
         self.assert_(not os.path.exists(os.environ['SENDMAILDEBUG']))
+
+    def testNewUserAuthor(self):
+        # first without the permission
+        Anonid = self.db.role.lookup('Anonymous')
+        self.db.role.set(Anonid, permissions=[])
+        anonid = self.db.user.lookup('anonymous')
+        self.db.user.set(anonid, roles='Anonymous')
+
+        self.db.security.hasPermission('Email Registration', anonid)
+        l = self.db.user.list()
+        l.sort()
+        s = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: fubar <fubar@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id>
+Subject: [issue] Testing...
+
+This is a test submission of a new issue.
+'''
+        message = cStringIO.StringIO(s)
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        self.assertRaises(Unauthorized, handler.main, message)
+        m = self.db.user.list()
+        m.sort()
+        self.assertEqual(l, m)
+
+        # now with the permission
+        p = self.db.security.getPermission('Email Registration')
+        self.db.role.set(Anonid, permissions=[p])
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        message = cStringIO.StringIO(s)
+        handler.main(message)
+        m = self.db.user.list()
+        m.sort()
+        self.assertNotEqual(l, m)
 
     def testEnc01(self):
         self.doNewIssue()
@@ -743,6 +781,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/07/14 02:02:43  richard
+# Fixed the unit tests for the new multilist controls in the mailgw
+#
 # Revision 1.22  2002/07/09 01:21:24  richard
 # Added ability for unit tests to turn off exception handling in mailgw so
 # that exceptions are reported earlier (and hence make sense).

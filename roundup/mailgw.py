@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.78 2002-07-25 07:14:06 richard Exp $
+$Id: mailgw.py,v 1.79 2002-07-26 08:26:59 richard Exp $
 '''
 
 
@@ -93,7 +93,7 @@ class MailUsageError(ValueError):
 class MailUsageHelp(Exception):
     pass
 
-class UnAuthorized(Exception):
+class Unauthorized(Exception):
     """ Access denied """
 
 def initialiseSecurity(security):
@@ -104,7 +104,6 @@ def initialiseSecurity(security):
     '''
     newid = security.addPermission(name="Email Registration",
         description="Anonymous may register through e-mail")
-    security.addPermissionToRole('Anonymous', newid)
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -182,7 +181,7 @@ class MailGW:
                 m.append('\n\nMail Gateway Help\n=================')
                 m.append(fulldoc)
                 m = self.bounce_message(message, sendto, m)
-            except UnAuthorized, value:
+            except Unauthorized, value:
                 # just inform the user that he is not authorized
                 sendto = [sendto[0][1]]
                 m = ['']
@@ -522,19 +521,16 @@ Subject was: "%s"
         # handle the users
         #
 
-        # Don't create users if ANONYMOUS_REGISTER_MAIL is denied
-        # ... fall back on ANONYMOUS_REGISTER if the other doesn't exist
+        # Don't create users if anonymous isn't allowed to register
         create = 1
-        if hasattr(self.instance, 'ANONYMOUS_REGISTER_MAIL'):
-            if self.instance.ANONYMOUS_REGISTER_MAIL == 'deny':
-                create = 0
-        elif self.instance.ANONYMOUS_REGISTER == 'deny':
+        anonid = self.db.user.lookup('anonymous')
+        if not self.db.security.hasPermission('Email Registration', anonid):
             create = 0
 
-        author = self.db.uidFromAddress(message.getaddrlist('from')[0],
+        author = uidFromAddress(self.db, message.getaddrlist('from')[0],
             create=create)
         if not author:
-            raise UnAuthorized, '''
+            raise Unauthorized, '''
 You are not a registered user.
 
 Unknown address: %s
@@ -561,7 +557,7 @@ Unknown address: %s
 
             # look up the recipient - create if necessary (and we're
             # allowed to)
-            recipient = self.db.uidFromAddress(recipient, create)
+            recipient = uidFromAddress(self.db, recipient, create)
 
             # if all's well, add the recipient to the list
             if recipient:
@@ -731,6 +727,53 @@ There was a problem with the message you sent:
 
         return nodeid
 
+def extractUserFromList(userClass, users):
+    '''Given a list of users, try to extract the first non-anonymous user
+       and return that user, otherwise return None
+    '''
+    if len(users) > 1:
+        for user in users:
+            # make sure we don't match the anonymous or admin user
+            if userClass.get(user, 'username') in ('admin', 'anonymous'):
+                continue
+            # first valid match will do
+            return user
+        # well, I guess we have no choice
+        return user[0]
+    elif users:
+        return users[0]
+    return None
+
+def uidFromAddress(db, address, create=1):
+    ''' address is from the rfc822 module, and therefore is (name, addr)
+
+        user is created if they don't exist in the db already
+    '''
+    (realname, address) = address
+
+    # try a straight match of the address
+    user = extractUserFromList(db.user, db.user.stringFind(address=address))
+    if user is not None: return user
+
+    # try the user alternate addresses if possible
+    props = db.user.getprops()
+    if props.has_key('alternate_addresses'):
+        users = db.user.filter(None, {'alternate_addresses': address},
+            [], [])
+        user = extractUserFromList(db.user, users)
+        if user is not None: return user
+
+    # try to match the username to the address (for local
+    # submissions where the address is empty)
+    user = extractUserFromList(db.user, db.user.stringFind(username=address))
+
+    # couldn't match address or username, so create a new user
+    if create:
+        return db.user.create(username=address, address=address,
+            realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES)
+    else:
+        return 0
+
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         eol=re.compile(r'[\r\n]+'), 
@@ -800,6 +843,14 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.78  2002/07/25 07:14:06  richard
+# Bugger it. Here's the current shape of the new security implementation.
+# Still to do:
+#  . call the security funcs from cgi and mailgw
+#  . change shipped templates to include correct initialisation and remove
+#    the old config vars
+# ... that seems like a lot. The bulk of the work has been done though. Honest :)
+#
 # Revision 1.77  2002/07/18 11:17:31  gmcm
 # Add Number and Boolean types to hyperdb.
 # Add conversion cases to web, mail & admin interfaces.

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.18 2002-07-25 07:14:06 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.19 2002-07-26 08:27:00 richard Exp $ 
 
 import unittest, cgi, time, os, shutil
 
@@ -434,10 +434,8 @@ class IndexTemplateCase(unittest.TestCase):
         tf.props = ['title']
 
         # admin user
-        r = str(self.db.role.lookup('Admin'))
-        self.db.user.create(username="admin", roles=[r])
-        r = str(self.db.role.lookup('User'))
-        self.db.user.create(username="anonymous", roles=[r])
+        self.db.user.create(username="admin", roles='Admin')
+        self.db.user.create(username="anonymous", roles='User')
 
     def testBasic(self):
         self.assertEqual(self.tf.execute_template('hello'), 'hello')
@@ -503,10 +501,8 @@ class ItemTemplateCase(unittest.TestCase):
         tf.nodeid = self.db.issue.create(title="spam", status='1')
 
         # admin user
-        r = str(self.db.role.lookup('Admin'))
-        self.db.user.create(username="admin", roles=[r])
-        r = str(self.db.role.lookup('User'))
-        self.db.user.create(username="anonymous", roles=[r])
+        self.db.user.create(username="admin", roles='Admin')
+        self.db.user.create(username="anonymous", roles='User')
 
     def testBasic(self):
         self.assertEqual(self.tf.execute_template('hello'), 'hello')
@@ -549,6 +545,14 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/07/25 07:14:06  richard
+# Bugger it. Here's the current shape of the new security implementation.
+# Still to do:
+#  . call the security funcs from cgi and mailgw
+#  . change shipped templates to include correct initialisation and remove
+#    the old config vars
+# ... that seems like a lot. The bulk of the work has been done though. Honest :)
+#
 # Revision 1.17  2002/07/18 23:07:07  richard
 # Unit tests and a few fixes.
 #

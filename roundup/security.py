@@ -63,31 +63,49 @@ class Security:
         ee = self.addPermission(name="Edit",
             description="User may edit everthing")
         self.addPermissionToRole('Admin', ee)
-        ae = self.addPermission(name="Access",
+        ae = self.addPermission(name="View",
             description="User may access everything")
-        self.addPermissionToRole('Admin', ae)
-        ae = self.addPermission(name="Assign",
-            description="User may be assigned to anything")
         self.addPermissionToRole('Admin', ae)
         reg = self.addPermission(name="Register Web",
             description="User may register through the web")
-        self.addPermissionToRole('Anonymous', reg)
         reg = self.addPermission(name="Register Email",
             description="User may register through the email")
-        self.addPermissionToRole('Anonymous', reg)
 
         # initialise the permissions and roles needed for the UIs
         from roundup import cgi_client, mailgw
         cgi_client.initialiseSecurity(self)
         mailgw.initialiseSecurity(self)
 
-    def hasClassPermission(self, classname, permission, userid):
+    def getPermission(self, permission, classname=None):
+        ''' Find the Permission matching the name and for the class, if the
+            classname is specified.
+
+            Raise ValueError if there is no exact match.
+        '''
+        perm = self.db.permission
+        for permissionid in perm.stringFind(name=permission):
+            klass = perm.get(permissionid, 'klass')
+            if classname is not None and classname == klass:
+                return permissionid
+            elif not classname and not klass:
+                return permissionid
+        if not classname:
+            raise ValueError, 'No permission "%s" defined'%permission
+        raise ValueError, 'No permission "%s" defined for "%s"'%(permission,
+            classname)
+
+    def hasPermission(self, permission, userid, classname=None):
         ''' Look through all the Roles, and hence Permissions, and see if
             "permission" is there for the specified classname.
 
         '''
         roles = self.db.user.get(userid, 'roles')
-        for roleid in roles:
+        if roles is None:
+            return 0
+        for rolename in roles.split(','):
+            if not rolename:
+                continue
+            roleid = self.db.role.lookup(rolename)
             for permissionid in self.db.role.get(roleid, 'permissions'):
                 if self.db.permission.get(permissionid, 'name') != permission:
                     continue

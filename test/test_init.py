@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.13 2002-07-14 02:05:54 richard Exp $
+# $Id: test_init.py,v 1.14 2002-07-26 08:27:00 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -60,7 +60,7 @@ class ClassicTestCase(MyTestCase):
         l = db.keyword.list()
         ae(l, [])
         l = db.user.list()
-        ae(l, ['1'])
+        ae(l, ['1', '2'])
         l = db.msg.list()
         ae(l, [])
         l = db.file.list()
@@ -155,6 +155,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2002/07/14 02:05:54  richard
+# . all storage-specific code (ie. backend) is now implemented by the backends
+#
 # Revision 1.12  2002/07/11 01:13:13  richard
 # *** empty log message ***
 #

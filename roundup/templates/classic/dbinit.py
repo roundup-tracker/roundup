@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.20 2002-07-17 12:39:10 gmcm Exp $
+# $Id: dbinit.py,v 1.21 2002-07-26 08:26:59 richard Exp $
 
 import os
 
@@ -56,11 +56,13 @@ def open(name=None):
                     url=String())
     query.setkey("name")
     
+    # Note: roles is a comma-separated string of Role names
     user = Class(db, "user", 
                     username=String(),   password=Password(),
                     address=String(),    realname=String(), 
                     phone=String(),      organisation=String(),
-                    alternate_addresses=String(), queries=Multilink("query"))
+                    alternate_addresses=String(),
+                    queries=Multilink('query'), roles=String())
     user.setkey("username")
 
     # FileClass automatically gets these properties:
@@ -86,6 +88,43 @@ def open(name=None):
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
 
+    #
+    # SECURITY SETTINGS
+    #
+    # new permissions for this schema
+    for cl in 'issue', 'file', 'msg':
+        db.security.addPermission(name="Edit", klass=cl,
+            description="User is allowed to edit "+cl)
+        db.security.addPermission(name="View", klass=cl,
+            description="User is allowed to access "+cl)
+
+    # Assign the appropriate permissions to the anonymous user's Anonymous
+    # Role. Choices here are:
+    # - Allow anonymous users to register through the web
+    p = db.security.getPermission('Web Registration')
+    db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous (new) users to register through the email gateway
+    p = db.security.getPermission('Email Registration')
+    db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous users access to the "issue" class of data
+    #   Note: this also grants access to related information like files,
+    #         messages, statuses etc that are linked to issues
+    #p = db.security.getPermission('View', 'issue')
+    #db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous users access to edit the "issue" class of data
+    #   Note: this also grants access to create related information like
+    #         files and messages etc that are linked to issues
+    #p = db.security.getPermission('Edit', 'issue')
+    #db.security.addPermissionToRole('Anonymous', p)
+
+    # Assign the access and edit permissions for issue, file and message
+    # to regular users now
+    for cl in 'issue', 'file', 'msg':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Edit', cl)
+        db.security.addPermissionToRole('User', p)
+
     import detectors
     detectors.init(db)
 
@@ -107,6 +146,9 @@ def init(adminpw):
     db = open("admin")
     db.clear()
 
+    #
+    # INITIAL PRIORITY AND STATUS VALUES
+    #
     pri = db.getclass('priority')
     pri.create(name="critical", order="1")
     pri.create(name="urgent", order="2")
@@ -124,13 +166,19 @@ def init(adminpw):
     stat.create(name="done-cbb", order="7")
     stat.create(name="resolved", order="8")
 
+    # create the two default users
     user = db.getclass('user')
-    user.create(username="admin", password=adminpw, 
-                                  address=instance_config.ADMIN_EMAIL)
+    user.create(username="admin", password=adminpw,
+        address=instance_config.ADMIN_EMAIL, roles='Admin')
+    user.create(username="anonymous", roles='Anonymous')
+
     db.commit()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/07/17 12:39:10  gmcm
+# Saving, running & editing queries.
+#
 # Revision 1.19  2002/07/14 02:05:54  richard
 # . all storage-specific code (ie. backend) is now implemented by the backends
 #

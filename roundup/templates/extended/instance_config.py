@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.18 2002-05-25 07:16:25 rochecompaan Exp $
+# $Id: instance_config.py,v 1.19 2002-07-26 08:27:00 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -68,14 +68,13 @@ LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 # Where to place the web filtering HTML on the index page
 FILTER_POSITION = 'bottom'          # one of 'top', 'bottom', 'top and bottom'
 
-# Deny or allow anonymous access to the web interface
-ANONYMOUS_ACCESS = 'deny'           # either 'deny' or 'allow'
-
-# Deny or allow anonymous users to register through the web interface
-ANONYMOUS_REGISTER = 'deny'         # either 'deny' or 'allow'
-
-# Deny or allow anonymous users to register through the mail interface
-ANONYMOUS_REGISTER_MAIL = 'deny'    # either 'deny' or 'allow'
+# 
+# SECURITY DEFINITIONS
+#
+# define the Roles that a user gets when they register with the tracker
+# these are a comma-separated string of role names (e.g. 'Admin,User')
+NEW_WEB_USER_ROLES = 'User'
+NEW_EMAIL_USER_ROLES = 'User'
 
 # Send nosy messages to the author of the message
 MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
@@ -214,6 +213,9 @@ SUPPORT_FILTER = {
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/05/25 07:16:25  rochecompaan
+# Merged search_indexing-branch with HEAD
+#
 # Revision 1.17  2002/05/22 00:32:34  richard
 #  . changed the default message list in issues to display the message body
 #  . made backends.__init__ be more specific about which ImportErrors it really

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.144 2002-07-25 07:14:05 richard Exp $
+# $Id: cgi_client.py,v 1.145 2002-07-26 08:26:59 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -39,9 +39,13 @@ def initialiseSecurity(security):
         This function is directly invoked by security.Security.__init__()
         as a part of the Security object instantiation.
     '''
-    newid = security.addPermission(name="Web Registration",
+    security.addPermission(name="Web Registration",
         description="User may register through the web")
-    security.addPermissionToRole('Anonymous', newid)
+
+    # doing Role stuff through the web - make sure Admin can
+    p = security.addPermission(name="Web Roles",
+        description="User may manipulate user Roles through the web")
+    security.addPermissionToRole('Admin', p)
 
 class Client:
     '''
@@ -97,14 +101,14 @@ class Client:
                 err = _("sanity check: unknown user name `%s'")%self.user
             raise Unauthorised, errmsg
 
-    def header(self, headers=None):
+    def header(self, headers=None, response=200):
         '''Put up the appropriate header.
         '''
         if headers is None:
             headers = {'Content-Type':'text/html'}
         if not headers.has_key('Content-Type'):
             headers['Content-Type'] = 'text/html'
-        self.request.send_response(200)
+        self.request.send_response(response)
         for entry in headers.items():
             self.request.send_header(*entry)
         self.request.end_headers()
@@ -178,22 +182,19 @@ function help_window(helpurl, width, height) {
         style = open(os.path.join(self.instance.TEMPLATES, 'style.css')).read()
 
         # figure who the user is
-        user_name = self.user or ''
-        if user_name not in ('', 'anonymous'):
-            userid = self.db.user.lookup(self.user)
-        else:
-            userid = None
+        user_name = self.user
+        userid = self.db.user.lookup(user_name)
 
         # figure all the header links
         if hasattr(self.instance, 'HEADER_INDEX_LINKS'):
             links = []
             for name in self.instance.HEADER_INDEX_LINKS:
                 spec = getattr(self.instance, name + '_INDEX')
-                # skip if we need to fill in the logged-in user id there's
-                # no user logged in
+                # skip if we need to fill in the logged-in user id and
+                # we're anonymous
                 if (spec['FILTERSPEC'].has_key('assignedto') and
                         spec['FILTERSPEC']['assignedto'] in ('CURRENT USER',
-                        None) and userid is None):
+                        None) and user_name == 'anonymous'):
                     continue
                 links.append(self.make_index_link(name))
         else:
@@ -203,59 +204,55 @@ function help_window(helpurl, width, height) {
                 _('Unassigned <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>')
             ]
 
-        if userid:
+        user_info = _('<a href="login">Login</a>')
+        add_links = ''
+        if user_name != 'anonymous':
             # add any personal queries to the menu
             try:
                 queries = self.db.getclass('query')
             except KeyError:
                 # no query class
-                queries = self.instance.dbinit.Class(self.db,
-                                                    "query",
-                                                    klass=hyperdb.String(),
-                                                    name=hyperdb.String(),
-                                                    url=hyperdb.String())
+                queries = self.instance.dbinit.Class(self.db, "query",
+                    klass=hyperdb.String(), name=hyperdb.String(),
+                    url=hyperdb.String())
                 queries.setkey('name')
-#queries.disableJournalling()
+                #queries.disableJournalling()
             try:
                 qids = self.db.getclass('user').get(userid, 'queries')
             except KeyError, e:
                 #self.db.getclass('user').addprop(queries=hyperdb.Multilink('query'))
                 qids = []
             for qid in qids:
-                links.append('<a href=%s?%s>%s</a>' % (queries.get(qid, 'klass'),
-                                                       queries.get(qid, 'url'),
-                                                       queries.get(qid, 'name')))
-                
-        # if they're logged in, include links to their information, and the
-        # ability to add an issue
-        if user_name not in ('', 'anonymous'):
+                links.append('<a href=%s?%s>%s</a>'%(queries.get(qid, 'klass'),
+                    queries.get(qid, 'url'), queries.get(qid, 'name')))
+
+            # if they're logged in, include links to their information,
+            # and the ability to add an issue
             user_info = _('''
 <a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
 ''')%locals()
 
-            # figure the "add class" links
-            if hasattr(self.instance, 'HEADER_ADD_LINKS'):
-                classes = self.instance.HEADER_ADD_LINKS
-            else:
-                classes = ['issue']
-            l = []
-            for class_name in classes:
-                cap_class = class_name.capitalize()
-                links.append(_('Add <a href="new%(class_name)s">'
-                    '%(cap_class)s</a>')%locals())
 
-            # if there's no config header link spec, force a user link here
-            if not hasattr(self.instance, 'HEADER_INDEX_LINKS'):
-                links.append(_('<a href="issue?assignedto=%(userid)s&status=-1,unread,chatting,open,pending&:filter=status,resolution,assignedto&:sort=-activity&:columns=id,activity,status,resolution,title,creator&:group=type&show_customization=1">My Issues</a>')%locals())
+        # figure the "add class" links
+        if hasattr(self.instance, 'HEADER_ADD_LINKS'):
+            classes = self.instance.HEADER_ADD_LINKS
         else:
-            user_info = _('<a href="login">Login</a>')
-            add_links = ''
+            classes = ['issue']
+        l = []
+        for class_name in classes:
+            # make sure the user has permission to add
+            if not self.db.security.hasPermission('Edit', userid, class_name):
+                continue
+            cap_class = class_name.capitalize()
+            links.append(_('Add <a href="new%(class_name)s">'
+                '%(cap_class)s</a>')%locals())
 
-        # if the user is admin, include admin links
+        # if the user can edit everything, include the links
         admin_links = ''
-        if user_name == 'admin':
+        userid = self.db.user.lookup(user_name)
+        if self.db.security.hasPermission('Edit', userid):
             links.append(_('<a href="list_classes">Class List</a>'))
-            links.append(_('<a href="user?:sort=username">User List</a>'))
+            links.append(_('<a href="user?:sort=username&:group=roles">User List</a>'))
             links.append(_('<a href="newuser">Add User</a>'))
 
         # add the search links
@@ -265,6 +262,9 @@ function help_window(helpurl, width, height) {
             classes = ['issue']
         l = []
         for class_name in classes:
+            # make sure the user has permission to view
+            if not self.db.security.hasPermission('View', userid, class_name):
+                continue
             cap_class = class_name.capitalize()
             links.append(_('Search <a href="search%(class_name)s">'
                 '%(cap_class)s</a>')%locals())
@@ -486,7 +486,8 @@ function help_window(helpurl, width, height) {
     # XXX deviates from spec - loses the '+' (that's a reserved character
     # in URLS
     def list(self, sort=None, group=None, filter=None, columns=None,
-            filterspec=None, show_customization=None, show_nodes=1, pagesize=None):
+            filterspec=None, show_customization=None, show_nodes=1,
+            pagesize=None):
         ''' call the template index with the args
 
             :sort    - sort by prop name, optionally preceeded with '-'
@@ -569,14 +570,14 @@ function help_window(helpurl, width, height) {
         '''Display a basic edit page that allows simple editing of the
            nodes of the current class
         '''
-        if self.user != 'admin':
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Edit', userid):
             raise Unauthorised
         w = self.write
         cn = self.classname
         cl = self.db.classes[cn]
         idlessprops = cl.getprops(protected=0).keys()
         props = ['id'] + idlessprops
-
 
         # get the CSV module
         try:
@@ -610,7 +611,13 @@ function help_window(helpurl, width, height) {
                 # extract the new values
                 d = {}
                 for name, value in zip(idlessprops, values):
-                    d[name] = value.strip()
+                    value = value.strip()
+                    # only add the property if it has a value
+                    if value:
+                        # if it's a multilink, split it
+                        if isinstance(cl.properties[name], hyperdb.Multilink):
+                            value = value.split(':')
+                        d[name] = value
 
                 # perform the edit
                 if cl.hasnode(nodeid):
@@ -626,10 +633,12 @@ function help_window(helpurl, width, height) {
                     cl.retire(nodeid)
 
         w(_('''<p class="form-help">You may edit the contents of the
-        "%(classname)s" class using this form. The lines are full-featured
-        Comma-Separated-Value lines, so you may include commas and even
+        "%(classname)s" class using this form. Commas, newlines and double
+        quotes (") must be handled delicately. You may include commas and
         newlines by enclosing the values in double-quotes ("). Double
         quotes themselves must be quoted by doubling ("").</p>
+        <p class="form-help">Multilink properties have their multiple
+        values colon (":") separated (... ,"one:two:three", ...)</p>
         <p class="form-help">Remove entries by deleting their line. Add
         new entries by appending
         them to the table - put an X in the id column.</p>''')%{'classname':cn})
@@ -647,7 +656,13 @@ function help_window(helpurl, width, height) {
         for nodeid in cl.list():
             l = []
             for name in props:
-                l.append(cgi.escape(str(cl.get(nodeid, name))))
+                value = cl.get(nodeid, name)
+                if value is None:
+                    l.append('')
+                elif isinstance(value, type([])):
+                    l.append(cgi.escape(':'.join(map(str, value))))
+                else:
+                    l.append(cgi.escape(str(cl.get(nodeid, name))))
             w(p.join(l) + '\n')
 
         w(_('</textarea><br><input type="submit" value="Save Changes"></form>'))
@@ -934,6 +949,9 @@ function help_window(helpurl, width, height) {
         node's id. The node id will be appended to the multilink.
         '''
         cn = self.classname
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('View', userid, cn):
+            raise Unauthorised
         cl = self.db.classes[cn]
         if self.form.has_key(':multilink'):
             link = self.form[':multilink'].value
@@ -945,6 +963,9 @@ function help_window(helpurl, width, height) {
         # possibly perform a create
         keys = self.form.keys()
         if [i for i in keys if i[0] != ':']:
+            # no dice if you can't edit!
+            if not self.db.security.hasPermission('Edit', userid, cn):
+                raise Unauthorised
             props = {}
             try:
                 nid = self._createnode()
@@ -985,6 +1006,10 @@ function help_window(helpurl, width, height) {
 
             Don't do any of the message or file handling, just create the node.
         '''
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Edit', userid, 'user'):
+            raise Unauthorised
+
         cn = self.classname
         cl = self.db.classes[cn]
 
@@ -1019,6 +1044,9 @@ function help_window(helpurl, width, height) {
         This form works very much the same way as newnode - it just has a
         file upload.
         '''
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Edit', userid, 'file'):
+            raise Unauthorised
         cn = self.classname
         cl = self.db.classes[cn]
         props = parsePropsFromForm(self.db, cl, self.form)
@@ -1064,15 +1092,16 @@ function help_window(helpurl, width, height) {
         '''Display a user page for editing. Make sure the user is allowed
             to edit this node, and also check for password changes.
         '''
-        if self.user == 'anonymous':
-            raise Unauthorised
-
         user = self.db.user
 
         # get the username of the node being edited
         node_user = user.get(self.nodeid, 'username')
 
-        if self.user not in ('admin', node_user):
+        # ok, so we need to be able to edit everything, or be this node's
+        # user
+        userid = self.db.user.lookup(self.user)
+        if (not self.db.security.hasPermission('Edit', userid)
+                and self.user != node_user):
             raise Unauthorised
         
         #
@@ -1129,27 +1158,32 @@ function help_window(helpurl, width, height) {
         self.header(headers={'Content-Type': mime_type})
         self.write(cl.get(nodeid, 'content'))
 
+    def permission(self):
+        '''
+        '''
+
     def classes(self, message=None):
         ''' display a list of all the classes in the database
         '''
-        if self.user == 'admin':
-            self.pagehead(_('Table of classes'), message)
-            classnames = self.db.classes.keys()
-            classnames.sort()
-            self.write('<table border=0 cellspacing=0 cellpadding=2>\n')
-            for cn in classnames:
-                cl = self.db.getclass(cn)
-                self.write('<tr class="list-header"><th colspan=2 align=left>'
-                    '<a href="%s">%s</a></th></tr>'%(cn, cn.capitalize()))
-                for key, value in cl.properties.items():
-                    if value is None: value = ''
-                    else: value = str(value)
-                    self.write('<tr><th align=left>%s</th><td>%s</td></tr>'%(
-                        key, cgi.escape(value)))
-            self.write('</table>')
-            self.pagefoot()
-        else:
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Edit', userid):
             raise Unauthorised
+
+        self.pagehead(_('Table of classes'), message)
+        classnames = self.db.classes.keys()
+        classnames.sort()
+        self.write('<table border=0 cellspacing=0 cellpadding=2>\n')
+        for cn in classnames:
+            cl = self.db.getclass(cn)
+            self.write('<tr class="list-header"><th colspan=2 align=left>'
+                '<a href="%s">%s</a></th></tr>'%(cn, cn.capitalize()))
+            for key, value in cl.properties.items():
+                if value is None: value = ''
+                else: value = str(value)
+                self.write('<tr><th align=left>%s</th><td>%s</td></tr>'%(
+                    key, cgi.escape(value)))
+        self.write('</table>')
+        self.pagefoot()
 
     def login(self, message=None, newuser_form=None, action='index'):
         '''Display a login page.
@@ -1168,7 +1202,8 @@ function help_window(helpurl, width, height) {
     <td><input type="submit" value="Log In"></td></tr>
 </form>
 ''')%locals())
-        if self.user is None and self.instance.ANONYMOUS_REGISTER == 'deny':
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Web Registration', userid):
             self.write('</table>')
             self.pagefoot()
             return
@@ -1251,6 +1286,11 @@ function help_window(helpurl, width, height) {
 
         return 1 on successful login
         '''
+        # make sure we're allowed to register
+        userid = self.db.user.lookup(self.user)
+        if not self.db.security.hasPermission('Web Registration', userid):
+            raise Unauthorised
+
         # re-open the database as "admin"
         self.opendb('admin')
 
@@ -1258,7 +1298,9 @@ function help_window(helpurl, width, height) {
         cl = self.db.user
         try:
             props = parsePropsFromForm(self.db, cl, self.form)
+            props['roles'] = self.instance.NEW_WEB_USER_ROLES
             uid = cl.create(**props)
+            self.db.commit()
         except ValueError, message:
             action = self.form['__destination_url'].value
             self.login(message, action=action)
@@ -1283,8 +1325,6 @@ function help_window(helpurl, width, height) {
           else:
             session = session[:-1]
 
-        print 'session set to', `session`
-
         # insert the session in the sessiondb
         sessions = self.db.getclass('__sessions')
         self.session = sessions.create(sessid=session, user=user,
@@ -1303,12 +1343,13 @@ function help_window(helpurl, width, height) {
             session, expire, path)})
 
     def make_user_anonymous(self):
-        # make us anonymous if we can
-        try:
-            self.db.user.lookup('anonymous')
-            self.user = 'anonymous'
-        except KeyError:
-            self.user = None
+        ''' Make use anonymous
+
+            This method used to handle non-existence of the 'anonymous'
+            user, but that user is mandatory now.
+        '''
+        self.db.user.lookup('anonymous')
+        self.user = 'anonymous'
 
     def logout(self, message=None):
         self.make_user_anonymous()
@@ -1341,6 +1382,19 @@ function help_window(helpurl, width, height) {
             sessions.disableJournalling()
 
     def main(self):
+        ''' Wrap the request and handle unauthorised requests
+        '''
+        self.desired_action = None
+        try:
+            self.main_action()
+        except Unauthorised:
+            self.header(response=403)
+            if self.desired_action is None or self.desired_action == 'login':
+                self.login()             # go to the index after login
+            else:
+                self.login(action=self.desired_action)
+
+    def main_action(self):
         '''Wrap the database accesses so we can close the database cleanly
         '''
         # determine the uid to use
@@ -1378,6 +1432,12 @@ function help_window(helpurl, width, height) {
                 self.db.commit()
                 user = sessions.get(sessid, 'user')
 
+        # sanity check on the user still being valid
+        try:
+            self.db.user.lookup(user)
+        except KeyError:
+            user = 'anonymous'
+
         # make sure the anonymous user is valid if we're using it
         if user == 'anonymous':
             self.make_user_anonymous()
@@ -1392,6 +1452,7 @@ function help_window(helpurl, width, height) {
             action = 'index'
         else:
             action = path[0]
+        self.desired_action = action
 
         # Everthing ignores path[1:]
         #  - The file download link generator actually relies on this - it
@@ -1412,14 +1473,6 @@ function help_window(helpurl, width, height) {
 
         # allow anonymous people to register
         if action == 'newuser_action':
-            # if we don't have a login and anonymous people aren't allowed to
-            # register, then spit up the login form
-            if self.instance.ANONYMOUS_REGISTER == 'deny' and self.user is None:
-                if action == 'login':
-                    self.login()         # go to the index after login
-                else:
-                    self.login(action=action)
-                return
             # try to add the user
             if not self.newuser_action():
                 return
@@ -1427,14 +1480,6 @@ function help_window(helpurl, width, height) {
             action = self.form['__destination_url'].value
             if not action:
                 action = 'index'
-
-        # no login or registration, make sure totally anonymous access is OK
-        elif self.instance.ANONYMOUS_ACCESS == 'deny' and self.user is None:
-            if action == 'login':
-                self.login()             # go to the index after login
-            else:
-                self.login(action=action)
-            return
 
         # re-open the database for real, using the user
         self.opendb(self.user)
@@ -1623,6 +1668,14 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.144  2002/07/25 07:14:05  richard
+# Bugger it. Here's the current shape of the new security implementation.
+# Still to do:
+#  . call the security funcs from cgi and mailgw
+#  . change shipped templates to include correct initialisation and remove
+#    the old config vars
+# ... that seems like a lot. The bulk of the work has been done though. Honest :)
+#
 # Revision 1.143  2002/07/20 19:29:10  gmcm
 # Fixes/improvements to the search form & saved queries.
 #

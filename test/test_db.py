@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.37 2002-07-25 07:14:06 richard Exp $ 
+# $Id: test_db.py,v 1.38 2002-07-26 08:27:00 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -28,7 +28,7 @@ def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
     status.setkey("name")
     user = module.Class(db, "user", username=String(), password=Password(),
-        assignable=Boolean(), age=Number(), roles=Multilink('role'))
+        assignable=Boolean(), age=Number(), roles=String())
     user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"))
@@ -603,6 +603,14 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.37  2002/07/25 07:14:06  richard
+# Bugger it. Here's the current shape of the new security implementation.
+# Still to do:
+#  . call the security funcs from cgi and mailgw
+#  . change shipped templates to include correct initialisation and remove
+#    the old config vars
+# ... that seems like a lot. The bulk of the work has been done though. Honest :)
+#
 # Revision 1.36  2002/07/19 03:36:34  richard
 # Implemented the destroy() method needed by the session database (and possibly
 # others). At the same time, I removed the leading underscores from the hyperdb

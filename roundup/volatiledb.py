@@ -272,3 +272,53 @@ class VolatileClass(hyperdb.Class):
     def index(self, nodeid):
         pass
 
+    def stringFind(self, **requirements):
+        """Locate a particular node by matching a set of its String
+           properties in a caseless search.
+
+           If the property is not a String property, a TypeError is raised.
+        
+           The return is a list of the id of all nodes that match.
+        """
+        for propname in requirements.keys():
+            prop = self.properties[propname]
+            if isinstance(not prop, String):
+                raise TypeError, "'%s' not a String property"%propname
+            requirements[propname] = requirements[propname].lower()
+        l = []
+        for nodeid, node in self.store.items():
+            for key, value in requirements.items():
+                if node[key] and node[key].lower() != value:
+                    break
+            else:
+                l.append(nodeid)
+        return l
+
+    def getkey(self):
+        """Return the name of the key property for this class or None."""
+        return self.key
+
+    def labelprop(self, default_to_id=0):
+        ''' Return the property name for a label for the given node.
+
+        This method attempts to generate a consistent label for the node.
+        It tries the following in order:
+            1. key property
+            2. "name" property
+            3. "title" property
+            4. first property from the sorted property name list
+        '''
+        k = self.getkey()
+        if  k:
+            return k
+        props = self.getprops()
+        if props.has_key('name'):
+            return 'name'
+        elif props.has_key('title'):
+            return 'title'
+        if default_to_id:
+            return 'id'
+        props = props.keys()
+        props.sort()
+        return props[0]
+

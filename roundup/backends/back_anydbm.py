@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.53 2002-07-25 07:14:06 richard Exp $
+#$Id: back_anydbm.py,v 1.54 2002-07-26 08:26:59 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1333,7 +1333,7 @@ class Class(hyperdb.Class):
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
                 for key, value in requirements.items():
-                    if node[key] and node[key].lower() != value:
+                    if node[key] is None or node[key].lower() != value:
                         break
                 else:
                     l.append(nodeid)
@@ -1776,6 +1776,14 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.53  2002/07/25 07:14:06  richard
+#Bugger it. Here's the current shape of the new security implementation.
+#Still to do:
+# . call the security funcs from cgi and mailgw
+# . change shipped templates to include correct initialisation and remove
+#   the old config vars
+#... that seems like a lot. The bulk of the work has been done though. Honest :)
+#
 #Revision 1.52  2002/07/19 03:36:34  richard
 #Implemented the destroy() method needed by the session database (and possibly
 #others). At the same time, I removed the leading underscores from the hyperdb

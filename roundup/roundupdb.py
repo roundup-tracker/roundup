@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.62 2002-07-14 02:05:53 richard Exp $
+# $Id: roundupdb.py,v 1.63 2002-07-26 08:26:59 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -36,61 +36,11 @@ import hyperdb
 # this var must contain a file to write the mail to
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
-
-def extractUserFromList(userClass, users):
-    '''Given a list of users, try to extract the first non-anonymous user
-       and return that user, otherwise return None
-    '''
-    if len(users) > 1:
-        # make sure we don't match the anonymous or admin user
-        for user in users:
-            if user == '1': continue
-            if userClass.get(user, 'username') == 'anonymous': continue
-            # first valid match will do
-            return user
-        # well, I guess we have no choice
-        return user[0]
-    elif users:
-        return users[0]
-    return None
-
 class Database:
     def getuid(self):
         """Return the id of the "user" node associated with the user
         that owns this connection to the hyperdatabase."""
         return self.user.lookup(self.journaltag)
-
-    def uidFromAddress(self, address, create=1):
-        ''' address is from the rfc822 module, and therefore is (name, addr)
-
-            user is created if they don't exist in the db already
-        '''
-        (realname, address) = address
-
-        # try a straight match of the address
-        user = extractUserFromList(self.user,
-            self.user.stringFind(address=address))
-        if user is not None: return user
-
-        # try the user alternate addresses if possible
-        props = self.user.getprops()
-        if props.has_key('alternate_addresses'):
-            users = self.user.filter(None, {'alternate_addresses': address},
-                [], [])
-            user = extractUserFromList(self.user, users)
-            if user is not None: return user
-
-        # try to match the username to the address (for local
-        # submissions where the address is empty)
-        user = extractUserFromList(self.user,
-            self.user.stringFind(username=address))
-
-        # couldn't match address or username, so create a new user
-        if create:
-            return self.user.create(username=address, address=address,
-                realname=realname)
-        else:
-            return 0
 
 class MessageSendError(RuntimeError):
     pass
@@ -476,6 +426,9 @@ class IssueClass:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.62  2002/07/14 02:05:53  richard
+# . all storage-specific code (ie. backend) is now implemented by the backends
+#
 # Revision 1.61  2002/07/09 04:19:09  richard
 # Added reindex command to roundup-admin.
 # Fixed reindex on first access.

@@ -18,6 +18,7 @@ TODO: mention that the dbinit needs the db.post_init() method call for
 reindexing
 TODO: dbinit now imports classes from selct_db
 TODO: select_db needs fixing to include Class, FileClass and IssueClass
+TODO: migration of security settings
 
 
 Migrating from 0.4.1 to 0.4.2

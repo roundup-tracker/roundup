@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.23 2002-07-14 02:05:54 richard Exp $
+# $Id: dbinit.py,v 1.24 2002-07-26 08:27:00 richard Exp $
 
 import os
 
@@ -24,7 +24,6 @@ from select_db import Database, Class, FileClass, IssueClass
 
 def open(name=None):
     ''' as from the roundupdb method openDB 
- 
     ''' 
     from roundup.hyperdb import String, Password, Date, Link, Multilink
 
@@ -56,7 +55,8 @@ def open(name=None):
                     username=String(),   password=Password(),
                     address=String(),    realname=String(), 
                     phone=String(),      organisation=String(),
-                    alternate_addresses=String())
+                    alternate_addresses=String(),
+                    queries=Multilink('query'), roles=String())
     user.setkey("username")
 
     # FileClass automatically gets these properties:
@@ -111,6 +111,43 @@ def open(name=None):
                     status=Link("status"), product=Link("product"), 
                     platform=Multilink("platform"), version=String(),
                     targetversion=String(), supportcall=Multilink("support"))
+
+    #
+    # SECURITY SETTINGS
+    #
+    # new permissions for this schema
+    for cl in 'issue', 'support', 'file', 'msg':
+        db.security.addPermission(name="Edit", klass=cl,
+            description="User is allowed to edit "+cl)
+        db.security.addPermission(name="View", klass=cl,
+            description="User is allowed to access "+cl)
+
+    # Assign the appropriate permissions to the anonymous user's Anonymous
+    # Role. Choices here are:
+    # - Allow anonymous users to register through the web
+    p = db.security.getPermission('Web Registration')
+    db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous (new) users to register through the email gateway
+    p = db.security.getPermission('Email Registration')
+    db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous users access to the "issue" class of data
+    #   Note: this also grants access to related information like files,
+    #         messages, statuses etc that are linked to issues
+    #p = db.security.getPermission('View', 'issue')
+    #db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous users access to edit the "issue" class of data
+    #   Note: this also grants access to create related information like
+    #         files and messages etc that are linked to issues
+    #p = db.security.getPermission('Edit', 'issue')
+    #db.security.addPermissionToRole('Anonymous', p)
+
+    # Assign the access and edit permissions for issue, file and message
+    # to regular users now
+    for cl in 'issue', 'support', 'file', 'msg':
+        p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
+        p = db.security.getPermission('Edit', cl)
+        db.security.addPermissionToRole('User', p)
 
     import detectors
     detectors.init(db)
@@ -173,12 +210,16 @@ def init(adminpw):
 
     user = db.getclass('user')
     user.create(username="admin", password=adminpw, 
-                                  address=instance_config.ADMIN_EMAIL)
+        address=instance_config.ADMIN_EMAIL, roles="Admin")
+    user.create(username="anonymous", roles='Anonymous')
 
     db.commit()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/07/14 02:05:54  richard
+# . all storage-specific code (ie. backend) is now implemented by the backends
+#
 # Revision 1.22  2002/07/09 03:02:53  richard
 # More indexer work:
 # - all String properties may now be indexed too. Currently there's a bit of

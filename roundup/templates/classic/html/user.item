@@ -1,4 +1,4 @@
-<!-- $Id: user.item,v 1.4 2002-07-17 12:39:11 gmcm Exp $-->
+<!-- $Id: user.item,v 1.5 2002-07-26 08:27:00 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -17,6 +17,12 @@
     <td width=1% nowrap align=right><span class="form-label">Login Password</span></td>
     <td class="form-text"><display call="field('password', size=10)"></td>
 </tr>
+<require permission="Web Roles">
+ <tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Roles</span></td>
+    <td class="form-text"><display call="field('roles', size=10)"></td>
+ </tr>
+</require>
 <tr  bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Phone</span></td>
     <td class="form-text"><display call="field('phone', size=40)"></td>
