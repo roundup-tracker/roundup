@@ -55,7 +55,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.6 2001-08-01 04:24:21 richard Exp $
+$Id: mailgw.py,v 1.7 2001-08-03 07:18:22 richard Exp $
 '''
 
 
@@ -243,17 +243,7 @@ class MailGW:
         else:
             content = message.fp.read()
 
-        # extract out the summary from the message
-        summary = []
-        for line in content.split('\n'):
-            line = line.strip()
-            if summary and not line:
-                break
-            if not line:
-                summary.append('')
-            elif line[0] not in '>|':
-                summary.append(line)
-        summary = '\n'.join(summary)
+        summary, content = parseContent(content)
 
         # handle the files
         files = []
@@ -296,8 +286,41 @@ class MailGW:
             props['nosy'].sort()
             nodeid = cl.create(**props)
 
+def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
+        eol=re.compile(r'[\r\n]+'), signature=re.compile(r'^[>|\s]*[-_]+\s*$')):
+    ''' The message body is divided into sections by blank lines.
+    Sections where the second and all subsequent lines begin with a ">" or "|"
+    character are considered "quoting sections". The first line of the first
+    non-quoting section becomes the summary of the message. 
+    '''
+    sections = blank_line.split(content)
+    # extract out the summary from the message
+    summary = ''
+    l = []
+    print sections
+    for section in sections:
+        section = section.strip()
+        if not section:
+            continue
+        lines = eol.split(section)
+        if lines[0] and lines[0][0] in '>|':
+            continue
+        if len(lines) > 1 and lines[1] and lines[1][0] in '>|':
+            continue
+        if not summary:
+            summary = lines[0]
+            l.append(section)
+            continue
+        if signature.match(lines[0]):
+            break
+        l.append(section)
+    return summary, '\n'.join(l)
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/08/01 04:24:21  richard
+# mailgw was assuming certain properties existed on the issues being created.
+#
 # Revision 1.5  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #

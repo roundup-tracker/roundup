@@ -78,9 +78,7 @@ hyperdb:
 roundupdb:
   . split the file storage into multiple dirs?
 roundup-mailgw:
-  . do the "sectioning" stuff properly (ie. as it's documented)
   . errors as attachments
-  . snip signatures?
 roundup-server:
   . check the source file timestamps before reloading
 cgi_client
