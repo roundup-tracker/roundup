@@ -15,12 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.7 2001-08-29 06:23:59 richard Exp $ 
+# $Id: test_db.py,v 1.8 2001-10-09 07:25:59 richard Exp $ 
 
 import unittest, os, shutil
 
-from roundup.hyperdb import String, Link, Multilink, Date, Interval, Class, \
-    DatabaseError
+from roundup.hyperdb import String, Password, Link, Multilink, Date, \
+    Interval, Class, DatabaseError
 
 def setupSchema(db, create):
     status = Class(db, "status", name=String())
@@ -30,7 +30,7 @@ def setupSchema(db, create):
         status.create(name="in-progress")
         status.create(name="testing")
         status.create(name="resolved")
-    Class(db, "user", username=String(), password=String())
+    Class(db, "user", username=String(), password=Password())
     Class(db, "issue", title=String(), status=Link("status"),
         nosy=Multilink("user"))
 
@@ -242,6 +242,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/08/29 06:23:59  richard
+# Disabled the bsddb3 module entirely in the unit testing. See CHANGES for
+# details.
+#
 # Revision 1.6  2001/08/07 00:24:43  richard
 # stupid typo
 #

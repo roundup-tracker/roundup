@@ -72,13 +72,13 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.16 2001-10-05 02:23:24 richard Exp $
+$Id: mailgw.py,v 1.17 2001-10-09 07:25:59 richard Exp $
 '''
 
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import traceback
-import hyperdb, date
+import hyperdb, date, password
 
 class MailUsageError(ValueError):
     pass
@@ -221,6 +221,8 @@ Subject was: "%s"
 '''%(key, subject)
                 if isinstance(type, hyperdb.String):
                     props[key] = value 
+                if isinstance(type, hyperdb.Password):
+                    props[key] = password.Password(value)
                 elif isinstance(type, hyperdb.Date):
                     props[key] = date.Date(value)
                 elif isinstance(type, hyperdb.Interval):
@@ -400,6 +402,26 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/10/05 02:23:24  richard
+#  . roundup-admin create now prompts for property info if none is supplied
+#    on the command-line.
+#  . hyperdb Class getprops() method may now return only the mutable
+#    properties.
+#  . Login now uses cookies, which makes it a whole lot more flexible. We can
+#    now support anonymous user access (read-only, unless there's an
+#    "anonymous" user, in which case write access is permitted). Login
+#    handling has been moved into cgi_client.Client.main()
+#  . The "extended" schema is now the default in roundup init.
+#  . The schemas have had their page headings modified to cope with the new
+#    login handling. Existing installations should copy the interfaces.py
+#    file from the roundup lib directory to their instance home.
+#  . Incorrectly had a Bizar Software copyright on the cgitb.py module from
+#    Ping - has been removed.
+#  . Fixed a whole bunch of places in the CGI interface where we should have
+#    been returning Not Found instead of throwing an exception.
+#  . Fixed a deviation from the spec: trying to modify the 'id' property of
+#    an item now throws an exception.
+#
 # Revision 1.15  2001/08/30 06:01:17  richard
 # Fixed missing import in mailgw :(
 #

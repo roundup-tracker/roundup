@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.24 2001-09-27 06:45:58 richard Exp $
+# $Id: htmltemplate.py,v 1.25 2001-10-09 07:25:59 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
-import hyperdb, date
+import hyperdb, date, password
 
 class Base:
     def __init__(self, db, templates, classname, nodeid=None, form=None,
@@ -53,6 +53,9 @@ class Plain(Base):
         if isinstance(propclass, hyperdb.String):
             if value is None: value = ''
             else: value = str(value)
+        elif isinstance(propclass, hyperdb.Password):
+            if value is None: value = ''
+            else: value = '*encrypted*'
         elif isinstance(propclass, hyperdb.Date):
             value = str(value)
         elif isinstance(propclass, hyperdb.Interval):
@@ -106,6 +109,9 @@ class Field(Base):
                 value = cgi.escape(value)
                 value = '&quot;'.join(value.split('"'))
             s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
+        elif isinstance(propclass, hyperdb.Password):
+            size = size or 30
+            s = '<input type="password" name="%s" size="%s">'%(property, size)
         elif isinstance(propclass, hyperdb.Link):
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
@@ -747,6 +753,10 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/09/27 06:45:58  richard
+# *gak* ... xmp is Old Skool apparently. Am using pre again by have the option
+# on the plain() template function to escape the text for HTML.
+#
 # Revision 1.23  2001/09/10 09:47:18  richard
 # Fixed bug in the generation of links to Link/Multilink in indexes.
 #   (thanks Hubert Hoegl)

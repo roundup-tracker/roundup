@@ -15,10 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.8 2001-09-29 13:27:00 richard Exp $
+#$Id: back_anydbm.py,v 1.9 2001-10-09 07:25:59 richard Exp $
 
 import anydbm, os, marshal
-from roundup import hyperdb, date
+from roundup import hyperdb, date, password
 
 #
 # Now the database
@@ -104,6 +104,8 @@ class Database(hyperdb.Database):
                 node[key] = node[key].get_tuple()
             elif isinstance(properties[key], hyperdb.Interval):
                 node[key] = node[key].get_tuple()
+            elif isinstance(properties[key], hyperdb.Password):
+                node[key] = str(node[key])
 
         # now save the marshalled data
         db[nodeid] = marshal.dumps(node)
@@ -126,6 +128,10 @@ class Database(hyperdb.Database):
                 res[key] = date.Date(res[key])
             elif isinstance(properties[key], hyperdb.Interval):
                 res[key] = date.Interval(res[key])
+            elif isinstance(properties[key], hyperdb.Password):
+                p = password.Password()
+                p.unpack(res[key])
+                res[key] = p
 
         if not cldb: db.close()
         return res
@@ -220,6 +226,10 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.8  2001/09/29 13:27:00  richard
+#CGI interfaces now spit up a top-level index of all the instances they can
+#serve.
+#
 #Revision 1.7  2001/08/12 06:32:36  richard
 #using isinstance(blah, Foo) now instead of isFooType
 #

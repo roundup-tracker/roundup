@@ -15,12 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_schema.py,v 1.4 2001-08-07 00:24:43 richard Exp $ 
+# $Id: test_schema.py,v 1.5 2001-10-09 07:25:59 richard Exp $ 
 
 import unittest, os, shutil
 
 from roundup.backends import anydbm
-from roundup.hyperdb import String, Link, Multilink, Date, Interval, Class
+from roundup.hyperdb import String, Password, Link, Multilink, Date, \
+    Interval, Class
 
 class SchemaTestCase(unittest.TestCase):
     def setUp(self):
@@ -64,7 +65,7 @@ class SchemaTestCase(unittest.TestCase):
         self.assert_(issue, 'no class object returned')
 
     def testC_User(self):
-        user = Class(self.db, "user", username=String(), password=String())
+        user = Class(self.db, "user", username=String(), password=Password())
         self.assert_(user, 'no class object returned')
         user.setkey("username")
 
@@ -75,6 +76,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.3  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

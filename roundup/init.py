@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.15 2001-08-07 00:24:42 richard Exp $
+# $Id: init.py,v 1.16 2001-10-09 07:25:59 richard Exp $
 
 import os, shutil, sys, errno
 
-import roundup.instance
+import roundup.instance, password
 
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copy2().
@@ -99,10 +99,13 @@ from roundup.backends.back_%s import Database'''%backend
 
     # now import the instance and call its init
     instance = roundup.instance.open(instance_home)
-    instance.init(adminpw)
+    instance.init(password.Password(adminpw))
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.14  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

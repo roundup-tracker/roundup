@@ -18,6 +18,13 @@ Changed:
  . The schemas have had their page headings modified to cope with the new
    login handling. Existing installations should copy the interfaces.py
    file from the roundup lib directory to their instance home.
+ . Passwords are now encoded by default (except exising databases which
+   will only be encoded when the passwords are changed). The scheme used
+   at the moment is SHA - but the code is flexible enough to take any
+   number of encoding systems.
+ . The roundup-admin tool always operates as the "admin" user now. Database
+   protection should be achieved using file system protections (see the
+   documentation for details.)
 
 Fixed:
  . Incorrectly had a Bizar Software copyright on the cgitb.py module from
@@ -30,8 +37,8 @@ Fixed:
  . Fixed a deviation from the spec: trying to modify the 'id' property of
    an item now throws an exception.
  . The plain() template function now html-escapes the content.
+ . Change message was stuffing up for multilinks with no key property.
 
---------------------
 
 2001-08-30 - 0.2.8
 Fixed:

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.21 2001-10-05 02:23:24 richard Exp $
+# $Id: roundup-admin,v 1.22 2001-10-09 07:25:59 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -24,7 +24,7 @@ if int(sys.version[0]) < 2:
     sys.exit(1)
 
 import string, os, getpass, getopt, re
-from roundup import date, roundupdb, init
+from roundup import date, roundupdb, init, password
 import roundup.instance
 
 def usage(message=''):
@@ -180,6 +180,8 @@ def do_set(db, args):
             type =  properties[key]
             if isinstance(type, hyperdb.String):
                 continue
+            elif isinstance(type, hyperdb.Password):
+                props[key] = password.Password(value)
             elif isinstance(type, hyperdb.Date):
                 props[key] = date.Date(value)
             elif isinstance(type, hyperdb.Interval):
@@ -379,11 +381,6 @@ def main():
             return 0
         if opt == '-i':
             instance_home = arg
-        if opt == '-u':
-            l = arg.split(':')
-            name = l[0]
-            if len(l) > 1:
-                password = l[1]
         if opt == '-c':
             comma_sep = 1
 
@@ -418,16 +415,6 @@ def main():
     if command == 'init':
         return do_init(instance_home, args)
 
-    # open the database
-    if command in ('create', 'set', 'retire', 'freshen'):
-        while not name:
-            name = raw_input('Login name: ')
-        while not password:
-            password = getpass.getpass('  password: ')
-
-    # get the instance
-    instance = roundup.instance.open(instance_home)
-
     function = figureCommands().get(command, None)
 
     # not a valid command
@@ -435,7 +422,11 @@ def main():
         usage('Unknown command "%s"'%command)
         return 1
 
-    db = instance.open(name or 'admin')
+    # get the instance
+    instance = roundup.instance.open(instance_home)
+    db = instance.open('admin')
+
+    # do the command
     try:
         return function(db, args[1:])
     finally:
@@ -449,6 +440,26 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/10/05 02:23:24  richard
+#  . roundup-admin create now prompts for property info if none is supplied
+#    on the command-line.
+#  . hyperdb Class getprops() method may now return only the mutable
+#    properties.
+#  . Login now uses cookies, which makes it a whole lot more flexible. We can
+#    now support anonymous user access (read-only, unless there's an
+#    "anonymous" user, in which case write access is permitted). Login
+#    handling has been moved into cgi_client.Client.main()
+#  . The "extended" schema is now the default in roundup init.
+#  . The schemas have had their page headings modified to cope with the new
+#    login handling. Existing installations should copy the interfaces.py
+#    file from the roundup lib directory to their instance home.
+#  . Incorrectly had a Bizar Software copyright on the cgitb.py module from
+#    Ping - has been removed.
+#  . Fixed a whole bunch of places in the CGI interface where we should have
+#    been returning Not Found instead of throwing an exception.
+#  . Fixed a deviation from the spec: trying to modify the 'id' property of
+#    an item now throws an exception.
+#
 # Revision 1.20  2001/10/04 02:12:42  richard
 # Added nicer command-line item adding: passing no arguments will enter an
 # interactive more which asks for each property in turn. While I was at it, I

@@ -15,13 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.11 2001-08-07 00:24:43 richard Exp $
+# $Id: dbinit.py,v 1.12 2001-10-09 07:25:59 richard Exp $
 
 import os
 
 import instance_config
 from roundup import roundupdb
 import select_db
+
 from roundup.roundupdb import Class, FileClass
 
 class Database(roundupdb.Database, select_db.Database):
@@ -44,7 +45,7 @@ def open(name=None):
     ''' as from the roundupdb method openDB 
  
     ''' 
-    from roundup.hyperdb import String, Date, Link, Multilink
+    from roundup.hyperdb import String, Password, Date, Link, Multilink
 
     # open the database
     db = Database(instance_config.DATABASE, name)
@@ -60,9 +61,10 @@ def open(name=None):
 
     keywords = Class(db, "keyword", 
                     name=String())
+    keywords.setkey("name")
 
     user = Class(db, "user", 
-                    username=String(),   password=String(),
+                    username=String(),   password=Password(),
                     address=String(),    realname=String(), 
                     phone=String(),      organisation=String())
     user.setkey("username")
@@ -173,6 +175,9 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.10  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

@@ -21,7 +21,7 @@
         <li><a href="#startcmd">Command Line Tool</a>
         <li><a href="#startweb">E-Mail Interface</a>
         <li><a href="#startweb">Web Interface</a>
-        <li><a href="#users">Users</a> (Users and permissions, Adding users)
+        <li><a href="#users">Users and Access Control</a> (Users and permissions, Adding users)
         <li><a href="#issues">Issues</a>
     </ul>
 <li><a href="#guide">User Guide</a>
@@ -126,6 +126,14 @@ asked a series of questions:
     <li>Administration user "admin" password.
 </ol>
 
+You should also think about whether there is going to be controlled access
+to the instance on the machine the instance is running on. That is, who can
+actually make changes to the database using the roundup-admin tool. See
+the section on <a href="#users">Users and Access Control</a> for
+information on how to secure your instance from the start.
+
+<p>
+
 Roundup is configurable using an instance_config.py file in the instance home.
 It should be edited before roundup is used, and may have the following
 variable declarations:
@@ -227,9 +235,25 @@ roundup doesn't know who they are, they can't change anything. This has the
 following repurcussions:
 <dl>
 <dt><strong>Command-line interface</strong>
-<dd>The data modification commands (create, init, retire, set) are not
-available without a login, and if one is not supplied on the command line
-(-u user:pass) then it will be prompted for.
+<dd>The data modification commands (create, init, retire, set) are
+performed as the "admin" user. It is therefore important that the database
+be protected by the filesystem if protection is required. On a Unix system,
+the easiest and most flexible method of doing so is:
+<ol>
+<li>Add a new user and group to your system (e.g. "issue_tracker")
+<li>When creating a new instance home, use the following commands
+(substituting instance_home for the directory you want to use):<br>
+<pre>
+mkdir instance_home
+chown issue_tracker:issue_tracker instance_home
+chmod g+rwxs instance_home
+chmod o-rwx instance_home
+roundup-admin -i instance_home init
+</pre>
+<li>Now, edit the /etc/group line for issue_tracker so it includes the unix
+logins of all the users who are going to administer your roundup instance.
+</ol>
+
 <dt><strong>E-Mail interface</strong>
 <dd>Users are identified by e-mail address - a new user entry will be
 created for any e-mail address that is not recognised, so users are
@@ -240,12 +264,6 @@ entry with the username "anonymous", then unidentified users are
 automatically logged in as that user. This gives them write access.
 </dl>
 <p>
-There has been only a half-hearted attempt to restrict certain activities
-to the "admin" user. For example, the "extended" schema web interface enables
-some fnuctionality for the "admin" user. On the fil-side, it is possible to
-obtain the admin user's password using the read-only access on the command
-line (it would also be possible to access the database files directly to
-obtain this information).
 
 <h3>Adding users</h3>
 To add users, use one of the following interfaces:
@@ -1085,7 +1103,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.10 2001-10-08 21:49:30 richard Exp $
+$Id: index.html,v 1.11 2001-10-09 07:25:59 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
