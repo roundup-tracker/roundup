@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.36 2004-10-31 09:57:10 a1s Exp $
+# $Id: back_sqlite.py,v 1.37 2004-12-14 23:16:45 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -9,7 +9,7 @@ for the columns, but sqlite IGNORES these specifications.
 '''
 __docformat__ = 'restructuredtext'
 
-import os, base64, marshal, shutil
+import os, base64, marshal, shutil, time
 
 from roundup import hyperdb, date, password
 from roundup.backends import locking
