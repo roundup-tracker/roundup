@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.22 2004-10-08 00:57:22 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.23 2004-10-08 01:29:30 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1953,8 +1953,8 @@ class Class(hyperdb.Class):
 
         # first, links
         a = self.db.arg
-        allvalues = (1,)
-        o = []
+        allvalues = ()
+        sql = []
         where = []
         for prop, values in propspec:
             if not isinstance(props[prop], hyperdb.Link):
@@ -1975,9 +1975,10 @@ class Class(hyperdb.Class):
                 allvalues += tuple(values)
                 s += '_%s in (%s)'%(prop, ','.join([a]*len(values)))
                 where.append('(' + s +')')
-        tables = ['_%s'%self.classname]
         if where:
-            o.append('(' + ' and '.join(where) + ')')
+            allvalues = (1, ) + allvalues
+            sql.append('''select id from _%s where  __retired__ <> %s
+                and %s'''%(self.classname, a, ' and '.join(where)))
 
         # now multilinks
         for prop, values in propspec:
@@ -1985,6 +1986,7 @@ class Class(hyperdb.Class):
                 continue
             if not values:
                 continue
+            allvalues += (1, )
             if type(values) is type(''):
                 allvalues += (values,)
                 s = a
@@ -1992,18 +1994,13 @@ class Class(hyperdb.Class):
                 allvalues += tuple(values.keys())
                 s = ','.join([a]*len(values))
             tn = '%s_%s'%(self.classname, prop)
-            tables.append(tn)
-            o.append('(id=%s.nodeid and %s.linkid in (%s))'%(tn, tn, s))
+            sql.append('''select id from _%s, %s where  __retired__ <> %s
+                  and id = %s.nodeid and %s.linkid in (%s)'''%(self.classname,
+                  tn, a, tn, tn, s))
 
-        if not o:
+        if not sql:
             return []
-        elif len(o) > 1:
-            o = '(' + ' or '.join(['(%s)'%i for i in o]) + ')'
-        else:
-            o = o[0]
-        t = ', '.join(tables)
-        sql = 'select distinct(id) from %s where __retired__ <> %s and %s'%(
-            t, a, o)
+        sql = ' union '.join(sql)
         self.db.sql(sql, allvalues)
         # XXX numeric ids
         l = [str(x[0]) for x in self.db.sql_fetchall()]

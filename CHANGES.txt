@@ -20,6 +20,7 @@ Fixed:
 - date.Interval() now accepts an Interval as a spec (sf bug 1041266)
 - handle deleted properties in RDBMS history
 - apply timezone in correct direction in user input (sf bug 1013097)
+- more efficient find() in RDBMS (sf bug 1012781)
 
 
 2004-07-21 0.7.6
