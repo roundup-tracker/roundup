@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 NOTE: This is just a grabbag, most of this should go into documentation.
 
@@ -30,6 +30,150 @@ Different jobs run under different users.
 
 * roundup-mailgw called via .forward from MTA, or running a cron job
   fetching via pop.
+
+
+
+The cgibin is very slow!
+~~~~~~~~~~~~~~~~~~~~~~~~
+Yep, it sure is.  It has to do database open/operation/close 
+_every_ request.
+
+Solution:
+* use the built in server
+* place the built in server behind apache and link it into your web tree
+
+
+
+How do I put it behind apache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We have a project (foo) running on foohost.com:8888.
+We want http://foohost.com/FooIssues to use the roundup server, so we 
+set that up on port 8888 on foohost.com with the config.py line:
+
+  TRACKER_WEB = 'http://foohost.com/FooIssues/'
+
+We have a foo_issues project/tracker configured on roundup and we run the 
+server with:
+  ~/bin/roundup-server -p 8888 foo_issues=/home/roundup/trackers/foo_issues 
+
+
+Then, on the 'front end' host (redhat 7.3 with apache 1.3), in
+/etc/httpd/conf/httpd.conf uncomment:
+
+  LoadModule proxy_module       modules/libproxy.so
+and
+  AddModule mod_proxy.c
+
+Then add:
+
+  # roundup stuff (added manually)
+  <IfModule mod_proxy.c>
+
+  RewriteEngine on
+  
+  # General Roundup
+  RewriteRule ^/Roundup$  Roundup/    [R]
+  RewriteRule ^/Roundup/(.*) http://foohost.com:8888/$1   [P]
+  
+  # Redirect to Foo Issues
+  RewriteRule ^/Roundup/foo_issues(.*) FooIssues$1    [R]
+  
+  # Handle Foo Issues
+  RewriteRule ^/FooIssues$  FooIssues/    [R]
+  RewriteRule ^/FooIssues/(.*) http://foohost.com:8888/foo_issues/$1 [P]
+  
+  </IfModule>
+
+Then restart apache.
+
+Now apache will proxy the request on to the roundup server.
+
+Obviously you need to add the last 3 RewriteRule lines for each
+project/tracker that you have.
+
+You can now firewall off port 8888 from the rest of the world.
+
+
+
+
+
+
+Templates
+---------
+
+What is that stuff in ~/trackers/foo_issues/html/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is the template code that roundup uses to display the various pages.
+
+This is bases upon the template markup language in zope.
+
+Have a look at:
+
+   http://www.zope.org/Documentation/Books/ZopeBook/current/contents
+
+chapter     5   Using Zope Page Templates
+and chapter 9   Advanced Page Templates
+
+
+But I just want a select/option list for ....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Really easy...
+
+Edit issue.item
+
+For 'nosy', change line 53 from:
+  <span tal:replace="structure context/nosy/field" />
+to
+  <span tal:replace="structure context/nosy/menu" />
+
+For 'assigned to', change line 61 from:
+  <td tal:content="structure context/assignedto/field">assignedto menu</td>
+to:
+  <td tal:content="structure context/assignedto/menu">assignedto menu</td>
+
+get the idea?
+
+
+
+Great! But now the select/option list is too big
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Thats a little harder (but only a little ;^)
+
+Edit issue.item
+
+For nosy, change line 53 from:
+  (see above)
+to 
+  <span tal:replace="structure python:context.nosy.menu(height=3)" />
+
+and then, like me, go and read about Zope templates.
+
+
+
+
+
+Using Roundup
+-------------
+
+
+I got an error and I cant reload it!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you're using netscape/mozilla, try holding shift and pressing reload.
+If you're using IE then install mozilla and try again ;^)
+
+
+
+I tried changing my password and I got 'invalid one time ticket' or something
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ok, so I said to use mozilla, well apparently it 'double requests' pages
+from roundup.
+
+This means the first request worked (ie, your request was processed) then 
+mozilla/galeon/children tried again and that request failed (ie, it tried to
+perform an operation using a no longer valid ticket).
+
+Dont worry, it worked. :^)
+
 
 
 -----------------
