@@ -1,4 +1,4 @@
-#$Id: back_bsddb.py,v 1.5 2001-07-30 01:41:36 richard Exp $
+#$Id: back_bsddb.py,v 1.6 2001-07-30 02:36:23 richard Exp $
 
 import bsddb, os, marshal
 from roundup import hyperdb, date
@@ -66,7 +66,10 @@ class Database(hyperdb.Database):
             multiple actions
         '''
         path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
-        return bsddb.btopen(path, mode)
+        if os.path.exists(path):
+            return bsddb.btopen(path, mode)
+        else:
+            return bsddb.btopen(path, 'n')
 
     #
     # Nodes
@@ -199,6 +202,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.5  2001/07/30 01:41:36  richard
+#Makes schema changes mucho easier.
+#
 #Revision 1.4  2001/07/23 08:25:33  richard
 #more handling of bad journals
 #

@@ -1,4 +1,4 @@
-#$Id: back_bsddb3.py,v 1.2 2001-07-30 01:41:36 richard Exp $
+#$Id: back_bsddb3.py,v 1.3 2001-07-30 02:36:23 richard Exp $
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date
@@ -66,7 +66,10 @@ class Database(hyperdb.Database):
             multiple actions
         '''
         path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
-        return bsddb3.btopen(path, mode)
+        if os.path.exists(path):
+            return bsddb3.btopen(path, mode)
+        else:
+            return bsddb3.btopen(path, 'n')
 
     #
     # Nodes
@@ -199,6 +202,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.2  2001/07/30 01:41:36  richard
+#Makes schema changes mucho easier.
+#
 #Revision 1.1  2001/07/24 04:26:03  anthonybaxter
 #bsddb3 implementation. For now, it's the bsddb implementation with a "3"
 #added in crayon.
