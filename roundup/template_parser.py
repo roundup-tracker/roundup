@@ -70,12 +70,17 @@ class RoundupTemplate(htmllib.HTMLParser):
             self.current.append(data)
 
     def unknown_starttag(self, tag, attributes):
-        s = ''
-        s = s + '<%s' % tag
+        self.append_data('<%s' % tag)
+        closeit = 1
         for name, value in attributes:
-            s = s + ' %s="%s"' % (name, value)
-        s = s + '>'
-        self.append_data(s)
+            pos = value.find('<')
+            if pos > -1:
+                self.append_data(' %s="%s' % (name, value[:pos]))
+                closeit = 0
+            else:
+                self.append_data(' %s="%s"' % (name, value))
+        if closeit:
+            self.append_data('>')
 
     def handle_starttag(self, tag, method, attributes):
         if tag in ('require', 'else', 'display', 'property'):
