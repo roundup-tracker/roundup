@@ -1,5 +1,15 @@
 This is the second beta release of Roundup version 0.7. It fixes some bugs
-in the previous beta release and introduces a few new features.
+in the previous beta release:
+
+- Boolean, Date and Link HTML templating was broken
+- fix reporting of test inclusion in postgresql test
+- EditAction was confused about who "self" was
+- edit collision detection was broken for index-page edits
+- sqlite backend wasn't migrating multilink tables correctly
+- use SimpleCookie instead of Cookie (is an alias for the evil SmartCookie)
+- handle older sessions in session dbm
+- make presetunread more resilient to status Class changes
+- HTMLDatabase classes() was broken
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
