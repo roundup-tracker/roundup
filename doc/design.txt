@@ -708,7 +708,7 @@ hyperdatabase, except for the following changes and additional methods::
             field of the specified issue.
             """
 
-        def sendmessage(self, itemid, msgid):
+        def nosymessage(self, itemid, msgid):
             """Send a message to the members of an issue's nosy list.
 
             The message is sent only to users on the nosy list who are
