@@ -40,8 +40,10 @@ add::
 0.7.0 Getting the current user id
 ---------------------------------
 
-Removed Database.curuserid attribute. Any code referencing this attribute
-should be replaced with a call to Database.getuid().
+The Database.curuserid attribute has been removed.
+
+Any code referencing this attribute should be replaced with a
+call to Database.getuid().
 
 
 0.7.0 ZRoundup changes
