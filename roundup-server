@@ -18,7 +18,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup-server,v 1.24 2002-01-05 02:19:03 richard Exp $
+$Id: roundup-server,v 1.25 2002-01-05 02:21:21 richard Exp $
 """
 
 # python version check
@@ -181,7 +181,7 @@ roundup-server [-n hostname] [-p port] [name=instance home]*
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. For convenience, you may edit the
    ROUNDUP_INSTANCE_HOMES variable in the roundup-server file instead.
-'''%locals()
+''')%locals()
     sys.exit(0)
 
 def main():
@@ -248,6 +248,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/01/05 02:19:03  richard
+# i18n'ification
+#
 # Revision 1.23  2001/12/15 23:47:07  richard
 # sys module went away...
 #

@@ -16,11 +16,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.23 2002-01-05 02:19:03 richard Exp $
+# $Id: roundup.cgi,v 1.24 2002-01-05 02:21:22 richard Exp $
 
 # python version check
 from roundup import version_check
 from roundup.i18n import _
+import sys
 
 #
 ##  Configuration
@@ -51,7 +52,7 @@ ROUNDUP_INSTANCE_HOMES = {
 class DevNull:
     def write(self, info):
         pass
-    def close():
+    def close(self):
         pass
 #LOG = open('/var/log/roundup.cgi.log', 'a')
 LOG = DevNull()
@@ -197,6 +198,9 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/01/05 02:19:03  richard
+# i18n'ification
+#
 # Revision 1.22  2001/12/13 00:20:01  richard
 #  . Centralised the python version check code, bumped version to 2.1.1 (really
 #    needs to be 2.1.2, but that isn't released yet :)

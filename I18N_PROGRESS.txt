@@ -17,11 +17,6 @@ whether there is at least one use of "_()".
 
 THESE FILES DO NOT USE _()
 ==========================
-roundup-admin
-roundup-mailgw
-roundup-server
-cgi-bin/roundup.cgi
-roundup/__init__.py
 roundup/cgitb.py
 roundup/date.py
 roundup/htmltemplate.py
@@ -57,7 +52,13 @@ roundup/templates/extended/detectors/nosyreaction.py
 
 THESE FILES DO USE _()
 ======================
+roundup-admin
+roundup-mailgw
+roundup-server
+cgi-bin/roundup.cgi
+roundup/__init__.py
 roundup/cgi_client.py
+roundup/admin.py
 
 
 WE DON'T CARE ABOUT THESE FILES

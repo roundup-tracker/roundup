@@ -16,19 +16,27 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.60 2002-01-05 02:11:22 richard Exp $
+# $Id: roundup-admin,v 1.61 2002-01-05 02:21:21 richard Exp $
 
 # python version check
 from roundup import version_check
 
 # import the admin tool guts and make it go
 from roundup.admin import AdminTool
-if __name__ == '__main__':
-    tool = AdminTool()
-    sys.exit(tool.main())
+from roundup.i18n import _
+
+import sys
+tool = AdminTool()
+sys.exit(tool.main())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2002/01/05 02:11:22  richard
+# I18N'ed roundup admin - and split the code off into a module so it can be used
+# elsewhere.
+# Big issue with this is the doc strings - that's the help. We're probably going to
+# have to switch to not use docstrings, which will suck a little :(
+#
 # Revision 1.59  2001/12/31 05:20:34  richard
 #  . #496360 ] table width does not work
 #

@@ -102,7 +102,7 @@ issueDOTindex = """<!-- dollarId: issue.index,v 1.3 2001/08/01 05:15:09 richard 
 </tr>
 """
 
-issueDOTitem = """<!-- dollarId: issue.item,v 1.7 2001/11/21 02:34:18 richard Exp dollar-->
+issueDOTitem = """<!-- dollarId: issue.item,v 1.8 2001/12/18 05:05:14 richard Exp dollar-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -196,6 +196,13 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.7 2001/11/21 02:34:18 richard Ex
      <td colspan=4><display call="list('files')"></td>
  </tr>
 </property>
+
+<tr class="strong-header">
+    <td colspan=4><b>History</b></td>
+</tr>
+<tr>
+    <td colspan=4><display call="history()"></td>
+</tr>
 
 </table>
 
