@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.151 2002-07-30 21:37:43 richard Exp $
+# $Id: cgi_client.py,v 1.152 2002-07-31 22:04:14 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -684,7 +684,7 @@ function help_window(helpurl, width, height) {
         for name in props:
             w('<th align=left>%s</th>'%name)
         w('</tr>')
-        for nodeid in cl.filter(None, {}, sort, []): #cl.list():
+        for nodeid in cl.filter(None, {}, sort, []):
             w('<tr>')
             for name in props:
                 value = cgi.escape(str(cl.get(nodeid, name)))
@@ -1696,6 +1696,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.151  2002/07/30 21:37:43  richard
+# oops, thanks Duncan Booth for spotting this one
+#
 # Revision 1.150  2002/07/30 20:43:18  gmcm
 # Oops, fix the permission check!
 #

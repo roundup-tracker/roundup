@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.55 2002-07-30 08:22:38 richard Exp $
+#$Id: back_anydbm.py,v 1.56 2002-07-31 22:04:33 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1359,18 +1359,25 @@ class Class(hyperdb.Class):
         l.sort()
         return l
 
-    # XXX not in spec
     def filter(self, search_matches, filterspec, sort, group, 
             num_re = re.compile('^\d+$')):
         ''' Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
-            sort spec
+            sort spec.
+
+            "filterspec" is {propname: value(s)}
+            "sort" is ['+propname', '-propname', 'propname', ...]
+            "group is ['+propname', '-propname', 'propname', ...]
         '''
         cn = self.classname
 
         # optimise filterspec
         l = []
         props = self.getprops()
+        LINK = 0
+        MULTILINK = 1
+        STRING = 2
+        OTHER = 6
         for k, v in filterspec.items():
             propclass = props[k]
             if isinstance(propclass, Link):
@@ -1389,7 +1396,7 @@ class Class(hyperdb.Class):
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
 
-                l.append((0, k, u))
+                l.append((LINK, k, u))
             elif isinstance(propclass, Multilink):
                 if type(v) is not type([]):
                     v = [v]
@@ -1404,58 +1411,66 @@ class Class(hyperdb.Class):
                             raise ValueError, 'new property "%s": %s not a %s'%(
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
-                l.append((1, k, u))
+                l.append((MULTILINK, k, u))
             elif isinstance(propclass, String):
                 # simple glob searching
                 v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
                 v = v.replace('?', '.')
                 v = v.replace('*', '.*?')
-                l.append((2, k, re.compile(v, re.I)))
+                l.append((STRING, k, re.compile(v, re.I)))
             elif isinstance(propclass, Boolean):
                 if type(v) is type(''):
                     bv = v.lower() in ('yes', 'true', 'on', '1')
                 else:
                     bv = v
-                l.append((6, k, bv))
+                l.append((OTHER, k, bv))
             elif isinstance(propclass, Number):
-                l.append((6, k, int(v)))
+                l.append((OTHER, k, int(v)))
             else:
-                l.append((6, k, v))
+                l.append((OTHER, k, v))
         filterspec = l
 
         # now, find all the nodes that are active and pass filtering
         l = []
         cldb = self.db.getclassdb(cn)
         try:
+            # TODO: only full-scan once (use items())
             for nodeid in self.db.getnodeids(cn, cldb):
                 node = self.db.getnode(cn, nodeid, cldb)
                 if node.has_key(self.db.RETIRED_FLAG):
                     continue
                 # apply filter
                 for t, k, v in filterspec:
-                    # this node doesn't have this property, so reject it
-                    if not node.has_key(k): break
-
-                    if t == 0 and node[k] not in v:
-                        # link - if this node'd property doesn't appear in the
-                        # filterspec's nodeid list, skip it
+                    # make sure the node has the property
+                    if not node.has_key(k):
+                        # this node doesn't have this property, so reject it
                         break
-                    elif t == 1:
+
+                    # now apply the property filter
+                    if t == LINK:
+                        # link - if this node's property doesn't appear in the
+                        # filterspec's nodeid list, skip it
+                        if node[k] not in v:
+                            break
+                    elif t == MULTILINK:
                         # multilink - if any of the nodeids required by the
                         # filterspec aren't in this node's property, then skip
                         # it
-                        for value in v:
-                            if value not in node[k]:
+                        have = node[k]
+                        for want in v:
+                            if want not in have:
                                 break
                         else:
                             continue
                         break
-                    elif t == 2 and (node[k] is None or not v.search(node[k])):
+                    elif t == STRING:
                         # RE search
-                        break
-                    elif t == 6 and node[k] != v:
+                        if node[k] is None or not v.search(node[k]):
+                            break
+                    elif t == OTHER:
                         # straight value comparison for the other types
-                        break
+                        if node[k] != v:
+                            break
                 else:
                     l.append((nodeid, node))
         finally:
@@ -1465,9 +1480,7 @@ class Class(hyperdb.Class):
         # filter based on full text search
         if search_matches is not None:
             k = []
-            l_debug = []
             for v in l:
-                l_debug.append(v[0])
                 if search_matches.has_key(v[0]):
                     k.append(v)
             l = k
@@ -1778,6 +1791,12 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.55  2002/07/30 08:22:38  richard
+#Session storage in the hyperdb was horribly, horribly inefficient. We use
+#a simple anydbm wrapper now - which could be overridden by the metakit
+#backend or RDB backend if necessary.
+#Much, much better.
+#
 #Revision 1.54  2002/07/26 08:26:59  richard
 #Very close now. The cgi and mailgw now use the new security API. The two
 #templates have been migrated to that setup. Lots of unit tests. Still some
