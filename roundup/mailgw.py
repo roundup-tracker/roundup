@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.59 2002-01-23 21:43:23 richard Exp $
+$Id: mailgw.py,v 1.60 2002-02-01 07:43:12 grubert Exp $
 '''
 
 
@@ -487,8 +487,27 @@ Unknown address: %s
                 subtype = part.gettype()
                 if subtype == 'text/plain' and not content:
                     # add all text/plain parts to the message content
+                    # BUG (in code or comment) only add the first one. 
                     if content is None:
-                        content = part.fp.read()
+                        # try name on Content-Type
+                        # maybe add name to non text content ?
+                        name = part.getparam('name')
+                        # assume first part is the mail
+                        encoding = part.getencoding()
+                        if encoding == 'base64':
+                            data = binascii.a2b_base64(part.fp.read())
+                        elif encoding == 'quoted-printable':
+                            # the quopri module wants to work with files
+                            decoded = cStringIO.StringIO()
+                            quopri.decode(part.fp, decoded)
+                            data = decoded.getvalue()
+                        elif encoding == 'uuencoded':
+                            data = binascii.a2b_uu(part.fp.read())
+                            attachments.append((name, part.gettype(), data))
+                        else:
+                            # take it as text
+                            data = part.fp.read()
+                        content = data
                     else:
                         content = content + part.fp.read()
 
@@ -516,7 +535,6 @@ Unknown address: %s
                     elif encoding == 'uuencoded':
                         data = binascii.a2b_uu(part.fp.read())
                     attachments.append((name, part.gettype(), data))
-
             if content is None:
                 raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
@@ -757,6 +775,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.59  2002/01/23 21:43:23  richard
+# tabnuke
+#
 # Revision 1.58  2002/01/23 21:41:56  richard
 #  . mailgw failures (unexpected ones) are forwarded to the roundup admin
 #

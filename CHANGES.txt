@@ -10,6 +10,7 @@ Feature:
  . you can now use the roundup-admin tool pack the database
 
 Fixed:
+ . mailgw checks encoding on first part too.
  . the mail gateway now responds with an error message when invalid values 
    for arguments are specified for link or mutlilink properties
  . modified unit test to check nosy and assignedto when specified as arguments
@@ -25,7 +26,6 @@ Fixed:
  . allow abbreviation of "help" in admin tool too.
  . run_tests testReldate_date failed if LANG is 'german'
  . mailgw failures (unexpected ones) are forwarded to the roundup admin
-
 
 2002-01-16 - 0.4.0b2
 Fixed:
