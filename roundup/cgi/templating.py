@@ -205,7 +205,10 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
                 c['context'] = HTMLItem(client, classname, client.nodeid,
                     anonymous=1)
         elif client.db.classes.has_key(classname):
-            c['context'] = HTMLClass(client, classname, anonymous=1)
+            if classname == 'user':
+                c['context'] = HTMLUserClass(client, classname, anonymous=1)
+            else:
+                c['context'] = HTMLClass(client, classname, anonymous=1)
         return c
 
     def render(self, client, classname, request, **options):
@@ -253,6 +256,8 @@ class HTMLDatabase:
             return HTMLItem(self._client, m.group('cl'), m.group('id'))
         else:
             self._client.db.getclass(item)
+            if item == 'user':
+                return HTMLUserClass(self._client, item)
             return HTMLClass(self._client, item)
 
     def __getattr__(self, attr):
@@ -264,7 +269,12 @@ class HTMLDatabase:
     def classes(self):
         l = self._client.db.classes.keys()
         l.sort()
-        return [HTMLClass(self._client, cn) for cn in l]
+        r = []
+        for item in l:
+            if item == 'user':
+                m.append(HTMLUserClass(self._client, item))
+            m.append(HTMLClass(self._client, item))
+        return r
 
 def lookupIds(db, prop, ids, num_re=re.compile('-?\d+')):
     cl = db.getclass(prop.classname)
@@ -850,7 +860,44 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         # use our fabricated request
         return pt.render(self._client, req.classname, req)
 
-class HTMLUser(HTMLItem):
+class HTMLUserPermission:
+
+    def is_edit_ok(self):
+        ''' Is the user allowed to Edit the current class?
+            Also check whether this is the current user's info.
+        '''
+        return self._user_perm_check('Edit')
+
+    def is_view_ok(self):
+        ''' Is the user allowed to View the current class?
+            Also check whether this is the current user's info.
+        '''
+        return self._user_perm_check('View')
+
+    def _user_perm_check(self, type):
+        # some users may view / edit all users
+        s = self._db.security
+        userid = self._client.userid
+        if s.hasPermission(type, userid, self._classname):
+            return 1
+
+        # users may view their own info
+        is_anonymous = self._db.user.get(userid, 'username') == 'anonymous'
+        if getattr(self, '_nodeid', None) == userid and not is_anonymous:
+            return 1
+
+        # may anonymous users register?
+        if (is_anonymous and s.hasPermission('Web Registration', userid,
+                self._classname)):
+            return 1
+
+        # nope, no access here
+        return 0
+
+class HTMLUserClass(HTMLUserPermission, HTMLClass):
+    pass
+
+class HTMLUser(HTMLUserPermission, HTMLItem):
     ''' Accesses through the *user* (a special case of item)
     '''
     def __init__(self, client, classname, nodeid, anonymous=0):
@@ -870,22 +917,6 @@ class HTMLUser(HTMLItem):
         if classname is self._marker:
             classname = self._default_classname
         return self._security.hasPermission(permission, self._nodeid, classname)
-
-    def is_edit_ok(self):
-        ''' Is the user allowed to Edit the current class?
-            Also check whether this is the current user's info.
-        '''
-        return self._db.security.hasPermission('Edit', self._client.userid,
-            self._classname) or (self._nodeid == self._client.userid and
-            self._db.user.get(self._client.userid, 'username') != 'anonymous')
-
-    def is_view_ok(self):
-        ''' Is the user allowed to View the current class?
-            Also check whether this is the current user's info.
-        '''
-        return self._db.security.hasPermission('View', self._client.userid,
-            self._classname) or (self._nodeid == self._client.userid and
-            self._db.user.get(self._client.userid, 'username') != 'anonymous')
 
 class HTMLProperty(HTMLInputMixin, HTMLPermissions):
     ''' String, Number, Date, Interval HTMLProperty

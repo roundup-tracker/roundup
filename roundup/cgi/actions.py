@@ -619,7 +619,6 @@ class ConfRegoAction(Action):
             # pull the rego information out of the otk database
             self.userid = self.db.confirm_registration(self.form['otk'].value)
         except (ValueError, KeyError), message:
-            # XXX: we need to make the "default" page be able to display errors!
             self.client.error_message.append(str(message))
             return
         
@@ -627,11 +626,10 @@ class ConfRegoAction(Action):
         self.client.user = self.db.user.get(self.userid, 'username')
         # re-open the database for real, using the user
         self.client.opendb(self.client.user)
-        self.db = client.db
 
         # if we have a session, update it
         if hasattr(self, 'session'):
-            self.db.sessions.set(self.session, user=self.user,
+            self.client.db.sessions.set(self.session, user=self.user,
                 last_use=time.time())
         else:
             # new session cookie
@@ -642,7 +640,7 @@ class ConfRegoAction(Action):
 
         # redirect to the user's page
         raise Redirect, '%suser%s?@ok_message=%s'%(self.base,
-                                                   self.userid, urllib.quote(message))
+            self.userid, urllib.quote(message))
 
 class RegisterAction(Action):
     name = 'register'
@@ -654,16 +652,18 @@ class RegisterAction(Action):
 
         Return 1 on successful login.
         """        
-        props = self.client.parsePropsFromForm()[0][('user', None)]
+        props = self.client.parsePropsFromForm(create=1)[0][('user', None)]
 
         # registration isn't allowed to supply roles
         if props.has_key('roles'):
-            raise Unauthorised, _("It is not permitted to supply roles at registration.")            
+            raise Unauthorised, _("It is not permitted to supply roles "
+                "at registration.")            
 
+        username = props['username']
         try:
-            self.db.user.lookup(props['username'])
-            self.client.error_message.append('Error: A user with the username "%s" '
-                'already exists'%props['username'])
+            self.db.user.lookup(username)
+            self.client.error_message.append(_('Error: A user with the '
+                'username "%(username)s" already exists')%props)
             return
         except KeyError:
             pass
@@ -686,7 +686,7 @@ class RegisterAction(Action):
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
-        subject = 'Complete your registration to %s -- key %s' % (tracker_name,
+        subject = 'Complete your registration to %s -- key %s'%(tracker_name,
                                                                   otk)
         body = """To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:

@@ -1,4 +1,4 @@
-#$Id: sessions.py,v 1.7 2004-02-11 23:55:09 richard Exp $
+#$Id: sessions.py,v 1.8 2004-02-19 02:39:05 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -59,7 +59,10 @@ class BasicDatabase:
     def getall(self, infoid):
         db = self.opendb('c')
         try:
-            return marshal.loads(db[infoid])
+            try:
+                return marshal.loads(db[infoid])
+            except KeyError:
+                raise KeyError, 'No such One Time Key "%s"'%infoid
         finally:
             db.close()
 
