@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.23 2002-09-09 04:43:10 richard Exp $
+# $Id: client.py,v 1.24 2002-09-09 23:38:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -600,13 +600,13 @@ class Client:
             :multilink=designator:property
              The value specifies a node designator and the property on that
              node to add _this_ node to as a link or multilink.
-            __note
+            :note
              Create a message and attach it to the current node's
              "messages" property.
-            __file
+            :file
              Create a file and attach it to the current node's
              "files" property. Attach the file to the message created from
-             the __note if it's supplied.
+             the :note if it's supplied.
 
             :required=property,property,...
              The named properties are required to be filled in the form.
@@ -645,9 +645,9 @@ class Client:
         if props:
             message = _('%(changes)s edited ok')%{'changes':
                 ', '.join(props.keys())}
-        elif self.form.has_key('__note') and self.form['__note'].value:
+        elif self.form.has_key(':note') and self.form[':note'].value:
             message = _('note added')
-        elif (self.form.has_key('__file') and self.form['__file'].filename):
+        elif (self.form.has_key(':file') and self.form[':file'].filename):
             message = _('file added')
         else:
             message = _('nothing changed')
@@ -969,8 +969,8 @@ class Client:
         '''
         # handle file attachments 
         files = []
-        if self.form.has_key('__file'):
-            file = self.form['__file']
+        if self.form.has_key(':file'):
+            file = self.form[':file']
             if file.filename:
                 filename = file.filename.split('\\')[-1]
                 mime_type = mimetypes.guess_type(filename)[0]
@@ -987,8 +987,8 @@ class Client:
         note = None
         # in a nutshell, don't do anything if there's no note or there's no
         # NOSY
-        if self.form.has_key('__note'):
-            note = self.form['__note'].value.strip()
+        if self.form.has_key(':note'):
+            note = self.form[':note'].value.strip()
         if not note:
             return None, files
         if not props.has_key('messages'):
@@ -1032,7 +1032,7 @@ class Client:
            which issue to link the file to.
 
            TODO: I suspect that this and newfile will go away now that
-           there's the ability to upload a file using the issue __file form
+           there's the ability to upload a file using the issue :file form
            element!
         '''
         cn = self.classname
