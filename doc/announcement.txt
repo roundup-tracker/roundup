@@ -1,5 +1,9 @@
 I'm proud to release this 8th major feature release of Roundup.
 
+First up, big thanks go to alexander smishlajev who has done some really
+good work getting the i18n and new configuration components of this release
+going.
+
 Version 0.8 introduces far too many features to list here so I've put
 together a What's New page:
 
@@ -12,7 +16,8 @@ Some highlights:
 * several speed optimisations,
 * integration of the python logging module,
 * optional configuration of roundup-server through a configuration file,
-* Permissions definable on a per-property basis,
+* creation of items check the new Create Permission rather than Edit now,
+* Permissions may be defined on a per-property basis,
 * Permissions may include a fragment of code to run to check, and
 * a bunch of smaller feature additions... 
 

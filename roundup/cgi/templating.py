@@ -1124,9 +1124,9 @@ class StringHTMLProperty(HTMLProperty):
                 cl = self._db.getclass(s1)
                 if not cl.hasnode(s2):
                     raise KeyError, 'oops'
-                return '<a href="%s">%s%s</a>'%(s, s1, s2)
+                return '<a href="%s%s">%s</a>'%(s1, s2, s)
             except KeyError:
-                return '%s%s'%(s1, s2)
+                return s
 
     def hyperlinked(self):
         ''' Render a "hyperlinked" version of the text '''
