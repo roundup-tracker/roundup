@@ -18,6 +18,7 @@ are given with the most recent entry first.
 - bad entries for multilink editing in cgi don't traceback now (sf bug 640310)
 - detect and break email loops (sf bug 640854)
 - finished of handling of retired flag in filter() (sf bug 635260)
+- allow StringHTMLProperty in MultilinkHTMLProperty test to work
 
 
 2002-11-07 0.5.2

@@ -1091,9 +1091,10 @@ class MultilinkHTMLProperty(HTMLProperty):
         return klass(self._client, self._prop.classname, value)
 
     def __contains__(self, value):
-        ''' Support the "in" operator
+        ''' Support the "in" operator. We have to make sure the passed-in
+            value is a string first, not a *HTMLProperty.
         '''
-        return value in self._value
+        return str(value) in self._value
 
     def reverse(self):
         ''' return the list in reverse order
