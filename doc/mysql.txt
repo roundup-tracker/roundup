@@ -2,47 +2,48 @@
 MySQL Backend
 =============
 
-This is notes about mysql backend for roundup issue tracker.
+This notes detail the MySQL backend for the roundup issue tracker.
 
 
 Prerequisites
 =============
 
-To use MySQL as backend for storing roundup data, you should additionally
-install:
+To use MySQL as the backend for storing roundup data, you also need 
+to install:
 
     1. MySQL RDBMS 3.23.34 or higher - http://www.mysql.com. Your MySQL
        installation should support Berkeley DB (BDB) tables for transaction
        support.
-    2. Python interface to mysql - http://sourceforge.net/projects/mysql-python
+    2. Python MySQL interface - http://sourceforge.net/projects/mysql-python
 
 
-How to run mysql tests?
+Running the MySQL tests
 =======================
 
-Roundup tests expect an empty database available for use. There are two ways how to
-provide this:
+Roundup tests expect an empty MySQL database. Two alternate ways to provide 
+this:
 
-    1. If you have root permissions on mysql server, you can create necessary
-       database using this SQL sequence:
+    1. If you have root permissions on the MySQL server, you can create 
+       the necessary database entries using this SQL sequence:
 
        CREATE DATABASE rounduptest
        GRANT ALL PRIVILEGES ON rounduptest TO rounduptest@localhost IDENTIFIED BY 'rounduptest'
        FLUSH PRIVILEGES
 
-    2. If your administrator has provided you with database connection info, you
-       can modify MYSQL_* constants in test/test_db.py with corresponding
-       values.
+    2. If your administrator has provided you with database connection info, 
+       you can modify MYSQL_* constants in the file test/test_db.py with 
+       the correct values.
 
-Note, that mysql database should not contain any tables. Tests will not dare to
-drop database with data.
+Note that the MySQL database should not contain any tables. Tests will not 
+drop the database with existing data.
 
 
 Additional configuration
 ========================
 
-To initialise and use mysql database roundup' configuration file (config.py in
-the tracker' home directory) should be appended with the following constants:
+To initialise and use the MySQL database backend, roundup's configuration 
+file (config.py in the tracker's home directory) should have the following
+entries:
 
     MYSQL_DBHOST = 'localhost'
     MYSQL_DBUSER = 'rounduptest'
@@ -50,9 +51,8 @@ the tracker' home directory) should be appended with the following constants:
     MYSQL_DBNAME = 'rounduptest'
     MYSQL_DATABASE = ( MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME )
 
-Fill first four constants with real values before running 
-"roundup-admin initialise". 
-
+Fill in the first four entries with values for your local MySQL installation 
+before running "roundup-admin initialise". 
 
 
     Andrey Lebedev <andrey@micro.lt>
