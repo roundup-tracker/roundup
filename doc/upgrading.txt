@@ -278,6 +278,17 @@ prefixes such as ``python:`` and ``string:``. Please ask on the
 roundup-users mailing list for help if you're unsure.
 
 
+0.7.0 Edit collision detection
+------------------------------
+
+Roundup now detects collisions with editing in the web interface (that is,
+two people editing the same item at the same time).
+
+You must copy the ``_generic.collision.html`` file from Roundup source in
+the ``templates/classic/html`` directory. to your tracker's ``html``
+directory.
+
+
 Migrating from 0.6.x to 0.6.3
 =============================
 
