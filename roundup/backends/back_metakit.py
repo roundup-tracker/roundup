@@ -43,8 +43,7 @@ class _Database(hyperdb.Database):
             for nodeid in klass.list():
                 klass.index(nodeid)
         self.indexer.save_index()
-        
-            
+
     # --- defined in ping's spec
     def __getattr__(self, classname):
         if classname == 'curuserid':
@@ -247,14 +246,18 @@ class Class:
                               'activity' : hyperdb.Date(),
                               'creation' : hyperdb.Date(),
                               'creator'  : hyperdb.Link('user') }
-        self.auditors = {'create': [], 'set': [], 'retire': []} # event -> list of callables
-        self.reactors = {'create': [], 'set': [], 'retire': []} # ditto
+
+        # event -> list of callables
+        self.auditors = {'create': [], 'set': [], 'retire': []}
+        self.reactors = {'create': [], 'set': [], 'retire': []}
+
         view = self.__getview()
         self.maxid = 1
         if view:
             self.maxid = view[-1].id + 1
         self.uncommitted = {}
         self.rbactions = []
+
         # people reach inside!!
         self.properties = self.ruprops
         self.db.addclass(self)
@@ -288,6 +291,7 @@ class Class:
         l = self.reactors[event]
         if detector not in l:
             self.reactors[event].append(detector)
+
     # --- the hyperdb.Class methods
     def create(self, **propvalues):
         self.fireAuditors('create', None, propvalues)
@@ -345,6 +349,7 @@ class Class:
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError, 'Database open read-only'
         view = self.getview(1)
+
         # node must exist & not be retired
         id = int(nodeid)
         ndx = view.find(id=id)
@@ -536,7 +541,7 @@ class Class:
                 setattr(row, key, v)
                 changes[key] = oldvalue
                 propvalues[key] = value
-                
+
             elif isinstance(prop, hyperdb.Boolean):
                 if value is None:
                     bv = 0
@@ -593,15 +598,18 @@ class Class:
                 iv.delete(ndx)
         self.db.dirty = 1
         self.fireReactors('retire', nodeid, None)
+
     def history(self, nodeid):
         if not self.do_journal:
             raise ValueError, 'Journalling is disabled for this class'
         return self.db.getjournal(self.classname, nodeid)
+
     def setkey(self, propname):
         if self.keyname:
             if propname == self.keyname:
                 return
-            raise ValueError, "%s already indexed on %s" % (self.classname, self.keyname)
+            raise ValueError, "%s already indexed on %s"%(self.classname,
+                self.keyname)
         prop = self.properties.get(propname, None)
         if prop is None:
             prop = self.privateprops.get(propname, None)
@@ -609,21 +617,24 @@ class Class:
             raise KeyError, "no property %s" % propname
         if not isinstance(prop, hyperdb.String):
             raise TypeError, "%s is not a String" % propname
+
         # first setkey for this run
         self.keyname = propname
         iv = self.db._db.view('_%s' % self.classname)
         if self.db.fastopen and iv.structure():
             return
+
         # very first setkey ever
         self.db.dirty = 1
         iv = self.db._db.getas('_%s[k:S,i:I]' % self.classname)
         iv = iv.ordered(1)
-#        print "setkey building index"
         for row in self.getview():
             iv.append(k=getattr(row, propname), i=row.id)
         self.db.commit()
+
     def getkey(self):
         return self.keyname
+
     def lookup(self, keyvalue):
         if type(keyvalue) is not _STRINGTYPE:
             raise TypeError, "%r is not a string" % keyvalue
@@ -721,30 +732,34 @@ class Class:
         for row in self.getview().select(_isdel=0):
             l.append(str(row.id))
         return l
+
     def count(self):
         return len(self.getview())
+
     def getprops(self, protected=1):
         # protected is not in ping's spec
         allprops = self.ruprops.copy()
         if protected and self.privateprops is not None:
             allprops.update(self.privateprops)
         return allprops
+
     def addprop(self, **properties):
         for key in properties.keys():
             if self.ruprops.has_key(key):
-                raise ValueError, "%s is already a property of %s" % (key, self.classname)
+                raise ValueError, "%s is already a property of %s"%(key,
+                    self.classname)
         self.ruprops.update(properties)
         self.db.fastopen = 0
         view = self.__getview()
         self.db.commit()
     # ---- end of ping's spec
+
     def filter(self, search_matches, filterspec, sort=(None,None),
             group=(None,None)):
         # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
         # filterspec is a dict {propname:value}
         # sort and group are (dir, prop) where dir is '+', '-' or None
         #                    and prop is a prop name or None
-
         where = {'_isdel':0}
         mlcriteria = {}
         regexes = {}
@@ -807,11 +822,10 @@ class Class:
         if where:
             v = v.select(where)
         #print "filter where at  %s" % time.time() 
-            
+
         if mlcriteria:
-                    # multilink - if any of the nodeids required by the
-                    # filterspec aren't in this node's property, then skip
-                    # it
+            # multilink - if any of the nodeids required by the
+            # filterspec aren't in this node's property, then skip it
             def ff(row, ml=mlcriteria):
                 for propname, values in ml.items():
                     sv = getattr(row, propname)
@@ -919,6 +933,7 @@ class Class:
         props = props.keys()
         props.sort()
         return props[0]
+
     def stringFind(self, **requirements):
         """Locate a particular node by matching a set of its String
         properties in a caseless search.
@@ -1001,7 +1016,8 @@ class Class:
         view.append(d)
         creator = d.get('creator', None)
         creation = d.get('creation', None)
-        self.db.addjournal(self.classname, newid, 'create', {}, creator, creation)
+        self.db.addjournal(self.classname, newid, 'create', {}, creator,
+            creation)
         return newid
 
     # --- used by Database
@@ -1113,13 +1129,15 @@ _typmap = {
     hyperdb.Number    : 'I',
 }
 class FileClass(Class):
-    ' like Class but with a content property '
+    ''' like Class but with a content property
+    '''
     default_mime_type = 'text/plain'
     def __init__(self, db, classname, **properties):
         properties['content'] = FileName()
         if not properties.has_key('type'):
             properties['type'] = hyperdb.String()
         Class.__init__(self, db, classname, **properties)
+
     def get(self, nodeid, propname, default=_marker, cache=1):
         x = Class.get(self, nodeid, propname, default, cache)
         if propname == 'content':
@@ -1130,6 +1148,7 @@ class FileClass(Class):
                 except Exception, e:
                     x = repr(e)
         return x
+
     def create(self, **propvalues):
         content = propvalues['content']
         del propvalues['content']
@@ -1145,11 +1164,13 @@ class FileClass(Class):
         open(nm, 'wb').write(content)
         self.set(newid, content = 'file:'+nm)
         mimetype = propvalues.get('type', self.default_mime_type)
-        self.db.indexer.add_text((self.classname, newid, 'content'), content, mimetype)
+        self.db.indexer.add_text((self.classname, newid, 'content'), content,
+            mimetype)
         def undo(fnm=nm, action1=os.remove, indexer=self.db.indexer):
             action1(fnm)
         self.rollbackaction(undo)
         return newid
+
     def index(self, nodeid):
         Class.index(self, nodeid)
         mimetype = self.get(nodeid, 'type')
@@ -1159,12 +1180,12 @@ class FileClass(Class):
                     self.get(nodeid, 'content'), mimetype)
  
 class IssueClass(Class, roundupdb.IssueClass):
-    # Overridden methods:
-    def __init__(self, db, classname, **properties):
-        """The newly-created class automatically includes the "messages",
+    ''' The newly-created class automatically includes the "messages",
         "files", "nosy", and "superseder" properties.  If the 'properties'
         dictionary attempts to specify any of these properties or a
-        "creation" or "activity" property, a ValueError is raised."""
+        "creation" or "activity" property, a ValueError is raised.
+    '''
+    def __init__(self, db, classname, **properties):
         if not properties.has_key('title'):
             properties['title'] = hyperdb.String(indexme='yes')
         if not properties.has_key('messages'):
@@ -1204,6 +1225,7 @@ class Indexer(indexer.Indexer):
             self.reindex = 1
         self.changed = 0
         self.propcache = {}
+
     def force_reindex(self):
         v = self.db.view('ids')
         v[:] = []
@@ -1211,8 +1233,10 @@ class Indexer(indexer.Indexer):
         v[:] = []
         self.db.commit()
         self.reindex = 1
+
     def should_reindex(self):
         return self.reindex
+
     def _getprops(self, classname):
         props = self.propcache.get(classname, None)
         if props is None:
@@ -1220,8 +1244,10 @@ class Indexer(indexer.Indexer):
             props = [prop.name for prop in props]
             self.propcache[classname] = props
         return props
+
     def _getpropid(self, classname, propname):
         return self._getprops(classname).index(propname)
+
     def _getpropname(self, classname, propid):
         return self._getprops(classname)[propid]
 
@@ -1287,12 +1313,15 @@ class Indexer(indexer.Indexer):
                 property = self._getpropname(classname, hit.propid)
                 rslt[i] = (classname, nodeid, property)
         return rslt
+
     def save_index(self):
         if self.changed:
             self.db.commit()
         self.changed = 0
+
     def rollback(self):
         if self.changed:
             self.db.rollback()
             self.db = metakit.storage(self.path, 1)
         self.changed = 0
+

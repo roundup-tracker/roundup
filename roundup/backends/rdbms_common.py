@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.24 2002-11-06 11:38:42 richard Exp $
+# $Id: rdbms_common.py,v 1.25 2002-12-12 09:31:04 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -28,6 +28,7 @@ import sys, os, time, re, errno, weakref, copy
 from roundup import hyperdb, date, password, roundupdb, security
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number
+from roundup.backends import locking
 
 # support
 from blobfiles import FileStorage
@@ -61,6 +62,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # (classname, nodeid) = row
         self.cache = {}
         self.cache_lru = []
+
+        # database lock
+        self.lockfile = None
 
         # open a connection to the database, creating the "conn" attribute
         self.open_connection()
@@ -903,6 +907,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Close off the connection.
         '''
         self.conn.close()
+        if self.lockfile is not None:
+            locking.release_lock(self.lockfile)
+        if self.lockfile is not None:
+            self.lockfile.close()
+            self.lockfile = None
 
 #
 # The base Class class

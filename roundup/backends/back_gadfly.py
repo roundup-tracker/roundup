@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.29 2002-10-07 00:52:51 richard Exp $
+# $Id: back_gadfly.py,v 1.30 2002-12-12 09:31:04 richard Exp $
 ''' Gadlfy relational database hypderb backend.
 
 About Gadfly
@@ -36,6 +36,7 @@ import sys, os, time, re, errno, weakref, copy
 from roundup import hyperdb, date, password, roundupdb, security
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number
+from roundup.backends import locking
 
 # basic RDBMS backen implementation
 from roundup.backends import rdbms_common
@@ -51,6 +52,13 @@ class Database(rdbms_common.Database):
 
     def open_connection(self):
         db = getattr(self.config, 'GADFLY_DATABASE', ('database', self.dir))
+
+        # lock it
+        lockfilenm = os.path.join(db[1], db[0]) + '.lck'
+        self.lockfile = locking.acquire_lock(lockfilenm)
+        self.lockfile.write(str(os.getpid()))
+        self.lockfile.flush()
+
         if len(db) == 2:
             # ensure files are group readable and writable
             os.umask(0002)

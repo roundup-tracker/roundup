@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.62 2002-11-06 11:45:25 richard Exp $ 
+# $Id: test_db.py,v 1.63 2002-12-12 09:31:04 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -49,8 +49,6 @@ def setupSchema(db, create, module):
 class MyTestCase(unittest.TestCase):
     def tearDown(self):
         self.db.close()
-        if hasattr(self, 'db2'):
-            self.db2.close()
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
 
@@ -77,8 +75,11 @@ class anydbmDBTestCase(MyTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = anydbm.Database(config, 'admin')
         setupSchema(self.db, 1, anydbm)
-        self.db2 = anydbm.Database(config, 'admin')
-        setupSchema(self.db2, 0, anydbm)
+
+    def testIDGeneration(self):
+        id1 = self.db.issue.create(title="spam", status='1')
+        id2 = self.db.issue.create(title="eggs", status='2')
+        self.assertNotEqual(id1, id2)
 
     def testStringChange(self):
         for commit in (0,1):
@@ -475,11 +476,6 @@ class anydbmDBTestCase(MyTestCase):
         # we should have the create and last set entries now
         self.assertEqual(jlen-1, len(self.db.getjournal('issue', id)))
 
-    def testIDGeneration(self):
-        id1 = self.db.issue.create(title="spam", status='1')
-        id2 = self.db2.issue.create(title="eggs", status='2')
-        self.assertNotEqual(id1, id2)
-
     def testSearching(self):
         self.db.file.create(content='hello', type="text/plain")
         self.db.file.create(content='world', type="text/frozz",
@@ -602,10 +598,9 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
         os.makedirs(config.DATABASE + '/files')
         db = anydbm.Database(config, 'admin')
         setupSchema(db, 1, anydbm)
+        db.close()
         self.db = anydbm.Database(config)
         setupSchema(self.db, 0, anydbm)
-        self.db2 = anydbm.Database(config, 'admin')
-        setupSchema(self.db2, 0, anydbm)
 
     def testExceptions(self):
         # this tests the exceptions that should be raised
@@ -626,8 +621,6 @@ class bsddbDBTestCase(anydbmDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = bsddb.Database(config, 'admin')
         setupSchema(self.db, 1, bsddb)
-        self.db2 = bsddb.Database(config, 'admin')
-        setupSchema(self.db2, 0, bsddb)
 
 class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -638,10 +631,9 @@ class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         db = bsddb.Database(config, 'admin')
         setupSchema(db, 1, bsddb)
+        db.close()
         self.db = bsddb.Database(config)
         setupSchema(self.db, 0, bsddb)
-        self.db2 = bsddb.Database(config, 'admin')
-        setupSchema(self.db2, 0, bsddb)
 
 
 class bsddb3DBTestCase(anydbmDBTestCase):
@@ -653,8 +645,6 @@ class bsddb3DBTestCase(anydbmDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = bsddb3.Database(config, 'admin')
         setupSchema(self.db, 1, bsddb3)
-        self.db2 = bsddb3.Database(config, 'admin')
-        setupSchema(self.db2, 0, bsddb3)
 
 class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -665,10 +655,9 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         db = bsddb3.Database(config, 'admin')
         setupSchema(db, 1, bsddb3)
+        db.close()
         self.db = bsddb3.Database(config)
         setupSchema(self.db, 0, bsddb3)
-        self.db2 = bsddb3.Database(config, 'admin')
-        setupSchema(self.db2, 0, bsddb3)
 
 
 class gadflyDBTestCase(anydbmDBTestCase):
@@ -684,11 +673,6 @@ class gadflyDBTestCase(anydbmDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = gadfly.Database(config, 'admin')
         setupSchema(self.db, 1, gadfly)
-
-    def testIDGeneration(self):
-        id1 = self.db.issue.create(title="spam", status='1')
-        id2 = self.db.issue.create(title="eggs", status='2')
-        self.assertNotEqual(id1, id2)
 
     def testFilteringString(self):
         ae, filt = self.filteringSetup()
@@ -707,6 +691,7 @@ class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         db = gadfly.Database(config, 'admin')
         setupSchema(db, 1, gadfly)
+        db.close()
         self.db = gadfly.Database(config)
         setupSchema(self.db, 0, gadfly)
 
@@ -733,6 +718,7 @@ class sqliteReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         db = sqlite.Database(config, 'admin')
         setupSchema(db, 1, sqlite)
+        db.close()
         self.db = sqlite.Database(config)
         setupSchema(self.db, 0, sqlite)
 
@@ -748,11 +734,6 @@ class metakitDBTestCase(anydbmDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         self.db = metakit.Database(config, 'admin')
         setupSchema(self.db, 1, metakit)
-
-    def testIDGeneration(self):
-        id1 = self.db.issue.create(title="spam", status='1')
-        id2 = self.db.issue.create(title="eggs", status='2')
-        self.assertNotEqual(id1, id2)
 
     def testTransactions(self):
         # remember the number of items we started
@@ -796,6 +777,7 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         os.makedirs(config.DATABASE + '/files')
         db = metakit.Database(config, 'admin')
         setupSchema(db, 1, metakit)
+        db.close()
         self.db = metakit.Database(config)
         setupSchema(self.db, 0, metakit)
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.94 2002-12-11 01:03:38 richard Exp $
+#$Id: back_anydbm.py,v 1.95 2002-12-12 09:31:04 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -28,7 +28,7 @@ from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
 from sessions import Sessions
 from roundup.indexer import Indexer
-from locking import acquire_lock, release_lock
+from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number
 
@@ -71,6 +71,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.security = security.Security(self)
         # ensure files are group readable and writable
         os.umask(0002)
+
+        # lock it
+        lockfilenm = os.path.join(self.dir, 'lock')
+        self.lockfile = locking.acquire_lock(lockfilenm)
+        self.lockfile.write(str(os.getpid()))
+        self.lockfile.flush()
 
     def post_init(self):
         ''' Called once the schema initialisation has finished.
@@ -203,12 +209,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 mode)
         return dbm.open(path, mode)
 
-    def lockdb(self, name):
-        ''' Lock a database file
-        '''
-        path = os.path.join(os.getcwd(), self.dir, '%s.lock'%name)
-        return acquire_lock(path)
-
     #
     # Node IDs
     #
@@ -216,7 +216,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Generate a new id for the given class
         '''
         # open the ids DB - create if if doesn't exist
-        lock = self.lockdb('_ids')
         db = self.opendb('_ids', 'c')
         if db.has_key(classname):
             newid = db[classname] = str(int(db[classname]) + 1)
@@ -225,18 +224,15 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             newid = str(self.getclass(classname).count()+1)
             db[classname] = newid
         db.close()
-        release_lock(lock)
         return newid
 
     def setid(self, classname, setid):
         ''' Set the id counter: used during import of database
         '''
         # open the ids DB - create if if doesn't exist
-        lock = self.lockdb('_ids')
         db = self.opendb('_ids', 'c')
         db[classname] = str(setid)
         db.close()
-        release_lock(lock)
 
     #
     # Nodes
@@ -696,7 +692,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def close(self):
         ''' Nothing to do
         '''
-        pass
+        if self.lockfile is not None:
+            locking.release_lock(self.lockfile)
+        if self.lockfile is not None:
+            self.lockfile.close()
+            self.lockfile = None
 
 _marker = []
 class Class(hyperdb.Class):
@@ -1326,7 +1326,7 @@ class Class(hyperdb.Class):
 
     def destroy(self, nodeid):
         '''Destroy a node.
-        
+
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
                  deleted
@@ -1906,13 +1906,12 @@ class FileClass(Class):
     def get(self, nodeid, propname, default=_marker, cache=1):
         ''' trap the content propname and get it from the file
         '''
-
-        poss_msg = 'Possibly a access right configuration problem.'
+        poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
             try:
                 return self.db.getfile(self.classname, nodeid, None)
             except IOError, (strerror):
-                # BUG: by catching this we donot see an error in the log.
+                # XXX by catching this we donot see an error in the log.
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
         if default is not _marker:

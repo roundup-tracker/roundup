@@ -1,9 +1,10 @@
-# $Id: back_sqlite.py,v 1.7 2002-10-08 04:11:16 richard Exp $
+# $Id: back_sqlite.py,v 1.8 2002-12-12 09:31:04 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
 import base64, marshal
 from roundup.backends.rdbms_common import *
+from roundup.backends import locking
 import sqlite
 
 class Database(Database):
@@ -14,6 +15,13 @@ class Database(Database):
         # ensure files are group readable and writable
         os.umask(0002)
         db = os.path.join(self.config.DATABASE, 'db')
+
+        # lock it
+        lockfilenm = db[:-3] + 'lck'
+        self.lockfile = locking.acquire_lock(lockfilenm)
+        self.lockfile.write(str(os.getpid()))
+        self.lockfile.flush()
+
         self.conn = sqlite.connect(db=db)
         self.cursor = self.conn.cursor()
         try:
@@ -37,6 +45,12 @@ class Database(Database):
             if str(value) != 'close failed - Connection is closed.':
                 raise
 
+        # release the lock too
+        if self.lockfile is not None:
+            locking.release_lock(self.lockfile)
+        if self.lockfile is not None:
+            self.lockfile.close()
+            self.lockfile = None
 
     def rollback(self):
         ''' Reverse all actions from the current transaction.
