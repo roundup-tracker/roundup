@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.22 2004-04-08 00:40:20 richard Exp $ 
+# $Id: db_test_base.py,v 1.23 2004-04-08 00:42:13 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1208,20 +1208,20 @@ class SchemaTest(MyTestCase):
         # add a multilink prop
         self.init_ml()
         aid = self.db.a.create(name='apple')
-        bid = self.db.b.create(name='bear', fooz=[aid])
-        self.assertEqual(self.db.b.find(fooz=aid), [bid])
+        bid = self.db.a.create(name='bear', fooz=[aid])
+        self.assertEqual(self.db.a.find(fooz=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
-        self.assertEqual(self.db.b.lookup('bear'), bid)
+        self.assertEqual(self.db.a.lookup('bear'), bid)
         self.db.commit(); self.db.close()
 
         # remove the multilink
-        self.init_ab()
+        self.init_a()
         self.assertEqual(self.db.a.lookup('apple'), aid)
-        self.assertEqual(self.db.b.lookup('bear'), bid)
+        self.assertEqual(self.db.a.lookup('bear'), bid)
 
         # confirm journal's ok
         self.db.getjournal('a', aid)
-        self.db.getjournal('b', bid)
+        self.db.getjournal('a', bid)
 
     def test_removeClass(self):
         self.init_ml()
