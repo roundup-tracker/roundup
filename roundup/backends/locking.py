@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: locking.py,v 1.1 2002-04-15 23:25:15 richard Exp $
+# $Id: locking.py,v 1.2 2002-09-10 00:11:50 richard Exp $
 
 '''This module provides a generic interface to acquire and release
 exclusive access to a file.
@@ -44,8 +44,3 @@ def release_lock(file):
     '''Release our lock on the given path
     '''
     portalocker.unlock(file)
-
-#
-# $Log: not supported by cvs2svn $
-#
-#

@@ -1,4 +1,4 @@
-#$Id: sessions.py,v 1.2 2002-09-09 02:58:35 richard Exp $
+#$Id: sessions.py,v 1.3 2002-09-10 00:11:50 richard Exp $
 '''
 This module defines a very basic store that's used by the CGI interface
 to store session information.
@@ -94,14 +94,3 @@ class Sessions:
 
     def commit(self):
         pass
-
-#
-#$Log: not supported by cvs2svn $
-#Revision 1.1  2002/07/30 08:22:38  richard
-#Session storage in the hyperdb was horribly, horribly inefficient. We use
-#a simple anydbm wrapper now - which could be overridden by the metakit
-#backend or RDB backend if necessary.
-#Much, much better.
-#
-#
-#
