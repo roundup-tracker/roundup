@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.21 2002-06-18 03:59:59 dman13 Exp $
+# $Id: test_mailgw.py,v 1.22 2002-07-09 01:21:24 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -106,6 +106,7 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         nodeid = handler.main(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
@@ -130,6 +131,7 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         nodeid = handler.main(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
@@ -150,6 +152,7 @@ This is a test submission of a new issue.
 ''')
         userlist = self.db.user.list()
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
@@ -169,6 +172,7 @@ Subject: Testing...
 This is a test submission of a new issue.
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
@@ -185,6 +189,7 @@ Subject: [issue] Testing... [nosy=mary; assignedto=richard]
 This is a test submission of a new issue.
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         # TODO: fix the damn config - this is apalling
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         handler.main(message)
@@ -242,6 +247,7 @@ Subject: [issue1] Testing...
 This is a second followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -285,6 +291,7 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=john]
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
@@ -333,6 +340,7 @@ Subject: Re: Testing... [assignedto=mary; nosy=john]
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
@@ -379,6 +387,7 @@ Subject: [issue1] Testing...
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
@@ -426,6 +435,7 @@ Subject: [issue1] Testing...
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
@@ -473,6 +483,7 @@ Subject: [issue1] Testing...
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
@@ -519,6 +530,7 @@ Subject: [issue1] Testing...
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
@@ -565,6 +577,7 @@ Subject: [issue1] Testing...
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
@@ -609,6 +622,7 @@ Subject: [issue1] Testing... [nosy=-richard]
 
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
@@ -634,6 +648,7 @@ A message with encoding (encoded oe =F6)
 
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -687,6 +702,7 @@ A message with first part encoded (encoded oe =F6)
 
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
         handler.main(message)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -727,6 +743,12 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/06/18 03:59:59  dman13
+# Updated message strings to match the RFC822 address quoting performed
+# by the 'email' and 'rfc822' modules.  The verification really should
+# use a RFC2822 message parser rather than literal string comparisions
+# to allow for legal variations in messages.
+#
 # Revision 1.20  2002/05/29 01:16:17  richard
 # Sorry about this huge checkin! It's fixing a lot of related stuff in one go
 # though.
