@@ -12,6 +12,7 @@ Feature:
 - added another sample detector "creator_resolution"
 - added search_checkboxes as an option for the search form
 - added IMAP support to mail gateway (sf rfe 934000)
+- check MANIFEST against the files actually unpacked
 
 Fixed:
 - mysql and postgresql schema mutation now handle added Multilinks

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.59 2004-03-24 05:56:06 richard Exp $
+# $Id: setup.py,v 1.60 2004-04-16 10:43:51 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -128,6 +128,25 @@ def scriptname(path):
         script = script + ".bat"
     return script
 
+def check_manifest():
+    """Check that the files listed in the MANIFEST are present when the
+    source is unpacked.
+    """
+    try:
+        f = open('MANIFEST')
+    except:
+        print '\n*** SOURCE ERROR: The MANIFEST file is missing!'
+        sys.exit(1)
+    try:
+        manifest = [l.strip() for l in f.readlines()]
+    finally:
+        f.close()
+    err = [line for line in manifest if not os.path.exists(line)]
+    if err:
+        n = len(manifest)
+        print '\n*** SOURCE ERROR: There are files missing (%d/%d found)!'%(
+            n-len(err), n)
+        sys.exit(1)
 
 
 #############################################################################
