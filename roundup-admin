@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.50 2001-12-02 05:06:16 richard Exp $
+# $Id: roundup-admin,v 1.51 2001-12-10 00:57:38 richard Exp $
 
 import sys
 if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1):
@@ -64,6 +64,7 @@ class AdminTool:
         for k in AdminTool.__dict__.keys():
             if k[:5] == 'help_':
                 self.help[k[5:]] = getattr(self, k)
+        self.instance_home = ''
         self.db = None
 
     def usage(self, message=''):
@@ -205,6 +206,8 @@ Command help:
 
         See also initopts help.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         # select template
         import roundup.templates
         templates = roundup.templates.listTemplates()
@@ -243,6 +246,8 @@ Command help:
 
         Retrieves the property value of the nodes specified by the designators.
         '''
+        if len(args) < 2:
+            raise UsageError, 'Not enough arguments supplied'
         propname = args[0]
         designators = string.split(args[1], ',')
         l = []
@@ -279,6 +284,8 @@ Command help:
 
         Sets the property to the value for all designators given.
         '''
+        if len(args) < 2:
+            raise UsageError, 'Not enough arguments supplied'
         from roundup import hyperdb
 
         designators = string.split(args[0], ',')
@@ -340,6 +347,8 @@ Command help:
         Find the nodes of the given class with a given link property value. The
         value may be either the nodeid of the linked node, or its key value.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         classname = args[0]
         # get the class
         try:
@@ -401,6 +410,8 @@ Command help:
 
         This lists the properties for a given class.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         classname = args[0]
         # get the class
         try:
@@ -416,6 +427,33 @@ Command help:
             else:
                 print '%s: %s'%(key, value)
 
+    def do_display(self, args):
+        '''Usage: display designator
+        Show the property values for the given node.
+
+        This lists the properties and their associated values for the given
+        node.
+        '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
+
+        # decode the node designator
+        try:
+            classname, nodeid = roundupdb.splitDesignator(args[0])
+        except roundupdb.DesignatorError, message:
+            raise UsageError, message
+
+        # get the class
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'invalid class "%s"'%classname
+
+        # display the values
+        for key in cl.properties.keys():
+            value = cl.get(nodeid, key)
+            print '%s: %s'%(key, value)
+
     def do_create(self, args):
         '''Usage: create classname property=value ...
         Create a new entry of a given class.
@@ -424,6 +462,8 @@ Command help:
         name=value arguments provided on the command line after the "create"
         command.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         from roundup import hyperdb
 
         classname = args[0]
@@ -508,6 +548,8 @@ Command help:
         in order: the key, "name", "title" and then the first property,
         alphabetically.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         classname = args[0]
 
         # get the class
@@ -548,6 +590,8 @@ Command help:
           3  usability 
           4  feature   
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         classname = args[0]
 
         # get the class
@@ -600,6 +644,8 @@ Command help:
 
         Lists the journal entries for the node identified by the designator.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         try:
             classname, nodeid = roundupdb.splitDesignator(args[0])
         except roundupdb.DesignatorError, message:
@@ -637,7 +683,7 @@ Command help:
         manually. This command undoes all those changes, so a commit
         immediately after would make no changes to the database.
         '''
-        self.db.commit()
+        self.db.rollback()
         return 0
 
     def do_retire(self, args):
@@ -647,6 +693,8 @@ Command help:
         This action indicates that a particular node is not to be retrieved by
         the list or find commands, and its key value may be re-used.
         '''
+        if len(args) < 1:
+            raise UsageError, 'Not enough arguments supplied'
         designators = string.split(args[0], ',')
         for designator in designators:
             try:
@@ -670,8 +718,7 @@ Command help:
         directory. The journals are not exported.
         '''
         if len(args) < 2:
-            print do_export.__doc__
-            return 1
+            raise UsageError, 'Not enough arguments supplied'
         classes = string.split(args[0], ',')
         dir = args[1]
 
@@ -834,13 +881,13 @@ Command help:
         try:
             instance = roundup.instance.open(self.instance_home)
         except ValueError, message:
+            self.instance_home = ''
             print "Couldn't open instance: %s"%message
             return 1
-        self.db = instance.open('admin')
 
-        if len(args) < 2:
-            print function.__doc__
-            return 1
+        # only open the database once!
+        if not self.db:
+            self.db = instance.open('admin')
 
         # do the command
         ret = 0
@@ -870,12 +917,20 @@ Command help:
             try:
                 command = raw_input('roundup> ')
             except EOFError:
-                print '.. exit'
-                return 0
+                print 'exit...'
+                break
+            if not command: continue
             args = ws_re.split(command)
             if not args: continue
-            if args[0] in ('quit', 'exit'): return 0
+            if args[0] in ('quit', 'exit'): break
             self.run_command(args)
+
+        # exit.. check for transactions
+        if self.db and self.db.transactions:
+            commit = raw_input("There are unsaved changes. Commit them (y/N)? ")
+            if commit[0].lower() == 'y':
+                self.db.commit()
+        return 0
 
     def main(self):
         try:
@@ -918,6 +973,20 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.50  2001/12/02 05:06:16  richard
+# . We now use weakrefs in the Classes to keep the database reference, so
+#   the close() method on the database is no longer needed.
+#   I bumped the minimum python requirement up to 2.1 accordingly.
+# . #487480 ] roundup-server
+# . #487476 ] INSTALL.txt
+#
+# I also cleaned up the change message / post-edit stuff in the cgi client.
+# There's now a clearly marked "TODO: append the change note" where I believe
+# the change note should be added there. The "changes" list will obviously
+# have to be modified to be a dict of the changes, or somesuch.
+#
+# More testing needed.
+#
 # Revision 1.49  2001/12/01 07:17:50  richard
 # . We now have basic transaction support! Information is only written to
 #   the database when the commit() method is called. Only the anydbm

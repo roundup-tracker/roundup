@@ -89,7 +89,7 @@ Set up a mail alias called "issue_tracker" as:
 In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
 so sendmail will accept the pipe command. In that case, symlink
 /etc/smrsh/roundup-mailgw to /usr/local/bin/roundup-mailgw and change the
-command to:
+command to (include the quote marks):
   "|roundup-mailgw <instance_home>"
 
 To test the mail gateway on unix systems, try:

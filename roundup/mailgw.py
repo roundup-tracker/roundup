@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.40 2001-12-05 14:26:44 rochecompaan Exp $
+$Id: mailgw.py,v 1.41 2001-12-10 00:57:38 richard Exp $
 '''
 
 
@@ -276,7 +276,7 @@ supply a full node identifier (with number, eg "[issue123]" or keep the
 previous subject title intact so I can match that.
 
 Subject was: "%s"
-'''%(classname, subject)
+'''%subject
 
         # extract the args
         subject_args = m.group('args')
@@ -635,6 +635,10 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.40  2001/12/05 14:26:44  rochecompaan
+# Removed generation of change note from "sendmessage" in roundupdb.py.
+# The change note is now generated when the message is created.
+#
 # Revision 1.39  2001/12/02 05:06:16  richard
 # . We now use weakrefs in the Classes to keep the database reference, so
 #   the close() method on the database is no longer needed.

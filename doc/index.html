@@ -160,10 +160,9 @@ The email addresses used by the system by default are:
 <h2><a name="startweb">E-Mail Interface</a></h2>
 
 <h3>Setup 1: As a mail alias pipe process</h3>
-Set up a mail alias called "issue_tracker" as:
+Set up a mail alias called "issue_tracker" as (include the quote marks):
 <blockquote>
-    <tt>|/usr/bin/python /usr/local/bin/roundup-mailgw
-        &lt;instance_home&gt;</tt>
+    <tt>"|/usr/bin/python /usr/local/bin/roundup-mailgw &lt;instance_home&gt;"</tt>
 </blockquote>
 
 In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
@@ -1201,7 +1200,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.19 2001-11-21 23:42:54 richard Exp $
+$Id: index.html,v 1.20 2001-12-10 00:57:38 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>

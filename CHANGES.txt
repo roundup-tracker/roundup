@@ -13,6 +13,12 @@ Feature:
  . We now have basic transaction support. Information is only written to
    the database when the commit() method is called. Only the anydbm backend
    is modified in this way - neither of the bsddb backends have been.
+    - the CGI and mailgw automatically commit() at the end of processing a
+      single transaction
+    - the admin tool requires an explicit "commit" - it will prompt at exit
+      if there are unsaved changes. A "rollback" removes all changes made
+      during the session (up to the last commit).
+ . Added the "display" command to the admin tool - displays a node's values
 
 
 Fixed:
@@ -26,6 +32,8 @@ Fixed:
    the close() method on the database is no longer needed.
  . #487480 ] roundup-server
  . #487476 ] INSTALL.txt
+ . #489760 ] [issue] only subject
+ . fixed doc/index.html to include the quoting in the mail alias.
 
 
 2001-11-23 - 0.3.0 
