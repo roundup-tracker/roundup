@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.5 2002-09-19 03:56:20 richard Exp $
+# $Id: rdbms_common.py,v 1.6 2002-09-19 05:30:25 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -13,7 +13,16 @@ from blobfiles import FileStorage
 from roundup.indexer import Indexer
 from sessions import Sessions
 
+# number of rows to keep in memory
+ROW_CACHE_SIZE = 100
+
 class Database(FileStorage, hyperdb.Database, roundupdb.Database):
+    ''' Wrapper around an SQL database that presents a hyperdb interface.
+
+        - some functionality is specific to the actual SQL database, hence
+          the sql_* methods that are NotImplemented
+        - we keep a cache of the latest ROW_CACHE_SIZE row fetches.
+    '''
     # flag to set on retired entries
     RETIRED_FLAG = '__hyperdb_retired'
 
@@ -29,6 +38,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # additional transaction support for external files and the like
         self.transactions = []
+
+        # keep a cache of the N most recently retrieved rows of any kind
+        # (classname, nodeid) = row
+        self.cache = {}
+        self.cache_lru = []
 
         # open a connection to the database, creating the "conn" attribute
         self.open_connection()
@@ -453,6 +467,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 if not node.has_key(col):
                     node[col] = None
 
+        # clear this node out of the cache if it's in there
+        key = (classname, nodeid)
+        if self.cache.has_key(key):
+            del self.cache[key]
+            self.cache_lru.remove(key)
+
+        # make the node data safe for the DB
         node = self.serialise(classname, node)
 
         # make sure the ordering is correct for column name -> column value
@@ -483,6 +504,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'setnode', (self, classname, nodeid, node)
+
+        # clear this node out of the cache if it's in there
+        key = (classname, nodeid)
+        if self.cache.has_key(key):
+            del self.cache[key]
+            self.cache_lru.remove(key)
+
         node = self.serialise(classname, node)
 
         cl = self.classes[classname]
@@ -531,6 +559,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'getnode', (self, classname, nodeid)
+
+        # see if we have this node cached
+        key = (classname, nodeid)
+        if self.cache.has_key(key):
+            # push us back to the top of the LRU
+            self.cache_lru.remove(key)
+            self.cache_lry.insert(0, key)
+            # return the cached information
+            return self.cache[key]
+
         # figure the columns we're fetching
         cl = self.classes[classname]
         cols, mls = self.determine_columns(cl.properties.items())
@@ -559,7 +597,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # extract the first column from the result
             node[col] = [x[0] for x in cursor.fetchall()]
 
-        return self.unserialise(classname, node)
+        # un-dbificate the node data
+        node = self.unserialise(classname, node)
+
+        # save off in the cache
+        key = (classname, nodeid)
+        self.cache[key] = node
+	# update the LRU
+	self.cache_lru.insert(0, key)
+	del self.cache[self.cache_lru.pop()]
+
+        return node
 
     def destroynode(self, classname, nodeid):
         '''Remove a node from the database. Called exclusively by the
@@ -571,6 +619,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # make sure the node exists
         if not self.hasnode(classname, nodeid):
             raise IndexError, '%s has no node %s'%(classname, nodeid)
+
+        # see if we have this node cached
+        if self.cache.has_key((classname, nodeid)):
+            del self.cache[(classname, nodeid)]
 
         # see if there's any obvious commit actions that we should get rid of
         for entry in self.transactions[:]:
@@ -1636,6 +1688,8 @@ class Class(hyperdb.Class):
                     if '-1' in v:
                         v.remove('-1')
                         xtra = ' or _%s is NULL'%k
+                    else:
+                        xtra = ''
                     s = ','.join([a for x in v])
                     where.append('(_%s in (%s)%s)'%(k, s, xtra))
                     args = args + v
