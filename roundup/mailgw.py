@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.139 2003-12-04 23:34:25 richard Exp $
+$Id: mailgw.py,v 1.140 2003-12-19 01:50:19 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -661,7 +661,7 @@ Unknown address: %s
             errors, props = setPropArrayFromString(self, cl, args, nodeid)
             # handle any errors parsing the argument list
             if errors:
-                errors = '\n- '.join(errors)
+                errors = '\n- '.join(map(str, errors))
                 raise MailUsageError, '''
 There were problems handling your subject line argument list:
 - %s

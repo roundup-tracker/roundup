@@ -23,6 +23,7 @@ Feature:
 - use HTTP 'Content-Length' header (modified sf patch 844577)
 - HTML generated is now HTML4 (or optionally XHTML) compliant (sf feature
   814314 and sf patch 834620)
+- default stylesheet turns off sidebar when printing
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
@@ -58,6 +59,10 @@ Cleanup:
 - implemented semantic comparison of Message objects in test_mailgw
 - tidied up forms in default stylesheet
 - force textareas to use monospace fonts, lessening surprise on the user
+
+2004-??-?? 0.6.5
+Fixed:
+- mailgw handling of subject-line errors
 
 
 2003-12-17 0.6.4
