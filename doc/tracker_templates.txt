@@ -2,15 +2,15 @@
 Roundup Tracker Templates
 =========================
 
-:Version: $Revision: 1.1 $
+:Version: $Revision: 1.2 $
 
 The templates distributed with Roundup are stored in the "share" directory
-nominated by Python. On Unix this is typically 
-``/usr/share/roundup/templates/`` (or ``/usr/local/share...``) and 
+nominated by Python. On Unix this is typically
+``/usr/share/roundup/templates/`` (or ``/usr/local/share...``) and
 on Windows this is ``c:\python22\share\roundup\templates\``.
 
 The template loading looks in four places to find the templates:
- 
+
 1. *share* - eg. ``<prefix>/share/roundup/templates/*``.
    This should be the standard place to find them when Roundup is
    installed.
@@ -24,11 +24,12 @@ The template loading looks in four places to find the templates:
 
 Templates contain:
 
-- modules __init__.py, dbinit.py, config.py, interfaces.py
-- directories html and detectors (with appropriate contents)
-- TEMPLATE-INFO.txt which is our template "marker" file, which contains 
-  the name of the template,  a description of the template and its 
-  intended audience.
+- modules ``schema.py`` and ``initial_data.py``
+- directories ``html``, ``detectors`` and ``extensions``
+  (with appropriate contents)
+- template "marker" file ``TEMPLATE-INFO.txt``, which contains
+  the name of the template, a description of the template
+  and its intended audience.
 
 An example TEMPLATE-INFO.txt::
 
