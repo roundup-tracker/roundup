@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.141 2004-01-17 13:49:06 jlgijsbers Exp $
+$Id: mailgw.py,v 1.142 2004-01-20 00:06:09 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -377,7 +377,7 @@ class MailGW:
         import getpass, poplib, socket
         try:
             if not user:
-                user = raw_input(_('User: '))
+                user = raw_input('User: ')
             if not password:
                 password = getpass.getpass()
         except (KeyboardInterrupt, EOFError):
