@@ -2,9 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.12 $
-
-NOTE: This is just a grabbag, most of this should go into documentation.
+:Version: $Revision: 1.13 $
 
 .. contents::
 
@@ -12,59 +10,48 @@ NOTE: This is just a grabbag, most of this should go into documentation.
 Installation
 ------------
 
-Living without a mailserver.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Living without a mailserver
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remove the nosy reactor, means delete the tracker file
-'detectors/nosyreactor.py'.
+``detectors/nosyreactor.py`` from your tracker home.
 
 
-Rights issues (MISSING)
-~~~~~~~~~~~~~~~~~~~~~~~
+The cgi-bin is very slow!
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Different jobs run under different users.
+Yep, it sure is. It has to start up Python and load all of the support
+libraries for *every* request.
 
-* Standalone roundup-server is started by whome ?
+The solution is to use the built in server.
 
-* Running cgi under apache.
-
-* roundup-mailgw called via .forward from MTA, or running a cron job
-  fetching via pop.
-
+To make Roundup more seamless with your website, you may place the built
+in server behind apache and link it into your web tree
 
 
-The cgibin is very slow!
-~~~~~~~~~~~~~~~~~~~~~~~~
-Yep, it sure is.  It has to do database open/operation/close 
-_every_ request.
+How do I put Roundup behind Apache
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Solution:
-* use the built in server
-* place the built in server behind apache and link it into your web tree
-
-
-
-How do I put it behind apache
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-We have a project (foo) running on foohost.com:8888.
-We want http://foohost.com/FooIssues to use the roundup server, so we 
-set that up on port 8888 on foohost.com with the config.py line:
+We have a project (foo) running on ``foohost.com:8888``.
+We want ``http://foohost.com/FooIssues`` to use the roundup server, so we 
+set that up on port 8888 on ``foohost.com`` with the ``config.py`` line::
 
   TRACKER_WEB = 'http://foohost.com/FooIssues/'
 
-We have a foo_issues project/tracker configured on roundup and we run the 
-server with:
-  ~/bin/roundup-server -p 8888 foo_issues=/home/roundup/trackers/foo_issues 
+We have a "foo_issues" tracker and we run the server with::
 
+  roundup-server -p 8888 foo_issues=/home/roundup/trackers/foo_issues 
 
-Then, on the 'front end' host (redhat 7.3 with apache 1.3), in
-/etc/httpd/conf/httpd.conf uncomment:
+Then, on the Apache machine (eg. redhat 7.3 with apache 1.3), in
+``/etc/httpd/conf/httpd.conf`` uncomment::
 
   LoadModule proxy_module       modules/libproxy.so
-and
+
+and::
+
   AddModule mod_proxy.c
 
-Then add:
+Then add::
 
   # roundup stuff (added manually)
   <IfModule mod_proxy.c>
@@ -84,96 +71,83 @@ Then add:
   
   </IfModule>
 
-Then restart apache.
+Then restart Apache. Now Apache will proxy the request on to the
+roundup-server.
 
-Now apache will proxy the request on to the roundup server.
-
-Obviously you need to add the last 3 RewriteRule lines for each
-project/tracker that you have.
+You need to add the last 3 RewriteRule lines for each tracker that you have.
 
 You can now firewall off port 8888 from the rest of the world.
-
-
-
-
 
 
 Templates
 ---------
 
-What is that stuff in ~/trackers/foo_issues/html/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This is the template code that roundup uses to display the various pages.
+What is that stuff in the tracker html directory?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is bases upon the template markup language in zope.
-
-Have a look at:
+This is the template code that Roundup uses to display the various pages.
+This is based upon the template markup language in Zope called, oddly
+enough "Zope Page Templates". There's documentation in the Roundup
+customisation_ documentation. For more information have a look at:
 
    http://www.zope.org/Documentation/Books/ZopeBook/current/contents
 
-chapter     5   Using Zope Page Templates
-and chapter 9   Advanced Page Templates
+specifically chapter 5 "Using Zope Page Templates" and chapter 9 "Advanced
+Page Templates".
 
 
 But I just want a select/option list for ....
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Really easy...
 
-Edit issue.item
+Really easy... edit ``html/issue.item``. For 'nosy', change line 53 from::
 
-For 'nosy', change line 53 from:
   <span tal:replace="structure context/nosy/field" />
-to
+
+to::
+
   <span tal:replace="structure context/nosy/menu" />
 
-For 'assigned to', change line 61 from:
-  <td tal:content="structure context/assignedto/field">assignedto menu</td>
-to:
-  <td tal:content="structure context/assignedto/menu">assignedto menu</td>
+For 'assigned to', change line 61 from::
 
-get the idea?
+  <td tal:content="structure context/assignedto/field">assignedto menu</td>
+
+to::
+
+  <td tal:content="structure context/assignedto/menu">assignedto menu</td>
 
 
 
 Great! But now the select/option list is too big
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Thats a little harder (but only a little ;^)
 
-Edit issue.item
+Again, edit ``html/issue.item``. For nosy, change line 53 from:
 
-For nosy, change line 53 from:
-  (see above)
-to 
+  <span tal:replace="structure context/nosy/field" />
+
+to::
+
   <span tal:replace="structure python:context.nosy.menu(height=3)" />
 
-and then, like me, go and read about Zope templates.
-
-
-
+for more information, go and read about Zope Page Templates.
 
 
 Using Roundup
 -------------
 
-
 I got an error and I cant reload it!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If you're using netscape/mozilla, try holding shift and pressing reload.
-If you're using IE then install mozilla and try again ;^)
+
+If you're using Netscape/Mozilla, try holding shift and pressing reload.
+If you're using IE then install Mozilla and try again ;^)
 
 
+I keep getting logged out
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-I tried changing my password and I got 'invalid one time ticket' or something
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Ok, so I said to use mozilla, well apparently it 'double requests' pages
-from roundup.
-
-This means the first request worked (ie, your request was processed) then 
-mozilla/galeon/children tried again and that request failed (ie, it tried to
-perform an operation using a no longer valid ticket).
-
-Dont worry, it worked. :^)
-
+Make sure that the TRACKER_WEB setting in your tracker's config.py is set
+to the URL of the tracker.
 
 
 -----------------
@@ -181,4 +155,5 @@ Dont worry, it worked. :^)
 Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
+.. _`customisation`: customisation.html
 
