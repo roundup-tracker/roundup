@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.9 2002-03-12 22:51:47 richard Exp $
+# $Id: admin.py,v 1.10 2002-04-27 10:07:23 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -267,7 +267,7 @@ Command help:
         parent = os.path.split(instance_home)[0]
         if not os.path.exists(parent):
             raise UsageError, _('Instance home parent directory "%(parent)s"'
-                'does not exist')%locals()
+                ' does not exist')%locals()
 
         # select template
         import roundup.templates
@@ -1061,6 +1061,11 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/03/12 22:51:47  richard
+#  . #527416 ] roundup-admin uses undefined value
+#  . #527503 ] unfriendly init blowup when parent dir
+#    (also handles UsageError correctly now in init)
+#
 # Revision 1.8  2002/02/27 03:28:21  richard
 # Ran it through pychecker, made fixes
 #
