@@ -2,6 +2,7 @@
 *.pyo
 localconfig.py
 build
+demo
 dist
 MANIFEST
 _test_*
