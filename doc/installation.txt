@@ -317,6 +317,7 @@ There are three web interfaces to choose from:
 1. `web server cgi-bin`_
 2. `stand-alone web server`_
 3. `Zope product - ZRoundup`_
+4. `Apache HTTP Server with mod_python`_
 
 You may need to give the web server user permission to access the tracker home
 - see the `UNIX environment steps`_ for information. You may also need to
@@ -386,6 +387,76 @@ code tree lib/python/Products.
 
 When you next (re)start up Zope, you will be able to add a ZRoundup object
 that interfaces to your new tracker.
+
+Apache HTTP Server with mod_python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Mod_python`_ is an `Apache`_ module that embeds the Python interpreter
+within the server.  Running Roundup this way is much faster than all
+above options and, like `web server cgi-bin`_, allows to use HTTPS
+protocol.  The drawback is that this setup is more complicated.
+
+The following instructions were tested on apache 2.0 with mod_python 3.1.
+If you are using older versions, your mileage may vary.
+
+Mod_python uses OS threads.  If your apache was built without threads
+(quite commonly), you must load the threading library to run mod_python.
+This is done by setting ``LD_PRELOAD`` to your threading library path
+in apache ``envvars`` file.  Example for gentoo linux (``envvars`` file
+is located in ``/usr/lib/apache2/build/``)::
+
+  LD_PRELOAD=/lib/libpthread.so.0
+  export LD_PRELOAD
+
+Example for FreeBSD (``envvars`` is in ``/usr/local/sbin/``)::
+
+  LD_PRELOAD=/usr/lib/libc_r.so
+  export LD_PRELOAD
+
+Next, you have to add Roundup trackers configuration to apache config.
+In the following example we have two trackers set up in
+``/var/db/roundup/support`` and ``var/db/roundup/devel`` and accessed
+as ``https://my.host/roundup/support/`` and ``https://my.host/roundup/devel/``
+respectively.  Having them share same parent directory allows us to
+reduce the number of configuration directives.
+
+Static files from ``html`` directory are served by apache itself - this
+is quickier and generally more robust than doing that from python.
+Everything else is aliased to dummy (non-existing) ``py`` file,
+which is handled by mod_python and our roundup module.
+
+Example mod_python configuration::
+
+    #################################################
+    # Roundup Issue tracker
+    #################################################
+    # enable Python optimizations (like 'python -O')
+    PythonOptimize On
+    # let apache handle static files from 'html' directories
+    AliasMatch /roundup/(.+)/@@file/(.*) /var/db/roundup/$1/html/$2
+    # everything else is handled by roundup web UI
+    AliasMatch /roundup/([^/]+)/(?!@@file/)(.*) /var/db/roundup/$1/dummy.py/$2
+    # roundup requires a slash after tracker name - add it if missing
+    RedirectMatch permanent /roundup/([^/]+)$ /roundup/$1/
+    # common settings for all roundup trackers
+    <Directory /var/db/roundup/*>
+      Order allow,deny
+      Allow from all
+      AllowOverride None
+      Options None
+      AddHandler python-program .py
+      PythonHandler roundup.cgi.apache
+      # uncomment the following line to see tracebacks in the browser
+      # (note that *some* tracebacks will be displayed anyway)
+      #PythonDebug On
+    </Directory>
+    # roundup tracker homes
+    <Directory /var/db/roundup/devel>
+      PythonOption TrackerHome /var/db/roundup/devel
+    </Directory>
+    <Directory /var/db/roundup/support>
+      PythonOption TrackerHome /var/db/roundup/support
+    </Directory>
 
 
 Configure an Email Interface
@@ -650,9 +721,14 @@ Next: `User Guide`_
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`administration guide`: admin_guide.html
+
+
+.. _External hyperlink targets:
+
+.. _apache: http://httpd.apache.org/
+.. _metakit: http://www.equi4.com/metakit/
+.. _mod_python: http://www.modpython.org/
+.. _MySQLdb: http://sourceforge.net/projects/mysql-python
+.. _Psycopg: http://initd.org/software/initd/psycopg
 .. _pybsddb: http://pybsddb.sourceforge.net/
 .. _pysqlite: http://pysqlite.sourceforge.net/
-.. _metakit: http://www.equi4.com/metakit/
-.. _Psycopg: http://initd.org/software/initd/psycopg
-.. _MySQLdb: http://sourceforge.net/projects/mysql-python
-
