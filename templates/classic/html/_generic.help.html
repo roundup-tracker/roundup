@@ -29,6 +29,28 @@
        <input type="button" name="btn_apply" class="apply"
               value=" Apply " onclick="updateList(); window.close();"/>     
      </div>
+     <table width="100%">
+      <tr class="navigation">
+       <th>
+        <a tal:define="prev batch/previous" tal:condition="prev"
+           tal:attributes="href python:request.indexargs_href(request.classname,
+           {'@template':'help', 'property': request.form['property'].value,
+            'properties': request.form['properties'].value,
+            '@startwith':prev.first, '@pagesize':prev.size})">&lt;&lt; previous</a>
+        &nbsp;
+       </th>
+       <th tal:content="python: '%d...%d out of %d'%(batch.start,
+               batch.start+batch.length-1, batch.sequence_length)">current</th>
+       <th>
+        <a tal:define="next batch/next" tal:condition="next"
+           tal:attributes="href python:request.indexargs_href(request.classname,
+           {'@template':'help', 'property': request.form['property'].value,
+            'properties': request.form['properties'].value,
+            '@startwith':next.first, '@pagesize':next.size})">next &gt;&gt;</a>
+        &nbsp;
+       </th>
+      </tr>
+     </table>
 
      <table class="classhelp">
        <tr>
@@ -53,22 +75,6 @@
            <th>&nbsp;<b>x</b></th>
            <th tal:repeat="prop props" tal:content="prop"></th>
        </tr>
-     </table>
-     <table width="100%">
-      <tr class="navigation">
-       <th>
-        <a tal:define="prev batch/previous" tal:condition="prev"
-            tal:attributes="href string:${request/classname}?@template=help&@startwith=${prev/first}&property=${request/form/property/value}&properties=${request/form/properties/value}">&lt;&lt; previous</a>
-        &nbsp;
-       </th>
-       <th tal:content="python: '%d...%d out of %d'%(batch.start,
-               batch.start+batch.length-1, batch.sequence_length)">current</th>
-       <th>
-        <a tal:define="next batch/next" tal:condition="next"
-            tal:attributes="href string:${request/classname}?@template=help&@startwith=${next/first}&property=${request/form/property/value}&properties=${request/form/properties/value}">next &gt;&gt;</a>
-        &nbsp;
-       </th>
-      </tr>
      </table>
 
  </form>
