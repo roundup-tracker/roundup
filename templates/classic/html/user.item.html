@@ -19,7 +19,8 @@ You are not allowed to view this page.
 </span>
 
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
+      enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+      tal:attributes="action context/designator">
 
 <table class="form">
  <tr>

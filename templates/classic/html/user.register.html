@@ -15,7 +15,9 @@ You are not allowed to view this page.
 </span>
 
 <tal:block tal:condition="editok">
-<form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data"
+      tal:attributes="action context/designator">
 
 <table class="form">
  <tr>

@@ -9,7 +9,8 @@
 <p>You have two options if you have forgotten your password. If you 
 know the email address you registered with, enter it below.</p>
 
-<form method="POST" onSubmit="return submit_once()">
+<form method="POST" onSubmit="return submit_once()"
+      tal:attributes="action context/designator">
     <table class="form">
       <tr>
         <th>Email Address:</th>

@@ -31,7 +31,8 @@ You are not allowed to view this page.
  them to the table - put an X in the id column.
 </p>
 
-<form onSubmit="return submit_once()" method="POST">
+<form onSubmit="return submit_once()" method="POST"
+      tal:attributes="action context/designator">
 <textarea rows="15" cols="60" name="rows" tal:content="context/csv"></textarea>
 <br>
 <input type="hidden" name=":action" value="editCSV">
