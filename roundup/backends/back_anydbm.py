@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.161 2004-07-20 05:57:54 richard Exp $
+#$Id: back_anydbm.py,v 1.162 2004-07-20 07:26:40 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -896,8 +896,6 @@ class Class(hyperdb.Class):
                 raise ValueError, 'key property "%s" is required'%key
             if isinstance(prop, Multilink):
                 propvalues[key] = []
-            else:
-                propvalues[key] = None
 
         # done
         self.db.addnode(self.classname, newid, propvalues)
@@ -2057,10 +2055,6 @@ class FileClass(hyperdb.FileClass, Class):
 
         # do the database create
         newid = self.create_inner(**propvalues)
-
-        # and index!
-        self.db.indexer.add_text((self.classname, newid, 'content'), content,
-            mime_type)
 
         # fire reactors
         self.fireReactors('create', newid, None)
