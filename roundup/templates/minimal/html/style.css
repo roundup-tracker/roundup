@@ -20,8 +20,8 @@ td.page-header-left {
 }
 
 td.page-header-top {
-  border-bottom: 1px solid #444444;
   padding: 5px;
+  border-bottom: 1px solid #444444;
 }
 
 td.sidebar {
@@ -45,6 +45,7 @@ td.sidebar p.userblock {
 td.content {
   padding: 1 5 1 5;
   vertical-align: top;
+  width: 100%;
 }
 
 p.ok-message {
@@ -112,6 +113,7 @@ table.list th {
   border-top: 1px solid #404070;
   border-bottom: 1px solid #404070;
   vertical-align: top;
+  empty-cells: show;
 }
 table.list th a[href]:hover { color: #404070 }
 table.list th a[href]:link { color: #404070 }
@@ -128,27 +130,25 @@ table.list td {
   color: #404070;
   background-color: white;
   vertical-align: top;
+  empty-cells: show;
 }
 
 table.list tr.normal td {
-  empty-cells: show;
+  background-color: white;
 }
 
 table.list tr.alt td {
   background-color: #efefef;
-  empty-cells: show;
 }
 
 table.list td:first-child {
   border-left: 1px solid #404070;
   border-right: 1px solid #404070;
-  empty-cells: show;
 }
 
 table.list th:first-child {
   border-left: 1px solid #404070;
   border-right: 1px solid #404070;
-  empty-cells: show;
 }
 
 table.list tr.navigation th {
@@ -179,15 +179,23 @@ table.messages th {
   font-weight: bold;
   color: black;
   text-align: left;
+  border-bottom: 1px solid #afafaf;
 }
 
 table.messages td {
   font-family: monospace;
   background-color: #efefef;
-  border-top: 1px solid #afafaf;
   border-bottom: 1px solid #afafaf;
   color: black;
   empty-cells: show;
+  border-right: 1px solid #afafaf;
+  vertical-align: top;
+  padding: 2 5 2 5;
+}
+
+table.messages td:first-child {
+  border-left: 1px solid #afafaf;
+  border-right: 1px solid #afafaf;
 }
 
 /* style for file displays */
