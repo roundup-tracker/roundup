@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.136 2003-09-08 09:28:28 jlgijsbers Exp $
+# $Id: client.py,v 1.137 2003-09-08 21:07:29 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -766,15 +766,22 @@ class Client:
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
-        subject = 'Complete your registration to %s'%tracker_name
-        body = '''
-To complete your registration of the user "%(name)s" with %(tracker)s,
-please visit the following URL:
+        tracker_email = self.db.config.TRACKER_EMAIL
+        subject = 'Complete your registration to %s -- key %s' % (tracker_name,
+                                                                  otk)
+        body = """To complete your registration of the user "%(name)s" with
+%(tracker)s, please do one of the following:
+
+- send a reply to %(tracker_email)s and maintain the subject line as is (the
+reply's additional "Re:" is ok),
+
+- or visit the following URL:
 
    %(url)s?@action=confrego&otk=%(otk)s
-'''%{'name': props['username'], 'tracker': tracker_name, 'url': self.base,
-                'otk': otk}
-        if not self.standard_message(props['address'], subject, body):
+""" % {'name': props['username'], 'tracker': tracker_name, 'url': self.base,
+       'otk': otk, 'tracker_email': tracker_email}
+        if not self.standard_message(props['address'], subject, body,
+                                     tracker_email):
             return
 
         # commit changes to the database
@@ -783,14 +790,13 @@ please visit the following URL:
         # redirect to the "you're almost there" page
         raise Redirect, '%suser?@template=rego_progress'%self.base
 
-    def standard_message(self, to, subject, body):
+    def standard_message(self, to, subject, body, author=None):
         try:
-            self.mailer.standard_message(to, subject, body)
+            self.mailer.standard_message(to, subject, body, author)
             return 1
         except MessageSendException, e:
             self.error_message.append(str(e))
             
-
     def registerPermission(self, props):
         ''' Determine whether the user has permission to register
 
