@@ -1498,16 +1498,9 @@ class HTMLRequest:
         ''' Parse the URL for query args, and update my attributes using the
             values.
         ''' 
-        self.form = {}
-        for name, value in cgi.parse_qsl(url):
-            if self.form.has_key(name):
-                if isinstance(self.form[name], type([])):
-                    self.form[name].append(cgi.MiniFieldStorage(name, value))
-                else:
-                    self.form[name] = [self.form[name],
-                        cgi.MiniFieldStorage(name, value)]
-            else:
-                self.form[name] = cgi.MiniFieldStorage(name, value)
+        env = {'QUERY_STRING': url}
+        self.form = cgi.FieldStorage(environ=env)
+
         self._post_init()
 
     def update(self, kwargs):
