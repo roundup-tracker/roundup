@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.25 2001-08-29 05:30:49 richard Exp $
+# $Id: cgi_client.py,v 1.26 2001-09-12 08:31:42 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -395,9 +395,11 @@ class Client:
         if [i for i in keys if i[0] != ':']:
             try:
                 file = self.form['content']
+                type = mimetypes.guess_type(file.filename)[0]
+                if not type:
+                    type = "application/octet-stream"
                 self._post_editnode(cl.create(content=file.file.read(),
-                    type=mimetypes.guess_type(file.filename)[0],
-                    name=file.filename))
+                    type=type, name=file.filename))
                 # and some nice feedback for the user
                 message = '%s created ok'%cn
             except:
@@ -513,6 +515,9 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/08/29 05:30:49  richard
+# change messages weren't being saved when there was no-one on the nosy list.
+#
 # Revision 1.24  2001/08/29 04:49:39  richard
 # didn't clean up fully after debugging :(
 #
