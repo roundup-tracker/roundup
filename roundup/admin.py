@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.84 2004-11-03 01:34:21 richard Exp $
+# $Id: admin.py,v 1.85 2004-11-09 23:12:11 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -368,8 +368,7 @@ Command help:
         config_ini_file = os.path.join(tracker_home, CoreConfig.INI_FILE)
         # check for both old- and new-style configs
         if filter(os.path.exists, [config_ini_file,
-            os.path.join(tracker_home, 'config.py'),
-        ]):
+                os.path.join(tracker_home, 'config.py')]):
             ok = raw_input(_(
 """WARNING: There appears to be a tracker in "%(tracker_home)s"!
 If you re-install it, you will lose all the data!
@@ -433,6 +432,15 @@ Erase it? Y/N: """) % locals())
 }
         return 0
 
+    def do_genconfig(self, args):
+        ""'''Usage: genconfig <filename>
+        Generate a new tracker config file (ini style) with default values
+        in <filename>.
+        '''
+        if len(args) < 1:
+            raise UsageError, _('Not enough arguments supplied')
+        config = CoreConfig()
+        config.save(args[0])
 
     def do_initialise(self, tracker_home, args):
         ""'''Usage: initialise [adminpw]
@@ -1249,6 +1257,9 @@ Erase it? Y/N: """))
             self.do_help(['help'])
             self.help_commands()
             self.help_all()
+            return 0
+        if command == 'config':
+            self.do_config(args[1:])
             return 0
 
         # figure what the command is

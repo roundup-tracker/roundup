@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: init.py,v 1.33 2004-11-03 09:44:16 a1s Exp $
+# $Id: init.py,v 1.34 2004-11-09 23:12:12 richard Exp $
 
 """Init (create) a roundup instance.
 """
@@ -99,8 +99,7 @@ def install(instance_home, template):
     # installed from the template, write default config text
     config_ini_file = os.path.join(instance_home, CoreConfig.INI_FILE)
     if not (os.path.isfile(config_ini_file)
-        or os.path.isfile(os.path.join(instance_home, 'config.py'))
-    ):
+            or os.path.isfile(os.path.join(instance_home, 'config.py'))):
         config = CoreConfig()
         config.save(config_ini_file)
 

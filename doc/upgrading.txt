@@ -35,10 +35,10 @@ Class.get() instead.
 
 XXX describe any mandatory changes to tracker layout
 
-The ``config.py`` file has been replaced by ``config.ini``. You may copy
-the example config.ini from the classic tracker template::
+The ``config.py`` file has been replaced by ``config.ini``. You may use the
+roundup-admin command "genconfig" to generate a new config file::
 
-  templates/classic/config.ini
+  roundup-admin genconfig <tracker home>/config.ini
 
 and modify the values therein based on the contents of your old config.py.
 In most cases, the names of the config variables are the same.
