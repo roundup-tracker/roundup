@@ -106,10 +106,10 @@ db.security.addPermissionToRole('User', 'View', 'user')
 def own_record(db, userid, itemid):
     '''Determine whether the userid matches the item being accessed.'''
     return userid == itemid
-p = db.security.addPermission(name='View Self', klass='user', check=own_record,
+p = db.security.addPermission(name='View', klass='user', check=own_record,
     description="User is allowed to view their own user details")
 db.security.addPermissionToRole('User', p)
-p = db.security.addPermission(name='Edit Self', klass='user', check=own_record,
+p = db.security.addPermission(name='Edit', klass='user', check=own_record,
     description="User is allowed to edit their own user details")
 db.security.addPermissionToRole('User', p)
 
