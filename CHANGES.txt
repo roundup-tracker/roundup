@@ -2,9 +2,17 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-08-?? - 0.2.6
+Feature:
+ . Added tests for instance initialisation.
+
 Fixed:
  . Implemented correct mail splitting. Added unit tests. Also snips
    signatures now too.
+ . Bug #447671 - typo in roundup/init.py
+ . Changed date.Date to use regular string formatting instead of strftime -
+   win32 seems to have problems with %T and no hour... or something...
+ . Instances are now opened by a special function that generates a unique
+   module name for the instances on import time.
 
 
 2001-08-03 - 0.2.5
