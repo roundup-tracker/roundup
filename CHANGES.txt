@@ -5,6 +5,7 @@ are given with the most recent entry first.
 - fixed Interval maths (sf bug 665357)
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
+- fixed detection of bad date specs (sf bug 691439)
 - required String properties not being flagged (thanks Ajit George)
 - only look for CSV files when importing (thanks Dan Grassi)
 - can now unset values in CSV editing (sf bug 704788)
