@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.81 2004-03-18 01:58:45 richard Exp $
+# $Id: rdbms_common.py,v 1.82 2004-03-19 04:47:59 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -39,7 +39,7 @@ from roundup.backends import locking
 
 # support
 from blobfiles import FileStorage
-from roundup.indexer import Indexer
+from indexer_dbm import Indexer
 from sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
@@ -249,7 +249,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'update_class FIRING'
 
         # detect key prop change for potential index change
-        keyprop_changes = 0
+        keyprop_changes = {}
         if new_spec[0] != old_spec[0]:
             keyprop_changes = {'remove': old_spec[0], 'add': new_spec[0]}
 
@@ -260,20 +260,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if new_has(name):
                 continue
 
-            if isinstance(prop, Multilink):
+            if prop.find('Multilink to') != -1:
                 # first drop indexes.
-                self.drop_multilink_table_indexes(spec.classname, ml)
+                self.drop_multilink_table_indexes(spec.classname, name)
 
                 # now the multilink table itself
-                sql = 'drop table %s_%s'%(spec.classname, prop)
+                sql = 'drop table %s_%s'%(spec.classname, name)
             else:
                 # if this is the key prop, drop the index first
                 if old_spec[0] == prop:
-                    self.drop_class_table_key_index(spec.classname, prop)
+                    self.drop_class_table_key_index(spec.classname, name)
                     del keyprop_changes['remove']
 
                 # drop the column
-                sql = 'alter table _%s drop column _%s'%(spec.classname, prop)
+                sql = 'alter table _%s drop column _%s'%(spec.classname, name)
 
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class', (self, sql)
@@ -974,8 +974,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Load the journal from the database
         '''
         # now get the journal entries
-        sql = 'select %s from %s__journal where nodeid=%s'%(cols, classname,
-            self.arg)
+        sql = 'select %s from %s__journal where nodeid=%s order by date'%(
+            cols, classname, self.arg)
         if __debug__:
             print >>hyperdb.DEBUG, 'load_journal', (self, sql, nodeid)
         self.cursor.execute(sql, (nodeid,))
@@ -1019,14 +1019,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.sql_commit()
 
         # now, do all the other transaction stuff
-        reindex = {}
         for method, args in self.transactions:
-            reindex[method(*args)] = 1
-
-        # reindex the nodes that request it
-        for classname, nodeid in filter(None, reindex.keys()):
-            print >>hyperdb.DEBUG, 'commit.reindex', (classname, nodeid)
-            self.getclass(classname).index(nodeid)
+            method(*args)
 
         # save the indexer state
         self.indexer.save_index()
@@ -1241,6 +1235,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, String):
                 if type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%key
+                self.db.indexer.add_text((self.classname, newid, key), value)
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
@@ -1465,6 +1460,15 @@ class Class(hyperdb.Class):
         If the value of a Link or Multilink property contains an invalid
         node id, a ValueError is raised.
         '''
+        self.fireAuditors('set', nodeid, propvalues)
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+        propvalues = self.set_inner(nodeid, **propvalues)
+        self.fireReactors('set', nodeid, oldvalues)
+        return propvalues        
+
+    def set_inner(self, nodeid, **propvalues):
+        ''' Called by set, in-between the audit and react calls.
+        ''' 
         if not propvalues:
             return propvalues
 
@@ -1478,12 +1482,6 @@ class Class(hyperdb.Class):
 
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
-
-        self.fireAuditors('set', nodeid, propvalues)
-        # Take a copy of the node dict so that the subsequent set
-        # operation doesn't modify the oldvalues structure.
-        # XXX used to try the cache here first
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
 
         node = self.db.getnode(self.classname, nodeid)
         if self.is_retired(nodeid):
@@ -1620,6 +1618,8 @@ class Class(hyperdb.Class):
             elif isinstance(prop, String):
                 if value is not None and type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%propname
+                self.db.indexer.add_text((self.classname, nodeid, propname),
+                    value)
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
@@ -1658,8 +1658,6 @@ class Class(hyperdb.Class):
 
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, 'set', journalvalues)
-
-        self.fireReactors('set', nodeid, oldvalues)
 
         return propvalues        
 
@@ -2234,15 +2232,8 @@ class Class(hyperdb.Class):
         # find all the String properties that have indexme
         for prop, propclass in self.getprops().items():
             if isinstance(propclass, String) and propclass.indexme:
-                try:
-                    value = str(self.get(nodeid, prop))
-                except IndexError:
-                    # node no longer exists - entry should be removed
-                    self.db.indexer.purge_entry((self.classname, nodeid, prop))
-                else:
-                    # and index them under (classname, nodeid, property)
-                    self.db.indexer.add_text((self.classname, nodeid, prop),
-                        value)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                    str(self.get(nodeid, prop)))
 
 
     #
@@ -2297,7 +2288,14 @@ class FileClass(Class, hyperdb.FileClass):
         del propvalues['content']
 
         # do the database create
-        newid = Class.create_inner(self, **propvalues)
+        newid = self.create_inner(**propvalues)
+
+        # figure the mime type
+        mime_type = propvalues.get('type', self.default_mime_type)
+
+        # and index!
+        self.db.indexer.add_text((self.classname, newid, 'content'), content,
+            mime_type)
 
         # fire reactors
         self.fireReactors('create', newid, None)
@@ -2354,27 +2352,34 @@ class FileClass(Class, hyperdb.FileClass):
         d['content'] = hyperdb.String()
         return d
 
-    def index(self, nodeid):
-        ''' Index the node in the search index.
-
-            We want to index the content in addition to the normal String
-            property indexing.
+    def set(self, itemid, **propvalues):
+        ''' Snarf the "content" propvalue and update it in a file
         '''
-        # perform normal indexing
-        Class.index(self, nodeid)
+        self.fireAuditors('set', itemid, propvalues)
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
 
-        # get the content to index
-        content = self.get(nodeid, 'content')
+        # now remove the content property so it's not stored in the db
+        content = None
+        if propvalues.has_key('content'):
+            content = propvalues['content']
+            del propvalues['content']
 
-        # figure the mime type
-        if self.properties.has_key('type'):
-            mime_type = self.get(nodeid, 'type')
-        else:
-            mime_type = self.default_mime_type
+        # do the database create
+        propvalues = self.set_inner(itemid, **propvalues)
 
-        # and index!
-        self.db.indexer.add_text((self.classname, nodeid, 'content'), content,
-            mime_type)
+        # do content?
+        if content:
+            # store and index
+            self.db.storefile(self.classname, itemid, None, content)
+            mime_type = propvalues.get('type', self.get(itemid, 'type'))
+            if not mime_type:
+                mime_type = self.default_mime_type
+            self.db.indexer.add_text((self.classname, itemid, 'content'),
+                content, mime_type)
+
+        # fire reactors
+        self.fireReactors('set', itemid, oldvalues)
+        return propvalues
 
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):

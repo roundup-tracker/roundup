@@ -244,6 +244,7 @@ class Database(Database):
             '%s_%s_l_idx'%(classname, ml),
             '%s_%s_n_idx'%(classname, ml)
         ]
+        table_name = '%s_%s'%(classname, ml)
         for index_name in l:
             if not self.sql_index_exists(table_name, index_name):
                 continue

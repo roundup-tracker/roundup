@@ -32,12 +32,6 @@ class SessionTest(unittest.TestCase):
         self.sessions.set('random_key', text='nope')
         self.assertEqual(self.sessions.get('random_key', 'text'), 'nope')
 
-    def testSetOTK(self):
-        assert 0, 'not implemented'
-
-    def testExpiry(self):
-        assert 0, 'not implemented'
-
 class DBMTest(SessionTest):
     import roundup.backends.sessions_dbm as sessions_module
 

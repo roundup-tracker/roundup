@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.11 2004-02-11 23:55:09 richard Exp $
+#$Id: blobfiles.py,v 1.12 2004-03-19 04:47:59 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -77,12 +77,14 @@ class FileStorage:
         if not os.path.exists(os.path.dirname(name)):
             os.makedirs(os.path.dirname(name))
 
-        # open the temp file for writing
-        open(name + '.tmp', 'wb').write(content)
-
-        # save off the commit action
-        self.transactions.append((self.doStoreFile, (classname, nodeid,
-            property)))
+        # save to a temp file
+        name = name + '.tmp'
+        # make sure we don't register the rename action more than once
+        if not os.path.exists(name):
+            # save off the rename action
+            self.transactions.append((self.doStoreFile, (classname, nodeid,
+                property)))
+        open(name, 'wb').write(content)
 
     def getfile(self, classname, nodeid, property):
         '''Get the content of the file in the database.
@@ -114,6 +116,11 @@ class FileStorage:
         '''
         # determine the name of the file to write to
         name = self.filename(classname, nodeid, property)
+
+        # content is being updated (and some platforms, eg. win32, won't
+        # let us rename over the top of the old file)
+        if os.path.exists(name):
+            os.remove(name)
 
         # the file is currently ".tmp" - move it to its real name to commit
         os.rename(name+".tmp", name)

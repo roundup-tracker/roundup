@@ -18,11 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_indexer.py,v 1.3 2003-10-25 22:53:26 richard Exp $
+# $Id: test_indexer.py,v 1.4 2004-03-19 04:47:59 richard Exp $
 
 import os, unittest, shutil
 
-from roundup.indexer import Indexer
+from roundup.backends.indexer_dbm import Indexer
 
 class IndexerTest(unittest.TestCase):
     def setUp(self):

@@ -146,30 +146,26 @@ class Database(rdbms_common.Database):
         cols, mls = self.determine_columns(spec.properties.items())
         cols.append('id')
         cols.append('__retired__')
-        scols = ',' . join(['"%s" VARCHAR(255)' % x for x in cols])
+        scols = ',' . join(['"%s" VARCHAR(255)'%x for x in cols])
         sql = 'CREATE TABLE "_%s" (%s)' % (spec.classname, scols)
-
         if __debug__:
-            print >>hyperdb.DEBUG, 'create_class', (self, sql)
-
+            print >>hyperdb.DEBUG, 'create_class_table', (self, sql)
         self.cursor.execute(sql)
         self.create_class_table_indexes(spec)
         return cols, mls
 
     def create_journal_table(self, spec):
-        cols = ',' . join(['"%s" VARCHAR(255)' % x
-                           for x in 'nodeid date tag action params' . split()])
+        cols = ',' . join(['"%s" VARCHAR(255)'%x
+          for x in 'nodeid date tag action params' . split()])
         sql  = 'CREATE TABLE "%s__journal" (%s)'%(spec.classname, cols)
-        
         if __debug__:
-            print >>hyperdb.DEBUG, 'create_class', (self, sql)
-
+            print >>hyperdb.DEBUG, 'create_journal_table', (self, sql)
         self.cursor.execute(sql)
         self.create_journal_table_indexes(spec)
 
     def create_multilink_table(self, spec, ml):
         sql = '''CREATE TABLE "%s_%s" (linkid VARCHAR(255),
-                   nodeid VARCHAR(255))''' % (spec.classname, ml)
+            nodeid VARCHAR(255))'''%(spec.classname, ml)
 
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)

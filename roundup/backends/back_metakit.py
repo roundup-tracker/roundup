@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.62 2004-03-18 01:58:45 richard Exp $
+# $Id: back_metakit.py,v 1.63 2004-03-19 04:47:59 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -45,7 +45,7 @@ from roundup import hyperdb, date, password, roundupdb, security
 import metakit
 from sessions_dbm import Sessions, OneTimeKeys
 import re, marshal, os, sys, time, calendar
-from roundup import indexer
+from indexer_dbm import Indexer
 import locking
 from roundup.date import Range
 
@@ -1783,7 +1783,7 @@ class IssueClass(Class, roundupdb.IssueClass):
         
 CURVERSION = 2
 
-class Indexer(indexer.Indexer):
+class Indexer(Indexer):
     disallows = {'THE':1, 'THIS':1, 'ZZZ':1, 'THAT':1, 'WITH':1}
     def __init__(self, path, datadb):
         self.path = os.path.join(path, 'index.mk4')

@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.18 2004-02-11 23:55:08 richard Exp $
+#$Id: indexer_dbm.py,v 1.1 2004-03-19 04:47:59 richard Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -22,7 +22,7 @@ messages, string properties and text files possible.
 __docformat__ = 'restructuredtext'
 
 import os, shutil, re, mimetypes, marshal, zlib, errno
-from hyperdb import Link, Multilink
+from roundup.hyperdb import Link, Multilink
 
 class Indexer:
     '''Indexes information from roundup's hyperdb to allow efficient
@@ -129,7 +129,7 @@ class Indexer:
         """Split text/plain string into a list of words
         """
         # case insensitive
-        text = text.upper()
+        text = str(text).upper()
 
         # Split the raw text, losing anything longer than 25 characters
         # since that'll be gibberish (encoded text or somesuch) or shorter
@@ -340,5 +340,10 @@ class Indexer:
     def index_loaded(self):
         return (hasattr(self,'fileids') and hasattr(self,'files') and
             hasattr(self,'words'))
+
+
+    def rollback(self):
+        ''' load last saved index info. '''
+        self.load_index(reload=1)
 
 # vim: set filetype=python ts=4 sw=4 et si

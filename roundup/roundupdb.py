@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.101 2004-03-15 05:50:19 richard Exp $
+# $Id: roundupdb.py,v 1.102 2004-03-19 04:47:59 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -60,7 +60,7 @@ class Database:
         return timezone
 
     def confirm_registration(self, otk):
-        props = self.otks.getall(otk)
+        props = self.getOTKManager().getall(otk)
         for propname, proptype in self.user.getprops().items():
             value = props.get(propname, None)
             if value is None:
@@ -80,10 +80,9 @@ class Database:
         cl = self.user
       
         props['roles'] = self.config.NEW_WEB_USER_ROLES
-        del props['__time']
         userid = cl.create(**props)
         # clear the props from the otk database
-        self.otks.destroy(otk)
+        self.getOTKManager().destroy(otk)
         self.commit()
         
         return userid

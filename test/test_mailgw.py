@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.64 2004-01-20 00:11:51 richard Exp $
+# $Id: test_mailgw.py,v 1.65 2004-03-19 04:47:59 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -926,7 +926,7 @@ This is a followup
 
     def testRegistrationConfirmation(self):
         otk = "Aj4euk4LZSAdwePohj90SME5SpopLETL"
-        self.db.otks.set(otk, username='johannes', __time='')
+        self.db.getOTKManager().set(otk, username='johannes')
         self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>

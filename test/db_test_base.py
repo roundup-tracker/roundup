@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.17 2004-03-18 01:58:46 richard Exp $ 
+# $Id: db_test_base.py,v 1.18 2004-03-19 04:47:59 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -23,7 +23,6 @@ from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
 from roundup import date, password
 from roundup import init
-from roundup.indexer import Indexer
 
 def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
@@ -89,18 +88,20 @@ class DBTest(MyTestCase):
     # automatic properties (well, the two easy ones anyway)
     #
     def testCreatorProperty(self):
-        id1 = self.db.issue.create()
+        i = self.db.issue
+        id1 = i.create(title='spam')
         self.db.commit()
         self.db.close()
         self.db = self.module.Database(config, 'fred')
         setupSchema(self.db, 0, self.module)
         i = self.db.issue
-        id2 = i.create()
+        id2 = i.create(title='spam')
         self.assertNotEqual(id1, id2)
         self.assertNotEqual(i.get(id1, 'creator'), i.get(id2, 'creator'))
 
     def testActorProperty(self):
-        id1 = self.db.issue.create()
+        i = self.db.issue
+        id1 = i.create(title='spam')
         self.db.commit()
         self.db.close()
         self.db = self.module.Database(config, 'fred')
@@ -121,6 +122,7 @@ class DBTest(MyTestCase):
         id1 = self.db.issue.create(title="spam", status='1')
         self.db.issue.set(id1)
 
+    # String
     def testStringChange(self):
         for commit in (0,1):
             # test set & retrieve
@@ -142,6 +144,19 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "title"), None)
 
+    # FileClass "content" property (no unset test)
+    def testFileClassContentChange(self):
+        for commit in (0,1):
+            # test set & retrieve
+            nid = self.db.file.create(content="spam")
+            self.assertEqual(self.db.file.get(nid, 'content'), 'spam')
+
+            # change and make sure we retrieve the correct value
+            self.db.file.set(nid, content='eggs')
+            if commit: self.db.commit()
+            self.assertEqual(self.db.file.get(nid, 'content'), 'eggs')
+
+    # Link
     def testLinkChange(self):
         self.assertRaises(IndexError, self.db.issue.create, title="spam",
             status='100')
@@ -161,6 +176,7 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "status"), None)
 
+    # Multilink
     def testMultilinkChange(self):
         for commit in (0,1):
             self.assertRaises(IndexError, self.db.issue.create, title="spam",
@@ -175,8 +191,11 @@ class DBTest(MyTestCase):
             self.assertEqual(self.db.issue.get(nid, "nosy"), [])
             self.db.issue.set(nid, nosy=[u1,u2])
             if commit: self.db.commit()
-            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1,u2])
+            l = [u1,u2]; l.sort()
+            m = self.db.issue.get(nid, "nosy"); m.sort()
+            self.assertEqual(l, m)
 
+    # Date
     def testDateChange(self):
         self.assertRaises(TypeError, self.db.issue.create, 
             title='spam', deadline=1)
@@ -201,6 +220,7 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "deadline"), None)
 
+    # Interval
     def testIntervalChange(self):
         self.assertRaises(TypeError, self.db.issue.create, 
             title='spam', foo=1)
@@ -230,6 +250,7 @@ class DBTest(MyTestCase):
             if commit: self.db.commit()
             self.assertEqual(self.db.issue.get(nid, "foo"), None)
 
+    # Boolean
     def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
         self.assertEqual(1, self.db.user.get(userid, 'assignable'))
@@ -241,6 +262,7 @@ class DBTest(MyTestCase):
         self.db.user.set(nid, assignable=None)
         self.assertEqual(self.db.user.get(nid, "assignable"), None)
 
+    # Number
     def testNumberChange(self):
         nid = self.db.user.create(username='foo', age=1)
         self.assertEqual(1, self.db.user.get(nid, 'age'))
@@ -259,6 +281,7 @@ class DBTest(MyTestCase):
         self.db.user.set(nid, age=None)
         self.assertEqual(self.db.user.get(nid, "age"), None)
 
+    # Password
     def testPasswordChange(self):
         x = password.Password('x')
         userid = self.db.user.create(username='foo', password=x)
@@ -277,6 +300,7 @@ class DBTest(MyTestCase):
         self.db.user.set(nid, assignable=None)
         self.assertEqual(self.db.user.get(nid, "assignable"), None)
 
+    # key value
     def testKeyValue(self):
         self.assertRaises(ValueError, self.db.user.create)
 
@@ -295,6 +319,7 @@ class DBTest(MyTestCase):
 
         self.assertRaises(TypeError, self.db.issue.lookup, 'fubar')
 
+    # label property
     def testLabelProp(self):
         # key prop
         self.assertEqual(self.db.status.labelprop(), 'name')
@@ -306,6 +331,7 @@ class DBTest(MyTestCase):
         # id
         self.assertEqual(self.db.stuff.labelprop(default_to_id=1), 'id')
 
+    # retirement
     def testRetire(self):
         self.db.issue.create(title="spam", status='1')
         b = self.db.status.get('1', 'name')
@@ -609,6 +635,7 @@ class DBTest(MyTestCase):
 
     def testIndexerSearching(self):
         f1 = self.db.file.create(content='hello', type="text/plain")
+        # content='world' has the wrong content-type and won't be indexed
         f2 = self.db.file.create(content='world', type="text/frozz",
             comment='blah blah')
         i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
@@ -623,15 +650,44 @@ class DBTest(MyTestCase):
             {i1: {}, i2: {}})
 
     def testReindexing(self):
-        self.db.issue.create(title="frooz")
+        search = self.db.indexer.search
+        issue = self.db.issue
+        i1 = issue.create(title="flebble plop")
+        i2 = issue.create(title="flebble frooz")
         self.db.commit()
-        self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue),
-            {'1': {}})
-        self.db.issue.set('1', title="dooble")
+        self.assertEquals(search(['plop'], issue), {i1: {}})
+        self.assertEquals(search(['flebble'], issue), {i1: {}, i2: {}})
+
+        # change i1's title
+        issue.set(i1, title="plop")
         self.db.commit()
-        self.assertEquals(self.db.indexer.search(['dooble'], self.db.issue),
-            {'1': {}})
-        self.assertEquals(self.db.indexer.search(['frooz'], self.db.issue), {})
+        self.assertEquals(search(['plop'], issue), {i1: {}})
+        self.assertEquals(search(['flebble'], issue), {i2: {}})
+
+        # unset i1's title
+        issue.set(i1, title="")
+        self.db.commit()
+        self.assertEquals(search(['plop'], issue), {})
+        self.assertEquals(search(['flebble'], issue), {i2: {}})
+
+    def testFileClassReindexing(self):
+        f1 = self.db.file.create(content='hello')
+        f2 = self.db.file.create(content='hello, world')
+        i1 = self.db.issue.create(files=[f1, f2])
+        self.db.commit()
+        d = self.db.indexer.search(['hello'], self.db.issue)
+        d[i1]['files'].sort()
+        self.assertEquals(d, {i1: {'files': [f1, f2]}})
+        self.assertEquals(self.db.indexer.search(['world'], self.db.issue),
+            {i1: {'files': [f2]}})
+        self.db.file.set(f1, content="world")
+        self.db.commit()
+        d = self.db.indexer.search(['world'], self.db.issue)
+        d[i1]['files'].sort()
+        self.assertEquals(d, {i1: {'files': [f1, f2]}})
+        self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
+            {i1: {'files': [f2]}})
+
 
     def testForcedReindexing(self):
         self.db.issue.create(title="flebble frooz")
@@ -889,10 +945,14 @@ class DBTest(MyTestCase):
             ae(l, m)
             for id, props in items.items():
                 for name, value in props.items():
-                    ae(klass.get(id, name), value)
+                    l = klass.get(id, name)
+                    if isinstance(value, type([])):
+                        value.sort()
+                        l.sort()
+                    ae(l, value)
 
         # make sure the retired items are actually imported
-        ae(self.db.user.get('3', 'username'), 'blop')
+        ae(self.db.user.get('4', 'username'), 'blop')
         ae(self.db.issue.get('2', 'title'), 'issue two')
 
         # make sure id counters are set correctly

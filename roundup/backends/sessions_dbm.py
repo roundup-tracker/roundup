@@ -1,4 +1,4 @@
-#$Id: sessions_dbm.py,v 1.1 2004-03-18 01:58:45 richard Exp $
+#$Id: sessions_dbm.py,v 1.2 2004-03-19 04:47:59 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -63,7 +63,9 @@ class BasicDatabase:
         db = self.opendb('c')
         try:
             try:
-                return marshal.loads(db[infoid])
+                d = marshal.loads(db[infoid])
+                del d['__timestamp']
+                return d
             except KeyError:
                 raise KeyError, 'No such %s "%s"'%(self.name, infoid)
         finally:
