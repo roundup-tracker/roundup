@@ -13,11 +13,11 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
+#
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.48 2004-05-12 22:30:25 richard Exp $
+$Id: roundup_server.py,v 1.49 2004-05-14 20:02:44 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -45,7 +45,7 @@ except:
 # This indicates where the Roundup trackers live. They're given as NAME ->
 # TRACKER_HOME, where the NAME part is used in the URL to select the
 # appropriate reacker.
-# Make sure the NAME part doesn't include any url-unsafe characters like 
+# Make sure the NAME part doesn't include any url-unsafe characters like
 # spaces, as these confuse the cookie handling in browsers like IE.
 TRACKER_HOMES = {
 #    'example': '/path/to/example',
@@ -272,7 +272,7 @@ else:
                 # appending, unbuffered
                 sys.stdout = sys.stderr = open(LOGFILE, 'a', 0)
             win32serviceutil.ServiceFramework.__init__(self, args)
-            BaseHTTPServer.HTTPServer.__init__(self, self.address, 
+            BaseHTTPServer.HTTPServer.__init__(self, self.address,
                 RoundupRequestHandler)
 
             # Create the necessary NT Event synchronization objects...
@@ -321,7 +321,7 @@ else:
                         # caught by self.SvcDoRun
                         raise SvcShutdown
                     # Otherwise, rc == WAIT_OBJECT_0 + 1 which means
-                    # self.hevConn was signaled, which means when we call 
+                    # self.hevConn was signaled, which means when we call
                     # self.socket.accept(), we'll have our incoming connection
                     # socket!
                     # Loop back to the top, and let that accept do its thing...
@@ -330,10 +330,10 @@ else:
                     # However... the new socket is non-blocking, we need to
                     # set it back into blocking mode. (The socket that accept()
                     # returns has the same properties as the listening sockets,
-                    # this includes any properties set by WSAAsyncSelect, or 
+                    # this includes any properties set by WSAAsyncSelect, or
                     # WSAEventSelect, and whether its a blocking socket or not.)
                     #
-                    # So if you yank the following line, the setblocking() call 
+                    # So if you yank the following line, the setblocking() call
                     # will be useless. The socket will still be in non-blocking
                     # mode.
                     WSAEventSelect(rv[0], self.hevConn, 0)
@@ -377,7 +377,7 @@ name=tracker home:
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. For convenience, you may edit the
    TRACKER_HOMES variable in the roundup-server file instead.
-   Make sure the name part doesn't include any url-unsafe characters like 
+   Make sure the name part doesn't include any url-unsafe characters like
    spaces, as these confuse the cookie handling in browsers like IE.
 ''')%locals()
     sys.exit(0)
@@ -464,7 +464,7 @@ def run(port=PORT, success_message=None):
 
         if pidfile and not logfile:
             raise ValueError, _("logfile *must* be specified if pidfile is")
-  
+
         # obtain server before changing user id - allows to use port <
         # 1024 if started as root
         address = (hostname, port)
@@ -534,8 +534,8 @@ def run(port=PORT, success_message=None):
 
     if pidfile:
         if not hasattr(os, 'fork'):
-            print "Sorry, you can't run the server as a daemon on this" \
-                'Operating System'
+            print _("Sorry, you can't run the server as a daemon"
+                " on this Operating System")
             sys.exit(0)
         else:
             daemonize(pidfile)
