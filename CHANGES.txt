@@ -12,6 +12,9 @@ Feature:
 - all RDBMS backends now have indexes on several columns
 - Change nosymessage and send_message to accept msgid=None (RFE #707235).
 - Handle Resent-From: headers (sf bug 841151)
+- Existing trackers (ie. live ones) may be used as templates for new
+  trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
+  appended (so the demo tracker's template name is "classic-demo")
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.60 2003-11-11 00:35:13 richard Exp $
+# $Id: admin.py,v 1.61 2003-11-13 04:12:10 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -305,7 +305,7 @@ Command help:
                 path = os.path.dirname(path)
             tdir = os.path.join(path, 'share', 'roundup', 'templates')
             if os.path.isdir(tdir):
-                templates = listTemplates(tdir)
+                templates = init.listTemplates(tdir)
                 break
 
         # OK, now try as if we're in the roundup source distribution
@@ -316,13 +316,13 @@ Command help:
             path = os.path.dirname(path)
         tdir = os.path.join(path, 'templates')
         if os.path.isdir(tdir):
-            templates.update(listTemplates(tdir))
+            templates.update(init.listTemplates(tdir))
 
         # Try subdirs of the current dir
-        templates.update(listTemplates(os.getcwd()))
+        templates.update(init.listTemplates(os.getcwd()))
 
         # Finally, try the current directory as a template
-        template = loadTemplate(os.getcwd())
+        template = init.loadTemplateInfo(os.getcwd())
         if template:
             templates[template['name']] = template
 
@@ -1343,41 +1343,6 @@ Date format is "YYYY-MM-DD" eg:
         finally:
             if self.db:
                 self.db.close()
-
-
-def listTemplates(dir):
-    ''' List all the Roundup template directories in a given directory.
-
-        Find all the dirs that contain a TEMPLATE-INFO.txt and parse it.
-
-        Return a list of dicts of info about the templates.
-    '''
-    ret = {}
-    for idir in os.listdir(dir):
-        idir = os.path.join(dir, idir)
-        ti = loadTemplate(idir)
-        if ti:
-            ret[ti['name']] = ti
-    return ret
-
-def loadTemplate(dir):
-    ''' Attempt to load a Roundup template from the indicated directory.
-
-        Return None if there's no template, otherwise a template info
-        dictionary.
-    '''
-    ti = os.path.join(dir, 'TEMPLATE-INFO.txt')
-    if not os.path.exists(ti):
-        return None
-
-    # load up the template's information
-    m = rfc822.Message(open(ti))
-    ti = {}
-    ti['name'] = m['name']
-    ti['description'] = m['description']
-    ti['intended-for'] = m['intended-for']
-    ti['path'] = dir
-    return ti
 
 if __name__ == '__main__':
     tool = AdminTool()
