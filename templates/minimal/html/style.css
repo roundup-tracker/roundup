@@ -2,6 +2,7 @@
 body.body {
   font-family: sans-serif, Arial, Helvetica;
   color: #333333;
+  margin: 0px 0px 0px 0px;
 }
 a[href]:hover { color:blue; text-decoration: underline; }
 a[href]:link { color:blue; text-decoration: none; }
@@ -12,6 +13,16 @@ table.body {
   padding: 0;
   border-spacing: 0px;
   border-collapse: separate;
+}
+
+/* don't display the sidebar when printing */
+@media print {
+    td.page-header-left {
+        display: none;
+    }
+    td.sidebar {
+        display: none;
+    }
 }
 
 td.page-header-left {
@@ -28,16 +39,19 @@ td.sidebar {
   padding: 1 0 0 1;
   white-space: nowrap;
 }
+td.sidebar form {
+     margin: 0 0 0 0;
+}
 
 td.sidebar p.classblock {
-  padding: 0 5 0 5;
+  padding: 2 5 2 5;
   margin: 1 1 1 1;
   border: 1px solid #444444;
   background-color: #eeeeee;
 }
 
 td.sidebar p.userblock {
-  padding: 0 5 0 5;
+  padding: 2 5 2 5;
   margin: 1 1 1 1;
   border: 1px solid #444444;
   background-color: #eeeeff;
@@ -47,6 +61,10 @@ td.content {
   padding: 1 5 1 5;
   vertical-align: top;
   width: 100%;
+}
+
+td.date, th.date { 
+  white-space: nowrap;
 }
 
 p.ok-message {
@@ -71,17 +89,21 @@ table.form {
 }
 
 table.form th {
-  font-weight: bold;
   color: #333388;
   text-align: right;
   vertical-align: top;
+  font-weight: normal;
+  white-space: nowrap;
 }
 
 table.form th.header {
   font-weight: bold;
-  color: #333388;
   background-color: #eeeeff;
   text-align: left;
+}
+
+table.form th.required {
+  font-weight: bold;
 }
 
 table.form td {
@@ -110,9 +132,7 @@ table.list th {
   padding: 0 4 0 4;
   color: #404070;
   background-color: #eeeeff;
-  border-right: 1px solid #404070;
-  border-top: 1px solid #404070;
-  border-bottom: 1px solid #404070;
+  border: 1px solid white;
   vertical-align: top;
   empty-cells: show;
 }
@@ -126,38 +146,26 @@ table.list th.group {
 
 table.list td {
   padding: 0 4 0 4;
-  border: 0 2 0 2;
-  border-right: 1px solid #404070;
+  border: 1px solid white;
   color: #404070;
-  background-color: white;
+  background-color: #efefef;
   vertical-align: top;
   empty-cells: show;
 }
 
-table.list tr.normal td {
-  background-color: white;
-}
-
-table.list tr.alt td {
-  background-color: #efefef;
-}
-
-table.list td:first-child {
-  border-left: 1px solid #404070;
-  border-right: 1px solid #404070;
-}
-
-table.list th:first-child {
-  border-left: 1px solid #404070;
-  border-right: 1px solid #404070;
-}
-
 table.list tr.navigation th {
-  text-align: right;
+  width: 33%;
+  border-style: hidden;
+  text-align: center;
+}
+table.list tr.navigation td {
+    border: none
 }
 table.list tr.navigation th:first-child {
-  border-right: none;
   text-align: left;
+}
+table.list tr.navigation th:last-child {
+  text-align: right;
 }
 
 
@@ -277,26 +285,73 @@ table.classlist th {
 
 
 /* style for class help display */
-table.classhelp {
-  border-spacing: 0px;
-  border-collapse: separate;
-  width: 100%;
+table.classhelp {      /* the table-layout: fixed;        */ 
+  table-layout: fixed; /* compromises quality for speed   */
+  overflow: hidden;
+  font-size: .9em;
+  padding-bottom: 3em;
 }
 
 table.classhelp th {
-  font-weight: bold;
+  font-weight: normal;
   text-align: left;
-  color: #707040;
+  color: #444444;
+  background-color: #efefef;
+  border-bottom: 1px solid #afafaf;
+  border-top: 1px solid #afafaf;
+  text-transform: uppercase;
+  vertical-align: middle;
+  line-height:1.5em;
 }
 
 table.classhelp td {
-  padding: 2 2 2 2;
-  border: 1px solid black;
+  vertical-align: middle;
+  padding-right: .2em;
+  border-bottom: 1px solid #efefef;
   text-align: left;
-  vertical-align: top;
   empty-cells: show;
 }
 
+table.classhelp td {
+  white-space: nowrap;
+  vertical-align: middle;
+  padding-right: .2em;
+  border-bottom: 1px solid #efefef;
+  text-align: left;
+  empty-cells: show;
+}
+
+table.classhelp tr:hover {
+  background-color: #eeeeee;
+}
+
+label.classhelp-label {
+  cursor: pointer;
+}
+
+#classhelp-controls {
+  position: fixed;
+  display: block;
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: .5em;
+  border-top: 2px solid #444444;
+  background-color: #eeeeee;
+}
+
+#classhelp-controls input.apply {
+  width: 7em;
+  font-weight: bold;
+  margin-right: 2em;
+  margin-left: 2em;
+}
+
+#classhelp-controls input.preview {
+   margin-right: 3em;
+   margin-left: 1em;
+}
 
 /* style for "other" displays */
 table.otherinfo {
