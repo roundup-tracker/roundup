@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.93.2.8 $
+:Version: $Revision: 1.93.2.9 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1589,7 +1589,14 @@ local       only on Date properties - return this date as a new property
                 python:context.creation.local(10)
 
             will render the date with a +10 hour offset.
-pretty      only on Interval properties - render the interval in a pretty
+pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
+            Mar 2004"). Takes an optional format argument, for example::
+
+                python:context.activity.pretty('%Y-%m-%d')
+
+            Will format as "2004-03-19" instead.
+
+            Interval properties - render the interval in a pretty
             format (eg. "yesterday")
 menu        only on Link and Multilink properties - render a form select
             list for this property
