@@ -14,6 +14,7 @@
 ##############################################################################
 # Modifications for Roundup:
 # 1. commented out ITALES references
+# 2. escape quotes in msgids
 
 """Program to extract internationalization markup from Page Templates.
 
@@ -42,7 +43,7 @@ from roundup.cgi.TAL.DummyEngine import DummyEngine
 #from ITALES import ITALESEngine
 from roundup.cgi.TAL.TALDefs import TALESError
 
-__version__ = '$Revision: 1.3 $'
+__version__ = '$Revision: 1.4 $'
 
 pot_header = '''\
 # SOME DESCRIPTIVE TITLE.
@@ -304,7 +305,7 @@ def main():
         for filename, position in positions:
             outfile.write('#: %s:%s\n' % (filename, position[0]))
 
-        outfile.write('msgid "%s"\n' % msgid)
+        outfile.write('msgid "%s"\n' % msgid.replace('"', '\\"'))
         outfile.write('msgstr ""\n')
         outfile.write('\n')
 
