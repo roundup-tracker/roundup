@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.123 $
+:Version: $Revision: 1.124 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -867,18 +867,18 @@ identifier is examined. Typical URL paths look like:
 
 1.  ``/tracker/issue``
 2.  ``/tracker/issue1``
-3.  ``/tracker/_file/style.css``
+3.  ``/tracker/@file/style.css``
 4.  ``/cgi-bin/roundup.cgi/tracker/file1``
 5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
 
 where the "tracker identifier" is "tracker" in the above cases. That means
-we're looking at "issue", "issue1", "_file/style.css", "file1" and
+we're looking at "issue", "issue1", "@file/style.css", "file1" and
 "file1/kitten.png" in the cases above. The path is generally only one
 entry long - longer paths are handled differently.
 
 a. if there is no path, then we are in the "home" context.
-b. if the path starts with "_file" (as in example 3,
-   "/tracker/_file/style.css"), then the additional path entry,
+b. if the path starts with "@file" (as in example 3,
+   "/tracker/@file/style.css"), then the additional path entry,
    "style.css" specifies the filename of a static file we're to serve up
    from the tracker "html" directory. Raises a SendStaticFile exception.
 c. if there is something in the path (as in example 1, "issue"), it
@@ -900,6 +900,13 @@ defaults to:
 
 - only classname suplied:        "index"
 - full item designator supplied: "item"
+
+
+Serving static content
+----------------------
+
+See the previous section `determining web context`_ where it describes
+``@file`` paths.
 
 
 Performing actions in web requests
