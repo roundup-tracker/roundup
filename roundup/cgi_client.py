@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.136 2002-07-10 06:51:08 richard Exp $
+# $Id: cgi_client.py,v 1.137 2002-07-10 07:00:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -44,6 +44,9 @@ class Client:
     'anonymous' user exists, the user is logged in using that user (though
     there is no cookie). This allows them to modify the database, and all
     modifications are attributed to the 'anonymous' user.
+
+    Once a user logs in, they are assigned a session. The Client instance
+    keeps the nodeid of the session as the "session" attribute.
     '''
 
     def __init__(self, instance, request, env, form=None):
@@ -1164,7 +1167,8 @@ function help_window(helpurl, width, height) {
         print 'session set to', `session`
 
         # insert the session in the sessiondb
-        self.db.getclass('__sessions').create(sessid=session, user=user,
+        sessions = self.db.getclass('__sessions')
+        self.session = sessions.create(sessid=session, user=user,
             last_use=date.Date())
 
         # and commit immediately
@@ -1239,19 +1243,17 @@ function help_window(helpurl, width, height) {
         user = 'anonymous'
         if (cookie.has_key('roundup_user') and
                 cookie['roundup_user'].value != 'deleted'):
-            print cookie
 
             # get the session key from the cookie
             session = cookie['roundup_user'].value
-            print 'session is', `session`
 
             # get the user from the session
             try:
-                sessid = sessions.lookup(session)
+                self.session = sessions.lookup(session)
             except KeyError:
                 user = 'anonymous'
             else:
-                sessions.set(sessid, last_use=date.Date())
+                sessions.set(self.session, last_use=date.Date())
                 self.db.commit()
                 user = sessions.get(sessid, 'user')
 
@@ -1494,6 +1496,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.136  2002/07/10 06:51:08  richard
+# . #576241 ] MultiLink problems in parsePropsFromForm
+#
 # Revision 1.135  2002/07/10 00:22:34  richard
 #  . switched to using a session-based web login
 #
