@@ -648,8 +648,9 @@ class Class:
                 v = v[0]
                 if '*' in v or '?' in v:
                     # simple glob searching
-                    v = v.replace(v, '?', '.')
-                    v = v.replace(v, '*', '.*?')
+                    v = v.replace('?', '.')
+                    v = v.replace('*', '.*?')
+                    v = re.compile(v)
                     l.append((2, k, v))
                 elif v[0] == '^':
                     # start-anchored
@@ -690,7 +691,7 @@ class Class:
                     else:
                         continue
                     break
-                elif t == 2 and not v.match(node[k]):
+                elif t == 2 and not v.search(node[k]):
                     # RE search
                     break
                 elif t == 3 and node[k][:len(v)] != v:
@@ -748,10 +749,10 @@ class Class:
 
                     # String and Date values are sorted in the natural way
                     if propclass.isStringType:
-                        # make sure that case doesn't get involved
-                        if av[0] in string.uppercase:
+                        # clean up the strings
+                        if av and av[0] in string.uppercase:
                             av = an[prop] = av.lower()
-                        if bv[0] in string.uppercase:
+                        if bv and bv[0] in string.uppercase:
                             bv = bn[prop] = bv.lower()
                     if propclass.isStringType or propclass.isDateType:
                         if dir == '+':

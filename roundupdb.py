@@ -329,8 +329,9 @@ def initDB(storagelocator, password):
     pri = db.getclass('priority')
     pri.create(name="fatal-bug", order="1")
     pri.create(name="bug", order="2")
-    pri.create(name="usability", order="3")
-    pri.create(name="feature", order="4")
+    pri.create(name="todo", order="3")
+    pri.create(name="usability", order="4")
+    pri.create(name="feature", order="5")
 
     stat = db.getclass('status')
     stat.create(name="unread", order="1")

@@ -8,7 +8,7 @@ ISSUE_TRACKER_EMAIL = 'issue_tracker@bizarsoftware.com.au'
 ADMIN_EMAIL = "roundup-admin@bizarsoftware.com.au"
 
 # The SMTP mail host that roundup will use to send mail
-MAILHOST = 'goanna.adroit.net'
+MAILHOST = 'dirk'
 
 # Somewhere for roundup to log stuff internally sent to stdout or stderr
 LOG = '/home/httpd/html/roundup/roundup.log'

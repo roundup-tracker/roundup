@@ -506,7 +506,10 @@ def index(fp, db, classname, filterspec={}, filter=[], columns=[], sort=[],
                         for value in cl.get(nodeid, name):
                             l.append(group_cl.get(value, key))
                     else:
-                        l.append(cl.get(nodeid, name))
+                        value = cl.get(nodeid, name)
+                        if value is None:
+                            value = '[empty %s]'%name
+                        l.append(value)
                 w('<tr class="list-header">'
                   '<td align=left colspan=%s><strong>%s</strong></td></tr>'%(
                     len(columns), ', '.join(l)))

@@ -212,11 +212,12 @@ class Client:
                         props[key] = value
                 cl.set(self.nodeid, **props)
 
-                # if this item has messages, 
+                # if this item has messages, generate an edit message
+                # TODO: don't send the edit message to the person who
+                # performed the edit
                 if (cl.getprops().has_key('messages') and
                         cl.getprops()['messages'].isMultilinkType and
                         cl.getprops()['messages'].classname == 'msg'):
-                    # generate an edit message - nosyreactor will send it
                     nid = self.nodeid
                     m = []
                     for name, prop in cl.getprops().items():

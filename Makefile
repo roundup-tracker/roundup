@@ -11,8 +11,8 @@ release:
 	mkdir /tmp/${PACKAGE}
 	cp -r ${FILES} /tmp/${PACKAGE}
 	cp dummy_config.py /tmp/${PACKAGE}
-	(cd /tmp; tar zcf ${PACKAGE}.tgz ${PACKAGE})
-	mv /tmp/${PACKAGE}.tgz .
+	(cd /tmp; tar zcf ${PACKAGE}.tar.gz ${PACKAGE})
+	mv /tmp/${PACKAGE}.tar.gz .
 
 clean:
-	rm -f *.pyc *.tgz
+	rm -f *.pyc *.tar.gz
