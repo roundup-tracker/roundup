@@ -1,13 +1,18 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2003-??-?? 0.6.4
+Fixed:
+- Fixed activity displaying as future because of Date arithmetic fix in 0.6.3
+(sf bug 842027).
+
 2003-11-14 0.6.3
 Fixed:
 - fixed detectors fix incorrectly fixed in bugfix release 0.6.2
 - added note to upgrading doc for detectors fix in 0.6.2
 - added script to help migrating queries from pre-0.6 trackers
 - fixed "documentation" of getnodeids in roundup.hyperdb
-- added flush() to DevNull (sf bug #835365)
+- added flush() to DevNull (sf bug 835365)
 - fixed javascript for help window for only one checkbox case
 - Date +/- Interval now works, and Date - Date also works
 - handle socket timeout exception (thanks Marcus Priesch)
