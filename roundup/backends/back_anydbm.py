@@ -1,4 +1,4 @@
-#$Id: _anydbm.py,v 1.1 2001-07-23 07:15:57 richard Exp $
+#$Id: back_anydbm.py,v 1.1 2001-07-23 07:22:13 richard Exp $
 
 import anydbm, os, cPickle
 from roundup import hyperdb, date
@@ -162,4 +162,7 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.1  2001/07/23 07:15:57  richard
+#Moved the backends into the backends package. Anydbm hasn't been tested at all.
+#
 #
