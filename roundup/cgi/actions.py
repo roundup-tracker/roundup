@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.26 2004-05-06 02:03:42 richard Exp $
+#$Id: actions.py,v 1.27 2004-05-06 03:18:03 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -465,6 +465,7 @@ class EditItemAction(_EditAction):
         else:
             return None
         d.second = int(d.second)
+        return d
 
     def lastNodeActivity(self):
         cl = getattr(self.client.db, self.classname)
@@ -473,7 +474,6 @@ class EditItemAction(_EditAction):
         return activity
 
     def detectCollision(self, user_activity, node_activity):
-        print (user_activity, node_activity)
         if user_activity:
             return user_activity < node_activity
 

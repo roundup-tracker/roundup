@@ -16,6 +16,10 @@ Some highlights:
 - database exports now include full journals
 - IMAP support in the mail gateway
 
+Known issues:
+
+- the metakit import feature currently has a bug and should not be used
+
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
