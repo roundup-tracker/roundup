@@ -1,6 +1,15 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2001-08-?? - 0.2.3
+Features:
+ . Added the unit tests to the start of setup.py so they're run whenever
+   we do anything distutils'y.
+
+Fixed:
+ . One of the tests in test_date had the wrong expected result.
+
+
 2001-07-29 - 0.2.2
 Features:
  . Added implementation.txt to the doc directory. Contains implementation
