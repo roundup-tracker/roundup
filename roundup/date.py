@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.30 2002-09-23 07:09:15 richard Exp $
+# $Id: date.py,v 1.31 2002-09-23 07:27:23 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -215,11 +215,11 @@ class Date:
         return str
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
-            (((?P<y>\d{4}-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
+            ((?P<y>\d\d\d\d-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
             (?P<n>\.)?                                     # .
             (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
             (?P<o>.+)?                                     # offset
-            ''', re.VERBOSE), serialised_re=re.compile('''
+            ''', re.VERBOSE), serialised_re=re.compile(r'''
             (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)
             ''', re.VERBOSE)):
         ''' set the date to the value in spec
