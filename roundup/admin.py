@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.64 2004-04-02 05:58:43 richard Exp $
+# $Id: admin.py,v 1.65 2004-04-03 21:32:24 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -935,7 +935,7 @@ Command help:
 
     def do_commit(self, args):
         '''Usage: commit
-        Commit all changes made to the database.
+        Commit changes made to the database during an interactive session.
 
         The changes made during an interactive session are not
         automatically written to the database - they must be committed
