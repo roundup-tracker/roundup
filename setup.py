@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: setup.py,v 1.8 2001-07-29 09:43:46 richard Exp $
+# $Id: setup.py,v 1.9 2001-07-29 23:34:26 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -7,6 +7,10 @@ from distutils.util import get_platform
 from glob import glob
 import os
 from roundup.templatebuilder import makeHtmlBase
+
+print 'Running unit tests...'
+import test
+test.go()
 
 templates = 'classic', 'extended'
 packagelist = [ 'roundup', 'roundup.backends', 'roundup.templates' ]
@@ -21,7 +25,7 @@ for t in templates:
 
 
 setup ( name = "roundup", 
-        version = "0.2.2",
+        version = "0.2.3",
         description = "Roundup issue tracking system.",
         author = "Richard Jones",
         author_email = "richard@sourceforge.net",
@@ -32,6 +36,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/07/29 09:43:46  richard
+# Make sure that the htmlbase is up-to-date when we build a source dist.
+#
 # Revision 1.7  2001/07/29 08:37:58  richard
 # changes
 #
