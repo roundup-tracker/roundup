@@ -14,9 +14,19 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.1 2001-12-12 23:27:13 richard Exp $
+# $Id: ZRoundup.py,v 1.2 2001-12-12 23:33:58 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
+
+This frontend works by providing a thin layer that sits between Zope and the regular CGI
+interface of roundup, providing the web frontend with the minimum of effort.
+
+This means that the regular CGI interface does all authentication quite independently of
+Zope.
+
+It also means that any requests which specify :filter, :columns or :sort _must_ be done
+using a GET, so that this interface can re-parse the QUERY_STRING. Zope interprets the
+':' as a special character, and the special args are lost to it.
 '''
 from Globals import InitializeClass, HTMLFile
 from OFS.SimpleItem import Item
@@ -153,6 +163,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/12/12 23:27:13  richard
+# Added a Zope frontend for roundup.
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
