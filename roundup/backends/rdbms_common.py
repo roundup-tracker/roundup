@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.19 2004-07-20 23:27:02 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.20 2004-10-07 06:33:57 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -196,7 +196,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     # update this number when we need to make changes to the SQL structure
     # of the backen database
-    current_db_version = 3
+    current_db_version = 4
     def upgrade_db(self):
         ''' Update the SQL database to reflect changes in the backend code.
 
@@ -222,8 +222,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if version < 3:
             self.fix_version_2_tables()
 
+        if version < 4:
+            self.fix_version_3_tables()
+
         self.database_schema['version'] = self.current_db_version
         return 1
+
+    def fix_version_3_tables(self):
+        # drop the shorter VARCHAR OTK column and add a new TEXT one
+        for name in ('otk', 'session'):
+            self.sql('ALTER TABLE %ss DROP %s_value'%(name, name))
+            self.sql('ALTER TABLE %ss ADD %s_value TEXT'%(name, name))
 
     def fix_version_2_tables(self):
         '''Default (used by sqlite): NOOP'''
@@ -2210,6 +2219,10 @@ class Class(hyperdb.Class):
             s = ','.join([a for x in v])
             where.append('_%s.id in (%s)'%(cn, s))
             args = args + v
+
+        # sanity check: sorting *and* grouping on the same property?
+        if group[1] == sort[1]:
+            sort = (None, None)
 
         # "grouping" is just the first-order sorting in the SQL fetch
         orderby = []

@@ -122,13 +122,13 @@ class Database(rdbms_common.Database):
     def create_version_2_tables(self):
         # OTK store
         self.cursor.execute('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value VARCHAR(255), otk_time REAL)''')
+            otk_value TEXT, otk_time REAL)''')
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.cursor.execute('''CREATE TABLE sessions (
             session_key VARCHAR(255), session_time REAL,
-            session_value VARCHAR(255))''')
+            session_value TEXT)''')
         self.cursor.execute('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
 

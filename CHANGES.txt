@@ -13,6 +13,8 @@ Fixed:
 - mailgw can override the MAIL_DEFAULT_CLASS
 - handle Py2.3+ datetime objects as Date specs (sf bug 971300)
 - use row locking in MySQL newid() (sf bug 1034211)
+- add sanity check for sort and group on same property (sf bug 1033477)
+- extend OTK and session table value cols to TEXT (sf bug 1031271)
 
 
 2004-07-21 0.7.6

@@ -170,14 +170,14 @@ class Database(Database):
     def create_version_2_tables(self):
         # OTK store
         self.cursor.execute('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value VARCHAR(255), otk_time FLOAT(20))
+            otk_value TEXT, otk_time FLOAT(20))
             TYPE=%s'''%self.mysql_backend)
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.cursor.execute('''CREATE TABLE sessions (
             session_key VARCHAR(255), session_time FLOAT(20),
-            session_value VARCHAR(255)) TYPE=%s'''%self.mysql_backend)
+            session_value TEXT) TYPE=%s'''%self.mysql_backend)
         self.cursor.execute('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
 
@@ -687,6 +687,10 @@ class MysqlClass:
             s = ','.join([a for x in v])
             where.append('_%s.id in (%s)'%(cn, s))
             args = args + v
+
+        # sanity check: sorting *and* grouping on the same property?
+        if group[1] == sort[1]:
+            sort = (None, None)
 
         # "grouping" is just the first-order sorting in the SQL fetch
         orderby = []
