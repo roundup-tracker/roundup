@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.34 2001-10-20 11:58:48 richard Exp $
+# $Id: cgi_client.py,v 1.35 2001-10-21 00:17:54 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -156,6 +156,21 @@ class Client:
                 filterspec[key] = value.value
         return filterspec
 
+    def customization_widget(self):
+        ''' The customization widget is visible by default. The widget
+            visibility is remembered by show_customization.  Visibility
+            is not toggled if the action value is "Redisplay"
+        '''
+        if not self.form.has_key('show_customization'):
+            visible = 1
+        else:
+            visible = int(self.form['show_customization'].value)
+            if self.form.has_key('action'):
+                if self.form['action'].value != 'Redisplay':
+                    visible = self.form['action'].value == '+'
+            
+        return visible
+
     default_index_sort = ['-activity']
     default_index_group = ['priority']
     default_index_filter = []
@@ -182,7 +197,7 @@ class Client:
     # XXX deviates from spec - loses the '+' (that's a reserved character
     # in URLS
     def list(self, sort=None, group=None, filter=None, columns=None,
-            filterspec=None):
+            filterspec=None, show_customization=None):
         ''' call the template index with the args
 
             :sort    - sort by prop name, optionally preceeded with '-'
@@ -202,9 +217,12 @@ class Client:
         if filter is None: filter = self.index_arg(':filter')
         if columns is None: columns = self.index_arg(':columns')
         if filterspec is None: filterspec = self.index_filterspec()
+        if show_customization is None:
+            show_customization = self.customization_widget()
 
         htmltemplate.index(self, self.TEMPLATES, self.db, cn, filterspec,
-            filter, columns, sort, group)
+            filter, columns, sort, group,
+            show_customization=show_customization)
         self.pagefoot()
 
     def shownode(self, message=None):
@@ -681,8 +699,8 @@ class ExtendedClient(Client):
         if self.user not in (None, 'anonymous'):
             userid = self.db.user.lookup(self.user)
             user_info = '''
-<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
-<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">My Support</a> |
+<a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="support?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
 <a href="user%s">My Details</a> | <a href="logout">Logout</a>
 '''%(userid, userid, userid)
         else:
@@ -707,11 +725,11 @@ class ExtendedClient(Client):
 <td align=right valign=bottom>%s</td></tr>
 <tr class="location-bar">
 <td align=left>All
-<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
-<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
+<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
+<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
 | Unassigned
-<a href="issue?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
-<a href="support?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
+<a href="issue?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
+<a href="support?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
 %s
 %s</td>
 <td align=right>%s</td>
@@ -776,6 +794,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2001/10/20 11:58:48  richard
+# Catch errors in login - no username or password supplied.
+# Fixed editing of password (Password property type) thanks Roch'e Compaan.
+#
 # Revision 1.33  2001/10/17 00:18:41  richard
 # Manually constructing cookie headers now.
 #

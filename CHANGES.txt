@@ -4,6 +4,8 @@ are given with the most recent entry first.
 2001-10-?? - 0.3.0
 Feature:
  . Hyperdatabase sorts strings-that-look-like-numbers as numbers now.
+ . CGI interface view customisation section may now be hidden (patch from
+   Roch'e Compaan.)
  Admin Tool (roundup-admin):
   . Interactive mode for running multiple (independant at present) commands.
   . Tabular display of nodes.

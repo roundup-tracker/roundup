@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.28 2001-10-21 00:00:16 richard Exp $
+# $Id: htmltemplate.py,v 1.29 2001-10-21 00:17:56 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -312,7 +312,7 @@ class Checklist(Base):
         # get our current checkbox state
         if self.nodeid:
             # get the info from the node - make sure it's a list
-            if isinstance(propclass, hyperdb.Link:
+            if isinstance(propclass, hyperdb.Link):
                 value = [self.cl.get(self.nodeid, property)]
             else:
                 value = self.cl.get(self.nodeid, property)
@@ -462,6 +462,7 @@ def sortby(sort_name, columns, filter, sort, group, filterspec):
 
 def index(client, templates, db, classname, filterspec={}, filter=[],
         columns=[], sort=[], group=[], show_display_form=1, nodeids=None,
+        show_customization=1,
         col_re=re.compile(r'<property\s+name="([^>]+)">')):
     globals = {
         'plain': Plain(db, templates, classname, filterspec=filterspec),
@@ -498,7 +499,7 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         replace = IndexTemplateReplace(globals, locals(), filter)
         w(replace.go(template))
         w('<tr class="location-bar"><td width="1%%">&nbsp;</td>')
-        w('<td><input type="submit" value="Redisplay"></td></tr>')
+        w('<td><input type="submit" name="action" value="Redisplay"></td></tr>')
         w('</table>')
 
     # If the filters aren't being displayed, then hide their current
@@ -527,6 +528,93 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
             if name in columns:
                 l.append(name)
         columns = l
+
+    # now add in the filter/columns/group/etc config table form
+    w('<input type="hidden" name="show_customization" value="%s">' %
+        show_customization )
+    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
+    names = []
+    for name in cl.getprops().keys():
+        if name in all_filters or name in all_columns:
+            names.append(name)
+    w('<tr class="location-bar">')
+    if show_customization:
+        action = '-'
+    else:
+        action = '+'
+        # hide the values for filters, columns and grouping in the form
+        # if the customization widget is not visible
+        for name in names:
+            if all_filters and name in filter:
+                w('<input type="hidden" name=":filter" value="%s">' % name)
+            if all_columns and name in columns:
+                w('<input type="hidden" name=":columns" value="%s">' % name)
+            if all_columns and name in group:
+                w('<input type="hidden" name=":group" value="%s">' % name)
+
+    if show_display_form:
+        # TODO: The widget style can go into the stylesheet
+        w('<th align="left" colspan=%s>'
+          '<input style="height : 1em; width : 1em; font-size: 12pt" type="submit" name="action" value="%s">&nbsp;View '
+          'customisation...</th></tr>\n'%(len(names)+1, action))
+        if show_customization:
+            w('<tr class="location-bar"><th>&nbsp;</th>')
+            for name in names:
+                w('<th>%s</th>'%name.capitalize())
+            w('</tr>\n')
+
+            # Filter
+            if all_filters:
+                w('<tr><th width="1%" align=right class="location-bar">'
+                  'Filters</th>\n')
+                for name in names:
+                    if name not in all_filters:
+                        w('<td>&nbsp;</td>')
+                        continue
+                    if name in filter: checked=' checked'
+                    else: checked=''
+                    w('<td align=middle>\n')
+                    w(' <input type="checkbox" name=":filter" value="%s" '
+                      '%s></td>\n'%(name, checked))
+                w('</tr>\n')
+
+            # Columns
+            if all_columns:
+                w('<tr><th width="1%" align=right class="location-bar">'
+                  'Columns</th>\n')
+                for name in names:
+                    if name not in all_columns:
+                        w('<td>&nbsp;</td>')
+                        continue
+                    if name in columns: checked=' checked'
+                    else: checked=''
+                    w('<td align=middle>\n')
+                    w(' <input type="checkbox" name=":columns" value="%s"'
+                      '%s></td>\n'%(name, checked))
+                w('</tr>\n')
+
+                # Grouping
+                w('<tr><th width="1%" align=right class="location-bar">'
+                  'Grouping</th>\n')
+                for name in names:
+                    prop = properties[name]
+                    if name not in all_columns:
+                        w('<td>&nbsp;</td>')
+                        continue
+                    if name in group: checked=' checked'
+                    else: checked=''
+                    w('<td align=middle>\n')
+                    w(' <input type="checkbox" name=":group" value="%s"'
+                      '%s></td>\n'%(name, checked))
+                w('</tr>\n')
+
+            w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
+            w('<td colspan="%s">'%len(names))
+            w('<input type="submit" name="action" value="Redisplay"></td>')
+            w('</tr>\n')
+
+        w('</table>\n')
+        w('</form>\n')
 
     # now display the index section
     w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
@@ -595,72 +683,6 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         w(replace.go(template))
 
     w('</table>')
-
-    if not show_display_form:
-        return
-
-    # now add in the filter/columns/group/etc config table form
-    w('<p>')
-    w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
-    names = []
-    for name in cl.getprops().keys():
-        if name in all_filters or name in all_columns:
-            names.append(name)
-    w('<tr class="location-bar">')
-    w('<th align="left" colspan=%s>View customisation...</th></tr>\n'%
-        (len(names)+1))
-    w('<tr class="location-bar"><th>&nbsp;</th>')
-    for name in names:
-        w('<th>%s</th>'%name.capitalize())
-    w('</tr>\n')
-
-    # filter
-    if all_filters:
-        w('<tr><th width="1%" align=right class="location-bar">Filters</th>\n')
-        for name in names:
-            if name not in all_filters:
-                w('<td>&nbsp;</td>')
-                continue
-            if name in filter: checked=' checked'
-            else: checked=''
-            w('<td align=middle>\n')
-            w(' <input type="checkbox" name=":filter" value="%s" %s></td>\n'%(
-                name, checked))
-        w('</tr>\n')
-
-    # columns
-    if all_columns:
-        w('<tr><th width="1%" align=right class="location-bar">Columns</th>\n')
-        for name in names:
-            if name not in all_columns:
-                w('<td>&nbsp;</td>')
-                continue
-            if name in columns: checked=' checked'
-            else: checked=''
-            w('<td align=middle>\n')
-            w(' <input type="checkbox" name=":columns" value="%s" %s></td>\n'%(
-                name, checked))
-        w('</tr>\n')
-
-        # group
-        w('<tr><th width="1%" align=right class="location-bar">Grouping</th>\n')
-        for name in names:
-            prop = properties[name]
-            if name not in all_columns:
-                w('<td>&nbsp;</td>')
-                continue
-            if name in group: checked=' checked'
-            else: checked=''
-            w('<td align=middle>\n')
-            w(' <input type="checkbox" name=":group" value="%s" %s></td>\n'%(
-                name, checked))
-        w('</tr>\n')
-
-    w('<tr class="location-bar"><td width="1%">&nbsp;</td>')
-    w('<td colspan="%s">'%len(names))
-    w('<input type="submit" value="Redisplay"></td></tr>\n')
-    w('</table>\n')
-    w('</form>\n')
 
 
 #
@@ -768,6 +790,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2001/10/21 00:00:16  richard
+# Fixed Checklist function - wasn't always working on a list.
+#
 # Revision 1.27  2001/10/20 12:13:44  richard
 # Fixed grouping of non-str properties (thanks Roch'e Compaan)
 #
