@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.206 2004-11-22 07:10:24 a1s Exp $
+# $Id: client.py,v 1.207 2004-11-22 09:12:02 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -125,6 +125,9 @@ class Client:
         self.cookie_path = urlparse.urlparse(self.base)[2]
         self.cookie_name = 'roundup_session_' + re.sub('[^a-zA-Z]', '',
             self.instance.config.TRACKER_NAME)
+        # cookies to set in http responce
+        # {(path, name): (value, expire)}
+        self.add_cookies = {}
 
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
@@ -316,8 +319,12 @@ class Client:
         self.charset = self.STORAGE_CHARSET
 
         # look for client charset
+        charset_parameter = 0
         if self.form.has_key('@charset'):
             charset = self.form['@charset'].value
+            if charset.lower() == "none":
+                charset = ""
+            charset_parameter = 1
         elif self.cookie.has_key('roundup_charset'):
             charset = self.cookie['roundup_charset'].value
         else:
@@ -329,8 +336,15 @@ class Client:
             except LookupError:
                 self.error_message.append(self._('Unrecognized charset: %r')
                     % charset)
+                charset_parameter = 0
             else:
                 self.charset = charset.lower()
+        # If we've got a character set in request parameters,
+        # set the browser cookie to keep the preference.
+        # This is done after codecs.lookup to make sure
+        # that we aren't keeping a wrong value.
+        if charset_parameter:
+            self.add_cookie('roundup_charset', charset)
 
         # if client charset is different from the storage charset,
         # recode form fields
@@ -750,17 +764,6 @@ class Client:
             # at this point, we are sure about Content-Type
             self.additional_headers['Content-Type'] = \
                 'text/html; charset=%s' % self.charset
-            # set the charset cookie
-            # Note: we want to preserve the session cookie
-            #   set by LoginAction or ConfRegoAction.
-            #   i think that's ok: user does not perform
-            #   two actions (login and charset toggle) simultaneously.
-            if not self.additional_headers.has_key('Set-Cookie'):
-                # the charset is remembered for a year
-                expire = Cookie._getdate(86400*365)
-                self.additional_headers['Set-Cookie'] = \
-                    'roundup_charset=%s; expires=%s; Path=%s;' % (
-                        self.charset, expire, self.cookie_path)
             self.header()
 
         if self.env['REQUEST_METHOD'] == 'HEAD':
@@ -796,10 +799,38 @@ class Client:
         self.request.send_response(response)
         for entry in headers.items():
             self.request.send_header(*entry)
+        for ((path, name), (value, expire)) in self.add_cookies.items():
+            self.request.send_header('Set-Cookie',
+                "%s=%s; expires=%s; Path=%s;"
+                % (name, value, Cookie._getdate(expire), path))
         self.request.end_headers()
         self.headers_done = 1
         if self.debug:
             self.headers_sent = headers
+
+    def add_cookie(self, name, value, expire=86400*365, path=None):
+        """Set a cookie value to be sent in HTTP headers
+
+        Parameters:
+            name:
+                cookie name
+            value:
+                cookie value
+            expire:
+                cookie expiration time (seconds).
+                If value is empty (meaning "delete cookie"),
+                expiration time is forced in the past
+                and this argument is ignored.
+                If omitted, the cookie will be kept for a year.
+            path:
+                cookie path (optional)
+
+        """
+        if path is None:
+            path = self.cookie_path
+        if not value:
+            expire = -1
+        self.add_cookies[(path, name)] = (value, expire)
 
     def set_cookie(self, user):
         """Set up a session cookie for the user.
@@ -827,13 +858,8 @@ class Client:
         sessions.set(self.session, user=user)
         self.db.commit()
 
-        # expire us in a long, long time
-        expire = Cookie._getdate(86400*365)
-
-        # generate the cookie path - make sure it has a trailing '/'
-        self.additional_headers['Set-Cookie'] = \
-          '%s=%s; expires=%s; Path=%s;'%(self.cookie_name, self.session,
-            expire, self.cookie_path)
+        # add session cookie
+        self.add_cookie(self.cookie_name, self.session)
 
     def make_user_anonymous(self):
         ''' Make us anonymous
