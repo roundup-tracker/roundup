@@ -66,6 +66,8 @@ Fixed:
  . build htmlbase if tests are run using CVS checkout
  . #565979 ] code error in hyperdb.Class.find
  . #565996 ] The "Attach a File to this Issue" fails
+ . #564271 ] find() and new properties
+
 
 2002-03-25 - 0.4.1
 Feature:
