@@ -191,7 +191,10 @@ class HTMLDatabase:
         self.client = client
         self.config = client.db.config
     def __getattr__(self, attr):
-        self.client.db.getclass(attr)
+        try:
+            self.client.db.getclass(attr)
+        except KeyError:
+            raise AttributeError, attr
         return HTMLClass(self.client, attr)
     def classes(self):
         l = self.client.db.classes.keys()
