@@ -16,14 +16,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.85 2004-11-09 23:12:11 richard Exp $
+# $Id: admin.py,v 1.85.2.1 2005-02-15 00:22:23 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
 __docformat__ = 'restructuredtext'
 
 import sys, os, getpass, getopt, re, UserDict, shutil, rfc822
-from roundup import date, hyperdb, roundupdb, init, password, token, rcsv
+from roundup import date, hyperdb, roundupdb, init, password, token, csv
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import CoreConfig
@@ -1037,8 +1037,6 @@ Erase it? Y/N: """))
         # grab the directory to export to
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
-        if rcsv.error:
-            raise UsageError, _(rcsv.error)
 
         dir = args[-1]
 
@@ -1048,12 +1046,15 @@ Erase it? Y/N: """))
         else:
             classes = self.db.classes.keys()
 
+        class colon_separated(csv.excel):
+            delimiter = ':'
+
         # do all the classes specified
         for classname in classes:
             cl = self.get_class(classname)
 
             f = open(os.path.join(dir, classname+'.csv'), 'w')
-            writer = rcsv.writer(f, rcsv.colon_separated)
+            writer = csv.writer(f, colon_separated)
 
             properties = cl.getprops()
             propnames = cl.export_propnames()
@@ -1072,7 +1073,7 @@ Erase it? Y/N: """))
 
             # export the journals
             jf = open(os.path.join(dir, classname+'-journals.csv'), 'w')
-            journals = rcsv.writer(jf, rcsv.colon_separated)
+            journals = csv.writer(jf, colon_separated)
             map(journals.writerow, cl.export_journals())
             jf.close()
         return 0
@@ -1099,12 +1100,13 @@ Erase it? Y/N: """))
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
-        if rcsv.error:
-            raise UsageError, _(rcsv.error)
         from roundup import hyperdb
 
         # directory to import from
         dir = args[0]
+
+        class colon_separated(csv.excel):
+            delimiter = ':'
 
         # import all the files
         for file in os.listdir(dir):
@@ -1117,7 +1119,7 @@ Erase it? Y/N: """))
 
             # ensure that the properties and the CSV file headings match
             f = open(os.path.join(dir, file), 'rU')
-            reader = rcsv.reader(f, rcsv.colon_separated)
+            reader = csv.reader(f, csv.colon_separated)
             file_props = None
             maxid = 1
             # loop through the file and create a node for each entry
@@ -1135,7 +1137,7 @@ Erase it? Y/N: """))
 
             # import the journals
             f = open(os.path.join(args[0], classname + '-journals.csv'), 'rU')
-            reader = rcsv.reader(f, rcsv.colon_separated)
+            reader = csv.reader(f, csv.colon_separated)
             cl.import_journals(reader)
             f.close()
 
