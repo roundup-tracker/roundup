@@ -452,8 +452,6 @@ class Class:    # no, I'm not going to subclass the existing!
             if not row.creator:
                 row.creator = self.db.curuserid
             
-        #XXX
-        print "back_metakit.Class.set - dirty"
         self.db.dirty = 1
         if isnew:
             self.db.addjournal(self.classname, nodeid, _CREATE, {})
@@ -812,8 +810,6 @@ class Class:    # no, I'm not going to subclass the existing!
             return view.ordered(1)
         # need to create or restructure the mk view
         # id comes first, so MK will order it for us
-        #XXX
-        print "back_metakit.Class.__getview - dirty!"
         self.db.dirty = 1
         s = ["%s[id:I" % self.classname]
         for nm, rutyp in self.ruprops.items():
