@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.25 2003-10-25 22:53:26 richard Exp $ 
+# $Id: test_dates.py,v 1.26 2003-11-02 09:27:50 richard Exp $ 
 
 import unittest, time
 
@@ -176,6 +176,71 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval(str(then))), '+ 2d')
         then = now - Interval('2d')
         ae(str(Interval(str(then))), '- 2d')
+
+    def testIntervalAddMonthBoundary(self):
+        # force the transition over a month boundary
+        now = Date('2003-10-30.00:00:00')
+        then = now + Interval('2d')
+        self.assertEqual(str(then), '2003-11-01.00:00:00')
+        now = Date('2004-02-28.00:00:00')
+        then = now + Interval('1d')
+        self.assertEqual(str(then), '2004-02-29.00:00:00')
+        now = Date('2003-02-28.00:00:00')
+        then = now + Interval('1d')
+        self.assertEqual(str(then), '2003-03-01.00:00:00')
+        now = Date('2003-01-01.00:00:00')
+        then = now + Interval('59d')
+        self.assertEqual(str(then), '2003-03-01.00:00:00')
+        now = Date('2004-01-01.00:00:00')
+        then = now + Interval('59d')
+        self.assertEqual(str(then), '2004-02-29.00:00:00')
+
+    def testIntervalSubtractMonthBoundary(self):
+        # force the transition over a month boundary
+        now = Date('2003-11-01.00:00:00')
+        then = now - Interval('2d')
+        self.assertEqual(str(then), '2003-10-30.00:00:00')
+        now = Date('2004-02-29.00:00:00')
+        then = now - Interval('1d')
+        self.assertEqual(str(then), '2004-02-28.00:00:00')
+        now = Date('2003-03-01.00:00:00')
+        then = now - Interval('1d')
+        self.assertEqual(str(then), '2003-02-08.00:00:00')
+        now = Date('2003-03-01.00:00:00')
+        then = now - Interval('59d')
+        self.assertEqual(str(then), '2003-01-01.00:00:00')
+        now = Date('2004-02-29.00:00:00')
+        then = now - Interval('59d')
+        self.assertEqual(str(then), '2004-01-01.00:00:00')
+
+    def testIntervalAddYearBoundary(self):
+        # force the transition over a year boundary
+        now = Date('2003-12-30.00:00:00')
+        then = now + Interval('2d')
+        self.assertEqual(str(then), '2004-01-01.00:00:00')
+        now = Date('2003-01-01.00:00:00')
+        then = now + Interval('364d')
+        self.assertEqual(str(then), '2004-01-01.00:00:00')
+        now = Date('2004-01-01.00:00:00')
+        then = now + Interval('365d')
+        self.assertEqual(str(then), '2005-01-01.00:00:00')
+
+    def testIntervalSubtractYearBoundary(self):
+        # force the transition over a year boundary
+        now = Date('2003-01-01.00:00:00')
+        then = now - Interval('2d')
+        self.assertEqual(str(then), '2002-12-30.00:00:00')
+        now = Date('2004-02-01.00:00:00')
+        then = now - Interval('365d')
+        self.assertEqual(str(then), '2003-02-01.00:00:00')
+        now = Date('2005-02-01.00:00:00')
+        then = now - Interval('365d')
+        self.assertEqual(str(then), '2004-02-02.00:00:00')
+
+    def testDateSubtract(self):
+        # force the transition over a year boundary
+        i = Date('2003-01-01.00:00:00') - Date('2002-01-01.00:00:00')
+        self.assertEqual(str(i).strip(), '1y')
 
     def testIntervalAdd(self):
         ae = self.assertEqual
