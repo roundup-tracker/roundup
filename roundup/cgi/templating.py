@@ -206,7 +206,11 @@ def lookupIds(db, prop, ids, num_re=re.compile('-?\d+')):
         if num_re.match(entry):
             l.append(entry)
         else:
-            l.append(cl.lookup(entry))
+            try:
+                l.append(cl.lookup(entry))
+            except KeyError:
+                # ignore invalid keys
+                pass
     return l
 
 class HTMLPermissions:

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.43 $
+:Version: $Revision: 1.44 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -473,7 +473,7 @@ The basic processing of a web request proceeds as follows:
 1. figure out who we are, defaulting to the "anonymous" user
 2. figure out what the request is for - we call this the "context"
 3. handle any requested action (item edit, search, ...)
-4. render a template, resulting in HTML output
+4. render the template requested by the context, resulting in HTML output
 
 In some situations, exceptions occur:
 
@@ -632,11 +632,12 @@ Most customisation of the web view can be done by modifying the templates in
 the tracker **html** directory. There are several types of files in there:
 
 **page**
-  This template defines the overall look of your tracker. When you
+  This template usually defines the overall look of your tracker. When you
   view an issue, it appears inside this template. When you view an index, it
-  also appears inside this template. It will have a ``tal:content`` or
-  ``tal:replace`` command with the expression ``structure content`` which
-  will show the issue, list of issues or whatever.
+  also appears inside this template. This template defines a macro which is
+  used by almost all other templates as a wrapper for their content, using its
+  "content" slot. It will also define the "head_title" and "body_title" slots
+  to allow setting of the page title.
 **home**
   the default page displayed when no other page is indicated by the user
 **home.classlist**
@@ -670,8 +671,8 @@ How the templates work
 ----------------------
 
 Roundup's templates consist of special attributes on your template tags. These
-attributes form the Template Attribute Language, or TAL. The commands are:
-
+attributes form the Template Attribute Language, or TAL. The basic tag
+commands are:
 
 **tal:define="variable expression; variable expression; ..."**
    Define a new variable that is local to this tag and its contents. For
@@ -788,6 +789,51 @@ three forms:
    equivalent to ``item/status/checklist``, assuming that ``checklist`` is
    a method.
 
+Tag macros, which are used in forming the basic structure of your pages,
+are handled with the following commands:
+
+**metal:define-macro="macro name"**
+  Define that the tag and its contents are now a macro that may be inserted
+  into other templates using the *use-macro* command. For example::
+
+    <html metal:define-macro="page">
+     ...
+    </html>
+
+  defines a macro called "page" using the ``<html>`` tag and its contents.
+  Once defined, macros are stored on the template they're defined on in the
+  ``macros`` attribute. You can access them later on through the ``templates``
+  variable, eg. the most common ``templates/page/macros/page`` to access the
+  "page" macro of the "page" template.
+
+**metal:use-macro="path expression"**
+  Use a macro, which is identified by the path expression (see above). This
+  will replace the current tag with the identified macro contents. For
+  example::
+
+   <tal:block metal:use-macro="templates/page/macros/page">
+    ...
+   </tal:block>
+
+   will replace the tag and its contents with the "page" macro of the "page"
+   template.
+
+**metal:define-slot="slot name"** and **metal:fill-slot="slot name"**
+  To define *dynamic* parts of the macro, you define "slots" which may be 
+  filled when the macro is used with a *use-macro* command. For example, the
+  ``templates/page/macros/page`` macro defines a slot like so::
+
+    <title metal:define-slot="head_title">title goes here</title>
+
+  In your *use-macro* command, you may now use a *fill-slot* command like
+  this::
+
+    <title metal:fill-slot="head_title">My Title</title>
+
+  where the tag that fills the slot completely replaces the one defined as
+  the slot in the macro.
+
+
 Information available to templates
 ----------------------------------
 
@@ -812,6 +858,11 @@ The following variables are available to templates.
   The current tracker
 **db**
   The current database, through which db.config may be reached.
+**templates**
+  Access to all the tracker templates by name. Used mainly in *use-macro*
+  commands.
+**utils**
+  This variable makes available some utility functions like batching.
 **nothing**
   This is a special variable - if an expression evaluates to this, then the
   tag (in the case of a tal:replace), its contents (in the case of
@@ -834,9 +885,6 @@ The following variables are available to templates.
   would result in::
 
     <span>Hello, World!</span>
-
-**utils**
-  This variable makes available some utility functions like batching.
 
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
@@ -1078,9 +1126,34 @@ want access to the "user" class, for example, you would use::
 
 The access results in a `hyperdb class wrapper`_.
 
+The templates variable
+~~~~~~~~~~~~~~~~~~~~~~
 
-The util variable
-~~~~~~~~~~~~~~~~~
+Note: this is implemented by the roundup.cgi.templating.Templates class.
+
+This variable doesn't have any useful methods defined. It supports being
+used in expressions to access the templates, and subsequently the template
+macros. You may access the templates using the following path expression::
+
+   templates/name
+
+or the python expression::
+
+   templates[name]
+
+where "name" is the name of the template you wish to access. The template you
+get access to has one useful attribute, "macros". To access a specific macro
+(called "macro_name"), use the path expression::
+
+   templates/name/macros/macro_name
+
+or the python expression::
+
+   templates[name].macros[macro_name]
+
+
+The utils variable
+~~~~~~~~~~~~~~~~~~
 
 Note: this is implemented by the roundup.cgi.templating.TemplatingUtils class.
 
@@ -1546,13 +1619,22 @@ The link was for the item template for the category object. This translates
 into the system looking for a file called ``category.item`` in the ``html``
 tracker directory. This is the file that we are going to write now.
 
-First we add an id tag in a comment which doesn't affect the outcome
-of the code at all but is essential for managing the changes to this
-file. It is useful for debugging however, if you load a page in a
+First we add an info tag in a comment which doesn't affect the outcome
+of the code at all but is useful for debugging. If you load a page in a
 browser and look at the page source, you can see which sections come
 from which files by looking for these comments::
 
-    <!-- dollarId: category.item,v 1.3 2002/05/22 00:32:34 me Exp dollar-->
+    <!-- category.item -->
+
+Next we need to add in the METAL macro stuff so we get the normal page
+trappings::
+
+ <tal:block metal:use-macro="templates/page/macros/page">
+  <title metal:fill-slot="head_title">Category editing</title>
+  <td class="page-header-top" metal:fill-slot="body_title">
+   <h2>Category editing</h2>
+  </td>
+  <td class="content" metal:fill-slot="content">
 
 Next we need to setup up a standard HTML form, which is the whole
 purpose of this file. We link to some handy javascript which sends the form
@@ -1587,7 +1669,7 @@ will be created with that name::
      <td tal:content="structure python:context.name.field(size=60)">name</td>
     </tr>
 
-Finally a submit button so that the user can submit the new category::
+Then a submit button so that the user can submit the new category::
 
     <tr>
      <td>&nbsp;</td>
@@ -1596,31 +1678,43 @@ Finally a submit button so that the user can submit the new category::
      </td>
     </tr>
 
+Finally we finish off the tags we used at the start to do the METAL stuff::
+
+  </td>
+ </tal:block>
+
 So putting it all together, and closing the table and form we get::
 
- <!-- dollarId: category.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
+ <!-- category.item -->
+ <tal:block metal:use-macro="templates/page/macros/page">
+  <title metal:fill-slot="head_title">Category editing</title>
+  <td class="page-header-top" metal:fill-slot="body_title">
+   <h2>Category editing</h2>
+  </td>
+  <td class="content" metal:fill-slot="content">
+   <form method="POST" onSubmit="return submit_once()"
+         enctype="multipart/form-data">
 
- <form method="POST" onSubmit="return submit_once()"
-       enctype="multipart/form-data">
+    <input type="hidden" name=":required" value="name">
 
-  <input type="hidden" name=":required" value="name">
+    <table class="form">
+     <tr><th class="header" colspan=2>Category</th></tr>
 
-  <table class="form">
-   <tr><th class="header" colspan=2>Category</th></tr>
+     <tr>
+      <th nowrap>Name</th>
+      <td tal:content="structure python:context.name.field(size=60)">name</td>
+     </tr>
 
-   <tr>
-    <th nowrap>Name</th>
-    <td tal:content="structure python:context.name.field(size=60)">name</td>
-   </tr>
-
-   <tr>
-    <td>&nbsp;</td>
-    <td colspan=3 tal:content="structure context/submit">
-     submit button will go here
-    </td>
-   </tr>
-  </table>
- </form>
+     <tr>
+      <td>&nbsp;</td>
+      <td colspan=3 tal:content="structure context/submit">
+       submit button will go here
+      </td>
+     </tr>
+    </table>
+   </form>
+  </td>
+ </tal:block>
 
 This is quite a lot to just ask the user one simple question, but
 there is a lot of setup for basically one line (the form line) to do
@@ -1897,7 +1991,6 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
    The next page has the usual issue entry information, with the addition of
    the following form fragments::
-
 
     <form method="POST" onSubmit="return submit_once()"
           enctype="multipart/form-data" tal:condition="context/is_edit_ok"
