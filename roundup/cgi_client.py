@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.50 2001-11-05 23:45:40 richard Exp $
+# $Id: cgi_client.py,v 1.51 2001-11-06 22:00:34 jhermann Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -61,7 +61,11 @@ class Client:
 
         self.form = cgi.FieldStorage(environ=env)
         self.headers_done = 0
-        self.debug = 0
+        try:
+            self.debug = int(env.get("ROUNDUP_DEBUG", 0))
+        except ValueError:
+            # someone gave us a non-int debug level, turn it off
+            self.debug = 0
 
     def getuid(self):
         return self.db.user.lookup(self.user)
@@ -927,6 +931,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.50  2001/11/05 23:45:40  richard
+# Fixed newuser_action so it sets the cookie with the unencrypted password.
+# Also made it present nicer error messages (not tracebacks).
+#
 # Revision 1.49  2001/11/04 03:07:12  richard
 # Fixed various cookie-related bugs:
 #  . bug #477685 ] base64.decodestring breaks
