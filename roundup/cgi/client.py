@@ -1,4 +1,8 @@
-# $Id: client.py,v 1.65.2.6 2003-03-19 02:50:12 richard Exp $
+<<<<<<< client.py
+# $Id: client.py,v 1.65.2.7 2003-06-10 22:59:22 richard Exp $
+=======
+# $Id: client.py,v 1.65.2.7 2003-06-10 22:59:22 richard Exp $
+>>>>>>> 1.119
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -46,6 +50,13 @@ def initialiseSecurity(security):
     p = security.addPermission(name="Web Roles",
         description="User may manipulate user Roles through the web")
     security.addPermissionToRole('Admin', p)
+
+def clean_message(match, ok={'a':1,'i':1,'b':1,'br':1}):
+    ''' Strip all non <a>,<i>,<b> and <br> tags from a string
+    '''
+    if ok.has_key(match.group(2)):
+        return match.group(1)
+    return '&lt;%s&gt;'%match.group(2)
 
 class Client:
     ''' Instantiate to handle one CGI request.
@@ -249,7 +260,8 @@ class Client:
         # reopen the database as the correct user
         self.opendb(self.user)
 
-    def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
+    def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)'),
+            mc=re.compile(r'(</?(.*?)>)')):
         ''' Determine the context of this page from the URL:
 
             The URL path after the instance identifier is examined. The path
@@ -331,9 +343,11 @@ class Client:
 
         # see if we were passed in a message
         if self.form.has_key(':ok_message'):
-            self.ok_message.append(self.form[':ok_message'].value)
+            msg = mc.sub(clean_message, self.form[':ok_message'].value)
+            self.ok_message.append(msg)
         if self.form.has_key(':error_message'):
-            self.error_message.append(self.form[':error_message'].value)
+            msg = mc.sub(clean_message, self.form[':error_message'].value)
+            self.error_message.append(msg)
 
     def serve_file(self, designator, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Serve the file from the content property of the designated item.
