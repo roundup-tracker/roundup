@@ -20,7 +20,7 @@ try:
     except AttributeError:
         # fake it all up using the Object-Craft CSV module
         class excel:
-            pass
+            delimiter = ':' 
         if hasattr(csv, 'parser'):
             error = ''
             def _reader(fileobj, dialect=excel):
@@ -54,7 +54,7 @@ try:
 
 except ImportError:
     class excel:
-        pass
+        delimiter = ':' 
        
 class colon_separated(excel):
     delimiter = ':' 
