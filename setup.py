@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.49 2003-04-19 05:03:54 richard Exp $
+# $Id: setup.py,v 1.50 2003-04-25 02:09:20 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -77,10 +77,21 @@ class build_scripts_create(build_scripts):
 
             module = os.path.splitext(os.path.basename(script))[0]
             module = string.translate(module, to_module)
+            cmdopt=self.distribution.command_options
+            if cmdopt['install'].has_key('prefix'):
+                prefix = cmdopt['install']['prefix'][1]
+                version = '%d.%d'%sys.version_info[:2]
+                prefix = '''
+import sys
+sys.path.insert(1, "%s/lib/python%s/site-packages")
+'''%(prefix, version)
+            else:
+                prefix = ''
             script_vars = {
                 'python': os.path.normpath(sys.executable),
                 'package': self.package_name,
                 'module': module,
+                'prefix': prefix,
             }
 
             self.announce("creating %s" % outfile)
@@ -93,7 +104,7 @@ class build_scripts_create(build_scripts):
                         'if     "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
                         % script_vars)
                 else:
-                    file.write('#! %(python)s -O\n'
+                    file.write('#! %(python)s -O\n%(prefix)s'
                         'from %(package)s.scripts.%(module)s import run\n'
                         'run()\n'
                         % script_vars)
