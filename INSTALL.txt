@@ -91,7 +91,8 @@ Stand-alone:
  1. Edit roundup-server at the top - ROUNDUP_INSTANCE_HOMES needs to know
     about your instance.
  2. "roundup-server [hostname port]"   (hostname may be "")
- 3. Load up the page "/" using the port number you set.
+ 3. Load up the page "/<instance name>/" using the port number you set and
+    where instance name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
 
 Apache:
  1. Make sure roundup.cgi is executable. Edit it at the top -
@@ -107,6 +108,7 @@ RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=
 ------8<------- snip here ------8<-------
    note: the RewriteRule must be on one line - no breaks
  4. Re-start your apache to re-load the config
- 5. Load up the page "/roundup/roundup.cgi/"
+ 5. Load up the page "/roundup/roundup.cgi/<instance name>/" where instance
+    name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
 
 
