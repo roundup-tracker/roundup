@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.40 2003-02-28 03:33:46 richard Exp $
+# $Id: admin.py,v 1.41 2003-03-06 06:06:49 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -445,7 +445,8 @@ Command help:
 
         This command sets the properties to the values for all designators
         given. If the value is missing (ie. "property=") then the property is
-        un-set.
+        un-set. If the property is a multilink, you specify the linked ids
+        for the multilink as comma-separated numbers (ie "1,2,3").
         '''
         if len(args) < 2:
             raise UsageError, _('Not enough arguments supplied')
