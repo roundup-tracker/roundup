@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.77 2004-12-08 01:24:41 richard Exp $
+# $Id: setup.py,v 1.77.2.1 2005-01-03 03:17:48 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -309,13 +309,13 @@ def main():
 
     # perform the setup action
     from roundup import __version__
-    setup(
-        name = "roundup",
-        version = __version__,
-        description = "A simple-to-use and -install issue-tracking system"
+    setup_args = {
+        'name': "roundup",
+        'version': __version__,
+        'description': "A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-        long_description =
+        'long_description': 
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
@@ -339,13 +339,12 @@ Some highlights:
 - database exports now include full journals
 - IMAP support in the mail gateway
 ''',
-        author = "Richard Jones",
-        author_email = "richard@users.sourceforge.net",
-        url = 'http://roundup.sourceforge.net/',
-        download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
-        packages = packagelist,
-        py_modules = py_modules,
-        classifiers = [
+        'author': "Richard Jones",
+        'author_email': "richard@users.sourceforge.net",
+        'url': 'http://roundup.sourceforge.net/',
+        'download_url': 'http://sourceforge.net/project/showfiles.php?group_id=31577',
+        'packages': packagelist,
+        'classifiers': [
             'Development Status :: 4 - Beta',
             'Environment :: Console',
             'Environment :: Web Environment',
@@ -363,15 +362,19 @@ Some highlights:
         ],
 
         # Override certain command classes with our own ones
-        cmdclass = {
+        'cmdclass': {
             'build_scripts': build_scripts_roundup,
             'build_py': build_py_roundup,
             'build': build_roundup,
         },
-        scripts = roundup_scripts,
+        'scripts': roundup_scripts,
 
-        data_files =  installdatafiles
-    )
+        'data_files':  installdatafiles
+    }
+    if sys.version_info[:2] > (2, 2):
+       setup_args['py_modules'] = py_modules
+
+    setup(**setup_args)
 
 if __name__ == '__main__':
     main()
