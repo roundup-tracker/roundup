@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176.2.5 2004-10-07 23:14:23 richard Exp $
+# $Id: client.py,v 1.176.2.6 2004-10-26 07:59:28 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -506,7 +506,7 @@ class Client:
         self.additional_headers['Content-Type'] = mime_type
         self.additional_headers['Content-Length'] = len(content)
         lmt = rfc822.formatdate(lmt)
-        self.additional_headers['Last-Modifed'] = lmt
+        self.additional_headers['Last-Modified'] = lmt
         self.write(content)
 
     def renderContext(self):
