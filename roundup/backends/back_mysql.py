@@ -559,8 +559,9 @@ class MysqlClass:
                 v = ['%%'+self.db.sql_stringquote(s)+'%%' for s in v]
 
                 # now add to the where clause
-                where.append(' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s)
-                    for s in v]))
+                where.append('('
+                    +' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
+                    +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):
                 if isinstance(v, type([])):
@@ -576,9 +577,10 @@ class MysqlClass:
                     if d:
                         v = d.keys()
                         s = ','.join([a for x in v])
-                        where.append('(_%s._%s in (%s))'%(cn, k, s))
+                        l.append('(_%s._%s in (%s))'%(cn, k, s))
                         args = args + v
-                    where.append(' or '.join(l))
+                    if l:
+                        where.append('(' + ' or '.join(l) +')')
                 else:
                     if v in ('-1', None):
                         v = None
