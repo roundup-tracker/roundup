@@ -10,8 +10,7 @@ Feature:
  . Added CGI configuration via env vars (see roundup.cgi for details)
  . "roundup.cgi" is now installed to "<python-prefix>/share/roundup/cgi-bin"
  . roundup-admin now accepts abbreviated commands (eg. l = li = lis = list)
- . roundup-mailgw now supports unix mailbox as a source of mail. There's
-   also POP support in there, but it's untested.
+ . roundup-mailgw now supports unix mailbox and POP as sources of mail.
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
@@ -30,6 +29,7 @@ Fixed:
  . bug #477837 ] lynx does not like the cookie
  . bug #477892 ] Password edit doesn't fix login cookie
  . newuser_action now presents error messages rather than tracebacks.
+ . bug #479511 ] mailgw to pop
 
 2001-10-23 - 0.3.0 pre 3
 Feature:
