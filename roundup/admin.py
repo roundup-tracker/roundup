@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.20 2002-08-01 00:56:22 richard Exp $
+# $Id: admin.py,v 1.21 2002-08-01 01:07:37 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -993,6 +993,16 @@ Date format is "YYYY-MM-DD" eg:
                 return 1
         else:
             roles = self.db.security.role.items()
+            role = self.db.config.NEW_WEB_USER_ROLES
+            if ',' in role:
+                print _('New Web users get the Roles "%(role)s"')%locals()
+            else:
+                print _('New Web users get the Role "%(role)s"')%locals()
+            role = self.db.config.NEW_EMAIL_USER_ROLES
+            if ',' in role:
+                print _('New Email users get the Roles "%(role)s"')%locals()
+            else:
+                print _('New Email users get the Role "%(role)s"')%locals()
         roles.sort()
         for rolename, role in roles:
             print _('Role "%(name)s":')%role.__dict__
@@ -1154,6 +1164,12 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/08/01 00:56:22  richard
+# Added the web access and email access permissions, so people can restrict
+# access to users who register through the email interface (for example).
+# Also added "security" command to the roundup-admin interface to display the
+# Role/Permission config for an instance.
+#
 # Revision 1.19  2002/07/25 07:14:05  richard
 # Bugger it. Here's the current shape of the new security implementation.
 # Still to do:
