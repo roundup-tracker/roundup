@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.2 $
+:Version: $Revision: 1.3 $
 
 Current situation
 =================
@@ -16,13 +16,19 @@ ANONYMOUS_REGISTER = 'deny'
 ANONYMOUS_REGISTER_MAIL = 'deny'
  Deny or allow anonymous users to register through the mail interface
 
-The web interface implements another level of user-interface security,
+Current user interface authentication and controls:
+
+- command-line tool access controlled with passwords, but no logical controls
+- CGI access is by username and password and has some logical controls
+- mailgw access is through identification using sender email address, with
+  limited functionality available
+
+The web interface implements has specific logical controls,
 preventing non-admin users from accessing:
 
  - other user's details pages
  - listing the base classes (not issues or their user page)
  - editing base classes
-
 
 Issues
 ======
@@ -32,7 +38,9 @@ Issues
    but restrict those users from accessing the web interface.
 3. Only one user may perform admin functions.
 4. There is no verification of users in the mail gateway by any means other
-   than the From address. Support for strong signatures should be added.
+   than the From address. Support for strong identification through digital
+   signatures should be added.
+5. The command-line tool has no logical controls.
 
 
 Possible approaches
@@ -49,6 +57,7 @@ Security controls in Roundup could be approached in three ways:
 In all cases, the security built into roundup assumes restricted access to the
 hyperdatabase itself, through Operating System controls such as user or group
 permissions.
+
 
 Hyperdb-level control
 ---------------------
@@ -115,6 +124,8 @@ Cons:
 
    - large number of possible permissions that may be defined, possibly
      mirroring actual user interface controls.
+   - access to the hyperdb must be strictly controlled through program code
+     that implements the logical controls.
 
 
 Applying controls to users
@@ -201,7 +212,41 @@ The instance dbinit module then has::
     r = db.getclass('role').find('User')
     user.create(username="anonymous", roles=[r])
 
+
+Authentication of Users
+-----------------------
+
+Users must be authenticated correctly for the above controls to work. This is
+not done in the current mail gateway at all. Use of digital signing of
+messages could alleviate this problem.
+
+The exact mechanism of registering the digital signature should be flexible,
+with perhaps a level of trust. Users who supply their signature through their
+first message into the tracker should be at a lower level of trust to those
+who supply their signature to an admin for submission to their user details.
+
+
+Action
+======
+
+The CGI interface must be changed to:
+
+- authenticate over a secure connection
+- use unique tokens as a result of authentication, rather than pass the user's
+  real credentials (username/password) around for each request (this means
+  sessions :)
+- use the new logical control mechanisms
+
+The mail gateway must be changed to:
+
+- use digital signatures
+- use the new logical control mechanisms
     
+The command-line tool must be changed to:
+
+- use the new logical control mechanisms (only allowing write
+  access by admin users, and read-only by everyone else)
+
 
 Use cases
 =========
