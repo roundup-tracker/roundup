@@ -1,10 +1,18 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-??-?? 0.?.?
+2002-??-?? 0.5.0
 Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
+ . cleaned up the indexer code:
+   - it splits more words out
+   - removed code we'll never use (roundup.roundup_indexer has the full
+     implementation, and replaces roundup.indexer)
+   - only index text/plain and rfc822/message (ideas for other text formats to
+     index are welcome)
+   - added simple unit test for indexer. Needs more tests for regression.
+ . made the unit tests run again - they were quite b0rken
 
 
 2002-06-24 0.4.2

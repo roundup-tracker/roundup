@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.37 2002-06-20 23:52:35 richard Exp $
+#$Id: back_anydbm.py,v 1.38 2002-07-08 06:58:15 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -26,7 +26,7 @@ serious bugs, and is not available)
 import whichdb, anydbm, os, marshal
 from roundup import hyperdb, date
 from blobfiles import FileStorage
-from roundup.roundup_indexer import RoundupIndexer
+from roundup.indexer import Indexer
 from locking import acquire_lock, release_lock
 
 #
@@ -62,7 +62,7 @@ class Database(FileStorage, hyperdb.Database):
         self.dirtynodes = {}    # keep track of the dirty nodes by class
         self.newnodes = {}      # keep track of the new nodes by class
         self.transactions = []
-        self.indexer = RoundupIndexer(self.dir)
+        self.indexer = Indexer(self.dir)
         # ensure files are group readable and writable
         os.umask(0002)
 
@@ -160,7 +160,7 @@ class Database(FileStorage, hyperdb.Database):
         except ImportError:
             raise hyperdb.DatabaseError, \
                 "Couldn't open database - the required module '%s'"\
-                "is not available"%db_type
+                " is not available"%db_type
         if __debug__:
             print >>hyperdb.DEBUG, "_opendb %r.open(%r, %r)"%(db_type, path,
                 mode)
@@ -486,6 +486,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.37  2002/06/20 23:52:35  richard
+#More informative error message
+#
 #Revision 1.36  2002/06/19 03:07:19  richard
 #Moved the file storage commit into blobfiles where it belongs.
 #
