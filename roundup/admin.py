@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.28 2002-09-10 12:44:42 richard Exp $
+# $Id: admin.py,v 1.29 2002-09-11 01:19:45 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -81,7 +81,10 @@ class AdminTool:
                 key, value = arg.split('=')
             except ValueError:
                 raise UsageError, _('argument "%(arg)s" not propname=value')%locals()
-            props[key] = value
+            if value:
+                props[key] = value
+            else:
+                props[key] = None
         return props
 
     def usage(self, message=''):
@@ -394,35 +397,53 @@ Command help:
 
 
     def do_set(self, args):
-        '''Usage: set designator[,designator]* propname=value ...
-        Set the given property of one or more designator(s).
+        '''Usage: set [items] property=value property=value ...
+        Set the given properties of one or more items(s).
 
-        Sets the property to the value for all designators given.
+        The items may be specified as a class or as a comma-separeted
+        list of item designators (ie "designator[,designator,...]").
+
+        This command sets the properties to the values for all designators
+        given. If the value is missing (ie. "property=") then the property is
+        un-set.
         '''
         if len(args) < 2:
             raise UsageError, _('Not enough arguments supplied')
         from roundup import hyperdb
 
         designators = args[0].split(',')
+        if len(designators) == 1:
+            designator = designators[0]
+            try:
+                designator = hyperdb.splitDesignator(designator)
+                designators = [designator]
+            except hyperdb.DesignatorError:
+                cl = self.get_class(designator)
+                designators = [(designator, x) for x in cl.list()]
+        else:
+            try:
+                designators = [hyperdb.splitDesignator(x) for x in designators]
+            except hyperdb.DesignatorError, message:
+                raise UsageError, message
 
         # get the props from the args
         props = self.props_from_args(args[1:])
 
         # now do the set for all the nodes
-        for designator in designators:
-            # decode the node designator
-            try:
-                classname, nodeid = hyperdb.splitDesignator(designator)
-            except hyperdb.DesignatorError, message:
-                raise UsageError, message
-
-            # get the class
+        for classname, itemid in designators:
             cl = self.get_class(classname)
 
             properties = cl.getprops()
             for key, value in props.items():
                 proptype =  properties[key]
-                if isinstance(proptype, hyperdb.String):
+                if isinstance(proptype, hyperdb.Multilink):
+                    if value is None:
+                        props[key] = []
+                    else:
+                        props[key] = value.split(',')
+                elif value is None:
+                    continue
+                elif isinstance(proptype, hyperdb.String):
                     continue
                 elif isinstance(proptype, hyperdb.Password):
                     props[key] = password.Password(value)
@@ -438,8 +459,6 @@ Command help:
                         raise UsageError, '"%s": %s'%(value, message)
                 elif isinstance(proptype, hyperdb.Link):
                     props[key] = value
-                elif isinstance(proptype, hyperdb.Multilink):
-                    props[key] = value.split(',')
                 elif isinstance(proptype, hyperdb.Boolean):
                     props[key] = value.lower() in ('yes', 'true', 'on', '1')
                 elif isinstance(proptype, hyperdb.Number):
@@ -447,7 +466,7 @@ Command help:
 
             # try the set
             try:
-                apply(cl.set, (nodeid, ), props)
+                apply(cl.set, (itemid, ), props)
             except (TypeError, IndexError, ValueError), message:
                 raise UsageError, message
         return 0
