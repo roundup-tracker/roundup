@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.20 2004-11-02 09:46:36 a1s Exp $
+# $Id: configuration.py,v 1.21 2004-11-03 09:44:47 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -394,8 +394,14 @@ SETTINGS = (
     ("main", (
         (FilePathOption, "database", "db", "Database directory path."),
         (FilePathOption, "templates", "html",
-            "Path to the HTML templates directory.",
-            ["STATIC_FILES"]),
+            "Path to the HTML templates directory."),
+        (NullableFilePathOption, "static_files", "",
+            "Path to directory holding additional static files\n"
+            "available via Web UI.  This directory may contain\n"
+            "sitewide images, CSS stylesheets etc. and is searched\n"
+            "for these files prior to the TEMPLATES directory\n"
+            "specified above.  If this option is not set, all static\n"
+            "files are taken from the TEMPLATES directory"),
         (MailAddressOption, "admin_email", "roundup-admin",
             "Email address that roundup will complain to"
             " if it runs into trouble."),
