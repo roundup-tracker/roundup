@@ -15,6 +15,7 @@ pending hyperdb: migrate "id" property to be Number type
 pending hyperdb: allow classes to define their ordering (properties, asc/desc)
 pending instance: including much simpler upgrade path and the use of
                   non-Python configuration files (ConfigParser)
+pending instance: move the header link config out into an html template
 pending instance: cleanup to support config (feature request #498658)
 pending instance: split instance.open() into open() and login()
 pending instance: rename to "instance" to "tracker"
