@@ -24,6 +24,7 @@ Fixed:
 - removed rlog module (py 2.3 is minimum version now)
 - fixed class "help" listing paging (sf bug 1106329)
 - nicer error looking up values of None (response to sf bug 1108697)
+- added "imapServer.py" script (sf patch 934567)
 - fallback for (list) popups if javascript disabled (sf patch 1101626)
 
 
@@ -100,6 +101,7 @@ Fixed:
 - allow suppression of search_text in indexargs_form (sf bug 1101548)
 - hack to fix some anydbm export problems (sf bug 1081454)
 - ignore AutoReply messages (sf patch 1085051)
+- fix ZRoundup syntax error (sf bug 1122335)
 
 
 2005-01-06 0.7.11
@@ -109,7 +111,7 @@ Fixed:
 - fix permission lookup in query editing
 
 
-2004-10-04 0.7.10
+2005-01-04 0.7.10
 Fixed:
 - reset ID counters if the database is cleared (thanks William)
 - apply IE caching "fix" to automatically serve up all pages expired
