@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.123 2003-06-18 23:34:52 richard Exp $
+$Id: mailgw.py,v 1.124 2003-06-23 08:37:15 neaj Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -188,11 +188,21 @@ class Message(mimetools.Message):
         hdr = mimetools.Message.getheader(self, name, default)
         return rfc2822.decode_header(hdr)
  
-subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*'
-    r'\s*(?P<quote>")?(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
-    r'\s*(?P<title>[^[]+)?"?(\[(?P<args>.+?)\])?', re.I)
-
 class MailGW:
+
+    # Matches subjects like:
+    # Re: "[issue1234] title of issue [status=resolved]"
+    subject_re = re.compile(r'''
+        (?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*\s*   # Re:
+        (?P<quote>")?                                 # Leading "
+        (\[(?P<classname>[^\d\s]+)                    # [issue..
+           (?P<nodeid>\d+)?                           # ..1234]
+         \])?\s*
+        (?P<title>[^[]+)?                             # issue title 
+        "?                                            # Trailing "
+        (\[(?P<args>.+?)\])?                          # [prop=value]
+        ''', re.IGNORECASE|re.VERBOSE)
+
     def __init__(self, instance, db, arguments={}):
         self.instance = instance
         self.db = db
@@ -495,7 +505,7 @@ Emails to Roundup trackers must include a Subject: line!
         if subject.strip().lower() == 'help':
             raise MailUsageHelp
 
-        m = subject_re.match(subject)
+        m = self.subject_re.match(subject)
 
         # check for well-formed subject line
         if m:
