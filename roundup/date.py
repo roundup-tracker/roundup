@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.20 2002-02-21 23:34:51 richard Exp $
+# $Id: date.py,v 1.21 2002-05-15 06:32:46 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -366,8 +366,11 @@ class Interval:
     def pretty(self):
         ''' print up the date date using one of these nice formats..
         '''
-        if self.year or self.month > 2:
-            return None
+        if self.year:
+            if self.year == 1:
+                return _('1 year')
+            else:
+                return _('%(number)s years')%{'number': self.year}
         elif self.month or self.day > 13:
             days = (self.month * 30) + self.day
             if days > 28:
@@ -437,6 +440,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/02/21 23:34:51  richard
+# Oops, there's 24 hours in a day, and subtraction of intervals now works
+# properly.
+#
 # Revision 1.19  2002/02/21 23:11:45  richard
 #  . fixed some problems in date calculations (calendar.py doesn't handle over-
 #    and under-flow). Also, hour/minute/second intervals may now be more than
