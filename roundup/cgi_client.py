@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.77 2001-12-06 22:48:29 richard Exp $
+# $Id: cgi_client.py,v 1.78 2001-12-07 05:59:27 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -313,7 +313,7 @@ class Client:
                     self.nodeid)
 
                 # set status to chatting if 'unread' or 'resolved'
-                if 'status' not in changed.keys():
+                if not changed.has_key('status'):
                     try:
                         # determine the id of 'unread','resolved' and 'chatting'
                         unread_id = self.db.status.lookup('unread')
@@ -525,7 +525,8 @@ class Client:
             m = [summary]
 
         # append the change note
-        m.append(change_note)
+        if change_note:
+            m.append(change_note)
 
         # now create the message
         content = '\n'.join(m)
@@ -1084,6 +1085,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.77  2001/12/06 22:48:29  richard
+# files multilink was being nuked in post_edit_node
+#
 # Revision 1.76  2001/12/05 14:26:44  rochecompaan
 # Removed generation of change note from "sendmessage" in roundupdb.py.
 # The change note is now generated when the message is created.
