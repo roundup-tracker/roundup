@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2003-10-?? 0.6.3
+2003-11-14 0.6.3
 Fixed:
 - fixed detectors fix incorrectly fixed in bugfix release 0.6.2
 - added note to upgrading doc for detectors fix in 0.6.2

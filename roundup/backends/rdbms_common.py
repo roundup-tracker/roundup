@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.58.2.2 2003-11-14 00:19:02 richard Exp $
+# $Id: rdbms_common.py,v 1.58.2.3 2003-11-14 02:47:56 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -321,7 +321,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         # figure the multilinks
         mls = []
-        for col, prop in spec.properties.items():
+        for col, prop in spec.getprops().items():
             if isinstance(prop, Multilink):
                 mls.append(col)
 

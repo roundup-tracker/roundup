@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.23 2003-04-17 06:51:44 richard Exp $
+# $Id: test_init.py,v 1.23.2.1 2003-11-14 02:47:56 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -39,12 +39,21 @@ class MyTestCase(unittest.TestCase):
 
 class ClassicTestCase(MyTestCase):
     backend = 'anydbm'
+    extra_config = ''
     def testCreation(self):
         ae = self.assertEqual
 
         # create the instance
         init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, self.backend)
+
+        if self.extra_config:
+            f = open(os.path.join(self.dirname, 'config.py'), 'a')
+            try:
+                f.write(self.extra_config)
+            finally:
+                f.close()
+
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package
@@ -78,9 +87,6 @@ class bsddb3ClassicTestCase(ClassicTestCase):
 class metakitClassicTestCase(ClassicTestCase):
     backend = 'metakit'
 
-class mysqlClassicTestCase(ClassicTestCase):
-    backend = 'mysql'
-
 class sqliteClassicTestCase(ClassicTestCase):
     backend = 'sqlite'
 
@@ -96,8 +102,6 @@ def suite():
         l.append(unittest.makeSuite(bsddb3ClassicTestCase, 'test'))
     if hasattr(backends, 'metakit'):
         l.append(unittest.makeSuite(metakitClassicTestCase, 'test'))
-    if hasattr(backends, 'mysql'):
-        l.append(unittest.makeSuite(mysqlClassicTestCase, 'test'))
     if hasattr(backends, 'sqlite'):
         l.append(unittest.makeSuite(sqliteClassicTestCase, 'test'))
 

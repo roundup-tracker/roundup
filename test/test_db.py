@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.90.2.1 2003-09-04 23:09:48 richard Exp $ 
+# $Id: test_db.py,v 1.90.2.2 2003-11-14 02:47:56 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -943,7 +943,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-    p.append('anydbm')
+#    p.append('anydbm')
 #    return unittest.TestSuite(l)
 
     from roundup import backends
@@ -956,7 +956,7 @@ def suite():
             db.conn.select_db(config.MYSQL_DBNAME)
             db.sql("SHOW TABLES");
             tables = db.sql_fetchall()
-            if tables:
+            if 0: #tables:
                 # Database should be empty. We don't dare to delete any data
                 raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
             db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
@@ -969,7 +969,7 @@ def suite():
             p.append('mysql')
             l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
             l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
-    #return unittest.TestSuite(l)
+#    return unittest.TestSuite(l)
 
     if hasattr(backends, 'sqlite'):
         p.append('sqlite')
