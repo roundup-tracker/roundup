@@ -1,4 +1,4 @@
-# $Id: cgitb.py,v 1.2 2001-07-19 05:52:22 anthonybaxter Exp $
+# $Id: cgitb.py,v 1.3 2001-07-19 06:27:07 anthonybaxter Exp $
 
 import sys, os, types, string, keyword, linecache, tokenize, inspect, pydoc
 
@@ -115,4 +115,7 @@ def handler():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/19 05:52:22  anthonybaxter
+# Added CVS keywords Id and Log to all python files.
+#
 #

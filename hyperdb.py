@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.3 2001-07-19 05:52:22 anthonybaxter Exp $
+# $Id: hyperdb.py,v 1.4 2001-07-19 06:27:07 anthonybaxter Exp $
 
 import bsddb, os, cPickle, re, string
 
@@ -921,5 +921,8 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/19 05:52:22  anthonybaxter
+# Added CVS keywords Id and Log to all python files.
+#
 #
 

@@ -1,4 +1,4 @@
-# $Id: config.py,v 1.4 2001-07-19 05:52:22 anthonybaxter Exp $
+# $Id: config.py,v 1.5 2001-07-19 06:27:07 anthonybaxter Exp $
 
 ROUNDUP_HOME=MAIL_DOMAIN=MAILHOST=None
 
@@ -37,5 +37,8 @@ del os
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/19 05:52:22  anthonybaxter
+# Added CVS keywords Id and Log to all python files.
+#
 #
 
