@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.140 $
+:Version: $Revision: 1.141 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1598,6 +1598,20 @@ The following variables are available to templates.
 **true**, **false**
   Boolean constants that may be used in `templating expressions`_
   instead of ``python:1`` and ``python:0``.
+**i18n**
+  Internationalization service, providing two string translation methods:
+
+  **gettext** (*message*)
+    Return the localized translation of message
+  **ngettext** (*singular*, *plural*, *number*)
+    Like ``gettext()``, but consider plural forms. If a translation
+    is found, apply the plural formula to *number*, and return the
+    resulting message (some languages have more than two plural forms).
+    If no translation is found, return singular if *number* is 1;
+    return plural otherwise.
+
+    This function requires python2.3; in earlier python versions
+    may not work as expected.
 
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
