@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.51 $
+:Version: $Revision: 1.52 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -52,18 +52,43 @@ html/               Web interface templates, images and style sheets
 Tracker Configuration
 =====================
 
-The config.py located in your tracker home contains the basic
-configuration for the web and e-mail components of roundup's interfaces. This
-file is a Python module. The configuration variables available are:
+The config.py located in your tracker home contains the basic configuration
+for the web and e-mail components of roundup's interfaces. As the name
+suggests, this file is a Python module. This means that any valid python
+expression may be used in the file. Mostly though, you'll be setting the
+configuration variables to string values. Python string values must be quoted
+with either single or double quotes::
+
+   'this is a string'
+   "this is also a string - use it when you have a 'single quote' in the value"
+   this is not a string - it's not quoted
+
+Python strings may use formatting that's almost identical to C string
+formatting. The ``%`` operator is used to perform the formatting, like so::
+
+    'roundup-admin@%s'%MAIL_DOMAIN
+
+this will create a string ``'roundup-admin@tracker.domain.example'`` if
+MAIL_DOMAIN is set to ``'tracker.domain.example'``.
+
+You'll also note some values are set to::
+
+   os.path.join(TRACKER_HOME, 'db')
+
+or similar. This creates a new string which holds the path to the "db"
+directory in the TRACKER_HOME directory. This is just a convenience so if the
+TRACKER_HOME changes you don't have to edit multiple valoues.
+
+The configuration variables available are:
 
 **TRACKER_HOME** - ``os.path.split(__file__)[0]``
  The tracker home directory. The above default code will automatically
- determine the tracker home for you.
+ determine the tracker home for you, so you can just leave it alone.
 
 **MAILHOST** - ``'localhost'``
  The SMTP mail host that roundup will use to send e-mail.
 
-**MAIL_DOMAIN** - ``'your.tracker.email.domain.example'``
+**MAIL_DOMAIN** - ``'tracker.domain.example'``
  The domain name used for email addresses.
 
 **DATABASE** - ``os.path.join(TRACKER_HOME, 'db')``
@@ -1428,18 +1453,38 @@ by activity, arranged in descending order. The filter section shows filters for
 the "status" and "topic" properties, and the table includes columns for the
 "title", "status", and "fixer" properties.
 
-Filtering of indexes
-~~~~~~~~~~~~~~~~~~~~
-
-TODO
-
 Searching Views
 ---------------
 
 This is one of the class context views. The template used is typically
-"*classname*.search".
+"*classname*.search". The form on this page should have "search" as its
+``:action`` variable. The "search" action:
 
-TODO
+- sets up additional filtering, as well as performing indexed text searching
+- sets the ``:filter`` variable correctly
+- saves the query off if ``:query_name`` is set.
+
+The searching page should lay out any fields that you wish to allow the user
+to search one. If your schema contains a large number of properties, you
+should be wary of making all of those properties available for searching, as
+this can cause confusion. If the additional properties are Strings, consider
+having their value indexed, and then they will be searchable using the full
+text indexed search. This is both faster, and more useful for the end user.
+
+The two special form values on search pages which are handled by the "search"
+action are:
+
+:search_text
+  Text to perform a search of the text index with. Results from that search
+  will be used to limit the results of other filters (using an intersection
+  operation)
+:query_name
+  If supplied, the search parameters (including :search_text) will be saved
+  off as a the query item and registered against the user's queries property.
+  Note that the *classic* template schema has this ability, but the *minimal*
+  template schema does not.
+
+
 
 Item Views
 ----------

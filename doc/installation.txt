@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.30 $
+:Version: $Revision: 1.31 $
 
 .. contents::
 
@@ -118,9 +118,14 @@ Basic Installation Steps
 
       You will now be directed to edit the tracker configuration and
       initial schema.  At a minimum, you must set ``MAILHOST``,
-      ``TRACKER_WEB``, ``MAIL_DOMAIN`` and ``ADMIN_EMAIL``. If you just want
-      to get set up to test things quickly, you can even just set the
-      TRACKER_WEB variable to::
+      ``TRACKER_WEB``, ``MAIL_DOMAIN`` and ``ADMIN_EMAIL``. Note that the
+      configuration file uses Python syntax, so almost every value must be
+      ``'quoted'`` using single or double quotes. If you get stuck, and get
+      configuration file errors, then see the `tracker configuration`_ section
+      of the `customisation documentation`_.
+
+      If you just want to get set up to test things quickly, you can even
+      just set the TRACKER_WEB variable to::
 
          TRACKER_WEB = 'http://localhost:8080/support/'
 
@@ -417,6 +422,8 @@ Next: `Getting Started`_
 .. _`table of contents`: index.html
 .. _`getting started`: getting_started.html
 .. _`roundup specification`: spec.html
+.. _`tracker configuration`: customizing.html#tracker-configuration
+.. _`customisation documentation`: customizing.html
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`maintenance documentation`: maintenance.html
