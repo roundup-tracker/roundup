@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.65 2003-01-12 23:53:20 richard Exp $ 
+# $Id: test_db.py,v 1.66 2003-01-13 23:32:12 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -708,7 +708,8 @@ class mysqlDBTestCase(anydbmDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
-        config.MYSQL_DATABASE='mysql@localhost root rootpasswd'.split()
+        config.MYSQL_DATABASE = ('localhost', 'rounduptest', 'rounduptest',
+            'rounduptest')
         os.makedirs(config.DATABASE + '/files')
         self.db = mysql.Database(config, 'admin')
         setupSchema(self.db, 1, mysql)
@@ -719,7 +720,8 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
-        config.MYSQL_DATABASE='mysql@localhost root rootpasswd'.split()
+        config.MYSQL_DATABASE = ('localhost', 'rounduptest', 'rounduptest',
+            'rounduptest')
         os.makedirs(config.DATABASE + '/files')
         db = mysql.Database(config, 'admin')
         setupSchema(db, 1, mysql)
@@ -818,9 +820,9 @@ def suite():
 #    return unittest.TestSuite(l)
 
     from roundup import backends
-#    if hasattr(backends, 'mysql'):
-#        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
-#        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+    if hasattr(backends, 'mysql'):
+        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
 #    return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):
