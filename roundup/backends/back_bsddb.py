@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.14 2002-01-22 07:21:13 richard Exp $
+#$Id: back_bsddb.py,v 1.15 2002-02-16 09:15:33 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
@@ -88,9 +88,9 @@ class Database(back_anydbm.Database):
         journal = marshal.loads(db[nodeid])
         res = []
         for entry in journal:
-            (nodeid, date_stamp, self.journaltag, action, params) = entry
+            (nodeid, date_stamp, user, action, params) = entry
             date_obj = date.Date(date_stamp)
-            res.append((nodeid, date_obj, self.journaltag, action, params))
+            res.append((nodeid, date_obj, user, action, params))
         db.close()
         return res
 
@@ -109,6 +109,14 @@ class Database(back_anydbm.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.14  2002/01/22 07:21:13  richard
+#. fixed back_bsddb so it passed the journal tests
+#
+#... it didn't seem happy using the back_anydbm _open method, which is odd.
+#Yet another occurrance of whichdb not being able to recognise older bsddb
+#databases. Yadda yadda. Made the HYPERDBDEBUG stuff more sane in the
+#process.
+#
 #Revision 1.13  2001/12/10 22:20:01  richard
 #Enabled transaction support in the bsddb backend. It uses the anydbm code
 #where possible, only replacing methods where the db is opened (it uses the
