@@ -2,7 +2,7 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 
-2005-??-?? 0.8.1
+2005-02-17 0.8.1
 Fixed:
 - replaced MutlilinkIterator with multilinkGenerator (thanks Bob Ippolito)
 - fixed broken csv import in roundup.admin module
