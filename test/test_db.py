@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.63.2.2 2003-03-18 00:43:29 richard Exp $ 
+# $Id: test_db.py,v 1.63.2.3 2003-03-18 00:43:48 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -818,8 +818,8 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 
 def suite():
     l = [
-#         unittest.makeSuite(anydbmDBTestCase, 'test'),
-#         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
+         unittest.makeSuite(anydbmDBTestCase, 'test'),
+         unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
 #    return unittest.TestSuite(l)
 
@@ -828,7 +828,6 @@ def suite():
     if hasattr(backends, 'bsddb3'):
         l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
         l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
-    return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):
         l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
