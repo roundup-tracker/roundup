@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.20 2003-09-08 20:39:18 jlgijsbers Exp $
+#$Id: back_bsddb3.py,v 1.21 2003-11-14 00:11:18 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB3.
 '''
@@ -105,6 +105,9 @@ class Database(Database):
             db = bsddb3.btopen(os.path.join(self.dir, 'journals.%s'%classname),
                 'r')
         except bsddb3._db.DBNoSuchFileError:
+            if res:
+                # we have unsaved journal entries, return them
+                return res
             raise IndexError, 'no such %s %s'%(classname, nodeid)
         # more handling of bad journals
         if not db.has_key(nodeid):

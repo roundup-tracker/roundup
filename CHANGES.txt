@@ -61,6 +61,8 @@ Fixed:
   Date +/- Interval now works, and Date - Date also works (produces
   an Interval.
 - Handle socket timeout exception (thanks Marcus Priesch)
+- Fixed retirement of items in rdbms imports (sf bug 841355)
+- Fixed bug in looking up journal of newly-created items in *dbm backends
 
 
 2003-09-29 0.6.2

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.69 2003-11-12 03:42:12 richard Exp $
+# $Id: rdbms_common.py,v 1.70 2003-11-14 00:11:19 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1236,7 +1236,7 @@ class Class(hyperdb.Class):
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
             l.append(repr(value))
-        l.append(self.is_retired(nodeid))
+        l.append(repr(self.is_retired(nodeid)))
         return l
 
     def import_list(self, propnames, proplist):
@@ -1293,6 +1293,9 @@ class Class(hyperdb.Class):
         if newid is None:
             newid = self.db.newid(self.classname)
 
+        # add the node and journal
+        self.db.addnode(self.classname, newid, d)
+
         # retire?
         if retire:
             # use the arg for __retired__ to cope with any odd database type
@@ -1302,9 +1305,6 @@ class Class(hyperdb.Class):
             if __debug__:
                 print >>hyperdb.DEBUG, 'retire', (self, sql, newid)
             self.db.cursor.execute(sql, (1, newid))
-
-        # add the node and journal
-        self.db.addnode(self.classname, newid, d)
 
         # extract the extraneous journalling gumpf and nuke it
         if d.has_key('creator'):

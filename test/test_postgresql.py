@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.3 2003-11-11 11:19:18 richard Exp $ 
+# $Id: test_postgresql.py,v 1.4 2003-11-14 00:11:19 richard Exp $ 
 
 import sys, unittest, os, shutil, time, popen2
 
@@ -68,7 +68,12 @@ class postgresqlOpener:
         db_create()
 
     def tearDown(self):
+        self.nuke_database()
+
+    def nuke_database(self):
+        # clear out the database - easiest way is to nuke and re-created it
         db_nuke()
+        db_create()
 
 class postgresqlDBTest(postgresqlOpener, DBTest):
     def setUp(self):

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.130 2003-11-10 03:56:39 richard Exp $
+#$Id: back_anydbm.py,v 1.131 2003-11-14 00:11:18 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -516,7 +516,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if str(error) == "need 'c' or 'n' flag to open new db":
                 raise IndexError, 'no such %s %s'%(classname, nodeid)
             elif error.args[0] != 2:
+                # this isn't a "not found" error, be alarmed!
                 raise
+            if res:
+                # we have unsaved journal entries, return them
+                return res
             raise IndexError, 'no such %s %s'%(classname, nodeid)
         try:
             journal = marshal.loads(db[nodeid])
@@ -936,7 +940,7 @@ class Class(hyperdb.Class):
             l.append(repr(value))
 
         # append retired flag
-        l.append(self.is_retired(nodeid))
+        l.append(repr(self.is_retired(nodeid)))
 
         return l
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.5 2003-11-11 11:19:18 richard Exp $ 
+# $Id: test_mysql.py,v 1.6 2003-11-14 00:11:19 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -42,6 +42,9 @@ class mysqlOpener:
 
     def tearDown(self):
         self.db.close()
+        self.nuke_database()
+
+    def nuke_database(self):
         self.module.db_nuke(config)
 
 class mysqlDBTest(mysqlOpener, DBTest):
@@ -53,7 +56,7 @@ class mysqlROTest(mysqlOpener, ROTest):
 class mysqlSchemaTest(mysqlOpener, SchemaTest):
     pass
 
-class mysqlClassicInitTest(ClassicInitTest):
+class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
     backend = 'mysql'
     extra_config = '''
 MYSQL_DBHOST = 'localhost'
@@ -66,7 +69,7 @@ MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
         from roundup.backends import mysql as module
     def tearDown(self):
         ClassicInitTest.tearDown(self)
-        self.module.db_nuke(config)
+        self.nuke_database()
 
 def test_suite():
     suite = unittest.TestSuite()

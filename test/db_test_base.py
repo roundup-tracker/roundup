@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.7 2003-11-12 03:42:13 richard Exp $ 
+# $Id: db_test_base.py,v 1.8 2003-11-14 00:11:19 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -744,6 +744,59 @@ class DBTest(MyTestCase):
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
 
+    def testImportExport(self):
+        # use the filtering setup to create a bunch of items
+        ae, filt = self.filteringSetup()
+        self.db.user.retire('3')
+        self.db.issue.retire('2')
+
+        # grab snapshot of the current database
+        orig = {}
+        for cn,klass in self.db.classes.items():
+            cl = orig[cn] = {}
+            for id in klass.list():
+                it = cl[id] = {}
+                for name in klass.getprops().keys():
+                    it[name] = klass.get(id, name)
+
+        # grab the export
+        export = {}
+        for cn,klass in self.db.classes.items():
+            names = klass.getprops().keys()
+            cl = export[cn] = [names+['is retired']]
+            for id in klass.getnodeids():
+                cl.append(klass.export_list(names, id))
+
+        # shut down this db and nuke it
+        self.db.close()
+        self.nuke_database()
+
+        # open a new, empty database
+        os.makedirs(config.DATABASE + '/files')
+        self.db = self.module.Database(config, 'admin')
+        setupSchema(self.db, 0, self.module)
+
+        # import
+        for cn, items in export.items():
+            klass = self.db.classes[cn]
+            names = items[0]
+            for itemprops in items[1:]:
+                klass.import_list(names, itemprops)
+
+        # grab snapshot of the current database
+        for cn, items in orig.items():
+            klass = self.db.classes[cn]
+            # ensure retired items are retired :)
+            l = items.keys(); l.sort()
+            m = klass.list(); m.sort()
+            ae(l, m)
+            for id, props in items.items():
+                for name, value in props.items():
+                    ae(klass.get(id, name), value)
+
+        # make sure the retired items are actually imported
+        ae(self.db.user.get('3', 'username'), 'blop')
+        ae(self.db.issue.get('2', 'title'), 'issue two')
 
 class ROTest(MyTestCase):
     def setUp(self):

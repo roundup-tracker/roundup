@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.27 2003-09-08 20:39:18 jlgijsbers Exp $
+#$Id: back_bsddb.py,v 1.28 2003-11-14 00:11:18 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
@@ -105,7 +105,12 @@ class Database(Database):
             db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname),
                 'r')
         except bsddb.error, error:
-            if error.args[0] != 2: raise
+            if error.args[0] != 2:
+                # this isn't a "not found" error, be alarmed!
+                raise
+            if res:
+                # we have unsaved journal entries, return them
+                return res
             raise IndexError, 'no such %s %s'%(classname, nodeid)
         # more handling of bad journals
         if not db.has_key(nodeid):

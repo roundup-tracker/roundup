@@ -21,7 +21,7 @@ class Database(rdbms_common.Database):
         try:
             self.conn = psycopg.connect(**db)
         except psycopg.OperationalError, message:
-            raise DatabaseError, message
+            raise hyperdb.DatabaseError, message
 
         self.cursor = self.conn.cursor()
 
