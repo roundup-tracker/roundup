@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.18 2003-08-11 11:28:31 jlgijsbers Exp $
+# $Id: test_cgi.py,v 1.18.2.1 2004-02-15 23:16:20 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -94,7 +94,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = classname
         cl.nodeid = nodeid
         cl.db = self.db
-        return cl.parsePropsFromForm()
+        return cl.parsePropsFromForm(create=1)
 
     def tearDown(self):
         self.db.close()
@@ -268,7 +268,7 @@ class FormTestCase(unittest.TestCase):
         cl.classname = 'issue'
         cl.nodeid = None
         cl.db = self.db
-        self.assertEqual(cl.parsePropsFromForm(), 
+        self.assertEqual(cl.parsePropsFromForm(create=1), 
             ({('issue', None): {'nosy': ['1','2', '3']}}, []))
 
     def testEmptyMultilinkSet(self):
