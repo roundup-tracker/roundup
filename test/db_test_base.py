@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.3 2003-11-05 01:38:52 richard Exp $ 
+# $Id: db_test_base.py,v 1.4 2003-11-05 21:54:57 jlgijsbers Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time
 
@@ -976,6 +976,14 @@ class ClassicInitTest(unittest.TestCase):
         # create the instance
         init.install(self.dirname, 'templates/classic')
         init.write_select_db(self.dirname, self.backend)
+
+        if self.extra_config:
+            f = open(os.path.join(self.dirname, 'config.py'), 'a')
+            try:
+                f.write(self.extra_config)
+            finally:
+                f.close()
+        
         init.initialise(self.dirname, 'sekrit')
 
         # check we can load the package

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.3 2003-11-02 08:44:17 richard Exp $ 
+# $Id: test_mysql.py,v 1.4 2003-11-05 21:54:57 jlgijsbers Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -44,48 +44,13 @@ class mysqlSchemaTest(mysqlOpener, SchemaTest):
 
 class mysqlClassicInitTest(ClassicInitTest):
     backend = 'mysql'
-
-    def testCreation(self):
-        ae = self.assertEqual
-
-        # create the instance
-        init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, self.backend)
-        f = open(os.path.join(self.dirname, 'config.py'), 'a')
-        try:
-            f.write('''
+    extra_config = '''
 MYSQL_DBHOST = 'localhost'
 MYSQL_DBUSER = 'rounduptest'
 MYSQL_DBPASSWORD = 'rounduptest'
 MYSQL_DBNAME = 'rounduptest'
 MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
-            ''')
-        finally:
-            f.close()
-        init.initialise(self.dirname, 'sekrit')
-
-        # check we can load the package
-        instance = imp.load_package(self.dirname, self.dirname)
-
-        # and open the database
-        db = instance.open()
-
-        # check the basics of the schema and initial data set
-        l = db.priority.list()
-        ae(l, ['1', '2', '3', '4', '5'])
-        l = db.status.list()
-        ae(l, ['1', '2', '3', '4', '5', '6', '7', '8'])
-        l = db.keyword.list()
-        ae(l, [])
-        l = db.user.list()
-        ae(l, ['1', '2'])
-        l = db.msg.list()
-        ae(l, [])
-        l = db.file.list()
-        ae(l, [])
-        l = db.issue.list()
-        ae(l, [])
-
+'''
     if hasattr(backends, 'mysql'):
         from roundup.backends import mysql as module
     def tearDown(self):
