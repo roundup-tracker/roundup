@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.140 2003-09-24 14:53:58 jlgijsbers Exp $
+# $Id: client.py,v 1.141 2003-10-04 11:21:47 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -773,7 +773,7 @@ reply's additional "Re:" is ok),
    %(url)s?@action=confrego&otk=%(otk)s
 """ % {'name': props['username'], 'tracker': tracker_name, 'url': self.base,
        'otk': otk, 'tracker_email': tracker_email}
-        if not self.standard_message(props['address'], subject, body,
+        if not self.standard_message([props['address']], subject, body,
                                      tracker_email):
             return
 
@@ -878,7 +878,7 @@ The password has been reset for username "%(name)s".
 
 Your password is now: %(password)s
 '''%{'name': name, 'password': newpw}
-            if not self.standard_message(address, subject, body):
+            if not self.standard_message([address], subject, body):
                 return
 
             self.ok_message.append('Password reset and email sent to %s'%address)
@@ -921,7 +921,7 @@ the link below:
 
 You should then receive another email with the new password.
 '''%{'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
-        if not self.standard_message(address, subject, body):
+        if not self.standard_message([address], subject, body):
             return
 
         self.ok_message.append('Email sent to %s'%address)

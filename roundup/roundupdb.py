@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.91 2003-09-16 16:12:38 kedder Exp $
+# $Id: roundupdb.py,v 1.92 2003-10-04 11:21:47 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -288,8 +288,7 @@ class IssueClass:
 
         # create the message
         mailer = Mailer(self.db.config)
-        message, writer = mailer.get_standard_message(', '.join(sendto),
-                                                      subject, author)
+        message, writer = mailer.get_standard_message(sendto, subject, author)
 
         tracker_name = encode_header(self.db.config.TRACKER_NAME)
         writer.addheader('Reply-To', straddr((tracker_name, from_address)))
