@@ -15,6 +15,7 @@ Fixed:
  . 2.1-specific gmtime() (no arg) call in roundup.date. (thanks Paul Wright)
  . mailgw was making naughty assumptions about the schema of the classes it
    was creating nodes for.
+ . remove the $Foo$ from the HTML files stored in the htmlbase modules.
 
 
 2001-07-30 - 0.2.3
