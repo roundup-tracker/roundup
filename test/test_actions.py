@@ -37,6 +37,9 @@ class ActionTestCase(unittest.TestCase):
         self.form = FieldStorage()
         self.client = MockNull()
         self.client.form = self.form
+        class TemplatingUtils:
+            pass
+        self.client.instance.interfaces.TemplatingUtils = TemplatingUtils
 
 class ShowActionTestCase(ActionTestCase):
     def assertRaisesMessage(self, exception, callable, message, *args,
