@@ -140,7 +140,7 @@ python:db.user.classhelp('username,realname,address,phone')" /><br>
    </tr>
    <tr>
     <td colspan="4" class="content">
-     <pre tal:content="structure msg/content">content</pre>
+     <pre tal:content="msg/content">content</pre>
     </td>
    </tr>
   </tal:block>

@@ -786,7 +786,7 @@ class StringHTMLProperty(HTMLProperty):
         except KeyError:
             return '%s%s'%(s1, s2)
 
-    def plain(self, escape=0, hyperlink=1):
+    def plain(self, escape=0, hyperlink=0):
         ''' Render a "plain" representation of the property
             
             "escape" turns on/off HTML quoting
@@ -798,8 +798,10 @@ class StringHTMLProperty(HTMLProperty):
         if escape:
             s = cgi.escape(str(self._value))
         else:
-            s = self._value
+            s = str(self._value)
         if hyperlink:
+            if not escape:
+                s = cgi.escape(s)
             s = self.url_re.sub(self._url_repl, s)
             s = self.email_re.sub(self._email_repl, s)
             s = self.designator_re.sub(self._designator_repl, s)

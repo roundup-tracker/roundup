@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.70 $
+:Version: $Revision: 1.71 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1247,32 +1247,58 @@ _value          the value of the property if any - this is the actual value
 
 There are several methods available on these wrapper objects:
 
-=========== =================================================================
-Method      Description
-=========== =================================================================
-plain       render a "plain" representation of the property
-field       render an appropriate form edit field for the property - for most
-            types this is a text entry box, but for Booleans it's a tri-state
-            yes/no/neither selection.
-stext       only on String properties - render the value of the
-            property as StructuredText (requires the StructureText module
-            to be installed separately)
-multiline   only on String properties - render a multiline form edit
-            field for the property
-email       only on String properties - render the value of the 
-            property as an obscured email address
-confirm     only on Password properties - render a second form edit field for
-            the property, used for confirmation that the user typed the
-            password correctly. Generates a field with name "name:confirm".
-reldate     only on Date properties - render the interval between the
-            date and now
-pretty      only on Interval properties - render the interval in a
-            pretty format (eg. "yesterday")
-menu        only on Link and Multilink properties - render a form select
-            list for this property
-reverse     only on Multilink properties - produce a list of the linked
-            items in reverse order
-=========== =================================================================
+========= =====================================================================
+Method    Description
+========= =====================================================================
+plain     render a "plain" representation of the property. This method may
+          take two arguments:
+
+          escape
+           If true, escape the text so it is HTML safe (default: no). The
+           reason this defaults to off is that text is usually escaped
+           at a later stage by the TAL commands, unless the "structure"
+           option is used in the template. The following are all equivalent::
+
+            <p tal:content="structure python:msg.content.plain(escape=1)" />
+            <p tal:content="python:msg.content.plain()" />
+            <p tal:content="msg/content/plain" />
+            <p tal:content="msg/content" />
+
+           Usually you'll only want to use the escape option in a complex
+           expression.
+
+          hyperlink
+           If true, turn URLs, email addresses and hyperdb item designators
+           in the text into hyperlinks (default: no). Note that you'll need
+           to use the "structure" TAL option if you want to use this::
+
+            <p tal:content="structure python:msg.content.plain(hyperlink=1)" />
+
+           Note also that the text is automatically HTML-escape before the
+           hyperlinking transformation.
+
+field     render an appropriate form edit field for the property - for most
+          types this is a text entry box, but for Booleans it's a tri-state
+          yes/no/neither selection.
+stext     only on String properties - render the value of the
+          property as StructuredText (requires the StructureText module
+          to be installed separately)
+multiline only on String properties - render a multiline form edit
+          field for the property
+email     only on String properties - render the value of the 
+          property as an obscured email address
+confirm   only on Password properties - render a second form edit field for
+          the property, used for confirmation that the user typed the
+          password correctly. Generates a field with name "name:confirm".
+reldate   only on Date properties - render the interval between the
+          date and now
+pretty    only on Interval properties - render the interval in a
+          pretty format (eg. "yesterday")
+menu      only on Link and Multilink properties - render a form select
+          list for this property
+reverse   only on Multilink properties - produce a list of the linked
+          items in reverse order
+========= =====================================================================
 
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
