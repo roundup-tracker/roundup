@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.31 2001-10-14 10:55:00 richard Exp $
+# $Id: cgi_client.py,v 1.32 2001-10-16 03:36:21 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -218,7 +218,8 @@ class Client:
         num_re = re.compile('^\d+$')
         if keys:
             try:
-                props, changed = parsePropsFromForm(cl, self.form, self.nodeid)
+                props, changed = parsePropsFromForm(self.db, cl, self.form,
+                    self.nodeid)
                 cl.set(self.nodeid, **props)
                 self._post_editnode(self.nodeid, changed)
                 # and some nice feedback for the user
@@ -265,7 +266,7 @@ class Client:
         ''' create a node based on the contents of the form
         '''
         cl = self.db.classes[self.classname]
-        props, dummy = parsePropsFromForm(cl, self.form)
+        props, dummy = parsePropsFromForm(self.db, cl, self.form)
         return cl.create(**props)
 
     def _post_editnode(self, nid, changes=None):
@@ -545,7 +546,7 @@ class Client:
         '''
         # TODO: pre-check the required fields and username key property
         cl = self.db.classes['user']
-        props, dummy = parsePropsFromForm(cl, self.form)
+        props, dummy = parsePropsFromForm(self.db, cl, self.form)
         uid = cl.create(**props)
         self.user = self.db.user.get(uid, 'username')
         password = self.db.user.get(uid, 'password')
@@ -722,7 +723,7 @@ class ExtendedClient(Client):
 '''%(title, style, message, title, user_name, add_links, admin_links,
     user_info))
 
-def parsePropsFromForm(cl, form, nodeid=0):
+def parsePropsFromForm(db, cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
     '''
     props = {}
@@ -747,8 +748,8 @@ def parsePropsFromForm(cl, form, nodeid=0):
             link = cl.properties[key].classname
             if not num_re.match(value):
                 try:
-                    value = self.db.classes[link].lookup(value)
-                except:
+                    value = db.classes[link].lookup(value)
+                except KeyError:
                     raise ValueError, 'property "%s": %s not a %s'%(
                         key, value, link)
         elif isinstance(proptype, hyperdb.Multilink):
@@ -762,11 +763,11 @@ def parsePropsFromForm(cl, form, nodeid=0):
             for entry in map(str, value):
                 if not num_re.match(entry):
                     try:
-                        entry = self.db.classes[link].lookup(entry)
-                    except:
+                        entry = db.classes[link].lookup(entry)
+                    except KeyError:
                         raise ValueError, \
-                            'property "%s": %s not a %s'%(key,
-                            entry, link)
+                            'property "%s": "%s" not an entry of %s'%(key,
+                            entry, link.capitalize())
                 l.append(entry)
             l.sort()
             value = l
@@ -779,6 +780,9 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2001/10/14 10:55:00  richard
+# Handle empty strings in HTML template Link function
+#
 # Revision 1.30  2001/10/09 07:38:58  richard
 # Pushed the base code for the extended schema CGI interface back into the
 # code cgi_client module so that future updates will be less painful.
