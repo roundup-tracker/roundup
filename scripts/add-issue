@@ -1,0 +1,60 @@
+#! /usr/bin/env python
+# $Id: add-issue,v 1.1 2003-04-30 01:26:55 richard Exp $
+
+'''
+Usage: %s: <tracker home> <priority> <issue title>
+
+Create a new issue in the given tracker. Input is taken from STDIN to
+create the initial issue message (which may be empty). Issues will be
+created as the current user (%s) if they exist as a Roundup
+user, or "admin" otherwise.
+'''
+
+import sys, os, pwd
+
+from roundup import instance, mailgw, date
+
+# open the instance
+username = pwd.getpwuid(os.getuid())[0]
+if len(sys.argv) < 3:
+    print "Error: Not enough arguments"
+    print __doc__.strip()%(sys.argv[0], username)
+    sys.exit(1)
+tracker_home = sys.argv[1]
+issue_priority = sys.argv[2]
+issue_title = ' '.join(sys.argv[3:])
+
+# get the message, if any
+message_text = sys.stdin.read().strip()
+
+# open the tracker
+tracker = instance.open(tracker_home)
+db = tracker.open('admin')
+uid = db.user.lookup('admin')
+try:
+    # try to open the tracker as the current user
+    uid = db.user.lookup(username)
+    db.close()
+    db = tracker.open(username)
+except KeyError:
+    pass
+
+try:
+
+    # handle the message
+    messages = []
+    if message_text:
+        summary, x = mailgw.parseContent(message_text, 0, 0)
+        msg = db.msg.create(content=message_text, summary=summary, author=uid,
+            date=date.Date())
+        messages = [msg]
+
+    # now create the issue
+    db.issue.create(title=issue_title, priority=issue_priority,
+        messages=messages)
+
+    db.commit()
+finally:
+    db.close()
+
+# vim: set filetype=python ts=4 sw=4 et si
