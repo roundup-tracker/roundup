@@ -20,6 +20,8 @@ Fixed:
  . #502951 ] adding new properties to old database
  . #502953 ] nosy-like treatment of other multilinks
  . #503164 ] create and passwords
+ . plain rendering of links in the htmltemplate now generate a hyperlink to
+   the linked node's page.
 
 
 2002-01-08 - 0.4.0b1
