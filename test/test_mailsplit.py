@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.12 2002-10-18 03:34:58 richard Exp $
+# $Id: test_mailsplit.py,v 1.13 2003-09-30 23:55:54 richard Exp $
 
 import unittest, cStringIO
 
@@ -167,6 +167,11 @@ blah blah blah signature
 userfoo@foo.com
 ''')
 
+    def testAllQuoted(self):
+        s = '\nissue_tracker@foo.com wrote:\n> testing\n'
+        summary, content = parseContent(s, 0, 1)
+        self.assertEqual(summary, '')
+        self.assertEqual(content, s)
 
     def testSimple(self):
         s = '''testing'''
