@@ -6,6 +6,7 @@ Fixed:
 - fix roundup-server log and PID file paths to be absolute
 - fix initialisation of roundup-server in daemon mode so initialisation
   errors are visible
+- fix: 'Logout' link was enabled on issue index page only
 
 
 2005-01-13 0.8.0b2
