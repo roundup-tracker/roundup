@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.53 2003-05-09 03:32:41 richard Exp $
+# $Id: admin.py,v 1.54 2003-05-29 00:42:34 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -289,17 +289,21 @@ Command help:
         '''
         # OK, try <prefix>/share/roundup/templates
         # -- this module (roundup.admin) will be installed in something
-        # _like_ /usr/lib/python2.2/site-packages/roundup/admin.py, and
+        # like:
+        #    /usr/lib/python2.2/site-packages/roundup/admin.py  (5 dirs up)
+        #    c:\python22\lib\site-packages\roundup\admin.py     (4 dirs up)
         # we're interested in where the "lib" directory is - ie. the /usr/
         # part
-        path = __file__
-        for i in range(5):
-            path = os.path.dirname(path)
-        tdir = os.path.join(path, 'share', 'roundup', 'templates')
-        if os.path.isdir(tdir):
-            templates = listTemplates(tdir)
-        else:
-            templates = {}
+        templates = {}
+        for N in 4, 5:
+            path = __file__
+            # move up N elements in the path
+            for i in range(N):
+                path = os.path.dirname(path)
+            tdir = os.path.join(path, 'share', 'roundup', 'templates')
+            if os.path.isdir(tdir):
+                templates = listTemplates(tdir)
+                break
 
         # OK, now try as if we're in the roundup source distribution
         # directory, so this module will be in .../roundup-*/roundup/admin.py
