@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.6 2002-08-30 08:33:28 richard Exp $
+$Id: roundup_server.py,v 1.7 2002-09-04 07:32:55 richard Exp $
 """
 
 # python version check
@@ -168,10 +168,12 @@ def usage(message=''):
     if message:
         message = _('Error: %(error)s\n\n')%{'error': message}
     print _('''%(message)sUsage:
-roundup-server [-n hostname] [-p port] [name=instance home]*
+roundup-server [-n hostname] [-p port] [-l file] [-d file] [name=instance home]*
 
  -n: sets the host name
  -p: sets the port to listen on
+ -l: sets a filename to log to (instead of stdout)
+ -d: daemonize, and write the server's PID to the nominated file
 
  name=instance home
    Sets the instance home(s) to use. The name is how the instance is
@@ -186,10 +188,12 @@ roundup-server [-n hostname] [-p port] [name=instance home]*
 def run():
     hostname = ''
     port = 8080
+    pidfile = None
+    logfile = None
     try:
         # handle the command-line args
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:')
+            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:')
         except getopt.GetoptError, e:
             usage(str(e))
 
@@ -198,6 +202,8 @@ def run():
             if opt == '-n': hostname = arg
             elif opt == '-p': port = int(arg)
             elif opt == '-u': user = arg
+            elif opt == '-d': pidfile = arg
+            elif opt == '-l': logfile = arg
             elif opt == '-h': usage()
 
         if hasattr(os, 'getuid'):
@@ -238,6 +244,19 @@ def run():
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
     address = (hostname, port)
+
+    # fork?
+    if pidfile:
+        pid = os.fork()
+        if pid:
+            print 'forking', pid
+            open(pidfile, 'w').write(str(pid))
+            return
+
+    # redirect stdout/stderr
+    if logfile:
+        sys.stdout = sys.stderr = open(logfile, 'a')
+
     httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
     print _('Roundup server started on %(address)s')%locals()
     httpd.serve_forever()
@@ -247,6 +266,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2002/08/30 08:33:28  richard
+# new CGI frontend support
+#
 # Revision 1.5  2002/03/14 23:59:24  richard
 #  . #517734 ] web header customisation is obscure
 #
