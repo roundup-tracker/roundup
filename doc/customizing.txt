@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.64 $
+:Version: $Revision: 1.65 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -731,6 +731,12 @@ triggered by using a ``:action`` CGI variable, where the value is one of:
   the :note if it's supplied.
  :required=property,property,...
   The named properties are required to be filled in the form.
+ :remove:<propname>=id(s)
+  The ids will be removed from the multilink property. You may have multiple
+  :remove:<propname> form elements for a single <propname>.
+ :add:<propname>=id(s)
+  The ids will be added to the multilink property. You may have multiple
+  :add:<propname> form elements for a single <propname>.
 
 **new**
  Add a new item to the database. You may use the same special form elements

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.61 2002-12-10 23:39:40 richard Exp $
+# $Id: client.py,v 1.62 2002-12-11 01:46:46 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1173,6 +1173,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     props = {}
     keys = form.keys()
     properties = cl.getprops()
+    existing_cache = {}
     for key in keys:
         # see if we're performing a special multilink action
         mlaction = 'set'
@@ -1289,10 +1290,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 value = l
             else:
                 # we're modifying the list - get the current list of ids
-                try:
-                    existing = cl.get(nodeid, propname)
-                except KeyError:
-                    existing = []
+                if props.has_key(propname):
+                    existing = props[propname]
+                else:
+                    existing = cl.get(nodeid, propname, [])
+
+                # now either remove or add
                 if mlaction == 'remove':
                     # remove - handle situation where the id isn't in the list
                     for entry in l:
