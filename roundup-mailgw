@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.20 2002-01-07 10:43:48 richard Exp $
+# $Id: roundup-mailgw,v 1.21 2002-01-11 07:02:29 grubert Exp $
 
 # python version check
 from roundup import version_check
@@ -64,10 +64,15 @@ def do_pop(handler, server, user='', password=''):
     '''Read a series of messages from the specified POP server.
     '''
     import getpass, poplib, socket
-    if not user:
-        user = raw_input(_('User: '))
-    if not password:
-        password = getpass.getpass()
+    try:
+        if not user:
+            user = raw_input(_('User: '))
+        if not password:
+            password = getpass.getpass()
+    except (KeyboardInterrupt, EOFError):
+        # Ctrl C or D maybe also Ctrl Z under Windows.
+        print "\nAborted by user."
+        return 1
 
     # open a connection to the server and retrieve all messages
     try:
@@ -173,6 +178,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/01/07 10:43:48  richard
+# #500329 ] exception on server not reachable-patch
+#
 # Revision 1.19  2002/01/05 02:19:03  richard
 # i18n'ification
 #
