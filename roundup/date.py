@@ -1,4 +1,4 @@
-# $Id: date.py,v 1.3 2001-07-23 07:56:05 richard Exp $
+# $Id: date.py,v 1.4 2001-07-25 04:09:34 richard Exp $
 
 import time, re, calendar
 
@@ -66,9 +66,10 @@ class Date:
         if type(spec) == type(''):
             self.set(spec, offset=offset)
         else:
+            y,m,d,H,M,S,x,x,x = spec
+            ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
             self.year, self.month, self.day, self.hour, self.minute, \
-                self.second, x, x, x = spec
-        self.offset = offset
+                self.second, x, x, x = time.gmtime(ts)
 
     def applyInterval(self, interval):
         ''' Apply the interval to this date
@@ -139,8 +140,8 @@ class Date:
 
     def __str__(self):
         """Return this date as a string in the yyyy-mm-dd.hh:mm:ss format."""
-        return time.strftime('%Y-%m-%d.%T', (self.year, self.month,
-            self.day, self.hour, self.minute, self.second, 0, 0, 0))
+        return time.strftime('%Y-%m-%d.%T', (self.year, self.month, self.day,
+            self.hour, self.minute, self.second, 0, 0, 0))
 
     def pretty(self):
         ''' print up the date date using a pretty format...
@@ -162,23 +163,26 @@ class Date:
         info = m.groupdict()
 
         # get the current date/time using the offset
-        y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
-        ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
+        y,m,d,H,M,S,x,x,x = time.gmtime()
+
+        # override year, month, day parts
+        if info['m'] is not None and info['d'] is not None:
+            m = int(info['m'])
+            d = int(info['d'])
+            if info['y'] is not None: y = int(info['y'])
+            H = M = S = 0
+
+        # override hour, minute, second parts
+        if info['H'] is not None and info['M'] is not None:
+            H = int(info['H']) - offset
+            M = int(info['M'])
+            S = 0
+            if info['S'] is not None: S = int(info['S'])
+
+        # now handle the adjustment of hour
+        ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
         self.year, self.month, self.day, self.hour, self.minute, \
             self.second, x, x, x = time.gmtime(ts)
-
-        if info['m'] is not None and info['d'] is not None:
-            self.month = int(info['m'])
-            self.day = int(info['d'])
-            if info['y'] is not None:
-                self.year = int(info['y'])
-            self.hour = self.minute = self.second = 0
-
-        if info['H'] is not None and info['M'] is not None:
-            self.hour = int(info['H'])
-            self.minute = int(info['M'])
-            if info['S'] is not None:
-                self.second = int(info['S'])
 
         if info['o']:
             self.applyInterval(Interval(info['o']))
@@ -351,6 +355,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/23 07:56:05  richard
+# Storing only marshallable data in the db - no nasty pickled class references.
+#
 # Revision 1.2  2001/07/22 12:09:32  richard
 # Final commit of Grande Splite
 #
