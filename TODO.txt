@@ -5,6 +5,10 @@ Required:
 - translation databases in trackers
 - implementing logging for roundup-server, including command-line switches
 - per-property permission spec
+- fix documentation referring to configuration (config.ini, mysql.txt and
+  postgresql.txt)
+- fix documentation referring to customisation using interfaces.py
+- fix admin_guide referring to structure of trackers
 
 
 Optionally:
