@@ -32,22 +32,29 @@ You are not allowed to view this page.
        tal:content="python:i[request.group[1]]" class="group">
    </th>
   </tr>
-  <tr tal:attributes="class python:['normal', 'alt'][repeat['i'].index%6/3]">
-   <td tal:condition="request/show/priority" tal:content="i/priority"></td>
-   <td tal:condition="request/show/id" tal:content="i/id"></td>
+
+  <tr>
+   <td tal:condition="request/show/priority"
+       tal:content="python:i.priority.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/id" tal:content="i/id">&nbsp;</td>
    <td nowrap tal:condition="request/show/creation"
-       tal:content="i/creation/reldate"></td>
+       tal:content="i/creation/reldate">&nbsp;</td>
    <td nowrap tal:condition="request/show/activity"
-       tal:content="i/activity/reldate"></td>
-   <td tal:condition="request/show/topic" tal:content="i/topic"></td>
+       tal:content="i/activity/reldate">&nbsp;</td>
+   <td tal:condition="request/show/topic"
+       tal:content="python:i.topic.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/title">
     <a tal:attributes="href string:issue${i/id}"
 		tal:content="python:str(i.title.plain(hyperlink=0)) or '[no title]'">title</a>
    </td>
-   <td tal:condition="request/show/status" tal:content="i/status"></td>
-   <td tal:condition="request/show/creator" tal:content="i/creator"></td>
-   <td tal:condition="request/show/assignedto" tal:content="i/assignedto"></td>
+   <td tal:condition="request/show/status"
+       tal:content="python:i.status.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/creator"
+       tal:content="python:i.creator.plain() or default">&nbsp;</td>
+   <td tal:condition="request/show/assignedto"
+       tal:content="python:i.assignedto.plain() or default">&nbsp;</td>
   </tr>
+
  </tal:block>
  <tr class="navigation" tal:define="colspan python:len(request.columns)">
   <th tal:attributes="colspan python:colspan/2">

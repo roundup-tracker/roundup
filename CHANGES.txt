@@ -88,6 +88,8 @@ Fixed:
 - fixed missing (pre-commit) journal entries in *dbm backends (sf bug 679217)
 - URL cited in roundup email confusing dumb Email clients (sf bug 716585)
 - set title on issues even when the email body is empty (sf bug 727430)
+- under the heading of "questionable whether it's a fix or not"
+  (sf "bug" 621226 for the users of the "standards compliant" browser IE)
 
 
 2003-??-?? 0.5.7

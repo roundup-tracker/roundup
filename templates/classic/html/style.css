@@ -128,17 +128,9 @@ table.list td {
   padding: 0 4 0 4;
   border: 1px solid white;
   color: #404070;
-  background-color: white;
+  background-color: #efefef;
   vertical-align: top;
   empty-cells: show;
-}
-
-table.list tr.normal td {
-  background-color: #efefef;
-}
-
-table.list tr.alt td {
-  background-color: #efefef;
 }
 
 table.list tr.navigation th {

@@ -25,10 +25,10 @@ You are not allowed to view this page.
   <a tal:attributes="href string:user${user/id}"
      tal:content="user/username">username</a>
  </td>
- <td tal:content="user/realname">realname</td>
- <td tal:content="user/organisation">organisation</td>
- <td tal:content="python:user.address.email()">address</td>
- <td tal:content="user/phone">phone</td>
+ <td tal:content="python:user.realname.plain() or default">&nbsp;</td>
+ <td tal:content="python:user.organisation.plain() or default">&nbsp;</td>
+ <td tal:content="python:user.address.email() or default">&nbsp;</td>
+ <td tal:content="python:user.phone.plain() or default">&nbsp;</td>
  <td tal:condition="context/is_edit_ok">
   <a tal:attributes="href string:user${user/id}?:action=retire&:template=index">
    retire</a>
