@@ -16,10 +16,12 @@
 # 2. make imports use roundup.cgi
 """Global Translation Service for providing I18n to Page Templates.
 
-$Id: GlobalTranslationService.py,v 1.1 2004-05-21 05:58:48 richard Exp $
+$Id: GlobalTranslationService.py,v 1.2 2004-05-21 06:13:39 richard Exp $
 """
 
 import re
+
+from roundup.i18n import _
 
 from roundup.cgi.TAL.TALDefs import NAME_RE
 
@@ -29,6 +31,7 @@ class DummyTranslationService:
     """Translation service that doesn't know anything about translation."""
     def translate(self, domain, msgid, mapping=None,
                   context=None, target_language=None, default=None):
+        return str(msgid).upper()
         def repl(m, mapping=mapping):
             return ustr(mapping[m.group(m.lastindex)])
         cre = re.compile(r'\$(?:(%s)|\{(%s)\})' % (NAME_RE, NAME_RE))

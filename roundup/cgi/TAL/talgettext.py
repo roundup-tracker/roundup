@@ -36,13 +36,13 @@ import time
 import getopt
 import traceback
 
-from TAL.HTMLTALParser import HTMLTALParser
-from TAL.TALInterpreter import TALInterpreter
-from TAL.DummyEngine import DummyEngine
+from roundup.cgi.TAL.HTMLTALParser import HTMLTALParser
+from roundup.cgi.TAL.TALInterpreter import TALInterpreter
+from roundup.cgi.TAL.DummyEngine import DummyEngine
 #from ITALES import ITALESEngine
-from TAL.TALDefs import TALESError
+from roundup.cgi.TAL.TALDefs import TALESError
 
-__version__ = '$Revision: 1.1 $'
+__version__ = '$Revision: 1.2 $'
 
 pot_header = '''\
 # SOME DESCRIPTIVE TITLE.

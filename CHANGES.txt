@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Feature:
 - added MD5 scheme for password hiding
 - added support for HTTP charset selection
+- implement __nonzero__ for HTMLProperty
 
 
 2004-05-?? 0.7.3
