@@ -1,6 +1,6 @@
 import sys, cgi, urllib, os, re, os.path, time, errno
 
-from roundup import hyperdb, date
+from roundup import hyperdb, date, rcsv
 from roundup.i18n import _
 
 try:
@@ -395,17 +395,13 @@ class HTMLClass(HTMLPermissions):
     def csv(self):
         ''' Return the items of this class as a chunk of CSV text.
         '''
-        # get the CSV module
-        try:
-            import csv
-        except ImportError:
-            return 'Sorry, you need the csv module to use this function.\n'\
-                'Get it from: http://www.object-craft.com.au/projects/csv/'
+        if rcsv.error:
+            return rcsv.error
 
         props = self.propnames()
-        p = csv.parser()
         s = StringIO.StringIO()
-        s.write(p.join(props) + '\n')
+        writer = rcsv.writer(s, rcsv.comma_separated)
+        writer.writerow(props)
         for nodeid in self._klass.list():
             l = []
             for name in props:
@@ -416,7 +412,7 @@ class HTMLClass(HTMLPermissions):
                     l.append(':'.join(map(str, value)))
                 else:
                     l.append(str(self._klass.get(nodeid, name)))
-            s.write(p.join(l) + '\n')
+            writer.writerow(l)
         return s.getvalue()
 
     def propnames(self):
