@@ -8,6 +8,7 @@ Fixed:
  . bsddb3 backend should use 'c' for create, not 'n' for nuke
  . #571170 ] gdbm deadlock
  . #576241 ] MultiLink problems in parsePropsFromForm
+ . #516854 ] "My Issues" and redisplay
 
 
 2002-06-24 0.4.2
