@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.6 2002-07-09 04:26:44 richard Exp $
+#$Id: indexer.py,v 1.7 2002-07-09 21:38:43 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -35,8 +35,8 @@ class Indexer:
         self.indexdb_path = os.path.join(db_path, 'indexes')
         self.indexdb = os.path.join(self.indexdb_path, 'index.db')
         self.reindex = 0
-        self.casesensitive = 0
         self.quiet = 9
+        self.changed = 0
 
         # see if we need to reindex because of a change in code
         if (not os.path.exists(self.indexdb_path) or
@@ -54,6 +54,7 @@ class Indexer:
         os.chmod(self.indexdb_path, 0775)
         open(os.path.join(self.indexdb_path, 'version'), 'w').write('1\n')
         self.reindex = 1
+        self.changed = 1
 
     def should_reindex(self):
         '''Should we reindex?
@@ -102,21 +103,23 @@ class Indexer:
             # make a reference to the file for this word
             entry[file_index] = filedict[word]
 
+        # save needed
+        self.changed = 1
+
     def splitter(self, text, ftype):
         ''' Split the contents of a text string into a list of 'words'
         '''
         if ftype == 'text/plain':
-            words = self.text_splitter(text, self.casesensitive)
+            words = self.text_splitter(text)
         else:
             return []
         return words
 
-    def text_splitter(self, text, casesensitive=0):
+    def text_splitter(self, text):
         """Split text/plain string into a list of words
         """
-        # Let's adjust case if not case-sensitive
-        if not casesensitive:
-            text = text.upper()
+        # case insensitive
+        text = text.upper()
 
         # Split the raw text, losing anything longer than 25 characters
         # since that'll be gibberish (encoded text or somesuch) or shorter
@@ -183,8 +186,7 @@ class Indexer:
             if not 2 < len(word) < 25:
                 # word outside the bounds of what we index - ignore
                 continue
-            if not self.casesensitive:
-                word = word.upper()
+            word = word.upper()
             entry = self.words.get(word)    # For each word, get index
             entries[word] = entry           #   of matching files
             if not entry:                   # Nothing for this one word (fail)
@@ -244,10 +246,12 @@ class Indexer:
         self.words = db['WORDS']
         self.files = db['FILES']
         self.fileids = db['FILEIDS']
+        self.changed = 0
 
     def save_index(self):
-        # make sure we're loaded
-        self.load_index()
+        # only save if the index is loaded and changed
+        if not self.index_loaded() or not self.changed:
+            return
 
         # brutal space saver... delete all the small segments
         for segment in self.segments:
@@ -280,6 +284,9 @@ class Indexer:
             pickle_fh.write(zlib.compress(pickle_str))
             os.chmod(filename, 0664)
 
+        # save done
+        self.changed = 0
+
     def purge_entry(self, identifier):
         ''' Remove a file from file index and word index
         '''
@@ -295,12 +302,18 @@ class Indexer:
             if occurs.has_key(file_index):
                 del occurs[file_index]
 
+        # save needed
+        self.changed = 1
+
     def index_loaded(self):
         return (hasattr(self,'fileids') and hasattr(self,'files') and
             hasattr(self,'words'))
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.6  2002/07/09 04:26:44  richard
+#We're indexing numbers now, and _underscore words
+#
 #Revision 1.5  2002/07/09 04:19:09  richard
 #Added reindex command to roundup-admin.
 #Fixed reindex on first access.
