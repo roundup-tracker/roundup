@@ -1,7 +1,15 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-06-19 0.4.2
+2002-06- 0.4.2
+Fixed:
+ . Cleaned up the hyperdb unit tests.
+ . Applied patch from Andrew W. Nosenko to give nicer Unauthorised message
+   when anonymous user tries to edit. Should've been applied in 0.4.2pr1. Oops.
+ . Added more detailed note to MIGRATION regarding the detectors changes.
+
+
+2002-06-19 0.4.2pr1
 Feature:
  . added a "detectors" directory for people to put their useful auditors and
    reactors in. Note - the roundupdb.IssueClass.sendmessage method has been
@@ -76,6 +84,8 @@ Fixed:
    real-name is properly quoted
  . #558867 ] ZRoundup redirect /instance requests to /instance/ 
  . #569415 ] {version}
+ . #569178 ] type error
+   was fixed as part of the general cleanup of reactors
 
 
 2002-03-25 - 0.4.1
