@@ -2,10 +2,28 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.9 $
+:Version: $Revision: 1.10 $
 
 .. contents::
 
+
+What You Can Do
+---------------
+
+Customisation of Roundup can take one of three forms:
+
+1. `instance configuration`_ file changes
+2. `instance schema`_ changes
+3. "definition" class `database content`_ changes
+
+The third case is special because it takes two distinctly different forms
+depending upon whether the instance has been initialised or not. The other two
+may be done at any time, before or after instance initialisation. Yes, this
+includes adding or removing properties from classes.
+
+
+Instances in a Nutshell
+-----------------------
 
 Instances have the following structure:
 
@@ -336,7 +354,8 @@ Instance Schema
 ---------------
 
 Note: if you modify the schema, you'll most likely need to edit the
-      `web interface`_ HTML template files to reflect your changes.
+      `web interface`_ HTML template files and `detectors`_ to reflect
+      your changes.
 
 An instance schema defines what data is stored in the instance's database. The
 two schemas shipped with Roundup turn it into a typical software bug tracker
@@ -496,6 +515,7 @@ Create a node in the database. This is generally used to create nodes in the
 
 Detectors - adding behaviour to your tracker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _`detectors`:
 
 Sample additional detectors that have been found useful will appear in the
 ``detectors`` directory of the Roundup distribution:
@@ -504,6 +524,28 @@ newissuecopy.py
   This detector sends an email to a team address whenever a new issue is
   created. The address is hard-coded into the detector, so edit it before you
   use it (look for the text 'team@team.host') or you'll get email errors!
+
+
+Database Content
+----------------
+
+Note: if you modify the content of definitional classes, you'll most likely
+       need to edit the instance `detectors`_ to reflect your changes.
+
+Customisation of the special "definitional" classes (eg. status, priority,
+resolution, ...) may be done either before or after the instance is
+initialised. The actual method of doing so is completely different in each
+case though, so be careful to use the right one.
+
+**Changing content before instance initialisation**
+    Edit the dbinit module in your instance to alter the nodes created in using
+    the create() methods.
+
+
+**Changing content after instance initialisation**
+    Use the roundup-admin interface's create, set and retire methods to add,
+    alter or remove nodes from the classes in question.
+
 
 
 Web Interface
