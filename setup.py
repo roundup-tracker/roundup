@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.80 2005-02-28 03:14:48 richard Exp $
+# $Id: setup.py,v 1.81 2005-03-01 14:40:36 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -33,6 +33,7 @@ if not hasattr(DistributionMetadata, 'classifiers'):
     DistributionMetadata.classifiers = None
     DistributionMetadata.download_url = None
 
+from roundup import msgfmt
 
 #############################################################################
 ### Build script files
@@ -191,7 +192,7 @@ def scriptname(path):
 
 ### Build Roundup
 
-def list_message_files(suffix=".mo"):
+def list_message_files(suffix=".po"):
     """Return list of all found message files and their intallation paths"""
     _files = glob("locale/*" + suffix)
     _list = []
@@ -242,11 +243,12 @@ class build_py_roundup(build_py):
 class build_roundup(build):
 
     def build_message_files(self):
-        """Copy all .mo files to their locale directories"""
+        """For each locale/*.po, build .mo file in target locale directory"""
         for (_src, _dst) in list_message_files():
             _build_dst = os.path.join("build", _dst)
             self.mkpath(os.path.dirname(_build_dst))
-            self.copy_file(_src, _build_dst)
+            self.announce("Compiling %s -> %s" % (_src, _build_dst))
+            msgfmt.make(_src, _build_dst)
 
     def run(self):
         check_manifest()
@@ -315,7 +317,7 @@ def main():
         'description': "A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
-        'long_description': 
+        'long_description':
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
