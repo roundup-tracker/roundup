@@ -15,8 +15,8 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: builder.py,v 1.1 2002-08-16 04:25:03 richard Exp $
-import errno, re
+# $Id: builder.py,v 1.2 2002-09-05 23:39:13 richard Exp $
+import os, sys, glob, errno, re
 
 __doc__ = """
 Collect template parts and create instance template files.
@@ -29,14 +29,19 @@ preamble = """
 """
 
 def makeHtmlBase(templateDir):
-    """ make a htmlbase.py file in the given templateDir, from the
-        contents of templateDir/html """
-    import os, glob, re
+    ''' make a <template>_htmlbase.py file in rondup.tempaltes, from the
+        contents of templateDir/html
+    '''
     print "packing up templates in", templateDir
+
     filelist = glob.glob(os.path.join(templateDir, 'html', '*'))
     filelist = filter(os.path.isfile, filelist) # only want files
     filelist.sort()
-    fd = open(os.path.join(templateDir, 'htmlbase.py'), 'w')
+
+    # ok, figure the template name and templates dir
+    dir, name = os.path.split(templateDir)
+
+    fd = open(os.path.join(dir, '%s_htmlbase.py'%name), 'w')
     fd.write(preamble)
     for file in filelist:
         # skip the backup files created by richard's vim
@@ -49,16 +54,16 @@ def makeHtmlBase(templateDir):
     fd.close()
 
 def installHtmlBase(template, installDir):
-    """ passed a template package and an installDir, unpacks the html files into
-      the installdir """
-    import os,sys,re
-
-    tdir = __import__('roundup.templates.%s.htmlbase'%template).templates
-    if hasattr(tdir, template):
-        tmod = getattr(tdir, template)
+    ''' passed a template name and an installDir, unpacks the html files into
+        the installdir
+    '''
+    tmod = '%s_htmlbase'%template
+    tdir = __import__('roundup.templates.'+tmod).templates
+    if hasattr(tdir, tmod):
+        htmlbase = getattr(tdir, tmod)
     else:
-        raise "TemplateError", "couldn't find roundup.template.%s.htmlbase"%template
-    htmlbase = tmod.htmlbase
+        raise "TemplateError", \
+            "couldn't find roundup.templates.%s_htmlbase"%template
     installDir = os.path.join(installDir, 'html')
     try:
         os.makedirs(installDir)
@@ -76,10 +81,7 @@ def installHtmlBase(template, installDir):
         data = getattr(htmlbase, mangledfile)
         outfd.write(data)
     
-
-
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) == 2:
         makeHtmlBase(sys.argv[1])
     elif len(sys.argv) == 3:
@@ -89,6 +91,9 @@ if __name__ == "__main__":
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/08/16 04:25:03  richard
+# cleanup: moved templatebuilder into templates.builder
+#
 # Revision 1.14  2002/02/05 09:59:05  grubert
 #  . makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace does it.
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.21 2002-08-16 04:25:03 richard Exp $
+# $Id: init.py,v 1.22 2002-09-05 23:39:12 richard Exp $
 
 __doc__ = """
 Init (create) a roundup instance.
@@ -89,6 +89,7 @@ def install(instance_home, template, backend):
     # first, copy the template dir over
     from roundup.templates import builder
 
+    # copy the roundup.templates.<template> package contents to the instance dir
     template_dir = os.path.split(__file__)[0]
     template_name = template
     template = os.path.join(template_dir, 'templates', template)
@@ -114,6 +115,9 @@ def initialise(instance_home, adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/08/16 04:25:03  richard
+# cleanup: moved templatebuilder into templates.builder
+#
 # Revision 1.20  2002/07/14 02:05:53  richard
 # . all storage-specific code (ie. backend) is now implemented by the backends
 #

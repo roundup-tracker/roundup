@@ -1,3 +1,5 @@
 *.pyc
 *.pyo
 *.cover
+*_htmlbase.py
+*_htmlbase.pyc

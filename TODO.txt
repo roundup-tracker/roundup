@@ -47,19 +47,14 @@ pending web: search "refinement"
                query values
 pending web: have roundup.cgi pick up instance config from the environment 
 pending web: UNIX init.d script for roundup-server
+pending web: rewritten documentation (can come after the beta though so stuff
+             is settled)
+pending web: modify cgitb to handle PageTemplate errors better (see how 
+             Zope handles __traceback_supplement__ and __traceback_info__)
+pending web: title is stoopid
 
-New templating TODO:
-. rewritten documentation (can come after the beta though so stuff is settled)
-. modify cgitb to handle PageTemplate errors better
-. add :required to edit action
-active web: title is stoopid
-active hyperdb: full-text searching doesn't appear to match stuff in titles,
-                even though they're supposed to be indexed...
-
-ongoing: any bugs
 bug: request.url is incorrect in cgi-bin environments
 
-rejected instance: the use of non-Python configuration files (ConfigParser)
 done web: Re-enable link backrefs from messages (feature request #568714) (RJ)
 done web: have the page layout (header/footer) be templatable (RJ)
 done web: fixing the templating so it works (RJ)
@@ -79,7 +74,10 @@ done mailgw: better help message (feature request #558562) (RJ)
 done security: add info from doc/security.txt to design doc (RJ)
 done security: switch to sessions for web authentication (RJ)
 done security: implement and use the new logical control mechanisms
-done web: saving of named queries (GM)
+done web: saving of named queries (GM, RJ)
 done web: handle "not found", access and item page render errors better (RJ)
 done web: fix double-submit by having new-item-submit redirect at end (RJ)
-done web: daemonify roundup-server (fork, logfile, pidfile)
+done web: daemonify roundup-server (fork, logfile, pidfile) (RJ)
+
+rejected instance: the use of non-Python configuration files (ConfigParser)
+

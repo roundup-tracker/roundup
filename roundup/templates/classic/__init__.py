@@ -15,18 +15,18 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.5 2001-08-07 00:24:43 richard Exp $
+# $Id: __init__.py,v 1.6 2002-09-05 23:39:14 richard Exp $
 
 import sys
 from instance_config import *
-try:
-    from dbinit import *
-except:
-    pass # in install dir (probably :)
+from dbinit import *
 from interfaces import *
 
 # 
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.4  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.14 2002-09-05 05:25:23 richard Exp $
+# $Id: client.py,v 1.15 2002-09-05 23:39:12 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -114,9 +114,15 @@ class Client:
             In some situations, exceptions occur:
             - HTTP Redirect  (generally raised by an action)
             - SendFile       (generally raised by determine_context)
+              serve up a FileClass "content" property
             - SendStaticFile (generally raised by determine_context)
-            - Unauthorised   (raised pretty much anywhere it needs to be)
-            - NotFound       (see above... percolates up to the CGI interface)
+              serve up a file from the tracker "html" directory
+            - Unauthorised   (generally raised by an action)
+              the action is cancelled, the request is rendered and an error
+              message is displayed indicating that permission was not
+              granted for the action to take place
+            - NotFound       (raised wherever it needs to be)
+              percolates up to the CGI interface that called the client
         '''
         self.content_action = None
         self.ok_message = []
@@ -581,6 +587,10 @@ class Client:
              Create a file and attach it to the current node's
              "files" property. Attach the file to the message created from
              the __note if it's supplied.
+
+            :required=property,property,...
+             The named properties are required to be filled in the form.
+
         '''
         cl = self.db.classes[self.classname]
 
@@ -653,7 +663,8 @@ class Client:
     def newItemAction(self):
         ''' Add a new item to the database.
 
-            This follows the same form as the editItemAction
+            This follows the same form as the editItemAction, with the same
+            special form values.
         '''
         cl = self.db.classes[self.classname]
 
@@ -1033,36 +1044,58 @@ class Client:
 
 
 def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
-    '''Pull properties for the given class out of the form.
+    ''' Pull properties for the given class out of the form.
+
+        If a ":required" parameter is supplied, then the names property values
+        must be supplied or a ValueError will be raised.
     '''
+    required = []
+    if form.has_key(':required'):
+        value = form[':required']
+        if isinstance(value, type([])):
+            required = [i.value.strip() for i in value]
+        else:
+            required = [i.strip() for i in value.value.split(',')]
+
     props = {}
     keys = form.keys()
     for key in keys:
         if not cl.properties.has_key(key):
             continue
         proptype = cl.properties[key]
+
+        # Get the form value. This value may be a MiniFieldStorage or a list
+        # of MiniFieldStorages.
+        value = form[key]
+
+        # make sure non-multilinks only get one value
+        if not isinstance(proptype, hyperdb.Multilink):
+            if isinstance(value, type([])):
+                raise ValueError, 'You have submitted more than one value'\
+                    ' for the %s property'%key
+            # we've got a MiniFieldStorage, so pull out the value and strip
+            # surrounding whitespace
+            value = value.value.strip()
+
         if isinstance(proptype, hyperdb.String):
+            pass
             value = form[key].value.strip()
         elif isinstance(proptype, hyperdb.Password):
-            value = form[key].value.strip()
             if not value:
                 # ignore empty password values
                 continue
             value = password.Password(value)
         elif isinstance(proptype, hyperdb.Date):
-            value = form[key].value.strip()
             if value:
                 value = date.Date(form[key].value.strip())
             else:
                 value = None
         elif isinstance(proptype, hyperdb.Interval):
-            value = form[key].value.strip()
             if value:
                 value = date.Interval(form[key].value.strip())
             else:
                 value = None
         elif isinstance(proptype, hyperdb.Link):
-            value = form[key].value.strip()
             # see if it's the "no selection" choice
             if value == '-1':
                 value = None
@@ -1077,11 +1110,13 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             '%(value)s not a %(classname)s')%{'propname':key, 
                             'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
-            value = form[key]
-            if not isinstance(value, type([])):
-                value = [i.strip() for i in value.value.split(',')]
-            else:
+            if isinstance(value, type([])):
+                # it's a list of MiniFieldStorages
                 value = [i.value.strip() for i in value]
+            else:
+                # it's a MiniFieldStorage, but may be a comma-separated list
+                # of values
+                value = [i.strip() for i in value.value.split(',')]
             link = cl.properties[key].classname
             l = []
             for entry in map(str, value):
@@ -1097,10 +1132,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             l.sort()
             value = l
         elif isinstance(proptype, hyperdb.Boolean):
-            value = form[key].value.strip()
             props[key] = value = value.lower() in ('yes', 'true', 'on', '1')
         elif isinstance(proptype, hyperdb.Number):
-            value = form[key].value.strip()
             props[key] = value = int(value)
 
         # get the old value
@@ -1117,6 +1150,15 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 props[key] = value
         else:
             props[key] = value
+
+    # see if all the required properties have been supplied
+    l = []
+    for property in required:
+        if not props.has_key(property):
+            l.append(property)
+    if l:
+        raise ValueError, 'Required properties %s not supplied'%(', '.join(l))
+
     return props
 
 
