@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.57 $
+:Version: $Revision: 1.58 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -694,11 +694,14 @@ triggered by using a ``:action`` CGI variable, where the value is one of:
 
 **login**
  Attempt to log a user in.
+
 **logout**
  Log the user out - make them "anonymous".
+
 **register**
  Attempt to create a new user based on the contents of the form and then log
  them in.
+
 **edit**
  Perform an edit of an item in the database. There are some special form
  elements you may use:
@@ -719,6 +722,9 @@ triggered by using a ``:action`` CGI variable, where the value is one of:
 **new**
  Add a new item to the database. You may use the same special form elements
  as in the "edit" action.
+
+**retire**
+ Retire the item in the database.
 
 **editCSV**
  Performs an edit of all of a class' items in one go. See also the
