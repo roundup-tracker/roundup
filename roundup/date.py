@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.63 2004-03-24 04:57:25 richard Exp $
+# $Id: date.py,v 1.64 2004-04-06 21:56:10 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -90,6 +90,22 @@ class Date:
     The date format 'yyyymmddHHMMSS' (year, month, day, hour,
     minute, second) is the serialisation format returned by the serialise()
     method, and is accepted as an argument on instatiation.
+
+    The date class handles basic arithmetic::
+
+        >>> d1=Date('.')
+        >>> d1
+        <Date 2004-04-06.22:04:20.766830>
+        >>> d2=Date('2003-07-01')
+        >>> d2
+        <Date 2003-07-01.00:00:0.000000>
+        >>> d1-d2
+        <Interval + 280d 22:04:20>
+        >>> i1=_
+        >>> d2+i1
+        <Date 2004-04-06.22:04:20.000000>
+        >>> d1-i1
+        <Date 2003-07-01.00:00:0.000000>
     '''
     
     def __init__(self, spec='.', offset=0, add_granularity=0):
