@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.77 2003-02-07 04:49:13 richard Exp $
+# $Id: client.py,v 1.78 2003-02-12 00:00:28 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1166,10 +1166,6 @@ class Client:
 
            This is typically used on, eg. the file upload page to indicated
            which issue to link the file to.
-
-           TODO: I suspect that this and newfile will go away now that
-           there's the ability to upload a file using the issue :file form
-           element!
         '''
         cn = self.classname
         cl = self.db.classes[cn]

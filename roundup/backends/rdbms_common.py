@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.31 2003-02-08 15:31:28 kedder Exp $
+# $Id: rdbms_common.py,v 1.32 2003-02-12 00:00:25 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -27,7 +27,7 @@ import sys, os, time, re, errno, weakref, copy
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError, Boolean, Number
+    Multilink, DatabaseError, Boolean, Number, Node
 from roundup.backends import locking
 
 # support

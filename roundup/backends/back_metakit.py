@@ -50,7 +50,7 @@ def Database(config, journaltag=None):
             pass
     return db
 
-class _Database(hyperdb.Database):
+class _Database(hyperdb.Database, roundupdb.Database):
     def __init__(self, config, journaltag=None):
         self.config = config
         self.journaltag = journaltag
@@ -1206,13 +1206,16 @@ class FileClass(Class):
 
     def get(self, nodeid, propname, default=_marker, cache=1):
         x = Class.get(self, nodeid, propname, default, cache)
+        poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
             if x.startswith('file:'):
                 fnm = x[5:]
                 try:
                     x = open(fnm, 'rb').read()
-                except Exception, e:
-                    x = repr(e)
+                except IOError, (strerror):
+                    # XXX by catching this we donot see an error in the log.
+                    return 'ERROR reading file: %s%s\n%s\n%s'%(
+                            self.classname, nodeid, poss_msg, strerror)
         return x
 
     def create(self, **propvalues):
