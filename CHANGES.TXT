@@ -46,21 +46,27 @@
  . Added more fields to the issue.filter and issue.index templates
 
 
-2001-07-19 - 0.1.4
- . Fixed bug in re generation in the filter (I hadn't finished the code ;)
- . Fixed handling of None String property in grouped list headings
- . Fixed adding new issue with no change note
- . Added an issue priority of support
- . Fixed values in text input fields which contained quotes (") are now
-   quoted.
- . Fixed a bug in the hyperdb filter - wrong variable names in the error
-   message.
- . Major reshuffle of code to allow multiple roundup instances and a
+2001-07-26 - 0.2.0
+Features:
+ . Major reorganisation of code to allow multiple roundup instances and a
    single, site-packages -based installation. Also allows multiple database
    back-ends.
  . Moved the bin/ proggies into the top dir, so that it all works
    out-of-the-box
  . Added the "classic" template - a direct implementation of the Roundup
    spec. Well, as close as we're going to get, anyway.
+ . Added an issue priority of support to "extended"
  . Added command-line arg handling to roundup-server so it's more useful 
    out-of-the-box.
+ . Added distutils-style installation of "lib" files.
+ . Added some unit tests.
+
+Fixes:
+ . Fixed bug in re generation in the filter
+ . Fixed handling of None String property in grouped list headings
+ . Fixed adding new issue with no change note
+ . Fixed values in text input fields which contained quotes (") are now
+   quoted.
+ . Fixed a bug in the hyperdb filter - wrong variable names in the error
+   message.
+
