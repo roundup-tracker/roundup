@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.66 2003-01-13 23:32:12 richard Exp $ 
+# $Id: test_db.py,v 1.67 2003-01-14 10:52:05 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -204,6 +204,10 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.user.lookup('spam'), newid)
         self.db.user.retire(newid)
         self.assertRaises(KeyError, self.db.user.lookup, 'spam')
+
+        # use the key again now that the old is retired
+        newid2 = self.db.user.create(username="spam")
+        self.assertNotEqual(newid, newid2)
 
     def testNewProperty(self):
         self.db.issue.create(title="spam", status='1')
@@ -702,6 +706,13 @@ class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, gadfly)
 
 
+# XXX to fix the mysql tests...
+# From: Andrey Lebedev <andrey@micro.lt>
+# I believe we can DROP DATABASE <dbname> and then CREATE DATABASE
+# <dbname>.. it's an easiest way. This will work if db user has all
+# privileges on database. 
+# Another way - to perform "SHOW TABLES" SQL and then perform DROP TABLE
+# <tblname> on each table...
 class mysqlDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import mysql
@@ -820,31 +831,39 @@ def suite():
 #    return unittest.TestSuite(l)
 
     from roundup import backends
-    if hasattr(backends, 'mysql'):
-        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
-        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+    p = []
+#    if hasattr(backends, 'mysql'):
+#        p.append('mysql')
+#        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+#        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
 #    return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):
+        p.append('gadfly')
         l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
         l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
 
     if hasattr(backends, 'sqlite'):
+        p.append('sqlite')
         l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
         l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
 
     if hasattr(backends, 'bsddb'):
+        p.append('bsddb')
         l.append(unittest.makeSuite(bsddbDBTestCase, 'test'))
         l.append(unittest.makeSuite(bsddbReadOnlyDBTestCase, 'test'))
 
     if hasattr(backends, 'bsddb3'):
+        p.append('bsddb3')
         l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
         l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
 
     if hasattr(backends, 'metakit'):
+        p.append('metakit')
         l.append(unittest.makeSuite(metakitDBTestCase, 'test'))
         l.append(unittest.makeSuite(metakitReadOnlyDBTestCase, 'test'))
 
+    print 'running %s backend tests'%(', '.join(p))
     return unittest.TestSuite(l)
 
 # vim: set filetype=python ts=4 sw=4 et si
