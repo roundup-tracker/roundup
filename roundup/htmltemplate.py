@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.10 2001-07-29 09:28:23 richard Exp $
+# $Id: htmltemplate.py,v 1.11 2001-07-29 09:31:35 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -395,6 +395,8 @@ def sortby(sort_name, columns, filter, sort, group, filterspec):
         dir = name[0]
         if dir == '-':
             name = name[1:]
+        else:
+            dir = ''
         if sort_name == name:
             if dir == '-':
                 s_dir = ''
@@ -707,6 +709,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/07/29 09:28:23  richard
+# Fixed sorting by clicking on column headings.
+#
 # Revision 1.9  2001/07/29 08:27:40  richard
 # Fixed handling of passed-in values in form elements (ie. during a
 # drill-down)
