@@ -1485,8 +1485,8 @@ The security module defines::
                 'rolename' is the name of the role to add permission to.
             '''
 
-Modules such as ``cgi_client.py`` and ``mailgw.py`` define their own
-permissions like so (this example is ``cgi_client.py``)::
+Modules such as ``cgi/client.py`` and ``mailgw.py`` define their own
+permissions like so (this example is ``cgi/client.py``)::
 
     def initialiseSecurity(security):
         ''' Create some Permissions and Roles on the security object
