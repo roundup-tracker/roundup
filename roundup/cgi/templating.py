@@ -421,7 +421,7 @@ class HTMLClass(HTMLPermissions):
         return l
 
     def classhelp(self, properties=None, label='list', width='500',
-            height='400'):
+            height='400', property=''):
         ''' Pop up a javascript window with class help
 
             This generates a link to a popup window which displays the 
@@ -433,14 +433,19 @@ class HTMLClass(HTMLPermissions):
 
             You may optionally override the label displayed, the width and
             height. The popup window will be resizable and scrollable.
+
+            If the "property" arg is given, it's passed through to the
+            javascript help_window function.
         '''
         if properties is None:
             properties = self._klass.getprops(protected=0).keys()
             properties.sort()
             properties = ','.join(properties)
+        if property:
+            property = '&property=%s'%property
         return '<a href="javascript:help_window(\'%s?:template=help&' \
-            'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(
-            self.classname, properties, width, height, label)
+            'properties=%s%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(
+            self.classname, property, properties, width, height, label)
 
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
