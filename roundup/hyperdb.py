@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.47 2002-01-14 02:20:15 richard Exp $
+# $Id: hyperdb.py,v 1.48 2002-01-14 06:32:34 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -364,6 +364,7 @@ class Class:
             if isinstance(prop, Multilink):
                 propvalues[key] = []
             else:
+                # TODO: None isn't right here, I think...
                 propvalues[key] = None
 
         # convert all data to strings
@@ -395,13 +396,21 @@ class Class:
         if propname == 'id':
             return nodeid
 
+        # get the property (raises KeyErorr if invalid)
+        prop = self.properties[propname]
+
         # get the node's dict
         d = self.db.getnode(self.classname, nodeid, cache=cache)
-        if not d.has_key(propname) and default is not _marker:
-            return default
 
-        # get the value
-        prop = self.properties[propname]
+        if not d.has_key(propname):
+            if default is _marker:
+                if isinstance(prop, Multilink):
+                    return []
+                else:
+                    # TODO: None isn't right here, I think...
+                    return None
+            else:
+                return default
 
         # possibly convert the marshalled data to instances
         if isinstance(prop, Date):
@@ -519,8 +528,11 @@ class Class:
                 value = l
                 propvalues[key] = value
 
-                #handle removals
-                l = node[key]
+                # handle removals
+                if node.has_key(key):
+                    l = node[key]
+                else:
+                    l = []
                 for id in l[:]:
                     if id in value:
                         continue
@@ -1029,6 +1041,15 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.47  2002/01/14 02:20:15  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.46  2002/01/07 10:42:23  richard
 # oops
 #

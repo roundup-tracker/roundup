@@ -17,6 +17,7 @@ Fixed:
    config attriubute on the db. This means that all config is obtained from
    instance_config instead of the mish-mash of classes. This will make
    switching to a ConfigParser setup easier too, I hope.
+ . #502951 ] adding new properties to old database
 
 
 2002-01-08 - 0.4.0b1
