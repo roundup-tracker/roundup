@@ -445,10 +445,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def is_view_ok(self):
         ''' Is the user allowed to View the current class?
         '''
-        if self._db.security.hasPermission('View', self._client.userid,
-                self._classname):
-            return 1
-        return self.is_edit_ok()
+        return self._db.security.hasPermission('View', self._client.userid,
+            self._classname)
 
     def is_only_view_ok(self):
         ''' Is the user only allowed to View (ie. not Create) the current class?
@@ -612,7 +610,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         If the "property" arg is given, it's passed through to the
         javascript help_window function.
 
-        If the "form" arg is given, it's passed through to the 
+        If the "form" arg is given, it's passed through to the
         javascript help_window function. - it's the name of the form
         the "property" belongs to.
         '''
