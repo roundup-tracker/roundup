@@ -303,7 +303,8 @@ handle this exception sanely. For example:
 New auditor fixes Outlook bug
 -----------------------------
 
-This auditor fires whenever a new file entity is created.
+The new optional auditor ``detectors/emailauditor.py`` fires whenever a
+new file entity is created.
 
 If the file is of type message/rfc822, we tack onthe extension .eml.
 
