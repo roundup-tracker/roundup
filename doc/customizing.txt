@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.56 $
+:Version: $Revision: 1.57 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1334,13 +1334,20 @@ or the python expression::
 The utils variable
 ~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the roundup.cgi.templating.TemplatingUtils class.
+Note: this is implemented by the roundup.cgi.templating.TemplatingUtils class,
+but it may be extended as described below.
 
 =============== =============================================================
 Method          Description
 =============== =============================================================
 Batch           return a batch object using the supplied list
 =============== =============================================================
+
+You may add additional utility methods by writing them in your tracker
+``interfaces.py`` module's ``TemplatingUtils`` class. See `adding a time log
+to your issues`_ for an example. The TemplatingUtils class itself will have a
+single attribute, ``client``, which may be used to access the ``client.db``
+when you need to perform arbitrary database queries.
 
 Batching
 ::::::::
@@ -2520,10 +2527,35 @@ able to give a summary of the total time spent on a particular issue.
    isn't it handy? The important change is setting the action to
    "edit_with_timelog" for edit operations (where the item exists)
 
-6. Display the time log for an issue::
+6. We want to display a total of the time log times that have been accumulated
+   for an issue. To do this, we'll need to actually write some Python code,
+   since it's beyond the scope of PageTemplates to perform such calculations.
+   We do this by adding a method to the TemplatingUtils class in our tracker
+   ``interfaces.py`` module::
+
+
+    class TemplatingUtils:
+        ''' Methods implemented on this class will be available to HTML
+            templates through the 'utils' variable.
+        '''
+        def totalTimeSpent(self, times):
+            ''' Call me with a list of timelog items (which have an Interval 
+                "period" property)
+            '''
+            total = Interval('')
+            for time in times:
+                total += time.period._value
+            return total
+
+   As indicated in the docstrings, we will be able to access the
+   ``totalTimeSpent`` method via the ``utils`` variable in our templates. See
+
+7. Display the time log for an issue::
 
      <table class="otherinfo" tal:condition="context/times">
-      <tr><th colspan="3" class="header">Time Log</th></tr>
+      <tr><th colspan="3" class="header">Time Log
+       <tal:block tal:replace="python:utils.totalTimeSpent(context.times)" />
+      </th></tr>
       <tr><th>Date</th><th>Period</th><th>Logged By</th></tr>
       <tr tal:repeat="time context/times">
        <td tal:content="time/creation"></td>
@@ -2532,9 +2564,12 @@ able to give a summary of the total time spent on a particular issue.
       </tr>
      </table>
 
-   I put this just above the Messages log in my issue display.
+   I put this just above the Messages log in my issue display. Note our use
+   of the ``totalTimeSpent`` method which will total up the times for the
+   issue and return a new Interval. That will be automatically displayed in
+   the template as text like "+ 1y 2:40" (1 year, 2 hours and 40 minutes).
 
-6. If you're using a persistent web server - roundup-server or mod_python for
+8. If you're using a persistent web server - roundup-server or mod_python for
    example - then you'll need to restart that to pick up the code changes.
    When that's done, you'll be able to use the new time logging interface.
 

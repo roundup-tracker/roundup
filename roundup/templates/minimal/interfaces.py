@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.1 2002-09-26 04:15:07 richard Exp $
+# $Id: interfaces.py,v 1.2 2002-10-11 01:26:43 richard Exp $
 
 from roundup import mailgw 
 from roundup.cgi import client
@@ -24,6 +24,12 @@ class Client(client.Client):
     ''' derives basic CGI implementation from the standard module, 
         with any specific extensions 
     ''' 
+    pass
+
+class TemplatingUtils:
+    ''' Methods implemented on this class will be available to HTML templates
+        through the 'utils' variable.
+    '''
     pass
 
 class MailGW(mailgw.MailGW): 

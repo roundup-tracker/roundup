@@ -130,8 +130,19 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
           The current tracker config.
         *db*
           The current database, used to access arbitrary database items.
+        *utils*
+          This is a special class that has its base in the TemplatingUtils
+          class in this file. If the tracker interfaces module defines a
+          TemplatingUtils class then it is mixed in, overriding the methods
+          in the base class.
     '''
     def getContext(self, client, classname, request):
+        # construct the TemplatingUtils class
+        utils = TemplatingUtils
+        if hasattr(client.instance.interfaces, 'TemplatingUtils'):
+            class utils(client.instance.interfaces.TemplatingUtils, utils):
+                pass
+
         c = {
              'options': {},
              'nothing': None,
@@ -139,7 +150,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
              'db': HTMLDatabase(client),
              'config': client.instance.config,
              'tracker': client.instance,
-             'utils': TemplatingUtils(client),
+             'utils': utils(client),
              'templates': Templates(client.instance.config.TEMPLATES),
         }
         # add in the item if there is one
