@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.10 2002-02-21 23:11:45 richard Exp $ 
+# $Id: test_dates.py,v 1.11 2002-02-21 23:34:52 richard Exp $ 
 
 import unittest, time
 
@@ -74,7 +74,7 @@ class DateTestCase(unittest.TestCase):
         # now check calculations
         date = Date('2000-01-01') + Interval('- 2y 2m')
         ae(str(date), '1997-11-01.00:00:00')
-        date = Date('2000-01-01') + Interval('+ 2m')
+        date = Date('2000-01-01') + Interval('2m')
         ae(str(date), '2000-03-01.00:00:00')
 
         date = Date('2000-01-01') + Interval('60d')
@@ -82,6 +82,7 @@ class DateTestCase(unittest.TestCase):
         date = Date('2001-01-01') + Interval('60d')
         ae(str(date), '2001-03-02.00:00:00')
 
+        # time additions
         date = Date('2000-02-28.23:59:59') + Interval('00:00:01')
         ae(str(date), '2000-02-29.00:00:00')
         date = Date('2001-02-28.23:59:59') + Interval('00:00:01')
@@ -102,6 +103,37 @@ class DateTestCase(unittest.TestCase):
         date = Date('2001-02-28.22:58:59') + Interval('00:00:3661')
         ae(str(date), '2001-03-01.00:00:00')
 
+        # now subtractions
+        date = Date('2000-01-01') - Interval('- 2y 2m')
+        ae(str(date), '2002-03-01.00:00:00')
+        date = Date('2000-01-01') - Interval('2m')
+        ae(str(date), '1999-11-01.00:00:00')
+
+        date = Date('2000-03-01') - Interval('60d')
+        ae(str(date), '2000-01-01.00:00:00')
+        date = Date('2001-03-02') - Interval('60d')
+        ae(str(date), '2001-01-01.00:00:00')
+
+        date = Date('2000-02-29.00:00:00') - Interval('00:00:01')
+        ae(str(date), '2000-02-28.23:59:59')
+        date = Date('2001-03-01.00:00:00') - Interval('00:00:01')
+        ae(str(date), '2001-02-28.23:59:59')
+
+        date = Date('2000-02-29.00:00:00') - Interval('00:01:01')
+        ae(str(date), '2000-02-28.23:58:59')
+        date = Date('2001-03-01.00:00:00') - Interval('00:01:01')
+        ae(str(date), '2001-02-28.23:58:59')
+
+        date = Date('2000-02-29.00:00:00') - Interval('01:01:01')
+        ae(str(date), '2000-02-28.22:58:59')
+        date = Date('2001-03-01.00:00:00') - Interval('01:01:01')
+        ae(str(date), '2001-02-28.22:58:59')
+
+        date = Date('2000-02-29.00:00:00') - Interval('00:00:3661')
+        ae(str(date), '2000-02-28.22:58:59')
+        date = Date('2001-03-01.00:00:00') - Interval('00:00:3661')
+        ae(str(date), '2001-02-28.22:58:59')
+
     def testInterval(self):
         ae = self.assertEqual
         ae(str(Interval('3y')), '+ 3y')
@@ -118,6 +150,11 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/02/21 23:11:45  richard
+#  . fixed some problems in date calculations (calendar.py doesn't handle over-
+#    and under-flow). Also, hour/minute/second intervals may now be more than
+#    99 each.
+#
 # Revision 1.9  2002/02/21 06:57:39  richard
 #  . Added popup help for classes using the classhelp html template function.
 #    - add <display call="classhelp('priority', 'id,name,description')">

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.19 2002-02-21 23:11:45 richard Exp $
+# $Id: date.py,v 1.20 2002-02-21 23:34:51 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -123,8 +123,8 @@ class Date:
             elif second > 59: minute += 1; second -= 60
             if minute < 0: hour -= 1; minute += 60
             elif minute > 59: hour += 1; minute -= 60
-            if hour < 0: day -= 1; hour += 60
-            elif hour > 59: day += 1; hour -= 60
+            if hour < 0: day -= 1; hour += 24
+            elif hour > 59: day += 1; hour -= 24
 
         # fix up the month so we're within range
         while month < 1 or month > 12:
@@ -157,31 +157,35 @@ class Date:
              1. an interval from this date to produce another date.
              2. a date from this date to produce an interval.
         """
-        if isinstance(other, Date):
-            # TODO this code will fall over laughing if the dates cross
-            # leap years, phases of the moon, ....
-            a = calendar.timegm((self.year, self.month, self.day, self.hour,
-                self.minute, self.second, 0, 0, 0))
-            b = calendar.timegm((other.year, other.month, other.day,
-                other.hour, other.minute, other.second, 0, 0, 0))
-            diff = a - b
-            if diff < 0:
-                sign = 1
-                diff = -diff
-            else:
-                sign = -1
-            S = diff%60
-            M = (diff/60)%60
-            H = (diff/(60*60))%60
-            if H>1: S = 0
-            d = (diff/(24*60*60))%30
-            if d>1: H = S = M = 0
-            m = (diff/(30*24*60*60))%12
-            if m>1: H = S = M = 0
-            y = (diff/(365*24*60*60))
-            if y>1: d = H = S = M = 0
-            return Interval((y, m, d, H, M, S), sign=sign)
-        return self.__add__(other)
+        if isinstance(other, Interval):
+            other = Interval(other.get_tuple(), sign=-other.sign)
+            return self.__add__(other)
+
+        assert isinstance(other, Date), 'May only subtract Dates or Intervals'
+
+        # TODO this code will fall over laughing if the dates cross
+        # leap years, phases of the moon, ....
+        a = calendar.timegm((self.year, self.month, self.day, self.hour,
+            self.minute, self.second, 0, 0, 0))
+        b = calendar.timegm((other.year, other.month, other.day,
+            other.hour, other.minute, other.second, 0, 0, 0))
+        diff = a - b
+        if diff < 0:
+            sign = 1
+            diff = -diff
+        else:
+            sign = -1
+        S = diff%60
+        M = (diff/60)%60
+        H = (diff/(60*60))%60
+        if H>1: S = 0
+        d = (diff/(24*60*60))%30
+        if d>1: H = S = M = 0
+        m = (diff/(30*24*60*60))%12
+        if m>1: H = S = M = 0
+        y = (diff/(365*24*60*60))
+        if y>1: d = H = S = M = 0
+        return Interval((y, m, d, H, M, S), sign=sign)
 
     def __cmp__(self, other):
         """Compare this date to another date."""
@@ -433,6 +437,11 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/02/21 23:11:45  richard
+#  . fixed some problems in date calculations (calendar.py doesn't handle over-
+#    and under-flow). Also, hour/minute/second intervals may now be more than
+#    99 each.
+#
 # Revision 1.18  2002/01/23 20:00:50  jhermann
 # %e is a UNIXism and not documented for Python
 #
