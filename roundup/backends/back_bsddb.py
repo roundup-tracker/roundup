@@ -1,4 +1,4 @@
-#$Id: back_bsddb.py,v 1.3 2001-07-23 08:20:44 richard Exp $
+#$Id: back_bsddb.py,v 1.4 2001-07-23 08:25:33 richard Exp $
 
 import bsddb, os, marshal
 from roundup import hyperdb, date
@@ -162,6 +162,8 @@ class Database(hyperdb.Database):
         except bsddb.error, error:
             if error.args[0] != 2: raise
             return []
+        # mor handling of bad journals
+        if not db.has_key(nodeid): return []
         journal = marshal.loads(db[nodeid])
         res = []
         for entry in journal:
@@ -197,6 +199,11 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.3  2001/07/23 08:20:44  richard
+#Moved over to using marshal in the bsddb and anydbm backends.
+#roundup-admin now has a "freshen" command that'll load/save all nodes (not
+# retired - mod hyperdb.Class.list() so it lists retired nodes)
+#
 #Revision 1.2  2001/07/23 07:56:05  richard
 #Storing only marshallable data in the db - no nasty pickled class references.
 #
