@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.49 2004-10-14 10:39:14 a1s Exp $
+# $Id: db_test_base.py,v 1.50 2004-10-14 10:47:07 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -596,6 +596,8 @@ class DBTest(MyTestCase):
         self.assertEqual('link', action)
         self.assertEqual(('issue', '1', 'assignedto'), params)
 
+        # wait a bit to keep proper order of journal entries
+        time.sleep(0.01)
         # journal entry for unlink
         self.db.issue.set('1', assignedto='2')
         self.db.commit()
