@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.147 2002-07-30 08:22:38 richard Exp $
+# $Id: cgi_client.py,v 1.148 2002-07-30 16:09:11 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1332,8 +1332,9 @@ function help_window(helpurl, width, height) {
                         " %(action)s.")%{'action': 'registration'}
 
         # re-open the database as "admin"
-        self.opendb('admin')
-
+        if self.user != 'admin':
+            self.opendb('admin')
+            
         # create the new user
         cl = self.db.user
         try:
@@ -1691,6 +1692,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.147  2002/07/30 08:22:38  richard
+# Session storage in the hyperdb was horribly, horribly inefficient. We use
+# a simple anydbm wrapper now - which could be overridden by the metakit
+# backend or RDB backend if necessary.
+# Much, much better.
+#
 # Revision 1.146  2002/07/30 05:27:30  richard
 # nicer error messages, and a bugfix
 #
