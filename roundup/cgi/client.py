@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.21 2002-09-09 00:45:06 richard Exp $
+# $Id: client.py,v 1.22 2002-09-09 03:20:09 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -412,7 +412,7 @@ class Client:
 
     def set_cookie(self, user, password):
         # TODO generate a much, much stronger session key ;)
-        self.session = binascii.b2a_base64(repr(time.time())).strip()
+        self.session = binascii.b2a_base64(repr(random.random())).strip()
 
         # clean up the base64
         if self.session[-1] == '=':
@@ -1176,8 +1176,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
     # see if all the required properties have been supplied
     if required:
-        raise ValueError, 'Required properties %s not supplied'%(
-            ', '.join(required))
+        if len(required) > 1:
+            p = 'properties'
+        else:
+            p = 'property'
+        raise ValueError, 'Required %s %s not supplied'%(p, ', '.join(required))
 
     return props
 
