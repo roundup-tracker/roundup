@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.34 $
+:Version: $Revision: 1.35 $
 
 .. contents::
 
@@ -140,10 +140,11 @@ Basic Installation Steps
 
          TRACKER_WEB = 'http://localhost:8080/support/'
 
-      See `Customising Roundup`_ for details on configuration
-      and schema changes. Note that you may change any of the configuration
-      after you've initialised the tracker - it's just better to have valid
-      values for this stuff now.
+      The URL *must* end in a '/', or your web interface *will not work*.
+      See `Customising Roundup`_ for details on configuration and schema
+      changes. Note that you may change any of the configuration after
+      you've initialised the tracker - it's just better to have valid values
+      for this stuff now.
 
    d. Initialise the tracker database with ``roundup-admin initialise``.
       You will need to supply an admin password at this step. You will be
