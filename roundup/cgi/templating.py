@@ -924,6 +924,17 @@ class NumberHTMLProperty(HTMLProperty):
             value = '&quot;'.join(value.split('"'))
         return '<input name="%s" value="%s" size="%s">'%(self._formname, value, size)
 
+    def __int__(self):
+        ''' Return an int of me
+        '''
+        return int(self._value)
+
+    def __float__(self):
+        ''' Return a float of me
+        '''
+        return float(self._value)
+
+
 class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
