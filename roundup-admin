@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.41 2001-11-09 01:25:40 richard Exp $
+# $Id: roundup-admin,v 1.42 2001-11-09 10:11:08 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -49,6 +49,9 @@ class CommandDict(UserDict.UserDict):
         if not l and default is self._marker:
             raise KeyError, key
         return l
+
+class UsageError(ValueError):
+    pass
 
 class AdminTool:
 
@@ -159,14 +162,14 @@ Command help:
         # try help_ methods
         if self.help.has_key(topic):
             self.help[topic]()
-            return
+            return 0
 
         # try command docstrings
         try:
             l = self.commands.get(topic)
         except KeyError:
             print 'Sorry, no help for "%s"'%topic
-            return
+            return 1
 
         # display the help for each match, removing the docsring indent
         for name, help in l:
@@ -179,6 +182,7 @@ Command help:
                     print line[indent:]
                 else:
                     print line
+        return 0
 
     def help_initopts(self):
         import roundup.templates
@@ -242,15 +246,27 @@ Command help:
         designators = string.split(args[1], ',')
         l = []
         for designator in designators:
+            # decode the node designator
             try:
                 classname, nodeid = roundupdb.splitDesignator(designator)
             except roundupdb.DesignatorError, message:
-                print 'Error: %s'%message
-                return 1
-            if self.comma_sep:
-                l.append(self.db.getclass(classname).get(nodeid, propname))
-            else:
-                print self.db.getclass(classname).get(nodeid, propname)
+                raise UsageError, message
+
+            # get the class
+            try:
+                cl = self.db.getclass(classname)
+            except KeyError:
+                raise UsageError, 'invalid class "%s"'%classname
+            try:
+                if self.comma_sep:
+                    l.append(cl.get(nodeid, propname))
+                else:
+                    print cl.get(nodeid, propname)
+            except IndexError:
+                raise UsageError, 'no such %s node "%s"'%(classname, nodeid)
+            except KeyError:
+                raise UsageError, 'no such %s property "%s"'%(classname,
+                    propname)
         if self.comma_sep:
             print ','.join(l)
         return 0
@@ -267,15 +283,26 @@ Command help:
         designators = string.split(args[0], ',')
         props = {}
         for prop in args[1:]:
-            key, value = prop.split('=')
+            if prop.find('=') == -1:
+                raise UsageError, 'argument "%s" not propname=value'%prop
+            try:
+                key, value = prop.split('=')
+            except (TypeError, ValueError):
+                raise UsageError, 'argument "%s" not propname=value'%prop
             props[key] = value
         for designator in designators:
+            # decode the node designator
             try:
                 classname, nodeid = roundupdb.splitDesignator(designator)
             except roundupdb.DesignatorError, message:
-                print 'Error: %s'%message
-                return 1
-            cl = self.db.getclass(classname)
+                raise UsageError, message
+
+            # get the class
+            try:
+                cl = self.db.getclass(classname)
+            except KeyError:
+                raise UsageError, 'invalid class "%s"'%classname
+
             properties = cl.getprops()
             for key, value in props.items():
                 type =  properties[key]
@@ -284,14 +311,25 @@ Command help:
                 elif isinstance(type, hyperdb.Password):
                     props[key] = password.Password(value)
                 elif isinstance(type, hyperdb.Date):
-                    props[key] = date.Date(value)
+                    try:
+                        props[key] = date.Date(value)
+                    except ValueError, message:
+                        raise UsageError, '"%s": %s'%(value, message)
                 elif isinstance(type, hyperdb.Interval):
-                    props[key] = date.Interval(value)
+                    try:
+                        props[key] = date.Interval(value)
+                    except ValueError, message:
+                        raise UsageError, '"%s": %s'%(value, message)
                 elif isinstance(type, hyperdb.Link):
                     props[key] = value
                 elif isinstance(type, hyperdb.Multilink):
                     props[key] = value.split(',')
-            apply(cl.set, (nodeid, ), props)
+
+            # try the set
+            try:
+                apply(cl.set, (nodeid, ), props)
+            except (TypeError, IndexError, ValueError), message:
+                raise UsageError, message
         return 0
 
     def do_find(self, args):
@@ -302,25 +340,58 @@ Command help:
         value may be either the nodeid of the linked node, or its key value.
         '''
         classname = args[0]
-        cl = self.db.getclass(classname)
+        # get the class
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'invalid class "%s"'%classname
 
-        # look up the linked-to class and get the nodeid that has the value
-        propname, value = args[1].split('=')
+        # TODO: handle > 1 argument
+        # handle the propname=value argument
+        if prop.find('=') == -1:
+            raise UsageError, 'argument "%s" not propname=value'%prop
+        try:
+            propname, value = args[1].split('=')
+        except (TypeError, ValueError):
+            raise UsageError, 'argument "%s" not propname=value'%prop
+
+        # if the value isn't a number, look up the linked class to get the
+        # number
         num_re = re.compile('^\d+$')
         if not num_re.match(value):
-            propcl = cl.properties[propname]
-            if (not isinstance(propcl, hyperdb.Link) and not
-                    isinstance(type, hyperdb.Multilink)):
-                print 'You may only "find" link properties'
-                return 1
-            propcl = self.db.getclass(propcl.classname)
-            value = propcl.lookup(value)
+            # get the property
+            try:
+                property = cl.properties[propname]
+            except KeyError:
+                raise UsageError, '%s has no property "%s"'%(classname,
+                    propname)
 
-        # now do the find
-        if self.comma_sep:
-            print ','.join(apply(cl.find, (), {propname: value}))
-        else:
-            print apply(cl.find, (), {propname: value})
+            # make sure it's a link
+            if (not isinstance(property, hyperdb.Link) and not
+                    isinstance(type, hyperdb.Multilink)):
+                raise UsageError, 'You may only "find" link properties'
+
+            # get the linked-to class and look up the key property
+            link_class = self.db.getclass(property.classname)
+            try:
+                value = link_class.lookup(value)
+            except TypeError:
+                raise UsageError, '%s has no key property"'%link_class.classname
+            except KeyError:
+                raise UsageError, '%s has no entry "%s"'%(link_class.classname,
+                    propname)
+
+        # now do the find 
+        try:
+            if self.comma_sep:
+                print ','.join(apply(cl.find, (), {propname: value}))
+            else:
+                print apply(cl.find, (), {propname: value})
+        except KeyError:
+            raise UsageError, '%s has no property "%s"'%(classname,
+                propname)
+        except (ValueError, TypeError), message:
+            raise UsageError, message
         return 0
 
     def do_specification(self, args):
@@ -330,7 +401,13 @@ Command help:
         This lists the properties for a given class.
         '''
         classname = args[0]
-        cl = self.db.getclass(classname)
+        # get the class
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'invalid class "%s"'%classname
+
+        # get the key property
         keyprop = cl.getkey()
         for key, value in cl.properties.items():
             if keyprop == key:
@@ -349,7 +426,14 @@ Command help:
         from roundup import hyperdb
 
         classname = args[0]
-        cl = self.db.getclass(classname)
+
+        # get the class
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'invalid class "%s"'%classname
+
+        # now do a create
         props = {}
         properties = cl.getprops(protected = 0)
         if len(args) == 1:
@@ -372,26 +456,46 @@ Command help:
         else:
             # use the args
             for prop in args[1:]:
-                key, value = prop.split('=')
+                if prop.find('=') == -1:
+                    raise UsageError, 'argument "%s" not propname=value'%prop
+                try:
+                    key, value = prop.split('=')
+                except (TypeError, ValueError):
+                    raise UsageError, 'argument "%s" not propname=value'%prop
                 props[key] = value 
 
         # convert types
         for key in props.keys():
-            type =  properties[key]
+            # get the property
+            try:
+                type = properties[key]
+            except KeyError:
+                raise UsageError, '%s has no property "%s"'%(classname, key)
+
             if isinstance(type, hyperdb.Date):
-                props[key] = date.Date(value)
+                try:
+                    props[key] = date.Date(value)
+                except ValueError, message:
+                    raise UsageError, '"%s": %s'%(value, message)
             elif isinstance(type, hyperdb.Interval):
-                props[key] = date.Interval(value)
+                try:
+                    props[key] = date.Interval(value)
+                except ValueError, message:
+                    raise UsageError, '"%s": %s'%(value, message)
             elif isinstance(type, hyperdb.Password):
                 props[key] = password.Password(value)
             elif isinstance(type, hyperdb.Multilink):
                 props[key] = value.split(',')
 
+        # check for the key property
         if cl.getkey() and not props.has_key(cl.getkey()):
-            print "You must provide the '%s' property."%cl.getkey()
-        else:
-            print apply(cl.create, (), props)
+            raise UsageError, "you must provide the '%s' property."%cl.getkey()
 
+        # do the actual create
+        try:
+            print apply(cl.create, (), props)
+        except (TypeError, IndexError, ValueError), message:
+            raise UsageError, message
         return 0
 
     def do_list(self, args):
@@ -404,16 +508,27 @@ Command help:
         alphabetically.
         '''
         classname = args[0]
-        cl = self.db.getclass(classname)
+
+        # get the class
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'invalid class "%s"'%classname
+
+        # figure the property
         if len(args) > 1:
             key = args[1]
         else:
             key = cl.labelprop()
+
         if self.comma_sep:
             print ','.join(cl.list())
         else:
             for nodeid in cl.list():
-                value = cl.get(nodeid, key)
+                try:
+                    value = cl.get(nodeid, key)
+                except KeyError:
+                    raise UsageError, '%s has no property "%s"'%(classname, key)
                 print "%4s: %s"%(nodeid, value)
         return 0
 
@@ -433,25 +548,44 @@ Command help:
           4  feature   
         '''
         classname = args[0]
-        cl = self.db.getclass(classname)
+
+        # get the class
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'invalid class "%s"'%classname
+
+        # figure the property names to display
         if len(args) > 1:
             prop_names = args[1].split(',')
         else:
             prop_names = cl.getprops().keys()
-        props = []
-        for name in prop_names:
-            if ':' in name:
-                name, width = name.split(':')
-                props.append((name, int(width)))
-            else:
-                props.append((name, len(name)))
 
+        # now figure column widths
+        props = []
+        for spec in prop_names:
+            if ':' in spec:
+                try:
+                    name, width = spec.split(':')
+                except (ValueError, TypeError):
+                    raise UsageError, '"%s" not name:width'%spec
+                props.append((spec, int(width)))
+            else:
+                props.append((spec, len(spec)))
+
+        # now display the heading
         print ' '.join([string.capitalize(name) for name, width in props])
+
+        # and the table data
         for nodeid in cl.list():
             l = []
             for name, width in props:
                 if name != 'id':
-                    value = str(cl.get(nodeid, name))
+                    try:
+                        value = str(cl.get(nodeid, name))
+                    except KeyError:
+                        raise UsageError, '%s has no property "%s"'%(classname,
+                            name)
                 else:
                     value = str(nodeid)
                 f = '%%-%ds'%width
@@ -468,10 +602,15 @@ Command help:
         try:
             classname, nodeid = roundupdb.splitDesignator(args[0])
         except roundupdb.DesignatorError, message:
-            print 'Error: %s'%message
-            return 1
+            raise UsageError, message
+
         # TODO: handle the -c option?
-        print self.db.getclass(classname).history(nodeid)
+        try:
+            print self.db.getclass(classname).history(nodeid)
+        except KeyError:
+            raise UsageError, 'no such class "%s"'%classname
+        except IndexError:
+            raise UsageError, 'no such %s node "%s"'%(classname, nodeid)
         return 0
 
     def do_retire(self, args):
@@ -486,9 +625,13 @@ Command help:
             try:
                 classname, nodeid = roundupdb.splitDesignator(designator)
             except roundupdb.DesignatorError, message:
-                print 'Error: %s'%message
-                return 1
-            self.db.getclass(classname).retire(nodeid)
+                raise UsageError, message
+            try:
+                self.db.getclass(classname).retire(nodeid)
+            except KeyError:
+                raise UsageError, 'no such class "%s"'%classname
+            except IndexError:
+                raise UsageError, 'no such %s node "%s"'%(classname, nodeid)
         return 0
 
     def do_export(self, args):
@@ -511,7 +654,10 @@ Command help:
 
         # do all the classes specified
         for classname in classes:
-            cl = self.db.getclass(classname)
+            try:
+                cl = self.db.getclass(classname)
+            except KeyError:
+                raise UsageError, 'no such class "%s"'%classname
             f = open(os.path.join(dir, classname+'.csv'), 'w')
             f.write(string.join(cl.properties.keys(), ':') + '\n')
 
@@ -556,17 +702,19 @@ Command help:
         the old data.)
         '''
         if len(args) < 2:
-            print do_import.__doc__
-            return 1
+            raise UsageError, 'Not enough arguments supplied'
         if csv is None:
-            print 'Sorry, you need the csv module to use this function.'
-            print 'Get it from: http://www.object-craft.com.au/projects/csv/'
-            return 1
+            raise UsageError, \
+                'Sorry, you need the csv module to use this function.\n'\
+                'Get it from: http://www.object-craft.com.au/projects/csv/'
 
         from roundup import hyperdb
 
         # ensure that the properties and the CSV file headings match
-        cl = self.db.getclass(args[0])
+        try:
+            cl = self.db.getclass(classname)
+        except KeyError:
+            raise UsageError, 'no such class "%s"'%classname
         f = open(args[1])
         p = csv.parser(field_sep=':')
         file_props = p.parse(f.readline())
@@ -575,8 +723,8 @@ Command help:
         m.sort()
         props.sort()
         if m != props:
-            print 'Import file doesn\'t define the same properties as "%s".'%args[0]
-            return 1
+            raise UsageError, 'Import file doesn\'t define the same '\
+                'properties as "%s".'%args[0]
 
         # loop through the file and create a node for each entry
         n = range(len(props))
@@ -663,12 +811,18 @@ Command help:
             return 1
 
         # do the command
+        ret = 0
         try:
-            return function(args[1:])
-        finally:
-            self.db.close()
-
-        return 1
+            ret = function(args[1:])
+        except UsageError, message:
+            print 'Error: %s'%message
+            print function.__doc__
+            ret = 1
+        except:
+            import traceback
+            traceback.print_exc()
+            ret = 1
+        return ret
 
     def interactive(self, ws_re=re.compile(r'\s+')):
         '''Run in an interactive mode
@@ -713,10 +867,13 @@ Command help:
                 self.comma_sep = 1
 
         # if no command - go interactive
+        ret = 0
         if not args:
-            return self.interactive()
-
-        self.run_command(args)
+            self.interactive()
+        else:
+            ret = self.run_command(args)
+        self.db.close()
+        return ret
 
 
 if __name__ == '__main__':
@@ -725,6 +882,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.41  2001/11/09 01:25:40  richard
+# Should parse with python 1.5.2 now.
+#
 # Revision 1.40  2001/11/08 04:42:00  richard
 # Expanded the already-abbreviated "initialise" and "specification" commands,
 # and added a comment to the command help about the abbreviation.

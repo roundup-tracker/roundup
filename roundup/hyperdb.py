@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.29 2001-10-27 00:17:41 richard Exp $
+# $Id: hyperdb.py,v 1.30 2001-11-09 10:11:08 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -507,7 +507,7 @@ class Class:
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
             if not self.db.hasnode(prop.classname, nodeid):
-                raise ValueError, '%s has no node %s'%(link_class, nodeid)
+                raise ValueError, '%s has no node %s'%(prop.classname, nodeid)
 
         # ok, now do the find
         cldb = self.db.getclassdb(self.classname)
@@ -849,6 +849,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2001/10/27 00:17:41  richard
+# Made Class.stringFind() do caseless matching.
+#
 # Revision 1.28  2001/10/21 04:44:50  richard
 # bug #473124: UI inconsistency with Link fields.
 #    This also prompted me to fix a fairly long-standing usability issue -
