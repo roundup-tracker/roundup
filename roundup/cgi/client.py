@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.1 2003-08-28 04:21:22 richard Exp $
+# $Id: client.py,v 1.130.2.2 2003-08-28 04:53:04 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -8,7 +8,7 @@ import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, MimeWriter, smtplib, socket, quopri
 import stat, rfc822, string
 
-from roundup import roundupdb, date, hyperdb, password, token
+from roundup import roundupdb, date, hyperdb, password, token, rcsv
 from roundup.i18n import _
 from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
@@ -1219,12 +1219,8 @@ You should then receive another email with the new password.
                 _('You do not have permission to edit %s' %self.classname))
 
         # get the CSV module
-        try:
-            import csv
-        except ImportError:
-            self.error_message.append(_(
-                'Sorry, you need the csv module to use this function.<br>\n'
-                'Get it from: <a href="http://www.object-craft.com.au/projects/csv/">http://www.object-craft.com.au/projects/csv/'))
+        if rcsv.error:
+            self.error_message.append(_(rcsv.error))
             return
 
         cl = self.db.classes[self.classname]
@@ -1233,16 +1229,13 @@ You should then receive another email with the new password.
         props = ['id'] + idlessprops
 
         # do the edit
-        rows = self.form['rows'].value.splitlines()
-        p = csv.parser()
+        rows = StringIO.StringIO(self.form['rows'].value)
+        reader = rcsv.reader(rows, rcsv.comma_separated)
         found = {}
         line = 0
-        for row in rows[1:]:
+        for values in reader:
             line += 1
-            values = p.parse(row)
-            # not a complete row, keep going
-            if not values: continue
-
+            if line == 1: continue
             # skip property names header
             if values == props:
                 continue

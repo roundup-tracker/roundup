@@ -10,6 +10,7 @@ Fixed:
 - fix CGI editCSV action to handle metakit's integer itemids
 - apply fix for "remove" links from Klamer Schutte
 - added permission check on "remove" link while I was there..
+- applied CSV fix for python2.3 (thanks Paul Dubois for the patch)
 
 
 2003-08-08 0.6.0

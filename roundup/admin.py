@@ -16,17 +16,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.55 2003-06-23 08:05:30 neaj Exp $
+# $Id: admin.py,v 1.55.2.1 2003-08-28 04:53:04 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
 
 import sys, os, getpass, getopt, re, UserDict, shutil, rfc822
-try:
-    import csv
-except ImportError:
-    csv = None
-from roundup import date, hyperdb, roundupdb, init, password, token
+from roundup import date, hyperdb, roundupdb, init, password, token, rcsv
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.i18n import _
@@ -1063,15 +1059,12 @@ Command help:
         colon-separated-value files that are placed in the nominated
         destination directory. The journals are not exported.
         '''
-        # we need the CSV module
-        if csv is None:
-            raise UsageError, \
-                _('Sorry, you need the csv module to use this function.\n'
-                'Get it from: http://www.object-craft.com.au/projects/csv/')
-
         # grab the directory to export to
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
+        if rcsv.error:
+            raise UsageError, _(rcsv.error)
+
         dir = args[-1]
 
         # get the list of classes to export
@@ -1080,26 +1073,24 @@ Command help:
         else:
             classes = self.db.classes.keys()
 
-        # use the csv parser if we can - it's faster
-        p = csv.parser(field_sep=':')
-
         # do all the classes specified
         for classname in classes:
             cl = self.get_class(classname)
             f = open(os.path.join(dir, classname+'.csv'), 'w')
+            writer = rcsv.writer(f, rcsv.colon_separated)
             properties = cl.getprops()
             propnames = properties.keys()
             propnames.sort()
-            l = propnames[:]
-            l.append('is retired')
-            print >> f, p.join(l)
+            fields = propnames[:]
+            fields.append('is retired')
+            writer.writerow(fields)
 
             # all nodes for this class (not using list() 'cos it doesn't
             # include retired nodes)
 
             for nodeid in self.db.getclass(classname).getnodeids():
                 # get the regular props
-                print >>f, p.join(cl.export_list(propnames, nodeid))
+                writer.writerow (cl.export_list(propnames, nodeid))
 
             # close this file
             f.close()
@@ -1122,11 +1113,8 @@ Command help:
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
-        if csv is None:
-            raise UsageError, \
-                _('Sorry, you need the csv module to use this function.\n'
-                'Get it from: http://www.object-craft.com.au/projects/csv/')
-
+        if rcsv.error:
+            raise UsageError, _(rcsv.error)
         from roundup import hyperdb
 
         for file in os.listdir(args[0]):
@@ -1141,8 +1129,9 @@ Command help:
 
             # ensure that the properties and the CSV file headings match
             cl = self.get_class(classname)
-            p = csv.parser(field_sep=':')
-            file_props = p.parse(f.readline())
+            reader = rcsv.reader(f, rcsv.colon_separated)
+            file_props = None
+            maxid = 1
 
 # XXX we don't _really_ need to do this...
 #            properties = cl.getprops()
@@ -1155,22 +1144,15 @@ Command help:
 #                    'properties as "%(arg0)s".')%{'arg0': args[0]}
 
             # loop through the file and create a node for each entry
-            maxid = 1
-            while 1:
-                line = f.readline()
-                if not line: break
-
-                # parse lines until we get a complete entry
-                while 1:
-                    l = p.parse(line)
-                    if l: break
-                    line = f.readline()
-                    if not line:
-                        raise ValueError, "Unexpected EOF during CSV parse"
+            for r in reader:
+                if file_props is None:
+                    file_props = r
+                    continue
 
                 # do the import and figure the current highest nodeid
-                maxid = max(maxid, int(cl.import_list(file_props, l)))
+                maxid = max(maxid, int(cl.import_list(file_props, r)))
 
+            # set the id counter
             print 'setting', classname, maxid+1
             self.db.setid(classname, str(maxid+1))
         return 0
