@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.13 2004-01-20 03:58:38 richard Exp $ 
+# $Id: db_test_base.py,v 1.14 2004-01-20 05:55:51 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -621,54 +621,88 @@ class DBTest(MyTestCase):
     #
     # searching tests follow
     #
-    def testFind(self):
+    def testFindIncorrectProperty(self):
         self.assertRaises(TypeError, self.db.issue.find, title='fubar')
 
-        self.db.user.create(username='test')
-        ids = []
-        ids.append(self.db.issue.create(status="1", nosy=['1']))
-        oddid = self.db.issue.create(status="2", nosy=['2'], assignedto='2')
-        ids.append(self.db.issue.create(status="1", nosy=['1','2']))
-        self.db.issue.create(status="3", nosy=['1'], assignedto='1')
-        ids.sort()
+    def _find_test_setup(self):
+        self.db.file.create(content='')
+        self.db.file.create(content='')
+        self.db.user.create(username='')
+        one = self.db.issue.create(status="1", nosy=['1'])
+        two = self.db.issue.create(status="2", nosy=['2'], files=['1'],
+            assignedto='2')
+        three = self.db.issue.create(status="1", nosy=['1','2'])
+        four = self.db.issue.create(status="3", assignedto='1',
+            files=['1','2'])
+        return one, two, three, four
 
-        # should match first and third
+    def testFindLink(self):
+        one, two, three, four = self._find_test_setup()
         got = self.db.issue.find(status='1')
         got.sort()
-        self.assertEqual(got, ids)
+        self.assertEqual(got, [one, three])
         got = self.db.issue.find(status={'1':1})
         got.sort()
-        self.assertEqual(got, ids)
+        self.assertEqual(got, [one, three])
 
-        # none
+    def testFindLinkFail(self):
+        self._find_test_setup()
         self.assertEqual(self.db.issue.find(status='4'), [])
         self.assertEqual(self.db.issue.find(status={'4':1}), [])
 
-        # should match first and third
+    def testFindLinkUnset(self):
+        one, two, three, four = self._find_test_setup()
         got = self.db.issue.find(assignedto=None)
         got.sort()
-        self.assertEqual(got, ids)
+        self.assertEqual(got, [one, three])
         got = self.db.issue.find(assignedto={None:1})
         got.sort()
-        self.assertEqual(got, ids)
+        self.assertEqual(got, [one, three])
 
-        # should match first three
+    def testFindMultilink(self):
+        one, two, three, four = self._find_test_setup()
+        got = self.db.issue.find(nosy='2')
+        got.sort()
+        self.assertEqual(got, [two, three])
+        got = self.db.issue.find(nosy={'2':1})
+        got.sort()
+        self.assertEqual(got, [two, three])
+        got = self.db.issue.find(nosy={'2':1}, files={})
+        got.sort()
+        self.assertEqual(got, [two, three])
+
+    def testFindMultiMultilink(self):
+        one, two, three, four = self._find_test_setup()
+        got = self.db.issue.find(nosy='2', files='1')
+        got.sort()
+        self.assertEqual(got, [two, three, four])
+        got = self.db.issue.find(nosy={'2':1}, files={'1':1})
+        got.sort()
+        self.assertEqual(got, [two, three, four])
+
+    def testFindMultilinkFail(self):
+        self._find_test_setup()
+        self.assertEqual(self.db.issue.find(nosy='3'), [])
+        self.assertEqual(self.db.issue.find(nosy={'3':1}), [])
+
+    def testFindMultilinkUnset(self):
+        self._find_test_setup()
+        self.assertEqual(self.db.issue.find(nosy={}), [])
+
+    def testFindLinkAndMultilink(self):
+        one, two, three, four = self._find_test_setup()
         got = self.db.issue.find(status='1', nosy='2')
         got.sort()
-        ids.append(oddid)
-        ids.sort()
-        self.assertEqual(got, ids)
+        self.assertEqual(got, [one, two, three])
         got = self.db.issue.find(status={'1':1}, nosy={'2':1})
         got.sort()
-        self.assertEqual(got, ids)
+        self.assertEqual(got, [one, two, three])
 
-        # none
-        self.assertEqual(self.db.issue.find(status='4', nosy='3'), [])
-        self.assertEqual(self.db.issue.find(status={'4':1}, nosy={'3':1}), [])
-
-        # test retiring a node
-        self.db.issue.retire(ids[0])
-        self.assertEqual(len(self.db.issue.find(status='1', nosy='2')), 2)
+    def testFindRetired(self):
+        one, two, three, four = self._find_test_setup()
+        self.assertEqual(len(self.db.issue.find(status='1')), 2)
+        self.db.issue.retire(one)
+        self.assertEqual(len(self.db.issue.find(status='1')), 1)
 
     def testStringFind(self):
         self.assertRaises(TypeError, self.db.issue.stringFind, status='1')

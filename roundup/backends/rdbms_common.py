@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.73 2004-01-20 03:58:38 richard Exp $
+# $Id: rdbms_common.py,v 1.74 2004-01-20 05:55:51 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1789,8 +1789,9 @@ class Class(hyperdb.Class):
 
         # first, links
         a = self.db.arg
-        where = ['__retired__ <> %s'%a]
         allvalues = (1,)
+        o = []
+        where = []
         for prop, values in propspec:
             if not isinstance(props[prop], hyperdb.Link):
                 continue
@@ -1804,14 +1805,15 @@ class Class(hyperdb.Class):
             else:
                 allvalues += tuple(values.keys())
                 where.append('_%s in (%s)'%(prop, ','.join([a]*len(values))))
-        tables = []
+        tables = ['_%s'%self.classname]
         if where:
-            tables.append('select id as nodeid from _%s where %s'%(
-                self.classname, ' and '.join(where)))
+            o.append('(' + ' and '.join(where) + ')')
 
         # now multilinks
         for prop, values in propspec:
             if not isinstance(props[prop], hyperdb.Multilink):
+                continue
+            if not values:
                 continue
             if type(values) is type(''):
                 allvalues += (values,)
@@ -1819,10 +1821,18 @@ class Class(hyperdb.Class):
             else:
                 allvalues += tuple(values.keys())
                 s = ','.join([a]*len(values))
-            tables.append('select nodeid from %s_%s where linkid in (%s)'%(
-                self.classname, prop, s))
+            tn = '%s_%s'%(self.classname, prop)
+            tables.append(tn)
+            o.append('(id=%s.nodeid and %s.linkid in (%s))'%(tn, tn, s))
 
-        sql = '\nintersect\n'.join(tables)
+        if not o:
+            return []
+        elif len(o) > 1:
+            o = '(' + ' or '.join(['(%s)'%i for i in o]) + ')'
+        else:
+            o = o[0]
+        t = ', '.join(tables)
+        sql = 'select distinct(id) from %s where __retired__ <> %s and %s'%(t, a, o)
         self.db.sql(sql, allvalues)
         l = [x[0] for x in self.db.sql_fetchall()]
         if __debug__:
