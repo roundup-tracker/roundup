@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.90 2003-09-08 20:39:18 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.91 2003-09-16 16:12:38 kedder Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -415,8 +415,14 @@ class IssueClass:
                 continue
             if key in ('activity', 'creator', 'creation'):
                 continue
-            new_value = cl.get(nodeid, key)
+            # not all keys from oldvalues might be available in database
+            # this happens when property was deleted
+            try:                
+                new_value = cl.get(nodeid, key)
+            except KeyError:
+                continue
             # the old value might be non existent
+            # this happens when property was added
             try:
                 old_value = oldvalues[key]
                 if type(new_value) is type([]):
