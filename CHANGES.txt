@@ -43,6 +43,7 @@ Fixed:
  . errors in nosy reaction will be propogated now (were effectively being
    squashed)
  . re-open the database as the author in mail handling
+ . missing "return" in filter_section (thanks Roch'e Compaan)
 
 
 2001-10-23 - 0.3.0 pre 3
