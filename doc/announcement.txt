@@ -1,16 +1,13 @@
-I'm pleased to announce Roundup 0.6.9, a maintenance release which fixes
-some bugs:
+I'm pleased to announce Roundup 0.6.10, a maintenance release which fixes
+a single bug in the MySQL backend:
 
-- paging in classhelp popup was broken
-- socket timeout error logging can fail
-- hyperlink designators in message display (sf bug 931828)
-- don't match retired items in RDBMS stringFind
+- mysql backend wasn't locking tracker
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
 Note that the Zope interface still doesn't work - it is fixed in the 0.7
-development codebase.
+release.
 
 Roundup requires python 2.1.3 or later for correct operation. Python 2.3.1
 or later is strongly recommended.

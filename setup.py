@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.11 2004-04-18 06:38:22 richard Exp $
+# $Id: setup.py,v 1.55.2.12 2004-05-17 00:47:28 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -188,11 +188,9 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.9 release fixes some bugs:
-- paging in classhelp popup was broken
-- socket timeout error logging can fail
-- hyperlink designators in message display (sf bug 931828)
-- don't match retired items in RDBMS stringFind
+The 0.6.10 release fixes some bugs:
+
+- mysql backend wasn't locking tracker
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",

@@ -84,6 +84,13 @@ class Database(Database):
         if not db_exists(self.config):
             db_create(self.config)
 
+        # lock the tracker
+        dbdir = os.path.join(self.config.DATABASE, 'db')
+        lockfilenm = dbdir[:-3] + 'lck'
+        self.lockfile = locking.acquire_lock(lockfilenm)
+        self.lockfile.write(str(os.getpid()))
+        self.lockfile.flush()
+
         db = getattr(self.config, 'MYSQL_DATABASE')
         try:
             self.conn = MySQLdb.connect(*db)
