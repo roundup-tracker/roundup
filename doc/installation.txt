@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 .. contents::
 
@@ -181,7 +181,14 @@ Set aside 15-30 minutes.
 
      echo test | mail -s '[issue] test' support@YOUR_DOMAIN_HERE
 
-TODO (finish)
+
+Upgrading
+=========
+
+Read the separate upgrading_ document, which describes the steps needed to
+upgrade existing tracker instances for each version of Roundup that is
+released.
+
 
 ZRoundup
 ========
@@ -242,4 +249,5 @@ Next: `Getting Started`_
 .. _`getting started`: getting_started.html
 .. _`roundup specification`: spec.html
 .. _`customising roundup`: customizing.html
+.. _`upgrading`: upgrading.html
 

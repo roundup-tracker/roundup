@@ -1,0 +1,330 @@
+======================================
+Upgrading to newer versions of Roundup
+======================================
+
+Please read each section carefully and edit your instance home files
+accordingly.
+
+.. contents::
+
+Migrating from 0.4.1 to 0.4.2
+=============================
+
+0.4.2 Configuration
+-------------------
+The USER_INDEX definition introduced in 0.4.1 was too restrictive in its
+allowing replacement of 'assignedto' with the user's userid. Users must change
+the None value of 'assignedto' to 'CURRENT USER' (the string, in quotes) for
+the replacement behaviour to occur now.
+
+The new configuration variables are:
+
+- EMAIL_KEEP_QUOTED_TEXT 
+- EMAIL_LEAVE_BODY_UNCHANGED
+- ADD_RECIPIENTS_TO_NOSY
+
+See the sample condfiguration files in::
+
+ <roundup source>/roundup/templates/classic/instance_config.py
+
+and::
+
+ <roundup source>/roundup/templates/extended/instance_config.py
+
+for information on how they're used.
+
+
+0.4.2 Changes to detectors
+--------------------------
+You will need to copy the detectors from the distribution into your instance
+home "detectors" directory. If you used the classic schema, the detectors
+are in::
+
+ <roundup source>/roundup/templates/classic/detectors/
+
+If you used the extended schema, the detectors are in::
+
+ <roundup source>/roundup/templates/extended/detectors/
+
+The change means that schema-specific code has been removed from the
+mail gateway and cgi interface and made into auditors:
+
+- nosyreactor.py has now got an updatenosy auditor which updates the nosy
+  list with author, recipient and assignedto information.
+- statusauditor.py makes the unread or resolved -> chatting changes and
+  presets the status of an issue to unread.
+
+There's also a bug or two fixed in the nosyreactor code.
+
+0.4.2 HTML templating changes
+-----------------------------
+The link() htmltemplate function now has a "showid" option for links and
+multilinks. When true, it only displays the linked node id as the anchor
+text. The link value is displayed as a tooltip using the title anchor
+attribute. To use in eg. the superseder field, have something like this::
+
+   <td>
+    <display call="field('superseder', showid=1)">
+    <display call="classhelp('issue', 'id,title', label='list', width=500)">
+    <property name="superseder">
+     <br>View: <display call="link('superseder', showid=1)">
+    </property>
+   </td>
+
+The stylesheets have been cleaned up too. You may want to use the newer
+versions in::
+
+ <roundup source>/roundup/templates/<template>/html/default.css
+
+
+
+Migrating from 0.4.0 to 0.4.1
+=============================
+
+0.4.1 Files storage
+-------------------
+
+Messages and files from newly created issues will be put into subdierectories
+in thousands e.g. msg123 will be put into files/msg/0/msg123, file2003
+will go into files/file/2/file2003. Previous messages are still found, but
+could be put into this structure.
+
+0.4.1 Configuration
+-------------------
+
+To allow more fine-grained access control, the variable used to check
+permission to auto-register users in the mail gateway is now called
+ANONYMOUS_REGISTER_MAIL rather than overloading ANONYMOUS_REGISTER. If the
+variable doesn't exist, then ANONYMOUS_REGISTER is tested as before.
+
+Configuring the links in the web header is now easier too. The following
+variables have been added to the classic instance_config.py::
+
+  HEADER_INDEX_LINKS   - defines the "index" links to be made available
+  HEADER_ADD_LINKS     - defines the "add" links
+  DEFAULT_INDEX        - specifies the index view for DEFAULT
+  UNASSIGNED_INDEX     - specifies the index view for UNASSIGNED
+  USER_INDEX           - specifies the index view for USER
+
+See the <roundup source>/roundup/templates/classic/instance_config.py for more
+information - including how the variables are to be set up. Most users will
+just be able to copy the variables from the source to their instance home. If
+you've modified the header by changing the source of the interfaces.py file in
+the instance home, you'll need to remove that customisation and move it into
+the appropriate variables in instance_config.py.
+
+The extended schema has similar variables added too - see the source for more
+info.
+
+0.4.1 Alternate E-Mail Addresses
+--------------------------------
+
+If you add the property "alternate_addresses" to your user class, your users
+will be able to register alternate email addresses that they may use to
+communicate with roundup as. All email from roundup will continue to be sent
+to their primary address.
+
+If you have not edited the dbinit.py file in your instance home directory,
+you may simply copy the new dbinit.py file from the core code. If you used
+the classic schema, the interfaces file is in::
+
+ <roundup source>/roundup/templates/classic/dbinit.py
+
+If you used the extended schema, the file is in::
+
+ <roundup source>/roundup/templates/extended/dbinit.py 
+
+If you have modified your dbinit.py file, you need to edit the dbinit.py
+file in your instance home directory. Find the lines which define the user
+class::
+
+    user = Class(db, "msg",
+                    username=String(),   password=Password(),
+                    address=String(),    realname=String(), 
+                    phone=String(),      organisation=String(),
+                    alternate_addresses=String())
+
+You will also want to add the property to the user's details page. The
+template for this is the "user.item" file in your instance home "html"
+directory. Similar to above, you may copy the file from the roundup source if
+you haven't modified it. Otherwise, add the following to the template::
+
+   <display call="multiline('alternate_addresses')">
+
+with appropriate labelling etc. See the standard template for an idea.
+
+
+
+Migrating from 0.3.x to 0.4.0
+=============================
+
+0.4.0 Message-ID and In-Reply-To addition
+-----------------------------------------
+0.4.0 adds the tracking of messages by message-id and allows threading
+using in-reply-to. Most e-mail clients support threading using this
+feature, and we hope to add support for it to the web gateway. If you
+have not edited the dbinit.py file in your instance home directory, you may
+simply copy the new dbinit.py file from the core code. If you used the
+classic schema, the interfaces file is in::
+
+ <roundup source>/roundup/templates/classic/dbinit.py
+
+If you used the extended schema, the file is in::
+
+ <roundup source>/roundup/templates/extended/dbinit.py 
+
+If you have modified your dbinit.py file, you need to edit the dbinit.py
+file in your instance home directory. Find the lines which define the msg
+class::
+
+    msg = FileClass(db, "msg",
+                    author=Link("user"), recipients=Multilink("user"),
+                    date=Date(),         summary=String(),
+                    files=Multilink("file"))
+
+and add the messageid and inreplyto properties like so::
+
+    msg = FileClass(db, "msg",
+                    author=Link("user"), recipients=Multilink("user"),
+                    date=Date(),         summary=String(),
+                    files=Multilink("file"),
+                    messageid=String(),  inreplyto=String())
+
+Also, configuration is being cleaned up. This means that your dbinit.py will
+also need to be changed in the open function. If you haven't changed your
+dbinit.py, the above copy will be enough. If you have, you'll need to change
+the line (round line 50)::
+
+    db = Database(instance_config.DATABASE, name)
+
+to::
+
+    db = Database(instance_config, name)
+
+
+0.4.0 Configuration
+--------------------
+``INSTANCE_NAME`` and ``EMAIL_SIGNATURE_POSITION`` have been added to the
+instance_config.py. The simplest solution is to copy the default values
+from template in the core source.
+
+The mail gateway now checks ``ANONYMOUS_REGISTER`` to see if unknown users
+are to be automatically registered with the tracker. If it is set to "deny"
+then unknown users will not have access. If it is set to "allow" they will be
+automatically registered with the tracker.
+
+
+0.4.0 CGI script roundup.cgi
+----------------------------
+The CGI script has been updated with some features and a bugfix, so you should
+copy it from the roundup cgi-bin source directory again. Make sure you update
+the ROUNDUP_INSTANCE_HOMES after the copy.
+
+
+0.4.0 Nosy reactor
+------------------
+The nosy reactor has also changed - copy the nosyreactor.py file from the core
+source::
+
+   <roundup source>/roundup/templates/<template>/detectors/nosyreactor.py
+
+to your instance home "detectors" directory.
+
+
+0.4.0 HTML templating
+---------------------
+The field() function was incorrectly implemented - links and multilinks now
+display as text fields when rendered using field(). To display a menu (drop-
+down or select box) you need to use the menu() function.
+
+
+
+Migrating from 0.2.x to 0.3.x
+=============================
+
+0.3.x Cookie Authentication changes
+-----------------------------------
+0.3.0 introduces cookie authentication - you will need to copy the
+interfaces.py file from the roundup source to your instance home to enable
+authentication. If you used the classic schema, the interfaces file is in::
+
+ <roundup source>/roundup/templates/classic/interfaces.py
+
+If you used the extended schema, the file is in::
+
+ <roundup source>/roundup/templates/extended/interfaces.py
+
+If you have modified your interfaces.Client class, you will need to take
+note of the login/logout functionality provided in roundup.cgi_client.Client
+(classic schema) or roundup.cgi_client.ExtendedClient (extended schema) and
+modify your instance code apropriately.
+
+
+0.3.x Password encoding
+-----------------------
+This release also introduces encoding of passwords in the database. If you
+have not edited the dbinit.py file in your instance home directory, you may
+simply copy the new dbinit.py file from the core code. If you used the
+classic schema, the interfaces file is in::
+
+ <roundup source>/roundup/templates/classic/dbinit.py
+
+If you used the extended schema, the file is in::
+
+ <roundup source>/roundup/templates/extended/dbinit.py
+
+
+If you have modified your dbinit.py file, you may use encoded passwords:
+
+1. Edit the dbinit.py file in your instance home directory
+   a. At the first code line of the open() function::
+
+       from roundup.hyperdb import String, Date, Link, Multilink
+
+      alter to include Password, as so::
+
+       from roundup.hyperdb import String, Password, Date, Link, Multilink
+
+   b. Where the password property is defined (around line 66)::
+
+       user = Class(db, "user", 
+                       username=String(),   password=String(),
+                       address=String(),    realname=String(), 
+                       phone=String(),      organisation=String())
+       user.setkey("username")
+
+      alter the "password=String()" to "password=Password()"::
+
+       user = Class(db, "user", 
+                       username=String(),   password=Password(),
+                       address=String(),    realname=String(), 
+                       phone=String(),      organisation=String())
+       user.setkey("username")
+
+2. Any existing passwords in the database will remain cleartext until they
+   are edited. It is recommended that at a minimum the admin password be
+   changed immediately::
+
+      roundup-admin -i <instance home> set user1 password=<new password>
+
+
+0.3.x Configuration
+-------------------
+FILTER_POSITION, ANONYMOUS_ACCESS, ANONYMOUS_REGISTER have been added to
+the instance_config.py. Simplest solution is to copy the default values from
+template in the core source.
+
+MESSAGES_TO_AUTHOR has been added to the IssueClass in dbinit.py. Set to 'yes'
+to send nosy messages to the author. Default behaviour is to not send nosy
+messages to the author. You will need to add MESSAGES_TO_AUTHOR to your
+dbinit.py in your instance home.
+
+
+0.3.x CGI script roundup.cgi
+----------------------------
+There have been some structural changes to the roundup.cgi script - you will
+need to install it again from the cgi-bin directory of the source
+distribution. Make sure you update the ROUNDUP_INSTANCE_HOMES after the
+copy.
+
+
