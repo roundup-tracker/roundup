@@ -25,7 +25,7 @@ Modified for Roundup 0.5 release:
 
 """
 
-__version__='$Revision: 1.7 $'[11:-2]
+__version__='$Revision: 1.8 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
@@ -136,6 +136,7 @@ class PathExpr:
     def __init__(self, name, expr, engine):
         self._s = expr
         self._name = name
+        self._hybrid = 0
         paths = split(expr, '|')
         self._subexprs = []
         add = self._subexprs.append
@@ -145,6 +146,7 @@ class PathExpr:
                 # This part is the start of another expression type,
                 # so glue it back together and compile it.
                 add(engine.compile(lstrip(join(paths[i:], '|'))))
+                self._hybrid = 1
                 break
             add(SubPathExpr(path)._eval)
 
@@ -169,8 +171,11 @@ class PathExpr:
             else:
                 break
         else:
-            # On the last subexpression allow exceptions through.
+            # On the last subexpression allow exceptions through, and
+            # don't autocall if the expression was not a subpath.
             ob = self._subexprs[-1](econtext)
+            if self._hybrid:
+                return ob
 
         if self._name == 'nocall' or isinstance(ob, StringType):
             return ob

@@ -141,4 +141,7 @@ if __name__ == '__main__':
         main(name, numissues=20)
     for name in 'anydbm bsddb bsddb3 metakit sqlite'.split():
         main(name, numissues=100)
+    # don't even bother benchmarking the dbm backends > 100!
+    for name in 'metakit sqlite'.split():
+        main(name, numissues=1000)
 

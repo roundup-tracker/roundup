@@ -18,8 +18,8 @@ The Iterator() function accepts either a sequence or a Python
 iterator.  The next() method fetches the next item, and returns
 true if it succeeds.
 
-$Id: Iterator.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
-__version__='$Revision: 1.1 $'[11:-2]
+$Id: Iterator.py,v 1.2 2002-09-26 21:54:17 richard Exp $'''
+__version__='$Revision: 1.2 $'[11:-2]
 
 import string
 
@@ -137,7 +137,7 @@ class SeqInner(InnerBase):
 
     def _supports(self, ob):
         try: ob[0]
-        except TypeError: return 0
+        except (TypeError, AttributeError): return 0
         except: pass
         return 1
 

@@ -36,7 +36,13 @@ are given with the most recent entry first.
 - handle stupid mailers that QUOTE their Re; 'Re: "[issue1] bla blah"'
 - giving a user a Role that doesn't exist doesn't break stuff any more
 - revamped user guide, customisation guide, added maintenance guide
+- merge Zope Collector #538 fix from ZPT CVS trunk (path expressions with a
+  non-path final alternate no longer try to call a value returned by that
+  alternate)
+- merge Zope Collector #573 fix from ZPT CVS trunk
 - merge Zope Collector #580 fix from ZPT CVS trunk
+- added "crypt" password encoding and ability to set password with
+  already encrypted password through roundup-admin
 
 
 2002-09-13 0.5.0 beta2
