@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.9 $
+:Version: $Revision: 1.10 $
 
 Current Situation and Issues
 ============================
@@ -197,6 +197,10 @@ Accesses through a class (either through *class* or *db.<classname>*):
             ''' return an HTMLItem instance '''
         def classhelp(self, ...)
         def list(self, ...)
+        def filter(self):
+            ''' Return a list of items from this class, filtered and sorted
+                by the current requested filterspec/filter/sort/group args
+            '''
 
 Accesses through an *item*::
 
@@ -280,24 +284,43 @@ Multilink HTMLProperty
         def __init__(self, ...)
         def filterspec(self, ...)
 
-Action
-======
+Template files
+~~~~~~~~~~~~~~
 
-1. Investigate how PageTemplates would be integrated into Roundup:
+Each instance will have the opportunity to supply the following templates:
 
-   - we could go for a fully-divorced-from-Zope approach, which would involve
-     bundling PageTemplates/TAL/ZTUtils in with Roundup, with all the
-     Zope-specific bits removed.
-   - we could try to coexist with a Zope installation, but there the problem
-     would be that Zope includes its own copy of PageTemplates/TAL/ZTUtils and
-     we'd be installing a version in site-packages, which would be bad.
+page
+ This is the overall page look template, and includes at some point a TAL
+ command that includes the variable "content". This variable causes the actual
+ page content to be generated.
 
-   The latter may allow nicer integration with Zope itself, giving Zope
-   Roundup users access to acquired information in their templates. We could
-   get around that by modifying the ZRoundup interface to use the "real Zope"
-   ZPT. Maybe.
+*.index
+ Displays a list of items from the database, and a "filter refinement" form.
+ Would perform a TAL ``repeat`` command using the list supplied by
+ ``class/filter``. This deviates from the current situation in that currently
+ the index template specifies a single row, and the filter part is
+ automatically generated.
 
-2. Implement the Roundup infrastructure described in the `implementation`_
-   above.
+*.item
+ Displays a single item from the database using the *classname* variable (that
+ is, the variable of the same name as the class being displayed. If 
 
+*.filter
+ Displays a full search form for a class.
+
+Note that the newitem template doesn't really apply any more because the item
+templates may determine whether the page has an existing item to render.
+
+
+Integrating Code
+~~~~~~~~~~~~~~~~
+
+We will install PageTemplates, TAL and ZTUtils in site-packages. If there is a
+local Zope installation, it will use its own PageTemplates code (Zope modifies
+the module search path to give precedence to its own module library).
+
+We will then install the trivial MultiMapping and ComputedAttribute modules in
+the Roundup package, and have some import trickery that determines whether
+they are required, and if so they will be imported as if they were at the
+"top level" of the module namespace.
 
