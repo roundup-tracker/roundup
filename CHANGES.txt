@@ -8,6 +8,7 @@ Feature:
 Fixed:
 - Boolean HTML templating was broken
 - Link HTML templating field() was broken
+- Fix reporting of test inclusion in postgresql test
 
 
 2004-03-24 0.7.0b1
