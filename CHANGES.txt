@@ -13,7 +13,7 @@ Fixed:
 - enforce View Permission when serving file content (sf bug 1050470)
 - don't index common words (sf bug 1046612)
 - set the current username correctly after rego (sf bug 1048398)
-- don't wrap query.item.html in a <span> (thanks Roché Compaan
+- don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
 
 
 2004-10-15 0.7.8
