@@ -413,6 +413,7 @@ Property values are represented as strings in command arguments and in the
 printed results:
 <ul>
     <li>Strings are, well, strings.
+    <li>Password values will display as their encoded value.
     <li>Date values are printed in the full date format in the local time zone, and
    accepted in the full format or any of the partial formats explained below.
 <table>
@@ -671,6 +672,28 @@ up.
 <strong>Class</strong>
 <br>
 Class is the basic store of information.
+
+<p>
+A class is comprised of one or more properties of the following type:
+
+<ul>
+<li><em>String</em> properties are for storing arbitrary-length
+strings.
+
+<li><em>Password</em> properties are for storing encoded arbitrary-length
+strings. The default encoding is defined on the roundup.password.Password
+class.
+
+<li><em>Date</em> properties store date-and-time stamps.
+Their values are Timestamp objects.
+
+<li>A <em>Link</em> property refers to a single other node
+selected from a specified class.  The class is part of the property;
+the value is an integer, the id of the chosen node.
+
+<li>A <em>Multilink</em> property refers to possibly many nodes
+in a specified class.  The value is a list of integers.
+</ul>
 
 <p>
 
@@ -1103,7 +1126,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.11 2001-10-09 07:25:59 richard Exp $
+$Id: index.html,v 1.12 2001-10-09 07:31:02 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
