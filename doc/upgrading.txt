@@ -1038,4 +1038,4 @@ copy.
 
 .. _`customisation documentation`: customizing.html
 .. _`security documentation`: security.html
-.. _`administration guide`: admin.html
+.. _`administration guide`: admin_guide.html

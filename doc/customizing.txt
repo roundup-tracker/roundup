@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.137 $
+:Version: $Revision: 1.138 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3503,12 +3503,19 @@ resolved. To achieve this:
    example, the existing "Show All" link in the "page" template (in the
    tracker's "html" directory) looks like this::
 
-     <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
+     <a href="issue?:sort=-activity&:group=priority&:filter=status&
+        :columns=id,activity,title,creator,assignedto,status&
+        status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
    modify it to add the "blockers" info to the URL (note, both the
    ":filter" *and* "blockers" values must be specified)::
 
-     <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers&blockers=-1&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
+     <a href="issue?:sort=-activity&:group=priority&:filter=status,blockers&
+        blockers=-1&:columns=id,activity,title,creator,assignedto,status&
+        status=-1,1,2,3,4,5,6,7">Show All</a><br>
+
+   :Note: the above examples are line-wrapped on the trailing & and should
+          be unwrapped.
 
 That's it. You should now be able to set blockers on your issues. Note
 that if you want to know whether an issue has any other issues dependent
