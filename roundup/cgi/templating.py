@@ -645,8 +645,12 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
     def submit(self, label=''"Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
+
+        Generate nothing if we're not editable.
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return ''
+
         return self.input(type="hidden", name="@action", value="new") + \
             '\n' + \
             self.input(type="submit", name="submit", value=self._(label))
@@ -1171,37 +1175,33 @@ class StringHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return self.plain()
 
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
 
-        if self.is_edit_ok():
-            value = '&quot;'.join(value.split('"'))
-            return self.input(name=self._formname,value=value,size=size)
-
-        return self.plain()
+        value = '&quot;'.join(value.split('"'))
+        return self.input(name=self._formname,value=value,size=size)
 
     def multiline(self, escape=0, rows=5, cols=40):
         ''' Render a multiline form edit field for the property.
 
             If not editable, just display the plain() value in a <pre> tag.
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return '<pre>%s</pre>'%self.plain()
 
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
 
-        if self.is_edit_ok():
-            value = '&quot;'.join(value.split('"'))
-            return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
-                self._formname, rows, cols, value)
-
-        return '<pre>%s</pre>'%self.plain()
+        value = '&quot;'.join(value.split('"'))
+        return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
+            self._formname, rows, cols, value)
 
     def email(self, escape=1):
         ''' Render the value of the property as an obscured email address
@@ -1238,12 +1238,10 @@ class PasswordHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return self.plain()
 
-        if self.is_edit_ok():
-            return self.input(type="password", name=self._formname, size=size)
-
-        return self.plain()
+        return self.input(type="password", name=self._formname, size=size)
 
     def confirm(self, size = 30):
         ''' Render a second form edit field for the property, used for
@@ -1252,13 +1250,11 @@ class PasswordHTMLProperty(HTMLProperty):
 
             If not editable, display nothing.
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return ''
 
-        if self.is_edit_ok():
-            return self.input(type="password",
-                name="@confirm@%s"%self._formname, size=size)
-
-        return ''
+        return self.input(type="password",
+            name="@confirm@%s"%self._formname, size=size)
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self):
@@ -1276,18 +1272,16 @@ class NumberHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return self.plain()
 
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
 
-        if self.is_edit_ok():
-            value = '&quot;'.join(value.split('"'))
-            return self.input(name=self._formname,value=value,size=size)
-
-        return self.plain()
+        value = '&quot;'.join(value.split('"'))
+        return self.input(name=self._formname,value=value,size=size)
 
     def __int__(self):
         ''' Return an int of me
@@ -1315,8 +1309,6 @@ class BooleanHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
-
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1368,18 +1360,18 @@ class DateHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-	ret = date.Date('.', translator=self._client)
+        ret = date.Date('.', translator=self._client)
 
-	if isinstance(str_interval, basestring):
-		sign = 1
-		if str_interval[0] == '-':
-			sign = -1
-			str_interval = str_interval[1:]
-		interval = date.Interval(str_interval, translator=self._client)
-		if sign > 0:
-			ret = ret + interval
-		else:
-			ret = ret - interval
+        if isinstance(str_interval, basestring):
+            sign = 1
+            if str_interval[0] == '-':
+                sign = -1
+                str_interval = str_interval[1:]
+            interval = date.Interval(str_interval, translator=self._client)
+            if sign > 0:
+                ret = ret + interval
+            else:
+                ret = ret - interval
 
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, ret)
@@ -1391,7 +1383,6 @@ class DateHTMLProperty(HTMLProperty):
 
         The format string is a standard python strftime format string.
         '''
-        self.edit_check()
         if not self.is_edit_ok():
             if format is self._marker:
                 return self.plain()
@@ -1406,8 +1397,8 @@ class DateHTMLProperty(HTMLProperty):
                     raw_value = Date(default, translator=self._client)
                 elif isinstance(default, date.Date):
                     raw_value = default
-		elif isinstance(default, DateHTMLProperty):
-		    raw_value = default._value
+                elif isinstance(default, DateHTMLProperty):
+                    raw_value = default._value
                 else:
                     raise ValueError, _('default value for '
                         'DateHTMLProperty must be either DateHTMLProperty '
@@ -1501,18 +1492,16 @@ class IntervalHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
+        if not self.is_edit_ok():
+            return self.plain()
 
         if self._value is None:
             value = ''
         else:
             value = cgi.escape(str(self._value))
 
-        if self.is_edit_ok():
-            value = '&quot;'.join(value.split('"'))
-            return self.input(name=self._formname,value=value,size=size)
-
-        return self.plain()
+        value = '&quot;'.join(value.split('"'))
+        return self.input(name=self._formname,value=value,size=size)
 
 class LinkHTMLProperty(HTMLProperty):
     ''' Link HTMLProperty
@@ -1558,8 +1547,6 @@ class LinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
-
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1584,8 +1571,6 @@ class LinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
-
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1715,8 +1700,6 @@ class MultilinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
-
         if not self.is_edit_ok():
             return self.plain()
 
@@ -1737,8 +1720,6 @@ class MultilinkHTMLProperty(HTMLProperty):
 
             If not editable, just display the value via plain().
         '''
-        self.edit_check()
-
         if not self.is_edit_ok():
             return self.plain()
 

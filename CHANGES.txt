@@ -11,6 +11,7 @@ Fixed:
 - 'roundup-server -S' always writes [trackers] section heading (sf bug 1088878)
 - fix port number as int in mysql connection info (sf bug 1082530)
 - fix setup.py to work with <Python2.3 (sf bug 1082801)
+- fix permissions checks in cgi templating (sf bug 1082755)
 
 
 2004-12-08 0.8.0b1
