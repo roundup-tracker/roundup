@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.51 2001-11-06 22:00:34 jhermann Exp $
+# $Id: cgi_client.py,v 1.52 2001-11-06 23:11:22 jhermann Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -80,6 +80,8 @@ class Client:
             self.request.send_header(*entry)
         self.request.end_headers()
         self.headers_done = 1
+        if self.debug:
+            self.headers_sent = headers
 
     def pagehead(self, title, message=None):
         url = self.env['SCRIPT_NAME'] + '/'
@@ -144,14 +146,23 @@ class Client:
             if keys:
                 self.write('<dt><b>Form entries</b></dt>')
                 for k in self.form.keys():
-                    v = str(self.form[k].value)
-                    self.write('<dd><em>%s</em>:%s</dd>'%(k, cgi.escape(v)))
+                    v = self.form.getvalue(k, "<empty>")
+                    if type(v) is type([]):
+                        # Multiple username fields specified
+                        v = "|".join(v)
+                    self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
+            keys = self.headers_sent.keys()
+            keys.sort()
+            self.write('<dt><b>Sent these HTTP headers</b></dt>')
+            for k in keys:
+                v = self.headers_sent[k]
+                self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
             keys = self.env.keys()
             keys.sort()
             self.write('<dt><b>CGI environment</b></dt>')
             for k in keys:
                 v = self.env[k]
-                self.write('<dd><em>%s</em>:%s</dd>'%(k, cgi.escape(v)))
+                self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
             self.write('</dl></small>')
         self.write('</body></html>')
 
@@ -652,9 +663,10 @@ class Client:
     def set_cookie(self, user, password):
         # construct the cookie
         user = binascii.b2a_base64('%s:%s'%(user, password)).strip()
+        expire = Cookie._getdate(86400*365)
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
-        self.header({'Set-Cookie': 'roundup_user="%s"; Path="%s";'%(user,
-            path)})
+        self.header({'Set-Cookie': 'roundup_user="%s"; expires="%s"; Path="%s";' % (
+            user, expire, path)})
 
     def make_user_anonymous(self):
         # make us anonymous if we can
@@ -931,6 +943,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.51  2001/11/06 22:00:34  jhermann
+# Get debug level from ROUNDUP_DEBUG env var
+#
 # Revision 1.50  2001/11/05 23:45:40  richard
 # Fixed newuser_action so it sets the cookie with the unencrypted password.
 # Also made it present nicer error messages (not tracebacks).
