@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.174 2004-11-10 22:22:58 richard Exp $
+#$Id: back_anydbm.py,v 1.175 2004-11-11 06:04:58 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -41,7 +41,7 @@ from indexer_dbm import Indexer
 from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
-from roundup.date import Range
+from roundup.date import Range, Date
 
 def db_exists(config):
     # check for the user db
@@ -2046,6 +2046,9 @@ class Class(hyperdb.Class):
                     if value is None:
                         pass
                     elif isinstance(prop, Date):
+                        if type(value) == type(()):
+                            print 'warning: invalid date tuple %r'%(value,)
+                            value = Date( "2000-1-1" )
                         value = date.Date(value)
                     elif isinstance(prop, Interval):
                         value = date.Interval(value)

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.52 2004-11-05 05:10:07 richard Exp $
+# $Id: db_test_base.py,v 1.53 2004-11-11 06:04:59 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -234,6 +234,15 @@ class DBTest(MyTestCase):
             l = [u1,u2]; l.sort()
             m = self.db.issue.get(nid, "nosy"); m.sort()
             self.assertEqual(l, m)
+
+    def testMultilinkOrdering(self):
+        for i in range(10):
+            self.db.user.create(username='foo%s'%i)
+        i = self.db.issue.create(title="spam", nosy=['5','3','12','4'])
+        self.db.commit()
+        l = self.db.issue.get(i, "nosy")
+        # all backends should return the Multilink numeric-id-sorted
+        self.assertEqual(l, ['3', '4', '5', '12'])
 
     # Date
     def testDateChange(self):

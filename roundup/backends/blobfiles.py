@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.13 2004-06-24 06:39:07 richard Exp $
+#$Id: blobfiles.py,v 1.14 2004-11-11 06:04:59 richard Exp $
 '''This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
 '''
@@ -39,7 +39,11 @@ class FileStorage:
     """Store files in some directory structure"""
     def filename(self, classname, nodeid, property=None):
         '''Determine what the filename for the given node and optionally 
-           property is.
+        property is.
+
+        Try a variety of different filenames - the file could be in the
+        usual place, or it could be in a temp file pre-commit *or* it
+        could be in an old-style, backwards-compatible flat directory.
         '''
         if property:
             name = '%s%s.%s'%(classname, nodeid, property)
@@ -50,20 +54,27 @@ class FileStorage:
 
         # have a separate subdir for every thousand messages
         subdir = str(int(nodeid) / 1000)
-        return os.path.join(self.dir, 'files', classname, subdir, name)
+        filename  = os.path.join(self.dir, 'files', classname, subdir, name)
+        if os.path.exists(filename):
+            return filename
 
-    def filename_flat(self, classname, nodeid, property=None):
-        '''Determine what the filename for the given node and optionally 
-           property is.
-        '''
+        # try .tmp
+        filename = filename + '.tmp'
+        if os.path.exists(filename):
+            return filename
+
+        # ok, try flat (very old-style)
         if property:
-            return os.path.join(self.dir, 'files', '%s%s.%s'%(classname,
+            filename = os.path.join(self.dir, 'files', '%s%s.%s'%(classname,
                 nodeid, property))
         else:
-            # roundupdb.FileClass never specified the property name, so don't 
-            # include it
-            return os.path.join(self.dir, 'files', '%s%s'%(classname,
+            filename = os.path.join(self.dir, 'files', '%s%s'%(classname,
                 nodeid))
+        if os.path.exists(filename):
+            return filename
+
+        # file just ain't there
+        raise IOError, 'content file for %s not found'%name
 
     def storefile(self, classname, nodeid, property, content):
         '''Store the content of the file in the database. The property may be
@@ -89,21 +100,14 @@ class FileStorage:
     def getfile(self, classname, nodeid, property):
         '''Get the content of the file in the database.
         '''
-        # try a variety of different filenames - the file could be in the
-        # usual place, or it could be in a temp file pre-commit *or* it
-        # could be in an old-style, backwards-compatible flat directory
         filename = self.filename(classname, nodeid, property)
-        flat_filename = self.filename_flat(classname, nodeid, property)
-        for filename in (filename, filename+'.tmp', flat_filename):
-            if os.path.exists(filename):
-                f = open(filename, 'rb')
-                break
-        else:
-            raise IOError, 'content file not found'
-        # snarf the contents and make sure we close the file
-        content = f.read()
-        f.close()
-        return content
+
+        f = open(filename, 'rb')
+        try:
+            # snarf the contents and make sure we close the file
+            return f.read()
+        finally:
+            f.close()
 
     def numfiles(self):
         '''Get number of files in storage, even across subdirectories.
