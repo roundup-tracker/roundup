@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.53 2003-11-14 00:11:18 richard Exp $
+# $Id: back_metakit.py,v 1.54 2003-12-05 04:43:46 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -280,7 +280,7 @@ _marker = []
 
 _ALLOWSETTINGPRIVATEPROPS = 0
 
-class Class:    
+class Class(hyperdb.Class):
     privateprops = None
     def __init__(self, db, classname, **properties):
         #self.db = weakref.proxy(db)
@@ -1408,11 +1408,13 @@ class FileClass(Class, hyperdb.FileClass):
             if x.startswith('file:'):
                 fnm = x[5:]
                 try:
-                    x = open(fnm, 'rb').read()
+                    f = open(fnm, 'rb')
                 except IOError, (strerror):
                     # XXX by catching this we donot see an error in the log.
                     return 'ERROR reading file: %s%s\n%s\n%s'%(
                             self.classname, nodeid, poss_msg, strerror)
+                x = f.read()
+                f.close()
         return x
 
     def create(self, **propvalues):
