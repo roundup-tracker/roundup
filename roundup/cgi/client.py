@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.178 2004-05-27 21:51:43 richard Exp $
+# $Id: client.py,v 1.179 2004-06-15 09:19:49 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -10,7 +10,6 @@ import codecs
 
 
 from roundup import roundupdb, date, hyperdb, password
-from roundup.i18n import _
 from roundup.cgi import templating, cgitb
 from roundup.cgi.actions import *
 from roundup.cgi.exceptions import *
@@ -103,7 +102,7 @@ class Client:
     # columns, sort, sortdir, filter, group, groupdir, search_text,
     # pagesize, startwith
 
-    def __init__(self, instance, request, env, form=None):
+    def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator
         random.seed()
         if __debug__:
@@ -112,6 +111,7 @@ class Client:
         self.instance = instance
         self.request = request
         self.env = env
+        self.setTranslator(translator)
         self.mailer = Mailer(instance.config)
 
         # save off the path
@@ -153,6 +153,22 @@ class Client:
 
         # parse cookies (used in charset and session lookups)
         self.cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
+
+    def setTranslator(self, translator=None):
+        """Replace the translation engine
+
+        'translator'
+           is i18n module or one of gettext translation classes.
+           It must have attributes 'gettext' and 'ngettext',
+           serving as translation functions.
+
+           If omitted, use templating.translationService.
+        """
+        if translator is None:
+            translator = templating.translationService
+        self.translator = translator
+        self._ = self.gettext = translator.gettext
+        self.ngettext = translator.ngettext
 
     def main(self):
         ''' Wrap the real main in a try/finally so we always close off the db.
@@ -257,7 +273,7 @@ class Client:
             # pass through
             raise
         except FormError, e:
-            self.error_message.append(_('Form Error: ') + str(e))
+            self.error_message.append(self._('Form Error: ') + str(e))
             self.write_html(self.renderContext())
         except:
             # everything else
@@ -307,7 +323,7 @@ class Client:
             try:
                 codecs.lookup(charset)
             except LookupError:
-                self.error_message.append(_('Unrecognized charset: %r')
+                self.error_message.append(self._('Unrecognized charset: %r')
                     % charset)
             else:
                 self.charset = charset.lower()
