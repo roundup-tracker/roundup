@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.8 2004-03-25 22:52:12 richard Exp $
+# $Id: mailer.py,v 1.9 2004-03-25 22:53:26 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -99,8 +99,6 @@ class Mailer:
         - subject: the subject as a string.
 
         """
-        message, writer = self.get_standard_message(to, subject)
-
         # see whether we should send to the dispatcher or not
         dispatcher_email = getattr(self.config, "DISPATCHER_EMAIL",
             getattr(self.config, "ADMIN_EMAIL"))
@@ -109,6 +107,8 @@ class Mailer:
             to = [dispatcher_email]
         elif error_messages_to == "both":
             to.append(dispatcher_email)
+
+        message, writer = self.get_standard_message(to, subject)
 
         part = writer.startmultipartbody('mixed')
         part = writer.nextpart()
