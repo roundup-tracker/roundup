@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.56 2002-06-14 03:54:21 dman13 Exp $
+# $Id: roundupdb.py,v 1.57 2002-06-15 15:49:29 dman13 Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -24,7 +24,11 @@ Extending hyperdb with types specific to issue-tracking.
 import re, os, smtplib, socket, copy, time, random
 import MimeWriter, cStringIO
 import base64, quopri, mimetypes
-import rfc822
+# if available, use the 'email' module, otherwise fallback to 'rfc822'
+try :
+    from email.Utils import dump_address_pair as straddr
+except ImportError :
+    from rfc822 import dump_address_pair as straddr
 
 import hyperdb, date
 
@@ -395,7 +399,7 @@ class IssueClass(Class):
             authname = users.get(authid, 'username')
         authaddr = users.get(authid, 'address')
         if authaddr:
-            authaddr = rfc822.dump_address_pair( ('',authaddr) )
+            authaddr = straddr( ('',authaddr) )
         else:
             authaddr = ''
 
@@ -441,9 +445,9 @@ class IssueClass(Class):
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', rfc822.dump_address_pair(
+        writer.addheader('From', straddr(
                               (authname, self.db.config.ISSUE_TRACKER_EMAIL) ) )
-        writer.addheader('Reply-To', rfc822.dump_address_pair( 
+        writer.addheader('Reply-To', straddr( 
                                         (self.db.config.INSTANCE_NAME,
                                          self.db.config.ISSUE_TRACKER_EMAIL) ) )
         writer.addheader('MIME-Version', '1.0')
@@ -517,16 +521,17 @@ class IssueClass(Class):
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
         base = self.db.config.ISSUE_TRACKER_WEB 
-        if not isinstance( base , "" ) or not base.startswith( "http://" ) :
+        # Oops, can't do this in python2.1
+        #if not isinstance( base , "" ) or not base.startswith( "http://" ) :
+        if type(base) != type("") or not base.startswith( "http://" ) :
             base = "Configuration Error: ISSUE_TRACKER_WEB isn't a fully-qualified URL"
         elif base[-1] != '/' :
             base += '/'
         web = base + 'issue'+ nodeid
-        #web = self.db.config.ISSUE_TRACKER_WEB + 'issue'+ nodeid
 
         # ensure the email address is properly quoted
-        email = rfc822.dump_address_pair(   self.db.config.INSTANCE_NAME ,
-                                            self.db.config.ISSUE_TRACKER_EMAIL )
+        email = straddr( (self.db.config.INSTANCE_NAME ,
+                          self.db.config.ISSUE_TRACKER_EMAIL) )
 
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)
@@ -577,6 +582,18 @@ class IssueClass(Class):
         cl = self.db.classes[cn]
         changed = {}
         props = cl.getprops(protected=0)
+
+        # XXX DSH
+        # Temporary work-around to prevent crashes and allow the issue to be
+        # submitted.
+        try :
+            oldvalues.keys
+        except AttributeError :
+            # The arg isn't a dict.  Precondition/interface violation.
+            return '\n'.join( 
+                ('', '-'*10,
+                 "Precondition/interface Error -- 'oldvalues' isn't a dict." ,
+                 '-'*10 , '' , str(oldvalues) ) )
 
         # determine what changed
         for key in oldvalues.keys():
@@ -649,6 +666,12 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.56  2002/06/14 03:54:21  dman13
+# #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
+#
+# use the rfc822 module to ensure that every (oddball) email address and
+# real-name is properly quoted
+#
 # Revision 1.55  2002/06/11 04:58:07  richard
 # detabbing
 #

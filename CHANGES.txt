@@ -40,6 +40,8 @@ Feature:
    - also changed cgi client since it was duplicating the functionality
 
 Fixed:
+ . properly quote the email address and "real name" in all situations using the
+    'email' module if it is available and 'rfc822' otherwise
  . #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
  . use the rfc822 module to ensure that every (oddball) email address and
    real-name is properly quoted
