@@ -1,15 +1,23 @@
 This is the second beta release of Roundup version 0.7. It fixes some bugs
 in the previous beta release:
 
-- Boolean, Date and Link HTML templating was broken
-- fix reporting of test inclusion in postgresql test
-- EditAction was confused about who "self" was
-- edit collision detection was broken for index-page edits
-- sqlite backend wasn't migrating multilink tables correctly
-- use SimpleCookie instead of Cookie (is an alias for the evil SmartCookie)
-- handle older sessions in session dbm
-- make presetunread more resilient to status Class changes
-- HTMLDatabase classes() was broken
+- mysql and postgresql schema mutation now handle added Multilinks
+- web CSV export was busted (as was any action returning a result)
+- MultiMapping deviated from the Zope C implementation in a number of
+  places (thanks Toby Sargeant)
+- MySQL and Postgresql use BOOL/BOOLEAN for Boolean types
+- OTK generation was busted (thanks Stuart D. Gathman)
+- export and import now include journals (incompatible with export < 0.7)
+- added "download_url" method to generate a correctly quoted URL for file
+  download links (sf bug 927745)
+- all uses of TRACKER_WEB now ensure it ends with a '/'
+- roundup-admin install checks for existing tracker in target home
+- grouping (and sorting) by multilink in RDBMS backends (sf bug 655702)
+- roundup scripts may now be asked for their version (sf rfe 798657)
+- sqlite backend had stopped using the global lock
+- better check for anonymous viewing of user items (sf bug 933510)
+- stop Interval from displaying an empty string (sf bug 934022)
+- fixed storage of some datatypes in some RDBMS backends
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
@@ -30,12 +38,13 @@ together a What's New page:
 Some highlights:
 
 - added postgresql backend
-- RDBMS backends have no external locking requirements
+- trackers using postgresql or mysql backends may have many users
 - new "actor" automatic property (user who caused the last "activity")
 - RDBMS backends have data typed columns and indexes on several columns
-- we support confirming registration by replying to the email
-- all HTML templating methods now automatically check for permissions,
-  greatly simplifying templates
+- registration may be concluded by replying to the confirmation email
+- HTML templating permission checks are greatly simplified
+- database exports now include full journals
+- IMAP support in the mail gateway
 
 Roundup requires python 2.1.3 or later for correct operation.
 

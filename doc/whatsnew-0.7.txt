@@ -155,25 +155,15 @@ text/html. This is done with::
 if you were returning a PNG image.
 
 
-Added CSV export action
------------------------
-
-A new action has been added which exports the current index page or search
-result as a comma-separated-value (CSV) file.
-
-To use it, add this to your "index" templates::
-
-  <a tal:attributes="href python:request.indexargs_url('issue',
-      {'@action':'export_csv'})">Download as CSV</a>
-
-Making sure that the ``'issue'`` part matches the class name of the page
-you're editing.
-
 Roundup server 
 --------------
 
 The roundup-server web interface now supports setgid and running on port
 < 1024.
+
+It also forks to handle new connections, which means that trackers using
+the postgresql or mysql backends will be able to have multiple users
+accessing the tracker simultaneously.
 
 
 HTML templating made easier
@@ -238,6 +228,33 @@ may use the new ``utils.url_quote(url)`` and ``utils.html_quote(html)``
 methods.
 
 
+CSV download of search results
+------------------------------
+
+A new CGI action, ``export_csv`` has been added which exports a given
+index page query as a comma-separated-value file.
+
+To use this new action, just add a link to your ``issue.index.html``
+page::
+
+  <a tal:attributes="href python:request.indexargs_url('issue',
+            {'@action':'export_csv'})">Download as CSV</a>
+
+You may use this for other classes by adding it to their index page and
+changing the ``'issue'`` part of the expression to the new class' name.
+
+
+Other changes
+-------------
+
+- we serve up a favicon now
+- the page titles have the tracker name at the end of the text instead
+  of the start
+- added url_quote and html_quote methods to the utils object
+- added isset method to HTMLProperty
+- added search_checkboxes as an option for the search form
+
+
 Email Interface
 ===============
 
@@ -285,12 +302,33 @@ In addition, the ``IssueClass`` methods ``nosymessage()`` and
 message id parameter. This means that change notes with no associated
 change message may now be generated much more easily.
 
+The roundupdb nosymessage() method also accepts a ``bcc`` argument which
+specifies additional userids to send the message to that will not be
+included in the To: header of the message.
+
 
 Registration confirmation by email
 ----------------------------------
 
 Users may now reply to their registration confirmation email, and the
 roundup mail gateway will complete their registration.
+
+
+``roundup-mailgw`` now supports IMAP
+------------------------------------
+
+To retrieve from an IMAP mailbox, use a *cron* entry similar to the
+POP one::
+
+  0,10,20,30,40,50 * * * * /usr/local/bin/roundup-mailgw /opt/roundup/trackers/support imap <imap_spec>
+
+where imap_spec is "``username:password@server``" that specifies the roundup
+submission user's IMAP account name, password and server. You may
+optionally include a mailbox to use other than the default ``INBOX`` with
+"``imap username:password@server mailbox``".
+
+If you have a secure (ie. HTTPS) IMAP server then you may use ``imaps``
+in place of ``imap`` in the command to use a secure connection.
 
 
 Database configuration

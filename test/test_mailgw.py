@@ -8,7 +8,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.67 2004-04-09 01:32:58 richard Exp $
+# $Id: test_mailgw.py,v 1.68 2004-04-18 06:14:26 richard Exp $
+
+# TODO: test bcc
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
