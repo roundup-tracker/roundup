@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.176.2.8 2004-11-21 21:52:34 richard Exp $
+# $Id: client.py,v 1.176.2.9 2004-12-03 22:21:31 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -208,7 +208,9 @@ class Client:
 #            self.additional_headers['Pragma'] = 'no-cache'
 
             # expire this page 5 seconds from now
-            date = rfc822.formatdate(time.time() + 5)
+            # <rj> changed to "fix" IE caching issue - always expire all
+            # pages
+            date = rfc822.formatdate(time.time() - 1)
             self.additional_headers['Expires'] = date
 
             # render the content
