@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.12 2002-09-04 04:30:18 richard Exp $
+# $Id: back_gadfly.py,v 1.13 2002-09-04 07:12:19 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -923,8 +923,8 @@ class Class(hyperdb.Class):
                 l = []
                 for entry in value:
                     if type(entry) != type(''):
-                        raise ValueError, '"%s" link value (%s) must be '\
-                            'String'%(key, value)
+                        raise ValueError, '"%s" multilink value (%r) '
+                            'must contain Strings'%(key, value)
                     # if it isn't a number, it's a key
                     if not num_re.match(entry):
                         try:
@@ -1758,6 +1758,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/09/04 04:30:18  richard
+# bugfix
+#
 # Revision 1.11  2002/09/03 22:11:50  richard
 # *** empty log message ***
 #
