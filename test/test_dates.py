@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.16 2003-01-12 00:43:43 richard Exp $ 
+# $Id: test_dates.py,v 1.17 2003-02-24 15:38:51 kedder Exp $ 
 
 import unittest, time
 
@@ -56,10 +56,10 @@ class DateTestCase(unittest.TestCase):
     def testOffset(self):
         ae = self.assertEqual
         date = Date("2000-04-17", -5)
-        ae(str(date), '2000-04-17.00:00:00')
+        ae(str(date), '2000-04-17.05:00:00')
         date = Date("01-25", -5)
         y, m, d, x, x, x, x, x, x = time.gmtime(time.time())
-        ae(str(date), '%s-01-25.00:00:00'%y)
+        ae(str(date), '%s-01-25.05:00:00'%y)
         date = Date("2000-04-17.03:45", -5)
         ae(str(date), '2000-04-17.08:45:00')
         date = Date("08-13.22:13", -5)
