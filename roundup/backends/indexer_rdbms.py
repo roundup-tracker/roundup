@@ -74,6 +74,9 @@ class Indexer(Indexer):
         If none are found return an empty dictionary
         * more rules here
         '''        
+        if not wordlist:
+            return {}
+
         l = [word.upper() for word in wordlist if 26 > len(word) > 2]
 
         a = ','.join([self.db.arg] * len(l))
