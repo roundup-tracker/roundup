@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.11 2002-02-14 23:38:12 richard Exp $
+# $Id: test_mailgw.py,v 1.12 2002-02-15 00:13:38 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -61,6 +61,23 @@ This is a test submission of a new issue.
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
 
+    def testNewIssueNoClass(self):
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork
+To: issue_tracker@fill.me.in.
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: Testing...
+
+This is a test submission of a new issue.
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+        if os.path.exists(os.environ['SENDMAILDEBUG']):
+            error = open(os.environ['SENDMAILDEBUG']).read()
+            self.assertEqual('no error', error)
+
     def testNewIssueAuthMsg(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -104,14 +121,14 @@ ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''')
+''', 'Generated message not correct')
 
     # BUG
     # def testMultipart(self):
-    # 	'''With more than one part'''
-    #	see MultipartEnc tests: but if there is more than one part
-    #	we return a multipart/mixed and the boundary contains
-    #	the ip address of the test machine. 
+    #         '''With more than one part'''
+    #        see MultipartEnc tests: but if there is more than one part
+    #        we return a multipart/mixed and the boundary contains
+    #        the ip address of the test machine. 
 
     # BUG should test some binary attamchent too.
 
@@ -199,6 +216,50 @@ ___________________________________________________
 http://some.useful.url/issue1
 ___________________________________________________
 ''', 'Generated message not correct')
+
+    def testFollowupTitleMatch(self):
+        self.testNewIssue()
+        message = cStringIO.StringIO('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test>
+To: issue_tracker@fill.me.in.
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: Testing... [assignedto=mary; nosy=john]
+
+This is a followup
+''')
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.main(message)
+
+        self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
+'''FROM: roundup-admin@fill.me.in.
+TO: chef@bork.bork.bork, mary@test, john@test
+Content-Type: text/plain
+Subject: [issue1] Testing...
+To: chef@bork.bork.bork, mary@test, john@test
+From: richard <issue_tracker@fill.me.in.>
+Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
+MIME-Version: 1.0
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+X-Roundup-Name: Roundup issue tracker
+
+
+richard <richard@test> added the comment:
+
+This is a followup
+
+
+----------
+assignedto:  -> mary
+nosy: +mary, john
+status: unread -> chatting
+___________________________________________________
+"Roundup issue tracker" <issue_tracker@fill.me.in.>
+http://some.useful.url/issue1
+___________________________________________________
+''') #, 'Generated message not correct')
 
     def testEnc01(self):
         self.testNewIssue()
@@ -303,13 +364,20 @@ class ExtMailgwTestCase(MailgwTestCase):
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase, 'test'),
-        unittest.makeSuite(ExtMailgwTestCase, 'test')
+         unittest.makeSuite(ExtMailgwTestCase, 'test')
     ]
     return unittest.TestSuite(l)
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/02/14 23:38:12  richard
+# Fixed the unit tests for the mailgw re: the x-roundup-name header.
+# Also made the test runner more user-friendly:
+#   ./run_tests            - detect all tests in test/test_<name>.py and run them
+#   ./run_tests <name>     - run only test/test_<name>.py
+# eg ./run_tests mailgw    - run the mailgw test from test/test_mailgw.py
+#
 # Revision 1.10  2002/02/12 08:08:55  grubert
 #  . Clean up mail handling, multipart handling.
 #

@@ -2,6 +2,11 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2002-02-?? - 0.4.1
+Feature:
+ . #503204 ] mailgw needs a default class
+   - partially done - the setting of additional properties can wait for a
+     better configuration system.
+
 Fixed:
  . Clean up mail handling, multipart handling.
  . respect encodings in non multipart messages.
@@ -14,6 +19,7 @@ Fixed:
  . All forms now have "double-submit" protection when Javascript is enabled
    on the client-side.
  . #516883 ] mail interface + ANONYMOUS_REGISTER
+
 
 2002-01-24 - 0.4.0
 Feature:

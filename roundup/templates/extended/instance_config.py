@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.11 2002-02-14 23:46:02 richard Exp $
+# $Id: instance_config.py,v 1.12 2002-02-15 00:13:38 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -69,13 +69,13 @@ LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
 
 # Deny or allow anonymous access to the web interface
-ANONYMOUS_ACCESS = 'deny'
+ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
 
 # Deny or allow anonymous users to register through the web interface
-ANONYMOUS_REGISTER = 'deny'
+ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
 
 # Deny or allow anonymous users to register through the mail interface
-ANONYMOUS_REGISTER_MAIL = 'deny'
+ANONYMOUS_REGISTER_MAIL = 'deny'     # either 'deny' or 'allow'
 
 # Send nosy messages to the author of the message
 MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
@@ -83,8 +83,17 @@ MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
 # Where to place the email signature
 EMAIL_SIGNATURE_POSITION = 'bottom'
 
+# Default class to use in the mailgw if one isn't supplied in email
+# subjects. To disable, comment out the variable below or leave it blank.
+# Examples:
+MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
+#MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/02/14 23:46:02  richard
+# . #516883 ] mail interface + ANONYMOUS_REGISTER
+#
 # Revision 1.10  2001/11/26 22:55:56  richard
 # Feature:
 #  . Added INSTANCE_NAME to configuration - used in web and email to identify

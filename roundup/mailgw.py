@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.64 2002-02-14 23:46:02 richard Exp $
+$Id: mailgw.py,v 1.65 2002-02-15 00:13:38 richard Exp $
 '''
 
 
@@ -120,7 +120,7 @@ class Message(mimetools.Message):
         return Message(s)
 
 subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re|aw)\s*\W?\s*)*'
-    r'\s*(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])'
+    r'\s*(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
     r'\s*(?P<title>[^[]+)?(\[(?P<args>.+?)\])?', re.I)
 
 class MailGW:
@@ -292,6 +292,20 @@ class MailGW:
             raise MailUsageHelp
 
         m = subject_re.match(subject)
+
+        # check for well-formed subject line
+        if m:
+            # get the classname
+            classname = m.group('classname')
+            if classname is None:
+                # no classname, fallback on the default
+                if hasattr(self.instance, 'MAIL_DEFAULT_CLASS') and \
+                        self.instance.MAIL_DEFAULT_CLASS:
+                    classname = self.instance.MAIL_DEFAULT_CLASS
+                else:
+                    # fail
+                    m = None
+
         if not m:
             raise MailUsageError, '''
 The message you sent to roundup did not contain a properly formed subject
@@ -307,8 +321,7 @@ line. The subject must contain a class name or designator to indicate the
 Subject was: "%s"
 '''%subject
 
-        # get the classname
-        classname = m.group('classname')
+        # get the class
         try:
             cl = self.db.getclass(classname)
         except KeyError:
@@ -790,6 +803,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.64  2002/02/14 23:46:02  richard
+# . #516883 ] mail interface + ANONYMOUS_REGISTER
+#
 # Revision 1.63  2002/02/12 08:08:55  grubert
 #  . Clean up mail handling, multipart handling.
 #
