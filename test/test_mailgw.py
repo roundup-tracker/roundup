@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.55 2003-10-24 15:01:11 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.56 2003-10-25 12:02:36 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -994,26 +994,8 @@ This is a test confirmation of registration.
 
         self.db.user.lookup('johannes')
 
-
-class ParseContentTestCase(unittest.TestCase):
-    def testSignatureRemoval(self):
-        summary, content = parseContent('''Testing, testing.
-
--- 
-Signature''', 1, 0)
-        self.assertEqual(content, 'Testing, testing.')
-
-    def testKeepMultipleHyphens(self):
-        body = '''Testing, testing.
-
-----
-Testing, testing.'''
-        summary, content = parseContent(body, 1, 0)
-        self.assertEqual(body, content)
-
 def suite():
-    l = [unittest.makeSuite(MailgwTestCase),
-         unittest.makeSuite(ParseContentTestCase)]
+    l = [unittest.makeSuite(MailgwTestCase)]
     return unittest.TestSuite(l)
 
 

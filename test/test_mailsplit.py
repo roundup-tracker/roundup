@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.13 2003-09-30 23:55:54 richard Exp $
+# $Id: test_mailsplit.py,v 1.14 2003-10-25 12:02:37 jlgijsbers Exp $
 
 import unittest, cStringIO
 
@@ -218,6 +218,14 @@ userfoo@foo.com
         summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'This is a long sentence that would '
             'normally\nbe split.')
+
+    def testKeepMultipleHyphens(self):
+        body = '''Testing, testing.
+
+----
+Testing, testing.'''
+        summary, content = parseContent(body, 1, 0)
+        self.assertEqual(body, content)
 
 def suite():
    return unittest.makeSuite(MailsplitTestCase, 'test')
