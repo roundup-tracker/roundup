@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.91 2003-02-18 01:59:10 richard Exp $
+# $Id: client.py,v 1.92 2003-02-18 03:58:18 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -778,16 +778,13 @@ class Client:
 #        try:
         if 1:
             # create the context here
-            cn = self.classname
-            nid = self._createnode(cn, props[(cn, None)])
-            del props[(cn, None)]
+#            cn = self.classname
+#            nid = self._createnode(cn, props[(cn, None)])
+#            del props[(cn, None)]
 
-            extra = self._editnodes(props, links, {(cn, None): nid})
-            if extra:
-                extra = '<br>' + extra
+            # when it hits the None element, it'll set self.nodeid
+            messages = self._editnodes(props, links) #, {(cn, None): nid})
 
-            # now do the rest
-            messages = '%s %s created'%(cn, nid) + extra
 #        except (ValueError, KeyError, IndexError), message:
 #            # these errors might just be indicative of user dumbness
 #            self.error_message.append(_('Error: ') + str(message))
@@ -798,7 +795,7 @@ class Client:
 
         # redirect to the new item's page
         raise Redirect, '%s%s%s?@ok_message=%s'%(self.base, self.classname,
-            nid, urllib.quote(messages))
+            self.nodeid, urllib.quote(messages))
 
     def newItemPermission(self, props):
         ''' Determine whether the user has permission to create (edit) this
@@ -816,6 +813,119 @@ class Client:
             return 1
         return 0
 
+
+    #
+    #  Utility methods for editing
+    #
+    def _editnodes(self, all_props, all_links, newids=None):
+        ''' Use the props in all_props to perform edit and creation, then
+            use the link specs in all_links to do linking.
+        '''
+        # figure dependencies and re-work links
+        deps = {}
+        links = {}
+        for cn, nodeid, propname, vlist in all_links:
+            for value in vlist:
+                deps.setdefault((cn, nodeid), []).append(value)
+                links.setdefault(value, []).append((cn, nodeid, propname))
+
+        # figure chained dependencies ordering
+        order = []
+        done = {}
+        # loop detection
+        change = 0
+        while len(all_props) != len(done):
+            for needed in all_props.keys():
+                if done.has_key(needed):
+                    continue
+                tlist = deps.get(needed, [])
+                for target in tlist:
+                    if not done.has_key(target):
+                        break
+                else:
+                    done[needed] = 1
+                    order.append(needed)
+                    change = 1
+            if not change:
+                raise ValueError, 'linking must not loop!'
+
+        # now, edit / create
+        m = []
+        for needed in order:
+            props = all_props[needed]
+            cn, nodeid = needed
+
+            if nodeid is not None and int(nodeid) > 0:
+                # make changes to the node
+                props = self._changenode(cn, nodeid, props)
+
+                # and some nice feedback for the user
+                if props:
+                    info = ', '.join(props.keys())
+                    m.append('%s %s %s edited ok'%(cn, nodeid, info))
+                else:
+                    m.append('%s %s - nothing changed'%(cn, nodeid))
+            else:
+                assert props
+
+                # make a new node
+                newid = self._createnode(cn, props)
+                if nodeid is None:
+                    self.nodeid = newid
+                nodeid = newid
+
+                # and some nice feedback for the user
+                m.append('%s %s created'%(cn, newid))
+
+            # fill in new ids in links
+            if links.has_key(needed):
+                for linkcn, linkid, linkprop in links[needed]:
+                    props = all_props[(linkcn, linkid)]
+                    cl = self.db.classes[linkcn]
+                    propdef = cl.getprops()[linkprop]
+                    if not props.has_key(linkprop):
+                        if linkid is None or linkid.startswith('-'):
+                            # linking to a new item
+                            if isinstance(propdef, hyperdb.Multilink):
+                                props[linkprop] = [newid]
+                            else:
+                                props[linkprop] = newid
+                        else:
+                            # linking to an existing item
+                            if isinstance(propdef, hyperdb.Multilink):
+                                existing = cl.get(linkid, linkprop)[:]
+                                existing.append(nodeid)
+                                props[linkprop] = existing
+                            else:
+                                props[linkprop] = newid
+
+        return '<br>'.join(m)
+
+    def _changenode(self, cn, nodeid, props):
+        ''' change the node based on the contents of the form
+        '''
+        # check for permission
+        if not self.editItemPermission(props):
+            raise PermissionError, 'You do not have permission to edit %s'%cn
+
+        # make the changes
+        cl = self.db.classes[cn]
+        return cl.set(nodeid, **props)
+
+    def _createnode(self, cn, props):
+        ''' create a node based on the contents of the form
+        '''
+        # check for permission
+        if not self.newItemPermission(props):
+            raise PermissionError, 'You do not have permission to create %s'%cn
+
+        # create the node and return its id
+        cl = self.db.classes[cn]
+        return cl.create(**props)
+
+    # 
+    # More actions
+    #
     def editCSVAction(self):
         ''' Performs an edit of all of a class' items in one go.
 
@@ -1023,90 +1133,6 @@ class Client:
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
         raise Redirect, url
 
-
-    #
-    #  Utility methods for editing
-    #
-    def _editnodes(self, all_props, all_links, newids=None):
-        ''' Use the props in all_props to perform edit and creation, then
-            use the link specs in all_links to do linking.
-        '''
-        m = []
-        if newids is None:
-            newids = {}
-        for (cn, nodeid), props in all_props.items():
-            if int(nodeid) > 0:
-                # make changes to the node
-                props = self._changenode(cn, nodeid, props)
-
-                # and some nice feedback for the user
-                if props:
-                    info = ', '.join(props.keys())
-                    m.append('%s %s %s edited ok'%(cn, nodeid, info))
-                else:
-                    m.append('%s %s - nothing changed'%(cn, nodeid))
-            elif props:
-                # make a new node
-                newid = self._createnode(cn, props)
-                newids[(cn, nodeid)] = newid
-                nodeid = newid
-
-                # and some nice feedback for the user
-                m.append('%s %s created'%(cn, newid))
-
-        # handle linked nodes
-        keys = self.form.keys()
-        for cn, nodeid, propname, value in all_links:
-            cl = self.db.classes[cn]
-            property = cl.getprops()[propname]
-            if nodeid is None or nodeid.startswith('-'):
-                if not newids.has_key((cn, nodeid)):
-                    continue
-                nodeid = newids[(cn, nodeid)]
-
-            # map the desired classnames to their actual created ids
-            for link in value:
-                if not newids.has_key(link):
-                    continue
-                linkid = newids[link]
-                if isinstance(property, hyperdb.Multilink):
-                    # take a dupe of the list so we're not changing the cache
-                    existing = cl.get(nodeid, propname)[:]
-                    existing.append(linkid)
-                    cl.set(nodeid, **{propname: existing})
-                elif isinstance(property, hyperdb.Link):
-                    # make the Link set
-                    cl.set(nodeid, **{propname: linkid})
-                else:
-                    raise ValueError, '%s %s is not a link or multilink '\
-                        'property'%(cn, propname)
-                m.append('%s %s linked to <a href="%s%s">%s %s</a>'%(
-                    link[0], linkid, cn, nodeid, cn, nodeid))
-
-        return '<br>'.join(m)
-
-    def _changenode(self, cn, nodeid, props):
-        ''' change the node based on the contents of the form
-        '''
-        # check for permission
-        if not self.editItemPermission(props):
-            raise PermissionError, 'You do not have permission to edit %s'%cn
-
-        # make the changes
-        cl = self.db.classes[cn]
-        return cl.set(nodeid, **props)
-
-    def _createnode(self, cn, props):
-        ''' create a node based on the contents of the form
-        '''
-        # check for permission
-        if not self.newItemPermission(props):
-            raise PermissionError, 'You do not have permission to create %s'%cn
-
-        # create the node and return its id
-        cl = self.db.classes[cn]
-        return cl.create(**props)
-
     def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
         ''' Pull properties out of the form.
 
@@ -1267,6 +1293,13 @@ class Client:
                         raise ValueError, \
                             'link "%s" value "%s" not a designator'%(key, entry)
                     value.append((m.group(1), m.group(2)))
+
+                # make sure the link property is valid
+                if (not isinstance(propdef, hyperdb.Multilink) and
+                        not isinstance(propdef, hyperdb.Link)):
+                    raise ValueError, '%s %s is not a link or '\
+                        'multilink property'%(cn, propname)
+
                 all_links.append((cn, nodeid, propname, value))
                 continue
 
@@ -1525,7 +1558,22 @@ class Client:
             if not props.get('content', ''):
                 del all_props[(cn, id)]
 
-        return all_props, all_links
+        # clean up the links, removing ones that aren't possible
+        l = []
+        for entry in all_links:
+            (cn, nodeid, propname, destlist) = entry
+            source = (cn, nodeid)
+            if not all_props.has_key(source) or not all_props[source]:
+                # nothing to create - don't try to link
+                continue
+                # nothing to create - don't try to link
+                continue
+            for dest in destlist[:]:
+                if not all_props.has_key(dest) or not all_props[dest]:
+                    destlist.remove(dest)
+            l.append(entry)
+
+        return all_props, l
 
 def fixNewlines(text):
     ''' Homogenise line endings.
