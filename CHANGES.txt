@@ -8,6 +8,7 @@ Feature:
 - implement __nonzero__ for HTMLProperty
 - remove "manual" locking of sqlite database
 - create a new RDBMS cursor after committing
+- added basic logging, and configuration of it and python's logging module
 
 
 2004-??-?? 0.7.4

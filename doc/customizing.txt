@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.136 $
+:Version: $Revision: 1.137 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -156,6 +156,22 @@ The configuration variables available are:
   also useful if you want to switch your 'new message' notification to
   a central user. 
 
+**LOGGGING_CONFIG** - ``os.path.join(TRACKER_HOME, 'logging.ini')``
+  This variable activates logging of Roundup's internal messages using the
+  standard python ``logging`` module. The module is configured using the
+  indicated configuration file.
+
+**LOGGING_FILENAME** - ``'/path/to/log file'``
+  This variable activates logging of Roundup's internal messages using a
+  built-in minimal logging service which appends messages to the indicated
+  file.
+
+**LOGGING_LEVEL** - ``'DEBUG'``, ``'INFO'``, ``'WARNING'`` or ``'ERROR'``
+  This variable determines the level of messages logged by the built-in
+  logging service - messages of the level named and higher will be sent to
+  the ``LOGGING_FILENAME`` file. Not used when the ``LOGGGING_CONFIG``
+  variable is set.
+
 **MESSAGES_TO_AUTHOR** - ``'new'``, ``'yes'`` or``'no'``
  Send nosy messages to the author of the message?
  If 'new' is used, then the author will only be sent the message when the
@@ -243,6 +259,19 @@ tracker is attempted.::
     # The email address that roundup will complain to if it runs into
     # trouble
     ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+
+    # These variables define where to log Roundup's internal messages to.
+    # You have two choices - either using the standard Python logging module
+    # or a minimal logging facility built into Roundup. The former is activated
+    # when you provide a LOGGING_CONFIG variable below which contains the
+    # configuration of the logging module. The latter is activated when you
+    # provide the LOGGING_FILENAME and optionally LOGGING_LEVEL variables. If
+    # none of these variables are defined then only errors will be logged, and
+    # they will go to stderr.
+    # LOGGGING_CONFIG = os.path.join(TRACKER_HOME, 'logging.ini')
+    # or,
+    # LOGGING_FILENAME = '/path/to/log file'
+    # LOGGING_LEVEL = 'INFO'   # one of 'DEBUG', 'INFO', 'WARNING', 'ERROR'
 
     # Additional text to include in the "name" part of the From: address
     # used in nosy messages. If the sending user is "Foo Bar", the From:

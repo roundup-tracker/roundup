@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.13 2004-05-10 00:34:48 richard Exp $
+# $Id: instance.py,v 1.14 2004-06-08 05:29:18 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -24,6 +24,7 @@ Backwards compatibility for the old-style "imported" trackers.
 __docformat__ = 'restructuredtext'
 
 import os
+from roundup import rlog
 
 class Vars:
     ''' I'm just a container '''
@@ -90,6 +91,24 @@ class OldStyleTrackers:
             if not hasattr(tracker, required):
                 raise TrackerError, \
                     'Required tracker attribute "%s" missing'%required
+
+        # init the logging
+        config = tracker.config
+        if hasattr(config, 'LOGGING_CONFIG'):
+            try:
+                import logging
+                config.logging = logging
+            except ImportError, msg:
+                raise TrackerError, 'Python logging module unavailable: %s'%msg
+            config.logging.fileConfig(config.LOGGING_CONFIG)
+        elif hasattr(config, 'LOGGING_FILENAME'):
+            config.logging = rlog.BasicLogging()
+            config.logging.setFile(config.LOGGING_FILENAME)
+            if hasattr(config, 'LOGGING_LEVEL'):
+                config.logging.setLevel(config.LOGGING_LEVEL)
+        else:
+            config.logging = rlog.BasicLogging()
+            config.logging.setLevel('ERROR')
 
         return tracker
 

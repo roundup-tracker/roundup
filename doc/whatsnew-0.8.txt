@@ -1,0 +1,18 @@
+=========================
+What's New in Roundup 0.8
+=========================
+
+For those completely new to Roundup, you might want to look over the very
+terse features__ page.
+
+__ features.html
+
+.. contents::
+
+Logging of internal messages
+============================
+
+TODO
+
+
+.. _`customisation documentation`: customizing.html

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.8 2004-03-26 23:45:34 richard Exp $
+# $Id: config.py,v 1.9 2004-06-08 05:29:18 richard Exp $
 
 import os
 
@@ -62,6 +62,19 @@ TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+
+# These variables define where to log Roundup's internal messages to.
+# You have two choices - either using the standard Python logging module
+# or a minimal logging facility built into Roundup. The former is activated
+# when you provide a LOGGING_CONFIG variable below which contains the
+# configuration of the logging module. The latter is activated when you
+# provide the LOGGING_FILENAME and optionally LOGGING_LEVEL variables. If
+# none of these variables are defined then only errors will be logged, and
+# they will go to stderr.
+# LOGGGING_CONFIG = os.path.join(TRACKER_HOME, 'logging.ini')
+# or,
+# LOGGING_FILENAME = '/path/to/log file'
+# LOGGING_LEVEL = 'INFO'   # one of 'DEBUG', 'INFO', 'WARNING', 'ERROR'
 
 # The 'dispatcher' is a role that can get notified of new items to the
 # database. It is used by the ERROR_MESSAGES_TO config setting.
