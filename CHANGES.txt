@@ -17,6 +17,9 @@ Fixed:
  . Fixed some URL issues in roundup.cgi, again thanks Juergen Hermann.
  . bug #475347 ] WindowsError still not caught (patch from Juergen Hermann)
  . bug #474749 ] indentations lost
+ . bug #477104 ] HTML tag error in roundup-server
+ . bug #477107 ] HTTP header problem
+
 
 2001-10-23 - 0.3.0 pre 3
 Feature:

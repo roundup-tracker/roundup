@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.44 2001-10-28 23:03:08 richard Exp $
+# $Id: cgi_client.py,v 1.45 2001-11-01 22:04:37 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -52,14 +52,13 @@ class Client:
     ANONYMOUS_ACCESS = 'deny'        # one of 'deny', 'allow'
     ANONYMOUS_REGISTER = 'deny'      # one of 'deny', 'allow'
 
-    def __init__(self, instance, out, env):
+    def __init__(self, instance, request, env):
         self.instance = instance
-        self.out = out
+        self.request = request
         self.env = env
         self.path = env['PATH_INFO']
         self.split_path = self.path.split('/')
 
-        self.headers_done = 0
         self.form = cgi.FieldStorage(environ=env)
         self.headers_done = 0
         self.debug = 0
@@ -68,11 +67,14 @@ class Client:
         return self.db.user.lookup(self.user)
 
     def header(self, headers={'Content-Type':'text/html'}):
+        '''Put up the appropriate header.
+        '''
         if not headers.has_key('Content-Type'):
             headers['Content-Type'] = 'text/html'
+        self.request.send_response(200)
         for entry in headers.items():
-            self.out.write('%s: %s\n'%entry)
-        self.out.write('\n')
+            self.request.send_header(*entry)
+        self.request.end_headers()
         self.headers_done = 1
 
     def pagehead(self, title, message=None):
@@ -152,7 +154,7 @@ class Client:
     def write(self, content):
         if not self.headers_done:
             self.header()
-        self.out.write(content)
+        self.request.wfile.write(content)
 
     def index_arg(self, arg):
         ''' handle the args to index - they might be a list from the form
@@ -874,6 +876,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2001/10/28 23:03:08  richard
+# Added more useful header to the classic schema.
+#
 # Revision 1.43  2001/10/24 00:01:42  richard
 # More fixes to lockout logic.
 #

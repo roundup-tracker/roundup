@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.17 2001-10-29 23:55:44 richard Exp $
+$Id: roundup-server,v 1.18 2001-11-01 22:04:37 richard Exp $
 
 """
 import sys
@@ -31,7 +31,6 @@ if int(sys.version[0]) < 2:
 
 import os, urllib, StringIO, traceback, cgi, binascii, string, getopt, imp
 import BaseHTTPServer
-import SimpleHTTPServer
 
 # Roundup modules of use here
 from roundup import cgitb, cgi_client
@@ -63,13 +62,9 @@ ROUNDUP_USER = None
 #
 
 
-class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     ROUNDUP_INSTANCE_HOMES = ROUNDUP_INSTANCE_HOMES
     ROUNDUP_USER = ROUNDUP_USER
-    def send_head(self):
-        """Version of send_head that support CGI scripts"""
-        # TODO: actually do the HEAD ...
-        return self.run_cgi()
 
     def run_cgi(self):
         """ Execute the CGI command. Wrap an innner call in an error
@@ -100,12 +95,14 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.wfile.write("</pre>\n")
         sys.stdin = save_stdin
 
+    do_GET = do_POST = do_HEAD = send_head = run_cgi
+
     def index(self):
         ''' Print up an index of the available instances
         '''
         w = self.wfile.write
         w("Content-Type: text/html\n\n")
-        w('<html><head><title>Roundup instances index</title><head>\n')
+        w('<html><head><title>Roundup instances index</title></head>\n')
         w('<body><h1>Roundup instances index</h1><ol>\n')
         for instance in self.ROUNDUP_INSTANCE_HOMES.keys():
             w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
@@ -180,10 +177,8 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_response(200, "Script output follows")
 
         # do the roundup thang
-        client = instance.Client(instance, self.wfile, env)
+        client = instance.Client(instance, self, env)
         client.main()
-
-    do_POST = run_cgi
 
 def usage(message=''):
     if message: message = 'Error: %s\n'%message
@@ -261,6 +256,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/10/29 23:55:44  richard
+# Fix to CGI top-level index (thanks Juergen Hermann)
+#
 # Revision 1.16  2001/10/27 00:12:21  richard
 # Fixed roundup-server for windows, thanks Juergen Hermann.
 #

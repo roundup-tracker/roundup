@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.27 2001-10-30 11:26:10 richard Exp $
+$Id: mailgw.py,v 1.28 2001-11-01 22:04:37 richard Exp $
 '''
 
 
@@ -116,14 +116,18 @@ class MailGW:
 
     def main(self, fp):
         ''' fp - the file from which to read the Message.
+        '''
+        self.handle_Message(Message(fp))
 
-        Read a message from fp and then call handle_message() with the
-        result. This method's job is to make that call and handle any
+    def handle_Message(self, message):
+        '''Handle an RFC822 Message
+
+        Hanle the Message object by calling handle_message() and then cope
+        with any errors raised by handle_message.
+        This method's job is to make that call and handle any
         errors in a sane manner. It should be replaced if you wish to
         handle errors in a different manner.
         '''
-        # ok, figure the subject, author, recipients and content-type
-        message = Message(fp)
         m = []
         try:
             self.handle_message(message)
@@ -445,6 +449,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2001/10/30 11:26:10  richard
+# Case-insensitive match for ISSUE_TRACKER_EMAIL in address in e-mail.
+#
 # Revision 1.26  2001/10/30 00:54:45  richard
 # Features:
 #  . #467129 ] Lossage when username=e-mail-address

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.15 2001-10-29 23:55:44 richard Exp $
+# $Id: roundup.cgi,v 1.16 2001-11-01 22:04:37 richard Exp $
 
 # python version check
 import sys
@@ -59,6 +59,18 @@ except:
     traceback.print_exc(None, s)
     print cgi.escape(s.getvalue()), "</pre>"
 
+class RequestWrapper:
+    '''Used to make the CGI server look like a BaseHTTPRequestHandler
+    '''
+    def __init__(self, wfile):
+        self.wfile = wfile
+    def send_response(self, code):
+        self.wfile.write('Status: %s\r\n'%code)
+    def send_header(self, keyword, value):
+        self.wfile.write("%s: %s\r\n" % (keyword, value))
+    def end_headers(self, keyword, value):
+        self.wfile.write("\r\n")
+
 def main(out, err):
     import os, string
     import roundup.instance
@@ -66,26 +78,30 @@ def main(out, err):
     instance = path[1]
     os.environ['INSTANCE_NAME'] = instance
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
+    request = RequestWrapper(out)
     if ROUNDUP_INSTANCE_HOMES.has_key(instance):
         instance_home = ROUNDUP_INSTANCE_HOMES[instance]
         instance = roundup.instance.open(instance_home)
         from roundup import cgi_client
-        client = instance.Client(instance, out, os.environ)
+        client = instance.Client(instance, request, os.environ)
         try:
             client.main()
         except cgi_client.Unauthorised:
-            out.write('Content-Type: text/html\n')
-            out.write('Status: 403\n\n')
+            request.send_response(403)
+            request.send_header('Content-Type', 'text/html')
+            request.end_headers()
             out.write('Unauthorised')
         except cgi_client.NotFound:
-            out.write('Content-Type: text/html\n')
-            out.write('Status: 404\n\n')
+            request.send_response(404)
+            request.send_header('Content-Type', 'text/html')
+            request.end_headers()
             out.write('Not found: %s'%client.path)
     else:
         import urllib
-        w = out.write
-        w("Content-Type: text/html\n\n")
-        w('<html><head><title>Roundup instances index</title><head>\n')
+        request.send_response(200)
+        request.send_header('Content-Type', 'text/html')
+        w = request.wfile.write
+        w('<html><head><title>Roundup instances index</title></head>\n')
         w('<body><h1>Roundup instances index</h1><ol>\n')
         for instance in ROUNDUP_INSTANCE_HOMES.keys():
             w('<li><a href="%s/%s/index">%s</a>\n'%(
@@ -111,6 +127,9 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/10/29 23:55:44  richard
+# Fix to CGI top-level index (thanks Juergen Hermann)
+#
 # Revision 1.14  2001/10/27 00:22:35  richard
 # Fixed some URL issues in roundup.cgi, again thanks Juergen Hermann.
 #
