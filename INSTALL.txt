@@ -20,8 +20,8 @@ You will need either the anydbm or bsddb module.
 Testing the Software
 --------------------
 
-Run "python -c 'import test;test.go()'" and make sure there's no errors.
-If there are errors, please let us know!
+Either run "run_tests" or "python -c 'import test;test.go()'" and make sure 
+there's no errors. If there are errors, please let us know!
 
 Installing the Software
 -----------------------
