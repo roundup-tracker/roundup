@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.3 2002-08-23 04:58:00 richard Exp $
+# $Id: back_gadfly.py,v 1.4 2002-08-23 05:00:38 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1270,6 +1270,9 @@ class Class(hyperdb.Class):
         Retired nodes are not returned by the find(), list(), or lookup()
         methods, and other nodes may reuse the values of their key properties.
         '''
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
         cursor = self.db.conn.cursor()
         sql = 'update _%s set __retired__=1 where id=?'%self.classname
         if __debug__:
@@ -1645,6 +1648,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/08/23 04:58:00  richard
+# ahhh, I understand now
+#
 # Revision 1.2  2002/08/23 04:48:10  richard
 # That's gadfly done, mostly. Things left:
 # - Class.filter (I'm a wuss ;)
