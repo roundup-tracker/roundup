@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.26 2004-05-04 00:16:07 richard Exp $ 
+# $Id: db_test_base.py,v 1.27 2004-05-06 01:03:01 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -614,6 +614,7 @@ class DBTest(MyTestCase):
     def testPack(self):
         id = self.db.issue.create(title="spam", status='1')
         self.db.commit()
+        time.sleep(1)
         self.db.issue.set(id, status='2')
         self.db.commit()
 
