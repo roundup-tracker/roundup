@@ -435,6 +435,9 @@ Other improvements
   is not capable of storing this precision though, so it will be lost for
   users of that backend.
 
+- The roundup-admin "export" and "import" commands now handle the database
+  journals too. This means that exports from previous versions of Roundup
+  will not work under 0.7!
 
 
 .. _`customisation documentation`: customizing.html

@@ -6,9 +6,10 @@ Feature:
 - added a favicon
 - added url_quote and html_quote methods to the utils object
 - added isset method to HTMLProperty
+- database export now exports full journals too
 
 Fixed:
-- CSV export was busted (as was any action returning a result)
+- web CSV export was busted (as was any action returning a result)
 - MultiMapping deviated from the Zope C implementation in a number of
   places (thanks Toby Sargeant)
 - MySQL and Postgresql use BOOL/BOOLEAN for Boolean types
