@@ -52,6 +52,7 @@ Feature:
 - added ability to restore retired nodes
 - more lenient date input and addition Interval input support (sf bug 677764)
 - roundup mailgw now handles apop
+- implemented ability to search for multilink properties with no value
 
 
 Fixed:
@@ -71,8 +72,6 @@ Fixed:
 - fixed export/import of retired nodes (sf bug 685273)
 - remember the display template specified during edit (sf bug 701815)
 - added example HTML tempating for vacation flag (sf bug 701722)
-- only look for CSV files when importing (thanks Dan Grassi)
-- can now unset values in CSV editing (sf bug 704788)
 - finally, tables autosize columns (sf bug 609070)
 - added creation to index columns (sf bug 708247)
 
@@ -82,6 +81,8 @@ Fixed:
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
 - fixed detection of bad date specs (sf bug 691439)
+- only look for CSV files when importing (thanks Dan Grassi)
+- can now unset values in CSV editing (sf bug 704788)
 - fixed rdbms email address lookup (case insensitivity)
 
 

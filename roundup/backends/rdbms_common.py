@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.48 2003-03-24 04:47:44 richard Exp $
+# $Id: rdbms_common.py,v 1.49 2003-03-26 04:56:21 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1786,13 +1786,18 @@ class Class(hyperdb.Class):
             # now do other where clause stuff
             if isinstance(propclass, Multilink):
                 tn = '%s_%s'%(cn, k)
-                frum.append(tn)
                 if isinstance(v, type([])):
+                    frum.append(tn)
                     s = ','.join([a for x in v])
                     where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
                     args = args + v
+                elif v == '-1':
+                    # only match rows that have count(linkid)=0 in the
+                    # corresponding multilink table)
+                    where.append('id not in (select nodeid from %s)'%tn)
                 else:
-                    where.append('id=%s.nodeid and %s.linkid = %s'%(tn, tn, a))
+                    frum.append(tn)
+                    where.append('id=%s.nodeid and %s.linkid=%s'%(tn, tn, a))
                     args.append(v)
             elif k == 'id':
                 if isinstance(v, type([])):

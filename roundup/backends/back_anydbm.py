@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.113 2003-03-17 22:03:04 kedder Exp $
+#$Id: back_anydbm.py,v 1.114 2003-03-26 04:56:21 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1601,7 +1601,9 @@ class Class(hyperdb.Class):
 
             The filter must match all properties specificed - but if the
             property value to match is a list, any one of the values in the
-            list may match for that property to match.
+            list may match for that property to match. Unless the property
+            is a Multilink, in which case the item's property list must
+            match the filterspec list.
         '''
         cn = self.classname
 
@@ -1624,7 +1626,9 @@ class Class(hyperdb.Class):
                 u = []
                 link_class =  self.db.classes[propclass.classname]
                 for entry in v:
-                    if entry == '-1': entry = None
+                    # the value -1 is a special "not set" sentinel
+                    if entry == '-1':
+                        entry = None
                     elif not num_re.match(entry):
                         try:
                             entry = link_class.lookup(entry)
@@ -1635,8 +1639,12 @@ class Class(hyperdb.Class):
 
                 l.append((LINK, k, u))
             elif isinstance(propclass, Multilink):
-                if type(v) is not type([]):
+                # the value -1 is a special "not set" sentinel
+                if v == '-1':
+                    v = []
+                elif type(v) is not type([]):
                     v = [v]
+
                 # replace key values with node ids
                 u = []
                 link_class =  self.db.classes[propclass.classname]
@@ -1648,6 +1656,7 @@ class Class(hyperdb.Class):
                             raise ValueError, 'new property "%s": %s not a %s'%(
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
+                u.sort()
                 l.append((MULTILINK, k, u))
             elif isinstance(propclass, String) and k != 'id':
                 # simple glob searching
@@ -1710,6 +1719,12 @@ class Class(hyperdb.Class):
                         # filterspec aren't in this node's property, then skip
                         # it
                         have = node[k]
+                        # check for matching the absence of multilink values
+                        if not v and have:
+                            break
+
+                        # othewise, make sure this node has each of the
+                        # required values
                         for want in v:
                             if want not in have:
                                 break
