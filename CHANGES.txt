@@ -17,6 +17,8 @@ are given with the most recent entry first.
 - copied email address quoting from email v2.4.3 so we're consistent with 2.2
 - email summary extraction now takes the first whole sentence or line -
   whichever is longer
+- documented dependency on Active State (sf bug 623959)
+- ensured there's no zero-length files in source (sf bug 633622)
 
 
 2002-10-16 0.5.1
