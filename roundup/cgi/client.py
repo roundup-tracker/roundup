@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.12 2004-02-25 23:23:56 richard Exp $
+# $Id: client.py,v 1.130.2.13 2004-02-25 23:26:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1489,17 +1489,14 @@ You should then receive another email with the new password.
                 n = self.form[key].value.strip()
         if not t:
             raise ValueError, 'No type specified'
-            return
         if not n:
             raise SeriousError, _('No ID entered')
-            return
         try:
             int(n)
         except ValueError:
             d = {'input': n, 'classname': t}
             raise SeriousError, _(
                 '"%(input)s" is not an ID (%(classname)s ID required)')%d
-            return
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
         raise Redirect, url
 
