@@ -11,28 +11,7 @@
 from roundup.backends.rdbms_common import *
 from roundup.backends import rdbms_common
 import psycopg
-import os, shutil
-
-class Maintenance:
-    """ Database maintenance functions """
-    def db_nuke(self, config):
-        """Clear all database contents and drop database itself"""
-        config.POSTGRESQL_DATABASE['database'] = 'template1'
-        db = Database(config, 'admin')
-        db.conn.set_isolation_level(0)
-        db.sql("DROP DATABASE %s" % config.POSTGRESQL_DBNAME)
-        db.sql("CREATE DATABASE %s" % config.POSTGRESQL_DBNAME)
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        config.POSTGRESQL_DATABASE['database'] = config.POSTGRESQL_DBNAME
-
-    def db_exists(self, config):
-        """Check if database already exists"""
-        try:
-            db = Database(config, 'admin')
-            return 1
-        except:
-            return 0
+import os, shutil, popen2
 
 class Database(Database):
     arg = '%s'
@@ -58,7 +37,7 @@ class Database(Database):
         self.conn.close()
 
     def __repr__(self):
-        return '<psycopgroundsql 0x%x>' % id(self)
+        return '<roundpsycopgsql 0x%x>' % id(self)
 
     def sql_fetchone(self):
         return self.cursor.fetchone()
@@ -67,7 +46,15 @@ class Database(Database):
         return self.cursor.fetchall()
 
     def sql_stringquote(self, value):
-        return psycopg.QuotedString(str(value))
+        ''' psycopg.QuotedString returns a "buffer" object with the
+            single-quotes around it... '''
+        return str(psycopg.QuotedString(str(value)))[1:-1]
+
+    def sql_index_exists(self, table_name, index_name):
+        sql = 'select count(*) from pg_indexes where ' \
+            'tablename=%s and indexname=%s'%(self.arg, self.arg)
+        self.cursor.execute(sql, (table_name, index_name))
+        return self.cursor.fetchone()[0]
 
     def save_dbschema(self, schema):
         s = repr(self.database_schema)
@@ -139,10 +126,6 @@ class Database(Database):
 
         self.cursor.execute(sql)
 
-    # Static methods
-    nuke = Maintenance().db_nuke
-    exists = Maintenance().db_exists
-
 class PsycopgClass:
     def find(self, **propspec):
         """Get the ids of nodes in this class which link to the given nodes."""
@@ -174,6 +157,8 @@ class PsycopgClass:
             if type(values) is type(''):
                 allvalues += (values,)
                 where.append('_%s = %s' % (prop, a))
+            elif values is None:
+                where.append('_%s is NULL'%prop)
             else:
                 allvalues += tuple(values.keys())
                 where.append('_%s in (%s)' % (prop, ','.join([a]*len(values))))

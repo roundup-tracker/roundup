@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.10 2003-10-07 07:17:54 anthonybaxter Exp $
+# $Id: back_sqlite.py,v 1.11 2003-11-11 11:19:18 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -105,6 +105,13 @@ class Database(Database):
         except sqlite.DatabaseError, error:
             if str(error) != 'cannot commit - no transaction is active':
                 raise
+
+    def sql_index_exists(self, table_name, index_name):
+        self.cursor.execute('pragma index_list(%s)'%table_name)
+        for entry in self.cursor.fetchall():
+            if entry[1] == index_name:
+                return 1
+        return 0
 
     def save_dbschema(self, schema):
         ''' Save the schema definition that the database currently implements

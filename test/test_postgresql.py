@@ -15,64 +15,118 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.2 2003-10-26 14:43:51 jlgijsbers Exp $ 
+# $Id: test_postgresql.py,v 1.3 2003-11-11 11:19:18 richard Exp $ 
 
-import unittest, os, shutil, time
+import sys, unittest, os, shutil, time, popen2
 
 from roundup.hyperdb import DatabaseError
 
-from db_test_base import DBTest, ROTest, config, SchemaTest, nodbconfig, \
-    ClassicInitTest
+from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
+
+# Postgresql connection data
+# NOTE: THIS MUST BE A LOCAL DATABASE
+config.POSTGRESQL_DATABASE = {'database': 'rounduptest'}
 
 from roundup import backends
+
+def db_create():
+    """Clear all database contents and drop database itself"""
+    name = config.POSTGRESQL_DATABASE['database']
+    cout,cin = popen2.popen4('createdb %s'%name)
+    cin.close()
+    response = cout.read().split('\n')[0]
+    if response.find('FATAL') != -1 or response.find('ERROR') != -1:
+        raise RuntimeError, response
+
+def db_nuke(fail_ok=0):
+    """Clear all database contents and drop database itself"""
+    name = config.POSTGRESQL_DATABASE['database']
+    cout,cin = popen2.popen4('dropdb %s'%name)
+    cin.close()
+    response = cout.read().split('\n')[0]
+    if response.endswith('does not exist') and fail_ok:
+        return
+    if response.find('FATAL') != -1 or response.find('ERROR') != -1:
+        raise RuntimeError, response
+    if os.path.exists(config.DATABASE):
+        shutil.rmtree(config.DATABASE)
+
+def db_exists(config):
+    """Check if database already exists"""
+    try:
+        db = Database(config, 'admin')
+        return 1
+    except:
+        return 0
 
 class postgresqlOpener:
     if hasattr(backends, 'postgresql'):
         from roundup.backends import postgresql as module
 
+    def setUp(self):
+        db_nuke(1)
+        db_create()
+
     def tearDown(self):
-        self.db.close()
-        self.module.Database.nuke(config)
+        db_nuke()
 
 class postgresqlDBTest(postgresqlOpener, DBTest):
-    pass
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        DBTest.setUp(self)
+
+    def tearDown(self):
+        DBTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+    def testFilteringIntervalSort(self):
+        # PostgreSQL sorts NULLs differently to other databases (others
+        # treat it as lower than real values, PG treats it as higher)
+        ae, filt = self.filteringSetup()
+        # ascending should sort None, 1:10, 1d
+        ae(filt(None, {}, ('+','foo'), (None,None)), ['4', '1', '2', '3'])
+        # descending should sort 1d, 1:10, None
+        ae(filt(None, {}, ('-','foo'), (None,None)), ['3', '2', '1', '4'])
 
 class postgresqlROTest(postgresqlOpener, ROTest):
-    pass
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        ROTest.setUp(self)
+
+    def tearDown(self):
+        ROTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
 
 class postgresqlSchemaTest(postgresqlOpener, SchemaTest):
-    pass
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        SchemaTest.setUp(self)
 
-class postgresqlClassicInitTest(ClassicInitTest):
+    def tearDown(self):
+        SchemaTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest):
     backend = 'postgresql'
+    extra_config = "POSTGRESQL_DATABASE = {'database': 'rounduptest'}"
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        ClassicInitTest.setUp(self)
+
+    def tearDown(self):
+        ClassicInitTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
 
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'postgresql'):
         return suite
 
-    from roundup.backends import postgresql
-    try:
-        # Check if we can run postgresql tests
-        import psycopg
-        db = postgresql.Database(nodbconfig, 'admin')
-        db.conn.select_db(config.POSTGRESQL_DBNAME)
-        db.sql("SHOW TABLES");
-        tables = db.sql_fetchall()
-        if tables:
-            # Database should be empty. We don't dare to delete any data
-            raise DatabaseError, "(Database %s contains tables)"%\
-                config.POSTGRESQL_DBNAME
-        db.sql("DROP DATABASE %s" % config.POSTGRESQL_DBNAME)
-        db.sql("CREATE DATABASE %s" % config.POSTGRESQL_DBNAME)
-        db.close()
-    except (psycopg.ProgrammingError, DatabaseError), msg:
-        print "Skipping postgresql tests (%s)"%msg
-    else:
-        print 'Including postgresql tests'
-        suite.addTest(unittest.makeSuite(postgresqlDBTest))
-        suite.addTest(unittest.makeSuite(postgresqlROTest))
-        suite.addTest(unittest.makeSuite(postgresqlSchemaTest))
-        suite.addTest(unittest.makeSuite(postgresqlClassicInitTest))
+    # Check if we can run postgresql tests
+    print 'Including postgresql tests'
+    suite.addTest(unittest.makeSuite(postgresqlDBTest))
+    suite.addTest(unittest.makeSuite(postgresqlROTest))
+    suite.addTest(unittest.makeSuite(postgresqlSchemaTest))
+    suite.addTest(unittest.makeSuite(postgresqlClassicInitTest))
     return suite
 

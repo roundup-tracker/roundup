@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.5 2003-11-10 03:56:39 richard Exp $ 
+# $Id: db_test_base.py,v 1.6 2003-11-11 11:19:18 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time
 
@@ -68,25 +68,6 @@ class config:
     MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
     EMAIL_SIGNATURE_POSITION = 'bottom'
 
-    # Mysql connection data
-    MYSQL_DBHOST = 'localhost'
-    MYSQL_DBUSER = 'rounduptest'
-    MYSQL_DBPASSWORD = 'rounduptest'
-    MYSQL_DBNAME = 'rounduptest'
-    MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
-
-    # Postgresql connection data
-    POSTGRESQL_DBHOST = 'localhost'
-    POSTGRESQL_DBUSER = 'rounduptest'
-    POSTGRESQL_DBPASSWORD = 'rounduptest'
-    POSTGRESQL_DBNAME = 'rounduptest'
-    POSTGRESQL_PORT = 5432
-    POSTGRESQL_DATABASE = {'host': POSTGRESQL_DBHOST, 'port': POSTGRESQL_PORT,
-        'user': POSTGRESQL_DBUSER, 'password': POSTGRESQL_DBPASSWORD,
-        'database': POSTGRESQL_DBNAME}
-
-class nodbconfig(config):
-    MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)
 
 class DBTest(MyTestCase):
     def setUp(self):

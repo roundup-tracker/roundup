@@ -18,6 +18,17 @@ additionally install:
    http://initd.org/software/initd/psycopg
 
 
+Running the PostgreSQL unit tests
+=================================
+
+The user that you're running the tests as will need to be able to access
+the postgresql database on the local machine and create and drop
+databases. Edit the ``test/test_postgresql.py`` database connection info if
+you wish to test against a different database.
+
+The test database will be called "rounduptest".
+
+
 Additional configuration
 ========================
 
@@ -25,22 +36,22 @@ To initialise and use PostgreSQL database roundup's configuration file
 (config.py in the tracker's home directory) should be appended with the
 following constants (substituting real values, obviously)::
 
-    POSTGRESQL_DBHOST = 'localhost'
-    POSTGRESQL_DBUSER = 'roundup'
-    POSTGRESQL_DBPASSWORD = 'roundup'
-    POSTGRESQL_DBNAME = 'roundup'
-    POSTGRESQL_PORT = 5432
+    POSTGRESQL_DATABASE = {'database': 'rounduptest'}
+
+if not local, or a different user is to be used, then more information may
+be supplied::
+
     POSTGRESQL_DATABASE = {
-        'host': MYSQL_DBHOST, 'port': POSTGRESQL_PORT,
-        'user': MYSQL_DBUSER, 'password': MYSQL_DBPASSWORD,
-        'database': MYSQL_DBNAME
+        'host': 'localhost', 'port': 5432,
+        'database': 'roundup'
+        'user': 'roundup', 'password': 'roundup',
     }
 
 Also note that you can leave some values out of
 ``POSTGRESQL_DATABASE``: 'host' and 'port' are not necessary when
 connecting to a local database and 'password'
 is optional if postgres trusts local connections. The user specified in
-``POSTGRESQL_DBUSER`` must have rights to create a new database and to
+``user`` must have rights to create a new database and to
 connect to the "template1" database, used while initializing roundup.
 
     Have fun with psycopg,

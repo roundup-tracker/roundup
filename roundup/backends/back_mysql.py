@@ -92,7 +92,14 @@ class Database(Database):
 
     def sql_fetchall(self):
         return self.cursor.fetchall()
-    
+
+    def sql_index_exists(self, table_name, index_name):
+        self.cursor.execute('show index from %s'%table_name)
+        for index in self.cursor.fetchall():
+            if index[2] == index_name:
+                return 1
+        return 0
+
     def save_dbschema(self, schema):
         s = repr(self.database_schema)
         self.sql('INSERT INTO schema VALUES (%s)', (s,))
@@ -138,7 +145,23 @@ class Database(Database):
         if __debug__:
           print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+        self.create_class_table_indexes(spec)
         return cols, mls
+
+    def drop_class_table_indexes(self, cn, key):
+        # drop the old table indexes first
+        l = ['_%s_id_idx'%cn, '_%s_retired_idx'%cn]
+        if key:
+            l.append('_%s_%s_idx'%(cn, key))
+
+        table_name = '_%s'%cn
+        for index_name in l:
+            if not self.sql_index_exists(table_name, index_name):
+                continue
+            index_sql = 'drop index %s on %s'%(index_name, table_name)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
+            self.cursor.execute(index_sql)
 
     def create_journal_table(self, spec):
         cols = ',' . join(['`%s` VARCHAR(255)'%x
@@ -148,6 +171,16 @@ class Database(Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+        self.create_journal_table_indexes(spec)
+
+    def drop_journal_table_indexes(self, classname):
+        index_name = '%s_journ_idx'%classname
+        if not self.sql_index_exists('%s__journal'%classname, index_name):
+            return
+        index_sql = 'drop index %s on %s__journal'%(index_name, classname)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
+        self.cursor.execute(index_sql)
 
     def create_multilink_table(self, spec, ml):
         sql = '''CREATE TABLE `%s_%s` (linkid VARCHAR(255),
@@ -156,6 +189,20 @@ class Database(Database):
         if __debug__:
           print >>hyperdb.DEBUG, 'create_class', (self, sql)
         self.cursor.execute(sql)
+        self.create_multilink_table_indexes(spec, ml)
+
+    def drop_multilink_table_indexes(self, classname, ml):
+        l = [
+            '%s_%s_l_idx'%(classname, ml),
+            '%s_%s_n_idx'%(classname, ml)
+        ]
+        for index_name in l:
+            if not self.sql_index_exists(table_name, index_name):
+                continue
+            index_sql = 'drop index %s on %s'%(index_name, table_name)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
+            self.cursor.execute(index_sql)
 
 class MysqlClass:
     # we're overriding this method for ONE missing bit of functionality.

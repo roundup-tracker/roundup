@@ -15,15 +15,26 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.4 2003-11-05 21:54:57 jlgijsbers Exp $ 
+# $Id: test_mysql.py,v 1.5 2003-11-11 11:19:18 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
 from roundup.hyperdb import DatabaseError
 from roundup import init, backends
 
-from db_test_base import DBTest, ROTest, config, SchemaTest, nodbconfig, \
-    ClassicInitTest
+from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
+
+
+# Mysql connection data
+config.MYSQL_DBHOST = 'localhost'
+config.MYSQL_DBUSER = 'rounduptest'
+config.MYSQL_DBPASSWORD = 'rounduptest'
+config.MYSQL_DBNAME = 'rounduptest'
+config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+    config.MYSQL_DBPASSWORD, config.MYSQL_DBNAME)
+
+class nodbconfig(config):
+    MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)
 
 class mysqlOpener:
     if hasattr(backends, 'mysql'):
@@ -66,10 +77,11 @@ def test_suite():
     try:
         # Check if we can run mysql tests
         import MySQLdb
-        db = mysql.Database(nodbconfig, 'admin')
+        db = mysql.Database(config, 'admin')
         db.conn.select_db(config.MYSQL_DBNAME)
         db.sql("SHOW TABLES");
         tables = db.sql_fetchall()
+        # TODO: reinstate the check here
         if 0: #tables:
             # Database should be empty. We don't dare to delete any data
             raise DatabaseError, "Database %s contains tables"%\

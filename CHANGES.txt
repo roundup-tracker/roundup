@@ -7,7 +7,7 @@ Feature:
 - support setgid and running on port < 1024 (sf patch 777528)
 - using Zope3's test runner now, allowing GC checks, nicer controls and
   coverage analysis
-- !BETA! added postgresql backend, needs work !BETA!
+- added postgresql backend
 - all RDBMS backends now have indexes on several columns
 - Change nosymessage and send_message to accept msgid=None (RFE #707235).
 
