@@ -15,3 +15,5 @@ Required:
 Optionally:
 - have rdbms backends look up the journal for actor if it's not set
 - migrate to numeric ID values (fixes bug 817217)
+- configuration editing in Web User Interface: core config,
+  standalone server config, detectors and extensions configurations
