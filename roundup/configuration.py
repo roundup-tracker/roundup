@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.7 2004-07-25 15:22:54 a1s Exp $
+# $Id: configuration.py,v 1.8 2004-07-26 00:23:16 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -377,6 +377,8 @@ class NullableFilePathOption(NullableOption, FilePathOption):
 # is a sequence containing class name and constructor
 # parameters, starting from the setting name:
 # setting, default, [description, [aliases]]
+# Note: aliases should only exist in historical options for backwards
+# compatibility - new options should *not* have aliases!
 SETTINGS = (
     ("main", (
         (FilePathOption, "database", "db", "Database directory path"),
@@ -453,12 +455,6 @@ SETTINGS = (
             "If above 'config' option is set, this option has no effect.\n"
             "Allowed values: DEBUG, INFO, WARNING, ERROR"),
     )),
-    # XXX This section covers two service areas:
-    #   outgoing mail (domain, smtp parameters)
-    #   and creation of issues from incoming mail.
-    #   These things should be separated.
-    #   In addition, 'charset' option is used in nosy messages only,
-    #   so this option actually belongs to the 'nosy' section.
     ("mail", (
         (Option, "domain", NODEFAULT, "Domain name used for email addresses."),
         (Option, "host", NODEFAULT,
@@ -477,25 +473,6 @@ SETTINGS = (
         (NullableFilePathOption, "tls_certfile", "",
             "If TLS is used, you may set this option to the name\n"
             "of a PEM formatted certificate chain file"),
-        (BooleanOption, "keep_quoted_text", "yes",
-            "Keep email citations when accepting messages.\n"
-            "Setting this to \"no\" strips out \"quoted\" text"
-            " from the message.\n"
-            "Signatures are also stripped.",
-            ["EMAIL_KEEP_QUOTED_TEXT"]),
-        (FilePathOption, "debug", "",
-            "Setting this option makes Roundup to write all outgoing email\n"
-            "messages to this file *instead* of sending them.\n"
-            "This option has the same effect as environment variable"
-            " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
-        (BooleanOption, "leave_body_unchanged", "no",
-            "Preserve the email body as is - that is,\n"
-            "keep the citations _and_ signatures.",
-            ["EMAIL_LEAVE_BODY_UNCHANGED"]),
-        (Option, "default_class", "issue",
-            "Default class to use in the mailgw\n"
-            "if one isn't supplied in email subjects.\n"
-            "To disable, leave the value blank."),
         (Option, "charset", "utf-8",
             "Character set to encode email headers with.\n"
             "We use utf-8 by default, as it's the most flexible.\n"
@@ -503,6 +480,28 @@ SETTINGS = (
             "so you might need to specify a more limited character set\n"
             "(eg. iso-8859-1)",
             ["EMAIL_CHARSET"]),
+        (FilePathOption, "debug", "",
+            "Setting this option makes Roundup to write all outgoing email\n"
+            "messages to this file *instead* of sending them.\n"
+            "This option has the same effect as environment variable"
+            " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
+    )),
+    ("mailgw", (
+        (BooleanOption, "keep_quoted_text", "yes",
+            "Keep email citations when accepting messages.\n"
+            "Setting this to \"no\" strips out \"quoted\" text"
+            " from the message.\n"
+            "Signatures are also stripped.",
+            ["EMAIL_KEEP_QUOTED_TEXT"]),
+        (BooleanOption, "leave_body_unchanged", "no",
+            "Preserve the email body as is - that is,\n"
+            "keep the citations _and_ signatures.",
+            ["EMAIL_LEAVE_BODY_UNCHANGED"]),
+        (Option, "default_class", "issue",
+            "Default class to use in the mailgw\n"
+            "if one isn't supplied in email subjects.\n"
+            "To disable, leave the value blank.",
+            ["MAIL_DEFAULT_CLASS"]),
     )),
     ("nosy", (
         (BooleanOption, "messages_to_author", "no",
