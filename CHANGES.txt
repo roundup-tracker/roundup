@@ -14,6 +14,7 @@ Fixed:
 - fixed handling of key values starting with numbers (sf bug 941363)
 - fixed journal "param" column size in RDBMS backends
 - fixed static file serving
+- fixed rego from email address (sf bug 947414)
 
 
 2004-04-18 0.7.0b3

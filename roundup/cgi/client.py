@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.175 2004-05-04 00:02:18 richard Exp $
+# $Id: client.py,v 1.176 2004-05-04 05:56:54 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -670,11 +670,21 @@ class Client:
             self.db = self.instance.open(user)
 
     def standard_message(self, to, subject, body, author=None):
+        '''Send a standard email message from Roundup.
+
+        "to"      - recipients list
+        "subject" - Subject
+        "body"    - Message
+        "author"  - (name, address) tuple or None for admin email
+
+        Arguments are passed to the Mailer.standard_message code.
+        '''
         try:
             self.mailer.standard_message(to, subject, body, author)
-            return 1
         except MessageSendError, e:
             self.error_message.append(str(e))
+            return 0
+        return 1
 
     def parsePropsFromForm(self, create=0):
         return FormParser(self).parse(create=create)

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.96 2004-05-02 23:16:05 richard Exp $
+# $Id: rdbms_common.py,v 1.97 2004-05-04 05:56:48 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -981,6 +981,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if isinstance(params, type({})):
             properties = self.getclass(classname).getprops()
             for param, value in params.items():
+                if not value:
+                    continue
                 property = properties[param]
                 cvt = self.hyperdb_to_sql_value[property.__class__]
                 if isinstance(property, Password):
@@ -1032,17 +1034,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         properties = self.getclass(classname).getprops()
         for nodeid, date_stamp, user, action, params in journal:
             params = eval(params)
-            for param, value in params.items():
-                property = properties[param]
-                cvt = self.sql_to_hyperdb_value[property.__class__]
-                if isinstance(property, Password):
-                    params[param] = cvt(value)
-                elif isinstance(property, Date):
-                    params[param] = cvt(value)
-                elif isinstance(property, Interval):
-                    params[param] = cvt(value)
-                elif isinstance(property, Boolean):
-                    params[param] = cvt(value)
+            if isinstance(params, type({})):
+                for param, value in params.items():
+                    if not value:
+                        continue
+                    property = properties[param]
+                    cvt = self.sql_to_hyperdb_value[property.__class__]
+                    if isinstance(property, Password):
+                        params[param] = cvt(value)
+                    elif isinstance(property, Date):
+                        params[param] = cvt(value)
+                    elif isinstance(property, Interval):
+                        params[param] = cvt(value)
+                    elif isinstance(property, Boolean):
+                        params[param] = cvt(value)
             # XXX numeric ids
             res.append((str(nodeid), dc(date_stamp), user, action, params))
         return res
