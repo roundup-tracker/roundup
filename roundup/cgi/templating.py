@@ -24,14 +24,6 @@ from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL.TALInterpreter import TALInterpreter
 from roundup.cgi import ZTUtils
 
-def input_html4(**attrs):
-    """Generate an 'input' (html4) element with given attributes"""
-    return '<input %s>'%' '.join(['%s="%s"'%item for item in attrs.items()])
-
-def input_xhtml(**attrs):
-    """Generate an 'input' (xhtml) element with given attributes"""
-    return '<input %s/>'%' '.join(['%s="%s"'%item for item in attrs.items()])
-
 class NoTemplate(Exception):
     pass
 
@@ -289,7 +281,26 @@ class HTMLPermissions:
         '''
         return self.is_view_ok() and not self.is_edit_ok()
 
-class HTMLClass(HTMLPermissions):
+def input_html4(**attrs):
+    """Generate an 'input' (html4) element with given attributes"""
+    return '<input %s>'%' '.join(['%s="%s"'%item for item in attrs.items()])
+
+def input_xhtml(**attrs):
+    """Generate an 'input' (xhtml) element with given attributes"""
+    return '<input %s/>'%' '.join(['%s="%s"'%item for item in attrs.items()])
+
+class HTMLInputMixin:
+    ''' requires a _client property '''
+    def __init__(self):
+        html_version = 'html4'
+        if hasattr(self._client.instance.config, 'HTML_VERSION'):
+            html_version = self._client.instance.config.HTML_VERSION
+        if html_version == 'xhtml':
+            self.input = input_xhtml
+        else:
+            self.input = input_html4
+
+class HTMLClass(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
     def __init__(self, client, classname, anonymous=0):
@@ -303,13 +314,7 @@ class HTMLClass(HTMLPermissions):
         self._klass = self._db.getclass(self.classname)
         self._props = self._klass.getprops()
 
-        html_version = 'html4'
-        if hasattr(self._client.instance.config, 'HTML_VERSION'):
-            html_version = self._client.instance.config.HTML_VERSION
-        if html_version == 'xhtml':
-            self.input = input_xhtml
-        else:
-            self.input = input_html4
+        HTMLInputMixin.__init__(self)
 
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
@@ -514,7 +519,7 @@ class HTMLClass(HTMLPermissions):
         # use our fabricated request
         return pt.render(self._client, self.classname, req)
 
-class HTMLItem(HTMLPermissions):
+class HTMLItem(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through an *item*
     '''
     def __init__(self, client, classname, nodeid, anonymous=0):
@@ -527,6 +532,8 @@ class HTMLItem(HTMLPermissions):
 
         # do we prefix the form items with the item's identification?
         self._anonymous = anonymous
+
+        HTMLInputMixin.__init__(self)
 
     def __repr__(self):
         return '<HTMLItem(0x%x) %s %s>'%(id(self), self._classname,
@@ -836,7 +843,7 @@ class HTMLUser(HTMLItem):
             self._classname) or (self._nodeid == self._client.userid and
             self._db.user.get(self._client.userid, 'username') != 'anonymous')
 
-class HTMLProperty:
+class HTMLProperty(HTMLInputMixin):
     ''' String, Number, Date, Interval HTMLProperty
 
         Has useful attributes:
@@ -861,13 +868,7 @@ class HTMLProperty:
         else:
             self._formname = name
 
-        html_version = 'html4'
-        if hasattr(self._client.instance.config, 'HTML_VERSION'):
-            html_version = self._client.instance.config.HTML_VERSION
-        if html_version == 'xhtml':
-            self.input = input_xhtml
-        else:
-            self.input = input_html4
+        HTMLInputMixin.__init__(self)
         
     def __repr__(self):
         return '<HTMLProperty(0x%x) %s %r %r>'%(id(self), self._formname,
@@ -1441,7 +1442,7 @@ class ShowDict:
     def __getitem__(self, name):
         return self.columns.has_key(name)
 
-class HTMLRequest:
+class HTMLRequest(HTMLInputMixin):
     ''' The *request*, holding the CGI form and environment.
 
         "form" the CGI form as a cgi.FieldStorage
@@ -1463,7 +1464,8 @@ class HTMLRequest:
 
     '''
     def __init__(self, client):
-        self.client = client
+        # _client is needed by HTMLInputMixin
+        self._client = self.client = client
 
         # easier access vars
         self.form = client.form
@@ -1478,13 +1480,7 @@ class HTMLRequest:
         # the special char to use for special vars
         self.special_char = '@'
 
-        html_version = 'html4'
-        if hasattr(self.client.instance.config, 'HTML_VERSION'):
-            html_version = self.client.instance.config.HTML_VERSION
-        if html_version == 'xhtml':
-            self.input = input_xhtml
-        else:
-            self.input = input_html4
+        HTMLInputMixin.__init__(self)
 
         self._post_init()
 
