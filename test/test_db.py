@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.29 2002-07-14 04:03:15 richard Exp $ 
+# $Id: test_db.py,v 1.30 2002-07-14 06:06:34 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -199,6 +199,14 @@ class anydbmDBTestCase(MyTestCase):
         # invalid multilink index
         ar(IndexError, self.db.issue.create, title='foo', status='1',
             nosy=['10'])
+
+        #
+        # key property
+        # 
+        # key must be a String
+        ar(TypeError, self.db.user.setkey, 'password')
+        # key must exist
+        ar(KeyError, self.db.user.setkey, 'fubar')
 
         #
         # class get
@@ -524,6 +532,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2002/07/14 04:03:15  richard
+# Implemented a switch to disable journalling for a Class. CGI session
+# database now uses it.
+#
 # Revision 1.28  2002/07/14 02:16:29  richard
 # Fixes for the metakit backend (removed the cut-n-paste IssueClass, removed
 # a special case for it in testing)

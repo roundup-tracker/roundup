@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.45 2002-07-14 04:03:14 richard Exp $
+#$Id: back_anydbm.py,v 1.46 2002-07-14 06:06:34 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -143,16 +143,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'getclassdb', (self, classname, mode)
         return self._opendb('nodes.%s'%classname, mode)
 
-    def _opendb(self, name, mode):
-        '''Low-level database opener that gets around anydbm/dbm
-           eccentricities.
+    def determine_db_type(self, path):
+        ''' determine which DB wrote the class file
         '''
-        if __debug__:
-            print >>hyperdb.DEBUG, '_opendb', (self, name, mode)
-
-        # determine which DB wrote the class file
         db_type = ''
-        path = os.path.join(os.getcwd(), self.dir, name)
         if os.path.exists(path):
             db_type = whichdb.whichdb(path)
             if not db_type:
@@ -161,6 +155,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # if the path ends in '.db', it's a dbm database, whether
             # anydbm says it's dbhash or not!
             db_type = 'dbm'
+        return db_type
+
+    def _opendb(self, name, mode):
+        '''Low-level database opener that gets around anydbm/dbm
+           eccentricities.
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, '_opendb', (self, name, mode)
+
+        # figure the class db type
+        path = os.path.join(os.getcwd(), self.dir, name)
+        db_type = self.determine_db_type(path)
 
         # new database? let anydbm pick the best dbm
         if not db_type:
@@ -428,19 +434,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         classes = self.getclasses()
 
-        # TODO: factor this out to method - we're already doing it in
-        # _opendb.
-        db_type = ''
-        path = os.path.join(os.getcwd(), self.dir, classes[0])
-        if os.path.exists(path):
-            db_type = whichdb.whichdb(path)
-            if not db_type:
-                raise hyperdb.DatabaseError, "Couldn't identify database type"
-        elif os.path.exists(path+'.db'):
-            db_type = 'dbm'
+        # figure the class db type
 
         for classname in classes:
             db_name = 'journals.%s'%classname
+            path = os.path.join(os.getcwd(), self.dir, classname)
+            db_type = self.determine_db_type(path)
             db = self._opendb(db_name, 'w')
 
             for key in db.keys():
@@ -740,7 +739,6 @@ class Class(hyperdb.Class):
             if isinstance(prop, Multilink):
                 propvalues[key] = []
             else:
-                # TODO: None isn't right here, I think...
                 propvalues[key] = None
 
         # done
@@ -809,7 +807,6 @@ class Class(hyperdb.Class):
                 if isinstance(prop, Multilink):
                     return []
                 else:
-                    # TODO: None isn't right here, I think...
                     return None
             else:
                 return default
@@ -1059,9 +1056,12 @@ class Class(hyperdb.Class):
 
         'propname' must be the name of a String property of this class or
         None, or a TypeError is raised.  The values of the key property on
-        all existing nodes must be unique or a ValueError is raised.
+        all existing nodes must be unique or a ValueError is raised. If the
+        property doesn't exist, KeyError is raised.
         """
-        # TODO: validate that the property is a String!
+        prop = self.getprops()[propname]
+        if not isinstance(prop, String):
+            raise TypeError, 'key properties must be String'
         self.key = propname
 
     def getkey(self):
@@ -1615,6 +1615,10 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.45  2002/07/14 04:03:14  richard
+#Implemented a switch to disable journalling for a Class. CGI session
+#database now uses it.
+#
 #Revision 1.44  2002/07/14 02:05:53  richard
 #. all storage-specific code (ie. backend) is now implemented by the backends
 #
