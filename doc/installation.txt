@@ -446,6 +446,22 @@ directives:
     value has the same syntax as values of these environment variables.
     This option may be omitted.
 
+  TrackerDebug:
+    run the tracker in debug mode.  Setting this option to ``yes`` or
+    ``true`` has the same effect as running ``roundup-server -t debug``:
+    the database schema and used html templates are rebuilt for each
+    HTTP request.  Values ``no`` or ``false`` mean that all html
+    templates for the tracker are compiled and the database schema is
+    checked once at startup.  This is the default behaviour.
+
+  TrackerTiming:
+    has nearly the same effect as environment variable ``CGI_SHOW_TIMING``
+    for standalone roundup server.  The difference is that setting this
+    option to ``no`` or ``false`` disables timings display.  Value
+    ``comment`` writes request handling times in html comment, and
+    any other non-empty value makes timing report visible.  By default,
+    timing display is disabled.
+
 In the following example we have two trackers set up in
 ``/var/db/roundup/support`` and ``var/db/roundup/devel`` and accessed
 as ``https://my.host/roundup/support/`` and ``https://my.host/roundup/devel/``
