@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.68.2.4 2004-06-25 22:22:59 richard Exp $
+# $Id: admin.py,v 1.68.2.5 2004-10-20 04:50:15 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1091,7 +1091,7 @@ Command help:
             cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            f = open(os.path.join(dir, file))
+            f = open(os.path.join(dir, file), 'rU')
             reader = rcsv.reader(f, rcsv.colon_separated)
             file_props = None
             maxid = 1
@@ -1109,7 +1109,7 @@ Command help:
             f.close()
 
             # import the journals
-            f = open(os.path.join(args[0], classname + '-journals.csv'))
+            f = open(os.path.join(args[0], classname + '-journals.csv'), 'rU')
             reader = rcsv.reader(f, rcsv.colon_separated)
             cl.import_journals(reader)
             f.close()
