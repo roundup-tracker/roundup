@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.57 2002-06-15 15:49:29 dman13 Exp $
+# $Id: roundupdb.py,v 1.58 2002-06-16 01:05:15 dman13 Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -521,9 +521,7 @@ class IssueClass(Class):
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
         base = self.db.config.ISSUE_TRACKER_WEB 
-        # Oops, can't do this in python2.1
-        #if not isinstance( base , "" ) or not base.startswith( "http://" ) :
-        if type(base) != type("") or not base.startswith( "http://" ) :
+        if not isinstance( base , type('') ) or not base.startswith( "http://" ) :
             base = "Configuration Error: ISSUE_TRACKER_WEB isn't a fully-qualified URL"
         elif base[-1] != '/' :
             base += '/'
@@ -578,22 +576,17 @@ class IssueClass(Class):
     def generateChangeNote(self, nodeid, oldvalues):
         """Generate a change note that lists property changes
         """
+
+        if __debug__ :
+            if not isinstance( oldvalues , type({}) ) :
+                raise TypeError(
+                        "'oldvalues' must be dict-like, not %s."
+                        % str(type(oldvalues)) )
+
         cn = self.classname
         cl = self.db.classes[cn]
         changed = {}
         props = cl.getprops(protected=0)
-
-        # XXX DSH
-        # Temporary work-around to prevent crashes and allow the issue to be
-        # submitted.
-        try :
-            oldvalues.keys
-        except AttributeError :
-            # The arg isn't a dict.  Precondition/interface violation.
-            return '\n'.join( 
-                ('', '-'*10,
-                 "Precondition/interface Error -- 'oldvalues' isn't a dict." ,
-                 '-'*10 , '' , str(oldvalues) ) )
 
         # determine what changed
         for key in oldvalues.keys():
@@ -666,6 +659,12 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.57  2002/06/15 15:49:29  dman13
+# Use 'email' instead of 'rfc822', if available.
+# Don't use isinstance() on a string (not allowed in python 2.1).
+# Return an error message instead of crashing if 'oldvalues' isn't a
+#     dict (in generateChangeNote).
+#
 # Revision 1.56  2002/06/14 03:54:21  dman13
 # #565992 ] if ISSUE_TRACKER_WEB doesn't have the trailing '/', add it
 #
@@ -856,7 +855,7 @@ class IssueClass(Class):
 #  . Login now takes you to the page you back to the were denied access to.
 #
 # Fixed:
-#  . Lots of bugs, thanks RochÃ© and others on the devel mailing list!
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
 #
 # Revision 1.20  2001/11/25 10:11:14  jhermann
 # Typo fix
