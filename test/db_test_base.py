@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.44 2004-09-25 15:47:02 a1s Exp $
+# $Id: db_test_base.py,v 1.45 2004-09-26 12:17:42 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1365,10 +1365,16 @@ class ClassicInitTest(unittest.TestCase):
             finally:
                 f.close()
 
-        init.initialise(self.dirname, 'sekrit')
-
         # check we can load the package
         tracker = instance.open(self.dirname)
+
+        # if there is a database left behind
+        # from previous test runs, nuke it
+        if tracker.exists():
+            tracker.nuke()
+
+        # initialize the tracker database
+        tracker.init(password.Password('sekrit'))
 
         # and open the database
         db = self.db = tracker.open()
