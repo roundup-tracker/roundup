@@ -13,6 +13,7 @@ Fixed:
 - fixed fallback excel writer in rcsv so it has a delimiter
 - fixed setup.py's use of listTemplates (!)
 - make rdbms serialise() less trusting
+- handle Boolean values in history HTML display
 
 
 2004-03-01 0.6.7
