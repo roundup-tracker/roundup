@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.28 2004-11-03 01:34:21 richard Exp $
+# $Id: instance.py,v 1.29 2004-11-10 08:05:21 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -50,6 +50,7 @@ class Tracker:
         self.templating_utils = {}
         self.load_interfaces()
         self.templates = templating.Templates(self.config["TEMPLATES"])
+        self.backend = backends.get_backend(self.get_backend_name())
         if self.optimize:
             self.templates.precompileTemplates()
 
@@ -60,11 +61,8 @@ class Tracker:
         f.close()
         return name
 
-    def get_backend(self):
-        return backends.get_backend(self.get_backend_name())
-
     def open(self, name=None):
-        backend = self.get_backend()
+        backend = self.backend
         vars = {
             'Class': backend.Class,
             'FileClass': backend.FileClass,
@@ -114,12 +112,10 @@ class Tracker:
         db.close()
 
     def exists(self):
-        backend = self.get_backend()
-        return backend.db_exists(self.config)
+        return self.backend.db_exists(self.config)
 
     def nuke(self):
-        backend = self.get_backend()
-        backend.db_nuke(self.config)
+        self.backend.db_nuke(self.config)
 
     def _load_python(self, file, vars):
         file = os.path.join(self.tracker_home, file)
@@ -182,8 +178,6 @@ class OldStyleTrackers:
 
         # load and apply the config
         tracker.config = configuration.CoreConfig(tracker_home)
-        # FIXME! dbinit does "import config".
-        #   What would be the upgrade plan for existing trackers?
         tracker.dbinit.config = tracker.config
 
         tracker.optimize = optimize
