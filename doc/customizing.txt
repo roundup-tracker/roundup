@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.87 $
+:Version: $Revision: 1.88 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1476,7 +1476,7 @@ Batching
 Use Batch to turn a list of items, or item ids of a given class, into a series
 of batches. Its usage is::
 
-    python:util.Batch(sequence, size, start, end=0, orphan=0, overlap=0)
+    python:utils.Batch(sequence, size, start, end=0, orphan=0, overlap=0)
 
 or, to get the current index batch::
 
