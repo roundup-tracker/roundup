@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.162 $
+:Version: $Revision: 1.163 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -285,9 +285,10 @@ genconfig`` command.
 Tracker Schema
 ==============
 
-Note: if you modify the schema, you'll most likely need to edit the
-      `web interface`_ HTML template files and `detectors`_ to reflect
-      your changes.
+.. note::
+   if you modify the schema, you'll most likely need to edit the
+   `web interface`_ HTML template files and `detectors`_ to reflect
+   your changes.
 
 A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``schema.py`` module of your
@@ -692,9 +693,9 @@ is not required).
 Database Content
 ================
 
-Note: if you modify the content of definitional classes, you'll most
-       likely need to edit the tracker `detectors`_ to reflect your
-       changes.
+.. note::
+   if you modify the content of definitional classes, you'll most
+   likely need to edit the tracker `detectors`_ to reflect your changes.
 
 Customisation of the special "definitional" classes (eg. status,
 priority, resolution, ...) may be done either before or after the
@@ -901,8 +902,8 @@ Example Scenarios
  By giving the "anonymous" user the "Email Registration" Role, any
  unidentified user will automatically be registered with the tracker
  (with no password, so they won't be able to log in through the web
- until an admin sets their password). Note: this is the default
- behaviour in the tracker templates that ship with Roundup.
+ until an admin sets their password). This is the default behaviour
+ in the tracker templates that ship with Roundup.
 
 **anonymous access through the e-mail gateway**
  Give the "anonymous" user the "Email Access" and ("Edit", "issue")
@@ -1332,7 +1333,7 @@ of files in there. The *minimal* template includes:
 
 The *classic* template has a number of additional templates.
 
-Note: Remember that you can create any template extension you want to,
+Remember that you can create any template extension you want to,
 so if you just want to play around with the templating for new issues,
 you can copy the current "issue.item" template to "issue.test", and then
 access the test template using the "@template" URL argument::
@@ -1586,8 +1587,7 @@ TAL commands may be used freely inside METAL-using tags (so your
 Information available to templates
 ----------------------------------
 
-Note: this is implemented by
-``roundup.cgi.templating.RoundupPageTemplate``
+This is implemented by ``roundup.cgi.templating.RoundupPageTemplate``
 
 The following variables are available to templates.
 
@@ -1681,7 +1681,7 @@ item. The only real difference between cases 2 and 3 above are:
 Hyperdb class wrapper
 :::::::::::::::::::::
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLClass``
+This is implemented by the ``roundup.cgi.templating.HTMLClass``
 class.
 
 This wrapper object provides access to a hyperb class. It is used
@@ -1737,7 +1737,7 @@ will access the "list" property, rather than the list method.
 Hyperdb item wrapper
 ::::::::::::::::::::
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLItem``
+This is implemented by the ``roundup.cgi.templating.HTMLItem``
 class.
 
 This wrapper object provides access to a hyperb item.
@@ -1783,7 +1783,7 @@ will access the "journal" property, rather than the journal method.
 Hyperdb property wrapper
 ::::::::::::::::::::::::
 
-Note: this is implemented by subclasses of the
+This is implemented by subclasses of the
 ``roundup.cgi.templating.HTMLProperty`` class (``HTMLStringProperty``,
 ``HTMLNumberProperty``, and so on).
 
@@ -1920,7 +1920,7 @@ have permission to view the information.
 The request variable
 ~~~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLRequest``
+This is implemented by the ``roundup.cgi.templating.HTMLRequest``
 class.
 
 The request variable is packed with information about the current
@@ -1996,7 +1996,7 @@ best to know beforehand what you're dealing with.
 The db variable
 ~~~~~~~~~~~~~~~
 
-Note: this is implemented by the ``roundup.cgi.templating.HTMLDatabase``
+This is implemented by the ``roundup.cgi.templating.HTMLDatabase``
 class.
 
 Allows access to all hyperdb classes as attributes of this variable. If
@@ -2015,7 +2015,7 @@ The access results in a `hyperdb class wrapper`_.
 The templates variable
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the ``roundup.cgi.templating.Templates``
+This is implemented by the ``roundup.cgi.templating.Templates``
 class.
 
 This variable doesn't have any useful methods defined. It supports being
@@ -2071,7 +2071,7 @@ Roman           Same as roman(), except uppercase.
 The utils variable
 ~~~~~~~~~~~~~~~~~~
 
-Note: this is implemented by the
+This is implemented by the
 ``roundup.cgi.templating.TemplatingUtils`` class, but it may be extended
 as described below.
 
@@ -2122,7 +2122,7 @@ addition, it has several more attributes:
 =============== ========================================================
 Attribute       Description
 =============== ========================================================
-start           indicates the start index of the batch. *Note: unlike
+start           indicates the start index of the batch. *Unlike
                 the argument, is a 1-based index (I know, lame)*
 first           indicates the start index of the batch *as a 0-based
                 index*
@@ -2231,9 +2231,10 @@ propname     selects the values the item properties given by propname must
 Searching Views
 ---------------
 
-Note: if you add a new column to the ``@columns`` form variable
-      potentials then you will need to add the column to the appropriate
-      `index views`_ template so that it is actually displayed.
+.. note::
+   if you add a new column to the ``@columns`` form variable potentials
+   then you will need to add the column to the appropriate `index views`_
+   template so that it is actually displayed.
 
 This is one of the class context views. The template used is typically
 "*classname*.search". The form on this page should have "search" as its
@@ -3671,8 +3672,8 @@ resolved. To achieve this:
         blockers=-1&:columns=id,activity,title,creator,assignedto,status&
         status=-1,1,2,3,4,5,6,7">Show All</a><br>
 
-   :Note: the above examples are line-wrapped on the trailing & and should
-          be unwrapped.
+   The above examples are line-wrapped on the trailing & and should
+   be unwrapped.
 
 That's it. You should now be able to set blockers on your issues. Note
 that if you want to know whether an issue has any other issues dependent
