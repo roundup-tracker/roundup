@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.7 2002-09-03 02:58:11 richard Exp $
+# $Id: client.py,v 1.8 2002-09-03 03:23:56 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -155,11 +155,12 @@ class Client:
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
 
-        if (cookie.has_key('roundup_user') and
-                cookie['roundup_user'].value != 'deleted'):
+        # bump the "revision" of the cookie since the format changed
+        if (cookie.has_key('roundup_user_2') and
+                cookie['roundup_user_2'].value != 'deleted'):
 
             # get the session key from the cookie
-            self.session = cookie['roundup_user'].value
+            self.session = cookie['roundup_user_2'].value
             # get the user from the session
             try:
                 # update the lifetime datestamp
@@ -385,7 +386,7 @@ class Client:
         # generate the cookie path - make sure it has a trailing '/'
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
-        self.header({'Set-Cookie': 'roundup_user=%s; expires=%s; Path=%s;'%(
+        self.header({'Set-Cookie': 'roundup_user_2=%s; expires=%s; Path=%s;'%(
             self.session, expire, path)})
 
     def make_user_anonymous(self):
@@ -407,7 +408,7 @@ class Client:
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
         self.header({'Set-Cookie':
-            'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
+            'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
             path)})
         self.login()
 
@@ -466,7 +467,7 @@ class Client:
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
         self.header(headers={'Set-Cookie':
-          'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
+          'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
 
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
