@@ -1,15 +1,17 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-
-2003-??-?? 0.5.5
+2003-01-24 0.5.5
 - fixed rdbms searching by ID (sf bug 666615)
+- fixed metakit searching by ID
 - detect corrupted index and raise semi-useful exception (sf bug 666767)
 - open server logfile unbuffered
 - revert StringHTMLProperty to not hyperlink text by default
 - fixes to CGI form handling
 - fix unlink bug in metakit backend
-- fixed metakit searching by ID
+- fixed hyperlinking ambiguity (sf bug 669777)
+- fixed cookie path to use TRACKER_WEB (sf bug 667020) (thanks Nathaniel Smith
+  for helping chase it down and Luke Opperman for confirming fix)
 
 
 2003-01-10 0.5.4
