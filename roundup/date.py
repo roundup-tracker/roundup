@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.31 2002-09-23 07:27:23 richard Exp $
+# $Id: date.py,v 1.32 2002-09-23 12:09:29 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -215,7 +215,7 @@ class Date:
         return str
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
-            ((?P<y>\d\d\d\d-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
+            (((?P<y>\d\d\d\d)-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
             (?P<n>\.)?                                     # .
             (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
             (?P<o>.+)?                                     # offset
