@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.135 2003-09-07 22:12:24 richard Exp $
+# $Id: client.py,v 1.136 2003-09-08 09:28:28 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -14,7 +14,8 @@ from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
 from roundup.cgi.PageTemplates import PageTemplate
 from roundup.rfc2822 import encode_header
-from roundup.mailgw import uidFromAddress, openSMTPConnection
+from roundup.mailgw import uidFromAddress
+from roundup.mailer import Mailer, MessageSendError
 
 class HTTPException(Exception):
       pass
@@ -26,10 +27,6 @@ class  Redirect(HTTPException):
        pass
 class  NotModified(HTTPException):
        pass
-
-# set to indicate to roundup not to actually _send_ email
-# this var must contain a file to write the mail to
-SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
 # used by a couple of routines
 if hasattr(string, 'ascii_letters'):
@@ -164,6 +161,7 @@ class Client:
         self.instance = instance
         self.request = request
         self.env = env
+        self.mailer = Mailer(instance.config)
 
         # save off the path
         self.path = env['PATH_INFO']
@@ -776,7 +774,7 @@ please visit the following URL:
    %(url)s?@action=confrego&otk=%(otk)s
 '''%{'name': props['username'], 'tracker': tracker_name, 'url': self.base,
                 'otk': otk}
-        if not self.sendEmail(props['address'], subject, body):
+        if not self.standard_message(props['address'], subject, body):
             return
 
         # commit changes to the database
@@ -785,49 +783,13 @@ please visit the following URL:
         # redirect to the "you're almost there" page
         raise Redirect, '%suser?@template=rego_progress'%self.base
 
-    def sendEmail(self, to, subject, content):
-        # send email to the user's email address
-        message = StringIO.StringIO()
-        writer = MimeWriter.MimeWriter(message)
-        tracker_name = self.db.config.TRACKER_NAME
-        writer.addheader('Subject', encode_header(subject))
-        writer.addheader('To', to)
-        writer.addheader('From', roundupdb.straddr((tracker_name,
-            self.db.config.ADMIN_EMAIL)))
-        writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
-            time.gmtime()))
-        # add a uniquely Roundup header to help filtering
-        writer.addheader('X-Roundup-Name', tracker_name)
-        # avoid email loops
-        writer.addheader('X-Roundup-Loop', 'hello')
-        writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
-        body = writer.startbody('text/plain; charset=utf-8')
-
-        # message body, encoded quoted-printable
-        content = StringIO.StringIO(content)
-        quopri.encode(content, body, 0)
-
-        if SENDMAILDEBUG:
-            # don't send - just write to a file
-            open(SENDMAILDEBUG, 'a').write('FROM: %s\nTO: %s\n%s\n'%(
-                self.db.config.ADMIN_EMAIL,
-                ', '.join(to),message.getvalue()))
-        else:
-            # now try to send the message
-            try:
-                # send the message as admin so bounces are sent there
-                # instead of to roundup
-                smtp = openSMTPConnection(self.db.config)
-                smtp.sendmail(self.db.config.ADMIN_EMAIL, [to],
-                    message.getvalue())
-            except socket.error, value:
-                self.error_message.append("Error: couldn't send email: "
-                    "mailhost %s"%value)
-                return 0
-            except smtplib.SMTPException, msg:
-                self.error_message.append("Error: couldn't send email: %s"%msg)
-                return 0
-        return 1
+    def standard_message(self, to, subject, body):
+        try:
+            self.mailer.standard_message(to, subject, body)
+            return 1
+        except MessageSendException, e:
+            self.error_message.append(str(e))
+            
 
     def registerPermission(self, props):
         ''' Determine whether the user has permission to register
@@ -917,7 +879,7 @@ The password has been reset for username "%(name)s".
 
 Your password is now: %(password)s
 '''%{'name': name, 'password': newpw}
-            if not self.sendEmail(address, subject, body):
+            if not self.standard_message(address, subject, body):
                 return
 
             self.ok_message.append('Password reset and email sent to %s'%address)
@@ -960,7 +922,7 @@ the link below:
 
 You should then receive another email with the new password.
 '''%{'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
-        if not self.sendEmail(address, subject, body):
+        if not self.standard_message(address, subject, body):
             return
 
         self.ok_message.append('Email sent to %s'%address)

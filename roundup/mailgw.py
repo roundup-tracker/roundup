@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.129 2003-09-06 10:37:11 jlgijsbers Exp $
+$Id: mailgw.py,v 1.130 2003-09-08 09:28:28 jlgijsbers Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -81,6 +81,7 @@ import time, random, sys
 import traceback, MimeWriter, rfc822
 
 from roundup import hyperdb, date, password, rfc2822
+from roundup.mailer import Mailer
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -132,35 +133,6 @@ def getparam(str, param):
                 return rfc822.unquote(f[i+1:].strip())
     return None
 
-def openSMTPConnection(config):
-    ''' Open an SMTP connection to the mailhost specified in the config
-    '''
-    smtp = smtplib.SMTP(config.MAILHOST)
-
-    # use TLS?
-    use_tls = getattr(config, 'MAILHOST_TLS', 'no')
-    if use_tls == 'yes':
-        # do we have key files too?
-        keyfile = getattr(config, 'MAILHOST_TLS_KEYFILE', '')
-        if keyfile:
-            certfile = getattr(config, 'MAILHOST_TLS_CERTFILE', '')
-            if certfile:
-                args = (keyfile, certfile)
-            else:
-                args = (keyfile, )
-        else:
-            args = ()
-        # start the TLS
-        smtp.starttls(*args)
-
-    # ok, now do we also need to log in?
-    mailuser = getattr(config, 'MAILUSER', None)
-    if mailuser:
-        smtp.login(*config.MAILUSER)
-
-    # that's it, a fully-configured SMTP connection ready to go
-    return smtp
-
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
         message...
@@ -209,6 +181,7 @@ class MailGW:
         self.instance = instance
         self.db = db
         self.arguments = arguments
+        self.mailer = Mailer(instance.config)
 
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)
@@ -337,7 +310,7 @@ class MailGW:
                 m = ['']
                 m.append('\n\nMail Gateway Help\n=================')
                 m.append(fulldoc)
-                m = self.bounce_message(message, sendto, m,
+                self.mailer.bounce_message(message, sendto, m,
                     subject="Mail Gateway Help")
             except MailUsageError, value:
                 # bounce the message back to the sender with the usage message
@@ -347,13 +320,13 @@ class MailGW:
                 m.append(str(value))
                 m.append('\n\nMail Gateway Help\n=================')
                 m.append(fulldoc)
-                m = self.bounce_message(message, sendto, m)
+                self.mailer.bounce_message(message, sendto, m)
             except Unauthorized, value:
                 # just inform the user that he is not authorized
                 sendto = [sendto[0][1]]
                 m = ['']
                 m.append(str(value))
-                m = self.bounce_message(message, sendto, m)
+                self.mailer.bounce_message(message, sendto, m)
             except MailLoop:
                 # XXX we should use a log file here...
                 return
@@ -370,7 +343,7 @@ class MailGW:
                 import traceback
                 traceback.print_exc(None, s)
                 m.append(s.getvalue())
-                m = self.bounce_message(message, sendto, m)
+                self.mailer.bounce_message(message, sendto, m)
         else:
             # very bad-looking message - we don't even know who sent it
             # XXX we should use a log file here...
@@ -381,63 +354,8 @@ class MailGW:
             m.append('line, indicating that it is corrupt. Please check your')
             m.append('mail gateway source. Failed message is attached.')
             m.append('')
-            m = self.bounce_message(message, sendto, m,
+            self.mailer.bounce_message(message, sendto, m,
                 subject='Badly formed message from mail gateway')
-
-        # now send the message
-        if SENDMAILDEBUG:
-            open(SENDMAILDEBUG, 'a').write('From: %s\nTo: %s\n%s\n'%(
-                self.instance.config.ADMIN_EMAIL, ', '.join(sendto),
-                    m.getvalue()))
-        else:
-            try:
-                smtp = openSMTPConnection(self.instance.config)
-                smtp.sendmail(self.instance.config.ADMIN_EMAIL, sendto,
-                    m.getvalue())
-            except socket.error, value:
-                raise MailGWError, "Couldn't send error email: "\
-                    "mailhost %s"%value
-            except smtplib.SMTPException, value:
-                raise MailGWError, "Couldn't send error email: %s"%value
-
-    def bounce_message(self, message, sendto, error,
-            subject='Failed issue tracker submission'):
-        ''' create a message that explains the reason for the failed
-            issue submission to the author and attach the original
-            message.
-        '''
-        msg = cStringIO.StringIO()
-        writer = MimeWriter.MimeWriter(msg)
-        writer.addheader('X-Roundup-Loop', 'hello')
-        writer.addheader('Subject', subject)
-        writer.addheader('From', '%s <%s>'% (self.instance.config.TRACKER_NAME,
-            self.instance.config.TRACKER_EMAIL))
-        writer.addheader('To', ','.join(sendto))
-        writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
-            time.gmtime()))
-        writer.addheader('MIME-Version', '1.0')
-        part = writer.startmultipartbody('mixed')
-        part = writer.nextpart()
-        body = part.startbody('text/plain; charset=utf-8')
-        body.write('\n'.join(error))
-
-        # attach the original message to the returned message
-        part = writer.nextpart()
-        part.addheader('Content-Disposition','attachment')
-        part.addheader('Content-Description','Message you sent')
-        body = part.startbody('text/plain')
-        for header in message.headers:
-            body.write(header)
-        body.write('\n')
-        try:
-            message.rewindbody()
-        except IOError, message:
-            body.write("*** couldn't include message body: %s ***"%message)
-        else:
-            body.write(message.fp.read())
-
-        writer.lastpart()
-        return msg
 
     def get_part_data_decoded(self,part):
         encoding = part.getencoding()

@@ -15,42 +15,21 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.88 2003-09-06 20:02:23 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.89 2003-09-08 09:28:28 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
 """
 
 import re, os, smtplib, socket, time, random
-import MimeWriter, cStringIO
-import base64, quopri, mimetypes
+import cStringIO, base64, quopri, mimetypes
 
 from rfc2822 import encode_header
 
-from roundup import password, date
+from roundup import password, date, hyperdb
 
-# if available, use the 'email' module, otherwise fallback to 'rfc822'
-try :
-    from email.Utils import formataddr as straddr
-except ImportError :
-    # code taken from the email package 2.4.3
-    def straddr(pair, specialsre = re.compile(r'[][\()<>@,:;".]'),
-            escapesre = re.compile(r'[][\()"]')):
-        name, address = pair
-        if name:
-            quotes = ''
-            if specialsre.search(name):
-                quotes = '"'
-            name = escapesre.sub(r'\\\g<0>', name)
-            return '%s%s%s <%s>' % (quotes, name, quotes, address)
-        return address
-
-from roundup import hyperdb
-from roundup.mailgw import openSMTPConnection
-
-# set to indicate to roundup not to actually _send_ email
-# this var must contain a file to write the mail to
-SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
+# MessageSendError is imported for backwards compatibility
+from roundup.mailer import Mailer, straddr, MessageSendError
 
 class Database:
     def getuid(self):
@@ -112,12 +91,10 @@ class Database:
         
         return userid
 
-class MessageSendError(RuntimeError):
-    pass
 
 class DetectorError(RuntimeError):
-    ''' Raised by detectors that want to indicate that something's amiss
-    '''
+    """ Raised by detectors that want to indicate that something's amiss
+    """
     pass
 
 # deviation from spec - was called IssueClass
@@ -311,29 +288,20 @@ class IssueClass:
         if from_tag:
             from_tag = ' ' + from_tag
 
+        subject = '[%s%s] %s' % (cn, nodeid, encode_header(title))
+        author = straddr((encode_header(authname) + from_tag, from_address))
+
         # create the message
-        message = cStringIO.StringIO()
-        writer = MimeWriter.MimeWriter(message)
-        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid,
-            encode_header(title)))
-        writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', straddr((encode_header(authname) + 
-            from_tag, from_address)))
+        mailer = Mailer(self.db.config)
+        message, writer = mailer.get_standard_message(', '.join(sendto),
+                                                      subject, author)
+
         tracker_name = encode_header(self.db.config.TRACKER_NAME)
         writer.addheader('Reply-To', straddr((tracker_name, from_address)))
-        writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
-            time.gmtime()))
-        writer.addheader('MIME-Version', '1.0')
         if messageid:
             writer.addheader('Message-Id', messageid)
         if inreplyto:
             writer.addheader('In-Reply-To', inreplyto)
-
-        # add a uniquely Roundup header to help filtering
-        writer.addheader('X-Roundup-Name', tracker_name)
-
-        # avoid email loops
-        writer.addheader('X-Roundup-Loop', 'hello')
 
         # attach files
         if message_files:
@@ -371,24 +339,7 @@ class IssueClass:
             body = writer.startbody('text/plain; charset=utf-8')
             body.write(content_encoded)
 
-        # now try to send the message
-        if SENDMAILDEBUG:
-            open(SENDMAILDEBUG, 'a').write('FROM: %s\nTO: %s\n%s\n'%(
-                self.db.config.ADMIN_EMAIL,
-                ', '.join(sendto),message.getvalue()))
-        else:
-            try:
-                # send the message as admin so bounces are sent there
-                # instead of to roundup
-                smtp = openSMTPConnection(self.db.config)
-                smtp.sendmail(self.db.config.ADMIN_EMAIL, sendto,
-                    message.getvalue())
-            except socket.error, value:
-                raise MessageSendError, \
-                    "Couldn't send confirmation email: mailhost %s"%value
-            except smtplib.SMTPException, value:
-                raise MessageSendError, \
-                    "Couldn't send confirmation email: %s"%value
+        mailer.smtp_send(sendto, message)
 
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information
