@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.128 2003-08-10 13:38:43 jlgijsbers Exp $
+# $Id: client.py,v 1.129 2003-08-12 01:26:08 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1272,6 +1272,16 @@ You should then receive another email with the new password.
                     # if it's a multilink, split it
                     if isinstance(prop, hyperdb.Multilink):
                         value = value.split(':')
+                    elif isinstance(prop, hyperdb.Password):
+                        value = password.Password(value)
+                    elif isinstance(prop, hyperdb.Interval):
+                        value = date.Interval(value)
+                    elif isinstance(prop, hyperdb.Date):
+                        value = date.Date(value)
+                    elif isinstance(prop, hyperdb.Boolean):
+                        value = value.lower() in ('yes', 'true', 'on', '1')
+                    elif isinstance(prop, hyperdb.Number):
+                        value = float(value)
                     d[name] = value
                 elif exists:
                     # nuke the existing value

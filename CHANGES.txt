@@ -6,6 +6,8 @@ are given with the most recent entry first.
 - Query editing now works correctly (sf bug 621248)
 - roundup-server now logs IP addresses by default (sf bug 778795)
 - logfile must be specified if pidfile is (sf bug 772820)
+- timelog editing via csv interface crashes (sf bug 699837)
+
 
 2003-07-29 0.6.0b4
 - plugged cross-site-scripting hole (thanks Jeff Epler)
