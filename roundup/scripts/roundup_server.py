@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.28 2003-10-05 23:29:49 richard Exp $
+$Id: roundup_server.py,v 1.29 2003-10-10 00:40:16 richard Exp $
 """
 
 # python version check
@@ -122,11 +122,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         if rest == '/favicon.ico':
             raise client.NotFound
-#            self.send_response(200)
-#            self.send_header('Content-Type', 'image/x-ico')
-#            self.end_headers()
-#            self.wfile.write(favicon)
-#            return
 
         i = rest.rfind('?')
         if i >= 0:
@@ -203,98 +198,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             host, port = self.client_address
             return socket.getfqdn(host)
 
-try:
-    import win32serviceutil
-except:
-    RoundupService = None
-else:
-    # allow the win32
-    import win32service
-    import win32event
-    from win32event import *
-    from win32file import *
-
-    SvcShutdown = "ServiceShutdown"
-
-    class RoundupService(win32serviceutil.ServiceFramework,
-            BaseHTTPServer.HTTPServer):
-        ''' A Roundup standalone server for Win32 by Ewout Prangsma
-        '''
-        _svc_name_ = "Roundup Bug Tracker"
-        _svc_display_name_ = "Roundup Bug Tracker"
-        address = ('', 8888)
-        def __init__(self, args):
-            win32serviceutil.ServiceFramework.__init__(self, args)
-            BaseHTTPServer.HTTPServer.__init__(self, self.address, 
-                RoundupRequestHandler)
-
-            # Create the necessary NT Event synchronization objects...
-            # hevSvcStop is signaled when the SCM sends us a notification
-            # to shutdown the service.
-            self.hevSvcStop = win32event.CreateEvent(None, 0, 0, None)
-
-            # hevConn is signaled when we have a new incomming connection.
-            self.hevConn    = win32event.CreateEvent(None, 0, 0, None)
-
-            # Hang onto this module for other people to use for logging
-            # purposes.
-            import servicemanager
-            self.servicemanager = servicemanager
-
-        def SvcStop(self):
-            # Before we do anything, tell the SCM we are starting the
-            # stop process.
-            self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-            win32event.SetEvent(self.hevSvcStop)
-
-        def SvcDoRun(self):
-            try:
-                self.serve_forever()
-            except SvcShutdown:
-                pass
-
-        def get_request(self):
-            # Call WSAEventSelect to enable self.socket to be waited on.
-            WSAEventSelect(self.socket, self.hevConn, FD_ACCEPT)
-            while 1:
-                try:
-                    rv = self.socket.accept()
-                except socket.error, why:
-                    if why[0] != WSAEWOULDBLOCK:
-                        raise
-                    # Use WaitForMultipleObjects instead of select() because
-                    # on NT select() is only good for sockets, and not general
-                    # NT synchronization objects.
-                    rc = WaitForMultipleObjects((self.hevSvcStop, self.hevConn),
-                        0, INFINITE)
-                    if rc == WAIT_OBJECT_0:
-                        # self.hevSvcStop was signaled, this means:
-                        # Stop the service!
-                        # So we throw the shutdown exception, which gets
-                        # caught by self.SvcDoRun
-                        raise SvcShutdown
-                    # Otherwise, rc == WAIT_OBJECT_0 + 1 which means
-                    # self.hevConn was signaled, which means when we call 
-                    # self.socket.accept(), we'll have our incoming connection
-                    # socket!
-                    # Loop back to the top, and let that accept do its thing...
-                else:
-                    # yay! we have a connection
-                    # However... the new socket is non-blocking, we need to
-                    # set it back into blocking mode. (The socket that accept()
-                    # returns has the same properties as the listening sockets,
-                    # this includes any properties set by WSAAsyncSelect, or 
-                    # WSAEventSelect, and whether its a blocking socket or not.)
-                    #
-                    # So if you yank the following line, the setblocking() call 
-                    # will be useless. The socket will still be in non-blocking
-                    # mode.
-                    WSAEventSelect(rv[0], self.hevConn, 0)
-                    rv[0].setblocking(1)
-                    break
-            return rv
-
-
 def usage(message=''):
     if message:
         message = _('Error: %(error)s\n\n')%{'error': message}
@@ -304,6 +207,8 @@ roundup-server [options] [name=tracker home]*
 options:
  -n: sets the host name
  -p: sets the port to listen on
+ -u: sets the uid to this user after listening on the port
+ -g: sets the gid to this group after listening on the port
  -l: sets a filename to log to (instead of stdout)
  -d: sets a filename to write server PID to. This option causes the server 
      to run in the background. Note: on Windows the PID argument is needed,
@@ -387,10 +292,12 @@ def run():
             usage(str(e))
 
         user = ROUNDUP_USER
+        group = None
         for (opt, arg) in optlist:
             if opt == '-n': hostname = arg
             elif opt == '-p': port = int(arg)
             elif opt == '-u': user = arg
+            elif opt == '-g': group = arg
             elif opt == '-d': pidfile = abspath(arg)
             elif opt == '-l': logfile = abspath(arg)
             elif opt == '-h': usage()
@@ -398,6 +305,26 @@ def run():
 
         if pidfile and not logfile:
             raise ValueError, _("logfile *must* be specified if pidfile is")
+  
+        # obtain server before changing user id - allows to use port <
+        # 1024 if started as root
+        address = (hostname, port)
+        httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
+
+        if group is not None and hasattr(os, 'getgid'):
+            # if root, setgid to the running user
+            if not os.getgid() and user is not None:
+                try:
+                    import pwd
+                except ImportError:
+                    raise ValueError, _("Can't change groups - no pwd module")
+                try:
+                    gid = pwd.getpwnam(user)[3]
+                except KeyError:
+                    raise ValueError,_("Group %(group)s doesn't exist")%locals()
+                os.setgid(gid)
+            elif os.getgid() and user is not None:
+                print _('WARNING: ignoring "-g" argument, not root')
 
         if hasattr(os, 'getuid'):
             # if root, setuid to the running user
@@ -436,15 +363,9 @@ def run():
 
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
-    address = (hostname, port)
 
-    # fork?
     if pidfile:
-        if RoundupService:
-            # don't do any other stuff
-            RoundupService.address = address
-            return win32serviceutil.HandleCommandLine(RoundupService)
-        elif not hasattr(os, 'fork'):
+        if not hasattr(os, 'fork'):
             print "Sorry, you can't run the server as a daemon on this" \
                 'Operating System'
             sys.exit(0)
@@ -456,7 +377,6 @@ def run():
         # appending, unbuffered
         sys.stdout = sys.stderr = open(logfile, 'a', 0)
 
-    httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
     print _('Roundup server started on %(address)s')%locals()
     try:
         httpd.serve_forever()
