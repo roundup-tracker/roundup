@@ -878,7 +878,7 @@ class PasswordHTMLProperty(HTMLProperty):
             confirmation that the user typed the password correctly. Generates
             a field with name ":confirm:name".
         '''
-        return '<input type="password" name=":confirm:name" size="%s">'%(
+        return '<input type="password" name=":confirm:%s" size="%s">'%(
             self._name, size)
 
 class NumberHTMLProperty(HTMLProperty):
