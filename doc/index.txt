@@ -62,6 +62,7 @@ Thanks also to the many people on the mailing list and in the sourceforge
 project:
 Anthony Baxter,
 Jeff Blaine,
+Duncan Booth,
 Titus Brown,
 Roch'e Compaan,
 Engelbert Gruber,
