@@ -39,8 +39,8 @@ import MySQLdb
 import os, shutil
 from MySQLdb.constants import ER
 
-def connection_dict(config):
-    d = rdbms_common.connection_dict(config, 'db')
+def connection_dict(config, dbnamestr=None):
+    d = rdbms_common.connection_dict(config, dbnamestr)
     if d.has_key('password'):
         d['passwd'] = d['password']
         del d['password']
@@ -132,7 +132,7 @@ class Database(Database):
     }
 
     def sql_open_connection(self):
-        kwargs = connection_dict(self.config)
+        kwargs = connection_dict(self.config, 'db')
         self.config.logging.getLogger('hyperdb').info('open database %r'%(
             kwargs['db'],))
         try:
