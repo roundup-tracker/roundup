@@ -45,6 +45,8 @@ pending web: search "refinement"
 pending web: UNIX init.d script for roundup-server
 pending web: rewritten documentation (can come after the beta though so stuff
              is settled) ... including relevant file names in customisation doc
+pending web: allow multilink selections to select a "none" element to allow
+             people with broken browsers to select nothing
 pending dist: include the HTML in docs
 
 bug web: request.url is incorrect in cgi-bin environments
