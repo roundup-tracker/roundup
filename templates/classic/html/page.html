@@ -23,7 +23,7 @@
   <p class="classblock" tal:condition="request/user/queries">
    <b>Your Queries</b><br>
    <tal:block tal:repeat="qs request/user/queries">
-    <a tal:attributes="href string:${qs/klass}${qs/url}"
+    <a tal:attributes="href string:${qs/klass}?${qs/url}"
        tal:content="qs/name">link</a><br>
    </tal:block>
   </p>
