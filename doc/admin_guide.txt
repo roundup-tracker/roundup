@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.5.2.1 $
+:Version: $Revision: 1.5.2.2 $
 
 .. contents::
 
@@ -100,16 +100,40 @@ Software Upgrade
 Always make a backup of your tracker before upgrading software. Steps you may
 take:
 
-1. ensure that the unit tests run on your system
-2. copy your tracker home to a new directory
-3. follow the steps in the upgrading documentation for the new version of
-   the software
-4. test each of the admin tool, web interface and mail gateway using the new
-   version of the software
-5. stop the production web and email frontends
-6. perform the upgrade steps on the existing tracker directory
-7. upgrade the software
-8. restart your tracker
+1. Ensure that the unit tests run on your system:
+
+    python run_tests.py
+
+2. If you're using an RDBMS backend, make a backup of its contents now.
+3. Copy your tracker home to a new directory.
+
+Now, working in that copied tracker home:
+
+1. Follow the steps in the `upgrading documentation`_ for the new version of
+   the software in the copied.
+2. Test each of the admin tool, web interface and mail gateway using the new
+   version of the software. To do this, invoke the scripts directly in the
+   source directory with::
+
+    PYTHONPATH=. python roundup/scripts/roundup_server.py <normal arguments>
+    PYTHONPATH=. python roundup/scripts/roundup_admin.py <normal arguments>
+    PYTHONPATH=. python roundup/scripts/roundup_mailgw.py <normal arguments>
+
+Once you're comfortable that the upgrade will work using that copy, you
+should upgrade the live version:
+
+1. Stop the production web and email frontends.
+2. Perform the upgrade steps on the existing tracker directory.
+3. Upgrade the software::
+
+    python setup.py install
+
+4. Restart your tracker.
+
+If something bad happens, you may reinstate your backup of the tracker and
+reinstall the older version of the sofware using the same install command::
+
+    python setup.py install
 
 
 Migrating Backends
@@ -204,4 +228,5 @@ Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
 .. _`customisation documentation`: customizing.html
+.. _`upgrading documentation`: upgrading.html
 
