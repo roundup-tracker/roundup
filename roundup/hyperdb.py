@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.97 2004-05-02 23:16:05 richard Exp $
+# $Id: hyperdb.py,v 1.97.2.1 2004-05-18 21:50:30 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -743,7 +743,8 @@ def rawToHyperdb(db, klass, itemid, propname, value,
         value = [str(x) for x in value]
     elif isinstance(proptype, Boolean):
         value = value.strip()
-        value = value.lower() in ('yes', 'true', 'on', '1')
+        # checked is a common HTML checkbox value
+        value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
     elif isinstance(proptype, Number):
         value = value.strip()
         try:

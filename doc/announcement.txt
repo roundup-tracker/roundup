@@ -1,3 +1,7 @@
+Roundup is a simple-to-use and -install issue-tracking system with
+command-line, web and e-mail interfaces. It is based on the winning design
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
 This maintenance release fixes some bugs in the 0.7 release of Roundup:
 
 - anydbm sorting with None values (sf bug 952853)
@@ -34,13 +38,6 @@ Mailing lists - the place to ask questions:
 
 About Roundup
 =============
-
-Roundup is a simple-to-use and -install issue-tracking system with
-command-line, web and e-mail interfaces. It is based on the winning design
-from Ka-Ping Yee in the Software Carpentry "Track" design competition.
-
-Note: Ping is not responsible for this project. The contact for this
-project is richard@users.sourceforge.net.
 
 Roundup manages a number of issues (with flexible properties such as
 "description", "priority", and so on) and provides the ability to:
