@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.21 2004-09-26 13:16:40 a1s Exp $
+# $Id: instance.py,v 1.22 2004-09-29 07:01:44 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -24,8 +24,10 @@ Backwards compatibility for the old-style "imported" trackers.
 __docformat__ = 'restructuredtext'
 
 import os
-from roundup import configuration, rlog
+import types
+from roundup import configuration, mailgw, rlog
 from roundup import hyperdb, backends
+from roundup.cgi import client
 
 class Vars:
     def __init__(self, vars):
@@ -64,12 +66,20 @@ class Tracker:
         self._load_python('schema.py', vars)
         db = vars['db']
 
+        self.load_interfaces()
         self.load_extensions(db, 'detectors')
-
         self.load_extensions(self, 'extensions')
 
         db.post_init()
         return db
+
+    def load_interfaces(self):
+        """load interfaces.py (if any), initialize Client and MailGW attrs"""
+        vars = {}
+        if os.path.isfile(os.path.join(self.tracker_home, 'interfaces.py')):
+            self._load_python('interfaces.py', vars)
+        self.Client = vars.get('Client', client.Client)
+        self.MailGW = vars.get('MailGW', mailgw.MailGW)
 
     def load_extensions(self, parent, dirname):
         dirpath = os.path.join(self.tracker_home, dirname)
