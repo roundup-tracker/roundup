@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.44 2002-09-25 05:27:07 richard Exp $
+# $Id: client.py,v 1.45 2002-09-26 03:21:03 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1133,20 +1133,21 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         elif isinstance(proptype, hyperdb.Link):
             # see if it's the "no selection" choice
             if value == '-1':
-                continue
-            # handle key values
-            link = proptype.classname
-            if not num_re.match(value):
-                try:
-                    value = db.classes[link].lookup(value)
-                except KeyError:
-                    raise ValueError, _('property "%(propname)s": '
-                        '%(value)s not a %(classname)s')%{'propname':key, 
-                        'value': value, 'classname': link}
-                except TypeError, message:
-                    raise ValueError, _('you may only enter ID values '
-                        'for property "%(propname)s": %(message)s')%{
-                        'propname':key, 'message': message}
+                value = None
+            else:
+                # handle key values
+                link = proptype.classname
+                if not num_re.match(value):
+                    try:
+                        value = db.classes[link].lookup(value)
+                    except KeyError:
+                        raise ValueError, _('property "%(propname)s": '
+                            '%(value)s not a %(classname)s')%{'propname':key, 
+                            'value': value, 'classname': link}
+                    except TypeError, message:
+                        raise ValueError, _('you may only enter ID values '
+                            'for property "%(propname)s": %(message)s')%{
+                            'propname':key, 'message': message}
         elif isinstance(proptype, hyperdb.Multilink):
             if isinstance(value, type([])):
                 # it's a list of MiniFieldStorages
