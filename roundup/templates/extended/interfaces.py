@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.11 2001-10-09 07:38:58 richard Exp $
+# $Id: interfaces.py,v 1.12 2001-10-22 03:25:01 richard Exp $
 
 import instance_config
 from roundup import cgi_client, mailgw 
@@ -25,6 +25,9 @@ class Client(cgi_client.ExtendedClient):
         with any specific extensions 
     ''' 
     TEMPLATES = instance_config.TEMPLATES
+    FILTER_POSITION = instance_config.FILTER_POSITION
+    ANONYMOUS_ACCESS = instance_config.ANONYMOUS_ACCESS
+    ANONYMOUS_REGISTER = instance_config.ANONYMOUS_REGISTER
  
 class MailGW(mailgw.MailGW): 
     ''' derives basic mail gateway implementation from the standard module, 
@@ -36,6 +39,11 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/10/09 07:38:58  richard
+# Pushed the base code for the extended schema CGI interface back into the
+# code cgi_client module so that future updates will be less painful.
+# Also removed a debugging print statement from cgi_client.
+#
 # Revision 1.10  2001/10/05 02:23:24  richard
 #  . roundup-admin create now prompts for property info if none is supplied
 #    on the command-line.

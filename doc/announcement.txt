@@ -9,8 +9,8 @@ we're releasing this preview for the bleeding-edge users.
 **NOTE** existing users _must_ read the MIGRATION.txt that accompanies the
 source.
 
-This release fixes a nasty bug in the hyperdatabase that was inserted in
-pre-release 1. Users who downloaded that release MUST download this release.
+This release contains a bunch of changes and bug fixes. See the CHANGES
+file for details.
 
 Source and documentation is available at the website:
       http://roundup.sourceforge.net/

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.6 2001-10-01 06:10:42 richard Exp $
+# $Id: instance_config.py,v 1.7 2001-10-22 03:25:01 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -62,8 +62,18 @@ ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 # Somewhere for roundup to log stuff internally sent to stdout or stderr
 LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
+# Deny or allow anonymous access to the web interface
+ANONYMOUS_ACCESS = 'deny'
+
+# Deny or allow anonymous users to register through the web interface
+ANONYMOUS_REGISTER = 'deny'
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/10/01 06:10:42  richard
+# stop people setting up roundup with our addresses as default - need to
+# handle this better in the init
+#
 # Revision 1.5  2001/08/07 00:24:43  richard
 # stupid typo
 #

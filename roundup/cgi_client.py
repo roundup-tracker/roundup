@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.37 2001-10-21 07:26:35 richard Exp $
+# $Id: cgi_client.py,v 1.38 2001-10-22 03:25:01 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -39,7 +39,18 @@ class Client:
     'anonymous' user exists, the user is logged in using that user (though
     there is no cookie). This allows them to modify the database, and all
     modifications are attributed to the 'anonymous' user.
+
+
+    Customisation
+    -------------
+      FILTER_POSITION - one of 'top', 'bottom', 'top and bottom'
+      ANONYMOUS_ACCESS - one of 'deny', 'allow'
+      ANONYMOUS_REGISTER - one of 'deny', 'allow'
+
     '''
+    FILTER_POSITION = 'bottom'       # one of 'top', 'bottom', 'top and bottom'
+    ANONYMOUS_ACCESS = 'deny'        # one of 'deny', 'allow'
+    ANONYMOUS_REGISTER = 'deny'      # one of 'deny', 'allow'
 
     def __init__(self, instance, out, env):
         self.instance = instance
@@ -493,7 +504,11 @@ class Client:
 <tr><td></td>
     <td><input type="submit" value="Log In"></td></tr>
 </form>
-
+''')
+        if self.user is None and not self.ANONYMOUS_REGISTER == 'deny':
+            self.write('</table')
+            return
+        self.write('''
 <p>
 <tr><td colspan=2 class="strong-header">New User Registration</td></tr>
 <tr><td colspan=2><em>marked items</em> are optional...</td></tr>
@@ -610,6 +625,10 @@ class Client:
         else:
             self.user = user
         self.db.close()
+
+        # make sure totally anonymous access is OK
+        if self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
+            return self.login()
 
         # re-open the database for real, using the user
         self.db = self.instance.open(self.user)
@@ -815,6 +834,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.37  2001/10/21 07:26:35  richard
+# feature #473127: Filenames. I modified the file.index and htmltemplate
+#  source so that the filename is used in the link and the creation
+#  information is displayed.
+#
 # Revision 1.36  2001/10/21 04:44:50  richard
 # bug #473124: UI inconsistency with Link fields.
 #    This also prompted me to fix a fairly long-standing usability issue -

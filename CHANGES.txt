@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-10-?? - 0.3.0
+2001-10-22 - 0.3.0 pre 3
 Feature:
  . MailGW now moves 'unread' to 'chatting' on receiving e-mail for an issue.
  . feature #473127: Filenames. I modified the file.index and htmltemplate
