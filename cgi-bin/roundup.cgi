@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.11 2001-09-29 13:27:00 richard Exp $
+# $Id: roundup.cgi,v 1.12 2001-10-01 05:55:41 richard Exp $
 
 # python version check
 import sys
@@ -31,7 +31,7 @@ if int(sys.version[0]) < 2:
 
 # This indicates where the Roundup instance lives
 ROUNDUP_INSTANCE_HOMES = {
-    'test': '/tmp/roundup_test',
+    'demo': '/var/roundup/instances/demo',
 }
 
 # Where to log debugging information to. Use an instance of DevNull if you
@@ -39,13 +39,12 @@ ROUNDUP_INSTANCE_HOMES = {
 class DevNull:
     def write(self, info):
         pass
-LOG = open('/var/log/roundup.cgi.log', 'a')
-#LOG = DevNull()
+#LOG = open('/var/log/roundup.cgi.log', 'a')
+LOG = DevNull()
 
 #
 ##  end configuration
 #
-
 
 #
 # Set up the error handler
@@ -100,6 +99,7 @@ def main(instance, out):
 def index(out):
     ''' Print up an index of the available instances
     '''
+    import urllib
     w = out.write
     w("Content-Type: text/html\n\n")
     w('<html><head><title>Roundup instances index</title><head>\n')
@@ -125,7 +125,7 @@ try:
         instance = roundup.instance.open(instance_home)
         main(instance, out)
     else:
-        index()
+        index(out)
 except:
     sys.stdout, sys.stderr = out, err
     out.write('Content-Type: text/html\n\n')
@@ -135,6 +135,10 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/09/29 13:27:00  richard
+# CGI interfaces now spit up a top-level index of all the instances they can
+# serve.
+#
 # Revision 1.10  2001/08/07 00:24:42  richard
 # stupid typo
 #
