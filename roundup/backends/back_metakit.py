@@ -193,7 +193,7 @@ _marker = []
 
 _ALLOWSETTINGPRIVATEPROPS = 0
 
-class Class:    # no, I'm not going to subclass the existing!
+class Class:    
     privateprops = None
     def __init__(self, db, classname, **properties):
         self.db = weakref.proxy(db)
@@ -461,7 +461,7 @@ class Class:    # no, I'm not going to subclass the existing!
         # nothing to do?
         if not propvalues:
             return
-        if not row.activity:
+        if not propvalues.has_key('activity'):
             row.activity = int(time.time())
         if isnew:
             if not row.creation:
@@ -720,12 +720,11 @@ class Class:    # no, I'm not going to subclass the existing!
                 try:
                     prop = getattr(v, propname)
                 except AttributeError:
-                    # I can't sort on 'activity', cause it's psuedo!!
                     continue
                 if isreversed:
                     rev.append(prop)
                 sortspec.append(prop)
-            v = v.sortrev(sortspec, rev)[:] #XXX Aaaabh
+            v = v.sortrev(sortspec, rev)[:] #XXX Metakit bug
         #print "filter sort   at %s" % time.time() 
             
         rslt = []
