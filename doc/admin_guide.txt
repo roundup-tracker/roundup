@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.10 $
+:Version: $Revision: 1.11 $
 
 .. contents::
 
@@ -123,7 +123,7 @@ take:
     C:\sources\roundup-0.7.4> python roundup/scripts/roundup_server.py <normal arguments>
 
 7. Once you're comfortable that the upgrade will work using that copy, you
-   should the installed software::
+   should instal the new version of the software::
 
     python setup.py install
 
