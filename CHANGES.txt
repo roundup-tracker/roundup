@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2003-10-?? 0.6.3
 Fixed:
+- Fixed detectors fix incorrectly fixed in bugfix release 0.6.2
 - Added note to upgrading doc for detectors fix in 0.6.2
 
 
