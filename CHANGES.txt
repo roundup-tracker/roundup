@@ -3,6 +3,8 @@ are given with the most recent entry first.
 
 2003-??-?? 0.5.8
 - plugged cross-site-scripting hole (thanks Jeff Epler)
+- minor interface tweak (sf bug 753885)
+
 
 2003-05-08 0.5.7
 - fixed Interval maths (sf bug 665357)
