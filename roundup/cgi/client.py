@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.74 2003-01-27 16:32:48 kedder Exp $
+# $Id: client.py,v 1.75 2003-02-03 00:01:44 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -396,6 +396,7 @@ class Client:
         ('logout',   'logout_action'),
         ('search',   'searchAction'),
         ('retire',   'retireAction'),
+        ('show',     'showAction'),
     )
     def handle_action(self):
         ''' Determine whether there should be an _action called.
@@ -1021,6 +1022,15 @@ class Client:
                 self.classname):
             return 0
         return 1
+
+
+    def showAction(self):
+        ''' Show a node
+        '''
+        t = self.form[':type'].value
+        n = self.form[':number'].value
+        url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
+        raise Redirect, url
 
 
     #

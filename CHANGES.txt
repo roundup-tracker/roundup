@@ -2,7 +2,7 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2003-??-?? 0.6.0
-- better hyperlinking in web message texts (handle ambiguous cases)
+- better hyperlinking in web message texts (sf bug 669777)
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
 - allow additional control over the roundupdb email sending (explicit
@@ -25,6 +25,8 @@ are given with the most recent entry first.
   for helping chase it down and Luke Opperman for confirming fix)
 - added ability to display localized dates in web interface. User input is
   convered to GMT (see doc/upgrading.txt).
+- added a form to show a specific issue
+- fixed layout issues with forms in sidebar
 
 
 2003-??-?? 0.5.5
