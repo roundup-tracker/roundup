@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.3 2004-05-27 22:17:23 richard Exp $
+# $Id: setup.py,v 1.64.2.4 2004-06-09 06:43:02 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,14 +217,17 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-0.7.3 is a SECURITY FIX release of Roundup. All users are encouraged
-to upgrade immediately.
+0.7.4 is a bug fix release, including:
 
-This release also fixes a few minor bugs:
-
-- add "checked" to truth values for Boolean input
-- fixed import in metakit backend
-- fix SearchAction use of Class.filter(), and clarify API docs for same
+- re-acquire the OTK manager when we re-open the database
+- mailgw handler can close the database on us
+- fixed grouping by a NULL Link value
+- fixed anydbm import/export (sf bugs 965216, 964457, 964450)
+- fix python 2.3.3 strftime deprecation warning (sf patch 968398)
+- fix some column datatypes in postgresql and mysql (sf bugs 962611,
+  959177 and 964231)
+- fixed RDBMS journal packing (sf bug 959177)
+- fixed filtering by floats in anydbm (sf bug 963584)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",

@@ -2,14 +2,17 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.3 is a SECURITY FIX release of Roundup. All users are encouraged
-to upgrade immediately.
+0.7.4 is a bug fix release, including:
 
-This release also fixes a few minor bugs:
-
-- add "checked" to truth values for Boolean input
-- fixed import in metakit backend
-- fix SearchAction use of Class.filter(), and clarify API docs for same
+- re-acquire the OTK manager when we re-open the database
+- mailgw handler can close the database on us
+- fixed grouping by a NULL Link value
+- fixed anydbm import/export (sf bugs 965216, 964457, 964450)
+- fix python 2.3.3 strftime deprecation warning (sf patch 968398)
+- fix some column datatypes in postgresql and mysql (sf bugs 962611,
+  959177 and 964231)
+- fixed RDBMS journal packing (sf bug 959177)
+- fixed filtering by floats in anydbm (sf bug 963584)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
@@ -47,5 +50,5 @@ disutils-based install script is provided.
 
 It comes with two issue tracker templates (a classic bug/feature tracker and
 a minimal skeleton) and seven database back-ends (anydbm, bsddb, bsddb3,
-sqlite, metakit, mysql and postgresql). 
+sqlite, metakit, mysql and postgresql).
 
