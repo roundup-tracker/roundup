@@ -591,6 +591,11 @@ class HTMLUser(HTMLItem):
 class HTMLProperty:
     ''' String, Number, Date, Interval HTMLProperty
 
+        Hase useful attributes:
+
+         _name  the name of the property
+         _value the value of the property if any
+
         A wrapper object which may be stringified for the plain() behaviour.
     '''
     def __init__(self, client, nodeid, prop, name, value):
@@ -642,7 +647,7 @@ class StringHTMLProperty(HTMLProperty):
 
     def email(self, escape=1):
         ''' fudge email '''
-        if self.value is None: value = ''
+        if self._value is None: value = ''
         else: value = str(self._value)
         value = value.replace('@', ' at ')
         value = value.replace('.', ' ')
