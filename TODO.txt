@@ -6,23 +6,11 @@ done, it's moved to the CHANGES file.
 ======= ========= ============================================================
 State   Component Description
 ======= ========= ============================================================
-pending example   meta/parent bug implementation (feature request #506815)
 pending example   script for retrieval of "mbox" archive of all messages
-pending hyperdb   range searching of values (dates in particular).
-                  Filter specifies {property: (comparison function, value)}
-                  comparison functions: lt, le, eq, ge, gt. eq and
-                  [value, value, ...] implies "in"
 pending hyperdb   migrate "id" property to be Number type
 pending tracker   split instance.open() into open() and login()
-pending mailgw    allow commands (feature request #556996)
-                  like "help", "dump issue123" (would send all info about
-                  issue123, including a digest of all messages, but probably
-                  not all files...), "list issue", ...
-pending mailgw    Identification of users should have a configurable degree of
-                  strictness (ie. turn off username==address matching)
 pending mailgw    Use in-reply-to for determining message lineage when subject
                   line lets us down
-pending mailgw    Allow different brackets delimiting [issueNNN] in Subject
 pending mailgw    Have mailgw detect reply email with rego OTKs and complete
                   the rego.
 pending email     email sig could use a "remove me from this list"
@@ -32,23 +20,17 @@ pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
 pending security  use digital signatures in mailgw
 pending admin     "roundup-admin list" should list all the classnames
-pending admin     the find command in roundup-admin could do more than equality
-                  checks != for instance. Also the ability to check =None.
-pending web       I18N
-pending web       Better message summary display (feature request #520244)
 pending web       Allow responding to specific messages (incl. in-reply-to)
-pending web       Navigating around the issues (feature request #559149)
 pending web       Quick help links next to the property labels giving a
                   description of the property. Combine with help for the actual
                   form element too, eg. how to use the nosy list edit box.
 pending web       clicking on a group header should filter for that type of
                   entry
+pending web       column-heading sort stuff isn't implemented
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
 pending web       search "refinement" - pre-fill the search page with the
                   current search parameters
-pending web       query editing isn't fully implemented
-pending web       column-heading sort stuff isn't implemented
 pending web       multilink item removal action with retirement
 pending web       implement a python dict version of the form values
 pending web       implement the request.url attribute?
