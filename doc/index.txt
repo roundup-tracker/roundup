@@ -67,7 +67,8 @@ Roch'e Compaan,
 Engelbert Gruber,
 Juergen Hermann,
 Gordon McMillan,
-Patrick Ohly.
+Patrick Ohly,
+Stefan Seefeld.
 
 
 License

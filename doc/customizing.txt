@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.12 $
+:Version: $Revision: 1.13 $
 
 .. contents::
 
@@ -10,11 +10,12 @@ Customising Roundup
 What You Can Do
 ---------------
 
-Customisation of Roundup can take one of three forms:
+Customisation of Roundup can take one of four forms:
 
 1. `instance configuration`_ file changes
-2. `instance schema`_ changes
+2. database, or `instance schema`_ changes
 3. "definition" class `database content`_ changes
+4. behavioural changes, through detectors_
 
 The third case is special because it takes two distinctly different forms
 depending upon whether the instance has been initialised or not. The other two
@@ -515,7 +516,7 @@ Create a node in the database. This is generally used to create nodes in the
 
 Detectors - adding behaviour to your tracker
 --------------------------------------------
-.. _`detectors`:
+.. _detectors:
 
 The detectors in your instance fire before (*auditors*) and after (*reactors*)
 changes to the contents of your database. They are Python modules that sit in
@@ -537,7 +538,7 @@ ones. The existing detectors installed for you are:
 See the detectors section in the `design document`__ for details of the
 interface for detectors.
 
-__ spec.html
+__ design.html
 
 Sample additional detectors that have been found useful will appear in the
 ``detectors`` directory of the Roundup distribution:

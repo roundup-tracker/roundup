@@ -78,9 +78,13 @@ class Security:
         '''
         if not self.permission.has_key(permission):
             raise ValueError, 'No permission "%s" defined'%permission
+
+        # look through all the permissions of the given name
         for perm in self.permission[permission]:
+            # if we're passed a classname, the permission must match
             if perm.klass is not None and perm.klass == classname:
                 return perm
+            # otherwise the permission klass must be unset
             elif not perm.klass and not classname:
                 return perm
         raise ValueError, 'No permission "%s" defined for "%s"'%(permission,
@@ -96,9 +100,14 @@ class Security:
         for rolename in roles.split(','):
             if not rolename:
                 continue
+            # for each of the user's Roles, check the permissions
             for perm in self.role[rolename].permissions:
-                if perm.klass is None or perm.klass == classname:
-                    return 1
+                # permission name match?
+                if perm.name == permission:
+                    # permission klass match?
+                    if perm.klass is None or perm.klass == classname:
+                        # we have a winner
+                        return 1
         return 0
 
     def hasNodePermission(self, classname, nodeid, **propspec):
