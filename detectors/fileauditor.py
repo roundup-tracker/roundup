@@ -1,6 +1,6 @@
 
 def eml_to_mht(db, cl, nodeid, newvalues):
-    '''This reactor fires whenever a new file entity is created.
+    '''This auditor fires whenever a new file entity is created.
 
     If the file is of type message/rfc822, we tack onthe extension .eml.
 
@@ -37,5 +37,5 @@ def eml_to_mht(db, cl, nodeid, newvalues):
         newvalues['name'] = name + '.mht'
 
 def init(db):
-    db.file.react('create', eml_to_mht)
+    db.file.audit('create', eml_to_mht)
 
