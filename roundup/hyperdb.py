@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.97.2.4 2004-07-20 06:00:07 richard Exp $
+# $Id: hyperdb.py,v 1.97.2.5 2004-10-08 00:57:22 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -671,7 +671,7 @@ def rawToHyperdb(db, klass, itemid, propname, value,
     elif isinstance(proptype, Date):
         try:
             tz = db.getUserTimezone()
-            value = date.Date(value).local(tz)
+            value = date.Date(value).local(-tz)
         except ValueError, message:
             raise HyperdbValueError, 'property %s: %r is an invalid '\
                 'date (%s)'%(propname, value, message)

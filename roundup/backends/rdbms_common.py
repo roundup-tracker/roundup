@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.21 2004-10-08 00:21:31 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.22 2004-10-08 00:57:22 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1131,7 +1131,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 for param, value in params.items():
                     if not value:
                         continue
-                    property = properties[param]
+                    property = properties.get(param, None)
+                    if property is None:
+                        # deleted property
+                        continue
                     cvt = self.sql_to_hyperdb_value[property.__class__]
                     if isinstance(property, Password):
                         params[param] = cvt(value)
