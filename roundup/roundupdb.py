@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.76 2003-01-12 00:41:26 richard Exp $
+# $Id: roundupdb.py,v 1.77 2003-01-14 22:19:27 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -87,14 +87,16 @@ class IssueClass:
         appended to the "messages" field of the specified issue.
         """
 
+    # XXX "bcc" is an optional extra here...
     def nosymessage(self, nodeid, msgid, oldvalues, whichnosy='nosy',
-            from_address=[], cc=[], bcc=[]):
+            from_address=None, cc=[]): #, bcc=[]):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
         already on the "recipients" list for the message.
         
         These users are then added to the message's "recipients" list.
+
         """
         users = self.db.user
         messages = self.db.msg
