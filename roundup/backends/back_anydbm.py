@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.29 2002-02-25 14:34:31 grubert Exp $
+#$Id: back_anydbm.py,v 1.30 2002-02-27 03:40:59 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -24,7 +24,7 @@ serious bugs, and is not available)
 '''
 
 import whichdb, anydbm, os, marshal
-from roundup import hyperdb, date, password
+from roundup import hyperdb, date
 from blobfiles import FileStorage
 
 #
@@ -109,7 +109,7 @@ class Database(FileStorage, hyperdb.Database):
         if hyperdb.DEBUG:
             print 'clear', (self,)
         for cn in self.classes.keys():
-            for type in 'nodes', 'journals':
+            for dummy in 'nodes', 'journals':
                 path = os.path.join(self.dir, 'journals.%s'%cn)
                 if os.path.exists(path):
                     os.remove(path)
@@ -398,7 +398,7 @@ class Database(FileStorage, hyperdb.Database):
         # now insert the journal entry
         if db.has_key(nodeid):
             s = db[nodeid]
-            l = marshal.loads(db[nodeid])
+            l = marshal.loads(s)
             l.append(entry)
         else:
             l = [entry]
@@ -425,6 +425,11 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.29  2002/02/25 14:34:31  grubert
+# . use blobfiles in back_anydbm which is used in back_bsddb.
+#   change test_db as dirlist does not work for subdirectories.
+#   ATTENTION: blobfiles now creates subdirectories for files.
+#
 #Revision 1.28  2002/02/16 09:14:17  richard
 # . #514854 ] History: "User" is always ticket creator
 #

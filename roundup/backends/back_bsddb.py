@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.15 2002-02-16 09:15:33 richard Exp $
+#$Id: back_bsddb.py,v 1.16 2002-02-27 03:40:59 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
 
 import bsddb, os, marshal
-from roundup import hyperdb, date, password
+from roundup import hyperdb, date
 
 # these classes are so similar, we just use the anydbm methods
 import back_anydbm
@@ -100,7 +100,7 @@ class Database(back_anydbm.Database):
         db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
         if db.has_key(nodeid):
             s = db[nodeid]
-            l = marshal.loads(db[nodeid])
+            l = marshal.loads(s)
             l.append(entry)
         else:
             l = [entry]
@@ -109,6 +109,9 @@ class Database(back_anydbm.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.15  2002/02/16 09:15:33  richard
+#forgot to patch bsddb backend too
+#
 #Revision 1.14  2002/01/22 07:21:13  richard
 #. fixed back_bsddb so it passed the journal tests
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.1 2002-02-25 14:25:41 grubert Exp $
+#$Id: blobfiles.py,v 1.2 2002-02-27 03:40:59 richard Exp $
 '''
 This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
@@ -23,11 +23,23 @@ Files are stored into a directory hierarchy.
 
 import os, os.path
 
+def files_in_dir(dir):       
+    if not os.path.exists(dir):
+        return 0
+    num_files = 0
+    for dir_entry in os.listdir(dir):
+        full_filename = os.path.join(dir,dir_entry)
+        if os.path.isfile(full_filename):
+            num_files = num_files + 1
+        elif os.path.isdir(full_filename):
+            num_files = num_files + files_in_dir(full_filename)
+    return num_files
+
 class FileStorage:
     """Store files in some directory structure"""
-    def __init__(self):
-        # maybe set "files"
-        pass
+# TODO: maybe set "files"
+#    def __init__(self):
+#        pass
 
     def filename(self, classname, nodeid, property=None):
         '''Determine what the filename for the given node and optionally 
@@ -87,20 +99,10 @@ class FileStorage:
         '''Get number of files in storage, even across subdirectories.
         '''
         files_dir = os.path.join(self.dir, 'files')
-
-        def files_in_dir(dir):       
-            if not os.path.exists(dir):
-                return 0
-            num_files = 0
-            for dir_entry in os.listdir(dir):
-                full_filename = os.path.join(dir,dir_entry)
-                if os.path.isfile(full_filename):
-                    num_files = num_files + 1
-                elif os.path.isdir(full_filename):
-                    num_files = num_files + files_in_dir(full_filename)
-            return num_files
-
         return files_in_dir(files_dir)
 
-
+    def _doStoreFile(self, name, **databases):
+        '''Must be implemented by subclass
+        '''
+    	raise NotImplementedError
 
