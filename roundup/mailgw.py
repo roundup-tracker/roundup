@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.58 2002-01-23 21:41:56 richard Exp $
+$Id: mailgw.py,v 1.59 2002-01-23 21:43:23 richard Exp $
 '''
 
 
@@ -176,9 +176,9 @@ class MailGW:
                 # bounce the message back to the sender with the error message
                 sendto = [sendto[0][1], self.instance.ADMIN_EMAIL]
                 m = ['']
-		m.append('An unexpected error occurred during the processing')
-		m.append('of your message. The tracker administrator is being')
-		m.append('notified.\n')
+                m.append('An unexpected error occurred during the processing')
+                m.append('of your message. The tracker administrator is being')
+                m.append('notified.\n')
                 m.append('----  traceback of failure  ----')
                 s = cStringIO.StringIO()
                 import traceback
@@ -757,6 +757,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.58  2002/01/23 21:41:56  richard
+#  . mailgw failures (unexpected ones) are forwarded to the roundup admin
+#
 # Revision 1.57  2002/01/22 22:27:43  richard
 #  . handle stripping of "AW:" from subject line
 #
