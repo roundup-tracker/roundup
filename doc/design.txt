@@ -50,14 +50,15 @@ Hyperdatabase
 -------------
 
 The lowest-level component to be implemented is the hyperdatabase. The
-hyperdatabase is intended to be a flexible data store that can hold
-configurable data in records which we call items.
+hyperdatabase is a flexible data store that can hold configurable data
+in records which we call items.
 
 The hyperdatabase is implemented on top of the storage layer, an
-external module for storing its data.  "Batteries-includes" distribution
-implements the hyperdatabase on a standard anydbm module.  The storage
+external module for storing its data. The "batteries-includes" distribution
+implements the hyperdatabase on the standard anydbm module.  The storage
 layer could be a third-party RDBMS; for a low-maintenance solution,
 implementing the hyperdatabase on the SQLite RDBMS is suggested.
+
 
 Dates and Date Arithmetic
 ~~~~~~~~~~~~~~~~~~~~~~~~~
