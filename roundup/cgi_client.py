@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.161 2002-08-19 00:21:10 richard Exp $
+# $Id: cgi_client.py,v 1.162 2002-08-23 04:42:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1425,7 +1425,7 @@ function help_window(helpurl, width, height) {
         self.login()
 
     def opendb(self, user):
-        ''' Open the database - but include the definition of the sessions db.
+        ''' Open the database.
         '''
         # open the db if the user has changed
         if not hasattr(self, 'db') or user != self.db.journaltag:
@@ -1747,6 +1747,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.161  2002/08/19 00:21:10  richard
+# removed debug prints
+#
 # Revision 1.160  2002/08/19 00:20:34  richard
 # grant web access to admin ;)
 #
