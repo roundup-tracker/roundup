@@ -24,7 +24,7 @@
         <li><a href="#users">Users</a>
         <li><a href="#issues">Issues</a>
     </ul>
-<li><a href="#admin">Administration</a>
+<li><a href="#guide">User Guide</a>
     <ul>
         <li><a href="#cmd">Command Line Tool</a>
         <li><a href="#web">Web Interface</a>
@@ -239,6 +239,227 @@ To add issues, use one of the following interfaces:
     will automatically created a new issue in the database using the
     contents of the e-mail.
 </ol>
+
+<p><br>
+<h2><a name="guide">User Guide</a></h2>
+<h3><a name="cmd">Command Line Tool</a></h3>
+
+Usage:
+<tt>roundup-admin [-i instance home] [-u login] [-c] &lt;command&gt;
+    &lt;arguments&gt;</tt>
+<p>
+<dl>
+<dt>Commands:
+<dd>create classname property=value ...
+<dd>find classname propname=value ...
+<dd>freshen
+<dd>get property designator[,designator]*
+<dd>history designator
+<dd>init [template [backend [admin password]]]
+<dd>list classname [property]
+<dd>retire designator[,designator]*
+<dd>set designator[,designator]* propname=value ...
+<dd>spec classname
+<dt>Help:
+<dd>roundup-admin -h
+<dd>roundup-admin help                       -- this help
+<dd>roundup-admin help <command>             -- command-specific help
+<dd>roundup-admin morehelp                   -- even more detailed help
+<dt>Options:
+<dd>-i instance home  -- specify the issue tracker "home directory" to administer
+<dd>-u                -- the user[:password] to use for commands
+<dd>-c                -- when outputting lists of data, just comma-separate them
+</dl>
+
+<p>
+All commands (except help) require an instance specifier. This is just the path
+to the roundup instance you're working with. A roundup instance is where 
+roundup keeps the database and configuration file that defines an issue
+tracker. It may be thought of as the issue tracker's "home directory". It may
+be specified in the environment variable ROUNDUP_INSTANCE or on the command
+line as "-i instance".
+
+<p>
+A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
+
+<p>
+Property values are represented as strings in command arguments and in the
+printed results:
+<ul>
+    <li>Strings are, well, strings.
+    <li>Date values are printed in the full date format in the local time zone, and
+   accepted in the full format or any of the partial formats explained below.
+   <li>Link values are printed as node designators. When given as an argument,
+   node designators and key strings are both accepted.
+   <li>Multilink values are printed as lists of node designators joined by commas.
+   When given as an argument, node designators and key strings are both
+   accepted; an empty string, a single node, or a list of nodes joined by
+   commas is accepted.
+</ul>
+When multiple nodes are specified to the roundup get or roundup set
+commands, the specified properties are retrieved or set on all the listed
+nodes. 
+<p>
+When multiple results are returned by the roundup get or roundup find
+commands, they are printed one per line (default) or joined by commas (with
+the -c) option. 
+<p>
+Where the command changes data, a login name/password is required. The
+login may be specified as either "name" or "name:password".
+<ul>
+    <li>ROUNDUP_LOGIN environment variable
+    <li>the -u command-line option
+</ul>
+If either the name or password is not supplied, they are obtained from the
+command-line. 
+<p>
+Date format examples:
+<table>
+    <tr><th>Input of...</th><th>Means...</th></tr>
+    <tr><td>"2000-04-17.03:45"</td><td>2000-04-17.08:45:00</td></tr>
+    <tr><td>"2000-04-17"</td><td>2000-04-17.00:00:00</td></tr>
+    <tr><td>"01-25"</td><td>yyyy-01-25.00:00:00</td></tr>
+    <tr><td>"08-13.22:13"</td><td>yyyy-08-14.03:13:00</td></tr>
+    <tr><td>"11-07.09:32:43"</td><td>yyyy-11-07.14:32:43</td></tr>
+    <tr><td>"14:25"</td><td>yyyy-mm-dd.19:25:00</td></tr>
+    <tr><td>"8:47:11"</td><td>yyyy-mm-dd.13:47:11</td></tr>
+    <tr><td>"."</td><td>"right now"</td></tr>
+</table>
+
+<h4>Specific Command help</h4>
+
+<pre>
+history:
+    Usage: history designator
+    Show the history entries of a designator.
+
+    Lists the journal entries for the node identified by the designator.
+    
+find:
+    Usage: find classname propname=value ...
+    Find the nodes of the given class with a given property value.
+
+    Find the nodes of the given class with a given property value. The
+    value may be either the nodeid of the linked node, or its key value.
+    
+list:
+    Usage: list classname [property]
+    List the instances of a class.
+
+    Lists all instances of the given class along. If the property is not
+    specified, the  "label" property is used. The label property is tried
+    in order: the key, "name", "title" and then the first property,
+    alphabetically.
+    
+retire:
+    Usage: retire designator[,designator]*
+    Retire the node specified by designator.
+
+    This action indicates that a particular node is not to be retrieved by
+    the list or find commands, and its key value may be re-used.
+    
+create:
+    Usage: create classname property=value ...
+    Create a new entry of a given class.
+
+    This creates a new entry of the given class using the property
+    name=value arguments provided on the command line after the "create"
+    command.
+    
+get:
+    Usage: get property designator[,designator]*
+    Get the given property of one or more designator(s).
+
+    Retrieves the property value of the nodes specified by the designators.
+    
+spec:
+    Usage: spec classname
+    Show the properties for a classname.
+
+    This lists the properties for a given class.
+    
+set:
+    Usage: set designator[,designator]* propname=value ...
+    Set the given property of one or more designator(s).
+
+    Sets the property to the value for all designators given.
+    
+init:
+    Usage: init [template [backend [admin password]]]
+    Initialise a new Roundup instance.
+
+    The command will prompt for the instance home directory (if not supplied
+    through INSTANCE_HOME or the -i option. The template, backend and admin
+    password may be specified on the command-line as arguments, in that order.
+    
+freshen:
+    Usage: freshen
+    Freshen an existing instance.  **DO NOT USE**
+
+    This currently kills databases!!!!
+
+    This action should generally not be used. It reads in an instance
+    database and writes it again. In the future, is may also update
+    instance code to account for changes in templates. It's probably wise
+    not to use it anyway. Until we're sure it won't break things...
+</pre>
+
+<h3><a name="web">Web Interface</a></h3>
+T.B.D.
+
+<h3><a name="mail">E-Mail Gateway</a></h3>
+
+Incoming messages are examined for multiple parts:
+<ul>
+<li>In a multipart/mixed message or part, each subpart is extracted and
+   examined. The text/plain subparts are assembled to form the textual
+   body of the message, to be stored in the file associated with a "msg"
+   class node. Any parts of other types are each stored in separate files
+   and given "file" class nodes that are linked to the "msg" node. 
+<li>In a multipart/alternative message or part, we look for a text/plain
+   subpart and ignore the other parts.
+</ul>
+
+<h4>Summary</h4>
+The "summary" property on message nodes is taken from the first non-quoting
+section in the message body. The message body is divided into sections by
+blank lines. Sections where the second and all subsequent lines begin with
+a "&gt;" or "|" character are considered "quoting sections". The first line of
+the first non-quoting section becomes the summary of the message. 
+
+<h4>Addresses</h4>
+All of the addresses in the To: and Cc: headers of the incoming message are
+looked up among the user nodes, and the corresponding users are placed in
+the "recipients" property on the new "msg" node. The address in the From:
+header similarly determines the "author" property of the new "msg"
+node. The default handling for addresses that don't have corresponding
+users is to create new users with no passwords and a username equal to the
+address. (The web interface does not permit logins for users with no
+passwords.) If we prefer to reject mail from outside sources, we can simply
+register an auditor on the "user" class that prevents the creation of user
+nodes with no passwords. 
+
+<h4>Actions</h4>
+The subject line of the incoming message is examined to determine whether
+the message is an attempt to create a new item or to discuss an existing
+item. A designator enclosed in square brackets is sought as the first thing
+on the subject line (after skipping any "Fwd:" or "Re:" prefixes). 
+
+If an item designator (class name and id number) is found there, the newly
+created "msg" node is added to the "messages" property for that item, and
+any new "file" nodes are added to the "files" property for the item. 
+
+If just an item class name is found there, we attempt to create a new item
+of that class with its "messages" property initialized to contain the new
+"msg" node and its "files" property initialized to contain any new "file"
+nodes. 
+
+<h4>Triggers</h4>
+Both cases may trigger detectors (in the first case we are calling the
+set() method to add the message to the item's spool; in the second case we
+are calling the create() method to create a new node). If an auditor raises
+an exception, the original message is bounced back to the sender with the
+explanatory message given in the exception. 
 
 <p><hr>
 <h2><a name="ack">Acknowledgements</a></h2>
