@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.107 2003-02-28 03:33:46 richard Exp $
+#$Id: back_anydbm.py,v 1.108 2003-03-03 21:05:17 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1537,16 +1537,16 @@ class Class(hyperdb.Class):
         res = []
 
         # start off with the new nodes
-        if self.db.newnodes.has_key(classname):
-            res += self.db.newnodes[classname].keys()
+        if self.db.newnodes.has_key(self.classname):
+            res += self.db.newnodes[self.classname].keys()
 
         if db is None:
-            db = self.db.getclassdb(classname)
+            db = self.db.getclassdb(self.classname)
         res = res + db.keys()
 
         # remove the uncommitted, destroyed nodes
-        if self.db.destroyednodes.has_key(classname):
-            for nodeid in self.db.destroyednodes[classname].keys():
+        if self.db.destroyednodes.has_key(self.classname):
+            for nodeid in self.db.destroyednodes[self.classname].keys():
                 if db.has_key(nodeid):
                     res.remove(nodeid)
 

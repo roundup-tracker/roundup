@@ -15,12 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.72 2003-02-27 11:07:39 richard Exp $ 
+# $Id: test_db.py,v 1.73 2003-03-03 21:05:19 richard Exp $ 
 
 import unittest, os, shutil, time
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
-    Interval, DatabaseError, Boolean, Number
+    Interval, DatabaseError, Boolean, Number, Node
 from roundup import date, password
 from roundup.indexer import Indexer
 
@@ -653,6 +653,27 @@ class anydbmDBTestCase(MyTestCase):
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
 
+    def testNode1(self):
+        node1 = self.db.user.getnode('1')
+        name = node1.username
+        self.db.user.set('1', username = name+name)
+        name1 = node1.username
+        self.db.rollback()
+        node2 = self.db.user.getnode('1')
+        self.assertEqual(name, node1.username)
+        self.assertEqual(name, node2.username)
+
+    def testNode2(self):
+        node1 = Node(self.db.user, '1')
+        name = node1.username
+        self.db.user.set('1', username = name+name)
+        name1 = node1.username
+        self.db.rollback()
+        node2 = Node(self.db.user, '1')
+        self.assertEqual(name, node1.username)
+        self.assertEqual(name, node2.username)
+
+
 # TODO test auditors and reactors
 
 class anydbmReadOnlyDBTestCase(MyTestCase):
@@ -895,28 +916,28 @@ def suite():
 
     from roundup import backends
     p = []
-    if hasattr(backends, 'mysql'):
-        from roundup.backends import mysql
-        try:
-            # Check if we can run mysql tests
-            import MySQLdb
-            db = mysql.Database(nodbconfig, 'admin')
-            db.conn.select_db(config.MYSQL_DBNAME)
-            db.sql("SHOW TABLES");
-            tables = db.sql_fetchall()
-            if tables:
-                # Database should be empty. We don't dare to delete any data
-                raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
-            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
-            db.close()
-        except (MySQLdb.ProgrammingError, DatabaseError), msg:
-            print "Warning! Mysql tests will not be performed", msg
-            print "See doc/mysql.txt for more details."
-        else:
-            p.append('mysql')
-            l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
-            l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+#    if hasattr(backends, 'mysql'):
+#        from roundup.backends import mysql
+#        try:
+#            # Check if we can run mysql tests
+#            import MySQLdb
+#            db = mysql.Database(nodbconfig, 'admin')
+#            db.conn.select_db(config.MYSQL_DBNAME)
+#            db.sql("SHOW TABLES");
+#            tables = db.sql_fetchall()
+#            if tables:
+#                # Database should be empty. We don't dare to delete any data
+#                raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
+#            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
+#            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
+#            db.close()
+#        except (MySQLdb.ProgrammingError, DatabaseError), msg:
+#            print "Warning! Mysql tests will not be performed", msg
+#            print "See doc/mysql.txt for more details."
+#        else:
+#            p.append('mysql')
+#            l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+#            l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
     #return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):
