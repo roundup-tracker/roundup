@@ -31,6 +31,7 @@ are given with the most recent entry first.
 - better handling of Page Template compilation errors
 - handle multiple unrelated indexed classes
 - #614188 ] Exception in mailgw.py
+- #613310 ] traceback on onexistant items
 
 
 2002-09-13 0.5.0 beta2

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.42 2002-09-25 02:10:25 richard Exp $
+# $Id: client.py,v 1.43 2002-09-25 05:15:36 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -168,6 +168,9 @@ class Client:
             self.serve_static_file(str(file))
         except Unauthorised, message:
             self.write(self.renderTemplate('page', '', error_message=message))
+        except NotFound:
+            # pass through
+            raise
         except:
             # everything else
             self.write(cgitb.html())
