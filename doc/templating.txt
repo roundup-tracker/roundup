@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.6 $
 
 Current Situation and Issues
 ============================
@@ -116,7 +116,7 @@ variables defined:
 
 Accesses through a class (either through *class* or *db.<classname>*):
 
-    class HTMLItem:
+    class HTMLClass:
         def __getattr__(self, attr):
             ''' return an HTMLItem instance '''
         def classhelp(self, ...)
