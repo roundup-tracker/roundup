@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.56 2001-12-31 05:09:20 richard Exp $
+# $Id: roundup-admin,v 1.57 2001-12-31 05:12:01 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -137,6 +137,18 @@ printed results:
    When given as an argument, node designators and key strings are both
    accepted; an empty string, a single node, or a list of nodes joined by
    commas is accepted.
+
+When property values must contain spaces, just surround the value with
+quotes, either ' or ". A single space may also be backslash-quoted. If a
+valuu must contain a quote character, it must be backslash-quoted or inside
+quotes. Examples:
+           hello world      (2 tokens: hello, world)
+           "hello world"    (1 token: hello world)
+           "Roch'e" Compaan (2 tokens: Roch'e Compaan)
+           Roch\'e Compaan  (2 tokens: Roch'e Compaan)
+           address="1 2 3"  (1 token: address=1 2 3)
+           \\               (1 token: \)
+           \n\r\t           (1 token: a newline, carriage-return and tab)
 
 When multiple nodes are specified to the roundup get or roundup set
 commands, the specified properties are retrieved or set on all the listed
@@ -1000,6 +1012,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.56  2001/12/31 05:09:20  richard
+# Added better tokenising to roundup-admin - handles spaces and stuff. Can
+# use quoting or backslashes. See the roundup.token pydoc.
+#
 # Revision 1.55  2001/12/17 03:52:47  richard
 # Implemented file store rollback. As a bonus, the hyperdb is now capable of
 # storing more than one file per node - if a property name is supplied,
