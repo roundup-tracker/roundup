@@ -13,8 +13,8 @@
 #   translate(domain, msgid, mapping, context, target_language, default)
 #
 
-__version__ = "$Revision: 1.1 $"[11:-2]
-__date__ = "$Date: 2004-07-11 14:17:17 $"[7:-2]
+__version__ = "$Revision: 1.2 $"[11:-2]
+__date__ = "$Date: 2004-10-23 14:04:23 $"[7:-2]
 
 from roundup import i18n
 from roundup.cgi.PageTemplates import Expressions, PathIterator, TALES
@@ -93,7 +93,7 @@ Expressions.installHandlers(Expressions._engine)
 
 ### main API function
 
-def get_translation(language=None, domain=i18n.DOMAIN,
+def get_translation(language=None, tracker_home=None,
     translation_class=TranslationService,
     null_translation_class=NullTranslationService
 ):
@@ -103,7 +103,8 @@ def get_translation(language=None, domain=i18n.DOMAIN,
     specify the classes that are instantiated for existing
     and non-existing translations, respectively.
     """
-    return i18n.get_translation(language=language, domain=domain,
+    return i18n.get_translation(language=language,
+        tracker_home=tracker_home,
         translation_class=translation_class,
         null_translation_class=null_translation_class)
 
