@@ -454,6 +454,18 @@ class HTMLInputMixin:
             self.input = input_xhtml
         else:
             self.input = input_html4
+        # self._context is used for translations.
+        # will be initialized by the first call to .gettext()
+        self._context = None
+
+    def gettext(self, msgid):
+        """Return the localized translation of msgid"""
+        if self._context is None:
+            self._context = context(self._client)
+        return translationService.translate(domain="roundup",
+            msgid=msgid, context=self._context)
+
+    _ = gettext
 
 class HTMLClass(HTMLInputMixin, HTMLPermissions):
     ''' Accesses through a class (either through *class* or *db.<classname>*)
@@ -766,12 +778,12 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
 
         l = ['<table class="history">'
              '<tr><th colspan="4" class="header">',
-             _('History'),
+             self._('History'),
              '</th></tr><tr>',
-             _('<th>Date</th>'),
-             _('<th>User</th>'),
-             _('<th>Action</th>'),
-             _('<th>Args</th>'),
+             self._('<th>Date</th>'),
+             self._('<th>User</th>'),
+             self._('<th>Action</th>'),
+             self._('<th>Args</th>'),
             '</tr>']
         current = {}
         comments = {}
@@ -832,9 +844,10 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                         prop = None
                     if prop is None:
                         # property no longer exists
-                        comments['no_exist'] = _(
+                        comments['no_exist'] = self._(
                             "<em>The indicated property no longer exists</em>")
-                        cell.append('<em>%s: %s</em>\n'%(k, str(args[k])))
+                        cell.append(self._('<em>%s: %s</em>\n')
+                            % (k, str(args[k])))
                         continue
 
                     if args[k] and (isinstance(prop, hyperdb.Multilink) or
@@ -845,7 +858,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                             linkcl = self._db.getclass(classname)
                         except KeyError:
                             labelprop = None
-                            comments[classname] = _(
+                            comments[classname] = self._(
                                 "The linked class %(classname)s no longer exists"
                             ) % locals()
                         labelprop = linkcl.labelprop(1)
@@ -878,7 +891,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                                             labelprop != 'id':
                                         label = linkcl.get(linkid, labelprop)
                                 except IndexError:
-                                    comments['no_link'] = _(
+                                    comments['no_link'] = self._(
                                         "<strike>The linked node"
                                         " no longer exists</strike>")
                                     subml.append('<strike>%s</strike>'%label)
@@ -899,7 +912,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                             try:
                                 label = linkcl.get(args[k], labelprop)
                             except IndexError:
-                                comments['no_link'] = _(
+                                comments['no_link'] = self._(
                                     "<strike>The linked node"
                                     " no longer exists</strike>")
                                 cell.append(' <strike>%s</strike>,\n'%label)
@@ -959,7 +972,8 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                 arg_s = '<br />'.join(cell)
             else:
                 # unkown event!!
-                comments['unknown'] = _("<strong><em>This event is not handled"
+                comments['unknown'] = self._(
+                    "<strong><em>This event is not handled"
                     " by the history display!</em></strong>")
                 arg_s = '<strong><em>' + str(args) + '</em></strong>'
             date_s = date_s.replace(' ', '&nbsp;')
@@ -970,7 +984,8 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
                 date_s, user, action, arg_s))
         if comments:
-            l.append(_('<tr><td colspan=4><strong>Note:</strong></td></tr>'))
+            l.append(self._(
+                '<tr><td colspan=4><strong>Note:</strong></td></tr>'))
         for entry in comments.values():
             l.append('<tr><td colspan=4>%s</td></tr>'%entry)
         l.append('</table>')
@@ -1251,7 +1266,7 @@ class PasswordHTMLProperty(HTMLProperty):
 
         if self._value is None:
             return ''
-        return _('*encrypted*')
+        return self._('*encrypted*')
 
     def field(self, size = 30):
         ''' Render a form edit field for the property.
@@ -1573,7 +1588,7 @@ class LinkHTMLProperty(HTMLProperty):
         s = ''
         if value is None:
             s = 'selected="selected" '
-        l.append(_('<option %svalue="-1">- no selection -</option>')%s)
+        l.append(self._('<option %svalue="-1">- no selection -</option>')%s)
         if linkcl.getprops().has_key('order'):
             sort_on = ('+', 'order')
         else:
