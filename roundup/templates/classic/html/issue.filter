@@ -1,0 +1,13 @@
+<!-- $Id: issue.filter,v 1.1 2001-07-23 23:29:10 richard Exp $-->
+<property name="title">
+ <tr><th width="1%" align="right" class="location-bar">Title</th>
+ <td><display call="field('title')"></td></tr>
+</property>
+<property name="status">
+ <tr><th width="1%" align="right" class="location-bar">Status</th>
+ <td><display call="checklist('status')"></td></tr>
+</property>
+<property name="priority">
+ <tr><th width="1%" align="right" class="location-bar">Priority</th>
+ <td><display call="checklist('priority')"></td></tr>
+</property>

@@ -1,0 +1,15 @@
+<!-- $Id: issue.index,v 1.1 2001-07-23 23:29:10 richard Exp $-->
+<tr>
+    <property name="activity">
+        <td valign="top"><display call="reldate('activity', pretty=1)"></td>
+    </property>
+    <property name="priority">
+        <td valign="top"><display call="plain('priority')"></td>
+    </property>
+    <property name="status">
+        <td valign="top"><display call="plain('status')"></td>
+    </property>
+    <property name="title">
+        <td valign="top"><display call="link('title')"></td>
+    </property>
+</tr>

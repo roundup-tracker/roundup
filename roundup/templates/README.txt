@@ -6,4 +6,9 @@ templates.
 
 The currently available templates are:
 
-  extended --
+  classic  -- The schema is as described in the Roundup spec.
+
+  extended -- The classic schema with some extra fields useful for support
+              calls: product identification, customer name, source of call,
+              log of time spent on call.
+
