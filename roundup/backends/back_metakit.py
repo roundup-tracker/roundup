@@ -638,7 +638,9 @@ class Class:
         # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
         # filterspec is a dict {propname:value}
         # sort and group are lists of propnames
-        
+        # sort and group are (dir, prop) where dir is '+', '-' or None
+        #                    and prop is a prop name or None
+
         where = {'_isdel':0}
         mlcriteria = {}
         regexes = {}
@@ -745,10 +747,10 @@ class Class:
         if sort or group:
             sortspec = []
             rev = []
-            for propname in group + sort:
+            for dir, propname in group, sort:
+                if propname is None: continue
                 isreversed = 0
-                if propname[0] == '-':
-                    propname = propname[1:]
+                if dir == '-':
                     isreversed = 1
                 try:
                     prop = getattr(v, propname)
@@ -1013,7 +1015,9 @@ class IssueClass(Class, roundupdb.IssueClass):
         if not properties.has_key('files'):
             properties['files'] = hyperdb.Multilink("file")
         if not properties.has_key('nosy'):
-            properties['nosy'] = hyperdb.Multilink("user")
+            # note: journalling is turned off as it really just wastes
+            # space. this behaviour may be overridden in an instance
+            properties['nosy'] = hyperdb.Multilink("user", do_journal="no")
         if not properties.has_key('superseder'):
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)

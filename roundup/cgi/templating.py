@@ -1,4 +1,4 @@
-import sys, cgi, urllib, os
+import sys, cgi, urllib, os, re
 
 from roundup import hyperdb, date
 from roundup.i18n import _
@@ -136,15 +136,15 @@ class HTMLClass:
     def __repr__(self):
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
 
-    def __getattr__(self, attr):
+    def __getitem__(self, item):
         ''' return an HTMLItem instance'''
-        #print 'getattr', (self, attr)
-        if attr == 'creator':
+        #print 'getitem', (self, attr)
+        if item == 'creator':
             return HTMLUser(self.client)
 
-        if not self.props.has_key(attr):
-            raise AttributeError, attr
-        prop = self.props[attr]
+        if not self.props.has_key(item):
+            raise KeyError, item
+        prop = self.props[item]
 
         # look up the correct HTMLProperty class
         for klass, htmlklass in propclasses:
@@ -153,10 +153,17 @@ class HTMLClass:
             else:
                 value = None
             if isinstance(prop, klass):
-                return htmlklass(self.db, '', prop, attr, value)
+                return htmlklass(self.db, '', prop, item, value)
 
         # no good
-        raise AttributeError, attr
+        raise KeyError, item
+
+    def __getattr__(self, attr):
+        ''' convenience access '''
+        try:
+            return self[attr]
+        except KeyError:
+            raise AttributeError, attr
 
     def properties(self):
         ''' Return HTMLProperty for all props
@@ -248,29 +255,33 @@ class HTMLItem:
     def __repr__(self):
         return '<HTMLItem(0x%x) %s %s>'%(id(self), self.classname, self.nodeid)
 
-    def __getattr__(self, attr):
+    def __getitem__(self, item):
         ''' return an HTMLItem instance'''
-        #print 'getattr', (self, attr)
-        if attr == 'id':
+        if item == 'id':
             return self.nodeid
-
-        if not self.props.has_key(attr):
-            raise AttributeError, attr
-        prop = self.props[attr]
+        if not self.props.has_key(item):
+            raise KeyError, item
+        prop = self.props[item]
 
         # get the value, handling missing values
-        value = self.klass.get(self.nodeid, attr, None)
+        value = self.klass.get(self.nodeid, item, None)
         if value is None:
-            if isinstance(self.props[attr], hyperdb.Multilink):
+            if isinstance(self.props[item], hyperdb.Multilink):
                 value = []
 
         # look up the correct HTMLProperty class
         for klass, htmlklass in propclasses:
             if isinstance(prop, klass):
-                return htmlklass(self.db, self.nodeid, prop, attr, value)
+                return htmlklass(self.db, self.nodeid, prop, item, value)
 
-        # no good
-        raise AttributeError, attr
+        raise KeyErorr, item
+
+    def __getattr__(self, attr):
+        ''' convenience access to properties '''
+        try:
+            return self[attr]
+        except KeyError:
+            raise AttributeError, attr
     
     def submit(self, label="Submit Changes"):
         ''' Generate a submit button (and action hidden element)
@@ -613,7 +624,7 @@ class LinkHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         if self.value is None:
             return _('[unselected]')
-        linkcl = self.db.classes[self.klass.classname]
+        linkcl = self.db.classes[self.prop.classname]
         k = linkcl.labelprop(1)
         value = str(linkcl.get(self.value, k))
         if escape:
@@ -688,10 +699,10 @@ class LinkHTMLProperty(HTMLProperty):
             s = 'selected '
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
         if linkcl.getprops().has_key('order'):  
-            sort_on = 'order'  
+            sort_on = ('+', 'order')
         else:  
-            sort_on = linkcl.labelprop() 
-        options = linkcl.filter(None, conditions, [sort_on], []) 
+            sort_on = ('+', linkcl.labelprop())
+        options = linkcl.filter(None, conditions, sort_on, (None, None))
         for optionid in options:
             option = linkcl.get(optionid, k)
             s = ''
@@ -735,6 +746,12 @@ class MultilinkHTMLProperty(HTMLProperty):
         value = self.value[num]
         return HTMLItem(self.db, self.prop.classname, value)
 
+    def reverse(self):
+        ''' return the list in reverse order '''
+        l = self.value[:]
+        l.reverse()
+        return [HTMLItem(self.db, self.prop.classname, value) for value in l]
+
     def plain(self, escape=0):
         linkcl = self.db.classes[self.prop.classname]
         k = linkcl.labelprop(1)
@@ -772,10 +789,10 @@ class MultilinkHTMLProperty(HTMLProperty):
 
         linkcl = self.db.getclass(self.prop.classname)
         if linkcl.getprops().has_key('order'):  
-            sort_on = 'order'  
+            sort_on = ('+', 'order')
         else:  
-            sort_on = linkcl.labelprop()
-        options = linkcl.filter(None, conditions, [sort_on], []) 
+            sort_on = ('+', linkcl.labelprop())
+        options = linkcl.filter(None, conditions, sort_on, (None,None)) 
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self.name, height)]
         k = linkcl.labelprop(1)
@@ -858,19 +875,48 @@ class HTMLRequest:
         if self.form.has_key(':columns'):
             for entry in handleListCGIValue(self.form[':columns']):
                 self.columns[entry] = 1
-        self.sort = []
+
+        # sorting
+        self.sort = (None, None)
         if self.form.has_key(':sort'):
-            self.sort = handleListCGIValue(self.form[':sort'])
-        self.group = []
+            sort = self.form[':sort'].value
+            if sort.startswith('-'):
+                self.sort = ('-', sort[1:])
+            else:
+                self.sort = ('+', sort)
+        if self.form.has_key(':sortdir'):
+            self.sort = ('-', self.sort[1])
+
+        # grouping
+        self.group = (None, None)
         if self.form.has_key(':group'):
-            self.group = handleListCGIValue(self.form[':group'])
+            group = self.form[':group'].value
+            if group.startswith('-'):
+                self.group = ('-', group[1:])
+            else:
+                self.group = ('+', group)
+        if self.form.has_key(':groupdir'):
+            self.group = ('-', self.group[1])
+
+        # filtering
         self.filter = []
         if self.form.has_key(':filter'):
             self.filter = handleListCGIValue(self.form[':filter'])
         self.filterspec = {}
+        props = self.client.db.getclass(self.classname).getprops()
         for name in self.filter:
             if self.form.has_key(name):
-                self.filterspec[name]=handleListCGIValue(self.form[name])
+                prop = props[name]
+                if (isinstance(prop, hyperdb.Link) or
+                        isinstance(prop, hyperdb.Multilink)):
+                    self.filterspec[name] = handleListCGIValue(self.form[name])
+                else:
+                    self.filterspec[name] = self.form[name].value
+
+        # full-text search argument
+        self.search_text = None
+        if self.form.has_key(':search_text'):
+            self.search_text = self.form[':search_text'].value
 
     def __str__(self):
         d = {}
@@ -896,30 +942,32 @@ filterspec: %(filterspec)r
 env: %(env)s
 '''%d
 
-    def indexargs_form(self):
+    def indexargs_form(self, columns=1, sort=1, group=1, filter=1,
+            filterspec=1):
         ''' return the current index args as form elements '''
         l = []
         s = '<input type="hidden" name="%s" value="%s">'
-        if self.columns:
+        if columns and self.columns:
             l.append(s%(':columns', ','.join(self.columns.keys())))
-        if self.sort:
-            l.append(s%(':sort', ','.join(self.sort)))
-        if self.group:
-            l.append(s%(':group', ','.join(self.group)))
-        if self.filter:
+        if sort and self.sort is not None:
+            l.append(s%(':sort', self.sort))
+        if group and self.group is not None:
+            l.append(s%(':group', self.group))
+        if filter and self.filter:
             l.append(s%(':filter', ','.join(self.filter)))
-        for k,v in self.filterspec.items():
-            l.append(s%(k, ','.join(v)))
+        if filterspec:
+            for k,v in self.filterspec.items():
+                l.append(s%(k, ','.join(v)))
         return '\n'.join(l)
 
     def indexargs_href(self, url, args):
         l = ['%s=%s'%(k,v) for k,v in args.items()]
         if self.columns:
             l.append(':columns=%s'%(','.join(self.columns.keys())))
-        if self.sort:
-            l.append(':sort=%s'%(','.join(self.sort)))
-        if self.group:
-            l.append(':group=%s'%(','.join(self.group)))
+        if self.sort is not None:
+            l.append(':sort=%s'%self.sort)
+        if self.group is not None:
+            l.append(':group=%s'%self.group)
         if self.filter:
             l.append(':filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():
@@ -954,7 +1002,12 @@ function help_window(helpurl, width, height) {
 
         # get the list of ids we're batching over
         klass = self.client.db.getclass(self.classname)
-        l = klass.filter(None, filterspec, sort, group)
+        if self.search_text:
+            matches = self.client.db.indexer.search(
+                re.findall(r'\b\w{2,25}\b', self.search_text), klass)
+        else:
+            matches = None
+        l = klass.filter(matches, filterspec, sort, group)
 
         # figure batch args
         if self.form.has_key(':pagesize'):
@@ -973,6 +1026,8 @@ class Batch(ZTUtils.Batch):
     def __init__(self, client, classname, l, size, start, end=0, orphan=0, overlap=0):
         self.client = client
         self.classname = classname
+        self.last_index = self.last_item = None
+        self.current_item = None
         ZTUtils.Batch.__init__(self, l, size, start, end, orphan, overlap)
 
     # overwrite so we can late-instantiate the HTMLItem instance
@@ -983,13 +1038,28 @@ class Batch(ZTUtils.Batch):
         
         if index >= self.length: raise IndexError, index
 
+        # move the last_item along - but only if the fetched index changes
+        # (for some reason, index 0 is fetched twice)
+        if index != self.last_index:
+            self.last_item = self.current_item
+            self.last_index = index
+
         # wrap the return in an HTMLItem
-        return HTMLItem(self.client.db, self.classname,
+        self.current_item = HTMLItem(self.client.db, self.classname,
             self._sequence[index+self.first])
+        return self.current_item
+
+    def propchanged(self, property):
+        ''' Detect if the property marked as being the group property
+            changed in the last iteration fetch
+        '''
+        if (self.last_item is None or
+                self.last_item[property] != self.current_item[property]):
+            return 1
+        return 0
 
     # override these 'cos we don't have access to acquisition
     def previous(self):
-        print self.start
         if self.start == 1:
             return None
         return Batch(self.client, self.classname, self._sequence, self._size,

@@ -1,104 +1,43 @@
+/* main page styles */
 .body {
   font-family: sans-serif, Arial, Helvetica;
+  color: #333333;
 }
 a:hover { text-decoration: underline; }
 a:link { text-decoration: none; }
 a { text-decoration: none; }
 
-p {
-  color: #333333;
+.page-header-left {
+  background-color: #ffffee;
+  padding: 5px;
+}
+
+.page-header-top {
+  background-color: #ffffee;
+  border-bottom: 1px solid #ffffbb;
+  padding: 5px;
 }
 
 td.sidebar {
-  font-family: sans-serif, Arial, Helvetica;
-  background-color: #efefef;
-  border: none;
+  background-color: #ffffee;
+  border-right: 1px solid #ffffbb;
+  border-bottom: 1px solid #ffffbb;
   padding: 5px;
 }
 
-.page-header {
-  font-family: sans-serif, Arial, Helvetica;
-  background-color: #efefef;
-  border: none;
-  padding: 5px;
+td.sidebar p.classblock {
+  border-top: 1px solid #ffffbb;
+  border-bottom: 1px solid #ffffbb;
 }
 
-.strong-header {
-  font-family: sans-serif, Arial, Helvetica;
-  font-weight: bold;
-  background-color: #000000;
-  color: #ffffff;
+td.sidebar p.userblock {
+  background-color: #eeffff;
+  border-top: 1px solid #bbffff;
+  border-bottom: 1px solid #bbffff;
 }
 
 td.content {
   padding: 1px;
-/*
-  border: 1px solid black;
-*/
-}
-
-table.list td {
-  border: 0 2 0 2;
-  border-left: 1px solid #404070;
-  border-right: 1px solid #404070;
-}
-/*
-WAAAAAAH nothing seems to support last-child :(
-table.list td:first-child {
-  border-left: 2px solid #404070;
-}
-table.list td:last-child {
-  border-right: 2px solid #404070;
-}
-*/
-table.list tr:last-child td {
-  border-bottom: 2px solid #404070;
-}
-.list-header {
-  background-color: #404070;
-  color: white;
-  border: none;
-}
-
-.section-bar {
-  background-color: #e0e0e0;
-}
-
-.row-normal {
-  background-color: #ffffff;
-  border: none;
-}
-
-.row-alt {
-  background-color: #efefef;
-  border: none;
-}
-
-.file-header {
-  font-family: sans-serif, Arial, Helvetica;
-  font-weight: bold;
-  background-color: #41BE62;
-  color: #ffffff;
-}   
-
-.history-header {
-  font-family: sans-serif, Arial, Helvetica;
-  font-weight: bold;
-  background-color: #739DEE;
-  color: #ffffff;
-}
-
-.msg-header {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-weight: bold;
-  background-color: #EE71AC;
-  color: #ffffff;
-}
-
-.msg-content {
-  font-family: monospace;
-  background-color: #ffeaff;
-  color: #000000;
 }
 
 p.ok-message {
@@ -114,34 +53,164 @@ p.error-message {
   font-weight: bold;
 }
 
-tr.form td {
-  background-color: #f0f0f0;
-}
-.form-title {
-  font-weight: bold;
-  color: #333333;
+
+/* style for forms */
+table.form {
+  border-spacing: 0px;
+  border-collapse: separate;
+  /* width: 100%; */
 }
 
-.form-label {
+.form th {
   font-weight: bold;
-  color: #333333;
+  color: #333388;
+  text-align: right;
 }
 
-.form-optional {
+.form-header th {
+  font-weight: bold;
+  color: #333388;
+  background-color: #eeeeff;
+  text-align: left;
+}
+
+.form td.optional {
   font-weight: bold;
   font-style: italic;
   color: #333333;
 }
 
-.form-element {
-  color: #000000;
-}
-
-.form-text {
+.form td {
   color: #333333;
 }
 
-.form-mono {
+.form td.html {
+  color: #777777;
+}
+
+/* style for lists */
+table.list {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
+
+table.list th {
+  padding: 0 4 0 4;
+  color: #404070;
+  background-color: #eeeeff;
+/*
+  border-right: 1px solid #404070;
+*/
+  vertical-align: top;
+}
+table.list th a:hover { color: white }
+table.list th a:link { color: white }
+table.list th a { color: white }
+table.list th.group {
+  text-align: center;
+}
+
+table.list td {
+  padding: 0 4 0 4;
+  border: 0 2 0 2;
+  border-right: 1px solid #404070;
+  color: #404070;
+  background-color: white;
+  vertical-align: top;
+}
+
+table.list td.normal {
+}
+
+table.list td.alt {
+  background-color: #efefef;
+}
+
+table.list td:first-child {
+  border-left: 1px solid #404070;
+  border-right: 1px solid #404070;
+}
+/*
+table.list th:first-child {
+  border-left: 1px solid #404070;
+  border-right: 1px solid #404070;
+}
+*/
+
+/* style for message displays */
+table.messages {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
+
+table.messages th.header{
+  padding-top: 10px;
+  border-bottom: 1px solid gray;
+  font-weight: bold;
+  background-color: white;
+  color: #707040;
+}
+
+table.messages th {
+  font-weight: bold;
+  color: black;
+  text-align: left;
+}
+
+table.messages td {
   font-family: monospace;
+  background-color: #efefef;
+  border-top: 1px solid #afafaf;
+  border-bottom: 1px solid #afafaf;
+  color: black;
+}
+
+/* style for file displays */
+table.files {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
+
+table.files th.header{
+  padding-top: 10px;
+  border-bottom: 1px solid gray;
+  font-weight: bold;
+  background-color: white;
+  color: #707040;
+}
+
+table.files th {
+  border-bottom: 1px solid #afafaf;
+  font-weight: bold;
+  text-align: left;
+}
+
+table.files td {
+  font-family: monospace;
+}
+
+
+/* style for file displays */
+table.otherinfo {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
+
+table.otherinfo th.header{
+  padding-top: 10px;
+  border-bottom: 1px solid gray;
+  font-weight: bold;
+  background-color: white;
+  color: #707040;
+}
+
+table.otherinfo th {
+  border-bottom: 1px solid #afafaf;
+  font-weight: bold;
+  text-align: left;
 }
 

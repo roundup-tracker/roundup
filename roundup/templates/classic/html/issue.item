@@ -1,47 +1,44 @@
 <!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data">
-<table border=0 cellspacing=0 cellpadding=2>
-
-<tr class="form">
- <td width=1% nowrap align=right><span class="form-label">Title</span></td>
+<table border=0 cellspacing=0 cellpadding=2 class="form">
+<tr>
+ <th nowrap>Title</th>
  <td colspan=3 class="form-text" tal:content="structure python:issue.title.field(size=60)">title</td>
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right><span class="form-label">Created</span></td>
+ <th nowrap>Created</th>
  <td class="form-text" tal:content="string:${issue/creation} (${issue/creator/username})">creation (creator)</td>
- <td width=1% nowrap align=right><span class="form-label">Last activity</span></td>
+ <th nowrap>Last activity</th>
  <td class="form-text" tal:content="issue/activity">activity</td>
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right><span class="form-label">Priority</span></td>
+ <th nowrap>Priority</th>
  <td class="form-text" tal:content="structure issue/priority/menu">priority</td>
- <td width=1% nowrap align=right><span class="form-label">Status</span></td>
+ <th nowrap>Status</th>
  <td class="form-text" tal:content="structure issue/status/menu">status</td>
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right><span class="form-label">Superseder</span></td>
- <td class="form-text">
+ <th nowrap>Superseder</th>
+ <td>
   <span tal:replace="structure python:issue.superseder.field(showid=1)" />
   <span tal:replace="structure python:db.issue.classhelp('id,title', label='list', width=500)" />
   <span tal:condition="issue/superseder">
    <br>View: <span tal:replace="structure python:issue.superseder.link(showid=1)" />
   </span>
  </td>
- <td width=1% nowrap align=right><span class="form-label">Nosy List</span></td>
- <td class="form-text">
+ <th nowrap>Nosy List</th>
+ <td>
   <span tal:replace="structure issue/nosy/field" />
   <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone', label='list', width=500)" />
  </td>
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right>
-  <span class="form-label">Assigned To</span>
- </td>
+ <th nowrap>Assigned To</th>
  <td class="form-text" tal:content="structure issue/assignedto/menu">
   assignedto menu
  </td>
@@ -50,18 +47,14 @@
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right> 
-  <span class="form-label">Change Note</span>
- </td>
+ <th nowrap>Change Note</th>
  <td colspan=3 class="form-text">
   <textarea name="__note" wrap="hard" rows="5" cols="60"></textarea>
  </td>
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right>
-  <span class="form-label">File</span>
- </td>
+ <th nowrap>File</th>
  <td colspan=3 class="form-text">
   <input type="file" name="__file" size="60">
  </td>
@@ -73,31 +66,25 @@
   submit button will go here
  </td>
 </tr>
-
 </table>
 
-<table width="100%" cellspacing=0 cellpadding=0 border=0 tal:condition="exists:item">
- <tr class="msg-header">
-  <td colspan=2><b>Messages</b></td>
- </tr>
- <tal:block tal:condition="issue/messages" tal:repeat="msg issue/messages">
-  <tr>
-   <td class="msg-header" tal:content="msg/date">date</td>
-   <td class="msg-header" tal:content="msg/author">author</td>
-  </tr>
-  <tr>
-   <td class="msg-content" colspan="2" tal:content="msg/content">content</td>
-  </tr>
- </tal:block>
+<tal:block tal:condition="exists:item">
+ <table class="messages" tal:condition="issue/messages">
+  <tr><th colspan=2 class="header">Messages</th></tr>
+  <tal:block tal:repeat="msg issue/messages/reverse">
+   <tr>
+    <th tal:content="string:Author: ${msg/author}">author</th>
+    <th tal:content="string:Date: ${msg/date}">date</th>
+   </tr>
+   <tr>
+    <td colspan="2"><pre tal:content="msg/content">content</pre></td>
+   </tr>
+  </tal:block>
+ </table>
 
- <tr class="file-header">
-  <td colspan="2"><b>Files</b></td>
- </tr>
- <tal:block tal:condition="issue/files">
-  <tr>
-   <td class="file-header">File name</td>
-   <td class="file-header">Uploaded</td>
-  </tr>
+ <table class="files" tal:condition="issue/files">
+  <tr><th colspan="2" class="header">Files</th></tr>
+  <tr><th>File name</th><th>Uploaded</th></tr>
   <tr tal:repeat="file issue/files">
    <td>
     <a tal:attributes="href string:file${file/id}/${file/name}"
@@ -108,14 +95,12 @@
     <span tal:content="file/creation">creation date</span>
    </td>
   </tr>
- </tal:block>
+ </table>
 
- <tr class="history-header">
-  <td colspan="2"><b>History</b></td>
- </tr>
- <tr>
-  <td colspan="2" tal:content="structure issue/history">history</td>
- </tr>
-</table>
+ <table class="history">
+  <tr><th colspan="2" class="header">History</th></tr>
+  <tr><td colspan="2" tal:content="structure issue/history">history</td></tr>
+ </table>
+</tal:block>
 
 </form>

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.65 2002-08-30 08:35:45 richard Exp $
+#$Id: back_anydbm.py,v 1.66 2002-09-01 04:32:30 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1471,8 +1471,8 @@ class Class(hyperdb.Class):
             sort spec.
 
             "filterspec" is {propname: value(s)}
-            "sort" is ['+propname', '-propname', 'propname', ...]
-            "group is ['+propname', '-propname', 'propname', ...]
+            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+                               and prop is a prop name or None
             "search_matches" is {nodeid: marker}
         '''
         cn = self.classname
@@ -1591,68 +1591,86 @@ class Class(hyperdb.Class):
                     k.append(v)
             l = k
 
-        # optimise sort
-        m = []
-        for entry in sort:
-            if entry[0] != '-':
-                m.append(('+', entry))
-            else:
-                m.append((entry[0], entry[1:]))
-        sort = m
-
-        # optimise group
-        m = []
-        for entry in group:
-            if entry[0] != '-':
-                m.append(('+', entry))
-            else:
-                m.append((entry[0], entry[1:]))
-        group = m
         # now, sort the result
         def sortfun(a, b, sort=sort, group=group, properties=self.getprops(),
                 db = self.db, cl=self):
             a_id, an = a
             b_id, bn = b
             # sort by group and then sort
-            for list in group, sort:
-                for dir, prop in list:
-                    # sorting is class-specific
-                    propclass = properties[prop]
+            for dir, prop in group, sort:
+                if dir is None: continue
 
-                    # handle the properties that might be "faked"
-                    # also, handle possible missing properties
-                    try:
-                        if not an.has_key(prop):
-                            an[prop] = cl.get(a_id, prop)
-                        av = an[prop]
-                    except KeyError:
-                        # the node doesn't have a value for this property
-                        if isinstance(propclass, Multilink): av = []
-                        else: av = ''
-                    try:
-                        if not bn.has_key(prop):
-                            bn[prop] = cl.get(b_id, prop)
-                        bv = bn[prop]
-                    except KeyError:
-                        # the node doesn't have a value for this property
-                        if isinstance(propclass, Multilink): bv = []
-                        else: bv = ''
+                # sorting is class-specific
+                propclass = properties[prop]
 
-                    # String and Date values are sorted in the natural way
-                    if isinstance(propclass, String):
-                        # clean up the strings
-                        if av and av[0] in string.uppercase:
-                            av = an[prop] = av.lower()
-                        if bv and bv[0] in string.uppercase:
-                            bv = bn[prop] = bv.lower()
-                    if (isinstance(propclass, String) or
-                            isinstance(propclass, Date)):
-                        # it might be a string that's really an integer
-                        try:
-                            av = int(av)
-                            bv = int(bv)
-                        except:
-                            pass
+                # handle the properties that might be "faked"
+                # also, handle possible missing properties
+                try:
+                    if not an.has_key(prop):
+                        an[prop] = cl.get(a_id, prop)
+                    av = an[prop]
+                except KeyError:
+                    # the node doesn't have a value for this property
+                    if isinstance(propclass, Multilink): av = []
+                    else: av = ''
+                try:
+                    if not bn.has_key(prop):
+                        bn[prop] = cl.get(b_id, prop)
+                    bv = bn[prop]
+                except KeyError:
+                    # the node doesn't have a value for this property
+                    if isinstance(propclass, Multilink): bv = []
+                    else: bv = ''
+
+                # String and Date values are sorted in the natural way
+                if isinstance(propclass, String):
+                    # clean up the strings
+                    if av and av[0] in string.uppercase:
+                        av = an[prop] = av.lower()
+                    if bv and bv[0] in string.uppercase:
+                        bv = bn[prop] = bv.lower()
+                if (isinstance(propclass, String) or
+                        isinstance(propclass, Date)):
+                    # it might be a string that's really an integer
+                    try:
+                        av = int(av)
+                        bv = int(bv)
+                    except:
+                        pass
+                    if dir == '+':
+                        r = cmp(av, bv)
+                        if r != 0: return r
+                    elif dir == '-':
+                        r = cmp(bv, av)
+                        if r != 0: return r
+
+                # Link properties are sorted according to the value of
+                # the "order" property on the linked nodes if it is
+                # present; or otherwise on the key string of the linked
+                # nodes; or finally on  the node ids.
+                elif isinstance(propclass, Link):
+                    link = db.classes[propclass.classname]
+                    if av is None and bv is not None: return -1
+                    if av is not None and bv is None: return 1
+                    if av is None and bv is None: continue
+                    if link.getprops().has_key('order'):
+                        if dir == '+':
+                            r = cmp(link.get(av, 'order'),
+                                link.get(bv, 'order'))
+                            if r != 0: return r
+                        elif dir == '-':
+                            r = cmp(link.get(bv, 'order'),
+                                link.get(av, 'order'))
+                            if r != 0: return r
+                    elif link.getkey():
+                        key = link.getkey()
+                        if dir == '+':
+                            r = cmp(link.get(av, key), link.get(bv, key))
+                            if r != 0: return r
+                        elif dir == '-':
+                            r = cmp(link.get(bv, key), link.get(av, key))
+                            if r != 0: return r
+                    else:
                         if dir == '+':
                             r = cmp(av, bv)
                             if r != 0: return r
@@ -1660,57 +1678,22 @@ class Class(hyperdb.Class):
                             r = cmp(bv, av)
                             if r != 0: return r
 
-                    # Link properties are sorted according to the value of
-                    # the "order" property on the linked nodes if it is
-                    # present; or otherwise on the key string of the linked
-                    # nodes; or finally on  the node ids.
-                    elif isinstance(propclass, Link):
-                        link = db.classes[propclass.classname]
-                        if av is None and bv is not None: return -1
-                        if av is not None and bv is None: return 1
-                        if av is None and bv is None: continue
-                        if link.getprops().has_key('order'):
-                            if dir == '+':
-                                r = cmp(link.get(av, 'order'),
-                                    link.get(bv, 'order'))
-                                if r != 0: return r
-                            elif dir == '-':
-                                r = cmp(link.get(bv, 'order'),
-                                    link.get(av, 'order'))
-                                if r != 0: return r
-                        elif link.getkey():
-                            key = link.getkey()
-                            if dir == '+':
-                                r = cmp(link.get(av, key), link.get(bv, key))
-                                if r != 0: return r
-                            elif dir == '-':
-                                r = cmp(link.get(bv, key), link.get(av, key))
-                                if r != 0: return r
-                        else:
-                            if dir == '+':
-                                r = cmp(av, bv)
-                                if r != 0: return r
-                            elif dir == '-':
-                                r = cmp(bv, av)
-                                if r != 0: return r
-
-                    # Multilink properties are sorted according to how many
-                    # links are present.
-                    elif isinstance(propclass, Multilink):
-                        if dir == '+':
-                            r = cmp(len(av), len(bv))
-                            if r != 0: return r
-                        elif dir == '-':
-                            r = cmp(len(bv), len(av))
-                            if r != 0: return r
-                    elif isinstance(propclass, Number) or isinstance(propclass, Boolean):
-                        if dir == '+':
-                            r = cmp(av, bv)
-                        elif dir == '-':
-                            r = cmp(bv, av)
-                        
-                # end for dir, prop in list:
-            # end for list in sort, group:
+                # Multilink properties are sorted according to how many
+                # links are present.
+                elif isinstance(propclass, Multilink):
+                    if dir == '+':
+                        r = cmp(len(av), len(bv))
+                        if r != 0: return r
+                    elif dir == '-':
+                        r = cmp(len(bv), len(av))
+                        if r != 0: return r
+                elif isinstance(propclass, Number) or isinstance(propclass, Boolean):
+                    if dir == '+':
+                        r = cmp(av, bv)
+                    elif dir == '-':
+                        r = cmp(bv, av)
+                    
+            # end for dir, prop in sort, group:
             # if all else fails, compare the ids
             return cmp(a[0], b[0])
 
@@ -1909,13 +1892,18 @@ class IssueClass(Class, roundupdb.IssueClass):
         if not properties.has_key('files'):
             properties['files'] = hyperdb.Multilink("file")
         if not properties.has_key('nosy'):
-            properties['nosy'] = hyperdb.Multilink("user")
+            # note: journalling is turned off as it really just wastes
+            # space. this behaviour may be overridden in an instance
+            properties['nosy'] = hyperdb.Multilink("user", do_journal="no")
         if not properties.has_key('superseder'):
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.65  2002/08/30 08:35:45  richard
+#minor edits
+#
 #Revision 1.64  2002/08/22 07:57:11  richard
 #Consistent quoting
 #

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.1 2002-08-30 08:28:44 richard Exp $
+# $Id: client.py,v 1.2 2002-09-01 04:32:30 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -296,6 +296,7 @@ class Client:
         'login':    'login_action',
         'logout':   'logout_action',
         'register': 'register_action',
+        'search':   'search_action',
     }
     def handle_action(self):
         ''' Determine whether there should be an _action called.
@@ -308,6 +309,7 @@ class Client:
              "login"     -> self.login_action
              "logout"    -> self.logout_action
              "register"  -> self.register_action
+             "search"    -> self.search_action
 
         '''
         if not self.form.has_key(':action'):
@@ -512,23 +514,29 @@ class Client:
              "files" property. Attach the file to the message created from
              the __note if it's supplied.
         '''
-        cn = self.classname
-        cl = self.db.classes[cn]
+        cl = self.db.classes[self.classname]
 
         # check permission
         userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid, cn):
+        if not self.db.security.hasPermission('Edit', userid, self.classname):
             self.error_message.append(
-                _('You do not have permission to edit %s' %cn))
+                _('You do not have permission to edit %(classname)s' %
+                self.__dict__))
+            return
 
         # perform the edit
-        props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+        try:
+            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
 
-        # make changes to the node
-        props = self._changenode(props)
+            # make changes to the node
+            props = self._changenode(props)
 
-        # handle linked nodes 
-        self._post_editnode(self.nodeid)
+            # handle linked nodes 
+            self._post_editnode(self.nodeid)
+
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
 
         # commit now that all the tricky stuff is done
         self.db.commit()
@@ -545,8 +553,8 @@ class Client:
             message = _('nothing changed')
 
         # redirect to the item's edit page
-        raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, cn, self.nodeid,  
-            urllib.quote(message))
+        raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, self.classname,
+            self.nodeid,  urllib.quote(message))
 
     def newitem_action(self):
         ''' Add a new item to the database.
@@ -554,11 +562,10 @@ class Client:
             This follows the same form as the edititem_action
         '''
         # check permission
-        cn = self.classname
         userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid, cn):
+        if not self.db.security.hasPermission('Edit', userid, self.classname):
             self.error_message.append(
-                _('You do not have permission to create %s' %cn))
+                _('You do not have permission to create %s' %self.classname))
 
         # XXX
 #        cl = self.db.classes[cn]
@@ -583,17 +590,21 @@ class Client:
             self.nodeid = nid
 
             # and some nice feedback for the user
-            message = _('%(classname)s created ok')%{'classname': cn}
+            message = _('%(classname)s created ok')%self.__dict__
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
         except:
             # oops
             self.db.rollback()
             s = StringIO.StringIO()
             traceback.print_exc(None, s)
             self.error_message.append('<pre>%s</pre>'%cgi.escape(s.getvalue()))
+            return
 
         # redirect to the new item's page
-        raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, cn, nid,  
-            urllib.quote(message))
+        raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, self.classname,
+            nid,  urllib.quote(message))
 
     def genericedit_action(self):
         ''' Performs an edit of all of a class' items in one go.
@@ -603,12 +614,10 @@ class Client:
             non-existent ID) and removed lines are retired.
         '''
         userid = self.db.user.lookup(self.user)
-        if not self.db.security.hasPermission('Edit', userid):
+        if not self.db.security.hasPermission('Edit', userid, self.classname):
             raise Unauthorised, _("You do not have permission to access"\
                         " %(action)s.")%{'action': self.classname}
-        w = self.write
-        cn = self.classname
-        cl = self.db.classes[cn]
+        cl = self.db.classes[self.classname]
         idlessprops = cl.getprops(protected=0).keys()
         props = ['id'] + idlessprops
 
@@ -638,7 +647,7 @@ class Client:
 
             # confirm correct weight
             if len(idlessprops) != len(values):
-                w(_('Not enough values on line %(line)s'%{'line':line}))
+                message=(_('Not enough values on line %(line)s'%{'line':line}))
                 return
 
             # extract the new values
@@ -668,7 +677,7 @@ class Client:
         message = _('items edited OK')
 
         # redirect to the class' edit page
-        raise Redirect, '%s/%s?:ok_message=%s'%(self.base, cn, 
+        raise Redirect, '%s/%s?:ok_message=%s'%(self.base, self.classname, 
             urllib.quote(message))
 
     def _changenode(self, props):
@@ -797,6 +806,19 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
+    def search_action(self):
+        ''' Mangle some of the form variables.
+
+            Set the form ":filter" variable based on the values of the
+            filter variables - if they're set to anything other than
+            "dontcare" then add them to :filter.
+        '''
+        # add a faked :filter form variable for each filtering prop
+        props = self.db.classes[self.classname].getprops()
+        for key in self.form.keys():
+            if not props.has_key(key): continue
+            if not self.form[key].value: continue
+            self.form.value.append(cgi.MiniFieldStorage(':filter', key))
 
     def remove_action(self,  dre=re.compile(r'([^\d]+)(\d+)')):
         # XXX handle this !
@@ -838,7 +860,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         if isinstance(proptype, hyperdb.String):
             value = form[key].value.strip()
         elif isinstance(proptype, hyperdb.Password):
-            value = password.Password(form[key].value.strip())
+            value = form[key].value.strip()
+            if not value:
+                # ignore empty password values
+                continue
+            value = password.Password(value)
         elif isinstance(proptype, hyperdb.Date):
             value = form[key].value.strip()
             if value:

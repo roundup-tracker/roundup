@@ -14,7 +14,6 @@ pending hyperdb: range searching of values (dates in particular)
           [value, value, ...] implies "in"
 pending hyperdb: make creator, creation and activity available pre-commit
 pending hyperdb: migrate "id" property to be Number type
-pending hyperdb: allow classes to define their ordering (properties, asc/desc)
 pending instance: including much simpler upgrade path and the use of
                   non-Python configuration files (ConfigParser)
 pending instance: split instance.open() into open() and login()
@@ -34,25 +33,27 @@ pending project: have the demo allow anonymous login
 pending security: at least an LDAP user database implementation
 pending security: authenticate over a secure connection
 pending security: use digital signatures in mailgw
+pending security: submission protection
 pending web: I18N
 pending web: Better message summary display (feature request #520244)
 pending web: Navigating around the issues (feature request #559149)
-pending web: Re-enable link backrefs from messages (feature request #568714)
 pending web: Quick help links next to the property labels giving a
              description of the property. Combine with help for the actual
              form element too, eg. how to use the nosy list edit box.
 pending web: clicking on a group header should filter for that type of entry
 pending web: re-enable auth by basic http auth
 
-New templating TODO
+New templating TODO:
+. generic class editing
 . classhelp
 . query saving
-. search page is a shambles
-. view customisation is a shambles
-. style is a shambles
+. search "refinement" (pre-fill the search page with the current search
+  parameters)
+. security on actions (only allows/enforces generic Edit perm on the class :()
 
 ongoing: any bugs
 
+done web: Re-enable link backrefs from messages (feature request #568714) (RJ)
 done web: have the page layout (header/footer) be templatable (RJ)
 done web: fixing the templating so it works (RJ)
 done web: re-work cgi interface to abstract out the explicit "issue"

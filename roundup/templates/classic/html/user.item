@@ -7,88 +7,84 @@
 You are not allowed to view this page.
 </span>
 
-<form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="editok">
+<tal:block tal:condition="editok">
+<form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
 
-<table border=0 cellspacing=0 cellpadding=2>
- <tr class="strong-header">
-  <td colspan=2>Your Details</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">Name</span></td>
-  <td class="form-text" tal:content="structure user/realname/field">realname</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">Login Name</span></td>
-  <td class="form-text" tal:content="structure user/username/field">username</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">Login Password</span></td>
-  <td class="form-text" tal:content="structure user/password/field">password</td>
- </tr>
- <tr tal:condition="python:request.user.hasPermission('Web Roles')" class="form">
-  <td width=1% nowrap align=right><span class="form-label">Roles</span></td>
-  <td class="form-text" tal:content="structure user/roles/field">roles</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">Phone</span></td>
-  <td class="form-text" tal:content="structure user/phone/field">phone</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">Organisation</span></td>
-  <td class="form-text" tal:content="structure user/organisation/field">organisation</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">E-mail address</span></td>
-  <td class="form-text" tal:content="structure user/address/field">address</td>
- </tr>
- <tr class="form">
-  <td width=1% nowrap align=right><span class="form-label">Alternate
-   E-mail addresses</span><br>
-  <span class="form-help">One address per line</span></td>
-  <td class="form-text" tal:content="structure user/alternate_addresses/multiline">alternate_addresses</td>
- </tr>
-
- <tr class="form">
-  <td>&nbsp;</td>
-  <td colspan=3 class="form-text" tal:content="structure user/submit">
-   submit button will go here
-  </td>
- </tr>
-
- <tr class="strong-header"><td colspan=2><b>Queries</b></td></tr>
- <tr class="form" tal:repeat="query user/queries">
-  <td colspan=2 tal:content="query">query</td>
- </tr>
-
- <tr class="strong-header"><td colspan=2><b>History</b></td></tr>
+<table class="form">
  <tr>
-  <td colspan="2" tal:content="structure user/history">history</td>
+  <th>Name</th>
+  <td tal:content="structure user/realname/field">realname</td>
+ </tr>
+ <tr>
+  <th>Login Name</th>
+  <td tal:content="structure user/username/field">username</td>
+ </tr>
+ <tr>
+  <th>Login Password</th>
+  <td tal:content="structure user/password/field">password</td>
+ </tr>
+ <tr tal:condition="python:request.user.hasPermission('Web Roles')">
+  <th>Roles</th>
+  <td tal:content="structure user/roles/field">roles</td>
+ </tr>
+ <tr>
+  <th>Phone</th>
+  <td tal:content="structure user/phone/field">phone</td>
+ </tr>
+ <tr>
+  <th>Organisation</th>
+  <td tal:content="structure user/organisation/field">organisation</td>
+ </tr>
+ <tr>
+  <th>E-mail address</th>
+  <td tal:content="structure user/address/field">address</td>
+ </tr>
+ <tr>
+  <th>Alternate E-mail addresses<br>One address per line</th>
+  <td tal:content="structure user/alternate_addresses/multiline">alternate_addresses</td>
+ </tr>
+
+ <tr>
+  <td>&nbsp;</td>
+  <td colspan=3 tal:content="structure user/submit">submit button here</td>
+ </tr>
+</table>
+</form>
+
+<table class="otherinfo" tal:condition="user/queries">
+ <tr><th class="header">Queries</th></tr>
+ <tr tal:repeat="query user/queries">
+  <td tal:content="query">query</td>
  </tr>
 </table>
 
-</form>
+<table class="otherinfo">
+ <tr><th class="header">History</th></tr>
+ <tr>
+  <td tal:content="structure user/history">history</td>
+ </tr>
+</table>
+</tal:block>
 
-<table border=0 cellspacing=0 cellpadding=2
-       tal:condition="python:viewok and not editok">
- <tr class="strong-header">
-  <td colspan=2 tal:content="user/realname">realname</td>
+<table class="form" tal:condition="python:viewok and not editok">
+ <tr>
+  <th colspan=2 class="header" tal:content="user/realname">realname</th>
  </tr>
  <tr>
-  <td width=1% nowrap align=right><span class="form-label">Login Name</span></td>
-  <td class="form-text" tal:content="user/username">username</td>
+  <th>Login Name</th>
+  <td tal:content="user/username">username</td>
  </tr>
  <tr>
-  <td width=1% nowrap align=right><span class="form-label">Phone</span></td>
-  <td class="form-text" tal:content="user/phone">phone</td>
+  <th>Phone</th>
+  <td tal:content="user/phone">phone</td>
  </tr>
  <tr>
-  <td width=1% nowrap align=right><span class="form-label">Organisation</span></td>
-  <td class="form-text" tal:content="user/organisation">organisation</td>
+  <th>Organisation</th>
+  <td tal:content="user/organisation">organisation</td>
  </tr>
  <tr>
-  <td width=1% nowrap align=right><span class="form-label">E-mail address</span></td>
-  <td class="form-text" tal:content="user/address/email">address</td>
+  <th>E-mail address</th>
+  <td tal:content="user/address/email">address</td>
  </tr>
 </table>
 

@@ -5,7 +5,8 @@
  whatever. It's a good idea to have the issues on the front page though
 -->
 <span tal:replace="structure python:db.issue.renderWith('index',
-    sort=['-activity'], group=['priority'], filter=['status'],
-    columns={'id':1,'activity':1,'title':1,'creator':1,'assignedto':1},
+    sort=('-', 'activity'), group=('+', 'priority'), filter=['status'],
+    columns={'id':1,'activity':1,'title':1,'creator':1,'assignedto':1,
+             'priority':1},
     filterspec={'status':['-1','1','2','3','4','5','6','7']})" />
 

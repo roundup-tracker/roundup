@@ -13,41 +13,46 @@
 <table border=0 cellspacing=0 cellpadding=0>
 
 <tr>
- <td colspan="2" class="page-header">
+ <td class="page-header-left">&nbsp;</td>
+ <td class="page-header-top">
   <h2 tal:content="title">name</h2>
  </td>
 </tr>
 
 <tr>
  <td rowspan="2" valign="top" nowrap class="sidebar">
-  <div class="classblock"
+  <p class="classblock"
        tal:condition="python:request.user.hasPermission('Edit', 'issue')">
-   <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,assignedto&status=-1,1,2,3,4,5,6,7&assignedto=-1">Unassigned Issues</a><br>
-   <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto&status=-1,1,2,3,4,5,6,7">All Issues</a><br>
+   <b>Issues</b><br>
+   <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,priority&status=-1,1,2,3,4,5,6,7&assignedto=-1">Unassigned Issues</a><br>
+   <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,priority&status=-1,1,2,3,4,5,6,7">All Issues</a><br>
    <a href="issue?:template=search">Search Issues</a><br>
-   <a href="issue?:template=item">New Issue</a><br>
-  </div>
-  <div class="classblock"
+   <a href="issue?:template=item">New Issue</a>
+  </p>
+
+  <p class="classblock"
        tal:condition="python:request.user.hasPermission('Edit', None)">
+   <b>Admin</b><br>
    <a href="home?:template=classlist">Class List</a><br>
    <a href="user">User List</a><br>
-   <a href="user?:template=item">Add User</a><br>
-  </div>
-  <hr>
-  <b tal:content="request/user/username">username</b><br>
-  <div tal:condition="python:request.user.username=='anonymous'">
-   <form method="POST" action=''>
+   <a href="user?:template=item">Add User</a>
+  </p>
+
+  <p class="userblock">
+   <b>Logged in as</b><br><b tal:content="request/user/username">username</b><br>
+   <form method="POST" action=''
+         tal:condition="python:request.user.username=='anonymous'">
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
     <input type="submit" name=":action" value="login">
     <span tal:replace="structure request/indexargs_form" />
    </form>
-  </div>
-  <div tal:condition="python:request.user.username!='anonymous'">
-   <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,assignedto&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
-   <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
-   <a href="?:action=logout">Logout</a>
-  </div>
+   <tal:block tal:condition="python:request.user.username != 'anonymous'">
+    <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,priority&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
+    <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
+    <a href="?:action=logout">Logout</a>
+   </tal:block>
+  </p>
  </td>
  <td>
   <p tal:condition="options/error_message | nothing" class="error-message"

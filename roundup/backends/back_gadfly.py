@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.6 2002-08-30 08:35:16 richard Exp $
+# $Id: back_gadfly.py,v 1.7 2002-09-01 04:32:30 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1469,8 +1469,8 @@ class Class(hyperdb.Class):
             sort spec
 
             "filterspec" is {propname: value(s)}
-            "sort" is ['+propname', '-propname', 'propname', ...]
-            "group is ['+propname', '-propname', 'propname', ...]
+            "sort" and "group" are (dir, prop) where dir is '+', '-' or None
+                               and prop is a prop name or None
             "search_matches" is {nodeid: marker}
         '''
         cn = self.classname
@@ -1511,26 +1511,24 @@ class Class(hyperdb.Class):
         # figure the order by clause
         orderby = []
         ordercols = []
-        if sort:
-            for entry in sort:
-                if entry[0] != '-':
-                    orderby.append('_'+entry)
-                    ordercols.append(entry)
-                else:
-                    orderby.append('_'+entry[1:]+' desc')
-                    ordercols.append(entry)
+        if sort is not None:
+            if sort[0] != '-':
+                orderby.append('_'+sort[1])
+                ordercols.append(sort[1])
+            else:
+                orderby.append('_'+sort[1]+' desc')
+                ordercols.append(sort[1])
 
         # figure the group by clause
         groupby = []
         groupcols = []
-        if group:
-            for entry in group:
-                if entry[0] != '-':
-                    groupby.append('_'+entry)
-                    groupcols.append(entry)
-                else:
-                    groupby.append('_'+entry[1:]+' desc')
-                    groupcols.append(entry[1:])
+        if group is not None:
+            if group[0] != '-':
+                groupby.append('_'+group[1])
+                groupcols.append(group[1])
+            else:
+                groupby.append('_'+group[1]+' desc')
+                groupcols.append(group[1])
 
         # construct the SQL
         frum = ','.join(frum)
@@ -1743,13 +1741,18 @@ class IssueClass(Class, roundupdb.IssueClass):
         if not properties.has_key('files'):
             properties['files'] = hyperdb.Multilink("file")
         if not properties.has_key('nosy'):
-            properties['nosy'] = hyperdb.Multilink("user")
+            # note: journalling is turned off as it really just wastes
+            # space. this behaviour may be overridden in an instance
+            properties['nosy'] = hyperdb.Multilink("user", do_journal="no")
         if not properties.has_key('superseder'):
             properties['superseder'] = hyperdb.Multilink(classname)
         Class.__init__(self, db, classname, **properties)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2002/08/30 08:35:16  richard
+# very basic filter support
+#
 # Revision 1.5  2002/08/23 05:33:32  richard
 # implemented multilink changes (and a unit test)
 #
