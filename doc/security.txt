@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.7 $
+:Version: $Revision: 1.8 $
 
 Current situation
 =================
@@ -108,15 +108,6 @@ are asked if the current user has permission. Since code must call the
 check function to raise a denial, there is no possibility to have automatic
 default of deny in this situation.
 
-In practice, this is implemented as:
-
-1. there's a mapping of user -> role                (in hyperdb)
-2. there's a mapping of role -> permission          (in code)
-3. there's a set of permissions defined, possibly set against a specific class
-   (in code)
-4. there's a function that's available to all roundup code that can ask
-   whether a particular user has a particular permission.
-
 Pros:
 
    - quite obvious what is going on
@@ -139,6 +130,11 @@ is quite well developed in many projects. Roundup will take this path, and
 allow the multiple assignment of Roles to Users, and multiple Permissions to
 Roles. These definitions will be stored in the hyperdb. They don't need to be
 pushed to the actual database though.
+
+There will be two levels of Permission. The Class level permissions define
+logical permissions associated with all nodes of a particular class (or all
+classes). The Node level permissions define logical permissions associated
+with specific nodes by way of their user-linked properties.
 
 A permission module defines::
 
@@ -178,9 +174,25 @@ A permission module defines::
             - permissions (PermissionClass Multilink)
         '''
 
-    def hasPermission(db, userid, permission, classname):
+    def hasClassPermission(db, classname, permission, userid):
         ''' Look through all the Roles, and hence Permissions, and see if
             "permission" is there for the specified classname.
+
+        '''
+
+    def hasNodePermission(db, classname, nodeid, userid, properties):
+        ''' Check the named properties of the given node to see if the userid
+            appears in them. If it does, then the user is granted this
+            permission check.
+
+            'propspec' consists of a list of property names. The property
+            names must be the name of a property of classname, or a
+            KeyError is raised.  That property must be a Link or Multilink
+            property, or a TypeError is raised.
+
+            If the property is a Link, the userid must match the property
+            value. If the property is a Multilink, the userid must appear
+            in the Multilink list.
         '''
 
 The instance dbinit module then has in ``open()``::
@@ -229,7 +241,26 @@ in ``init()``::
     user.create(username="anonymous", roles=[r])
 
 Then in the code that matters, calls to ``hasPermission`` are made to
-determine if the user has permission to perform some action.
+determine if the user has permission to perform some action::
+
+    if security.hasClassPermission('issue', 'Edit', self.user):
+        # all ok
+
+    if security.hasNodePermission('issue', nodeid, self.user, ['assignedto']):
+        # all ok
+
+The htmltemplate will implement a new tag, <permission> which has the form::
+
+  <permission require=name,name,name node=assignedto>
+   HTML to display if the user has the permission.
+  <else>
+   HTML to display if the user does not have the permission.
+  </permission>
+
+where the require attribute gives a comma-separated list of permission names
+which are required, and the node attribute gives a comma-separated list of
+node properties whose value must match the current user's id. Either of these
+tests must pass or the permission check will fail.
 
 
 Authentication of Users
