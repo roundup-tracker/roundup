@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.120 2003-06-24 03:30:30 richard Exp $
+# $Id: client.py,v 1.121 2003-06-24 03:51:15 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1506,16 +1506,8 @@ You should then receive another email with the new password.
                 The form value is a comma-separated list of
                 designators.  The item corresponding to each
                 designator is linked to the property given by simple
-                form variable.
-
-XXX              Used to add a link to new items created during edit.
-XXX              These are collected up and returned in all_links. This will
-XXX              result in an additional linking operation (either Link set or
-XXX              Multilink append) after the edit/create is done using
-XXX              all_props in _editnodes. The <propname> on the current item
-XXX              will be set/appended the id of the newly created item of
-XXX              class <designator> (where <designator> must be
-XXX              <classname>-<N>).
+                form variable.  These are collected up and returned in
+                all_links.
 
             None of the above (ie. just a simple form value)
                 The value of the form variable is converted
@@ -1605,8 +1597,8 @@ XXX              <classname>-<N>).
         default_nodeid = self.nodeid
 
         # we'll store info about the individual class/item edit in these
-        all_required = {}       # one entry per class/item
-        all_props = {}          # one entry per class/item
+        all_required = {}       # required props per class/item
+        all_props = {}          # props present per class/item
         all_propdef = {}        # note - only one entry per class
         all_links = []          # as many as are required
 
@@ -1694,11 +1686,6 @@ XXX              <classname>-<N>).
             if d['required']:
                 all_required[this] = extractFormList(form[key])
                 continue
-
-            # get the required values list
-            if not all_required.has_key(this):
-                all_required[this] = []
-            required = all_required[this]
 
             # see if we're performing a special multilink action
             mlaction = 'set'
@@ -1919,10 +1906,6 @@ XXX              <classname>-<N>).
 
                 props[propname] = value
 
-            # register this as received if required?
-            if propname in required and value is not None:
-                required.remove(propname)
-
         # check to see if we need to specially link a file to the note
         if have_note and have_file:
             all_links.append(('msg', '-1', 'files', [('file', '-1')]))
@@ -1930,6 +1913,13 @@ XXX              <classname>-<N>).
         # see if all the required properties have been supplied
         s = []
         for thing, required in all_required.items():
+            # register the values we got
+            got = all_props.get(thing, {})
+            for entry in required:
+                if got.get(entry, ''):
+                    required.remove(entry)
+
+            # any required values not present?
             if not required:
                 continue
             if len(required) > 1:
