@@ -10,6 +10,7 @@ are given with the most recent entry first.
 - fix :required ordering problem (sf bug 740214)
 - audit some user properties for valid values (roles, address) (sf bugs
   742968 and 739653)
+- fix HTML file detection (hence history xref linking) (sf bug 741478)
 
 
 2003-06-10 0.6.0b3

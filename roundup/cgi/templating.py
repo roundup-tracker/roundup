@@ -25,6 +25,46 @@ from roundup.cgi import ZTUtils
 class NoTemplate(Exception):
     pass
 
+def find_template(dir, name, extension):
+    ''' Find a template in the nominated dir
+    '''
+    # find the source
+    if extension:
+        filename = '%s.%s'%(name, extension)
+    else:
+        filename = name
+
+    # try old-style
+    src = os.path.join(dir, filename)
+    if os.path.exists(src):
+        return (src, filename)
+
+    # try with a .html extension (new-style)
+    filename = filename + '.html'
+    src = os.path.join(dir, filename)
+    if os.path.exists(src):
+        return (src, filename)
+
+    # no extension == no generic template is possible
+    if not extension:
+        raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
+
+    # try for a _generic template
+    generic = '_generic.%s'%extension
+    src = os.path.join(dir, generic)
+    if os.path.exists(src):
+        return (src, generic)
+
+    # finally, try _generic.html
+    generic = filename + '.html'
+    src = os.path.join(dir, generic)
+    if os.path.exists(src):
+        return (src, generic)
+
+    raise NoTemplate, 'No template file exists for templating "%s" '\
+        'with template "%s" (neither "%s" nor "%s")'%(name, extension,
+        filename, generic)
+
 class Templates:
     templates = {}
 
@@ -59,33 +99,10 @@ class Templates:
             # split name
             name, extension = name.split('.')
 
-        # find the source, figure the time it was last modified
-        if extension:
-            filename = '%s.%s'%(name, extension)
-        else:
-            filename = name
+        # find the source
+        src, filename = find_template(self.dir, name, extension)
 
-        src = os.path.join(self.dir, filename)
-        if not os.path.exists(src):
-            filename = filename + '.html'
-            src = os.path.join(self.dir, filename)
-            if not os.path.exists(src):
-                if not extension:
-                    raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
-
-                # try for a generic template
-                generic = '_generic.%s'%extension
-                src = os.path.join(self.dir, generic)
-                if not os.path.exists(src):
-                    generic = '_generic.%s.html'%extension
-                    src = os.path.join(self.dir, generic)
-                    if not os.path.exists(src):
-                        raise NoTemplate, 'No template file exists for '\
-                            'templating "%s" with template "%s" (neither '\
-                            '"%s" nor "%s")'%(name, extension, filename,
-                            generic)
-                filename = generic
-
+        # has it changed?
         try:
             stime = os.stat(src)[os.path.stat.ST_MTIME]
         except os.error, error:
@@ -564,9 +581,15 @@ class HTMLItem(HTMLPermissions):
                     if (self._props.has_key(prop_n) and
                             isinstance(self._props[prop_n], hyperdb.Link)):
                         classname = self._props[prop_n].classname
-                        if os.path.exists(os.path.join(self._db.config.TEMPLATES, classname + '.item')):
-                            current[prop_n] = '<a href="%s%s">%s</a>'%(classname,
-                                self._klass.get(self._nodeid, prop_n, None), current[prop_n])
+                        try:
+                            find_template(self._db.config.TEMPLATES,
+                                classname, 'item')
+                        except NoTemplate:
+                            pass
+                        else:
+                            id = self._klass.get(self._nodeid, prop_n, None)
+                            current[prop_n] = '<a href="%s%s">%s</a>'%(
+                                classname, id, current[prop_n])
  
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
