@@ -17,7 +17,7 @@ pending  journalling: fix the journal bloat
 pending  alternative user auth: at least an LDAP implementation
 pending  security overhaul: see doc/security.txt
 pending  fix double-submit by having new-item-submit redirect at end
-pending  investigate splitting instance.open() into open() and login()
+pending  split instance.open() into open() and login()
 pending  range searching of values (dates in particular)
          - filter specifies {property: (comparison function, value)}
            comparison functions: lt, le, eq, ge, gt
@@ -37,6 +37,7 @@ pending  Allow multiple email addresses at one mailgw, with different default
          the mailgw as invoked in the mail delivery "aliases" file) eg:
            roundup: "|/roundup/bin/roundup-mailgw /roundup/instances/dev"
            vmbugs: "|/roundup/bin/roundup-mailgw /roundup/instances/dev component=voicemail"
+active   Have the full-text search also search certain String properties (RJ)
 
 ongoing  any bugs
 
