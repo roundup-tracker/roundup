@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.11 2002-09-23 06:48:35 richard Exp $
+# $Id: rdbms_common.py,v 1.12 2002-09-23 07:15:32 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -577,7 +577,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if self.cache.has_key(key):
             # push us back to the top of the LRU
             self.cache_lru.remove(key)
-            self.cache_lry.insert(0, key)
+            self.cache_lru.insert(0, key)
             # return the cached information
             return self.cache[key]
 
@@ -616,7 +616,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache[key] = node
         # update the LRU
         self.cache_lru.insert(0, key)
-        del self.cache[self.cache_lru.pop()]
+        if len(self.cache_lru) > ROW_CACHE_SIZE:
+            del self.cache[self.cache_lru.pop()]
 
         return node
 
