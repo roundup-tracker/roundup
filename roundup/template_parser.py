@@ -17,20 +17,36 @@ class Require:
         self.current.append(data)
     def elseMode(self):
         self.current = self.fail
+    def __repr__(self):
+        return '<Require %r ok:%r fail:%r>'%(self.attributes, self.ok,
+            self.fail)
 
 class Display:
     ''' Encapsulates a parsed <display attributes>
     '''
     def __init__(self, attributes):
         self.attributes = attributes
+    def __repr__(self):
+        return '<Display %r>'%self.attributes
 
 class Property:
     ''' Encapsulates a parsed <property attributes>
     '''
     def __init__(self, attributes):
         self.attributes = attributes
+        self.current = self.structure = []
+    def __len__(self):
+        return len(self.current)
+    def __getitem__(self, n):
+        return self.current[n]
+    def __setitem__(self, n, data):
+        self.current[n] = data
+    def append(self, data):
+        self.current.append(data)
+    def __repr__(self):
+        return '<Property %r %r>'%(self.attributes, self.structure)
 
-class RoundupTemplateParser(htmllib.HTMLParser):
+class RoundupTemplate(htmllib.HTMLParser):
     ''' Parse Roundup's HTML template structure into a list of components:
 
         'string': this is just plain data to be displayed
@@ -68,7 +84,7 @@ class RoundupTemplateParser(htmllib.HTMLParser):
             self.unknown_starttag(tag, attributes)
 
     def unknown_endtag(self, tag):
-        if tag == 'require':
+        if tag in ('require','property'):
             self.current = self.stack.pop()
         else:
             self.append_data('</%s>'%tag)
@@ -83,7 +99,10 @@ class RoundupTemplateParser(htmllib.HTMLParser):
         self.current.append(Display(attributes))
 
     def do_property(self, attributes):
-        self.current.append(Property(attributes))
+        p = Property(attributes)
+        self.current.append(p)
+        self.stack.append(self.current)
+        self.current = p
 
     def do_require(self, attributes):
         r = Require(attributes)
@@ -94,30 +113,33 @@ class RoundupTemplateParser(htmllib.HTMLParser):
     def do_else(self, attributes):
         self.current.elseMode()
 
+    def __repr__(self):
+        return '<RoundupTemplate %r>'%self.structure
+
 def display(structure, indent=''):
     ''' Pretty-print the parsed structure for debugging
     '''
+    l = []
     for entry in structure:
         if isinstance(entry, type('')):
-            print "%s%r"%(indent, entry[:50])
+            l.append("%s%s"%(indent, entry))
         elif isinstance(entry, Require):
-            print '%sTEST: %r'%(indent, entry.attributes)
-            print '%sOK...'%indent
-            display(entry.ok, indent+' ')
+            l.append('%sTEST: %r\n'%(indent, entry.attributes))
+            l.append('%sOK...'%indent)
+            l.append(display(entry.ok, indent+' '))
             if entry.fail:
-                print '%sFAIL...'%indent
-                display(entry.fail, indent+' ')
+                l.append('%sFAIL...'%indent)
+                l.append(display(entry.fail, indent+' '))
         elif isinstance(entry, Display):
-            print '%sDISPLAY: %r'%(indent, entry.attributes)
+            l.append('%sDISPLAY: %r'%(indent, entry.attributes))
+        elif isinstance(entry, Property):
+            l.append('%sPROPERTY: %r'%(indent, entry.attributes))
+            l.append(display(entry.structure, indent+' '))
+    return ''.join(l)
 
 if __name__ == '__main__':
     import sys
-    parser = RoundupTemplateParser()
+    parser = RoundupTemplate()
     parser.feed(open(sys.argv[1], 'r').read())
-    display(parser.structure)
-
-#
-# $Log: not supported by cvs2svn $
-#
-# vim: set filetype=python ts=4 sw=4 et si
+    print display(parser.structure)
 
