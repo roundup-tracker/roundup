@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.95 2002-01-10 03:39:45 richard Exp $
+# $Id: cgi_client.py,v 1.96 2002-01-10 05:26:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -400,7 +400,7 @@ class Client:
         ''' create a node based on the contents of the form
         '''
         cl = self.db.classes[self.classname]
-        props, dummy = parsePropsFromForm(self.db, cl, self.form)
+        props = parsePropsFromForm(self.db, cl, self.form)
 
         # set status to 'unread' if not specified - a status of '- no
         # selection -' doesn't make sense
@@ -595,7 +595,6 @@ class Client:
         if [i for i in keys if i[0] != ':']:
             try:
                 props = parsePropsFromForm(self.db, cl, self.form)
-		print props
                 nid = cl.create(**props)
                 # handle linked nodes 
                 self._post_editnode(nid)
@@ -1179,6 +1178,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.95  2002/01/10 03:39:45  richard
+#  . fixed some problems with web editing and change detection
+#
 # Revision 1.94  2002/01/09 13:54:21  grubert
 # _add_assignedto_to_nosy did set nosy to assignedto only, no adding.
 #
