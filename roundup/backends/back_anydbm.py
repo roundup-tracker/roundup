@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.177 2004-11-12 10:43:31 a1s Exp $
+#$Id: back_anydbm.py,v 1.178 2004-11-25 22:59:17 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -381,10 +381,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
-            # if the property doesn't exist, or is the "retired" flag then
-            # it won't be in the properties dict
-            if not properties.has_key(k):
+            if k == self.RETIRED_FLAG:
                 d[k] = v
+                continue
+
+            # if the property doesn't exist then we really don't care
+            if not properties.has_key(k):
                 continue
 
             # get the property spec
