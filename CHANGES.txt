@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-02-?? - 0.4.1
+2002-03-?? - 0.4.1
 Feature:
  . use blobfiles in back_anydbm which is used in back_bsddb.
    change test_db as dirlist does not work for subdirectories.
@@ -48,6 +48,7 @@ Fixed:
  . #527416 ] roundup-admin uses undefined value
  . #527503 ] unfriendly init blowup when parent dir
    (also handles UsageError correctly now in init)
+ . #524129 ] roundup-admin gets python path wrong
 
 
 2002-01-24 - 0.4.0
