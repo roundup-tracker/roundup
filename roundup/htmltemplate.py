@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.15 2001-07-30 08:12:17 richard Exp $
+# $Id: htmltemplate.py,v 1.16 2001-08-01 03:52:23 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -291,7 +291,7 @@ class Checklist(Base):
                 else:
                     checked = ''
                 l.append('%s:<input type="checkbox" %s name="%s" value="%s">'%(
-                    option, checked, propclass.classname, option))
+                    option, checked, property, option))
             return '\n'.join(l)
         return '[Checklist: not a link]'
 
@@ -723,6 +723,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/07/30 08:12:17  richard
+# Added time logging and file uploading to the templates.
+#
 # Revision 1.14  2001/07/30 06:17:45  richard
 # Features:
 #  . Added ability for cgi newblah forms to indicate that the new node

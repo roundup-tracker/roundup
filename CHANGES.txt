@@ -8,11 +8,11 @@ Features:
  . Added time logging and file uploading to the templates.
 
 Fixed:
- . Fixed the agument handling for the roundup-admin find command.
- . Fixed handling of summary when no note supplied for newblah. Again.
- . Fixed detection of no form in htmltemplate Field display.
- . Fixed the 2.1-specific gmtime() (no arg) call in roundup.date.
-   (thanks Paul Wright)
+ . Argument handling for the roundup-admin find command.
+ . Handling of summary when no note supplied for newblah. Again.
+ . Detection of no form in htmltemplate Field display.
+ . Checklist html template command was setting wrong name.
+ . 2.1-specific gmtime() (no arg) call in roundup.date. (thanks Paul Wright)
 
 
 2001-07-30 - 0.2.3
