@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.94 $
+:Version: $Revision: 1.95 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -468,6 +468,15 @@ for you are:
   It also provides the ``presetunread`` auditor which pre-sets the
   status to ``unread`` on new items if the status isn't explicitly
   defined.
+**messagesummary.py**
+  Generates the ``summary`` property for new messages based on the message
+  content.
+**userauditor.py**
+  Verifies the content of some of the user fields (email addresses and
+  roles lists).
+
+If you don't want this default behaviour, you're completely free to change
+or remove these detectors.
 
 See the detectors section in the `design document`__ for details of the
 interface for detectors.
