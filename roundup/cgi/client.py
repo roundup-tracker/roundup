@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.37 2002-09-16 22:37:26 richard Exp $
+# $Id: client.py,v 1.38 2002-09-18 00:01:28 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -610,7 +610,7 @@ class Client:
         message = _('You are now registered, welcome!')
 
         # redirect to the item's edit page
-        raise Redirect, '%s/%s%s?:ok_message=%s'%(
+        raise Redirect, '%s%s%s?:ok_message=%s'%(
             self.base, self.classname, self.userid,  urllib.quote(message))
 
     def registerPermission(self, props):
@@ -687,7 +687,7 @@ class Client:
             message = _('nothing changed')
 
         # redirect to the item's edit page
-        raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, self.classname,
+        raise Redirect, '%s%s%s?:ok_message=%s'%(self.base, self.classname,
             self.nodeid,  urllib.quote(message))
 
     def editItemPermission(self, props):
@@ -772,7 +772,7 @@ class Client:
             return
 
         # redirect to the new item's page
-        raise Redirect, '%s/%s%s?:ok_message=%s'%(self.base, self.classname,
+        raise Redirect, '%s%s%s?:ok_message=%s'%(self.base, self.classname,
             nid,  urllib.quote(message))
 
     def newItemPermission(self, props):
@@ -1111,10 +1111,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
     props = {}
     keys = form.keys()
+    properties = cl.getprops()
     for key in keys:
-        if not cl.properties.has_key(key):
+        if not properties.has_key(key):
             continue
-        proptype = cl.properties[key]
+        proptype = properties[key]
 
         # Get the form value. This value may be a MiniFieldStorage or a list
         # of MiniFieldStorages.
@@ -1161,7 +1162,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 value = None
             else:
                 # handle key values
-                link = cl.properties[key].classname
+                link = proptype.classname
                 if not num_re.match(value):
                     try:
                         value = db.classes[link].lookup(value)
@@ -1181,7 +1182,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 # it's a MiniFieldStorage, but may be a comma-separated list
                 # of values
                 value = [i.strip() for i in value.value.split(',')]
-            link = cl.properties[key].classname
+            link = proptype.classname
             l = []
             for entry in map(str, value):
                 if entry == '': continue
@@ -1215,7 +1216,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             except KeyError:
                 # this might be a new property for which there is no existing
                 # value
-                if not cl.properties.has_key(key): raise
+                if not properties.has_key(key): raise
 
             # if changed, set it
             if value != existing:
