@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.90.2.4 2004-03-18 02:40:08 richard Exp $ 
+# $Id: test_db.py,v 1.90.2.5 2004-03-20 22:15:58 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -51,6 +51,7 @@ class MyTestCase(unittest.TestCase):
         self.db.close()
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
+    nuke_database = tearDown
 
 class config:
     DATABASE='_test_dir'
@@ -78,12 +79,13 @@ class nodbconfig(config):
 class anydbmDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
+        self.module = anydbm
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
-        self.db = anydbm.Database(config, 'admin')
-        setupSchema(self.db, 1, anydbm)
+        self.db = self.module.Database(config, 'admin')
+        setupSchema(self.db, 1, self.module)
 
     #
     # schema mutation
@@ -740,6 +742,94 @@ class anydbmDBTestCase(MyTestCase):
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
 
+    def filteringSetup(self):
+        for user in (
+                {'username': 'bleep'},
+                {'username': 'blop'},
+                {'username': 'blorp'}):
+            self.db.user.create(**user)
+        iss = self.db.issue
+        for issue in (
+                {'title': 'issue one', 'status': '2', 'assignedto': '1',
+                    'foo': date.Interval('1:10'), 
+                    'deadline': date.Date('2003-01-01.00:00')},
+                    {'title': 'issue two', 'status': '1', 'assignedto': '2',
+                    'foo': date.Interval('1d'), 
+                    'deadline': date.Date('2003-02-16.22:50')},
+                {'title': 'issue three', 'status': '1',
+                    'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
+                {'title': 'non four', 'status': '3',
+                    'foo': date.Interval('0:10'), 
+                    'nosy': ['1'], 'deadline': date.Date('2004-03-08')}):
+            self.db.issue.create(**issue)
+        self.db.commit()
+        return self.assertEqual, self.db.issue.filter
+
+    def testImportExport(self):
+        # use the filtering setup to create a bunch of items
+        ae, filt = self.filteringSetup()
+        self.db.user.retire('3')
+        self.db.issue.retire('2')
+
+        # grab snapshot of the current database
+        orig = {}
+        for cn,klass in self.db.classes.items():
+            cl = orig[cn] = {}
+            for id in klass.list():
+                it = cl[id] = {}
+                for name in klass.getprops().keys():
+                    it[name] = klass.get(id, name)
+
+        # grab the export
+        export = {}
+        for cn,klass in self.db.classes.items():
+            names = klass.getprops().keys()
+            cl = export[cn] = [names+['is retired']]
+            for id in klass.getnodeids():
+                cl.append(klass.export_list(names, id))
+
+        # shut down this db and nuke it
+        self.db.close()
+        self.nuke_database()
+
+        # open a new, empty database
+        os.makedirs(config.DATABASE + '/files')
+        self.db = self.module.Database(config, 'admin')
+        setupSchema(self.db, 0, self.module)
+
+        # import
+        for cn, items in export.items():
+            klass = self.db.classes[cn]
+            names = items[0]
+            maxid = 1
+            for itemprops in items[1:]:
+                maxid = max(maxid, int(klass.import_list(names, itemprops)))
+            self.db.setid(cn, str(maxid+1))
+
+        # compare with snapshot of the database
+        for cn, items in orig.items():
+            klass = self.db.classes[cn]
+            # ensure retired items are retired :)
+            l = items.keys(); l.sort()
+            m = klass.list(); m.sort()
+            ae(l, m)
+            for id, props in items.items():
+                for name, value in props.items():
+                    l = klass.get(id, name)
+                    if isinstance(value, type([])):
+                        value.sort()
+                        l.sort()
+                    ae(l, value)
+
+        # make sure the retired items are actually imported
+        ae(self.db.user.get('4', 'username'), 'blorp')
+        ae(self.db.issue.get('2', 'title'), 'issue two')
+
+        # make sure id counters are set correctly
+        maxid = max([int(id) for id in self.db.user.list()])
+        newid = self.db.user.create(username='testing')
+        assert newid > maxid
+
 class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
@@ -766,12 +856,8 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
 class bsddbDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
-        self.db = bsddb.Database(config, 'admin')
-        setupSchema(self.db, 1, bsddb)
+        self.module = bsddb
+        anydbmDBTestCase.setUp(self)
 
 class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -790,12 +876,8 @@ class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 class bsddb3DBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb3
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
-        self.db = bsddb3.Database(config, 'admin')
-        setupSchema(self.db, 1, bsddb3)
+        self.module = bsddb3
+        anydbmDBTestCase.setUp(self)
 
 class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -814,17 +896,15 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 class mysqlDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import mysql
+        self.module = mysql
         mysql.db_nuke(config)
-
-        # open database for testing
-        os.makedirs(config.DATABASE + '/files')
-        self.db = mysql.Database(config, 'admin')       
-        setupSchema(self.db, 1, mysql)
+        anydbmDBTestCase.setUp(self)
 
     def tearDown(self):
         from roundup.backends import mysql
         self.db.close()
         mysql.db_nuke(config)
+    nuke_database = tearDown
 
 class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -844,12 +924,8 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import sqlite
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
-        self.db = sqlite.Database(config, 'admin')
-        setupSchema(self.db, 1, sqlite)
+        self.module = sqlite
+        anydbmDBTestCase.setUp(self)
 
 class sqliteReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -870,12 +946,8 @@ class metakitDBTestCase(anydbmDBTestCase):
         from roundup.backends import metakit
         import weakref
         metakit._instances = weakref.WeakValueDictionary()
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
-        self.db = metakit.Database(config, 'admin')
-        setupSchema(self.db, 1, metakit)
+        self.module = metakit
+        anydbmDBTestCase.setUp(self)
 
     def testTransactions(self):
         # remember the number of items we started

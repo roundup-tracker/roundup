@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.55.2.3 2004-03-05 00:06:20 richard Exp $
+# $Id: admin.py,v 1.55.2.4 2004-03-20 22:15:57 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1092,7 +1092,7 @@ Command help:
 
             for nodeid in self.db.getclass(classname).getnodeids():
                 # get the regular props
-                writer.writerow (cl.export_list(propnames, nodeid))
+                writer.writerow(cl.export_list(propnames, nodeid))
 
             # close this file
             f.close()

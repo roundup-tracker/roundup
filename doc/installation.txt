@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.55.2.6 $
+:Version: $Revision: 1.55.2.7 $
 
 .. contents::
 
@@ -458,7 +458,6 @@ responsibility of running roundup. This user:
    may actually login and play with the roundup setup.
 
 
-=======
 Additional Language Codecs
 --------------------------
 
