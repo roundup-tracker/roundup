@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.8 2004-03-25 02:16:08 richard Exp $ 
+# $Id: test_postgresql.py,v 1.9 2004-05-05 11:22:01 richard Exp $ 
 
 import unittest
 
@@ -109,8 +109,9 @@ def test_suite():
         return suite
 
     # make sure we start with a clean slate
-    from roundup.backends.back_postgresql import db_nuke
-    db_nuke(config, 1)
+    from roundup.backends.back_postgresql import db_nuke, db_exists
+    if db_exists(config):
+        db_nuke(config, 1)
 
     # TODO: Check if we can run postgresql tests
     print 'Including postgresql tests'
