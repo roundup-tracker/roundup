@@ -52,6 +52,14 @@ instance_config.py. Simplest solution is to copy the default values from
 template in the core source.
 
 
+CGI script roundup.cgi
+----------------------
+The CGI script has been updated with some features and a bugfix, so you should
+copy it from the roundup cgi-bin source directory again. Make sure you update
+the ROUNDUP_INSTANCE_HOMES after the copy.
+
+
+
 Migrating from 0.2.x to 0.3.x
 =============================
 
