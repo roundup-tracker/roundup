@@ -13,6 +13,21 @@ steps.
 
 .. contents::
 
+Migrating from 0.8.0 to 0.8.3
+=============================
+
+0.8.3 Nosy Handling Changes
+---------------------------
+
+A change was made to fix a bug in the ``nosyreaction.py`` standard
+detector. To incorporate this fix in your trackers, you will need to copy
+the ``nosyreaction.py`` file from the ``templates/classic/detectors``
+directory of the source to your tracker's ``templates`` directory.
+
+If you have modified the ``nosyreaction.py`` file from the standard
+version, you will need to roll your changes into the new file.
+
+
 Migrating from 0.7.1 to 0.8.0
 =============================
 
