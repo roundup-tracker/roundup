@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.38 2002-09-18 00:01:28 richard Exp $
+# $Id: client.py,v 1.39 2002-09-18 06:33:06 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -492,6 +492,8 @@ class Client:
         '''
         # open the db if the user has changed
         if not hasattr(self, 'db') or user != self.db.journaltag:
+            if hasattr(self, 'db'):
+                self.db.close()
             self.db = self.instance.open(user)
 
     #
