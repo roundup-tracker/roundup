@@ -1,18 +1,17 @@
 =================================================
-SC-Track Roundup 0.6.3 - an issue tracking system
+SC-Track Roundup 0.6.4 - an issue tracking system
 =================================================
 
 I'm pleased to announce this maintenance release of Roundup which fixes
 some bugs:
 
-- added script to help migrating queries from pre-0.6 trackers
-- fixed javascript for help window for only one checkbox case
-- Date +/- Interval now works, and Date - Date also works
-- handle socket timeout exception (thanks Marcus Priesch)
-- fixed retirement of items in rdbms imports (sf bug 841355)
-- fixed bug in looking up journal of newly-created items in *dbm backends
-- fixed detectors fix incorrectly fixed in bugfix release 0.6.2
-- added note to upgrading doc for detectors fix in 0.6.2
+- fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
+- fixed date arithmetic to limit hours-per-day to 24, not 60
+- fixed activity displaying as future because of Date arithmetic fix in 0.6.3
+  (sf bug 842027).
+- hard-coded python2.3-ism (socket.timeout) fixed
+- fix Windows service mode for roundup-server (sf bug 819890)
+- fixed #white in cgitb (thanks Henrik Levkowetz)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation. 

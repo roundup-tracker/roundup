@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.4 2003-11-14 06:14:48 jlgijsbers Exp $
+# $Id: setup.py,v 1.55.2.5 2003-12-16 20:58:26 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -180,21 +180,22 @@ def main():
     setup(
         name = "roundup", 
         version = __version__,
-        description = "Roundup issue tracking system.",
+        description = "Roundup is a simple-to-use and -install "\
+            "issue-tracking system with command-line, web and e-mail "\
+            "interfaces.",
         long_description = 
 '''Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.3 release fixes some bugs:
-- added script to help migrating queries from pre-0.6 trackers
-- fixed javascript for help window for only one checkbox case
-- Date +/- Interval now works, and Date - Date also works
-- handle socket timeout exception (thanks Marcus Priesch)
-- fixed retirement of items in rdbms imports (sf bug 841355)
-- fixed bug in looking up journal of newly-created items in *dbm backends
-- fixed detectors fix incorrectly fixed in bugfix release 0.6.2
-- added note to upgrading doc for detectors fix in 0.6.2
+The 0.6.4 release fixes some bugs:
+- fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
+- fixed date arithmetic to limit hours-per-day to 24, not 60
+- fixed activity displaying as future because of Date arithmetic fix in 0.6.3
+  (sf bug 842027).
+- hard-coded python2.3-ism (socket.timeout) fixed
+- fix Windows service mode for roundup-server (sf bug 819890)
+- fixed #white in cgitb (thanks Henrik Levkowetz)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
