@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.13 2004-11-17 06:56:00 a1s Exp $
+# $Id: i18n.py,v 1.14 2004-11-17 07:18:27 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -89,7 +89,7 @@ def find_locales(language=None):
             if val:
                 languages = val.split(':')
                 break
-    elif isinstance(language, (str, unicode)):
+    elif isinstance(language, str) or  isinstance(language, unicode):
         languages = [language]
     else:
         # 'language' must be iterable
