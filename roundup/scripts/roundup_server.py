@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.45 2004-04-09 01:31:16 richard Exp $
+$Id: roundup_server.py,v 1.46 2004-04-20 21:57:16 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -238,11 +238,19 @@ def error():
     exc_type, exc_value = sys.exc_info()[:2]
     return _('Error: %s: %s' % (exc_type, exc_value))
 
+# See whether we can use the forking server
+if hasattr(os, 'fork'):
+    class server_class(SocketServer.ForkingMixIn, BaseHTTPServer.HTTPServer):
+        pass
+else:
+    server_class = BaseHTTPServer.HTTPServer
+
 try:
     import win32serviceutil
 except:
     RoundupService = None
 else:
+
     # allow the win32
     import win32service
     import win32event
@@ -460,12 +468,9 @@ def run(port=PORT, success_message=None):
         # obtain server before changing user id - allows to use port <
         # 1024 if started as root
         address = (hostname, port)
-        server_klass = BaseHTTPServer.HTTPServer
-        class server_klass(SocketServer.ForkingMixIn,
-                BaseHTTPServer.HTTPServer):
-            pass
+
         try:
-            httpd = server_klass(address, RoundupRequestHandler)
+            httpd = server_class(address, RoundupRequestHandler)
         except socket.error, e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.170 2004-04-05 06:13:42 richard Exp $
+# $Id: client.py,v 1.171 2004-04-20 21:57:10 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -97,7 +97,9 @@ class Client:
     # pagesize, startwith
 
     def __init__(self, instance, request, env, form=None):
-        hyperdb.traceMark()
+        if __debug__:
+            hyperdb.traceMark()
+        self.start = time.time()
         self.instance = instance
         self.request = request
         self.env = env
@@ -139,7 +141,6 @@ class Client:
         # before the first write
         self.additional_headers = {}
         self.response_code = 200
-
 
     def main(self):
         ''' Wrap the real main in a try/finally so we always close off the db.
@@ -212,6 +213,7 @@ class Client:
 
             # render the content
             self.write(self.renderContext())
+
         except SeriousError, message:
             self.write(str(message))
         except Redirect, url:
@@ -513,6 +515,9 @@ class Client:
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type
+            if os.environ.get('CGI_SHOW_TIMING', ''):
+                s = '<p>Time elapsed: %fs</p></body>'%(time.time()-self.start)
+                result = result.replace('</body>', s)
             return result
         except templating.NoTemplate, message:
             return '<strong>%s</strong>'%message

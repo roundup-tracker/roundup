@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - sqlite migration drops some journal information (thanks David Linke)
 - user editing Role entry help text always appears
+- disable forking server when os.fork() not available (sf bug 938586)
 
 
 2004-04-18 0.7.0b3

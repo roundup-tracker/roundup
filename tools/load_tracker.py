@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: load_tracker.py,v 1.1 2004-04-20 05:47:33 richard Exp $
+# $Id: load_tracker.py,v 1.2 2004-04-20 21:57:29 richard Exp $
 
 '''
 Usage: %s <tracker home> <N>
@@ -71,6 +71,8 @@ try:
             priority=random.choice(priorities),
             status=random.choice(statuses),
             assignedto=random.choice(users))
+        if i%100:
+            db.commit()
     print
 
     db.commit()
