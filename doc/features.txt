@@ -20,7 +20,9 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - accessible through the web, email, command-line or Python programs
  - may be used to track bugs, features, user feedback, sales opportunities,
    milestones, ...
- - keeps a full history of changes to issues with configurable verbosity
+ - automatically keeps a full history of changes to issues with
+   configurable verbosity and easy access to information about who created
+   or last modified *any* item in the database
  - issues have their own mini mailing list (nosy list)
  - users may sign themselves up, there may be automatic signup for
    incoming email and users may handle their own password reset requests
