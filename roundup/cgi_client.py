@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.132 2002-07-08 07:26:14 richard Exp $
+# $Id: cgi_client.py,v 1.133 2002-07-08 15:32:05 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -133,6 +133,7 @@ function help_window(helpurl, width, height) {
         d[':group'] = ','.join(map(urllib.quote, spec['GROUP']))
         d[':filter'] = ','.join(map(urllib.quote, spec['FILTER']))
         d[':columns'] = ','.join(map(urllib.quote, spec['COLUMNS']))
+        d[':pagesize'] = spec.get('PAGESIZE','50')
 
         # snarf the filterspec
         filterspec = spec['FILTERSPEC'].copy()
@@ -257,7 +258,7 @@ function help_window(helpurl, width, height) {
 <tr class="location-bar">
 <td align=left>%(links)s</td>
 <td align=right>%(user_info)s</td>
-</table>
+</table><br>
 ''')%locals())
 
     def pagefoot(self):
@@ -306,34 +307,67 @@ function help_window(helpurl, width, height) {
             return arg.value.split(',')
         return []
 
+    def index_sort(self):
+        # first try query string
+        x = self.index_arg(':sort')
+        if x:
+            return x
+        # nope - get the specs out of the form
+        specs = []
+        for colnm in self.db.getclass(self.classname).getprops().keys():
+            desc = ''
+            try:
+                spec = self.form[':%s_ss' % colnm]
+            except KeyError:
+                continue
+            spec = spec.value
+            if spec:
+                if spec[-1] == '-':
+                    desc='-'
+                    spec = spec[0]
+                specs.append((int(spec), colnm, desc))
+        specs.sort()
+        x = []
+        for _, colnm, desc in specs:
+            x.append('%s%s' % (desc, colnm))
+        return x
+    
     def index_filterspec(self, filter):
         ''' pull the index filter spec from the form
 
         Links and multilinks want to be lists - the rest are straight
         strings.
         '''
-        props = self.db.classes[self.classname].getprops()
-        # all the form args not starting with ':' are filters
         filterspec = {}
-        for key in self.form.keys():
-            if key[0] == ':': continue
-            if not props.has_key(key): continue
-            if key not in filter: continue
-            prop = props[key]
-            value = self.form[key]
-            if (isinstance(prop, hyperdb.Link) or
-                    isinstance(prop, hyperdb.Multilink)):
-                if type(value) == type([]):
-                    value = [arg.value for arg in value]
+        props = self.db.classes[self.classname].getprops()
+        for colnm in filter:
+            widget = ':%s_fs' % colnm
+            try:
+                val = self.form[widget]
+            except KeyError:
+                try:
+                    val = self.form[colnm]
+                except KeyError:
+                    # they checked the filter box but didn't enter a value
+                    continue
+            propdescr = props.get(colnm, None)
+            if propdescr is None:
+                print "huh? %r is in filter & form, but not in Class!" % colnm
+                raise "butthead programmer"
+            if (isinstance(propdescr, hyperdb.Link) or
+                isinstance(propdescr, hyperdb.Multilink)):
+                if type(val) == type([]):
+                    val = [arg.value for arg in val]
                 else:
-                    value = value.value.split(',')
-                l = filterspec.get(key, [])
-                l = l + value
-                filterspec[key] = l
+                    val = val.value.split(',')
+                l = filterspec.get(colnm, [])
+                l = l + val
+                filterspec[colnm] = l
             else:
-                filterspec[key] = value.value
+                filterspec[colnm] = val.value
+            
         return filterspec
-
+    
     def customization_widget(self):
         ''' The customization widget is visible by default. The widget
             visibility is remembered by show_customization.  Visibility
@@ -355,11 +389,12 @@ function help_window(helpurl, width, height) {
     default_index_filter = ['status']
     default_index_columns = ['id','activity','title','status','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
+    default_pagesize = '50'
 
     def _get_customisation_info(self):
         # see if the web has supplied us with any customisation info
         defaults = 1
-        for key in ':sort', ':group', ':filter', ':columns':
+        for key in ':sort', ':group', ':filter', ':columns', ':pagesize':
             if self.form.has_key(key):
                 defaults = 0
                 break
@@ -373,6 +408,7 @@ function help_window(helpurl, width, height) {
                 filter = d['FILTER']
                 columns = d['COLUMNS']
                 filterspec = d['FILTERSPEC']
+                pagesize = d.get('PAGESIZE', '50')
 
             else:
                 # nope - fall back on the old way of doing it
@@ -382,43 +418,56 @@ function help_window(helpurl, width, height) {
                 filter = self.default_index_filter
                 columns = self.default_index_columns
                 filterspec = self.default_index_filterspec
+                pagesize = self.default_pagesize
         else:
             # make list() extract the info from the CGI environ
             self.classname = 'issue'
-            sort = group = filter = columns = filterspec = None
-        return columns, filter, group, sort, filterspec
+            sort = group = filter = columns = filterspec = pagesize = None
+        return columns, filter, group, sort, filterspec, pagesize
 
     def index(self):
         ''' put up an index - no class specified
         '''
-        columns, filter, group, sort, filterspec = \
+        columns, filter, group, sort, filterspec, pagesize = \
             self._get_customisation_info()
         return self.list(columns=columns, filter=filter, group=group,
-            sort=sort, filterspec=filterspec)
+            sort=sort, filterspec=filterspec, pagesize=pagesize)
 
     def searchnode(self):
-        columns, filter, group, sort, filterspec = \
+        columns, filter, group, sort, filterspec, pagesize = \
             self._get_customisation_info()
-        show_nodes = 1
-        if len(self.form.keys()) == 0:
-            # get the default search filters from instance_config
-            if hasattr(self.instance, 'SEARCH_FILTERS'):
-                for f in self.instance.SEARCH_FILTERS:
-                    spec = getattr(self.instance, f)
-                    if spec['CLASS'] == self.classname:
-                        filter = spec['FILTER']
-                
-            show_nodes = 0
-            show_customization = 1
-        return self.list(columns=columns, filter=filter, group=group,
-            sort=sort, filterspec=filterspec,
-            show_customization=show_customization, show_nodes=show_nodes)
-        
+##        show_nodes = 1
+##        if len(self.form.keys()) == 0:
+##            # get the default search filters from instance_config
+##            if hasattr(self.instance, 'SEARCH_FILTERS'):
+##                for f in self.instance.SEARCH_FILTERS:
+##                    spec = getattr(self.instance, f)
+##                    if spec['CLASS'] == self.classname:
+##                        filter = spec['FILTER']
+##                
+##            show_nodes = 0
+##            show_customization = 1
+##        return self.list(columns=columns, filter=filter, group=group,
+##            sort=sort, filterspec=filterspec,
+##            show_customization=show_customization, show_nodes=show_nodes,
+##            pagesize=pagesize)
+        cn = self.classname
+        self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
+            'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
+        index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
+        self.write('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
+        all_columns = self.db.getclass(cn).getprops().keys()
+        all_columns.sort()
+        index.filter_section('', filter, columns, group, all_columns, sort,
+                             filterspec, pagesize, 0)
+        self.pagefoot()
+        index.db = index.cl = index.properties = None
+        index.clear()
 
     # XXX deviates from spec - loses the '+' (that's a reserved character
     # in URLS
     def list(self, sort=None, group=None, filter=None, columns=None,
-            filterspec=None, show_customization=None, show_nodes=1):
+            filterspec=None, show_customization=None, show_nodes=1, pagesize=None):
         ''' call the template index with the args
 
             :sort    - sort by prop name, optionally preceeded with '-'
@@ -435,7 +484,7 @@ function help_window(helpurl, width, height) {
         cl = self.db.classes[cn]
         self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
             'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
-        if sort is None: sort = self.index_arg(':sort')
+        if sort is None: sort = self.index_sort()
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
         if columns is None: columns = self.index_arg(':columns')
@@ -446,12 +495,22 @@ function help_window(helpurl, width, height) {
             search_text = self.form['search_text'].value
         else:
             search_text = ''
+        if pagesize is None:
+            if self.form.has_key(':pagesize'):
+                pagesize = self.form[':pagesize'].value
+            else:
+                pagesize = '50'
+        pagesize = int(pagesize)
+        if self.form.has_key(':startwith'):
+            startwith = int(self.form[':startwith'].value)
+        else:
+            startwith = 0
 
         index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
         try:
             index.render(filterspec, search_text, filter, columns, sort, 
                 group, show_customization=show_customization, 
-                show_nodes=show_nodes)
+                show_nodes=show_nodes, pagesize=pagesize, startwith=startwith)
         except htmltemplate.MissingTemplateError:
             self.basicClassEditPage()
         self.pagefoot()
@@ -550,13 +609,17 @@ function help_window(helpurl, width, height) {
         cn = self.form['classname'].value
         cl = self.db.classes[cn]
         props = self.form['properties'].value.split(',')
+        if cl.labelprop(1) in props:
+            sort = [cl.labelprop(1)]
+        else:
+            sort = props[0]
 
         w('<table border=1 cellspacing=0 cellpaddin=2>')
         w('<tr>')
         for name in props:
             w('<th align=left>%s</th>'%name)
         w('</tr>')
-        for nodeid in cl.list():
+        for nodeid in cl.filter(None, {}, sort, []): #cl.list():
             w('<tr>')
             for name in props:
                 value = cgi.escape(str(cl.get(nodeid, name)))
@@ -1314,6 +1377,7 @@ class ExtendedClient(Client):
     default_index_filter = ['status']
     default_index_columns = ['activity','status','title','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
+    default_pagesize = '50'
 
 def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     '''Pull properties for the given class out of the form.
@@ -1395,6 +1459,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.132  2002/07/08 07:26:14  richard
+# ehem
+#
 # Revision 1.131  2002/07/08 06:53:57  richard
 # Not sure why the cgi_client had an indexer argument.
 #
