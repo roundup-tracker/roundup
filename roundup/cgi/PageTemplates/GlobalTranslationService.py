@@ -14,14 +14,15 @@
 # Modifications for Roundup:
 # 1. implemented ustr as str
 # 2. make imports use roundup.cgi
+# 3. added StaticTranslationService
 """Global Translation Service for providing I18n to Page Templates.
 
-$Id: GlobalTranslationService.py,v 1.2 2004-05-21 06:13:39 richard Exp $
+$Id: GlobalTranslationService.py,v 1.3 2004-05-23 13:05:43 a1s Exp $
 """
 
 import re
 
-from roundup.i18n import _
+from roundup import i18n
 
 from roundup.cgi.TAL.TALDefs import NAME_RE
 
@@ -38,7 +39,31 @@ class DummyTranslationService:
         return cre.sub(repl, default or msgid)
     # XXX Not all of Zope.I18n.ITranslationService is implemented.
 
-translationService = DummyTranslationService()
+class StaticTranslationService:
+
+    """Translation service for application default language
+
+    This service uses "static" translation, with single domain
+    and target language, initialized from OS environment when
+    roundup.i18n is loaded.
+
+    'domain' and 'target_language' parameters to 'translate()'
+    are ignored.
+
+    Returned strings are always utf8-encoded.
+
+    """
+
+    OUTPUT_ENCODING = "utf-8"
+
+    def translate(self, domain, msgid, mapping=None,
+        context=None, target_language=None, default=None
+    ):
+        _msg = i18n.ugettext(msgid).encode(self.OUTPUT_ENCODING)
+        #print ("TRANSLATE", msgid, _msg, mapping, context)
+        return _msg
+
+translationService = StaticTranslationService()
 
 def setGlobalTranslationService(service):
     """Sets the global translation service, and returns the previous one."""
