@@ -17,6 +17,7 @@ You are not allowed to view this page.
  <th>Organisation</th>
  <th>Email address</th>
  <th>Phone number</th>
+ <th tal:condition="context/is_edit_ok">Retire</th>
 </tr>
 <tr tal:repeat="user context/list"
     tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
@@ -28,6 +29,10 @@ You are not allowed to view this page.
  <td tal:content="user/organisation">organisation</td>
  <td tal:content="python:user.address.email()">address</td>
  <td tal:content="user/phone">phone</td>
+ <td tal:condition="context/is_edit_ok">
+  <a tal:attributes="href string:user${user/id}?:action=retire&:template=index">
+   retire</a>
+ </td>
 </tr>
 </table>
 </td>

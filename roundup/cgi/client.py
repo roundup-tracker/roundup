@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.52 2002-10-09 01:00:40 richard Exp $
+# $Id: client.py,v 1.53 2002-10-15 06:37:21 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -375,6 +375,7 @@ class Client:
         ('login',    'loginAction'),
         ('logout',   'logout_action'),
         ('search',   'searchAction'),
+        ('retire',   'retireAction'),
     )
     def handle_action(self):
         ''' Determine whether there should be an _action called.
@@ -388,7 +389,7 @@ class Client:
              "login"     -> self.loginAction
              "logout"    -> self.logout_action
              "search"    -> self.searchAction
-
+             "retire"    -> self.retireAction
         '''
         if not self.form.has_key(':action'):
             return None
@@ -949,33 +950,46 @@ class Client:
             return 0
         return 1
 
-    def remove_action(self,  dre=re.compile(r'([^\d]+)(\d+)')):
-        # XXX I believe this could be handled by a regular edit action that
-        # just sets the multilink...
-        target = self.index_arg(':target')[0]
-        m = dre.match(target)
-        if m:
-            classname = m.group(1)
-            nodeid = m.group(2)
-            cl = self.db.getclass(classname)
-            cl.retire(nodeid)
-            # now take care of the reference
-            parentref =  self.index_arg(':multilink')[0]
-            parent, prop = parentref.split(':')
-            m = dre.match(parent)
-            if m:
-                self.classname = m.group(1)
-                self.nodeid = m.group(2)
-                cl = self.db.getclass(self.classname)
-                value = cl.get(self.nodeid, prop)
-                value.remove(nodeid)
-                cl.set(self.nodeid, **{prop:value})
-                func = getattr(self, 'show%s'%self.classname)
-                return func()
-            else:
-                raise NotFound, parent
-        else:
-            raise NotFound, target
+    def retireAction(self):
+        ''' Retire the context item.
+        '''
+        # if we want to view the index template now, then unset the nodeid
+        # context info (a special-case for retire actions on the index page)
+        nodeid = self.nodeid
+        if self.template == 'index':
+            self.nodeid = None
+
+        # generic edit is per-class only
+        if not self.retirePermission():
+            self.error_message.append(
+                _('You do not have permission to retire %s' %self.classname))
+            return
+
+        # make sure we don't try to retire admin or anonymous
+        if self.classname == 'user' and \
+                self.db.user.get(nodeid, 'username') in ('admin', 'anonymous'):
+            self.error_message.append(
+                _('You may not retire the admin or anonymous user'))
+            return
+
+        # do the retire
+        self.db.getclass(self.classname).retire(nodeid)
+        self.db.commit()
+
+        self.ok_message.append(
+            _('%(classname)s %(itemid)s has been retired')%{
+                'classname': self.classname.capitalize(), 'itemid': nodeid})
+
+    def retirePermission(self):
+        ''' Determine whether the user has permission to retire this class.
+
+            Base behaviour is to check the user can edit this class.
+        ''' 
+        if not self.db.security.hasPermission('Edit', self.userid,
+                self.classname):
+            return 0
+        return 1
+
 
     #
     #  Utility methods for editing
