@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.5 2004-03-15 05:50:20 richard Exp $
+# $Id: dbinit.py,v 1.6 2004-03-15 05:51:23 richard Exp $
 
 import os
 
@@ -130,7 +130,7 @@ def open(name=None):
     db.security.addPermissionToRole('Anonymous', p)
     # - Allow anonymous users access to view issues (which implies being
     #   able to view all linked information too
-    for cl in 'issue', 'file', 'msg', 'keyword':
+    for cl in 'issue', 'file', 'msg', 'keyword', 'priority', 'status':
         p = db.security.getPermission('View', cl)
         db.security.addPermissionToRole('Anonymous', p)
     # - Allow anonymous users access to edit the "issue" class of data
