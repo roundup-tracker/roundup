@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.4 2003-11-14 00:11:19 richard Exp $ 
+# $Id: test_postgresql.py,v 1.5 2004-03-12 04:09:00 richard Exp $ 
 
-import sys, unittest, os, shutil, time, popen2
+import unittest
 
 from roundup.hyperdb import DatabaseError
 
@@ -28,52 +28,22 @@ from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 config.POSTGRESQL_DATABASE = {'database': 'rounduptest'}
 
 from roundup import backends
-
-def db_create():
-    """Clear all database contents and drop database itself"""
-    name = config.POSTGRESQL_DATABASE['database']
-    cout,cin = popen2.popen4('createdb %s'%name)
-    cin.close()
-    response = cout.read().split('\n')[0]
-    if response.find('FATAL') != -1 or response.find('ERROR') != -1:
-        raise RuntimeError, response
-
-def db_nuke(fail_ok=0):
-    """Clear all database contents and drop database itself"""
-    name = config.POSTGRESQL_DATABASE['database']
-    cout,cin = popen2.popen4('dropdb %s'%name)
-    cin.close()
-    response = cout.read().split('\n')[0]
-    if response.endswith('does not exist') and fail_ok:
-        return
-    if response.find('FATAL') != -1 or response.find('ERROR') != -1:
-        raise RuntimeError, response
-    if os.path.exists(config.DATABASE):
-        shutil.rmtree(config.DATABASE)
-
-def db_exists(config):
-    """Check if database already exists"""
-    try:
-        db = Database(config, 'admin')
-        return 1
-    except:
-        return 0
+from roundup.backends.back_postgresql import db_nuke, db_create, db_exists
 
 class postgresqlOpener:
     if hasattr(backends, 'postgresql'):
         from roundup.backends import postgresql as module
 
     def setUp(self):
-        db_nuke(1)
-        db_create()
+        #db_nuke(config, 1)
+        pass
 
     def tearDown(self):
         self.nuke_database()
 
     def nuke_database(self):
-        # clear out the database - easiest way is to nuke and re-created it
-        db_nuke()
-        db_create()
+        # clear out the database - easiest way is to nuke and re-create it
+        db_nuke(config)
 
 class postgresqlDBTest(postgresqlOpener, DBTest):
     def setUp(self):
@@ -127,7 +97,10 @@ def test_suite():
     if not hasattr(backends, 'postgresql'):
         return suite
 
-    # Check if we can run postgresql tests
+    # make sure we start with a clean slate
+    db_nuke(config, 1)
+
+    # TODO: Check if we can run postgresql tests
     print 'Including postgresql tests'
     suite.addTest(unittest.makeSuite(postgresqlDBTest))
     suite.addTest(unittest.makeSuite(postgresqlROTest))

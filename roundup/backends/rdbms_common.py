@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.76 2004-03-05 00:08:09 richard Exp $
+# $Id: rdbms_common.py,v 1.77 2004-03-12 04:08:59 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -23,7 +23,7 @@ everything as a string.)
 The schema of the hyperdb being mapped to the database is stored in the
 database itself as a repr()'ed dictionary of information about each Class
 that maps to a table. If that information differs from the hyperdb schema,
-then we update it. We also store in the schema dict a __version__ which
+then we update it. We also store in the schema dict a version which
 allows us to upgrade the database schema when necessary. See upgrade_db().
 '''
 __docformat__ = 'restructuredtext'
@@ -114,11 +114,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         return re.sub("'", "''", str(value))
 
+    def init_dbschema(self):
+        self.database_schema = {
+            'version': self.current_db_version,
+            'tables': {}
+        }
+
     def load_dbschema(self):
         ''' Load the schema definition that the database currently implements
         '''
         self.cursor.execute('select schema from schema')
-        self.database_schema = eval(self.cursor.fetchone()[0])
+        schema = self.cursor.fetchone()
+        if schema:
+            self.database_schema = eval(schema[0])
+        else:
+            self.database_schema = {}
 
     def save_dbschema(self, schema):
         ''' Save the schema definition that the database currently implements
@@ -132,25 +142,25 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             We should now confirm that the schema defined by our "classes"
             attribute actually matches the schema in the database.
         '''
-        self.upgrade_db()
+        save = self.upgrade_db()
 
         # now detect changes in the schema
-        save = 0
+        tables = self.database_schema['tables']
         for classname, spec in self.classes.items():
-            if self.database_schema.has_key(classname):
-                dbspec = self.database_schema[classname]
+            if tables.has_key(classname):
+                dbspec = tables[classname]
                 if self.update_class(spec, dbspec):
-                    self.database_schema[classname] = spec.schema()
+                    tables[classname] = spec.schema()
                     save = 1
             else:
                 self.create_class(spec)
-                self.database_schema[classname] = spec.schema()
+                tables[classname] = spec.schema()
                 save = 1
 
-        for classname, spec in self.database_schema.items():
+        for classname, spec in tables.items():
             if not self.classes.has_key(classname):
-                self.drop_class(classname, spec)
-                del self.database_schema[classname]
+                self.drop_class(classname, tables[classname])
+                del tables[classname]
                 save = 1
 
         # update the database version of the schema
@@ -170,14 +180,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     current_db_version = 2
     def upgrade_db(self):
         ''' Update the SQL database to reflect changes in the backend code.
+
+            Return boolean whether we need to save the schema.
         '''
-        version = self.database_schema.get('__version', 1)
+        version = self.database_schema.get('version', 1)
         if version == 1:
             # version 1 doesn't have the OTK, session and indexing in the
             # database
             self.create_version_2_tables()
+        else:
+            return 0
 
-        self.database_schema['__version'] = self.current_db_version
+        self.database_schema['version'] = self.current_db_version
+        return 1
 
 
     def refresh_database(self):
@@ -950,6 +965,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def sql_commit(self):
         ''' Actually commit to the database.
         '''
+        if __debug__:
+            print >>hyperdb.DEBUG, '+++ commit database connection +++'
         self.conn.commit()
 
     def commit(self):
@@ -1011,6 +1028,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return (classname, nodeid)
 
     def sql_close(self):
+        if __debug__:
+            print >>hyperdb.DEBUG, '+++ close database connection +++'
         self.conn.close()
 
     def close(self):

@@ -15,37 +15,68 @@ import MySQLdb
 import os, shutil
 from MySQLdb.constants import ER
 
-# Database maintenance functions
+
 def db_nuke(config):
     """Clear all database contents and drop database itself"""
-    db = Database(config, 'admin')
-    try:
-        db.sql_commit()
-        db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-        db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
-    finally:
-        db.close()
+    if db_exists(config):
+        conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+            config.MYSQL_DBPASSWORD)
+        try:
+            conn.select_db(config.MYSQL_DBNAME)
+        except:
+            # no, it doesn't exist
+            pass
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SHOW TABLES")
+            tables = cursor.fetchall()
+            for table in tables:
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'DROP TABLE %s'%table[0]
+                cursor.execute("DROP TABLE %s"%table[0])
+            if __debug__:
+                print >>hyperdb.DEBUG, "DROP DATABASE %s"%config.MYSQL_DBNAME
+            cursor.execute("DROP DATABASE %s"%config.MYSQL_DBNAME)
+            conn.commit()
+        conn.close()
+
     if os.path.exists(config.DATABASE):
         shutil.rmtree(config.DATABASE)
 
+def db_create(config):
+    """Create the database."""
+    conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+        config.MYSQL_DBPASSWORD)
+    cursor = conn.cursor()
+    if __debug__:
+        print >>hyperdb.DEBUG, "CREATE DATABASE %s"%config.MYSQL_DBNAME
+    cursor.execute("CREATE DATABASE %s"%config.MYSQL_DBNAME)
+    conn.commit()
+    conn.close()
+
 def db_exists(config):
-    """Check if database already exists"""
-    # Yes, this is a hack, but we must must open connection without
-    # selecting a database to prevent creation of some tables
-    config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-        config.MYSQL_DBPASSWORD)        
-    db = Database(config, 'admin')
+    """Check if database already exists."""
+    conn = MySQLdb.connect(config.MYSQL_DBHOST, config.MYSQL_DBUSER,
+        config.MYSQL_DBPASSWORD)
+#    tables = None
     try:
-        db.conn.select_db(config.MYSQL_DBNAME)
-        config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-            config.MYSQL_DBPASSWORD, config.MYSQL_DBNAME)
-        db.sql("SHOW TABLES")
-        tables = db.sql_fetchall()
+        try:
+            conn.select_db(config.MYSQL_DBNAME)
+#            cursor = conn.cursor()
+#            cursor.execute("SHOW TABLES")
+#            tables = cursor.fetchall()
+#            if __debug__:
+#                print >>hyperdb.DEBUG, "tables %s"%(tables,)
+        except MySQLdb.OperationalError:
+            if __debug__:
+                print >>hyperdb.DEBUG, "no database '%s'"%config.MYSQL_DBNAME
+            return 0
     finally:
-        db.close()
-    if tables or os.path.exists(config.DATABASE):
-        return 1
-    return 0        
+        conn.close()
+    if __debug__:
+        print >>hyperdb.DEBUG, "database '%s' exists"%config.MYSQL_DBNAME
+    return 1
+
 
 class Database(Database):
     arg = '%s'
@@ -57,6 +88,10 @@ class Database(Database):
     #mysql_backend = 'BDB'
     
     def sql_open_connection(self):
+        # make sure the database actually exists
+        if not db_exists(self.config):
+            db_create(self.config)
+
         db = getattr(self.config, 'MYSQL_DATABASE')
         try:
             self.conn = MySQLdb.connect(*db)
@@ -75,7 +110,7 @@ class Database(Database):
         except MySQLdb.ProgrammingError, message:
             if message[0] != ER.NO_SUCH_TABLE:
                 raise DatabaseError, message
-            self.database_schema = {}
+            self.init_dbschema()
             self.sql("CREATE TABLE schema (schema TEXT) TYPE=%s"%
                 self.mysql_backend)
             # TODO: use AUTO_INCREMENT for generating ids:
@@ -86,12 +121,12 @@ class Database(Database):
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
-        self.cursor.execute('CREATE TABLE otks (key VARCHAR(255), '
-            'value VARCHAR(255), __time FLOAT(20))')
-        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(key)')
-        self.cursor.execute('CREATE TABLE sessions (key VARCHAR(255), '
-            'last_use FLOAT(20), user VARCHAR(255))')
-        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(key)')
+        self.cursor.execute('CREATE TABLE otks (otk_key VARCHAR(255), '
+            'otk_value VARCHAR(255), otk_time FLOAT(20))')
+        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
+        self.cursor.execute('CREATE TABLE sessions (s_key VARCHAR(255), '
+            's_last_use FLOAT(20), s_user VARCHAR(255))')
+        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(s_key)')
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)

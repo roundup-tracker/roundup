@@ -358,7 +358,6 @@ class PathInit:
         # Hack sys.path
         self.cwd = os.getcwd()
         sys.path.insert(0, os.path.join(self.cwd, self.libdir))
-        print sys.path
         # Hack again for external products.
         global functional
         kind = functional and "functional" or "unit"
@@ -578,7 +577,7 @@ class TrackRefs:
 
 def runner(files, test_filter, debug):
     runner = ImmediateTestRunner(verbosity=VERBOSE, debug=debug,
-                                 progress=progress)
+        progress=progress)
     suite = unittest.TestSuite()
     for file in files:
         s = get_suite(file)

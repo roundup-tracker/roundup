@@ -24,10 +24,10 @@ You are not allowed to view this page.
    <th tal:condition="request/show/assignedto">Assigned&nbsp;To</th>
   </tr>
  <tal:block tal:repeat="i batch">
-  <tr tal:condition="python:request.group[1] and
-                            batch.propchanged(request.group[1])">
+  <tr tal:define="group python:request.group[1]"
+      tal:condition="python:group and batch.propchanged(group)">
    <th tal:attributes="colspan python:len(request.columns)"
-       tal:content="python:i[request.group[1]]" class="group">
+       tal:content="python:str(i[group]) or '(no %s set)'%group" class="group">
    </th>
   </tr>
 

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.14 2004-03-05 00:08:09 richard Exp $
+# $Id: back_sqlite.py,v 1.15 2004-03-12 04:08:59 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -34,19 +34,19 @@ class Database(rdbms_common.Database):
         except sqlite.DatabaseError, error:
             if str(error) != 'no such table: schema':
                 raise
-            self.database_schema = {}
+            self.init_dbschema()
             self.cursor.execute('create table schema (schema varchar)')
             self.cursor.execute('create table ids (name varchar, num integer)')
             self.cursor.execute('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
-        self.cursor.execute('create table otks (key varchar, '
-            'value varchar, __time varchar)')
-        self.cursor.execute('create index otks_key_idx on otks(key)')
-        self.cursor.execute('create table sessions (key varchar, '
-            'last_use varchar, user varchar)')
-        self.cursor.execute('create index sessions_key_idx on sessions(key)')
+        self.cursor.execute('create table otks (otk_key varchar, '
+            'otk_value varchar, otk_time varchar)')
+        self.cursor.execute('create index otks_key_idx on otks(otk_key)')
+        self.cursor.execute('create table sessions (s_key varchar, '
+            's_last_use varchar, s_user varchar)')
+        self.cursor.execute('create index sessions_key_idx on sessions(s_key)')
 
     def sql_close(self):
         ''' Squash any error caused by us already having closed the

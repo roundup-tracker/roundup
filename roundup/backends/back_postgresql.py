@@ -9,15 +9,86 @@
 __docformat__ = 'restructuredtext'
 
 
+import os, shutil, popen2, time
+import psycopg
+
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common
-import psycopg
-import os, shutil, popen2
+
+def db_create(config):
+    """Clear all database contents and drop database itself"""
+    if __debug__:
+        print >> hyperdb.DEBUG, '+++ create database +++'
+    name = config.POSTGRESQL_DATABASE['database']
+    n = 0
+    while n < 10:
+        cout,cin = popen2.popen4('createdb %s'%name)
+        cin.close()
+        response = cout.read().split('\n')[0]
+        if response.find('FATAL') != -1:
+            raise RuntimeError, response
+        elif response.find('ERROR') != -1:
+            if not response.find('is being accessed by other users') != -1:
+                raise RuntimeError, response
+            if __debug__:
+                print >> hyperdb.DEBUG, '+++ SLEEPING +++'
+            time.sleep(1)
+            n += 1
+            continue
+        return
+    raise RuntimeError, '10 attempts to create database failed'
+
+def db_nuke(config, fail_ok=0):
+    """Clear all database contents and drop database itself"""
+    if __debug__:
+        print >> hyperdb.DEBUG, '+++ nuke database +++'
+    name = config.POSTGRESQL_DATABASE['database']
+    n = 0
+    if os.path.exists(config.DATABASE):
+        shutil.rmtree(config.DATABASE)
+    while n < 10:
+        cout,cin = popen2.popen4('dropdb %s'%name)
+        cin.close()
+        response = cout.read().split('\n')[0]
+        if response.endswith('does not exist') and fail_ok:
+            return
+        elif response.find('FATAL') != -1:
+            raise RuntimeError, response
+        elif response.find('ERROR') != -1:
+            if not response.find('is being accessed by other users') != -1:
+                raise RuntimeError, response
+            if __debug__:
+                print >> hyperdb.DEBUG, '+++ SLEEPING +++'
+            time.sleep(1)
+            n += 1
+            continue
+        return
+    raise RuntimeError, '10 attempts to nuke database failed'
+
+def db_exists(config):
+    """Check if database already exists"""
+    db = getattr(config, 'POSTGRESQL_DATABASE')
+    try:
+        conn = psycopg.connect(**db)
+        conn.close()
+        if __debug__:
+            print >> hyperdb.DEBUG, '+++ database exists +++'
+        return 1
+    except:
+        if __debug__:
+            print >> hyperdb.DEBUG, '+++ no database +++'
+        return 0
 
 class Database(rdbms_common.Database):
     arg = '%s'
 
     def sql_open_connection(self):
+        if not db_exists(self.config):
+            db_create(self.config)
+
+        if __debug__:
+            print >>hyperdb.DEBUG, '+++ open database connection +++'
+
         db = getattr(self.config, 'POSTGRESQL_DATABASE')
         try:
             self.conn = psycopg.connect(**db)
@@ -30,19 +101,19 @@ class Database(rdbms_common.Database):
             self.load_dbschema()
         except:
             self.rollback()
-            self.database_schema = {}
+            self.init_dbschema()
             self.sql("CREATE TABLE schema (schema TEXT)")
             self.sql("CREATE TABLE ids (name VARCHAR(255), num INT4)")
             self.sql("CREATE INDEX ids_name_idx ON ids(name)")
             self.create_version_2_tables()
 
     def create_version_2_tables(self):
-        self.cursor.execute('CREATE TABLE otks (key VARCHAR(255), '
-            'value VARCHAR(255), __time NUMERIC)')
-        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(key)')
-        self.cursor.execute('CREATE TABLE sessions (key VARCHAR(255), '
-            'last_use NUMERIC, user VARCHAR(255))')
-        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(key)')
+        self.cursor.execute('CREATE TABLE otks (otk_key VARCHAR(255), '
+            'otk_value VARCHAR(255), otk_time FLOAT(20))')
+        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
+        self.cursor.execute('CREATE TABLE sessions (s_key VARCHAR(255), '
+            's_last_use FLOAT(20), s_user VARCHAR(255))')
+        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(s_key)')
 
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)

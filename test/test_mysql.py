@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.6 2003-11-14 00:11:19 richard Exp $ 
+# $Id: test_mysql.py,v 1.7 2004-03-12 04:09:00 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -33,12 +33,12 @@ config.MYSQL_DBNAME = 'rounduptest'
 config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER,
     config.MYSQL_DBPASSWORD, config.MYSQL_DBNAME)
 
-class nodbconfig(config):
-    MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)
-
 class mysqlOpener:
     if hasattr(backends, 'mysql'):
         from roundup.backends import mysql as module
+
+    def setUp(self):
+        self.module.db_nuke(config)
 
     def tearDown(self):
         self.db.close()
@@ -48,13 +48,19 @@ class mysqlOpener:
         self.module.db_nuke(config)
 
 class mysqlDBTest(mysqlOpener, DBTest):
-    pass
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        DBTest.setUp(self)
 
 class mysqlROTest(mysqlOpener, ROTest):
-    pass
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        ROTest.setUp(self)
 
 class mysqlSchemaTest(mysqlOpener, SchemaTest):
-    pass
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        SchemaTest.setUp(self)
 
 class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
     backend = 'mysql'
@@ -65,8 +71,9 @@ MYSQL_DBPASSWORD = 'rounduptest'
 MYSQL_DBNAME = 'rounduptest'
 MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
 '''
-    if hasattr(backends, 'mysql'):
-        from roundup.backends import mysql as module
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        ClassicInitTest.setUp(self)
     def tearDown(self):
         ClassicInitTest.tearDown(self)
         self.nuke_database()
@@ -81,16 +88,6 @@ def test_suite():
         # Check if we can run mysql tests
         import MySQLdb
         db = mysql.Database(config, 'admin')
-        db.conn.select_db(config.MYSQL_DBNAME)
-        db.sql("SHOW TABLES");
-        tables = db.sql_fetchall()
-        # TODO: reinstate the check here
-        if 0: #tables:
-            # Database should be empty. We don't dare to delete any data
-            raise DatabaseError, "Database %s contains tables"%\
-                config.MYSQL_DBNAME
-        db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-        db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
         db.close()
     except (MySQLdb.ProgrammingError, DatabaseError), msg:
         print "Skipping mysql tests (%s)"%msg
