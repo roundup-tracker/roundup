@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.76 $
+:Version: $Revision: 1.77 $
 
 .. contents::
 
@@ -88,6 +88,8 @@ folder names" check box is checked before you extract the files.
 Testing your Python
 -------------------
 
+Note: user of the Windows installer may not run these tests.
+
 Once you've unpacked roundup's source, run ``python run_tests.py`` in the
 source directory and make sure there are no errors. If there are errors,
 please let us know!
@@ -100,6 +102,8 @@ Roundup -- from installation and scripts.
 
 For The Really Impatient
 ========================
+
+Note: user of the Windows installer may not use the ``demo.py`` script.
 
 If you just want to give Roundup a whirl Right Now, then simply run
 ``python demo.py``. This will set up a simple demo tracker on your
@@ -220,6 +224,10 @@ Configuring your first tracker
           Admin Password:
                  Confirm:
 
+      Note: running this command will *destroy any existing data in the
+      database*. In the case of MySQL and PostgreSQL, any exsting database
+      will be dropped and re-created.
+
       Once this is done, the tracker has been created.
 
 2. At this point, your tracker is set up, but doesn't have a nice user
@@ -289,6 +297,11 @@ You may defer your decision by setting your tracker up with the anydbm
 backend (which is guaranteed to be available) and switching to one of the
 other backends at any time using the instructions in the `administration
 guide`_.
+
+Regardless of which backend you choose, Roundup will attempt to initialise
+a new database for you when you run the roundup-admin "initialise" command.
+In the case of MySQL and PostgreSQL you will need to have the appropriate
+privileges to create databases.
 
 
 Configure a Web Interface
