@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.144 $
+:Version: $Revision: 1.145 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -982,21 +982,23 @@ identifier is examined. Typical URL paths look like:
 
 1.  ``/tracker/issue``
 2.  ``/tracker/issue1``
-3.  ``/tracker/@file/style.css``
+3.  ``/tracker/@@file/style.css``
 4.  ``/cgi-bin/roundup.cgi/tracker/file1``
 5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
 
 where the "tracker identifier" is "tracker" in the above cases. That means
-we're looking at "issue", "issue1", "@file/style.css", "file1" and
+we're looking at "issue", "issue1", "@@file/style.css", "file1" and
 "file1/kitten.png" in the cases above. The path is generally only one
 entry long - longer paths are handled differently.
 
 a. if there is no path, then we are in the "home" context. See `the "home"
    context`_ below for more information about how it may be used.
-b. if the path starts with "@file" (as in example 3,
-   "/tracker/@file/style.css"), then the additional path entry,
+b. if the path starts with "@@file" (as in example 3,
+   "/tracker/@@file/style.css"), then the additional path entry,
    "style.css" specifies the filename of a static file we're to serve up
-   from the tracker "html" directory. Raises a SendStaticFile exception.
+   from the tracker TEMPLATES (or STATIC_FILES, if configured) directory.
+   This is usually the tracker's "html" directory. Raises a SendStaticFile
+   exception.
 c. if there is something in the path (as in example 1, "issue"), it
    identifies the tracker class we're to display.
 d. if the path is an item designator (as in examples 2 and 4, "issue1"
@@ -1041,7 +1043,7 @@ Serving static content
 ----------------------
 
 See the previous section `determining web context`_ where it describes
-``@file`` paths.
+``@@file`` paths.
 
 
 Performing actions in web requests
