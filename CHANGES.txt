@@ -8,6 +8,7 @@ are given with the most recent entry first.
 - open server logfile unbuffered
 - revert StringHTMLProperty to not hyperlink text by default
 - fixes to CGI form handling
+- fix unlink bug in metakit backend
 
 
 2003-01-10 0.5.4

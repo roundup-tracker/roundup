@@ -422,7 +422,7 @@ class Class:
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if oldvalue:
-                        self.db.addjournal(link_class, value, _UNLINK,
+                        self.db.addjournal(link_class, oldvalue, _UNLINK,
                             (self.classname, str(row.id), key))
 
                     # register the link with the newly linked node
