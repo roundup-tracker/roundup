@@ -5,6 +5,8 @@ punted automatically into the subsequent major release TODO.
 State   Description
 ------------------------------------------------------------------------------
 pending example: meta/parent bug implementation (feature request #506815)
+pending example: replace the "extended" example with a "help desk" one, and
+                 rename "classic" to "bug tracker"
 pending hyperdb: write a backend for gadfly
 pending hyperdb: range searching of values (dates in particular)
         - filter specifies {property: (comparison function, value)}
@@ -13,14 +15,10 @@ pending hyperdb: range searching of values (dates in particular)
 pending hyperdb: make creator, creation and activity available pre-commit
 pending hyperdb: migrate "id" property to be Number type
 pending hyperdb: allow classes to define their ordering (properties, asc/desc)
-pending hyperdb: entire database export and import (files, journals and all)
 pending instance: including much simpler upgrade path and the use of
                   non-Python configuration files (ConfigParser)
-pending instance: move the header link config out into an html template
-pending instance: cleanup to support config (feature request #498658)
 pending instance: split instance.open() into open() and login()
 pending instance: rename to "instance" to "tracker"
-pending instance: sanity check instance setup after all these changes
 pending mailgw: allow commands (feature request #556996)
                 like "help", "dump issue123" (would send all info about
                 issue123, including a digest of all messages, but probably
@@ -43,10 +41,13 @@ pending web: fix double-submit by having new-item-submit redirect at end
 pending web: Quick help links next to the property labels giving a
              description of the property. Combine with help for the actual
              form element too, eg. how to use the nosy list edit box.
-pending web: feature request #507842
 pending web: clicking on a group header should filter for that type of entry
+pending web: have the page layout (header/footer) be templatable
 pending web: have index page handle mid-page errors better so header and
-             footer are still visible!
+             footer are still visible
+pending web: re-work cgi interface to abstract out the explicit "issue"
+             interface
+pending admin/web?: retrieval of "mbox" archive of all messages
 
 ongoing  any bugs
 
@@ -56,6 +57,7 @@ done hyperdb: further split the *dbm backends from the core code, allowing
 done hyperdb: fix the journal bloat (RJ)
 done hyperdb: add Boolean and Number types (GM)
 done hyperdb: update design document (RJ)
+done hyperdb: entire database export and import (incl files) (RJ)
 done mailgw: better help message (feature request #558562) (RJ)
 done security: add info from doc/security.txt to design doc (RJ)
 done security: switch to sessions for web authentication (RJ)
