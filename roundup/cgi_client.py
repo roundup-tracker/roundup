@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.41 2001-10-23 23:52:35 richard Exp $
+# $Id: cgi_client.py,v 1.42 2001-10-23 23:56:03 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -513,7 +513,7 @@ class Client:
 </form>
 ''')
         if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
-            self.write('</table')
+            self.write('</table>')
             return
         self.write('''
 <p>
@@ -849,6 +849,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.41  2001/10/23 23:52:35  richard
+# Fixed lock-out logic, thanks Roch'e for pointing out the problems.
+#
 # Revision 1.40  2001/10/23 23:06:39  richard
 # Some cleanup.
 #
