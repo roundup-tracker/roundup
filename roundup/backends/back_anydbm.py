@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.124 2003-09-04 00:47:01 richard Exp $
+#$Id: back_anydbm.py,v 1.125 2003-09-06 07:27:30 jlgijsbers Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -87,8 +87,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # reindex the db if necessary
         if self.indexer.should_reindex():
             self.reindex()
+        self.figure_curuserid()
 
-        # figure the "curuserid"
+    def figure_curuserid(self):
+        """Figure out the 'curuserid'."""
         if self.journaltag is None:
             self.curuserid = None
         elif self.journaltag == 'admin':

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.132 2003-08-28 04:46:39 richard Exp $
+# $Id: client.py,v 1.133 2003-09-06 07:27:30 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -840,41 +840,16 @@ please visit the following URL:
     def confRegoAction(self):
         ''' Grab the OTK, use it to load up the new user details
         '''
-        # pull the rego information out of the otk database
-        otk = self.form['otk'].value
-        props = self.db.otks.getall(otk)
-        for propname, proptype in self.db.user.getprops().items():
-            value = props.get(propname, None)
-            if value is None:
-                pass
-            elif isinstance(proptype, hyperdb.Date):
-                props[propname] = date.Date(value)
-            elif isinstance(proptype, hyperdb.Interval):
-                props[propname] = date.Interval(value)
-            elif isinstance(proptype, hyperdb.Password):
-                props[propname] = password.Password()
-                props[propname].unpack(value)
-
-        # re-open the database as "admin"
-        if self.user != 'admin':
-            self.opendb('admin')
-
-        # create the new user
-        cl = self.db.user
-# XXX we need to make the "default" page be able to display errors!
         try:
-            props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
-            del props['__time']
-            self.userid = cl.create(**props)
-            # clear the props from the otk database
-            self.db.otks.destroy(otk)
-            self.db.commit()
+            # pull the rego information out of the otk database
+            self.userid = self.db.confirm_registration(self.form['otk'].value)
         except (ValueError, KeyError), message:
+            # XXX: we need to make the "default" page be able to display errors!
             self.error_message.append(str(message))
             return
-
+        
         # log the new user in
-        self.user = cl.get(self.userid, 'username')
+        self.user = self.db.user.get(self.userid, 'username')
         # re-open the database for real, using the user
         self.opendb(self.user)
 

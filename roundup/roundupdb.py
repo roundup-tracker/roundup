@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.86 2003-04-27 02:24:37 richard Exp $
+# $Id: roundupdb.py,v 1.87 2003-09-06 07:27:30 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -26,6 +26,8 @@ import MimeWriter, cStringIO
 import base64, quopri, mimetypes
 
 from rfc2822 import encode_header
+
+from roundup import password, date
 
 # if available, use the 'email' module, otherwise fallback to 'rfc822'
 try :
@@ -69,6 +71,36 @@ class Database:
             # Greenwich :)
             timezone = 0
         return timezone
+
+    def confirm_registration(self, otk):
+        props = self.otks.getall(otk)
+        for propname, proptype in self.user.getprops().items():
+            value = props.get(propname, None)
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                props[propname] = date.Date(value)
+            elif isinstance(proptype, hyperdb.Interval):
+                props[propname] = date.Interval(value)
+            elif isinstance(proptype, hyperdb.Password):
+                props[propname] = password.Password()
+                props[propname].unpack(value)
+
+        # tag new user creation with 'admin'
+        self.journaltag = 'admin'
+        self.figure_curuserid()
+
+        # create the new user
+        cl = self.user
+      
+        props['roles'] = self.config.NEW_WEB_USER_ROLES
+        del props['__time']
+        userid = cl.create(**props)
+        # clear the props from the otk database
+        self.otks.destroy(otk)
+        self.commit()
+        
+        return userid
 
 class MessageSendError(RuntimeError):
     pass
