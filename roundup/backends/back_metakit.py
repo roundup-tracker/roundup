@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.81 2004-07-20 23:24:26 richard Exp $
+# $Id: back_metakit.py,v 1.82 2004-07-27 00:57:18 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -55,6 +55,13 @@ from blobfiles import files_in_dir
 #  should we just get rid of them for simplicities sake?
 READ = 0
 READWRITE = 1
+
+def db_exists(config):
+    return os.path.exists(os.path.join(config.TRACKER_HOME, 'db',
+        'tracker.mk4'))
+
+def db_nuke(config):
+    shutil.rmtree(os.path.join(config.TRACKER_HOME, 'db'))
 
 # general metakit error
 class MKBackendError(Exception):

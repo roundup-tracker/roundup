@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.16 2004-07-25 13:14:57 a1s Exp $
+# $Id: instance.py,v 1.17 2004-07-27 00:57:18 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -25,31 +25,80 @@ __docformat__ = 'restructuredtext'
 
 import os
 from roundup import configuration, rlog
+from roundup import hyperdb, backends
 
 class Vars:
-    ''' I'm just a container '''
+    def __init__(self, vars):
+        self.__dict__.update(vars)
 
 class Tracker:
     def __init__(self, tracker_home):
         self.tracker_home = tracker_home
-        self.select_db = self._load_python('select_db.py')
-        self.config = self._load_config('config.py')
-        raise NotImplemented, 'this is *so* not finished'
-        self.init =  XXX
-        self.Client = XXX
-        self.MailGW = XXX
+        self.config = configuration.Config(tracker_home)
+        self.cgi_actions = {}
+        self.templating_utils = {}
 
-    def open(self):
-        return self._load_config('schema.py').db
-        self._load_config('security.py', db=db)
+    def get_backend(self):
+        o = __builtins__['open']
+        f = o(os.path.join(self.tracker_home, 'db', 'backend_name'))
+        name = f.readline().strip()
+        f.close()
+        return getattr(backends, name)
 
+    def open(self, name):
+        backend = self.get_backend()
+        vars = {
+            'Class': backend.Class,
+            'FileClass': backend.FileClass,
+            'IssueClass': backend.IssueClass,
+            'String': hyperdb.String,
+            'Password': hyperdb.Password,
+            'Date': hyperdb.Date,
+            'Link': hyperdb.Link,
+            'Multilink': hyperdb.Multilink,
+            'Interval': hyperdb.Interval,
+            'Boolean': hyperdb.Boolean,
+            'Number': hyperdb.Number,
+            'db': backend.Database(self.config, name)
+        }
+        self._load_python('schema.py', vars)
+        db = vars['db']
 
-    def _load_python(self, file):
+        detectors_dir = os.path.join(self.tracker_home, 'detectors')
+        for name in os.listdir(detectors_dir):
+            if not name.endswith('.py'):
+                continue
+            self._load_python(os.path.join('detectors', name), vars)
+            vars['init'](db)
+
+        db.post_init()
+        return db
+
+    def init(self, adminpw):
+        db = self.open('admin')
+        self._load_python('initial_data.py', {'db': db, 'adminpw': adminpw,
+            'admin_email': self.config['ADMIN_EMAIL']})
+        db.commit()
+        db.close()
+
+    def exists(self):
+        backend = self.get_backend()
+        return backend.db_exists(self.config)
+
+    def nuke(self):
+        backend = self.get_backend()
+        backend.db_nuke(self.config)
+
+    def _load_python(self, file, vars):
         file = os.path.join(self.tracker_home, file)
-        vars = Vars()
-        execfile(file, vars.__dict__)
+        execfile(file, vars)
         return vars
 
+    def registerAction(self, name, action):
+        self.cgi_actions[name] = action
+
+    def registerUtil(self, name, function):
+        self.templating_utils[name] = function
 
 class TrackerError(Exception):
     pass

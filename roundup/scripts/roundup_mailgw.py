@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.18 2004-05-28 00:56:50 richard Exp $
+# $Id: roundup_mailgw.py,v 1.19 2004-07-27 00:57:18 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -26,7 +26,7 @@ from roundup import __version__ as roundup_version
 
 import sys, os, re, cStringIO, getopt
 
-from roundup.mailgw import Message
+from roundup import mailgw
 from roundup.i18n import _
 
 def usage(args, message=None):
@@ -132,7 +132,10 @@ def main(argv):
 
     # now wrap in try/finally so we always close the database
     try:
-        handler = instance.MailGW(instance, db, optionsList)
+        if hasattr(instance, 'MailGW'):
+            handler = instance.MailGW(instance, db, optionsList)
+        else:
+            handler = mailgw.MailGW(instance, db, optionsList)
 
         # if there's no more arguments, read a single message from stdin
         if len(args) == 1:

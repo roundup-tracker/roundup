@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.18 2004-07-21 04:50:40 richard Exp $
+# $Id: ZRoundup.py,v 1.19 2004-07-27 00:57:17 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -40,7 +40,7 @@ from AccessControl import ModuleSecurityInfo
 modulesecurity = ModuleSecurityInfo()
 
 import roundup.instance
-from roundup.cgi.client import NotFound
+from roundup.cgi import client
 
 modulesecurity.declareProtected('View management screens',
     'manage_addZRoundupForm')
@@ -139,7 +139,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
     def roundup_opendb(self):
         '''Open the roundup instance database for a transaction.
         '''
-        instance = roundup.instance.open(self.instance_home)
+        tracker = roundup.instance.open(self.instance_home)
         request = RequestWrapper(self.REQUEST['RESPONSE'])
         env = self.REQUEST.environ
 
@@ -159,7 +159,9 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             env['TRACKER_NAME'] = path_components[-1]
 
         form = FormWrapper(self.REQUEST.form)
-        return instance.Client(instance, request, env, form)
+        if hasattr(tracker, 'Client'):
+            return tracker.Client(tracker, request, env, form)
+        return client.Client(tracker, request, env, form)
 
     security.declareProtected('View', 'index_html')
     def index_html(self):
@@ -208,7 +210,7 @@ class PathElement(Item, Implicit):
             # and call roundup to do something 
             client.main()
             return ''
-        except NotFound:
+        except client.NotFound:
             raise 'NotFound', REQUEST.URL
             pass
         except:

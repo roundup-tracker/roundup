@@ -14,15 +14,37 @@ import psycopg
 from roundup import hyperdb, date
 from roundup.backends import rdbms_common
 
+from roundup import configuration
+
+configuration.SETTINGS += (
+    ("postgresql", (
+        (configuration.Option, 'database', 'roundup'),
+        (configuration.NullableOption, 'host', 'localhost'),
+        (configuration.NullableOption, 'port', '5432'),
+        (configuration.NullableOption, 'user', 'roundup'),
+        (configuration.NullableOption, 'password', 'roundup'),
+    )),
+)
+
+def connection_dict(config):
+    d = {
+        'database': config.POSTGRESQL_DATABASE,
+    }
+    for name in 'host', 'port', 'password', 'user':
+        cvar = 'POSTGRESQL_'+name.upper()
+        if config[cvar] is not None:
+            d[name] = config[cvar]
+    return d
+
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    command = 'CREATE DATABASE %s'%config.POSTGRESQL_DATABASE['database']
+    command = 'CREATE DATABASE %s'%config.POSTGRESQL_DATABASE
     config.logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
 def db_nuke(config, fail_ok=0):
     """Clear all database contents and drop database itself"""
-    command = 'DROP DATABASE %s'% config.POSTGRESQL_DATABASE['database']
+    command = 'DROP DATABASE %s'% config.POSTGRESQL_DATABASE
     config.logging.getLogger('hyperdb').info(command)
     db_command(config, command)
 
@@ -33,7 +55,7 @@ def db_command(config, command):
     '''Perform some sort of database-level command. Retry 10 times if we
     fail by conflicting with another user.
     '''
-    template1 = config.POSTGRESQL_DATABASE.copy()
+    template1 = connection_dict(config)
     template1['database'] = 'template1'
     
     try:
@@ -70,7 +92,7 @@ def pg_command(cursor, command):
 
 def db_exists(config):
     """Check if database already exists"""
-    db = getattr(config, 'POSTGRESQL_DATABASE')
+    db = connection_dict(config)
     try:
         conn = psycopg.connect(**db)
         conn.close()
@@ -82,7 +104,7 @@ class Database(rdbms_common.Database):
     arg = '%s'
 
     def sql_open_connection(self):
-        db = getattr(self.config, 'POSTGRESQL_DATABASE')
+        db = connection_dict(config)
         self.config.logging.getLogger('hyperdb').info('open database %r'%db)
         try:
             conn = psycopg.connect(**db)

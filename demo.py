@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.11 2004-05-28 01:09:10 richard Exp $
+# $Id: demo.py,v 1.12 2004-07-27 00:57:17 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -27,7 +27,7 @@ def install_demo(home, backend):
             module.db_nuke(config)
     elif backend == 'postgresql':
         class config:
-            POSTGRESQL_DATABASE = {'database': 'rounduptest'}
+            POSTGRESQL_DATABASE = 'rounduptest'
             DATABASE = 'home'
         if module.db_exists(config):
             module.db_nuke(config)

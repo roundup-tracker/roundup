@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.39 2004-06-29 08:59:08 richard Exp $
+# $Id: roundup.cgi,v 1.40 2004-07-27 00:57:17 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -158,16 +158,19 @@ def main(out, err):
         else:
             tracker_home = TRACKER_HOMES[tracker]
             tracker = roundup.instance.open(tracker_home)
-            from roundup.cgi.client import Unauthorised, NotFound
-            client = tracker.Client(tracker, request, os.environ)
+            from roundup.cgi import client
+            if hasattr(tracker, 'Client'):
+                client = tracker.Client(tracker, request, os.environ)
+            else:
+                client = client.Client(tracker, request, os.environ)
             try:
                 client.main()
-            except Unauthorised:
+            except client.Unauthorised:
                 request.send_response(403)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
                 out.write('Unauthorised')
-            except NotFound:
+            except client.NotFound:
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.57 2004-07-27 00:45:49 richard Exp $
+$Id: roundup_server.py,v 1.58 2004-07-27 00:57:18 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -187,7 +187,10 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         decoded_query = query.replace('+', ' ')
 
         # do the roundup thang
-        c = tracker.Client(tracker, self, env)
+        if hasattr(tracker, 'Client'):
+            c = tracker.Client(tracker, self, env)
+        else:
+            c = client.Client(tracker, self, env)
         c.main()
 
     def address_string(self):

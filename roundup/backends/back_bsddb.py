@@ -15,16 +15,22 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb.py,v 1.30 2004-07-02 05:22:09 richard Exp $
+#$Id: back_bsddb.py,v 1.31 2004-07-27 00:57:18 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in BSDDB.
 '''
 __docformat__ = 'restructuredtext'
 
-import bsddb, os, marshal
+import bsddb, os, marshal, shutil
 from roundup import hyperdb, date
 
 # these classes are so similar, we just use the anydbm methods
 from back_anydbm import Database, Class, FileClass, IssueClass
+
+def db_exists(config):
+    return os.path.exists(os.path.join(config.TRACKER_HOME, 'db', 'user'))
+
+def db_nuke(config):
+    shutil.rmtree(os.path.join(config.TRACKER_HOME, 'db'))
 
 #
 # Now the database

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.30 2004-07-02 05:22:09 richard Exp $
+# $Id: back_sqlite.py,v 1.31 2004-07-27 00:57:18 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -9,12 +9,18 @@ for the columns, but sqlite IGNORES these specifications.
 '''
 __docformat__ = 'restructuredtext'
 
-import os, base64, marshal
+import os, base64, marshal, shutil
 
 from roundup import hyperdb, date, password
 from roundup.backends import locking
 from roundup.backends import rdbms_common
 import sqlite
+
+def db_exists(config):
+    return os.path.exists(os.path.join(config.TRACKER_HOME, 'db', 'db'))
+
+def db_nuke(config):
+    shutil.rmtree(os.path.join(config.TRACKER_HOME, 'db'))
 
 class Database(rdbms_common.Database):
     # char to use for positional arguments
