@@ -44,7 +44,10 @@ Fixed:
  . fixed some sorting issues that were breaking some unit tests under py2.2
  . mailgw test output dir was confusing the init test (but only on 2.2 *shrug*)
  . node caching now works, and gives a small boost in performance
- . bsddb3 backend now works, reinstating
+ . #449374 ] re-enable bsddb3 backend
+   bsddb3 backend now works, reinstating
+ . #551483 ] assignedto in Client.make_index_link
+
 
 2002-03-25 - 0.4.1
 Feature:

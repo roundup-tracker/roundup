@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.119 2002-05-15 06:21:21 richard Exp $
+# $Id: cgi_client.py,v 1.120 2002-05-21 06:05:53 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -126,7 +126,7 @@ function help_window(helpurl, width, height) {
         # now format the filterspec
         for k, l in filterspec.items():
             # fix up the assignedto if needed
-            if k == 'assignedto' and l is None:
+            if l == 'CURRENT USER':
                 l = [self.db.user.lookup(self.user)]
 
             # add
@@ -1383,6 +1383,14 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.119  2002/05/15 06:21:21  richard
+#  . node caching now works, and gives a small boost in performance
+#
+# As a part of this, I cleaned up the DEBUG output and implemented TRACE
+# output (HYPERDBTRACE='file to trace to') with checkpoints at the start of
+# CGI requests. Run roundup with python -O to skip all the DEBUG/TRACE stuff
+# (using if __debug__ which is compiled out with -O)
+#
 # Revision 1.118  2002/05/12 23:46:33  richard
 # ehem, part 2
 #
