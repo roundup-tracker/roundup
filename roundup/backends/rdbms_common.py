@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.143 2004-12-16 22:22:55 jlgijsbers Exp $
+# $Id: rdbms_common.py,v 1.144 2005-01-04 03:27:04 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -678,7 +678,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for cn in self.classes.keys():
             sql = 'delete from _%s'%cn
             self.sql(sql)
-        self.setid(cn, 0)
+        self.setid(cn, 1)
 
     #
     # Nodes
