@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.71 2004-10-30 08:43:06 a1s Exp $
+$Id: roundup_server.py,v 1.72 2004-11-02 09:07:08 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -52,7 +52,10 @@ bn3Zuj8M9Hepux6VfZtW1yA6K7cfGqVu8TL325u+fHTb71QKbk+7TZQ+lTc6RcnpqW8qmVQBoj/g
 DEFAULT_PORT = 8080
 
 # See what types of multiprocess server are available
-MULTIPROCESS_TYPES = ["none"]
+# Note: the order is important.  Preferred multiprocess type
+#   is the last element of this list.
+# "debug" means "none" + no tracker/template cache
+MULTIPROCESS_TYPES = ["debug", "none"]
 try:
     import thread
 except ImportError:
@@ -65,7 +68,31 @@ DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = {}
+    TRACKERS = None
     LOG_IPADDRESS = 1
+
+    def get_tracker(self, name):
+        """Return a tracker instance for given tracker name"""
+        # Note: try/except KeyError works faster that has_key() check
+        #   if the key is usually found in the dictionary
+        #
+        # Return cached tracker instance if we have a tracker cache
+        if self.TRACKERS:
+            try:
+                return self.TRACKERS[name]
+            except KeyError:
+                pass
+        # No cached tracker.  Look for home path.
+        try:
+            tracker_home = self.TRACKER_HOMES[name]
+        except KeyError:
+            raise client.NotFound
+        # open the instance
+        tracker = roundup.instance.open(tracker_home)
+        # and cache it if we have a tracker cache
+        if self.TRACKERS:
+            self.TRACKERS[name] = tracker
+        return tracker
 
     def run_cgi(self):
         """ Execute the CGI command. Wrap an innner call in an error
@@ -158,12 +185,6 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.wfile.write('Moved Permanently')
             return
 
-        if self.TRACKER_HOMES.has_key(tracker_name):
-            tracker_home = self.TRACKER_HOMES[tracker_name]
-            tracker = roundup.instance.open(tracker_home)
-        else:
-            raise client.NotFound
-
         # figure out what the rest of the path is
         if len(l_path) > 2:
             rest = '/'.join(l_path[2:])
@@ -193,7 +214,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['SERVER_PORT'] = str(self.server.server_port)
         env['HTTP_HOST'] = self.headers['host']
 
-        # do the roundup thang
+        # do the roundup thing
+        tracker = self.get_tracker(tracker_name)
         tracker.Client(tracker, self, env).main()
 
     def address_string(self):
@@ -376,10 +398,18 @@ class ServerConfig(configuration.Config):
             sys.stdout = sys.stderr = open(self["LOGFILE"], 'a', 0)
         # we don't want the cgi module interpreting the command-line args ;)
         sys.argv = sys.argv[:1]
+        # preload all trackers unless we are in "debug" mode
+        tracker_homes = self.trackers()
+        if self["MULTIPROCESS"] == "debug":
+            trackers = None
+        else:
+            trackers = dict([(name, roundup.instance.open(home))
+                for (name, home) in tracker_homes])
         # build customized request handler class
         class RequestHandler(RoundupRequestHandler):
             LOG_IPADDRESS = not self["LOG_HOSTNAMES"]
-            TRACKER_HOMES = dict(self.trackers())
+            TRACKER_HOMES = dict(tracker_homes)
+            TRACKERS = trackers
         # obtain request server class
         if self["MULTIPROCESS"] not in MULTIPROCESS_TYPES:
             print _("Multiprocess mode \"%s\" is not available, "
