@@ -9,6 +9,7 @@ Fixed:
 - fix user creation page
 - have roundup server pass though the cause of a "403 Forbidden" response
 - fix schema mutation in sqlite backends (thanks Tamer Fahmy)
+- make popup Javascript IE 5.0 friendly (thanks Marlon van den Berg)
 
 
 2004-05-06 0.7.0

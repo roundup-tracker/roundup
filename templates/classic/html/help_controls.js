@@ -3,46 +3,6 @@
 
 original_field = window.opener.document.itemSynopsis[field].value;
 
-
-// pop() and push() methods for pre5.5 IE browsers
-
-function bName() {
-    // test for IE 
-    if (navigator.appName == "Microsoft Internet Explorer")
-      return 1;
-    return 0;
-}
-
-function bVer() {
-    // return version number (e.g., 4.03)
-    msieIndex = navigator.appVersion.indexOf("MSIE") + 5;
-    return(parseFloat(navigator.appVersion.substr(msieIndex,3)));
-}
-
-function pop() {
-    // make a pop method for old IE browsers
-    var lastElement = this[this.length - 1];
-    this.length--;
-    return lastElement;
-}
-
-function push() {
-    // make a pop method for old IE browsers
-    var sub = this.length;
-    for (var i = 0; i < push.arguments.length; ++i) {
-      this[sub] = push.arguments[i];
-        sub++;
-  }
-}
-
-// add the pop() and push() method to Array if they're not there
-if (!Array.prototype.pop) {
-    Array.prototype.pop = pop;
-}
-if (!Array.prototype.push) {
-    Array.prototype.push = push;
-}
-
 function trim(value) {
   var temp = value;
   var obj = /^(\s*)([\W\w]*)(\b\s*$)/;
@@ -53,21 +13,21 @@ function trim(value) {
 }
 
 function determineList() {
-  // generate a comma-separated list of the checked items
-  if (document.frm_help.check==undefined) { return; }
-  var list = new Array();
-  if (document.frm_help.check.length==undefined) {
-      if (document.frm_help.check.checked) {
-          list.push(document.frm_help.check.value);
-      }
-  } else {
-      for (box=0; box < document.frm_help.check.length; box++) {
-          if (document.frm_help.check[box].checked) {
-              list.push(document.frm_help.check[box].value);
-          }
-      }
-  }
-  return new String(list.join(','));
+    // generate a comma-separated list of the checked items
+    var list = new String('');
+    for (box=0; box < document.frm_help.check.length; box++) {
+        if (document.frm_help.check[box].checked) {
+            if (list.length == 0) {
+                separator = '';
+            }
+            else {
+                separator = ',';
+            }
+            // we used to use an Array and push / join, but IE5.0 sux
+            list = list + separator + document.frm_help.check[box].value;
+        }
+    }
+    return list;
 }
 
 function updateList() {
