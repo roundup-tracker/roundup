@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.9 2004-03-24 06:18:59 richard Exp $ 
+# $Id: test_mysql.py,v 1.10 2004-05-23 09:44:47 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -65,12 +65,13 @@ class mysqlSchemaTest(mysqlOpener, SchemaTest):
 class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
     backend = 'mysql'
     extra_config = '''
-MYSQL_DBHOST = 'localhost'
-MYSQL_DBUSER = 'rounduptest'
-MYSQL_DBPASSWORD = 'rounduptest'
-MYSQL_DBNAME = 'rounduptest'
-MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
-'''
+MYSQL_DBHOST = %r
+MYSQL_DBUSER = %r
+MYSQL_DBPASSWORD = %r
+MYSQL_DBNAME = %r
+MYSQL_DATABASE = %r
+'''%(config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD,
+        config.MYSQL_DBNAME, config.MYSQL_DATABASE)
     def setUp(self):
         mysqlOpener.setUp(self)
         ClassicInitTest.setUp(self)

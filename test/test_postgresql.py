@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.9 2004-05-05 11:22:01 richard Exp $ 
+# $Id: test_postgresql.py,v 1.10 2004-05-23 09:44:47 richard Exp $ 
 
 import unittest
 
@@ -84,7 +84,7 @@ class postgresqlSchemaTest(postgresqlOpener, SchemaTest):
 
 class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest):
     backend = 'postgresql'
-    extra_config = "POSTGRESQL_DATABASE = {'database': 'rounduptest'}"
+    extra_config = "POSTGRESQL_DATABASE = %r"%config.POSTGRESQL_DATABASE
     def setUp(self):
         postgresqlOpener.setUp(self)
         ClassicInitTest.setUp(self)
