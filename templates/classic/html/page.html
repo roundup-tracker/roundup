@@ -68,17 +68,18 @@
 
   <form method="POST" action="">
    <p class="userblock" tal:condition="python:request.user.username=='anonymous'">
+    <b>Login</b><br>
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
-    <input type="submit" name=":action" value="login">
+    <input type="submit" name=":action" value="Login">
     <span tal:replace="structure request/indexargs_form" />
     <a href="user?:template=register">Register</a><br>
-    <a href="user?:template=forgotten">Forgotten your password?</a><br>
+    <a href="user?:template=forgotten">Lost your password?</a><br>
    </p>
   </form>
    
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
-   <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
+   <b>Hello,</b> <b tal:content="request/user/username">username</b><br>
    <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
    <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',

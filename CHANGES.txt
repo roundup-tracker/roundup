@@ -14,6 +14,7 @@ Fixed:
 - fixed form padding in LHS menu (sf bug 790502)
 - fixed upgrading docs for timezones (sf bug 790498)
 - set the content type on page templates (can have XML templates now)
+- various cosmetic fixes (thanks James Kew for being persistent :)
 
 
 2003-08-08 0.6.0
