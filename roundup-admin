@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.26 2001-10-11 05:03:51 richard Exp $
+# $Id: roundup-admin,v 1.27 2001-10-11 23:43:04 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -108,7 +108,7 @@ Command help:
         print '%s:'%name
         print '   ',command.__doc__
 
-def do_init(instance_home, args):
+def do_init(instance_home, args, comma_sep=0):
     '''Usage: init [template [backend [admin password]]]
     Initialise a new Roundup instance.
 
@@ -148,7 +148,7 @@ def do_init(instance_home, args):
     return 0
 
 
-def do_get(db, args):
+def do_get(db, args, comma_sep=0):
     '''Usage: get property designator[,designator]*
     Get the given property of one or more designator(s).
 
@@ -156,14 +156,19 @@ def do_get(db, args):
     '''
     propname = args[0]
     designators = string.split(args[1], ',')
-    # TODO: handle the -c option
+    l = []
     for designator in designators:
         classname, nodeid = roundupdb.splitDesignator(designator)
-        print db.getclass(classname).get(nodeid, propname)
+        if comma_sep:
+            l.append(db.getclass(classname).get(nodeid, propname))
+        else:
+            print db.getclass(classname).get(nodeid, propname)
+    if comma_sep:
+        print ','.join(l)
     return 0
 
 
-def do_set(db, args):
+def do_set(db, args, comma_sep=0):
     '''Usage: set designator[,designator]* propname=value ...
     Set the given property of one or more designator(s).
 
@@ -197,7 +202,7 @@ def do_set(db, args):
         apply(cl.set, (nodeid, ), props)
     return 0
 
-def do_find(db, args):
+def do_find(db, args, comma_sep=0):
     '''Usage: find classname propname=value ...
     Find the nodes of the given class with a given property value.
 
@@ -210,19 +215,19 @@ def do_find(db, args):
     # look up the linked-to class and get the nodeid that has the value
     propname, value = args[1].split('=')
     num_re = re.compile('^\d+$')
-    if num_re.match(value):
-        nodeid = value
-    else:
+    if not num_re.match(value):
         propcl = cl.properties[propname].classname
         propcl = db.getclass(propcl)
-        nodeid = propcl.lookup(value)
+        value = propcl.lookup(value)
 
     # now do the find
-    # TODO: handle the -c option
-    print cl.find(**{propname: nodeid})
+    if comma_sep:
+        print ','.join(cl.find(**{propname: value}))
+    else:
+        print cl.find(**{propname: value})
     return 0
 
-def do_spec(db, args):
+def do_spec(db, args, comma_sep=0):
     '''Usage: spec classname
     Show the properties for a classname.
 
@@ -237,7 +242,7 @@ def do_spec(db, args):
         else:
             print '%s: %s'%(key, value)
 
-def do_create(db, args):
+def do_create(db, args, comma_sep=0):
     '''Usage: create classname property=value ...
     Create a new entry of a given class.
 
@@ -293,7 +298,7 @@ def do_create(db, args):
 
     return 0
 
-def do_list(db, args):
+def do_list(db, args, comma_sep=0):
     '''Usage: list classname [property]
     List the instances of a class.
 
@@ -308,24 +313,26 @@ def do_list(db, args):
         key = args[1]
     else:
         key = cl.labelprop()
-    # TODO: handle the -c option
-    for nodeid in cl.list():
-        value = cl.get(nodeid, key)
-        print "%4s: %s"%(nodeid, value)
+    if comma_sep:
+        print ','.join(cl.list())
+    else:
+        for nodeid in cl.list():
+            value = cl.get(nodeid, key)
+            print "%4s: %s"%(nodeid, value)
     return 0
 
-def do_history(db, args):
+def do_history(db, args, comma_sep=0):
     '''Usage: history designator
     Show the history entries of a designator.
 
     Lists the journal entries for the node identified by the designator.
     '''
     classname, nodeid = roundupdb.splitDesignator(args[0])
-    # TODO: handle the -c option
+    # TODO: handle the -c option?
     print db.getclass(classname).history(nodeid)
     return 0
 
-def do_retire(db, args):
+def do_retire(db, args, comma_sep=0):
     '''Usage: retire designator[,designator]*
     Retire the node specified by designator.
 
@@ -338,7 +345,7 @@ def do_retire(db, args):
         db.getclass(classname).retire(nodeid)
     return 0
 
-def do_export(db, args):
+def do_export(db, args, comma_sep=0):
     '''Usage: export class[,class] destination_dir
     ** EXPERIMENTAL **
     Export the database to CSV files by class in the given directory.
@@ -380,7 +387,7 @@ def do_export(db, args):
                f.write(','.join(l) + '\n')
     return 0
 
-def do_import(db, args):
+def do_import(db, args, comma_sep=0):
     '''Usage: import class file
     ** EXPERIMENTAL **
     Import the contents of the CSV file as new nodes for the given class.
@@ -448,7 +455,7 @@ def do_import(db, args):
         apply(cl.create, (), d)
     return 0
 
-def do_freshen(db, args):
+def do_freshen(db, args, comma_sep=0):
     '''Usage: freshen
     Freshen an existing instance.  **DO NOT USE**
 
@@ -555,7 +562,7 @@ def main():
 
     # do the command
     try:
-        return function(db, args[1:])
+        return function(db, args[1:], comma_sep=comma_sep)
     finally:
         db.close()
 
@@ -567,6 +574,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2001/10/11 05:03:51  richard
+# Marked the roundup-admin import/export as experimental since they're not fully
+# operational.
+#
 # Revision 1.25  2001/10/10 04:12:32  richard
 # The setup.cfg file is just causing pain. Away it goes.
 #
