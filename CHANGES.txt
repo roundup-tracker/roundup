@@ -8,14 +8,16 @@ Feature:
 - implement __nonzero__ for HTMLProperty
 
 
-2004-05-?? 0.7.3
+2004-05-28 0.7.3
 Fixed:
 - add "checked" to truth values for Boolean input
 - fixed import in metakit backend
 - fix SearchAction use of Class.filter(), and clarify API docs for same
+- ensure static files may only be served out of the tracker's "static
+  files" directory
 
 
-2004-05-?? 0.7.2
+2004-05-17 0.7.2
 Fixed:
 - anydbm sorting with None values (sf bug 952853)
 - roundup-server -g option not recognised (sf bug 952310)
@@ -200,7 +202,14 @@ Cleanup:
     class
 
 
-2004-??-?? 0.6.9
+2004-05-17 0.6.10
+Fixed:
+- mysql backend wasn't locking tracker
+- ensure static files may only be served out of the tracker's "static
+  files" directory
+
+
+2004-04-18 0.6.9
 Fixed:
 - paging in classhelp popup was broken
 - socket timeout error logging can fail
