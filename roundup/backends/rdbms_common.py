@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.114 2004-06-29 05:51:38 richard Exp $
+# $Id: rdbms_common.py,v 1.115 2004-07-01 03:55:47 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2655,9 +2655,10 @@ class FileClass(Class, hyperdb.FileClass):
 
         Pass on the content-type property for the content property.
         '''
-        Class.index(nodeid)
-        mime_type = self.get(itemid, 'type')
-        if not mime_type:
+        Class.index(self, nodeid)
+        try:
+            mime_type = self.get(nodeid, 'type', self.default_mime_type)
+        except KeyError:
             mime_type = self.default_mime_type
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
             str(self.get(nodeid, 'content')), mime_type)
