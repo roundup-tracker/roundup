@@ -5,6 +5,7 @@ Roundup: an Issue-Tracking System for Knowledge Workers
 Contents
 ========
 
+- Features_
 - Overview_
 - Installation_
 - `Getting Started`_
@@ -16,6 +17,7 @@ Contents
 - Acknowledgements_
 - License_
 
+.. _Features: features.html
 .. _Overview: overview.html
 .. _Installation: installation.html
 .. _`Getting Started`: getting_started.html

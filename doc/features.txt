@@ -1,0 +1,34 @@
+================
+Roundup Features
+================
+
+
+Roundup is a simple-to-use and -install issue-tracking system with
+web, e-mail and command-line interfaces. It is based on the winning design
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
+
+*simple to use*
+ - accessible through the web, email, command-line or Python programs
+
+*simple to install*
+ - installation takes about 10 minutes for a basic installation
+
+*web interface*
+ - fully editable interfaces for indexing and display of items
+ - differentiates between anonymous, known and admin users
+ - may be set up to require login, and may also only allow admin users
+   to register new users
+
+*e-mail interface*
+ - may be set up using sendmail-like delivery alias, POP polling or mailbox
+   polling
+ - issues have their own mini mailing list (nosy list)
+ - nosy list configuration controls how people are added and when messages
+   are sent to the list
+ - auto-filing of "unformatted" messages into a particular class
+
+*command-line*
+ - may be used to interactively manage roundup databases
+ - may be scripted using standard shell scripting
+
