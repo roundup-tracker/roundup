@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.36 2002-06-19 03:07:19 richard Exp $
+#$Id: back_anydbm.py,v 1.37 2002-06-20 23:52:35 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -335,7 +335,10 @@ class Database(FileStorage, hyperdb.Database):
             if str(error) == "need 'c' or 'n' flag to open new db": return []
             elif error.args[0] != 2: raise
             return []
-        journal = marshal.loads(db[nodeid])
+        try:
+            journal = marshal.loads(db[nodeid])
+        except KeyError:
+            raise KeyError, 'no such %s %s'%(classname, nodeid)
         res = []
         for entry in journal:
             (nodeid, date_stamp, user, action, params) = entry
@@ -483,6 +486,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.36  2002/06/19 03:07:19  richard
+#Moved the file storage commit into blobfiles where it belongs.
+#
 #Revision 1.35  2002/05/25 07:16:24  rochecompaan
 #Merged search_indexing-branch with HEAD
 #
