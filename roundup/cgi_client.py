@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.134 2002-07-09 04:19:09 richard Exp $
+# $Id: cgi_client.py,v 1.135 2002-07-10 00:22:34 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -112,7 +112,7 @@ function submit_once() {
 }
 
 function help_window(helpurl, width, height) {
-    HelpWin = window.open('%(base)s%(instance_path_name)s/' + helpurl, 'HelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
+    HelpWin = window.open('%(base)s%(instance_path_name)s/' + helpurl, 'RoundupHelpWindow', 'scrollbars=yes,resizable=yes,toolbar=no,height='+height+',width='+width);
 }
 
 </script>
@@ -431,21 +431,6 @@ function help_window(helpurl, width, height) {
     def searchnode(self):
         columns, filter, group, sort, filterspec, pagesize = \
             self._get_customisation_info()
-##        show_nodes = 1
-##        if len(self.form.keys()) == 0:
-##            # get the default search filters from instance_config
-##            if hasattr(self.instance, 'SEARCH_FILTERS'):
-##                for f in self.instance.SEARCH_FILTERS:
-##                    spec = getattr(self.instance, f)
-##                    if spec['CLASS'] == self.classname:
-##                        filter = spec['FILTER']
-##                
-##            show_nodes = 0
-##            show_customization = 1
-##        return self.list(columns=columns, filter=filter, group=group,
-##            sort=sort, filterspec=filterspec,
-##            show_customization=show_customization, show_nodes=show_nodes,
-##            pagesize=pagesize)
         cn = self.classname
         self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
             'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
@@ -665,7 +650,8 @@ function help_window(helpurl, width, height) {
         id = self.nodeid
         if cl.getkey():
             id = cl.get(id, cl.getkey())
-        self.pagehead('%s: %s %s'%(self.classname.capitalize(), id, xtra), message)
+        self.pagehead('%s: %s %s'%(self.classname.capitalize(), id, xtra),
+            message)
 
         nodeid = self.nodeid
 
@@ -1111,6 +1097,8 @@ function help_window(helpurl, width, height) {
             self.login(message=_('Username required'))
             return 0
         self.user = self.form['__login_name'].value
+        # re-open the database for real, using the user
+        self.opendb(self.user)
         if self.form.has_key('__login_password'):
             password = self.form['__login_password'].value
         else:
@@ -1144,7 +1132,7 @@ function help_window(helpurl, width, height) {
         return 1 on successful login
         '''
         # re-open the database as "admin"
-        self.db = self.instance.open('admin')
+        self.opendb('admin')
 
         # TODO: pre-check the required fields and username key property
         cl = self.db.user
@@ -1156,22 +1144,42 @@ function help_window(helpurl, width, height) {
             self.login(message, action=action)
             return 0
         self.user = cl.get(uid, 'username')
+        # re-open the database for real, using the user
+        self.opendb(self.user)
         password = cl.get(uid, 'password')
         self.set_cookie(self.user, self.form['password'].value)
         return 1
 
     def set_cookie(self, user, password):
-        # construct the cookie
-        user = binascii.b2a_base64('%s:%s'%(user, password)).strip()
-        if user[-1] == '=':
-          if user[-2] == '=':
-            user = user[:-2]
+        # TODO generate a much, much stronger session key ;)
+        session = binascii.b2a_base64(repr(time.time())).strip()
+
+        # clean up the base64
+        if session[-1] == '=':
+          if session[-2] == '=':
+            session = session[:-2]
           else:
-            user = user[:-1]
+            session = session[:-1]
+
+        print 'session set to', `session`
+
+        # insert the session in the sessiondb
+        self.db.getclass('__sessions').create(sessid=session, user=user,
+            last_use=date.Date())
+
+        # and commit immediately
+        self.db.commit()
+
+        # expire us in a long, long time
+        # TODO: hrm, how long should this be, and how many sessions can one
+        # user have?
         expire = Cookie._getdate(86400*365)
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
-        self.header({'Set-Cookie': 'roundup_user=%s; expires=%s; Path=%s;' % (
-            user, expire, path)})
+
+        # generate the cookie path - make sure it has a trailing '/'
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+            ''))
+        self.header({'Set-Cookie': 'roundup_user=%s; expires=%s; Path=%s;'%(
+            session, expire, path)})
 
     def make_user_anonymous(self):
         # make us anonymous if we can
@@ -1185,47 +1193,73 @@ function help_window(helpurl, width, height) {
         self.make_user_anonymous()
         # construct the logout cookie
         now = Cookie._getdate()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
+        path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
+            ''))
         self.header({'Set-Cookie':
             'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
             path)})
         self.login()
 
+    def opendb(self, user):
+        ''' Open the database - but include the definition of the sessions db.
+        '''
+        # open the db
+        self.db = self.instance.open(user)
+
+        # make sure we have the session Class
+        try:
+            sessions = self.db.getclass('__sessions')
+        except:
+            # add the sessions Class
+            sessions = hyperdb.Class(self.db, '__sessions',
+                sessid=hyperdb.String(), user=hyperdb.String(),
+                last_use=hyperdb.Date())
+            sessions.setkey('sessid')
+
     def main(self):
         '''Wrap the database accesses so we can close the database cleanly
         '''
         # determine the uid to use
-        self.db = self.instance.open('admin')
+        self.opendb('admin')
+
+        # make sure we have the session Class
+        sessions = self.db.getclass('__sessions')
+
+        # age sessions, remove when they haven't been used for a week
+        # TODO: this doesn't need to be done every access
+        week = date.Interval('7d')
+        now = date.Date()
+        for sessid in sessions.list():
+            interval = now - sessions.get(sessid, 'last_use')
+            if interval > week:
+                sessions.destroy(sessid)
+
+        # look up the user session cookie
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
         if (cookie.has_key('roundup_user') and
                 cookie['roundup_user'].value != 'deleted'):
-            cookie = cookie['roundup_user'].value
-            if len(cookie)%4:
-              cookie = cookie + '='*(4-len(cookie)%4)
-            try:
-                user, password = binascii.a2b_base64(cookie).split(':')
-            except (TypeError, binascii.Error, binascii.Incomplete):
-                # damaged cookie!
-                user, password = 'anonymous', ''
+            print cookie
 
-            # make sure the user exists
+            # get the session key from the cookie
+            session = cookie['roundup_user'].value
+            print 'session is', `session`
+
+            # get the user from the session
             try:
-                uid = self.db.user.lookup(user)
-                # now validate the password
-                if password != self.db.user.get(uid, 'password'):
-                    user = 'anonymous'
+                sessid = sessions.lookup(session)
             except KeyError:
                 user = 'anonymous'
+            else:
+                sessions.set(sessid, last_use=date.Date())
+                self.db.commit()
+                user = sessions.get(sessid, 'user')
 
         # make sure the anonymous user is valid if we're using it
         if user == 'anonymous':
             self.make_user_anonymous()
         else:
             self.user = user
-
-        # re-open the database for real, using the user
-        self.db = self.instance.open(self.user)
 
         # now figure which function to call
         path = self.split_path
@@ -1278,6 +1312,9 @@ function help_window(helpurl, width, height) {
             else:
                 self.login(action=action)
             return
+
+        # re-open the database for real, using the user
+        self.opendb(self.user)
 
         # just a regular action
         self.do_action(action)
@@ -1454,6 +1491,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.134  2002/07/09 04:19:09  richard
+# Added reindex command to roundup-admin.
+# Fixed reindex on first access.
+# Also fixed reindexing of entries that change.
+#
 # Revision 1.133  2002/07/08 15:32:05  gmcm
 # Pagination of index pages.
 # New search form.
