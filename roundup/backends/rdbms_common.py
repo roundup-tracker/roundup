@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.102 2004-05-23 23:24:47 richard Exp $
+# $Id: rdbms_common.py,v 1.103 2004-05-28 01:09:11 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1109,6 +1109,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, '+++ commit database connection +++'
         self.conn.commit()
+
+        # open a new cursor for subsequent work
+        self.cursor = self.conn.cursor()
 
     def commit(self):
         ''' Commit the current transactions.

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.10 2004-03-31 23:07:51 richard Exp $
+# $Id: demo.py,v 1.11 2004-05-28 01:09:10 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -23,12 +23,14 @@ def install_demo(home, backend):
             MYSQL_DBPASSWORD = 'rounduptest'
             MYSQL_DBNAME = 'rounduptest'
             DATABASE = 'home'
-        module.db_nuke(config)
+        if module.db_exists(config):
+            module.db_nuke(config)
     elif backend == 'postgresql':
         class config:
             POSTGRESQL_DATABASE = {'database': 'rounduptest'}
             DATABASE = 'home'
-        module.db_nuke(config, 1)
+        if module.db_exists(config):
+            module.db_nuke(config)
 
     init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around

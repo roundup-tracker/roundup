@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.28 2004-05-10 00:39:40 richard Exp $
+# $Id: back_sqlite.py,v 1.29 2004-05-28 01:09:11 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -50,20 +50,21 @@ class Database(rdbms_common.Database):
     }
 
     def sql_open_connection(self):
+        '''Open a standard, non-autocommitting connection.
+
+        pysqlite will automatically BEGIN TRANSACTION for us.
+        '''
         db = os.path.join(self.config.DATABASE, 'db')
         conn = sqlite.connect(db=db)
+        # set a 30 second timeout (extraordinarily generous) for handling
+        # locked database
+        conn.db.sqlite_busy_timeout(30 * 1000)
         cursor = conn.cursor()
         return (conn, cursor)
 
     def open_connection(self):
         # ensure files are group readable and writable
         os.umask(0002)
-
-        # lock the database
-        lockfilenm = os.path.join(self.dir, 'lock')
-        self.lockfile = locking.acquire_lock(lockfilenm)
-        self.lockfile.write(str(os.getpid()))
-        self.lockfile.flush()
 
         (self.conn, self.cursor) = self.sql_open_connection()
 
@@ -245,17 +246,10 @@ class Database(rdbms_common.Database):
             connection.
         '''
         try:
-            try:
-                self.conn.close()
-            except sqlite.ProgrammingError, value:
-                if str(value) != 'close failed - Connection is closed.':
-                    raise
-        finally:
-            # always release the lock
-            if self.lockfile is not None:
-                locking.release_lock(self.lockfile)
-                self.lockfile.close()
-                self.lockfile = None
+            self.conn.close()
+        except sqlite.ProgrammingError, value:
+            if str(value) != 'close failed - Connection is closed.':
+                raise
 
     def sql_rollback(self):
         ''' Squash any error caused by us having closed the connection (and
@@ -280,6 +274,8 @@ class Database(rdbms_common.Database):
         except sqlite.DatabaseError, error:
             if str(error) != 'cannot commit - no transaction is active':
                 raise
+        # open a new cursor for subsequent work
+        self.cursor = self.conn.cursor()
 
     def sql_index_exists(self, table_name, index_name):
         self.cursor.execute('pragma index_list(%s)'%table_name)

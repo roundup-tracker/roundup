@@ -6,17 +6,14 @@ Feature:
 - added MD5 scheme for password hiding
 - added support for HTTP charset selection
 - implement __nonzero__ for HTMLProperty
+- remove "manual" locking of sqlite database
+- create a new RDBMS cursor after committing
 
-2004-??-?? 0.7.5
+
+2004-??-?? 0.7.4
 Fixed:
 - re-acquire the OTK manager when we re-open the database
 - mailgw handler can close the database on us
-
-
-2004-05-28 0.7.4
-Fixed:
-- remove "manual" locking of sqlite database
-- create a new RDBMS cursor after committing
 
 
 2004-05-28 0.7.3
