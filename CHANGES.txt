@@ -62,6 +62,11 @@ Cleanup:
 - implemented semantic comparison of Message objects in test_mailgw
 - tidied up forms in default stylesheet
 - force textareas to use monospace fonts, lessening surprise on the user
+- moved out parts of client.py to new modules:
+  * actions.py - the xxxAction and xxxPermission functions refactored into 
+    Action classes
+  * exceptions.py - all exceptions
+  * form_parser.py - parsePropsFromForm & extractFormList in a FormParser class
 
 
 2004-??-?? 0.6.5
