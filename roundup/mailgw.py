@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.118 2003-04-24 07:19:58 richard Exp $
+$Id: mailgw.py,v 1.119 2003-04-24 07:22:08 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -141,10 +141,10 @@ def openSMTPConnection(config):
     use_tls = getattr(config, 'MAILHOST_TLS', 'no')
     if use_tls == 'yes'
         # do we have key files too?
-        keyfile = getattr(config, 'MAILHOST_TLS_KEYFILE', None)
-        if keyfile is not None:
-            certfile = getattr(config, 'MAILHOST_TLS_CERTFILE', None)
-            if certfile is not None:
+        keyfile = getattr(config, 'MAILHOST_TLS_KEYFILE', '')
+        if keyfile:
+            certfile = getattr(config, 'MAILHOST_TLS_CERTFILE', '')
+            if certfile:
                 args = (keyfile, certfile)
             else:
                 args = (keyfile, )
