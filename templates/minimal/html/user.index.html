@@ -1,6 +1,7 @@
 <!-- dollarId: user.index,v 1.3 2002/07/09 05:29:51 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title" i18n:translate="">User listing</title>
+<title metal:fill-slot="head_title" i18n:translate="">User listing - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
 <span metal:fill-slot="body_title" tal:omit-tag="python:1"
  i18n:translate="">User listing</span>
 <td class="content" metal:fill-slot="content">
