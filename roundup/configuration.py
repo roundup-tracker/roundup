@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.1 2004-07-25 11:29:40 a1s Exp $
+# $Id: configuration.py,v 1.2 2004-07-25 12:44:16 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -9,6 +9,7 @@ import os
 import time
 import ConfigParser
 
+from roundup import instance, rlog
 # XXX i don't think this module needs string translation, does it?
 
 ### Exceptions
@@ -287,7 +288,7 @@ class FilePathOption(Option):
 
     def get(self):
         _val = Option.get(self)
-        if not os.path.isabs(_val):
+        if _val and not os.path.isabs(_val):
             _val = os.path.join(self.config["TRACKER_HOME"], _val)
         return _val
 
@@ -384,6 +385,21 @@ SETTINGS = (
         (MailAddressOption, "email", "issue_tracker",
             "Email address that mail to roundup should go to"),
     )),
+    ("logging", (
+        (FilePathOption, "config", "",
+            "Path to configuration file for standard Python logging module.\n"
+            "If this option is set, logging configuration is loaded\n"
+            "from specified file; options 'filename' and 'level'\n"
+            "in this section are ignored."),
+        (FilePathOption, "filename", "",
+            "Log file name for minimal logging facility built into Roundup.\n"
+            "If no file name specified, log messages are written on stderr.\n"
+            "If above 'config' option is set, this option has no effect."),
+        (Option, "level", "ERROR",
+            "Minimal severity level of messages written to log file.\n"
+            "If above 'config' option is set, this option has no effect.\n"
+            "Allowed values: DEBUG, INFO, WARNING, ERROR"),
+    )),
     # XXX This section covers two service areas:
     #   outgoing mail (domain, smtp parameters)
     #   and creation of issues from incoming mail.
@@ -479,6 +495,8 @@ class Config:
     section_options = None
     # mapping from option names and aliases to Option instances
     options = None
+    # logging engine
+    logging = rlog.BasicLogging()
 
     def __init__(self, tracker_home=None):
         # initialize option containers:
@@ -495,6 +513,8 @@ class Config:
         # load the config if tracker_home given
         if tracker_home is not None:
             self.load(tracker_home)
+        else:
+            self.init_logging()
 
     def add_option(self, option):
         """Adopt a new Option object"""
@@ -515,6 +535,25 @@ class Config:
         """Set all options to their default values"""
         for _option in self.items():
             _option.reset()
+        self.init_logging()
+
+    def init_logging(self):
+        _file = self["LOGGING_CONFIG"]
+        if _file and os.path.isfile(_file):
+            try:
+                import logging
+                _logging = logging
+            except ImportError, msg:
+                raise instance.TrackerError, \
+                    'Python logging module unavailable: %s' % msg
+            _logging.fileConfig(_file)
+        else:
+            _logging = rlog.BasicLogging()
+            _file = self["LOGGING_FILENAME"]
+            if _file:
+                _logging.setFile(_file)
+            _logging.setLevel(self["LOGGING_LEVEL"] or "ERROR")
+        self.logging = _logging
 
     # option and section locators (used in option access methods)
 
@@ -546,6 +585,7 @@ class Config:
         self.TRACKER_HOME = tracker_home
         for _option in self.items():
             _option.load_ini(_config)
+        self.init_logging()
 
     def load_pyconfig(self, tracker_home):
         """Set options from config.py file in given tracker_home directory"""
@@ -566,6 +606,7 @@ class Config:
         self.TRACKER_HOME = tracker_home
         for _option in self.items():
             _option.load_pyconfig(_config)
+        self.init_logging()
         # backward compatibility:
         # SMTP login parameters were specified as a tuple in old style configs
         # convert them to new plain string options
