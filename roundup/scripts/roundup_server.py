@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.35 2003-12-04 02:43:07 richard Exp $
+$Id: roundup_server.py,v 1.36 2003-12-06 02:46:34 richard Exp $
 """
 
 # python version check
@@ -44,6 +44,12 @@ TRACKER_HOMES = {
 }
 
 ROUNDUP_USER = None
+ROUNDUP_GROUP = None
+ROUNDUP_LOG_IP = 1
+HOSTNAME = ''
+PORT = 8080
+PIDFILE = None
+LOGFILE = None
 
 
 #
@@ -196,7 +202,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         c = tracker.Client(tracker, self, env)
         c.main()
 
-    LOG_IPADDRESS = 1
+    LOG_IPADDRESS = ROUNDUP_LOG_IP
     def address_string(self):
         if self.LOG_IPADDRESS:
             return self.client_address[0]
@@ -208,23 +214,128 @@ def error():
     exc_type, exc_value = sys.exc_info()[:2]
     return _('Error: %s: %s' % (exc_type, exc_value))
 
-def usage(message=''):
-    print _('''%(message)s
+try:
+    import win32serviceutil
+except:
+    RoundupService = None
+else:
+    # allow the win32
+    import win32service
+    import win32event
+    from win32event import *
+    from win32file import *
 
+    SvcShutdown = "ServiceShutdown"
+
+    class RoundupService(win32serviceutil.ServiceFramework,
+            BaseHTTPServer.HTTPServer):
+        ''' A Roundup standalone server for Win32 by Ewout Prangsma
+        '''
+        _svc_name_ = "Roundup Bug Tracker"
+        _svc_display_name_ = "Roundup Bug Tracker"
+        address = (HOSTNAME, PORT)
+        def __init__(self, args):
+            # redirect stdout/stderr to our logfile
+            if LOGFILE:
+                # appending, unbuffered
+                sys.stdout = sys.stderr = open(LOGFILE, 'a', 0)
+            win32serviceutil.ServiceFramework.__init__(self, args)
+            BaseHTTPServer.HTTPServer.__init__(self, self.address, 
+                RoundupRequestHandler)
+
+            # Create the necessary NT Event synchronization objects...
+            # hevSvcStop is signaled when the SCM sends us a notification
+            # to shutdown the service.
+            self.hevSvcStop = win32event.CreateEvent(None, 0, 0, None)
+
+            # hevConn is signaled when we have a new incomming connection.
+            self.hevConn    = win32event.CreateEvent(None, 0, 0, None)
+
+            # Hang onto this module for other people to use for logging
+            # purposes.
+            import servicemanager
+            self.servicemanager = servicemanager
+
+        def SvcStop(self):
+            # Before we do anything, tell the SCM we are starting the
+            # stop process.
+            self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+            win32event.SetEvent(self.hevSvcStop)
+
+        def SvcDoRun(self):
+            try:
+                self.serve_forever()
+            except SvcShutdown:
+                pass
+
+        def get_request(self):
+            # Call WSAEventSelect to enable self.socket to be waited on.
+            WSAEventSelect(self.socket, self.hevConn, FD_ACCEPT)
+            while 1:
+                try:
+                    rv = self.socket.accept()
+                except socket.error, why:
+                    if why[0] != WSAEWOULDBLOCK:
+                        raise
+                    # Use WaitForMultipleObjects instead of select() because
+                    # on NT select() is only good for sockets, and not general
+                    # NT synchronization objects.
+                    rc = WaitForMultipleObjects((self.hevSvcStop, self.hevConn),
+                        0, INFINITE)
+                    if rc == WAIT_OBJECT_0:
+                        # self.hevSvcStop was signaled, this means:
+                        # Stop the service!
+                        # So we throw the shutdown exception, which gets
+                        # caught by self.SvcDoRun
+                        raise SvcShutdown
+                    # Otherwise, rc == WAIT_OBJECT_0 + 1 which means
+                    # self.hevConn was signaled, which means when we call 
+                    # self.socket.accept(), we'll have our incoming connection
+                    # socket!
+                    # Loop back to the top, and let that accept do its thing...
+                else:
+                    # yay! we have a connection
+                    # However... the new socket is non-blocking, we need to
+                    # set it back into blocking mode. (The socket that accept()
+                    # returns has the same properties as the listening sockets,
+                    # this includes any properties set by WSAAsyncSelect, or 
+                    # WSAEventSelect, and whether its a blocking socket or not.)
+                    #
+                    # So if you yank the following line, the setblocking() call 
+                    # will be useless. The socket will still be in non-blocking
+                    # mode.
+                    WSAEventSelect(rv[0], self.hevConn, 0)
+                    rv[0].setblocking(1)
+                    break
+            return rv
+
+def usage(message=''):
+    if RoundupService:
+        win = ''' -c: Windows Service options.  If you want to run the server as a Windows
+     Service, you must configure the rest of the options by changing the
+     constants of this program.  You will at least configure one tracker
+     in the TRACKER_HOMES variable.  This option is mutually exclusive
+     from the rest.  Typing "roundup-server -c help" shows Windows
+     Services specifics.'''
+    else:
+        win = ''
+    port=PORT
+    print _('''%(message)s
 Usage:
 roundup-server [options] [name=tracker home]*
 
 options:
  -n: sets the host name
- -p: sets the port to listen on
+ -p: sets the port to listen on (default: %(port)s)
  -u: sets the uid to this user after listening on the port
  -g: sets the gid to this group after listening on the port
  -l: sets a filename to log to (instead of stdout)
- -d: sets a filename to write server PID to. This option causes the server 
-     to run in the background. Note: on Windows the PID argument is needed,
-     but ignored. The -l option *must* be specified if this option is.
+ -d: run the server in the background and on UN*X write the server's PID
+     to the nominated file. The -l option *must* be specified if this
+     option is.
  -N: log client machine names in access log instead of IP addresses (much
      slower)
+%(win)s
 
 name=tracker home:
    Sets the tracker home(s) to use. The name is how the tracker is
@@ -273,7 +384,7 @@ def daemonize(pidfile):
     os.dup2(devnull, 1)
     os.dup2(devnull, 2)
 
-def run(port=8080, success_message=None):
+def run(port=PORT, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
     # time out after a minute if we can
@@ -281,13 +392,21 @@ def run(port=8080, success_message=None):
     if hasattr(socket, 'setdefaulttimeout'):
         socket.setdefaulttimeout(60)
 
-    hostname = ''
-    pidfile = None
-    logfile = None
+    hostname = HOSTNAME
+    pidfile = PIDFILE
+    logfile = LOGFILE
+    user = ROUNDUP_USER
+    group = ROUNDUP_GROUP
+    svc_args = None
+
     try:
         # handle the command-line args
+        options = 'n:p:u:d:l:hN'
+        if RoundupService:
+            options += 'c'
+
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:hN')
+            optlist, args = getopt.getopt(sys.argv[1:], options)
         except getopt.GetoptError, e:
             usage(str(e))
 
@@ -302,6 +421,10 @@ def run(port=8080, success_message=None):
             elif opt == '-l': logfile = os.path.abspath(arg)
             elif opt == '-h': usage()
             elif opt == '-N': RoundupRequestHandler.LOG_IPADDRESS = 0
+            elif opt == '-c': svc_args = [opt] + args; args = None
+
+        if svc_args is not None and len(optlist) > 1:
+            raise ValueError, _("windows service option must be the only one")
 
         if pidfile and not logfile:
             raise ValueError, _("logfile *must* be specified if pidfile is")
@@ -355,11 +478,11 @@ def run(port=8080, success_message=None):
         if args:
             d = {}
             for arg in args:
-		try:
+                try:
                     name, home = arg.split('=')
                 except ValueError:
                     raise ValueError, _("Instances must be name=home")
-                d[name] = home
+                d[name] = os.path.abspath(home)
             RoundupRequestHandler.TRACKER_HOMES = d
     except SystemExit:
         raise
@@ -379,6 +502,10 @@ def run(port=8080, success_message=None):
             sys.exit(0)
         else:
             daemonize(pidfile)
+
+    if svc_args is not None:
+        # don't do any other stuff
+        return win32serviceutil.HandleCommandLine(RoundupService, argv=svc_args)
 
     # redirect stdout/stderr to our logfile
     if logfile:

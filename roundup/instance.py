@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.10 2003-09-04 00:47:01 richard Exp $
+# $Id: instance.py,v 1.11 2003-12-06 02:46:34 richard Exp $
 
 __doc__ = '''
 Tracker handling (open tracker).
@@ -43,7 +43,7 @@ class Tracker:
         self._load_config('security.py', db=db)
 
 
-    def __load_python(self, file):
+    def _load_python(self, file):
         file = os.path.join(tracker_home, file)
         vars = Vars()
         execfile(file, vars.__dict__)
