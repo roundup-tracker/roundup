@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.33 2004-07-06 11:29:12 a1s Exp $
+#$Id: actions.py,v 1.34 2004-07-13 09:41:15 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -60,8 +60,7 @@ class Action:
 
     def gettext(self, msgid):
         """Return the localized translation of msgid"""
-        return templating.translationService.translate(domain="roundup",
-            msgid=msgid, context=self.context)
+        return self.client.translator.gettext(msgid)
 
     _ = gettext
 
@@ -893,4 +892,4 @@ class ExportCSVAction(Action):
 
         return '\n'
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python ts=4 sw=4 et si :
