@@ -2,13 +2,10 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.9 is a bug fix release (with one feature cleaning up and API
+0.7.9 is a bug fix release (with one feature cleaning up an API
 inconsistency):
 
-Feature:
 - DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
-
-Fixed:
 - popup listing uses filter args (thanks Marlon van den Berg)
 - fixed editing of message contents
 - loosened the detection of issue cross-references in messages
