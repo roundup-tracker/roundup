@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.18 $
+:Version: $Revision: 1.19 $
 
 .. contents::
 
@@ -175,6 +175,24 @@ I keep getting logged out
 Make sure that the TRACKER_WEB setting in your tracker's config.py is set
 to the URL of the tracker.
 
+
+How is sorting performed, and why does it seem to fail sometimes?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When we sort items in the hyperdb, we use one of a number of methods,
+depending on the properties being sorted on:
+
+1. If it's a String, Number, Date or Interval property, we just sort the
+   scalar value of the property. Strings are sorted case-sensitively.
+2. If it's a Link property, we sort by either the linked item's "order"
+   property (if it has one) or the linked item's "id".
+3. Mulitlinks sort similar to #2, but we start with the first
+   Multilink list item, and if they're the same, we sort by the second item,
+   and so on.
+
+Note that if an "order" property is defined on a Class that is used for
+sorting, all items of that Class *must* have a value against the "order"
+property, or sorting will result in random ordering.
 
 -----------------
 
