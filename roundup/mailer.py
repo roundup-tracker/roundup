@@ -1,5 +1,5 @@
 """Sending Roundup-specific mail over SMTP."""
-# $Id: mailer.py,v 1.1 2003-09-08 09:28:28 jlgijsbers Exp $
+# $Id: mailer.py,v 1.2 2003-09-08 21:08:59 jlgijsbers Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -41,8 +41,8 @@ class Mailer:
         
         return message, writer
 
-    def standard_message(self, to, subject, content):
-        message, writer = self.get_standard_message(to, subject)
+    def standard_message(self, to, subject, content, author=None):
+        message, writer = self.get_standard_message(to, subject, author)
 
         writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
         body = writer.startbody('text/plain; charset=utf-8')
