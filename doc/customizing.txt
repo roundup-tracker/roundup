@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.89 $
+:Version: $Revision: 1.90 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -750,7 +750,7 @@ Determining web context
 -----------------------
 
 To determine the "context" of a request, we look at the URL and the
-special request variable ``:template``. The URL path after the tracker
+special request variable ``@template``. The URL path after the tracker
 identifier is examined. Typical URL paths look like:
 
 1.  ``/tracker/issue``
@@ -783,7 +783,7 @@ e. if the path starts with an item designator and is longer than one
 Both b. and e. stop before we bother to determine the template we're
 going to use. That's because they don't actually use templates.
 
-The template used is specified by the ``:template`` CGI variable, which
+The template used is specified by the ``@template`` CGI variable, which
 defaults to:
 
 - only classname suplied:        "index"
@@ -796,7 +796,7 @@ Performing actions in web requests
 When a user requests a web page, they may optionally also request for an
 action to take place. As described in `how requests are processed`_, the
 action is performed before the requested page is generated. Actions are
-triggered by using a ``:action`` CGI variable, where the value is one
+triggered by using a ``@action`` CGI variable, where the value is one
 of:
 
 **login**
@@ -810,31 +810,12 @@ of:
  log them in.
 
 **edit**
- Perform an edit of an item in the database. There are some special form
- elements you may use:
-
- :link=designator:property and :multilink=designator:property
-  The value specifies an item designator and the property on that item
-  to which *this* item should be added, as a link or multilink.
- :note
-  Create a message and attach it to the current item's "messages"
-  property.
- :file
-  Create a file and attach it to the current item's "files" property.
-  Attach the file to the message created from the ``:note`` if it's
-  supplied.
- :required=property,property,...
-  The named properties are required to be filled in the form.
- :remove:<propname>=id(s)
-  The ids will be removed from the multilink property. You may have
-  multiple ``:remove:<propname>`` form elements for a single <propname>.
- :add:<propname>=id(s)
-  The ids will be added to the multilink property. You may have multiple
-  ``:add:<propname>`` form elements for a single <propname>.
+ Perform an edit of an item in the database. There are some `special form
+ variables`_ you may use.
 
 **new**
- Add a new item to the database. You may use the same special form
- elements as in the "edit" action.
+ Add a new item to the database. You may use the same `special form
+ variables`_ as in the "edit" action.
 
 **retire**
  Retire the item in the database.
@@ -893,6 +874,139 @@ are:
  behaviour is to check whether the user may view this class.
 
 
+Special form variables
+----------------------
+
+Item properties and their values are edited with html FORM
+variables and their values. You can:
+
+- Change the value of some property of the current item.
+- Create a new item of any class, and edit the new item's
+  properties,
+- Attach newly created items to a multilink property of the
+  current item.
+- Remove items from a multilink property of the current item.
+- Specify that some properties are required for the edit
+  operation to be successful.
+
+In the following, <bracketed> values are variable, "@" may be
+either ":" or "@", and other text "required" is fixed.
+
+Most properties are specified as form variables:
+
+``<propname>``
+  property on the current context item
+
+``<designator>"@"<propname>``
+  property on the indicated item (for editing related information)
+
+Designators name a specific item of a class.
+
+``<classname><N>``
+    Name an existing item of class <classname>.
+
+``<classname>"-"<N>``
+    Name the <N>th new item of class <classname>. If the form
+    submission is successful, a new item of <classname> is
+    created. Within the submitted form, a particular
+    designator of this form always refers to the same new
+    item.
+
+Once we have determined the "propname", we look at it to see
+if it's special:
+
+``@required``
+    The associated form value is a comma-separated list of
+    property names that must be specified when the form is
+    submitted for the edit operation to succeed.  
+
+    When the <designator> is missing, the properties are
+    for the current context item.  When <designator> is
+    present, they are for the item specified by
+    <designator>.
+
+    The "@required" specifier must come before any of the
+    properties it refers to are assigned in the form.
+
+``@remove@<propname>=id(s)`` or ``@add@<propname>=id(s)``
+    The "@add@" and "@remove@" edit actions apply only to
+    Multilink properties.  The form value must be a
+    comma-separate list of keys for the class specified by
+    the simple form variable.  The listed items are added
+    to (respectively, removed from) the specified
+    property.
+
+``@link@<propname>=<designator>``
+    If the edit action is "@link@", the simple form
+    variable must specify a Link or Multilink property.
+    The form value is a comma-separated list of
+    designators.  The item corresponding to each
+    designator is linked to the property given by simple
+    form variable.
+
+None of the above (ie. just a simple form value)
+    The value of the form variable is converted
+    appropriately, depending on the type of the property.
+
+    For a Link('klass') property, the form value is a
+    single key for 'klass', where the key field is
+    specified in dbinit.py.  
+
+    For a Multilink('klass') property, the form value is a
+    comma-separated list of keys for 'klass', where the
+    key field is specified in dbinit.py.  
+
+    Note that for simple-form-variables specifiying Link
+    and Multilink properties, the linked-to class must
+    have a key field.
+
+    For a String() property specifying a filename, the
+    file named by the form value is uploaded. This means we
+    try to set additional properties "filename" and "type" (if
+    they are valid for the class).  Otherwise, the property
+    is set to the form value.
+
+    For Date(), Interval(), Boolean(), and Number()
+    properties, the form value is converted to the
+    appropriate
+
+Any of the form variables may be prefixed with a classname or
+designator.
+
+Two special form values are supported for backwards compatibility:
+
+@note
+    This is equivalent to::
+
+        @link@messages=msg-1
+        @msg-1@content=value
+
+    except that in addition, the "author" and "date" properties of
+    "msg-1" are set to the userid of the submitter, and the current
+    time, respectively.
+
+@file
+    This is equivalent to::
+
+        @link@files=file-1
+        @file-1@content=value
+
+    The String content value is handled as described above for file
+    uploads.
+
+If both the "@note" and "@file" form variables are
+specified, the action::
+
+        @link@msg-1@files=file-1
+
+is also performed.
+
+We also check that FileClass items have a "content" property with
+actual content, otherwise we remove them from all_props before
+returning.
+
+
+
 Default templates
 -----------------
 
@@ -936,9 +1050,9 @@ The *classic* template has a number of additional templates.
 Note: Remember that you can create any template extension you want to,
 so if you just want to play around with the templating for new issues,
 you can copy the current "issue.item" template to "issue.test", and then
-access the test template using the ":template" URL argument::
+access the test template using the "@template" URL argument::
 
-   http://your.tracker.example/tracker/issue?:template=test
+   http://your.tracker.example/tracker/issue?@template=test
 
 and it won't affect your users using the "issue.item" template.
 
@@ -1369,13 +1483,13 @@ plain     render a "plain" representation of the property. This method
            If true, escape the text so it is HTML safe (default: no). The
            reason this defaults to off is that text is usually escaped
            at a later stage by the TAL commands, unless the "structure"
-           option is used in the template. The following are all
-           equivalent::
+           option is used in the template. The following ``tal:content``
+           expressions are all equivalent::
 
-            <p tal:content="structure python:msg.content.plain(escape=1)" />
-            <p tal:content="python:msg.content.plain()" />
-            <p tal:content="msg/content/plain" />
-            <p tal:content="msg/content" />
+            "structure python:msg.content.plain(escape=1)"
+            "python:msg.content.plain()"
+            "msg/content/plain"
+            "msg/content"
 
            Usually you'll only want to use the escape option in a
            complex expression.
@@ -1384,9 +1498,9 @@ plain     render a "plain" representation of the property. This method
            If true, turn URLs, email addresses and hyperdb item
            designators in the text into hyperlinks (default: no). Note
            that you'll need to use the "structure" TAL option if you
-           want to use this::
+           want to use this ``tal:content`` expression::
 
-            <p tal:content="structure python:msg.content.plain(hyperlink=1)" />
+            "structure python:msg.content.plain(hyperlink=1)"
 
            Note also that the text is automatically HTML-escaped before
            the hyperlinking transformation.
@@ -1417,7 +1531,7 @@ menu      only on Link and Multilink properties - render a form select
           list for this property
 reverse   only on Multilink properties - produce a list of the linked
           items in reverse order
-========= =====================================================================
+========= ================================================================
 
 
 The request variable
@@ -1687,7 +1801,7 @@ Note: if you add a new column to the ``:columns`` form variable
 
 This is one of the class context views. The template used is typically
 "*classname*.search". The form on this page should have "search" as its
-``:action`` variable. The "search" action:
+``@action`` variable. The "search" action:
 
 - sets up additional filtering, as well as performing indexed text
   searching
@@ -1829,11 +1943,11 @@ Properties are specified as form variables:
 Once we have determined the "propname", we check to see if it is one of
 the special form values:
 
-``:required``
+``@required``
   The named property values must be supplied or a ValueError will be
   raised.
 
-``:remove:<propname>=id(s)``
+``@remove@<propname>=id(s)``
   The ids will be removed from the multilink property.
 
 ``:add:<propname>=id(s)``
@@ -1892,13 +2006,13 @@ templating through the "journal" method of the item*::
 Defining new web actions
 ------------------------
 
-You may define new actions to be triggered by the ``:action`` form
+You may define new actions to be triggered by the ``@action`` form
 variable. These are added to the tracker ``interfaces.py`` as methods on
 the ``Client`` class. 
 
 Adding action methods takes three steps; first you `define the new
 action method`_, then you `register the action method`_ with the cgi
-interface so it may be triggered by the ``:action`` form variable.
+interface so it may be triggered by the ``@action`` form variable.
 Finally you `use the new action`_ in your HTML form.
 
 See "`setting up a "wizard" (or "druid") for controlled adding of
@@ -1946,7 +2060,7 @@ Use the new action
 
 In your HTML form, add a hidden form element like so::
 
-  <input type="hidden" name=":action" value="myaction">
+  <input type="hidden" name="@action" value="myaction">
 
 where "myaction" is the name you registered in the previous step.
 
@@ -2128,7 +2242,7 @@ are going to add the category code::
      tal:condition="python:request.user.hasPermission('View', 'category')">
    <b>Categories</b><br>
    <a tal:condition="python:request.user.hasPermission('Edit', 'category')"
-      href="category?:template=item">New Category<br></a>
+      href="category?@template=item">New Category<br></a>
   </p>
 
 The first two lines is the classblock definition, which sets up a
@@ -2194,7 +2308,7 @@ Next we define some code which sets up the minimum list of fields that
 we require the user to enter. There will be only one field - "name" - so
 they better put something in it, otherwise the whole form is pointless::
 
-    <input type="hidden" name=":required" value="name">
+    <input type="hidden" name="@required" value="name">
 
 To get everything to line up properly we will put everything in a table,
 and put a nice big header on it so the user has an idea what is
@@ -2243,7 +2357,7 @@ So putting it all together, and closing the table and form we get::
    <form method="POST" onSubmit="return submit_once()"
          enctype="multipart/form-data">
 
-    <input type="hidden" name=":required" value="name">
+    <input type="hidden" name="@required" value="name">
 
     <table class="form">
      <tr><th class="header" colspan="2">Category</th></tr>
@@ -2309,7 +2423,7 @@ on the web server could look at all issues in the category "Web".
 
 If you look for "Search Issues" in the 'html/page.html' file, you will
 find that it looks something like 
-``<a href="issue?:template=search">Search Issues</a>``. This shows us
+``<a href="issue?@template=search">Search Issues</a>``. This shows us
 that when you click on "Search Issues" it will be looking for a
 ``issue.search.html`` file to display. So that is the file that we will
 change.
@@ -2481,7 +2595,7 @@ Alter the issue.item template section for messages to::
    <td nowrap tal:content="msg/date/pretty">date</td>
    <td tal:content="msg/summary">summary</td>
    <td>
-    <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">
+    <a tal:attributes="href string:?@remove@messages=${msg/id}&@action=edit">
     remove</a>
    </td>
   </tr>
@@ -2556,8 +2670,8 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
 
     <form method="POST" onSubmit="return submit_once()"
           enctype="multipart/form-data">
-      <input type="hidden" name=":template" value="add_page1">
-      <input type="hidden" name=":action" value="page1submit">
+      <input type="hidden" name="@template" value="add_page1">
+      <input type="hidden" name="@action" value="page1submit">
 
       <strong>Category:</strong>
       <tal:block tal:replace="structure context/category/menu" />
@@ -2572,8 +2686,8 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
           tal:condition="context/is_edit_ok"
           tal:define="cat request/form/category/value">
 
-      <input type="hidden" name=":template" value="add_page2">
-      <input type="hidden" name=":required" value="title">
+      <input type="hidden" name="@template" value="add_page2">
+      <input type="hidden" name="@required" value="title">
       <input type="hidden" name="category" tal:attributes="value cat">
        .
        .
@@ -2618,7 +2732,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
         # everything's ok, move on to the next page
         self.template = 'add_page2'
 
-4. Use the usual "new" action as the ``:action`` on the final page, and
+4. Use the usual "new" action as the ``@action`` on the final page, and
    you're done (the standard context/submit method can do this for you).
 
 
@@ -2787,122 +2901,32 @@ be able to give a summary of the total time spent on a particular issue.
    the "times" property is the new link to the "timelog" class.
 
 3. We'll need to let people add in times to the issue, so in the web
-   interface we'll have a new entry field, just below the change note
-   box::
+   interface we'll have a new entry field. This is a special field
+   because unlike the other fields in the issue.item template, it
+   affects a different item (a timelog item) and not the template's
+   item, an issue. We have a special syntax for form fields that affect
+   items other than the template default item (see the cgi 
+   documentation on `special form variables`_). In particular, we add a
+   field to capture a new timelog item's perdiod::
 
-    <tr>
-     <th nowrap>Time Log</th>
-     <td colspan="3"><input name=":timelog">
-      (enter as "3y 1m 4d 2:40:02" or parts thereof)
-     </td>
-    </tr>
+    <tr> 
+     <th nowrap>Time Log</th> 
+     <td colspan=3><input type="text" name="timelog-1@period" /> 
+      <br />(enter as '3y 1m 4d 2:40:02' or parts thereof) 
+     </td> 
+    </tr> 
+         
+   and another hidden field that links that new timelog item (new
+   because it's marked as having id "-1") to the issue item. It looks
+   like this::
 
-   Note that we've made up a new form variable, but since we place a
-   colon ":" in front of it, it won't clash with any existing property
-   variables. The names you *can't* use are ``:note``, ``:file``,
-   ``:action``, ``:required`` and ``:template``. These variables are
-   described in the section `performing actions in web requests`_.
+     <input type="hidden" name="@link@times" value="timelog-1" />
 
-4. We also need to handle this new field in the CGI interface - the way
-   to do this is through implementing a new form action (see `Setting up
-   a "wizard" (or "druid") for controlled adding of issues`_ for another
-   example where we implemented a new CGI form action).
+   On submission, the "-1" timelog item will be created and assigned a
+   real item id. The "times" property of the issue will have the new id
+   added to it.
 
-   In this case, we'll want our action to:
-
-   1. create a new "timelog" entry,
-   2. fake that the issue's "times" property has been edited, and then
-   3. call the normal CGI edit action handler.
-
-   The code to do this is::
-
-    class Client(client.Client): 
-        ''' derives basic CGI implementation from the standard module, 
-            with any specific extensions 
-        ''' 
-        actions = client.Client.actions + (
-            ('edit_with_timelog', 'timelogEditAction'),
-            ('new_with_timelog', 'timelogEditAction'),
-        )
-
-        def timelogEditAction(self):
-            ''' Handle the creation of a new time log entry if
-                necessary.
-
-                If we create a new entry, fake up a CGI form value for
-                the altered "times" property of the issue being edited.
-   
-                Punt to the regular edit action when we're done.
-            '''
-            # if there's a timelog value specified, create an entry
-            if self.form.has_key(':timelog') and \
-                    self.form[':timelog'].value.strip():
-                period = Interval(self.form[':timelog'].value)
-                # create it
-                newid = self.db.timelog.create(period=period)
-
-                # if we're editing an existing item, get the old timelog
-                # value
-                if self.nodeid:
-                    l = self.db.issue.get(self.nodeid, 'times')
-                    l.append(newid)
-                else:
-                    l = [newid]
-
-                # now make the fake CGI form values
-                for entry in l:
-                    self.form.list.append(
-                        MiniFieldStorage('times', entry))
-
-            # punt to the normal edit action
-            if self.nodeid:
-                return self.editItemAction()
-            else:
-                return self.newItemAction()
-   
-   you add this code to your Client class in your tracker's
-   ``interfaces.py`` file. Locate the section that looks like::
-
-    class Client:
-        ''' derives basic CGI implementation from the standard module,
-            with any specific extensions 
-        ''' 
-        pass
-
-   and insert this code in place of the ``pass`` statement.
-
-5. You'll also need to modify your ``issue.item`` form submit action so
-   it calls the time logging action we just created. The current
-   template will look like this::
-
-    <tr>
-     <td>&nbsp;</td>
-     <td colspan="3" tal:content="structure context/submit">
-      submit button will go here
-     </td>
-    </tr>
-
-   replace it with this::
-
-    <tr>
-     <td>&nbsp;</td>
-     <td colspan="3">
-      <tal:block tal:condition="context/id">
-        <input type="hidden" name=":action" value="edit_with_timelog">
-        <input type="submit" name="submit" value="Submit Changes">
-      </tal:block>
-      <tal:block tal:condition="not:context/id">
-        <input type="hidden" name=":action" value="new_with_timelog">
-        <input type="submit" name="submit" value="Submit New Issue">
-      </tal:block>
-     </td>
-    </tr>
-
-   The important change is setting the action to "edit_with_timelog" for
-   edit operations (where the item exists) and "new_with_timelog" for
-   creations operations.
-
-6. We want to display a total of the time log times that have been
+4. We want to display a total of the time log times that have been
    accumulated for an issue. To do this, we'll need to actually write
    some Python code, since it's beyond the scope of PageTemplates to
    perform such calculations. We do this by adding a method to the
@@ -2926,7 +2950,7 @@ be able to give a summary of the total time spent on a particular issue.
    ``totalTimeSpent`` method via the ``utils`` variable in our
    templates.
 
-7. Display the time log for an issue::
+5. Display the time log for an issue::
 
      <table class="otherinfo" tal:condition="context/times">
       <tr><th colspan="3" class="header">Time Log
@@ -3095,13 +3119,13 @@ This is pretty simple - all we need to do is copy the code from the
 example `displaying only message summaries in the issue display`_ into
 our template alongside the summary display, and then introduce a switch
 that shows either one or the other. We'll use a new form variable,
-``:whole_messages`` to achieve this::
+``@whole_messages`` to achieve this::
 
  <table class="messages" tal:condition="context/messages">
-  <tal:block tal:condition="not:request/form/:whole_messages/value | python:0">
+  <tal:block tal:condition="not:request/form/@whole_messages/value | python:0">
    <tr><th colspan="3" class="header">Messages</th>
        <th colspan="2" class="header">
-         <a href="?:whole_messages=yes">show entire messages</a>
+         <a href="?@whole_messages=yes">show entire messages</a>
        </th>
    </tr>
    <tr tal:repeat="msg context/messages">
@@ -3111,15 +3135,15 @@ that shows either one or the other. We'll use a new form variable,
     <td nowrap tal:content="msg/date/pretty">date</td>
     <td tal:content="msg/summary">summary</td>
     <td>
-     <a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>
+     <a tal:attributes="href string:?@remove@messages=${msg/id}&@action=edit">remove</a>
     </td>
    </tr>
   </tal:block>
 
-  <tal:block tal:condition="request/form/:whole_messages/value | python:0">
+  <tal:block tal:condition="request/form/@whole_messages/value | python:0">
    <tr><th colspan="2" class="header">Messages</th>
        <th class="header">
-         <a href="?:whole_messages=">show only summaries</a>
+         <a href="?@whole_messages=">show only summaries</a>
        </th>
    </tr>
    <tal:block tal:repeat="msg context/messages">
@@ -3127,7 +3151,7 @@ that shows either one or the other. We'll use a new form variable,
      <th tal:content="msg/author">author</th>
      <th nowrap tal:content="msg/date/pretty">date</th>
      <th style="text-align: right">
-      (<a tal:attributes="href string:?:remove:messages=${msg/id}&:action=edit">remove</a>)
+      (<a tal:attributes="href string:?@remove@messages=${msg/id}&@action=edit">remove</a>)
      </th>
     </tr>
     <tr><td colspan="3" tal:content="msg/content"></td></tr>
