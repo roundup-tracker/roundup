@@ -12,8 +12,9 @@
 ##############################################################################
 # Modified for Roundup:
 # 
-# 1. Removed all Zope-specific code (doesn't even try to import that stuff now)
-# 2. Removed all Acquisition
+# 1. removed all Zope-specific code (doesn't even try to import that stuff now)
+# 2. removed all Acquisition
+# 3. removed blocking of leading-underscore URL components
 
 """Page Template Expression Engine
 
@@ -21,7 +22,7 @@ Page Template-specific implementation of TALES, with handlers
 for Python expressions, string literals, and paths.
 """
 
-__version__='$Revision: 1.11 $'[11:-2]
+__version__='$Revision: 1.12 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
