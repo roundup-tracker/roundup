@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.87 2003-02-17 00:39:28 richard Exp $
+# $Id: client.py,v 1.88 2003-02-17 01:04:31 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -701,24 +701,26 @@ class Client:
            See parsePropsFromForm and _editnodes for special variables
         '''
         # parse the props from the form
-        try:
+        if 1:
+#        try:
             props, links = self.parsePropsFromForm()
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
+#        except (ValueError, KeyError), message:
+#            self.error_message.append(_('Error: ') + str(message))
+#            return
 
         # handle the props
-        try:
+        if 1:
+#        try:
             message = self._editnodes(props, links)
-        except (ValueError, KeyError, IndexError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
+#        except (ValueError, KeyError, IndexError), message:
+#            self.error_message.append(_('Error: ') + str(message))
+#            return
 
         # commit now that all the tricky stuff is done
         self.db.commit()
 
         # redirect to the item's edit page
-        raise Redirect, '%s%s%s?+ok_message=%s'%(self.base, self.classname,
+        raise Redirect, '%s%s%s?@ok_message=%s'%(self.base, self.classname,
             self.nodeid,  urllib.quote(message))
 
     def editItemPermission(self, props):
