@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.58 2003-11-13 05:56:48 richard Exp $
+# $Id: setup.py,v 1.59 2004-03-24 05:56:06 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -188,31 +188,33 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6 release has lots of new goodies including:
+If you're upgrading from an older version of Roundup you *must* follow
+the "Software Upgrade" guidelines given in the maintenance documentation.
 
-- new instant-gratification Demo Mode ("python demo.py" :)
-- added mysql backend (see doc/mysql.txt for details)
-- web interface cleanups including nicer history display, nicer index
-  navigation and nicer popup list windows
-- searching of date ranges
-- better international support, including utf-8 email handling and ability
-  to display localized dates in web interface.
-- more documentation including revamped design document, unix manual pages
-  and some FAQ entries
-- significantly more powerful form handling allowing editing of multiple
-  items and creation of multiple items
-- tracker templates can contain subdirectories and static files (e.g.
-  images) and we may now distribute templates separately from Roundup.
-  Template HTML files now have a .html extension too.
-- user registration is now a two-step process, with confirmation from the
-  email address supplied in the registration form, and we also have a
-  password reset feature for forgotten password / login
-- Windows Service mode for roundup-server when daemonification is
-  attempted on Windows
-- lots of speed enhancements, making the web interface much more responsive
-- fixed issues with dumb email or web clients
-- email system handles more SMTP and POP features (TLS, APOP, ...)
-- lots more little tweaks and back-end work...
+No, really, this is a BETA and if you don't follow the upgrading steps,
+particularly the bit about BACKING UP YOUR DATA, I'm NOT GOING TO BE HELD
+RESPONSIBLE. This release is NOT FOR GENERAL USE.
+
+I would *greatly* appreciate people giving this release a whirl with a
+copy of their existing setup. It's only through real-world testing of
+beta releases that we can ensure that older trackers will be OK.
+
+This release introduces far too many features to list here. Some
+highlights:
+
+- added postgresql backend (originally from sf patch 761740, many changes
+  since)
+- RDBMS backends implement their session and one-time-key stores and
+  full-text indexers; thus they are now performing their own locking
+  internally
+- added new "actor" automatic property (indicates user who cause the last
+  "activity")
+- all RDBMS backends have sensible data typed columns and indexes on
+  several columns
+- we support confirming registration by replying to the email (sf bug
+  763668)
+- all HTML templating methods now automatically check for permissions
+  (either view or edit as appropriate), greatly simplifying templates
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
@@ -220,7 +222,7 @@ The 0.6 release has lots of new goodies including:
         download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         packages = packagelist,
         classifiers = [
-            'Development Status :: 5 - Production/Stable',
+            'Development Status :: 4 - Beta',
             'Environment :: Console',
             'Environment :: Web Environment',
             'Intended Audience :: End Users/Desktop',

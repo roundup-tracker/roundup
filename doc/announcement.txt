@@ -1,13 +1,35 @@
-I'm pleased to announce this maintenance release of Roundup. This fix
-introduces Python2.3 compatibility. My thanks to Paul Dubois for
-contributing the csv module compatibility layer.
+It is with a huge sigh of relief that I announce this first beta of
+Roundup version 0.7.
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-Roundup requires python 2.1.3 or later for correct operation.
+No, really, this is a BETA and if you don't follow the upgrading steps,
+particularly the bit about BACKING UP YOUR DATA, I'm NOT GOING TO BE HELD
+RESPONSIBLE. This release is NOT FOR GENERAL USE.
 
-This release fixes some bugs:
+I would *greatly* appreciate people giving this release a whirl with a
+copy of their existing setup. It's only through real-world testing of
+beta releases that we can ensure that older trackers will be OK.
+
+This release introduces far too many features to list here. Some
+highlights:
+
+- added postgresql backend (originally from sf patch 761740, many changes
+  since)
+- RDBMS backends implement their session and one-time-key stores and
+  full-text indexers; thus they are now performing their own locking
+  internally
+- added new "actor" automatic property (indicates user who cause the last
+  "activity")
+- all RDBMS backends have sensible data typed columns and indexes on
+  several columns
+- we support confirming registration by replying to the email (sf bug
+  763668)
+- all HTML templating methods now automatically check for permissions
+  (either view or edit as appropriate), greatly simplifying templates
+
+Roundup requires python 2.1.3 or later for correct operation.
 
 To give Roundup a try, just download (see below), unpack and run::
 
