@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.104 2004-03-26 23:45:34 richard Exp $
+# $Id: roundupdb.py,v 1.105 2004-03-27 00:12:11 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -56,7 +56,7 @@ class Database:
             # If there is no class 'user' or current user doesn't have timezone 
             # property or that property is not numeric assume he/she lives in 
             # Greenwich :)
-            timezone = self.config.get('DEFAULT_TIMEZONE', 0)
+            timezone = getattr(self.config, 'DEFAULT_TIMEZONE', 0)
         return timezone
 
     def confirm_registration(self, otk):

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.126 $
+:Version: $Revision: 1.127 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -317,7 +317,30 @@ Note: if you modify the schema, you'll most likely need to edit the
 
 A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``dbinit.py`` module of your
-tracker. The "classic" schema looks like this (see below for the meaning
+tracker.
+
+The ``dbinit.py`` module
+------------------------
+
+The ``dbinit.py`` module contains two functions:
+
+**open**
+  This function defines what your tracker looks like on the inside, the
+  **schema** of the tracker. It defines the **Classes** and **properties**
+  on each class. It also defines the **security** for those Classes. The
+  next few sections describe how schemas work and what you can do with
+  them.
+**init**
+  This function is responsible for setting up the initial state of your
+  tracker. It's called exactly once - but the ``roundup-admin initialise``
+  command.  See the start of the section on `database content`_ for more
+  info about how this works.
+
+
+The "classic" schema
+--------------------
+
+The "classic" schema looks like this (see below for the meaning
 of ``'setkey'``)::
 
     pri = Class(db, "priority", name=String(), order=String())
