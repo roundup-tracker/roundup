@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.102 2002-07-18 23:07:08 richard Exp $
+# $Id: htmltemplate.py,v 1.103 2002-07-20 19:29:10 gmcm Exp $
 
 __doc__ = """
 Template engine.
@@ -1196,17 +1196,21 @@ class IndexTemplate(TemplateFunctions):
         w('  <td>&nbsp;</td>\n')
         w('  <td colspan=6><input type="submit" name="Query" value="Redisplay"></td>\n')
         w(' </tr>\n')
-        if self.db.getclass('user').getprops().has_key('queries'):
+        if (self.db.getclass('user').getprops().has_key('queries')
+            and not self.client.user in (None, "anonymous")):
             w(' <tr class="location-bar">\n')
             w('  <td colspan=7><hr></td>\n')
             w(' </tr>\n')
             w(' <tr class="location-bar">\n')
             w('  <td align=right class="form-label">Name</td>\n')
-            w('  <td colspan=6><input type="text" name=":name" value=""></td>\n')
+            w('  <td colspan=2 class="form-text"><input type="text" name=":name" value=""></td>\n')
+            w('  <td colspan=4 rowspan=2 class="form-help">If you give the query a name '
+              'and click <b>Save</b>, it will appear on your menu. Saved queries may be '
+              'edited by going to <b>My Details</b> and clicking on the query name.</td>')
             w(' </tr>\n')
             w(' <tr class="location-bar">\n')
             w('  <td>&nbsp;</td><input type="hidden" name=":classname" value="%s">\n' % self.classname)
-            w('  <td colspan=6><input type="submit" name="Query" value="Save"></td>\n')
+            w('  <td colspan=2><input type="submit" name="Query" value="Save"></td>\n')
             w(' </tr>\n')
         w('</table>\n')
 
@@ -1364,6 +1368,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.102  2002/07/18 23:07:08  richard
+# Unit tests and a few fixes.
+#
 # Revision 1.101  2002/07/18 11:17:30  gmcm
 # Add Number and Boolean types to hyperdb.
 # Add conversion cases to web, mail & admin interfaces.

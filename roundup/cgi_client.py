@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.142 2002-07-18 11:17:30 gmcm Exp $
+# $Id: cgi_client.py,v 1.143 2002-07-20 19:29:10 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -491,8 +491,6 @@ function help_window(helpurl, width, height) {
         '''
         cn = self.classname
         cl = self.db.classes[cn]
-        self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
-            'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
         if sort is None: sort = self.index_sort()
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
@@ -531,7 +529,9 @@ function help_window(helpurl, width, height) {
 
             # create a query
             d = {}
-            d['name'] = self.form[':name'].value
+            d['name'] = nm = self.form[':name'].value
+            if not nm:
+                d['name'] = nm = 'New Query'
             d['klass'] = self.form[':classname'].value
             d['url'] = url
             qid = self.db.getclass('query').create(**d)
@@ -543,6 +543,9 @@ function help_window(helpurl, width, height) {
             queries.append(qid)
             usercl.set(uid, queries=queries)
             
+        self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
+            'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
+        
         index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
         try:
             index.render(filterspec, search_text, filter, columns, sort, 
@@ -1610,6 +1613,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.142  2002/07/18 11:17:30  gmcm
+# Add Number and Boolean types to hyperdb.
+# Add conversion cases to web, mail & admin interfaces.
+# Add storage/serialization cases to back_anydbm & back_metakit.
+#
 # Revision 1.141  2002/07/17 12:39:10  gmcm
 # Saving, running & editing queries.
 #
