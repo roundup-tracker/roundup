@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.134 $
+:Version: $Revision: 1.135 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -952,7 +952,8 @@ we're looking at "issue", "issue1", "@file/style.css", "file1" and
 "file1/kitten.png" in the cases above. The path is generally only one
 entry long - longer paths are handled differently.
 
-a. if there is no path, then we are in the "home" context.
+a. if there is no path, then we are in the "home" context. See `the "home"
+   context`_ below for more information about how it may be used.
 b. if the path starts with "@file" (as in example 3,
    "/tracker/@file/style.css"), then the additional path entry,
    "style.css" specifies the filename of a static file we're to serve up
@@ -976,6 +977,25 @@ defaults to:
 
 - only classname suplied:        "index"
 - full item designator supplied: "item"
+
+
+The "home" Context
+------------------
+
+The "home" context is special because it allows you to add templated
+pages to your tracker that don't rely on a class or item (ie. an issues
+list or specific issue).
+
+Let's say you wish to add frames to control the layout of your tracker's
+interface. You'd probably have:
+
+- A top-level frameset page. This page probably wouldn't be templated, so
+  it could be served as a static file (see `serving static content`_)
+- A sidebar frame that is templated. Let's call this page
+  "home.navigation.html" in your tracker's "html" directory. To load that
+  page up, you use the URL:
+
+    <tracker url>/home?@template=navigation
 
 
 Serving static content
