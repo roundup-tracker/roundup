@@ -8,14 +8,15 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.16 2002-07-09 05:20:09 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.17 2002-07-18 23:07:07 richard Exp $ 
 
 import unittest, cgi, time
 
 from roundup import date, password
 from roundup.htmltemplate import TemplateFunctions
 from roundup.i18n import _
-from roundup.hyperdb import String, Password, Date, Interval, Link, Multilink
+from roundup.hyperdb import String, Password, Date, Interval, Link, \
+    Multilink, Boolean, Number
 
 class Class:
     def get(self, nodeid, attribute, default=None):
@@ -25,6 +26,10 @@ class Class:
             return 'file.foo'
         elif attribute == 'date':
             return date.Date('2000-01-01')
+        elif attribute == 'boolean':
+            return 0
+        elif attribute == 'number':
+            return 1234
         elif attribute == 'reldate':
             return date.Date() + date.Interval('- 2y 1m')
         elif attribute == 'interval':
@@ -52,7 +57,8 @@ class Class:
             'link': Link('other'), 'multilink': Multilink('other'),
             'password': Password(), 'html': String(), 'key': String(),
             'novalue': String(), 'filename': String(), 'multiline': String(),
-            'reldate': Date(), 'email': String()}
+            'reldate': Date(), 'email': String(), 'boolean': Boolean(),
+            'number': Number()}
     def labelprop(self, default_to_id=0):
         return 'key'
 
@@ -103,6 +109,11 @@ class NodeCase(unittest.TestCase):
     def testPlain_multilink(self):
         self.assertEqual(self.tf.do_plain('multilink'), 'the key1, the key2')
 
+    def testPlain_boolean(self):
+        self.assertEqual(self.tf.do_plain('boolean'), 'No')
+
+    def testPlain_number(self):
+        self.assertEqual(self.tf.do_plain('number'), '1234')
 
 #    def do_field(self, property, size=None, showid=0):
     def testField_string(self):
@@ -149,6 +160,16 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_field('multilink', size=10),
             '<input name="multilink" size="10" value="the key1,the key2">')
 
+    def testField_boolean(self):
+        self.assertEqual(self.tf.do_field('boolean'),
+            '<input type="checkbox" name="boolean" >')
+
+    def testField_number(self):
+        self.assertEqual(self.tf.do_field('number'),
+            '<input name="number" value="1234" size="30">')
+        self.assertEqual(self.tf.do_field('number', size=10),
+            '<input name="number" value="1234" size="10">')
+
 #    def do_multiline(self, property, rows=5, cols=40)
     def testMultiline_string(self):
         self.assertEqual(self.tf.do_multiline('multiline'),
@@ -168,6 +189,8 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_multiline('password'), s)
         self.assertEqual(self.tf.do_multiline('link'), s)
         self.assertEqual(self.tf.do_multiline('multilink'), s)
+        self.assertEqual(self.tf.do_multiline('boolean'), s)
+        self.assertEqual(self.tf.do_multiline('number'), s)
 
 #    def do_menu(self, property, size=None, height=None, showid=0):
     def testMenu_nonlinks(self):
@@ -176,6 +199,8 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_menu('date'), s)
         self.assertEqual(self.tf.do_menu('interval'), s)
         self.assertEqual(self.tf.do_menu('password'), s)
+        self.assertEqual(self.tf.do_menu('boolean'), s)
+        self.assertEqual(self.tf.do_menu('number'), s)
 
     def testMenu_link(self):
         self.assertEqual(self.tf.do_menu('link'), '''<select name="link">
@@ -250,6 +275,14 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_link('multilink', showid=1),
             '<a href="other1" title="the key1">1</a>, <a href="other2" title="the key2">2</a>')
 
+    def testLink_boolean(self):
+        self.assertEqual(self.tf.do_link('boolean'),
+            '<a href="test_class1">No</a>')
+
+    def testLink_number(self):
+        self.assertEqual(self.tf.do_link('number'),
+            '<a href="test_class1">1234</a>')
+
 #    def do_count(self, property, **args):
     def testCount_nonlinks(self):
         s = _('[Count: not a Multilink]')
@@ -258,6 +291,8 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_count('interval'), s)
         self.assertEqual(self.tf.do_count('password'), s)
         self.assertEqual(self.tf.do_count('link'), s)
+        self.assertEqual(self.tf.do_count('boolean'), s)
+        self.assertEqual(self.tf.do_count('number'), s)
 
     def testCount_multilink(self):
         self.assertEqual(self.tf.do_count('multilink'), '2')
@@ -270,6 +305,8 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_reldate('password'), s)
         self.assertEqual(self.tf.do_reldate('link'), s)
         self.assertEqual(self.tf.do_reldate('multilink'), s)
+        self.assertEqual(self.tf.do_reldate('boolean'), s)
+        self.assertEqual(self.tf.do_reldate('number'), s)
 
     def testReldate_date(self):
         self.assertEqual(self.tf.do_reldate('reldate'), '- 2y 1m')
@@ -308,15 +345,25 @@ class NodeCase(unittest.TestCase):
             '<a href="other1/the key1">the key1</a>, '
             '<a href="other2/the key2">the key2</a>')
 
+    def testDownload_boolean(self):
+        self.assertEqual(self.tf.do_download('boolean'),
+            '<a href="test_class1/No">No</a>')
+
+    def testDownload_number(self):
+        self.assertEqual(self.tf.do_download('number'),
+            '<a href="test_class1/1234">1234</a>')
+
 #    def do_checklist(self, property, reverse=0):
-    def testChecklink_nonlinks(self):
+    def testChecklist_nonlinks(self):
         s = _('[Checklist: not a link]')
         self.assertEqual(self.tf.do_checklist('string'), s)
         self.assertEqual(self.tf.do_checklist('date'), s)
         self.assertEqual(self.tf.do_checklist('interval'), s)
         self.assertEqual(self.tf.do_checklist('password'), s)
+        self.assertEqual(self.tf.do_checklist('boolean'), s)
+        self.assertEqual(self.tf.do_checklist('number'), s)
 
-    def testChecklink_link(self):
+    def testChecklstk_link(self):
         self.assertEqual(self.tf.do_checklist('link'),
             '''the key1:<input type="checkbox" checked name="link" value="the key1">
 the key2:<input type="checkbox"  name="link" value="the key2">
@@ -340,6 +387,8 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
         self.assertEqual(self.tf.do_list('interval'), s)
         self.assertEqual(self.tf.do_list('password'), s)
         self.assertEqual(self.tf.do_list('link'), s)
+        self.assertEqual(self.tf.do_list('boolean'), s)
+        self.assertEqual(self.tf.do_list('number'), s)
 
     def testList_multilink(self):
         # TODO: test this (needs to have lots and lots of support!
@@ -362,6 +411,8 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
         self.assertEqual(self.tf.do_email('password'), s)
         self.assertEqual(self.tf.do_email('link'), s)
         self.assertEqual(self.tf.do_email('multilink'), s)
+        self.assertEqual(self.tf.do_email('boolean'), s)
+        self.assertEqual(self.tf.do_email('number'), s)
 
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
@@ -369,6 +420,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/07/09 05:20:09  richard
+#  . added email display function - mangles email addrs so they're not so easily
+#    scraped from the web
+#
 # Revision 1.15  2002/07/08 06:39:00  richard
 # Fixed unit test support class so the tests ran again.
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.101 2002-07-18 11:17:30 gmcm Exp $
+# $Id: htmltemplate.py,v 1.102 2002-07-18 23:07:08 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -386,11 +386,13 @@ class TemplateFunctions:
 
         # get the value
         value = self.determine_value(property)
-        if not value:
+        if value in ('', None, []):
             return _('[no %(propname)s]')%{'propname':property.capitalize()}
 
         propclass = self.properties[property]
-        if isinstance(propclass, hyperdb.Link):
+        if isinstance(propclass, hyperdb.Boolean):
+            value = value and "Yes" or "No"
+        elif isinstance(propclass, hyperdb.Link):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop(1)
@@ -407,7 +409,7 @@ class TemplateFunctions:
                     linkvalue, title, label)
             else:
                 return '<a href="%s%s"%s>%s</a>'%(linkname, value, title, label)
-        if isinstance(propclass, hyperdb.Multilink):
+        elif isinstance(propclass, hyperdb.Multilink):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop(1)
@@ -1362,6 +1364,11 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.101  2002/07/18 11:17:30  gmcm
+# Add Number and Boolean types to hyperdb.
+# Add conversion cases to web, mail & admin interfaces.
+# Add storage/serialization cases to back_anydbm & back_metakit.
+#
 # Revision 1.100  2002/07/18 07:01:54  richard
 # minor bugfix
 #

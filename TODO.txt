@@ -10,10 +10,6 @@ pending  hyperdb: range searching of values (dates in particular)
          - filter specifies {property: (comparison function, value)}
            comparison functions: lt, le, eq, ge, gt. eq and
            [value, value, ...] implies "in"
-active   hyperdb: add tests for Number and Boolean
-                  - htmltemplate
-                  - schema
-                  - db
 pending  hyperdb: make creator, creation and activity available pre-commit
 pending  instance: including much simpler upgrade path and the use of
                    non-Python configuration files (ConfigParser)

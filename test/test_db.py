@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.34 2002-07-18 11:52:00 richard Exp $ 
+# $Id: test_db.py,v 1.35 2002-07-18 23:07:08 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -112,14 +112,11 @@ class anydbmDBTestCase(MyTestCase):
 
     def testBooleanChange(self):
         self.db.user.create(username='foo', assignable=1)
+        self.db.user.create(username='foo', assignable=0)
         a = self.db.user.get('1', 'assignable')
-        self.db.user.set('1', assignable='false')
-        self.assertNotEqual(self.db.user.get('1', 'assignable'), a)
-        self.db.user.set('1', assignable='FaLse')
-        self.db.user.set('1', assignable='nO')
         self.db.user.set('1', assignable=0)
-        self.db.user.set('1', assignable='tRuE')
-        self.db.user.set('1', assignable='yEs')
+        self.assertNotEqual(self.db.user.get('1', 'assignable'), a)
+        self.db.user.set('1', assignable=0)
         self.db.user.set('1', assignable=1)
 
     def testNumberChange(self):
@@ -265,12 +262,12 @@ class anydbmDBTestCase(MyTestCase):
         # invalid number value
         ar(TypeError, self.db.user.create, username='foo', age='a')
         # invalid boolean value
-        ar(TypeError, self.db.user.create, username='foo', assignable='fubar')
+        ar(TypeError, self.db.user.create, username='foo', assignable='true')
         self.db.user.create(username='foo')
         # invalid number value
         ar(TypeError, self.db.user.set, '3', username='foo', age='a')
         # invalid boolean value
-        ar(TypeError, self.db.user.set, '3', username='foo', assignable='fubar')
+        ar(TypeError, self.db.user.set, '3', username='foo', assignable='true')
 
     def testJournals(self):
         self.db.issue.addprop(fixer=Link("user", do_journal='yes'))
@@ -562,6 +559,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2002/07/18 11:52:00  richard
+# oops
+#
 # Revision 1.33  2002/07/18 11:50:58  richard
 # added tests for number type too
 #

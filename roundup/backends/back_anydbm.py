@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.50 2002-07-18 11:50:58 richard Exp $
+#$Id: back_anydbm.py,v 1.51 2002-07-18 23:07:08 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -732,27 +732,15 @@ class Class(hyperdb.Class):
 
             elif value is not None and isinstance(prop, Number):
                 try:
-                    int(value)
+                    float(value)
                 except ValueError:
-                    try:
-                        float(value)
-                    except ValueError:
-                        raise TypeError, 'new property "%s" not numeric'%key
+                    raise TypeError, 'new property "%s" not numeric'%key
 
             elif value is not None and isinstance(prop, Boolean):
-                if isinstance(value, type('')):
-                    s = value.lower()
-                    if s in ('0', 'false', 'no'):
-                        value = 0
-                    elif s in ('1', 'true', 'yes'):
-                        value = 1
-                    else:
-                        raise TypeError, 'new property "%s" not boolean'%key
-                else:
-                    try:
-                        int(value)
-                    except TypeError:
-                        raise TypeError, 'new property "%s" not boolean'%key
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError, 'new property "%s" not boolean'%key
 
         # make sure there's data where there needs to be
         for key, prop in self.properties.items():
@@ -1037,30 +1025,15 @@ class Class(hyperdb.Class):
 
             elif value is not None and isinstance(prop, Number):
                 try:
-                    int(value)
+                    float(value)
                 except ValueError:
-                    try:
-                        float(value)
-                    except ValueError:
-                        raise TypeError, 'new property "%s" not '\
-                            'numeric'%propname
+                    raise TypeError, 'new property "%s" not numeric'%propname
 
             elif value is not None and isinstance(prop, Boolean):
-                if isinstance(value, type('')):
-                    s = value.lower()
-                    if s in ('0', 'false', 'no'):
-                        value = 0
-                    elif s in ('1', 'true', 'yes'):
-                        value = 1
-                    else:
-                        raise TypeError, 'new property "%s" not '\
-                            'boolean'%propname
-                else:
-                    try:
-                        int(value)
-                    except ValueError:
-                        raise TypeError, 'new property "%s" not '\
-                            'boolean'%propname
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError, 'new property "%s" not boolean'%propname
 
             node[propname] = value
 
@@ -1703,6 +1676,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.50  2002/07/18 11:50:58  richard
+#added tests for number type too
+#
 #Revision 1.49  2002/07/18 11:41:10  richard
 #added tests for boolean type, and fixes to anydbm backend
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.22 2002-07-14 06:05:50 richard Exp $
+# $Id: date.py,v 1.23 2002-07-18 23:07:08 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -190,6 +190,8 @@ class Date:
         if other is None:
             return 1
         for attr in ('year', 'month', 'day', 'hour', 'minute', 'second'):
+            if not hasattr(other, attr):
+                return 1
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r: return r
         return 0
@@ -304,6 +306,8 @@ class Interval:
         if other is None:
             return 1
         for attr in ('year', 'month', 'day', 'hour', 'minute', 'second'):
+            if not hasattr(other, attr):
+                return 1
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r: return r
         return 0
@@ -438,6 +442,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/07/14 06:05:50  richard
+#  . fixed the date module so that Date(". - 2d") works
+#
 # Revision 1.21  2002/05/15 06:32:46  richard
 #  . reverting to dates for intervals > 2 months sucks
 #
