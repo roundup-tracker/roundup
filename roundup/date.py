@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.55 2003-11-03 10:23:05 anthonybaxter Exp $
+# $Id: date.py,v 1.56 2003-11-04 12:35:47 anthonybaxter Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -226,6 +226,9 @@ class Date:
 
         return (year, month, day, hour, minute, second, 0, 0, 0)
 
+    def differenceDate(self, other):
+        "Return the difference between this date and another date"
+
     def applyInterval(self, interval):
         ''' Apply the interval to this date
         '''
@@ -250,29 +253,29 @@ class Date:
 
         assert isinstance(other, Date), 'May only subtract Dates or Intervals'
 
-        # TODO this code will fall over laughing if the dates cross
-        # leap years, phases of the moon, ....
+        return self.dateDelta(other)
+
+    def dateDelta(self, other):
+        """ Produce an Interval of the difference between this date
+            and another date. Only returns days:hours:minutes:seconds.
+        """
+        # Returning intervals larger than a day is almost
+        # impossible - months, years, weeks, are all so imprecise.
         a = calendar.timegm((self.year, self.month, self.day, self.hour,
             self.minute, self.second, 0, 0, 0))
         b = calendar.timegm((other.year, other.month, other.day,
             other.hour, other.minute, other.second, 0, 0, 0))
         diff = a - b
-        if diff < 0:
+        if diff > 0:
             sign = 1
-            diff = -diff
         else:
             sign = -1
+            diff = -diff
         S = diff%60
         M = (diff/60)%60
-        H = (diff/(60*60))%60
-        if H>1: S = 0
-        d = (diff/(24*60*60))%30
-        if d>1: H = S = M = 0
-        m = (diff/(30*24*60*60))%12
-        if m>1: H = S = M = 0
-        y = (diff/(365*24*60*60))
-        if y>1: d = H = S = M = 0
-        return Interval((y, m, d, H, M, S), sign=sign)
+        H = (diff/(60*60))%24
+        d = diff/(24*60*60)
+        return Interval((0, 0, d, H, M, S), sign=sign)
 
     def __cmp__(self, other):
         """Compare this date to another date."""

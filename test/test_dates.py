@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.28 2003-11-03 10:33:23 anthonybaxter Exp $ 
+# $Id: test_dates.py,v 1.29 2003-11-04 12:35:47 anthonybaxter Exp $ 
 
 import unittest, time
 
@@ -173,9 +173,9 @@ class DateTestCase(unittest.TestCase):
         now = Date('.')
         now.hour = now.minute = now.second = 0
         then = now + Interval('2d')
-        ae(str(Interval(str(then))), '+ 2d')
+        ae((Interval(str(then))), Interval('- 2d'))
         then = now - Interval('2d')
-        ae(str(Interval(str(then))), '- 2d')
+        ae(Interval(str(then)), Interval('+ 2d'))
 
     def testIntervalAddMonthBoundary(self):
         # force the transition over a month boundary
@@ -245,12 +245,14 @@ class DateTestCase(unittest.TestCase):
         self.assertEqual(i, Interval('-28d'))
         i = Date('2003-03-01.00:00:00') - Date('2003-02-01.00:00:00')
         self.assertEqual(i, Interval('28d'))
-        i = Date('2003-03-03.00:00:00') - Date('2002-02-01.00:00:00')
+        i = Date('2003-03-03.00:00:00') - Date('2003-02-01.00:00:00')
         self.assertEqual(i, Interval('30d'))
-        i = Date('2003-03-03.00:00:00') - Date('2002-04-01.00:00:00')
+        i = Date('2003-03-03.00:00:00') - Date('2002-02-01.00:00:00')
+        self.assertEqual(i, Interval('395d'))
+        i = Date('2003-03-03.00:00:00') - Date('2003-04-01.00:00:00')
         self.assertEqual(i, Interval('-29d'))
-        i = Date('2003-03-01.00:00:00') - Date('2002-02-01.00:00:00')
-        self.assertEqual(i, Interval('1m'))
+        i = Date('2003-03-01.00:00:00') - Date('2003-02-01.00:00:00')
+        self.assertEqual(i, Interval('28d'))
         # force the transition over a year boundary
         i = Date('2003-01-01.00:00:00') - Date('2002-01-01.00:00:00')
         self.assertEqual(i, Interval('365d'))

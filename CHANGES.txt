@@ -24,6 +24,9 @@ Fixed:
   (bug #798659).
 - Remove empty lines before sending strings off to the csv parser 
   (bug #821364).
+- Date arithmetic was utterly broken, and has been for a long time.
+  Date +/- Interval now works, and Date - Date also works (produces
+  an Interval.
 
 Cleanup:
 - Replace curuserid attribute on Database with the extended getuid() method.
