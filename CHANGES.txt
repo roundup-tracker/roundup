@@ -18,7 +18,7 @@ Feature:
 Fixed:
  . handle attachments with no name (eg tnef)
  . fixed setting nosy as argument in subject line
-
+ . fixed back_bsddb so it passed the journal tests
 
 2002-01-16 - 0.4.0b2
 Fixed:

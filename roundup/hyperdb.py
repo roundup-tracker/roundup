@@ -15,18 +15,19 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.52 2002-01-21 16:33:19 rochecompaan Exp $
+# $Id: hyperdb.py,v 1.53 2002-01-22 07:21:13 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
 """
 
 # standard python modules
-import cPickle, re, string, weakref
+import cPickle, re, string, weakref, os
 
 # roundup modules
 import date, password
 
+DEBUG = os.environ.get('HYPERDBDEBUG', '')
 
 #
 # Types
@@ -1065,6 +1066,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2002/01/21 16:33:19  rochecompaan
+# You can now use the roundup-admin tool to pack the database
+#
 # Revision 1.51  2002/01/21 03:01:29  richard
 # brief docco on the do_journal argument
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.26 2002-01-22 05:18:38 rochecompaan Exp $
+#$Id: back_anydbm.py,v 1.27 2002-01-22 07:21:13 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -25,8 +25,6 @@ serious bugs, and is not available)
 
 import whichdb, anydbm, os, marshal
 from roundup import hyperdb, date, password
-
-DEBUG=os.environ.get('HYPERDBDEBUG', '')
 
 #
 # Now the database
@@ -71,13 +69,13 @@ class Database(hyperdb.Database):
     def __getattr__(self, classname):
         """A convenient way of calling self.getclass(classname)."""
         if self.classes.has_key(classname):
-            if DEBUG:
+            if hyperdb.DEBUG:
                 print '__getattr__', (self, classname)
             return self.classes[classname]
         raise AttributeError, classname
 
     def addclass(self, cl):
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'addclass', (self, cl)
         cn = cl.classname
         if self.classes.has_key(cn):
@@ -86,7 +84,7 @@ class Database(hyperdb.Database):
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'getclasses', (self,)
         l = self.classes.keys()
         l.sort()
@@ -97,7 +95,7 @@ class Database(hyperdb.Database):
 
         If 'classname' is not a valid class name, a KeyError is raised.
         """
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'getclass', (self, classname)
         return self.classes[classname]
 
@@ -107,7 +105,7 @@ class Database(hyperdb.Database):
     def clear(self):
         '''Delete all database contents
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'clear', (self,)
         for cn in self.classes.keys():
             for type in 'nodes', 'journals':
@@ -121,7 +119,7 @@ class Database(hyperdb.Database):
         ''' grab a connection to the class db that will be used for
             multiple actions
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'getclassdb', (self, classname, mode)
         return self._opendb('nodes.%s'%classname, mode)
 
@@ -129,7 +127,7 @@ class Database(hyperdb.Database):
         '''Low-level database opener that gets around anydbm/dbm
            eccentricities.
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print '_opendb', (self, name, mode)
         # determine which DB wrote the class file
         db_type = ''
@@ -145,7 +143,7 @@ class Database(hyperdb.Database):
 
         # new database? let anydbm pick the best dbm
         if not db_type:
-            if DEBUG:
+            if hyperdb.DEBUG:
                 print "_opendb anydbm.open(%r, 'n')"%path
             return anydbm.open(path, 'n')
 
@@ -156,7 +154,7 @@ class Database(hyperdb.Database):
             raise hyperdb.DatabaseError, \
                 "Couldn't open database - the required module '%s'"\
                 "is not available"%db_type
-        if DEBUG:
+        if hyperdb.DEBUG:
             print "_opendb %r.open(%r, %r)"%(db_type, path, mode)
         return dbm.open(path, mode)
 
@@ -166,7 +164,7 @@ class Database(hyperdb.Database):
     def addnode(self, classname, nodeid, node):
         ''' add the specified node to its class's db
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'addnode', (self, classname, nodeid, node)
         self.newnodes.setdefault(classname, {})[nodeid] = 1
         self.cache.setdefault(classname, {})[nodeid] = node
@@ -175,7 +173,7 @@ class Database(hyperdb.Database):
     def setnode(self, classname, nodeid, node):
         ''' change the specified node
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'setnode', (self, classname, nodeid, node)
         self.dirtynodes.setdefault(classname, {})[nodeid] = 1
         # can't set without having already loaded the node
@@ -185,15 +183,15 @@ class Database(hyperdb.Database):
     def savenode(self, classname, nodeid, node):
         ''' perform the saving of data specified by the set/addnode
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'savenode', (self, classname, nodeid, node)
         self.transactions.append((self._doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1):
         ''' get a node from the database
         '''
-        if DEBUG:
-            print 'getnode', (self, classname, nodeid, cldb)
+        if hyperdb.DEBUG:
+            print 'getnode', (self, classname, nodeid, db)
         if cache:
             # try the cache
             cache = self.cache.setdefault(classname, {})
@@ -213,8 +211,8 @@ class Database(hyperdb.Database):
     def hasnode(self, classname, nodeid, db=None):
         ''' determine if the database has a given node
         '''
-        if DEBUG:
-            print 'hasnode', (self, classname, nodeid, cldb)
+        if hyperdb.DEBUG:
+            print 'hasnode', (self, classname, nodeid, db)
         # try the cache
         cache = self.cache.setdefault(classname, {})
         if cache.has_key(nodeid):
@@ -227,8 +225,8 @@ class Database(hyperdb.Database):
         return res
 
     def countnodes(self, classname, db=None):
-        if DEBUG:
-            print 'countnodes', (self, classname, cldb)
+        if hyperdb.DEBUG:
+            print 'countnodes', (self, classname, db)
         # include the new nodes not saved to the DB yet
         count = len(self.newnodes.get(classname, {}))
 
@@ -239,7 +237,7 @@ class Database(hyperdb.Database):
         return count
 
     def getnodeids(self, classname, db=None):
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'getnodeids', (self, classname, db)
         # start off with the new nodes
         res = self.newnodes.get(classname, {}).keys()
@@ -294,7 +292,7 @@ class Database(hyperdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'addjournal', (self, classname, nodeid, action, params)
         self.transactions.append((self._doSaveJournal, (classname, nodeid,
             action, params)))
@@ -302,7 +300,7 @@ class Database(hyperdb.Database):
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'getjournal', (self, classname, nodeid)
         # attempt to open the journal - in some rare cases, the journal may
         # not exist
@@ -322,7 +320,7 @@ class Database(hyperdb.Database):
 
     def pack(self, pack_before):
         ''' delete all journal entries before 'pack_before' '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'packjournal', (self, pack_before)
 
         pack_before = pack_before.get_tuple()
@@ -375,7 +373,7 @@ class Database(hyperdb.Database):
     def commit(self):
         ''' Commit the current transactions.
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'commit', (self,)
         # TODO: lock the DB
 
@@ -399,7 +397,7 @@ class Database(hyperdb.Database):
         self.transactions = []
 
     def _doSaveNode(self, classname, nodeid, node):
-        if DEBUG:
+        if hyperdb.DEBUG:
             print '_doSaveNode', (self, classname, nodeid, node)
 
         # get the database handle
@@ -413,7 +411,7 @@ class Database(hyperdb.Database):
         db[nodeid] = marshal.dumps(node)
 
     def _doSaveJournal(self, classname, nodeid, action, params):
-        if DEBUG:
+        if hyperdb.DEBUG:
             print '_doSaveJournal', (self, classname, nodeid, action, params)
         entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
             params)
@@ -441,7 +439,7 @@ class Database(hyperdb.Database):
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
-        if DEBUG:
+        if hyperdb.DEBUG:
             print 'rollback', (self, )
         for method, args in self.transactions:
             # delete temporary files
@@ -455,6 +453,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.26  2002/01/22 05:18:38  rochecompaan
+#last_set_entry was referenced before assignment
+#
 #Revision 1.25  2002/01/22 05:06:08  rochecompaan
 #We need to keep the last 'set' entry in the journal to preserve
 #information on 'activity' for nodes.
