@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.6 2002-09-26 07:39:21 richard Exp $
+# $Id: password.py,v 1.7 2002-09-26 13:38:35 gmcm Exp $
 
 __doc__ = """
 Password handling (encoding, decoding).
@@ -23,7 +23,7 @@ Password handling (encoding, decoding).
 
 import sha, re, string
 try:
-    import crypt:
+    import crypt
 except:
     crypt = None
     pass
