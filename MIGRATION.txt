@@ -5,8 +5,22 @@ Please read each section carefully and edit your instance home files
 accordingly.
 
 This file contains information for users upgrading from:
+  0.4.0 -> 0.4.1
   0.3.x -> 0.4.x
   0.2.x -> 0.3.x
+
+
+Migrating from 0.4.0 to 0.4.1
+=============================
+
+Configuration
+-------------
+
+To allow more fine-grained access control, the variable used to check
+permission to auto-register users in the mail gateway is now called
+ANONYMOUS_REGISTER_MAIL rather than overloading ANONYMOUS_REGISTER. If the
+variable doesn't exist, then ANONYMOUS_REGISTER is tested as before.
+
 
 
 Migrating from 0.3.x to 0.4.x
