@@ -971,7 +971,11 @@ class LinkHTMLProperty(HTMLProperty):
         else:
             s = ''
         l.append(_('<option %svalue="-1">- no selection -</option>')%s)
-        # XXX if the current value is retired, then list it explicitly
+
+        # make sure we list the current value if it's retired
+        if self._value and self._value not in options:
+            options.insert(0, self._value)
+
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -1018,7 +1022,11 @@ class LinkHTMLProperty(HTMLProperty):
         else:  
             sort_on = ('+', linkcl.labelprop())
         options = linkcl.filter(None, conditions, sort_on, (None, None))
-        # XXX if the current value is retired, then list it explicitly
+
+        # make sure we list the current value if it's retired
+        if self._value and self._value not in options:
+            options.insert(0, self._value)
+
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''
@@ -1139,7 +1147,12 @@ class MultilinkHTMLProperty(HTMLProperty):
         height = height or min(len(options), 7)
         l = ['<select multiple name="%s" size="%s">'%(self._name, height)]
         k = linkcl.labelprop(1)
-        # XXX if any of the current values are retired, then list them
+
+        # make sure we list the current values if they're retired
+        for value in self._value:
+            if value not in options:
+                options.insert(0, value)
+
         for optionid in options:
             # get the option value, and if it's None use an empty string
             option = linkcl.get(optionid, k) or ''

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.34 2002-12-10 00:11:16 richard Exp $
+# $Id: test_mailgw.py,v 1.35 2002-12-10 00:46:55 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -211,6 +211,7 @@ Reply-To: Roundup issue tracker <issue_tracker@your.tracker.email.domain.example
 MIME-Version: 1.0
 Message-Id: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -267,6 +268,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -315,6 +317,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -361,6 +364,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -408,6 +412,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -456,6 +461,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -504,6 +510,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -551,6 +558,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -598,6 +606,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -706,6 +715,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -760,6 +770,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
@@ -804,6 +815,7 @@ MIME-Version: 1.0
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 X-Roundup-Name: Roundup issue tracker
+X-Roundup-Loop: hello
 Content-Transfer-Encoding: quoted-printable
 
 
