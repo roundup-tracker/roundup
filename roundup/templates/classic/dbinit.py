@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.15 2002-02-15 07:08:44 richard Exp $
+# $Id: dbinit.py,v 1.16 2002-02-16 08:06:14 richard Exp $
 
 import os
 
@@ -79,7 +79,6 @@ def open(name=None):
     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), topic=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"))
-    issue.setkey('title')
 
     import detectors
     detectors.init(db)
@@ -123,6 +122,10 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/02/15 07:08:44  richard
+#  . Alternate email addresses are now available for users. See the MIGRATION
+#    file for info on how to activate the feature.
+#
 # Revision 1.14  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
