@@ -1,8 +1,0 @@
-<!-- $Id: msg.index,v 1.4 2002-05-22 00:32:34 richard Exp $-->
-<tr class="row-hilite">
-    <td><display call="link('date')"></td>
-    <td><display call="plain('author')"></td>
-</tr>
-<tr class="msg-content">
-    <td colspan=2><pre><display call="plain('content', escape=1)"></pre></td>
-</tr>
