@@ -170,14 +170,11 @@ class FileClass(hyperdb.FileClass, Class):
         fp.write(self.get(nodeid, "content", default=''))
         fp.close()
 
-    # XXX: this unfortunately sets the activity on the node to "now", causing
-    # testImportExport to fail. We either need to create a way to disable
-    # setting activity/actor or we need to override import_list so it already
-    # includes the "content" property. However, that would mean changing its
-    # call signature, as we need to know `dirname`.
     def import_files(self, dirname, nodeid):
         source = self.exportFilename(dirname, nodeid)
 
         fp = open(source, "r")
-        self.set(nodeid, content=fp.read())
+        # Use Database.setnode instead of self.set or self.set_inner here, as
+        # Database.setnode doesn't update the "activity" or "actor" properties.
+        self.db.setnode(self.classname, nodeid, values={'content': fp.read()})
         fp.close()
