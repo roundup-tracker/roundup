@@ -9,7 +9,7 @@ from roundup.mailgw import uidFromAddress
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
-           'NewItemAction']
+           'NewItemAction', 'ExportCSVAction']
 
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -801,3 +801,39 @@ class LoginAction(Action):
         if not password and not stored:
             return 1
         return 0
+
+class ExportCSVAction(Action):
+    name = 'export'
+    permissionType = 'View'
+
+    def handle(self):
+        ''' Export the specified search query as CSV. '''
+        # figure the request
+        request = HTMLRequest(self)
+        filterspec = request.filterspec
+        sort = request.sort
+        group = request.group
+        columns = request.columns
+        klass = self.db.getclass(request.classname)
+
+        # full-text search
+        if request.search_text:
+            matches = self.db.indexer.search(
+                re.findall(r'\b\w{2,25}\b', request.search_text), klass)
+        else:
+            matches = None
+
+        h = self.additional_headers
+        h['Content-Type'] = 'text/csv'
+        # some browsers will honor the filename here...
+        h['Content-Disposition'] = 'inline; filename=query.csv'
+        self.header()
+        writer = rcsv.writer(self.request.wfile)
+        writer.writerow(columns)
+
+        # and search
+        for itemid in klass.filter(matches, filterspec, sort, group):
+            writer.writerow([str(klass.get(itemid, col)) for col in columns])
+
+        return '\n'
+

@@ -82,6 +82,9 @@ You are not allowed to view this page.
  </tr>
 </table>
 
+<a tal:attributes="href python:request.indexargs_url('issue',
+            {'@action':'csv_export'})">Download as CSV</a>
+
 <form method="GET" id="index-controls" tal:attributes="action request/classname">
  
  <table class="form">

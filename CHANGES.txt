@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-??-?? 0.7.0b2
+Feature:
+- added CSV export to index pages
+
+
 2004-03-24 0.7.0b1
 Major new features:
 - added postgresql backend (originally from sf patch 761740, many changes

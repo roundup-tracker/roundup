@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.167 2004-03-24 06:18:59 richard Exp $
+# $Id: client.py,v 1.168 2004-03-25 00:44:28 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -520,17 +520,18 @@ class Client:
 
     # these are the actions that are available
     actions = (
-        ('edit',     EditItemAction),
-        ('editcsv',  EditCSVAction),
-        ('new',      NewItemAction),
-        ('register', RegisterAction),
-        ('confrego', ConfRegoAction),
-        ('passrst',  PassResetAction),
-        ('login',    LoginAction),
-        ('logout',   LogoutAction),
-        ('search',   SearchAction),
-        ('retire',   RetireAction),
-        ('show',     ShowAction),
+        ('edit',        EditItemAction),
+        ('editcsv',     EditCSVAction),
+        ('new',         NewItemAction),
+        ('register',    RegisterAction),
+        ('confrego',    ConfRegoAction),
+        ('passrst',     PassResetAction),
+        ('login',       LoginAction),
+        ('logout',      LogoutAction),
+        ('search',      SearchAction),
+        ('retire',      RetireAction),
+        ('show',        ShowAction),
+        ('export_csv',  ExportCSVAction),
     )
     def handle_action(self):
         ''' Determine whether there should be an Action called.
