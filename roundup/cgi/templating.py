@@ -685,43 +685,36 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
     def history(self, direction='descending', dre=re.compile('^\d+$')):
         self.view_check()
 
-        l = ['<table class="history">'
-             '<tr><th colspan="4" class="header">',
-             _('History'),
-             '</th></tr><tr>',
-             _('<th>Date</th>'),
-             _('<th>User</th>'),
-             _('<th>Action</th>'),
-             _('<th>Args</th>'),
-            '</tr>']
+        l = []
         current = {}
         comments = {}
         history = self._klass.history(self._nodeid)
         history.sort()
         timezone = self._db.getUserTimezone()
-        if direction == 'descending':
-            history.reverse()
-            # pre-load the history with the current state
-            for prop_n in self._props.keys():
-                prop = self[prop_n]
-                if not isinstance(prop, HTMLProperty):
-                    continue
-                current[prop_n] = prop.plain()
-                # make link if hrefable
-                if (self._props.has_key(prop_n) and
-                        isinstance(self._props[prop_n], hyperdb.Link)):
-                    classname = self._props[prop_n].classname
-                    try:
-                        template = find_template(self._db.config.TEMPLATES,
-                            classname, 'item')
-                        if template[1].startswith('_generic'):
-                            raise NoTemplate, 'not really...'
-                    except NoTemplate:
-                        pass
-                    else:
-                        id = self._klass.get(self._nodeid, prop_n, None)
-                        current[prop_n] = '<a href="%s%s">%s</a>'%(
-                            classname, id, current[prop_n])
+
+        history.reverse()
+
+        # pre-load the history with the current state
+        for prop_n in self._props.keys():
+            prop = self[prop_n]
+            if not isinstance(prop, HTMLProperty):
+                continue
+            current[prop_n] = prop.plain()
+            # make link if hrefable
+            if (self._props.has_key(prop_n) and
+                    isinstance(self._props[prop_n], hyperdb.Link)):
+                classname = self._props[prop_n].classname
+                try:
+                    template = find_template(self._db.config.TEMPLATES,
+                        classname, 'item')
+                    if template[1].startswith('_generic'):
+                        raise NoTemplate, 'not really...'
+                except NoTemplate:
+                    pass
+                else:
+                    id = self._klass.get(self._nodeid, prop_n, None)
+                    current[prop_n] = '<a href="%s%s">%s</a>'%(
+                        classname, id, current[prop_n])
  
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
@@ -893,6 +886,19 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
             l.append(_('<tr><td colspan=4><strong>Note:</strong></td></tr>'))
         for entry in comments.values():
             l.append('<tr><td colspan=4>%s</td></tr>'%entry)
+
+        if direction == 'ascending':
+            l.reverse()
+
+        l[0:0] = ['<table class="history">'
+             '<tr><th colspan="4" class="header">',
+             _('History'),
+             '</th></tr><tr>',
+             _('<th>Date</th>'),
+             _('<th>User</th>'),
+             _('<th>Action</th>'),
+             _('<th>Args</th>'),
+            '</tr>']
         l.append('</table>')
         return '\n'.join(l)
 
