@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.30 2003-11-19 22:53:14 jlgijsbers Exp $
+# $Id: test_dates.py,v 1.31 2003-12-04 23:06:53 richard Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -122,6 +122,8 @@ class DateTestCase(unittest.TestCase):
 
     def testOffsetSub(self):
         ae = self.assertEqual
+        date = Date('2000-12-01') - Interval('- 1d')
+
         date = Date('2000-01-01') - Interval('- 2y 2m')
         ae(str(date), '2002-03-01.00:00:00')
         date = Date('2000-01-01') - Interval('2m')

@@ -10,12 +10,12 @@ Feature:
 - added postgresql backend (originally from sf patch 761740, many changes
   since)
 - all RDBMS backends now have indexes on several columns
-- Change nosymessage and send_message to accept msgid=None (RFE #707235).
-- Handle Resent-From: headers (sf bug 841151)
-- Existing trackers (ie. live ones) may be used as templates for new
+- change nosymessage and send_message to accept msgid=None (RFE #707235).
+- handle Resent-From: headers (sf bug 841151)
+- existing trackers (ie. live ones) may be used as templates for new
   trackers - the TEMPLATE-INFO.txt name entry has the tracker's dir name
   appended (so the demo tracker's template name is "classic-demo")
-- Always sort MultilinkHTMLProperty in the correct order, usually
+- always sort MultilinkHTMLProperty in the correct order, usually
   alphabetically (sf feature 790512).
 
 Fixed:
@@ -23,16 +23,16 @@ Fixed:
 - added testing of schema mutation, fixed rdbms backends handling of a
   couple of cases
 - HTML 4.01 validation on the 'classic' backend
-- Messages to the mailgw can be about classes other than issues now.
-- Signature matching is more precise (sf bug 827775).
-- Anonymous user can no longer edit or view itself (sf bug 828901).
-- Corrected typo in installation.html (sf bug 822967).
-- Clarified listTemplates docstring.
-- Print a nicer error message when the address is already in use 
+- messages to the mailgw can be about classes other than issues now.
+- signature matching is more precise (sf bug 827775).
+- anonymous user can no longer edit or view itself (sf bug 828901).
+- corrected typo in installation.html (sf bug 822967).
+- clarified listTemplates docstring.
+- print a nicer error message when the address is already in use 
   (sf bug 798659).
-- Remove empty lines before sending strings off to the csv parser 
+- remove empty lines before sending strings off to the csv parser 
   (sf bug 821364).
-- Centralised conversion of user-input data to hyperdb values (sf bug 802405,
+- centralised conversion of user-input data to hyperdb values (sf bug 802405,
   sf bug 817217, sf rfe 816994)
 - recalculate SHA on template files when installed tracker used as
   template (sf bug 827510)
@@ -42,35 +42,37 @@ Fixed:
   widget
 
 Cleanup:
-- Replace curuserid attribute on Database with the extended getuid() method.
-- Extract a new 'mailer' module for sending mail.
-- Extract a '_send_mail' method for testing mail sending.
-- Simplify backend importing.
-- Use roundup_server in demo.py.
-- Implement newItemAction using editItemAction.
-- Use FormError in client.py, moving the handling up to inner_main().
-- Implemented semantic comparison of Message objects in test_mailgw. 
+- replace curuserid attribute on Database with the extended getuid() method.
+- extract a new 'mailer' module for sending mail.
+- extract a '_send_mail' method for testing mail sending.
+- simplify backend importing.
+- use roundup_server in demo.py.
+- implement newItemAction using editItemAction.
+- use FormError in client.py, moving the handling up to inner_main().
+- implemented semantic comparison of Message objects in test_mailgw. 
 
 2003-??-?? 0.6.4
 Fixed:
-- Hard-coded python2.3-ism (socket.timeout) fixed
-- Fixed activity displaying as future because of Date arithmetic fix in 0.6.3
+- fixed date arithmetic to not allow day-of-month == 0 (sf bug 853306)
+- fixed date arithmetic to limit hours-per-day to 24, not 60
+- hard-coded python2.3-ism (socket.timeout) fixed
+- fixed activity displaying as future because of Date arithmetic fix in 0.6.3
   (sf bug 842027).
 
 2003-11-14 0.6.3
 Fixed:
-- Fixed detectors fix incorrectly fixed in bugfix release 0.6.2
-- Added note to upgrading doc for detectors fix in 0.6.2
-- Added script to help migrating queries from pre-0.6 trackers
-- Fixed "documentation" of getnodeids in roundup.hyperdb
-- Added flush() to DevNull (sf bug 835365)
-- Fixed javascript for help window for only one checkbox case
-- Date arithmetic was utterly broken, and has been for a long time.
+- fixed detectors fix incorrectly fixed in bugfix release 0.6.2
+- added note to upgrading doc for detectors fix in 0.6.2
+- added script to help migrating queries from pre-0.6 trackers
+- fixed "documentation" of getnodeids in roundup.hyperdb
+- added flush() to DevNull (sf bug 835365)
+- fixed javascript for help window for only one checkbox case
+- date arithmetic was utterly broken, and has been for a long time.
   Date +/- Interval now works, and Date - Date also works (produces
   an Interval.
-- Handle socket timeout exception (thanks Marcus Priesch)
-- Fixed retirement of items in rdbms imports (sf bug 841355)
-- Fixed bug in looking up journal of newly-created items in *dbm backends
+- handle socket timeout exception (thanks Marcus Priesch)
+- fixed retirement of items in rdbms imports (sf bug 841355)
+- fixed bug in looking up journal of newly-created items in *dbm backends
 
 
 2003-09-29 0.6.2

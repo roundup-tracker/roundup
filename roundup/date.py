@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.57 2003-11-19 22:53:15 jlgijsbers Exp $
+# $Id: date.py,v 1.58 2003-12-04 23:06:53 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -190,13 +190,13 @@ class Date:
         # now cope with under- and over-flow
         # first do the time
         while (second < 0 or second > 59 or minute < 0 or minute > 59 or
-                hour < 0 or hour > 59):
+                hour < 0 or hour > 23):
             if second < 0: minute -= 1; second += 60
             elif second > 59: minute += 1; second -= 60
             if minute < 0: hour -= 1; minute += 60
             elif minute > 59: hour += 1; minute -= 60
             if hour < 0: day -= 1; hour += 24
-            elif hour > 59: day += 1; hour -= 24
+            elif hour > 23: day += 1; hour -= 24
 
         # fix up the month so we're within range
         while month < 1 or month > 12:
@@ -204,13 +204,13 @@ class Date:
             if month > 12: year += 1; month -= 12
 
         # now do the days, now that we know what month we're in
-        def get_mdays(year,month):
+        def get_mdays(year, month):
             if month == 2 and calendar.isleap(year): return 29
             else: return calendar.mdays[month]
-            
-        while month < 1 or month > 12 or day < 0 or day > get_mdays(year,month):
+
+        while month < 1 or month > 12 or day < 1 or day > get_mdays(year,month):
             # now to day under/over
-            if day < 0: 
+            if day < 1: 
                 # When going backwards, decrement month, then increment days
                 month -= 1
                 day += get_mdays(year,month)
