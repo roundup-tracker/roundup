@@ -15,11 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.19 2003-03-06 06:12:30 richard Exp $ 
+# $Id: test_dates.py,v 1.20 2003-03-10 00:22:21 richard Exp $ 
 
 import unittest, time
 
-from roundup.date import Date, Interval, fixTimeOverflow
+from roundup.date import Date, Interval, Range, fixTimeOverflow
 
 class DateTestCase(unittest.TestCase):
     def testDateInterval(self):
@@ -223,6 +223,11 @@ class DateTestCase(unittest.TestCase):
         l = [i1, i2]; l.sort()
         ae(l, [i1, i2])
 
+        i1 = Interval("1:20")
+        i2 = Interval("2d")
+        i3 = Interval("3:30")
+        l = [i1, i2, i3]; l.sort()
+        ae(l, [i1, i3, i2])
 
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')

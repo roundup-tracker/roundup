@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.74 2003-03-06 06:03:51 richard Exp $ 
+# $Id: test_db.py,v 1.75 2003-03-10 00:22:21 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -632,9 +632,12 @@ class anydbmDBTestCase(MyTestCase):
             self.db.user.create(**user)
         iss = self.db.issue
         for issue in (
-                {'title': 'issue one', 'status': '2'},
-                {'title': 'issue two', 'status': '1'},
-                {'title': 'issue three', 'status': '1', 'nosy': ['1','2']}):
+                {'title': 'issue one', 'status': '2',
+                    'foo': date.Interval('1:10')},
+                {'title': 'issue two', 'status': '1',
+                    'foo': date.Interval('1d')},
+                {'title': 'issue three', 'status': '1',
+                    'nosy': ['1','2']}):
             self.db.issue.create(**issue)
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
@@ -662,8 +665,16 @@ class anydbmDBTestCase(MyTestCase):
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
 
+    def testFilteringIntervalSort(self):
+        ae, filt = self.filteringSetup()
+        # ascending should sort None, 1:10, 1d
+        ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '1', '2'])
+        # descending should sort 1d, 1:10, None
+        ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '3'])
 
-# TODO test auditors and reactors
+
+# XXX add sorting tests for other types
+# XXX test auditors and reactors
 
 class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.46 2003-03-08 20:41:45 kedder Exp $
+# $Id: date.py,v 1.47 2003-03-10 00:22:20 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -354,10 +354,9 @@ class Interval:
     def __cmp__(self, other):
         """Compare this interval to another interval."""
         if other is None:
+            # we are always larger than None
             return 1
         for attr in 'sign year month day hour minute second'.split():
-            if not hasattr(other, attr):
-                return 1
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r:
                 return r
