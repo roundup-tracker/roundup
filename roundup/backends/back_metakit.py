@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.85 2004-09-29 10:19:40 a1s Exp $
+# $Id: back_metakit.py,v 1.86 2004-09-30 09:48:12 a1s Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -328,12 +328,9 @@ class _Database(hyperdb.Database, roundupdb.Database):
             if not os.path.isfile(schemafile):
                 # try old-style schema
                 schemafile = os.path.join(self.config['HOME'], 'dbinit.py')
-            if os.path.isfile(schemafile):
-                if os.path.getmtime(schemafile) < dbtm:
-                    # found schema mod - it's older than the db
-                    self.fastopen = 1
-            else:
-                 # can't find schemamod - must be frozen
+            if os.path.isfile(schemafile) \
+            and (os.path.getmtime(schemafile) < dbtm):
+                # found schema file - it's older than the db
                 self.fastopen = 1
 
         # open the db
