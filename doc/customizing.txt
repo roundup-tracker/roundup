@@ -2,7 +2,10 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.18 $
+:Version: $Revision: 1.19 $
+
+.. This document borrows from the ZopeBook section on ZPT. The original is at:
+   http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
 .. contents::
 
@@ -620,6 +623,7 @@ The basic processing of a web request proceeds as follows:
 4. render a template, resulting in HTML output
 
 In some situations, exceptions occur:
+
 - HTTP Redirect  (generally raised by an action)
 - SendFile       (generally raised by determine_context)
   here we serve up a FileClass "content" property
@@ -721,17 +725,20 @@ search
  Also handle the ":queryname" variable and save off the query to
  the user's query list.
 
-Each of the actions is implemented by a corresponding *name*Action method on
+Each of the actions is implemented by a corresponding *actionAction* (where
+"action" is the name of the action) method on
 the roundup.cgi.Client class, which also happens to be in your instance as
 interfaces.Client. So if you need to define new actions, you may add them
 there (see `definining new web actions`_).
 
-Each action also has a corresponding *name*Permission method which determines
+Each action also has a corresponding *actionPermission* (where
+"action" is the name of the action) method which determines
 whether the action is permissible given the current user. The base permission
 checks are:
 
 login
- XXX TODO
+ Determine whether the user has permission to log in.
+ Base behaviour is to check the user has "Web Access".
 logout
  No permission checks are made.
 register
@@ -777,21 +784,95 @@ footer with your own code. This allows you to use a sidebar navigation scheme,
 for example.
 
 
-PageTemplates in a Nutshell
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How the templates work
+~~~~~~~~~~~~~~~~~~~~~~
 
-PageTemplates consist of two core technologies:
+Roundup's templates consist of two core technologies:
 
 TAL - Template Attribute Language
   This is the syntax which is woven into the HTML using the ``tal:`` tag
   attributes. A TAL parser pulls out the TAL commands from the attributes
-  runs them using some expression engine. TAL gives:
+  runs them using some expression engine. TAL gives us the following commands:
 
-  tal:define
-  tal:replace
-  tal:content
-  tal:repeat
-  tal:attributes
+  tal:define="variable expression; variable expression; ..."
+   Define a new variable that is local to this tag and its contents. For
+   example::
+
+      <html tal:define="title request/description">
+       <head><title tal:content="title"></title></head>
+      </html>
+
+   In the example, the variable "title" is defined as being the result of the
+   expression "request/description". The tal:content command inside the <html>
+   tag may then use the "title" variable.
+
+  tal:condition="expression"
+   Only keep this tag and its contents if the expression is true. For example::
+
+     <p tal:condition="python:request.user.hasPermission('View', 'issue')">
+      Display some issue information.
+     </p>
+
+   In the example, the <p> tag and its contents are only displayed if the
+   user has the View permission for issues. We consider the number zero, a
+   blank string, an empty list, and the built-in variable nothing to be false
+   values. Nearly every other value is true, including non-zero numbers, and
+   strings with anything in them (even spaces!).
+
+  tal:repeat="variable expression"
+   Repeat this tag and its contents for each element of the sequence that the
+   expression returns, defining a new local variable and a special "repeat"
+   variable for each element. For example::
+
+     <tr tal:repeat="u user/list">
+      <td tal:content="u/id"></td>
+      <td tal:content="u/username"></td>
+      <td tal:content="u/realname"></td>
+     </tr>
+
+   The example would iterate over the sequence of users returned by
+   "user/list" and define the local variable "u" for each entry.
+
+  tal:replace="expression"
+   Replace this tag with the result of the expression. For example::
+
+    <span tal:replace="request/user/realname"></span>
+
+   The example would replace the <span> tag and its contents with the user's
+   realname. If the user's realname was "Bruce" then the resultant output
+   would be "Bruce".
+
+  tal:content="expression"
+   Replace the contents of this tag with the result of the expression. For
+   example::
+
+    <span tal:content="request/user/realname">user's name appears here</span>
+
+   The example would replace the contents of the <span> tag with the user's
+   realname. If the user's realname was "Bruce" then the resultant output
+   would be "<span>Bruce</span>".
+
+  tal:attributes="attribute expression; attribute expression; ..."
+   Set attributes on this tag to the results of expressions. For example::
+
+     <a tal:attributes="href string:user${request/user/id}">My Details</a>
+
+   In the example, the "href" attribute of the <a> tag is set to the value of
+   the "string:user${request/user/id}" expression, which will be something
+   like "user123".
+
+  tal:omit-tag="expression"
+   Remove this tag (but not its contents) if the expression is true. For
+   example::
+
+      <span tal:omit-tag="python:1">Hello, world!</span>
+
+   would result in output of::
+
+      Hello, world!
+
+  Note that the commands on a given tag are evaulated in the order above, so
+  *define* comes before *condition*, and so on.
 
   Additionally, a tag is defined, tal:block, which is removed from output. Its
   content is not, but the tag itself is (so don't go using any tal:attributes
@@ -814,6 +895,9 @@ TALES - TAL Expression Syntax
    left with is evaluated to get a string - methods are called, objects are
    stringified. Path expressions may have an optional ``path:`` prefix, though
    they are the default expression type, so it's not necessary.
+
+   XXX | components of expressions
+   XXX "nothing" and "default"
 
   String Expressions - eg. ``string:hello ${user/name}``
    These expressions are simple string interpolations (though they can be just
