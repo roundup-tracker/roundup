@@ -24,6 +24,8 @@ are given with the most recent entry first.
   cases (there's a lot of __debug__ use)
 - fix :required for Link menus
 - import wasn't setting the ID to maxid+1
+- added getItem to HTMLClass so you can access arbitrary items in templates
+- index filtering form values may now be key values too
 
 
 2002-09-13 0.5.0 beta2

@@ -287,7 +287,7 @@ class HTMLClass(HTMLPermissions):
             if form.has_key(item):
                 if isinstance(prop, hyperdb.Multilink):
                     value = lookupIds(self._db, prop,
-                        handleListCGIValue(form[item]))
+                        handleListCGIValue(None, form[item]))
                 elif isinstance(prop, hyperdb.Link):
                     value = form[item].value.strip()
                     if value:
@@ -1279,7 +1279,7 @@ class HTMLRequest:
         # filtering
         self.filter = []
         if self.form.has_key(':filter'):
-            self.filter = handleListCGIValue(self.form[':filter'])
+            self.filter = handleListCGIValue(None, self.form[':filter'])
         self.filterspec = {}
         db = self.client.db
         if self.classname is not None:
@@ -1357,7 +1357,7 @@ class HTMLRequest:
         d.update(self.__dict__)
         f = ''
         for k in self.form.keys():
-            f += '\n      %r=%r'%(k,handleListCGIValue(self.form[k]))
+            f += '\n      %r=%r'%(k,handleListCGIValue(None, self.form[k]))
         d['form'] = f
         e = ''
         for k,v in self.env.items():
