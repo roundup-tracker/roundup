@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.52 2002-01-14 02:20:14 richard Exp $
+# $Id: htmltemplate.py,v 1.53 2002-01-14 04:03:32 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -146,7 +146,7 @@ class TemplateFunctions:
             if value is None:
                 value = ''
             else:
-                value = cgi.escape(value)
+                value = cgi.escape(str(value))
                 value = '&quot;'.join(value.split('"'))
             s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
         elif isinstance(propclass, hyperdb.Password):
@@ -889,6 +889,15 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2002/01/14 02:20:14  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.51  2002/01/10 10:02:15  grubert
 # In do_history: replace "." in date by " " so html wraps more sensible.
 # Should this be done in date's string converter ?
