@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: blobfiles.py,v 1.7 2002-07-14 06:14:40 richard Exp $
+#$Id: blobfiles.py,v 1.8 2002-07-19 03:36:34 richard Exp $
 '''
 This module exports file storage for roundup backends.
 Files are stored into a directory hierarchy.
@@ -81,7 +81,7 @@ class FileStorage:
         open(name + '.tmp', 'wb').write(content)
 
         # save off the commit action
-        self.transactions.append((self._doStoreFile, (classname, nodeid,
+        self.transactions.append((self.doStoreFile, (classname, nodeid,
             property)))
 
     def getfile(self, classname, nodeid, property):
@@ -105,7 +105,7 @@ class FileStorage:
         files_dir = os.path.join(self.dir, 'files')
         return files_in_dir(files_dir)
 
-    def _doStoreFile(self, classname, nodeid, property, **databases):
+    def doStoreFile(self, classname, nodeid, property, **databases):
         '''Store the file as part of a transaction commit.
         '''
         # determine the name of the file to write to
@@ -117,7 +117,7 @@ class FileStorage:
         # return the classname, nodeid so we reindex this content
         return (classname, nodeid)
 
-    def _rollbackStoreFile(self, classname, nodeid, property, **databases):
+    def rollbackStoreFile(self, classname, nodeid, property, **databases):
         '''Remove the temp file as a part of a rollback
         '''
         # determine the name of the file to delete
@@ -126,6 +126,9 @@ class FileStorage:
             os.remove(name+".tmp")
 
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2002/07/14 06:14:40  richard
+# Some more TODOs
+#
 # Revision 1.6  2002/07/09 03:02:52  richard
 # More indexer work:
 # - all String properties may now be indexed too. Currently there's a bit of

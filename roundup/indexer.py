@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.11 2002-07-18 11:17:30 gmcm Exp $
+#$Id: indexer.py,v 1.12 2002-07-19 03:36:33 richard Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -312,6 +312,8 @@ class Indexer:
     def purge_entry(self, identifier):
         ''' Remove a file from file index and word index
         '''
+        self.load_index()
+
         if not self.files.has_key(identifier):
             return
 
@@ -333,6 +335,11 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.11  2002/07/18 11:17:30  gmcm
+#Add Number and Boolean types to hyperdb.
+#Add conversion cases to web, mail & admin interfaces.
+#Add storage/serialization cases to back_anydbm & back_metakit.
+#
 #Revision 1.10  2002/07/14 23:17:24  richard
 #oops
 #

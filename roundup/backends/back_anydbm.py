@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.51 2002-07-18 23:07:08 richard Exp $
+#$Id: back_anydbm.py,v 1.52 2002-07-19 03:36:34 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -63,6 +63,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache = {}         # cache of nodes loaded or created
         self.dirtynodes = {}    # keep track of the dirty nodes by class
         self.newnodes = {}      # keep track of the new nodes by class
+        self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
         self.indexer = Indexer(self.dir)
         # ensure files are group readable and writable
@@ -141,7 +142,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'getclassdb', (self, classname, mode)
-        return self._opendb('nodes.%s'%classname, mode)
+        return self.opendb('nodes.%s'%classname, mode)
 
     def determine_db_type(self, path):
         ''' determine which DB wrote the class file
@@ -157,12 +158,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db_type = 'dbm'
         return db_type
 
-    def _opendb(self, name, mode):
+    def opendb(self, name, mode):
         '''Low-level database opener that gets around anydbm/dbm
            eccentricities.
         '''
         if __debug__:
-            print >>hyperdb.DEBUG, '_opendb', (self, name, mode)
+            print >>hyperdb.DEBUG, 'opendb', (self, name, mode)
 
         # figure the class db type
         path = os.path.join(os.getcwd(), self.dir, name)
@@ -171,7 +172,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # new database? let anydbm pick the best dbm
         if not db_type:
             if __debug__:
-                print >>hyperdb.DEBUG, "_opendb anydbm.open(%r, 'n')"%path
+                print >>hyperdb.DEBUG, "opendb anydbm.open(%r, 'n')"%path
             return anydbm.open(path, 'n')
 
         # open the database with the correct module
@@ -182,11 +183,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 "Couldn't open database - the required module '%s'"\
                 " is not available"%db_type
         if __debug__:
-            print >>hyperdb.DEBUG, "_opendb %r.open(%r, %r)"%(db_type, path,
+            print >>hyperdb.DEBUG, "opendb %r.open(%r, %r)"%(db_type, path,
                 mode)
         return dbm.open(path, mode)
 
-    def _lockdb(self, name):
+    def lockdb(self, name):
         ''' Lock a database file
         '''
         path = os.path.join(os.getcwd(), self.dir, '%s.lock'%name)
@@ -199,8 +200,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Generate a new id for the given class
         '''
         # open the ids DB - create if if doesn't exist
-        lock = self._lockdb('_ids')
-        db = self._opendb('_ids', 'c')
+        lock = self.lockdb('_ids')
+        db = self.opendb('_ids', 'c')
         if db.has_key(classname):
             newid = db[classname] = str(int(db[classname]) + 1)
         else:
@@ -239,7 +240,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'savenode', (self, classname, nodeid, node)
-        self.transactions.append((self._doSaveNode, (classname, nodeid, node)))
+        self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1):
         ''' get a node from the database
@@ -264,6 +265,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if not db.has_key(nodeid):
             raise IndexError, "no such %s %s"%(classname, nodeid)
 
+        # check the uncommitted, destroyed nodes
+        if (self.destroyednodes.has_key(classname) and
+                self.destroyednodes[classname].has_key(nodeid)):
+            raise IndexError, "no such %s %s"%(classname, nodeid)
+
         # decode
         res = marshal.loads(db[nodeid])
 
@@ -275,6 +281,32 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             cache_dict[nodeid] = res
 
         return res
+
+    def destroynode(self, classname, nodeid):
+        '''Remove a node from the database. Called exclusively by the
+           destroy() method on Class.
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'destroynode', (self, classname, nodeid)
+
+        # remove from cache and newnodes if it's there
+        if (self.cache.has_key(classname) and
+                self.cache[classname].has_key(nodeid)):
+            del self.cache[classname][nodeid]
+        if (self.newnodes.has_key(classname) and
+                self.newnodes[classname].has_key(nodeid)):
+            del self.newnodes[classname][nodeid]
+
+        # see if there's any obvious commit actions that we should get rid of
+        for entry in self.transactions[:]:
+            if entry[1][:2] == (classname, nodeid):
+                self.transactions.remove(entry)
+
+        # add to the destroyednodes map
+        self.destroyednodes.setdefault(classname, {})[nodeid] = 1
+
+        # add the destroy commit action
+        self.transactions.append((self.doDestroyNode, (classname, nodeid)))
 
     def serialise(self, classname, node):
         '''Copy the node contents, converting non-marshallable data into
@@ -357,8 +389,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def countnodes(self, classname, db=None):
         if __debug__:
             print >>hyperdb.DEBUG, 'countnodes', (self, classname, db)
-        # include the new nodes not saved to the DB yet
-        count = len(self.newnodes.get(classname, {}))
+
+        count = 0
+
+        # include the uncommitted nodes
+        if self.newnodes.has_key(classname):
+            count += len(self.newnodes[classname])
+        if self.destroyednodes.has_key(classname):
+            count -= len(self.destroyednodes[classname])
 
         # and count those in the DB
         if db is None:
@@ -369,12 +407,23 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def getnodeids(self, classname, db=None):
         if __debug__:
             print >>hyperdb.DEBUG, 'getnodeids', (self, classname, db)
+
+        res = []
+
         # start off with the new nodes
-        res = self.newnodes.get(classname, {}).keys()
+        if self.newnodes.has_key(classname):
+            res += self.newnodes[classname].keys()
 
         if db is None:
             db = self.getclassdb(classname)
         res = res + db.keys()
+
+        # remove the uncommitted, destroyed nodes
+        if self.destroyednodes.has_key(classname):
+            for nodeid in self.destroyednodes[classname].keys():
+                if db.has_key(nodeid):
+                    res.remove(nodeid)
+
         return res
 
 
@@ -396,33 +445,36 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'addjournal', (self, classname, nodeid,
                 action, params)
-        self.transactions.append((self._doSaveJournal, (classname, nodeid,
+        self.transactions.append((self.doSaveJournal, (classname, nodeid,
             action, params)))
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
+
+            Raise IndexError if the node doesn't exist (as per history()'s
+            API)
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'getjournal', (self, classname, nodeid)
         # attempt to open the journal - in some rare cases, the journal may
         # not exist
         try:
-            db = self._opendb('journals.%s'%classname, 'r')
+            db = self.opendb('journals.%s'%classname, 'r')
         except anydbm.error, error:
-            if str(error) == "need 'c' or 'n' flag to open new db": return []
-            elif error.args[0] != 2: raise
-            return []
+            if str(error) == "need 'c' or 'n' flag to open new db":
+                raise IndexError, 'no such %s %s'%(classname, nodeid)
+            elif error.args[0] != 2:
+                raise
+            raise IndexError, 'no such %s %s'%(classname, nodeid)
         try:
             journal = marshal.loads(db[nodeid])
         except KeyError:
             db.close()
-            raise KeyError, 'no such %s %s'%(classname, nodeid)
+            raise IndexError, 'no such %s %s'%(classname, nodeid)
         db.close()
         res = []
-        for entry in journal:
-            (nodeid, date_stamp, user, action, params) = entry
-            date_obj = date.Date(date_stamp)
-            res.append((nodeid, date_obj, user, action, params))
+        for nodeid, date_stamp, user, action, params in journal:
+            res.append((nodeid, date.Date(date_stamp), user, action, params))
         return res
 
     def pack(self, pack_before):
@@ -440,7 +492,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db_name = 'journals.%s'%classname
             path = os.path.join(os.getcwd(), self.dir, classname)
             db_type = self.determine_db_type(path)
-            db = self._opendb(db_name, 'w')
+            db = self.opendb(db_name, 'w')
 
             for key in db.keys():
                 journal = marshal.loads(db[key])
@@ -503,19 +555,24 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache = {}
         self.dirtynodes = {}
         self.newnodes = {}
+        self.destroyednodes = {}
         self.transactions = []
 
-    def _doSaveNode(self, classname, nodeid, node):
-        if __debug__:
-            print >>hyperdb.DEBUG, '_doSaveNode', (self, classname, nodeid,
-                node)
-
+    def getCachedClassDB(self, classname):
+        ''' get the class db, looking in our cache of databases for commit
+        '''
         # get the database handle
         db_name = 'nodes.%s'%classname
-        if self.databases.has_key(db_name):
-            db = self.databases[db_name]
-        else:
-            db = self.databases[db_name] = self.getclassdb(classname, 'c')
+        if not self.databases.has_key(db_name):
+            self.databases[db_name] = self.getclassdb(classname, 'c')
+        return self.databases[db_name]
+
+    def doSaveNode(self, classname, nodeid, node):
+        if __debug__:
+            print >>hyperdb.DEBUG, 'doSaveNode', (self, classname, nodeid,
+                node)
+
+        db = self.getCachedClassDB(classname)
 
         # now save the marshalled data
         db[nodeid] = marshal.dumps(self.serialise(classname, node))
@@ -523,7 +580,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # return the classname, nodeid so we reindex this content
         return (classname, nodeid)
 
-    def _doSaveJournal(self, classname, nodeid, action, params):
+    def getCachedJournalDB(self, classname):
+        ''' get the journal db, looking in our cache of databases for commit
+        '''
+        # get the database handle
+        db_name = 'journals.%s'%classname
+        if not self.databases.has_key(db_name):
+            self.databases[db_name] = self.opendb(db_name, 'c')
+        return self.databases[db_name]
+
+    def doSaveJournal(self, classname, nodeid, action, params):
         # serialise first
         if action in ('set', 'create'):
             params = self.serialise(classname, params)
@@ -533,14 +599,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             params)
 
         if __debug__:
-            print >>hyperdb.DEBUG, '_doSaveJournal', entry
+            print >>hyperdb.DEBUG, 'doSaveJournal', entry
 
-        # get the database handle
-        db_name = 'journals.%s'%classname
-        if self.databases.has_key(db_name):
-            db = self.databases[db_name]
-        else:
-            db = self.databases[db_name] = self._opendb(db_name, 'c')
+        db = self.getCachedJournalDB(classname)
 
         # now insert the journal entry
         if db.has_key(nodeid):
@@ -553,6 +614,23 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         db[nodeid] = marshal.dumps(l)
 
+    def doDestroyNode(self, classname, nodeid):
+        if __debug__:
+            print >>hyperdb.DEBUG, 'doDestroyNode', (self, classname, nodeid)
+
+        # delete from the class database
+        db = self.getCachedClassDB(classname)
+        if db.has_key(nodeid):
+            del db[nodeid]
+
+        # delete from the database
+        db = self.getCachedJournalDB(classname)
+        if db.has_key(nodeid):
+            del db[nodeid]
+
+        # return the classname, nodeid so we reindex this content
+        return (classname, nodeid)
+
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
@@ -560,11 +638,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'rollback', (self, )
         for method, args in self.transactions:
             # delete temporary files
-            if method == self._doStoreFile:
-                self._rollbackStoreFile(*args)
+            if method == self.doStoreFile:
+                self.rollbackStoreFile(*args)
         self.cache = {}
         self.dirtynodes = {}
         self.newnodes = {}
+        self.destroyednodes = {}
         self.transactions = []
 
 _marker = []
@@ -1075,6 +1154,23 @@ class Class(hyperdb.Class):
 
         self.fireReactors('retire', nodeid, None)
 
+    def destroy(self, nodeid):
+        """Destroy a node.
+        
+        WARNING: this method should never be used except in extremely rare
+                 situations where there could never be links to the node being
+                 deleted
+        WARNING: use retire() instead
+        WARNING: the properties of this node will not be available ever again
+        WARNING: really, use retire() instead
+
+        Well, I think that's enough warnings. This method exists mostly to
+        support the session storage of the cgi interface.
+        """
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+        self.db.destroynode(self.classname, nodeid)
+
     def history(self, nodeid):
         """Retrieve the journal of edits on a particular node.
 
@@ -1550,9 +1646,15 @@ class Class(hyperdb.Class):
         # find all the String properties that have indexme
         for prop, propclass in self.getprops().items():
             if isinstance(propclass, String) and propclass.indexme:
-                # and index them under (classname, nodeid, property)
-                self.db.indexer.add_text((self.classname, nodeid, prop),
-                    str(self.get(nodeid, prop)))
+                try:
+                    value = str(self.get(nodeid, prop))
+                except IndexError:
+                    # node no longer exists - entry should be removed
+                    self.db.indexer.purge_entry((self.classname, nodeid, prop))
+                else:
+                    # and index them under (classname, nodeid, property)
+                    self.db.indexer.add_text((self.classname, nodeid, prop),
+                        value)
 
     #
     # Detector interface
@@ -1676,6 +1778,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.51  2002/07/18 23:07:08  richard
+#Unit tests and a few fixes.
+#
 #Revision 1.50  2002/07/18 11:50:58  richard
 #added tests for number type too
 #
