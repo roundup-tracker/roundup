@@ -15,12 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.59 2001-11-21 03:21:13 richard Exp $
+# $Id: cgi_client.py,v 1.60 2001-11-21 22:57:28 jhermann Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
 
 import roundupdb, htmltemplate, date, hyperdb, password
+from roundup.i18n import _
 
 class Unauthorised(ValueError):
     pass
@@ -106,7 +107,7 @@ class Client:
 <a href="user%s">My Details</a> | <a href="logout">Logout</a>
 '''%(userid, userid)
         else:
-            user_info = '<a href="login">Login</a>'
+            user_info = _('<a href="login">Login</a>')
         if self.user is not None:
             add_links = '''
 | Add
@@ -274,7 +275,7 @@ class Client:
 
         '''
         cn = self.classname
-        self.pagehead('Index of %s'%cn)
+        self.pagehead(_('Index of %(classname)s')%{'classname': cn})
         if sort is None: sort = self.index_arg(':sort')
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
@@ -372,7 +373,7 @@ class Client:
         #
         # now the display
         #
-        self.pagehead('User: %s'%node_user, message)
+        self.pagehead(_('User: %(user)s')%{'user': node_user}, message)
 
         # use the template to display the item
         item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 'user')
@@ -581,7 +582,7 @@ class Client:
         ''' display a list of all the classes in the database
         '''
         if self.user == 'admin':
-            self.pagehead('Table of classes', message)
+            self.pagehead(_('Table of classes'), message)
             classnames = self.db.classes.keys()
             classnames.sort()
             self.write('<table border=0 cellspacing=0 cellpadding=2>\n')
@@ -599,7 +600,7 @@ class Client:
             raise Unauthorised
 
     def login(self, message=None, newuser_form=None):
-        self.pagehead('Login to roundup', message)
+        self.pagehead(_('Login to roundup'), message)
         self.write('''
 <table>
 <tr><td colspan=2 class="strong-header">Existing User Login</td></tr>
@@ -661,13 +662,13 @@ class Client:
         except KeyError:
             name = self.user
             self.make_user_anonymous()
-            return self.login(message='No such user "%s"'%name)
+            return self.login(message=_('No such user "%(name)s"')%locals())
 
         # and that the password is correct
         pw = self.db.user.get(uid, 'password')
         if password != self.db.user.get(uid, 'password'):
             self.make_user_anonymous()
-            return self.login(message='Incorrect password')
+            return self.login(message=_('Incorrect password'))
 
         self.set_cookie(self.user, password)
         return self.index()
@@ -977,6 +978,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.59  2001/11/21 03:21:13  richard
+# oops
+#
 # Revision 1.58  2001/11/21 03:11:28  richard
 # Better handling of new properties.
 #

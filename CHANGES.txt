@@ -16,6 +16,8 @@ Feature:
  . incorporated patch from Roch'e Compaan implementing attachments in nosy
    e-mail
  . added a target version field to the extended issue schema
+ . added dummy hooks for I18N and some preliminary (test) markup of
+   translatable messages
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
