@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.19 2001-08-29 04:47:18 richard Exp $
+# $Id: hyperdb.py,v 1.20 2001-10-04 02:12:42 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -200,6 +200,8 @@ class Class:
         for key, prop in self.properties.items():
             if propvalues.has_key(key):
                 continue
+            if key == self.key:
+                raise ValueError, 'key property "%s" is required'%key
             if isinstance(prop, Multilink):
                 propvalues[key] = []
             else:
@@ -734,10 +736,13 @@ class Class:
 
     # Manipulating properties:
 
-    def getprops(self):
-        """Return a dictionary mapping property names to property objects."""
+    def getprops(self, protected=1):
+        """Return a dictionary mapping property names to property objects.
+           If the "protected" flag is true, we include protected properties -
+           those which may not be modified."""
         d = self.properties.copy()
-        d['id'] = String()
+        if protected:
+            d['id'] = String()
         return d
 
     def addprop(self, **properties):
@@ -795,6 +800,10 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/08/29 04:47:18  richard
+# Fixed CGI client change messages so they actually include the properties
+# changed (again).
+#
 # Revision 1.18  2001/08/16 07:34:59  richard
 # better CGI text searching - but hidden filter fields are disappearing...
 #

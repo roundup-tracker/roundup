@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.10 2001-08-07 00:24:42 richard Exp $
+# $Id: roundupdb.py,v 1.11 2001-10-04 02:12:42 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -33,7 +33,7 @@ class Database:
         that owns this connection to the hyperdatabase."""
         return self.user.lookup(self.journaltag)
 
-    def uidFromAddress(self, address):
+    def uidFromAddress(self, address, create=1):
         ''' address is from the rfc822 module, and therefore is (name, addr)
 
             user is created if they don't exist in the db already
@@ -119,13 +119,17 @@ class Class(hyperdb.Class):
         else:
             return hyperdb.Class.get(self, nodeid, propname)
 
-    def getprops(self):
+    def getprops(self, protected=1):
         """In addition to the actual properties on the node, these
-        methods provide the "creation" and "activity" properties."""
+        methods provide the "creation" and "activity" properties. If the
+        "protected" flag is true, we include protected properties - those
+        which may not be modified.
+        """
         d = hyperdb.Class.getprops(self).copy()
-        d['creation'] = hyperdb.Date()
-        d['activity'] = hyperdb.Date()
-        d['creator'] = hyperdb.Link("user")
+        if protected:
+            d['creation'] = hyperdb.Date()
+            d['activity'] = hyperdb.Date()
+            d['creator'] = hyperdb.Link("user")
         return d
 
     #
@@ -176,12 +180,15 @@ class FileClass(Class):
         else:
             return Class.get(self, nodeid, propname)
 
-    def getprops(self):
+    def getprops(self, protected=1):
         ''' In addition to the actual properties on the node, these methods
-            provide the "content" property.
+            provide the "content" property. If the "protected" flag is true,
+            we include protected properties - those which may not be
+            modified.
         '''
         d = Class.getprops(self).copy()
-        d['content'] = hyperdb.String()
+        if protected:
+            d['content'] = hyperdb.String()
         return d
 
 # XXX deviation from spec - was called ItemClass
@@ -282,6 +289,9 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.9  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

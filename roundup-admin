@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.19 2001-10-01 06:40:43 richard Exp $
+# $Id: roundup-admin,v 1.20 2001-10-04 02:12:42 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -224,10 +224,14 @@ def do_spec(db, args):
     '''
     classname = args[0]
     cl = db.getclass(classname)
+    keyprop = cl.getkey()
     for key, value in cl.properties.items():
-        print '%s: %s'%(key, value)
+        if keyprop == key:
+            print '%s: %s (key property)'%(key, value)
+        else:
+            print '%s: %s'%(key, value)
 
-def do_create(db, args):
+def do_create(db, args, pretty_re=re.compile(r'<roundup\.hyperdb\.(.*)>')):
     '''Usage: create classname property=value ...
     Create a new entry of a given class.
 
@@ -240,21 +244,38 @@ def do_create(db, args):
     classname = args[0]
     cl = db.getclass(classname)
     props = {}
-    properties = cl.getprops()
-    for prop in args[1:]:
-        key, value = prop.split('=')
-        type =  properties[key]
-        if isinstance(type, hyperdb.String):
+    properties = cl.getprops(protected = 0)
+    if len(args) == 1:
+        # ask for the properties
+        for key, value in properties.items():
+            if key == 'id': continue
+            m = pretty_re.match(str(value))
+            if m:
+                value = m.group(1)
+            value = raw_input('%s (%s): '%(key.capitalize(), value))
+            if value:
+                props[key] = value
+    else:
+        # use the args
+        for prop in args[1:]:
+            key, value = prop.split('=')
             props[key] = value 
-        elif isinstance(type, hyperdb.Date):
+
+    # convert types
+    for key in props.keys():
+        type =  properties[key]
+        if isinstance(type, hyperdb.Date):
             props[key] = date.Date(value)
         elif isinstance(type, hyperdb.Interval):
             props[key] = date.Interval(value)
-        elif isinstance(type, hyperdb.Link):
-            props[key] = value
         elif isinstance(type, hyperdb.Multilink):
             props[key] = value.split(',')
-    print apply(cl.create, (), props)
+
+    if cl.getkey() and not props.has_key(cl.getkey()):
+        print "You must provide the '%s' property."%cl.getkey()
+    else:
+        print apply(cl.create, (), props)
+
     return 0
 
 def do_list(db, args):
@@ -428,6 +449,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/10/01 06:40:43  richard
+# made do_get have the args in the correct order
+#
 # Revision 1.18  2001/09/18 22:58:37  richard
 #
 # Added some more help to roundu-admin
