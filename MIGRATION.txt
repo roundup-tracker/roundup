@@ -26,6 +26,18 @@ Migrating from 0.4.0 to 0.4.1
 Configuration
 -------------
 
+The USER_INDEX definition introduced in 0.4.1 was too restrictive in its
+allowing replacement of 'assignedto' with the user's userid. Users must change
+the None value of 'assignedto' to 'CURRENT USER' (the string, in quotes) for
+the replacement behaviour to occur now.
+
+
+Migrating from 0.4.0 to 0.4.1
+=============================
+
+Configuration
+-------------
+
 To allow more fine-grained access control, the variable used to check
 permission to auto-register users in the mail gateway is now called
 ANONYMOUS_REGISTER_MAIL rather than overloading ANONYMOUS_REGISTER. If the

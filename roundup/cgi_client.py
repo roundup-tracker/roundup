@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.120 2002-05-21 06:05:53 richard Exp $
+# $Id: cgi_client.py,v 1.121 2002-05-21 06:08:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -125,8 +125,9 @@ function help_window(helpurl, width, height) {
 
         # now format the filterspec
         for k, l in filterspec.items():
-            # fix up the assignedto if needed
-            if l == 'CURRENT USER':
+            # fix up the CURRENT USER if needed (handle None too since that's
+            # the old flag value)
+            if l in (None, 'CURRENT USER'):
                 l = [self.db.user.lookup(self.user)]
 
             # add
@@ -1383,6 +1384,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.120  2002/05/21 06:05:53  richard
+#  . #551483 ] assignedto in Client.make_index_link
+#
 # Revision 1.119  2002/05/15 06:21:21  richard
 #  . node caching now works, and gives a small boost in performance
 #
