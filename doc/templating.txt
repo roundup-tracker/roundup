@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.10 $
+:Version: $Revision: 1.11 $
 
 Current Situation and Issues
 ============================
@@ -15,7 +15,7 @@ Roundup currently uses an element-based HTML-tag-alike templating syntax::
    <display call="checklist('status')">
 
 The templates were initially parsed using recursive regular expression
-parsing, and since no template tag could be encapsulate itself, the parser
+parsing, and since no template tag could encapsulate itself, the parser
 worked just fine. Then we got the ``<require>`` tag, which could have other
 ``<require>`` tags inside. This forced us to move towards a more complete
 parser, using the standard python sgmllib/htmllib parser. The downside of this
@@ -23,10 +23,8 @@ switch is that constructs of the form::
 
    <tr class="row-<display call="plain('status')">">
 
-don't parse as we'd hope. It would be almost impossible to modify the sgmllib
-parser to parse the above "correctly", so a wholly new parser would be
-required. That is a large undertaking, and doesn't address another couple of
-issues that have arisen:
+don't parse as we'd hope. We can modify the parser to work, but that doesn't
+another couple of issues that have arisen:
 
 1. the template syntax is not well-formed, and therefore is a pain to parse
    and doesn't play well with other tools, and
@@ -102,7 +100,7 @@ TAL - Template Attribute Language
   attributes. A TAL parser pulls out the TAL commands from the attributes
   runs them using some expression engine.
 
-TALES - TAL Expression Language
+TALES - TAL Expression Syntax
   The expression engine used in this case is TALES, which runs the expressions
   that form the tag attribute values. TALES expressions come in three
   flavours:
@@ -137,7 +135,7 @@ Implementation
 ~~~~~~~~~~~~~~
 
 I'm envisaging an infrastructure layer where each template has the following
-"root level" (that is, driectly accessible in the TALES namespace) variables
+"root level" (that is, directly accessible in the TALES namespace) variables
 defined:
 
 *user*
@@ -294,22 +292,32 @@ page
  command that includes the variable "content". This variable causes the actual
  page content to be generated.
 
-*.index
- Displays a list of items from the database, and a "filter refinement" form.
- Would perform a TAL ``repeat`` command using the list supplied by
- ``class/filter``. This deviates from the current situation in that currently
- the index template specifies a single row, and the filter part is
- automatically generated.
+[classname].[template type]
+ Templates that have this form are applied to item data. There are three forms
+ of special template types:
 
-*.item
- Displays a single item from the database using the *classname* variable (that
- is, the variable of the same name as the class being displayed. If 
+ [classname].index
+  This template is used when the URL specifies only the class, and not a node
+  designator.  It displays a list of [classname] items from the database, and
+  a "filter refinement" form.
+  Would perform a TAL ``repeat`` command using the list supplied by
+  ``class/filter``. This deviates from the current situation in that currently
+  the index template specifies a single row, and the filter part is
+  automatically generated.
 
-*.filter
- Displays a full search form for a class.
+ [classname].item
+  This template is used when the URL specifies an item designator. It's the
+  default template used (when no template is explicitly given). It displays
+  a single item from the database using the *classname* variable (that
+  is, the variable of the same name as the class being displayed. If 
 
-Note that the newitem template doesn't really apply any more because the item
-templates may determine whether the page has an existing item to render.
+ These two special template types may be overridden by the :template CGI
+ variable.
+
+Note that the "newitem" template doesn't exist any more because the item
+templates may determine whether the page has an existing item to render. The
+new item page would be accessed by "/tracker/url/issue?:template=item".
+The old "filter" template has been subsumed by the index template.
 
 
 Integrating Code
@@ -323,4 +331,25 @@ We will then install the trivial MultiMapping and ComputedAttribute modules in
 the Roundup package, and have some import trickery that determines whether
 they are required, and if so they will be imported as if they were at the
 "top level" of the module namespace.
+
+New CGI client structure
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Handling of a request in the CGI client will take three phases:
+
+1. Determine user, pre-set "content" to authorisation page if necessary
+2. Render main page, with callback to "content"
+3. Render content - if not pre-set, then determine which content to render
+
+
+Use Cases
+~~~~~~~~~
+
+Meta/parent bug
+  Can be done with addition to the schema and then the actual parent heirarchy
+  may be displayed with a new template page ":dependencies" or something.
+
+Submission wizard
+  Can be done using new templates ":page1", ":page2", etc and some additional
+  actions on the CGI Client class in the instance.
 
