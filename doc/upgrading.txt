@@ -12,6 +12,26 @@ Migrating from 0.5 to 0.6
 
 - Introduced EMAIL_FROM_TAG config variable.
 
+- Added internationalization support. This is done via encoding all data
+  stored in roundup database to utf-8 (unicode encoding). To support utf-8 in
+  web interface you should add the folowing line to your tracker's html/page
+  and html/_generic.help files inside <head> tag:
+  
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  Sinse latin characters in utf-8 has the same codes as in ASCII table, this
+  modification is optional for users who use only plain latin characters. 
+
+  After this modification, you will be able to see and enter any world
+  character via web interface. Data received via mail interface also converted
+  to utf-8, however only new messages will be converted. If your roundup
+  database contains some of non-ASCII characters in one of 8-bit encoding,
+  they will not be visible in new unicode environment. Some of such data (e.g.
+  user names, keywords, etc)  can be edited by administrator, the others
+  (e.g. messages' contents) is not editable via web interface. Currently there
+  is no tool for converting such data, the only solution is to close
+  appropriate old issues and create new ones with the same content.
+
 
 Migrating from 0.4.x to 0.5.0
 =============================
