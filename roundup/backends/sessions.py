@@ -1,4 +1,4 @@
-#$Id: sessions.py,v 1.3 2002-09-10 00:11:50 richard Exp $
+#$Id: sessions.py,v 1.3.2.1 2003-06-24 06:27:55 anthonybaxter Exp $
 '''
 This module defines a very basic store that's used by the CGI interface
 to store session information.
@@ -11,6 +11,9 @@ class Sessions:
 
         Keys are session id strings, values are marshalled data.
     '''
+
+    _db_type = None
+
     def __init__(self, config):
         self.config = config
         self.dir = config.DATABASE
@@ -24,8 +27,9 @@ class Sessions:
         elif os.path.exists(path+'.db'):    # dbm appends .db
             os.remove(path+'.db')
 
-    def determine_db_type(self, path):
-        ''' determine which DB wrote the class file
+    def cache_db_type(self, path):
+        ''' determine which DB wrote the class file, and cache it as a 
+            class attribute.
         '''
         db_type = ''
         if os.path.exists(path):
@@ -36,7 +40,7 @@ class Sessions:
             # if the path ends in '.db', it's a dbm database, whether
             # anydbm says it's dbhash or not!
             db_type = 'dbm'
-        return db_type
+        Sessions._db_type = db_type
 
     def get(self, sessionid, value):
         db = self.opendb('c')
@@ -82,7 +86,10 @@ class Sessions:
         '''
         # figure the class db type
         path = os.path.join(os.getcwd(), self.dir, 'sessions')
-        db_type = self.determine_db_type(path)
+        if self._db_type is None:
+            self.cache_db_type(path)
+
+        db_type = self._db_type
 
         # new database? let anydbm pick the best dbm
         if not db_type:
