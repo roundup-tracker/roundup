@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.1 2003-10-25 22:53:26 richard Exp $ 
+# $Id: test_postgresql.py,v 1.2 2003-10-26 14:43:51 jlgijsbers Exp $ 
 
 import unittest, os, shutil, time
 
@@ -27,7 +27,7 @@ from db_test_base import DBTest, ROTest, config, SchemaTest, nodbconfig, \
 from roundup import backends
 
 class postgresqlOpener:
-    if hasattr(backends, 'metakit'):
+    if hasattr(backends, 'postgresql'):
         from roundup.backends import postgresql as module
 
     def tearDown(self):
@@ -55,7 +55,7 @@ def test_suite():
     try:
         # Check if we can run postgresql tests
         import psycopg
-        db = psycopg.Database(nodbconfig, 'admin')
+        db = postgresql.Database(nodbconfig, 'admin')
         db.conn.select_db(config.POSTGRESQL_DBNAME)
         db.sql("SHOW TABLES");
         tables = db.sql_fetchall()
@@ -66,7 +66,7 @@ def test_suite():
         db.sql("DROP DATABASE %s" % config.POSTGRESQL_DBNAME)
         db.sql("CREATE DATABASE %s" % config.POSTGRESQL_DBNAME)
         db.close()
-    except (MySQLdb.ProgrammingError, DatabaseError), msg:
+    except (psycopg.ProgrammingError, DatabaseError), msg:
         print "Skipping postgresql tests (%s)"%msg
     else:
         print 'Including postgresql tests'
