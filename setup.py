@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.54 2003-06-17 11:03:27 neaj Exp $
+# $Id: setup.py,v 1.55 2003-06-22 00:28:56 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -26,8 +26,8 @@ import sys, os, string
 from glob import glob
 
 # patch distutils if it can't cope with the "classifiers" keyword
-if sys.version < '2.2.3':
-    from distutils.dist import DistributionMetadata
+from distutils.dist import DistributionMetadata
+if not hasattr(DistributionMetadata, 'classifiers'):
     DistributionMetadata.classifiers = None
     DistributionMetadata.download_url = None
 
