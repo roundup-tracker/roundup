@@ -2084,7 +2084,7 @@ env: %(env)s
                             l.append('%s=%s'%(k, ','.join([q(i) for i in v])))
                     else:
                         l.append('%s=%s'%(k, q(v)))
-            return '%s?%s'%(url, '&'.join(l))
+        return '%s?%s'%(url, '&'.join(l))
     indexargs_href = indexargs_url
 
     def base_javascript(self):
