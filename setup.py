@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.30 2002-01-29 20:07:15 jhermann Exp $
+# $Id: setup.py,v 1.31 2002-03-22 18:36:00 jhermann Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -94,6 +94,7 @@ class build_scripts_create(build_scripts):
                         % script_vars)
             finally:
                 file.close()
+                os.chmod(outfile, 0755)
 
 
 class build_scripts_roundup(build_scripts_create):
@@ -171,6 +172,9 @@ setup(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2002/01/29 20:07:15  jhermann
+# Conversion to generated script stubs
+#
 # Revision 1.29  2002/01/23 06:05:36  richard
 # prep work for release
 #
