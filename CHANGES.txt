@@ -65,6 +65,7 @@ Feature:
   feature 625808)
 - registration is now a two-step process, with confirmation from the email
   address supplied in the registration form
+- added password reset feature for forgotten password / login
 - added support for last-modified and if-modified-since headers for static
   file serving
 - added Node.get() method
