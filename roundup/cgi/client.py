@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.13 2004-02-25 23:26:30 richard Exp $
+# $Id: client.py,v 1.130.2.14 2004-02-26 22:20:43 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1420,8 +1420,9 @@ You should then receive another email with the new password.
 
             # and add it to the user's query multilink
             queries = self.db.user.get(self.userid, 'queries')
-            queries.append(qid)
-            self.db.user.set(self.userid, queries=queries)
+            if qid not in queries:
+                queries.append(qid)
+                self.db.user.set(self.userid, queries=queries)
 
             # commit the query change to the database
             self.db.commit()

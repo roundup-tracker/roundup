@@ -7,6 +7,7 @@ Fixed:
   for Multilink and Link form fields (sf bug 904072)
 - made errors from bad input in the quick "Show issue:" form more
   user-friendly (sf bug 904064)
+- don't add a query to a user's list if it's already there
 
 
 2004-02-25 0.6.6
