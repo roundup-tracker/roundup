@@ -111,6 +111,16 @@ class Database(Database):
     mysql_backend = 'InnoDB'
     #mysql_backend = 'BDB'
 
+    hyperdb_to_sql_datatypes = {
+        hyperdb.String : 'VARCHAR(255)',
+        hyperdb.Date   : 'DATETIME',
+        hyperdb.Link   : 'INTEGER',
+        hyperdb.Interval  : 'VARCHAR(255)',
+        hyperdb.Password  : 'VARCHAR(255)',
+        hyperdb.Boolean   : 'INTEGER',
+        hyperdb.Number    : 'REAL',
+    }
+
     hyperdb_to_sql_value = {
         hyperdb.String : str,
         # no fractional seconds for MySQL
