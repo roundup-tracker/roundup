@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.17 2003-06-24 03:30:40 richard Exp $
+# $Id: test_cgi.py,v 1.18 2003-08-11 11:28:31 jlgijsbers Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -197,6 +197,13 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.parseForm({'content': file}, 'file'),
             ({('file', None): {'content': 'foo', 'name': 'foo.txt',
             'type': 'text/plain'}}, []))
+
+    def testEditFileClassAttributes(self):
+        self.assertEqual(self.parseForm({'name': 'foo.txt',
+                                         'type': 'application/octet-stream'},
+                                        'file'),
+                         ({('file', None): {'name': 'foo.txt',
+                                            'type': 'application/octet-stream'}},[]))
 
     #
     # Link
