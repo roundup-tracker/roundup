@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-10-?? 0.5.1
+2002-10-16 0.5.1
 - highlight rows in groups of three
 - metakit cleanups
 - nicer "navigation" style in index views
@@ -29,6 +29,7 @@ are given with the most recent entry first.
 - include stylesheet in docs (sf bug 623183)
 - store PIPE messages so we can re-send them on errors (sf bug 623082)
 - implemented "retire" cgi action, added to user index (sf bug 618612)
+- included doc ideas from Bernhard Reiter (sf feature 621941)
 
 
 2002-10-02 0.5.0

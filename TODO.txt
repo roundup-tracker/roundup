@@ -32,6 +32,8 @@ pending mailgw    Identification of users should have a configurable degree of
                   strictness (ie. turn off username==address matching)
 pending mailgw    Use in-reply-to for determining message lineage when subject
                   line lets us down
+pending messages  Snarf the first whole sentence, or full first line of
+                  messages for the summary - whichever is longer.
 pending project   switch to a Roundup instance for Roundup bug/feature tracking
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies

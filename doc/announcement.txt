@@ -1,37 +1,44 @@
 =================================================
-SC-Track Roundup 0.5.0 - an issue tracking system
+SC-Track Roundup 0.5.1 - an issue tracking system
 =================================================
 
-Note: If you are upgrading, you *must* read doc/upgrading.txt!
+This is a bugfix release for version 0.5.0 - if you're upgrading from before
+that, you *must* read doc/upgrading.txt!
 
-Roundup requires python 2.1.1 for correct operation. Support for dumbdbm
-requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
+Unfortunately, the Zope frontend for Roundup is currently broken. I will be
+looking into fixing it for the next patch release.
 
-A lot has been done since 0.4.4:
+Roundup requires python 2.1.3 or later for correct operation.
 
-- new backend for metakit (thanks Gordon McMillan)
-- new backend for sqlite
-- new backend for gadfly (it's as done as it's going to get)
-- added Boolean and Number types
-- fixed the journal bloat, re-enabling useful link journal events
-- full-text search may also search certain String properties
-- entire database export and import (including files)
-- implemented new per-user access control mechanisms (Permissions, Roles)
-- switched templating to use Zope's PageTemplates giving much more flexibility
-- made web interface more generic, robust, give nicer errors, ...
-- revamped look and feel in web interface including cleaned up CSS usage
-- switched to cookie-based sessions for web authentication
-- saving of named search queries
-- lots of documentation cleanups including an updated customisation document
-  with los of examples and a new maintenance guide
-- roundup-server may be a daemon now (fork, logfile, pidfile)
-- many, many more bug fixes, cleanups and minor improvements (see CHANGES.txt)
-
-This final 0.5.0 release fixes the following problems:
-
-- fixed style for alternating rows in user lists
-- a couple of other minor bugs
-- updated demo to use 0.5 codebase
+We've had a good crack at bugs (thanks to all who contributed!):
+- fixed filter() with no sort/group (sf bug 618614)
+- fixed register with no session (sf bug 618611)
+- fixed log / pid file path handling in roundup-server (sf bug 617981)
+- fixed old gadfly compatibiltiy problem, for sure this time (sf bug 612873)
+- https URLs from config now recognised as valid (sf bug 619829)
+- nicer display of tracker list in roundup-server (sf bug 619769)
+- fixed some missed renaming instance -> tracker (sf bug 619769)
+- allow blank passwords again (sf bug 619714)
+- made form table cell alignment consistent (sf bug 621887)
+- include stylesheet in docs (sf bug 623183)
+- store PIPE messages so we can re-send them on errors (sf bug 623082)
+- implemented "retire" cgi action, added to user index (sf bug 618612)
+- included doc ideas from Bernhard Reiter (sf feature 621941)
+- handle "unset" status in status auditor (sf bug 621250)
+- homogenise newlines in CGI text submissions (sf bug 614072)
+- merged Zope Collector #372 fix from ZPT CVS trunk
+- implemented the missing Interval.__add__
+- metakit cleanups
+- nicer "navigation" style in index views
+- highlight index rows in groups of three
+- handle missing Link values in anydbm backend set() operation
+- expose the tracker config as a variable for templating
+- fixed history to display username instead of userid
+- shipped templates didn't import all hyperdb types in dbinit.py
+- fixed bug in Interval serialisation
+- issues in 'done-cbb' are now also moved to 'chatting' on new messages
+- added ability to implement new templating utility methods
+- expose the Date.pretty method to templating
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
