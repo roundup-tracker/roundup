@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.108 $
+:Version: $Revision: 1.109 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3011,15 +3011,14 @@ be able to give a summary of the total time spent on a particular issue.
             ''' Call me with a list of timelog items (which have an
                 Interval "period" property)
             '''
-            total = Interval('')
+            total = Interval('0d')
             for time in times:
                 total += time.period._value
             return total
 
-   Replace the ``pass`` line as we did in step 4 above with the Client
+   Replace the ``pass`` line if one appears in your TemplatingUtils
    class. As indicated in the docstrings, we will be able to access the
-   ``totalTimeSpent`` method via the ``utils`` variable in our
-   templates.
+   ``totalTimeSpent`` method via the ``utils`` variable in our templates.
 
 5. Display the time log for an issue::
 
