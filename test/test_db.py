@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.63 2002-12-12 09:31:04 richard Exp $ 
+# $Id: test_db.py,v 1.64 2003-01-12 00:43:43 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -588,6 +588,8 @@ class anydbmDBTestCase(MyTestCase):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
+
+# TODO test auditors and reactors
 
 class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):

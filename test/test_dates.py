@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.15 2002-12-09 02:43:21 richard Exp $ 
+# $Id: test_dates.py,v 1.16 2003-01-12 00:43:43 richard Exp $ 
 
 import unittest, time
 
@@ -161,6 +161,8 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval('1y') + Interval('2:40')), '+ 1y 2:40')
         ae(str(Interval('1y') + Interval('- 1y')), '+')
         ae(str(Interval('1y') + Interval('- 1m')), '+ 1y -1m')
+
+# TODO test add, subtraction, ?division?
 
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')
