@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.12 2002-07-11 01:13:13 richard Exp $
+# $Id: test_init.py,v 1.13 2002-07-14 02:05:54 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -125,8 +125,11 @@ class metakitExtendedTestCase(ExtendedTestCase):
     backend = 'metakit'
 
 def suite():
-    l = [unittest.makeSuite(ClassicTestCase, 'test'),
-         unittest.makeSuite(ExtendedTestCase, 'test')]
+    l = [
+        unittest.makeSuite(ClassicTestCase, 'test'),
+        unittest.makeSuite(ExtendedTestCase, 'test')
+    ]
+
     try:
         import bsddb
         l.append(unittest.makeSuite(bsddbClassicTestCase, 'test'))
@@ -152,6 +155,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/07/11 01:13:13  richard
+# *** empty log message ***
+#
 # Revision 1.11  2002/07/11 01:12:34  richard
 # Forgot to add to init tests
 #

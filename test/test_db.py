@@ -15,23 +15,22 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.26 2002-07-11 01:11:03 richard Exp $ 
+# $Id: test_db.py,v 1.27 2002-07-14 02:05:54 richard Exp $ 
 
 import unittest, os, shutil
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
-    Interval, DatabaseError, Class
-from roundup.roundupdb import FileClass
+    Interval, DatabaseError
 from roundup import date, password
 from roundup.indexer import Indexer
 
-def setupSchema(db, create, Class, FileClass):
-    status = Class(db, "status", name=String())
+def setupSchema(db, create, module):
+    status = module.Class(db, "status", name=String())
     status.setkey("name")
-    user = Class(db, "user", username=String(), password=Password())
-    file = FileClass(db, "file", name=String(), type=String(),
+    user = module.Class(db, "user", username=String(), password=Password())
+    file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"))
-    issue = Class(db, "issue", title=String(indexme="yes"),
+    issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
         foo=Interval(), files=Multilink("file"))
     db.post_init()
@@ -69,9 +68,9 @@ class anydbmDBTestCase(MyTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = anydbm.Database(config, 'test')
-        setupSchema(self.db, 1, Class, FileClass)
+        setupSchema(self.db, 1, anydbm)
         self.db2 = anydbm.Database(config, 'test')
-        setupSchema(self.db2, 0, Class, FileClass)
+        setupSchema(self.db2, 0, anydbm)
 
     def testStringChange(self):
         self.db.issue.create(title="spam", status='1')
@@ -117,8 +116,9 @@ class anydbmDBTestCase(MyTestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['deadline', 'files', 'fixer', 'foo', 'id',
-            'nosy', 'status', 'title'])
+        self.assertEqual(keys, ['activity', 'creation', 'creator', 'deadline',
+            'files', 'fixer', 'foo', 'id', 'messages', 'nosy', 'status',
+            'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRetire(self):
@@ -251,8 +251,8 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(action, 'create')
         keys = params.keys()
         keys.sort()
-        self.assertEqual(keys, ['deadline', 'files', 'fixer', 'foo', 'nosy', 
-            'status', 'title'])
+        self.assertEqual(keys, ['deadline', 'files', 'fixer', 'foo',
+            'messages', 'nosy', 'status', 'superseder', 'title'])
         self.assertEqual(None,params['deadline'])
         self.assertEqual(None,params['fixer'])
         self.assertEqual(None,params['foo'])
@@ -347,11 +347,11 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = anydbm.Database(config, 'test')
-        setupSchema(db, 1, Class, FileClass)
+        setupSchema(db, 1, anydbm)
         self.db = anydbm.Database(config)
-        setupSchema(self.db, 0, Class, FileClass)
+        setupSchema(self.db, 0, anydbm)
         self.db2 = anydbm.Database(config, 'test')
-        setupSchema(self.db2, 0, Class, FileClass)
+        setupSchema(self.db2, 0, anydbm)
 
     def testExceptions(self):
         ' make sure exceptions are raised on writes to a read-only db '
@@ -372,9 +372,9 @@ class bsddbDBTestCase(anydbmDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = bsddb.Database(config, 'test')
-        setupSchema(self.db, 1, Class, FileClass)
+        setupSchema(self.db, 1, bsddb)
         self.db2 = bsddb.Database(config, 'test')
-        setupSchema(self.db2, 0, Class, FileClass)
+        setupSchema(self.db2, 0, bsddb)
 
 class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -384,11 +384,11 @@ class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = bsddb.Database(config, 'test')
-        setupSchema(db, 1, Class, FileClass)
+        setupSchema(db, 1, bsddb)
         self.db = bsddb.Database(config)
-        setupSchema(self.db, 0, Class, FileClass)
+        setupSchema(self.db, 0, bsddb)
         self.db2 = bsddb.Database(config, 'test')
-        setupSchema(self.db2, 0, Class, FileClass)
+        setupSchema(self.db2, 0, bsddb)
 
 
 class bsddb3DBTestCase(anydbmDBTestCase):
@@ -399,9 +399,9 @@ class bsddb3DBTestCase(anydbmDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = bsddb3.Database(config, 'test')
-        setupSchema(self.db, 1, Class, FileClass)
+        setupSchema(self.db, 1, bsddb3)
         self.db2 = bsddb3.Database(config, 'test')
-        setupSchema(self.db2, 0, Class, FileClass)
+        setupSchema(self.db2, 0, bsddb3)
 
 class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -411,11 +411,11 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = bsddb3.Database(config, 'test')
-        setupSchema(db, 1, Class, FileClass)
+        setupSchema(db, 1, bsddb3)
         self.db = bsddb3.Database(config)
-        setupSchema(self.db, 0, Class, FileClass)
+        setupSchema(self.db, 0, bsddb3)
         self.db2 = bsddb3.Database(config, 'test')
-        setupSchema(self.db2, 0, Class, FileClass)
+        setupSchema(self.db2, 0, bsddb3)
 
 
 class metakitDBTestCase(anydbmDBTestCase):
@@ -428,9 +428,9 @@ class metakitDBTestCase(anydbmDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         self.db = metakit.Database(config, 'test')
-        setupSchema(self.db, 1, metakit.Class, metakit.FileClass)
+        setupSchema(self.db, 1, metakit)
         self.db2 = metakit.Database(config, 'test')
-        setupSchema(self.db2, 0, metakit.Class, metakit.FileClass)
+        setupSchema(self.db2, 0, metakit)
 
     def testTransactions(self):
         # remember the number of items we started
@@ -480,11 +480,11 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
             shutil.rmtree(config.DATABASE)
         os.makedirs(config.DATABASE + '/files')
         db = metakit.Database(config, 'test')
-        setupSchema(db, 1, metakit.Class, metakit.FileClass)
+        setupSchema(db, 1, metakit)
         self.db = metakit.Database(config)
-        setupSchema(self.db, 0, metakit.Class, metakit.FileClass)
+        setupSchema(self.db, 0, metakit)
         self.db2 = metakit.Database(config, 'test')
-        setupSchema(self.db2, 0, metakit.Class, metakit.FileClass)
+        setupSchema(self.db2, 0, metakit)
 
 def suite():
     l = [
@@ -517,6 +517,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2002/07/11 01:11:03  richard
+# Added metakit backend to the db tests and fixed the more easily fixable test
+# failures.
+#
 # Revision 1.25  2002/07/09 04:19:09  richard
 # Added reindex command to roundup-admin.
 # Fixed reindex on first access.

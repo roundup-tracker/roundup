@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.61 2002-07-09 04:19:09 richard Exp $
+# $Id: roundupdb.py,v 1.62 2002-07-14 02:05:53 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
 """
 
-import re, os, smtplib, socket, copy, time, random
+import re, os, smtplib, socket, time, random
 import MimeWriter, cStringIO
 import base64, quopri, mimetypes
 # if available, use the 'email' module, otherwise fallback to 'rfc822'
@@ -30,21 +30,11 @@ try :
 except ImportError :
     from rfc822 import dump_address_pair as straddr
 
-import hyperdb, date
+import hyperdb
 
 # set to indicate to roundup not to actually _send_ email
 # this var must contain a file to write the mail to
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
-
-class DesignatorError(ValueError):
-    pass
-def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
-    ''' Take a foo123 and return ('foo', 123)
-    '''
-    m = dre.match(designator)
-    if m is None:
-        raise DesignatorError, '"%s" not a node designator'%designator
-    return m.group(1), m.group(2)
 
 
 def extractUserFromList(userClass, users):
@@ -102,200 +92,6 @@ class Database:
         else:
             return 0
 
-_marker = []
-# XXX: added the 'creator' faked attribute
-class Class(hyperdb.Class):
-    # Overridden methods:
-    def __init__(self, db, classname, **properties):
-        if (properties.has_key('creation') or properties.has_key('activity')
-                or properties.has_key('creator')):
-            raise ValueError, '"creation", "activity" and "creator" are reserved'
-        hyperdb.Class.__init__(self, db, classname, **properties)
-        self.auditors = {'create': [], 'set': [], 'retire': []}
-        self.reactors = {'create': [], 'set': [], 'retire': []}
-
-    def create(self, **propvalues):
-        """These operations trigger detectors and can be vetoed.  Attempts
-        to modify the "creation" or "activity" properties cause a KeyError.
-        """
-        if propvalues.has_key('creation') or propvalues.has_key('activity'):
-            raise KeyError, '"creation" and "activity" are reserved'
-        self.fireAuditors('create', None, propvalues)
-        nodeid = hyperdb.Class.create(self, **propvalues)
-        self.fireReactors('create', nodeid, None)
-        return nodeid
-
-    def set(self, nodeid, **propvalues):
-        """These operations trigger detectors and can be vetoed.  Attempts
-        to modify the "creation" or "activity" properties cause a KeyError.
-        """
-        if propvalues.has_key('creation') or propvalues.has_key('activity'):
-            raise KeyError, '"creation" and "activity" are reserved'
-        self.fireAuditors('set', nodeid, propvalues)
-        # Take a copy of the node dict so that the subsequent set
-        # operation doesn't modify the oldvalues structure.
-        try:
-            # try not using the cache initially
-            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid,
-                cache=0))
-        except IndexError:
-            # this will be needed if somone does a create() and set()
-            # with no intervening commit()
-            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
-        hyperdb.Class.set(self, nodeid, **propvalues)
-        self.fireReactors('set', nodeid, oldvalues)
-
-    def retire(self, nodeid):
-        """These operations trigger detectors and can be vetoed.  Attempts
-        to modify the "creation" or "activity" properties cause a KeyError.
-        """
-        self.fireAuditors('retire', nodeid, None)
-        hyperdb.Class.retire(self, nodeid)
-        self.fireReactors('retire', nodeid, None)
-
-    def get(self, nodeid, propname, default=_marker, cache=1):
-        """Attempts to get the "creation" or "activity" properties should
-        do the right thing.
-        """
-        if propname == 'creation':
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                return self.db.getjournal(self.classname, nodeid)[0][1]
-            else:
-                # on the strange chance that there's no journal
-                return date.Date()
-        if propname == 'activity':
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                return self.db.getjournal(self.classname, nodeid)[-1][1]
-            else:
-                # on the strange chance that there's no journal
-                return date.Date()
-        if propname == 'creator':
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                name = self.db.getjournal(self.classname, nodeid)[0][2]
-            else:
-                return None
-            return self.db.user.lookup(name)
-        if default is not _marker:
-            return hyperdb.Class.get(self, nodeid, propname, default,
-                cache=cache)
-        else:
-            return hyperdb.Class.get(self, nodeid, propname, cache=cache)
-
-    def getprops(self, protected=1):
-        """In addition to the actual properties on the node, these
-        methods provide the "creation" and "activity" properties. If the
-        "protected" flag is true, we include protected properties - those
-        which may not be modified.
-        """
-        d = hyperdb.Class.getprops(self, protected=protected).copy()
-        if protected:
-            d['creation'] = hyperdb.Date()
-            d['activity'] = hyperdb.Date()
-            d['creator'] = hyperdb.Link("user")
-        return d
-
-    #
-    # Detector interface
-    #
-    def audit(self, event, detector):
-        """Register a detector
-        """
-        l = self.auditors[event]
-        if detector not in l:
-            self.auditors[event].append(detector)
-
-    def fireAuditors(self, action, nodeid, newvalues):
-        """Fire all registered auditors.
-        """
-        for audit in self.auditors[action]:
-            audit(self.db, self, nodeid, newvalues)
-
-    def react(self, event, detector):
-        """Register a detector
-        """
-        l = self.reactors[event]
-        if detector not in l:
-            self.reactors[event].append(detector)
-
-    def fireReactors(self, action, nodeid, oldvalues):
-        """Fire all registered reactors.
-        """
-        for react in self.reactors[action]:
-            react(self.db, self, nodeid, oldvalues)
-
-class FileClass(Class):
-    '''This class defines a large chunk of data. To support this, it has a
-       mandatory String property "content" which is typically saved off
-       externally to the hyperdb.
-
-       The default MIME type of this data is defined by the
-       "default_mime_type" class attribute, which may be overridden by each
-       node if the class defines a "type" String property.
-    '''
-    default_mime_type = 'text/plain'
-
-    def create(self, **propvalues):
-        ''' snaffle the file propvalue and store in a file
-        '''
-        content = propvalues['content']
-        del propvalues['content']
-        newid = Class.create(self, **propvalues)
-        self.db.storefile(self.classname, newid, None, content)
-        return newid
-
-    def get(self, nodeid, propname, default=_marker, cache=1):
-        ''' trap the content propname and get it from the file
-        '''
-
-        poss_msg = 'Possibly a access right configuration problem.'
-        if propname == 'content':
-            try:
-                return self.db.getfile(self.classname, nodeid, None)
-            except IOError, (strerror):
-                # BUG: by catching this we donot see an error in the log.
-                return 'ERROR reading file: %s%s\n%s\n%s'%(
-                        self.classname, nodeid, poss_msg, strerror)
-        if default is not _marker:
-            return Class.get(self, nodeid, propname, default, cache=cache)
-        else:
-            return Class.get(self, nodeid, propname, cache=cache)
-
-    def getprops(self, protected=1):
-        ''' In addition to the actual properties on the node, these methods
-            provide the "content" property. If the "protected" flag is true,
-            we include protected properties - those which may not be
-            modified.
-        '''
-        d = Class.getprops(self, protected=protected).copy()
-        if protected:
-            d['content'] = hyperdb.String()
-        return d
-
-    def index(self, nodeid):
-        ''' Index the node in the search index.
-
-            We want to index the content in addition to the normal String
-            property indexing.
-        '''
-        # perform normal indexing
-        Class.index(self, nodeid)
-
-        # get the content to index
-        content = self.get(nodeid, 'content')
-
-        # figure the mime type
-        if self.properties.has_key('type'):
-            mime_type = self.get(nodeid, 'type')
-        else:
-            mime_type = self.default_mime_type
-
-        # and index!
-        self.db.indexer.add_text((self.classname, nodeid, 'content'), content,
-            mime_type)
-
 class MessageSendError(RuntimeError):
     pass
 
@@ -303,29 +99,19 @@ class DetectorError(RuntimeError):
     pass
 
 # XXX deviation from spec - was called ItemClass
-class IssueClass(Class):
-
-    # Overridden methods:
-
-    def __init__(self, db, classname, **properties):
-        """The newly-created class automatically includes the "messages",
-        "files", "nosy", and "superseder" properties.  If the 'properties'
-        dictionary attempts to specify any of these properties or a
-        "creation" or "activity" property, a ValueError is raised."""
-        if not properties.has_key('title'):
+class IssueClass:
+    """ This class is intended to be mixed-in with a hyperdb backend
+        implementation. The backend should provide a mechanism that
+        enforces the title, messages, files, nosy and superseder
+        properties:
             properties['title'] = hyperdb.String(indexme='yes')
-        if not properties.has_key('messages'):
             properties['messages'] = hyperdb.Multilink("msg")
-        if not properties.has_key('files'):
             properties['files'] = hyperdb.Multilink("file")
-        if not properties.has_key('nosy'):
             properties['nosy'] = hyperdb.Multilink("user")
-        if not properties.has_key('superseder'):
             properties['superseder'] = hyperdb.Multilink(classname)
-        Class.__init__(self, db, classname, **properties)
+    """
 
     # New methods:
-
     def addmessage(self, nodeid, summary, text):
         """Add a message to an issue's mail spool.
 
@@ -553,15 +339,16 @@ class IssueClass(Class):
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
         base = self.db.config.ISSUE_TRACKER_WEB 
-        if not isinstance( base , type('') ) or not base.startswith( "http://" ) :
-            base = "Configuration Error: ISSUE_TRACKER_WEB isn't a fully-qualified URL"
+        if not isinstance(base , type('')) or not base.startswith('http://'):
+            base = "Configuration Error: ISSUE_TRACKER_WEB isn't a " \
+                "fully-qualified URL"
         elif base[-1] != '/' :
             base += '/'
         web = base + 'issue'+ nodeid
 
         # ensure the email address is properly quoted
-        email = straddr( (self.db.config.INSTANCE_NAME ,
-                          self.db.config.ISSUE_TRACKER_EMAIL) )
+        email = straddr((self.db.config.INSTANCE_NAME,
+            self.db.config.ISSUE_TRACKER_EMAIL))
 
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)
@@ -608,12 +395,10 @@ class IssueClass(Class):
     def generateChangeNote(self, nodeid, oldvalues):
         """Generate a change note that lists property changes
         """
-
         if __debug__ :
-            if not isinstance( oldvalues , type({}) ) :
-                raise TypeError(
-                        "'oldvalues' must be dict-like, not %s."
-                        % str(type(oldvalues)) )
+            if not isinstance(oldvalues, type({})) :
+                raise TypeError("'oldvalues' must be dict-like, not %s."%
+                    type(oldvalues))
 
         cn = self.classname
         cl = self.db.classes[cn]
@@ -691,6 +476,11 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.61  2002/07/09 04:19:09  richard
+# Added reindex command to roundup-admin.
+# Fixed reindex on first access.
+# Also fixed reindexing of entries that change.
+#
 # Revision 1.60  2002/07/09 03:02:52  richard
 # More indexer work:
 # - all String properties may now be indexed too. Currently there's a bit of

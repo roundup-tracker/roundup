@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.43 2002-07-10 06:30:30 richard Exp $
+#$Id: back_anydbm.py,v 1.44 2002-07-14 02:05:53 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -23,16 +23,18 @@ versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
 serious bugs, and is not available)
 '''
 
-import whichdb, anydbm, os, marshal
-from roundup import hyperdb, date
+import whichdb, anydbm, os, marshal, re, weakref, string, copy
+from roundup import hyperdb, date, password, roundupdb
 from blobfiles import FileStorage
 from roundup.indexer import Indexer
 from locking import acquire_lock, release_lock
+from roundup.hyperdb import String, Password, Date, Interval, Link, \
+    Multilink, DatabaseError
 
 #
 # Now the database
 #
-class Database(FileStorage, hyperdb.Database):
+class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     """A database for storing records containing flexible data types.
 
     Transaction stuff TODO:
@@ -267,6 +269,63 @@ class Database(FileStorage, hyperdb.Database):
             cache_dict[nodeid] = res
 
         return res
+
+    def serialise(self, classname, node):
+        '''Copy the node contents, converting non-marshallable data into
+           marshallable data.
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'serialise', classname, node
+        properties = self.getclass(classname).getprops()
+        d = {}
+        for k, v in node.items():
+            # if the property doesn't exist, or is the "retired" flag then
+            # it won't be in the properties dict
+            if not properties.has_key(k):
+                d[k] = v
+                continue
+
+            # get the property spec
+            prop = properties[k]
+
+            if isinstance(prop, Password):
+                d[k] = str(v)
+            elif isinstance(prop, Date) and v is not None:
+                d[k] = v.get_tuple()
+            elif isinstance(prop, Interval) and v is not None:
+                d[k] = v.get_tuple()
+            else:
+                d[k] = v
+        return d
+
+    def unserialise(self, classname, node):
+        '''Decode the marshalled node data
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'unserialise', classname, node
+        properties = self.getclass(classname).getprops()
+        d = {}
+        for k, v in node.items():
+            # if the property doesn't exist, or is the "retired" flag then
+            # it won't be in the properties dict
+            if not properties.has_key(k):
+                d[k] = v
+                continue
+
+            # get the property spec
+            prop = properties[k]
+
+            if isinstance(prop, Date) and v is not None:
+                d[k] = date.Date(v)
+            elif isinstance(prop, Interval) and v is not None:
+                d[k] = date.Interval(v)
+            elif isinstance(prop, Password):
+                p = password.Password()
+                p.unpack(v)
+                d[k] = p
+            else:
+                d[k] = v
+        return d
 
     def hasnode(self, classname, nodeid, db=None):
         ''' determine if the database has a given node
@@ -509,8 +568,1037 @@ class Database(FileStorage, hyperdb.Database):
         self.newnodes = {}
         self.transactions = []
 
+_marker = []
+class Class(hyperdb.Class):
+    """The handle to a particular class of nodes in a hyperdatabase."""
+
+    def __init__(self, db, classname, **properties):
+        """Create a new class with a given name and property specification.
+
+        'classname' must not collide with the name of an existing class,
+        or a ValueError is raised.  The keyword arguments in 'properties'
+        must map names to property objects, or a TypeError is raised.
+        """
+        if (properties.has_key('creation') or properties.has_key('activity')
+                or properties.has_key('creator')):
+            raise ValueError, '"creation", "activity" and "creator" are '\
+                'reserved'
+
+        self.classname = classname
+        self.properties = properties
+        self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
+        self.key = ''
+
+        # do the db-related init stuff
+        db.addclass(self)
+
+        self.auditors = {'create': [], 'set': [], 'retire': []}
+        self.reactors = {'create': [], 'set': [], 'retire': []}
+
+    def __repr__(self):
+        '''Slightly more useful representation
+        '''
+        return '<hypderdb.Class "%s">'%self.classname
+
+    # Editing nodes:
+
+    def create(self, **propvalues):
+        """Create a new node of this class and return its id.
+
+        The keyword arguments in 'propvalues' map property names to values.
+
+        The values of arguments must be acceptable for the types of their
+        corresponding properties or a TypeError is raised.
+        
+        If this class has a key property, it must be present and its value
+        must not collide with other key strings or a ValueError is raised.
+        
+        Any other properties on this class that are missing from the
+        'propvalues' dictionary are set to None.
+        
+        If an id in a link or multilink property does not refer to a valid
+        node, an IndexError is raised.
+
+        These operations trigger detectors and can be vetoed.  Attempts
+        to modify the "creation" or "activity" properties cause a KeyError.
+        """
+        if propvalues.has_key('id'):
+            raise KeyError, '"id" is reserved'
+
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
+        if propvalues.has_key('creation') or propvalues.has_key('activity'):
+            raise KeyError, '"creation" and "activity" are reserved'
+
+        self.fireAuditors('create', None, propvalues)
+
+        # new node's id
+        newid = self.db.newid(self.classname)
+
+        # validate propvalues
+        num_re = re.compile('^\d+$')
+        for key, value in propvalues.items():
+            if key == self.key:
+                try:
+                    self.lookup(value)
+                except KeyError:
+                    pass
+                else:
+                    raise ValueError, 'node with key "%s" exists'%value
+
+            # try to handle this property
+            try:
+                prop = self.properties[key]
+            except KeyError:
+                raise KeyError, '"%s" has no property "%s"'%(self.classname,
+                    key)
+
+            if isinstance(prop, Link):
+                if type(value) != type(''):
+                    raise ValueError, 'link value must be String'
+                link_class = self.properties[key].classname
+                # if it isn't a number, it's a key
+                if not num_re.match(value):
+                    try:
+                        value = self.db.classes[link_class].lookup(value)
+                    except (TypeError, KeyError):
+                        raise IndexError, 'new property "%s": %s not a %s'%(
+                            key, value, link_class)
+                elif not self.db.hasnode(link_class, value):
+                    raise IndexError, '%s has no node %s'%(link_class, value)
+
+                # save off the value
+                propvalues[key] = value
+
+                # register the link with the newly linked node
+                if self.properties[key].do_journal:
+                    self.db.addjournal(link_class, value, 'link',
+                        (self.classname, newid, key))
+
+            elif isinstance(prop, Multilink):
+                if type(value) != type([]):
+                    raise TypeError, 'new property "%s" not a list of ids'%key
+
+                # clean up and validate the list of links
+                link_class = self.properties[key].classname
+                l = []
+                for entry in value:
+                    if type(entry) != type(''):
+                        raise ValueError, '"%s" link value (%s) must be '\
+                            'String'%(key, value)
+                    # if it isn't a number, it's a key
+                    if not num_re.match(entry):
+                        try:
+                            entry = self.db.classes[link_class].lookup(entry)
+                        except (TypeError, KeyError):
+                            raise IndexError, 'new property "%s": %s not a %s'%(
+                                key, entry, self.properties[key].classname)
+                    l.append(entry)
+                value = l
+                propvalues[key] = value
+
+                # handle additions
+                for id in value:
+                    if not self.db.hasnode(link_class, id):
+                        raise IndexError, '%s has no node %s'%(link_class, id)
+                    # register the link with the newly linked node
+                    if self.properties[key].do_journal:
+                        self.db.addjournal(link_class, id, 'link',
+                            (self.classname, newid, key))
+
+            elif isinstance(prop, String):
+                if type(value) != type(''):
+                    raise TypeError, 'new property "%s" not a string'%key
+
+            elif isinstance(prop, Password):
+                if not isinstance(value, password.Password):
+                    raise TypeError, 'new property "%s" not a Password'%key
+
+            elif isinstance(prop, Date):
+                if value is not None and not isinstance(value, date.Date):
+                    raise TypeError, 'new property "%s" not a Date'%key
+
+            elif isinstance(prop, Interval):
+                if value is not None and not isinstance(value, date.Interval):
+                    raise TypeError, 'new property "%s" not an Interval'%key
+
+        # make sure there's data where there needs to be
+        for key, prop in self.properties.items():
+            if propvalues.has_key(key):
+                continue
+            if key == self.key:
+                raise ValueError, 'key property "%s" is required'%key
+            if isinstance(prop, Multilink):
+                propvalues[key] = []
+            else:
+                # TODO: None isn't right here, I think...
+                propvalues[key] = None
+
+        # done
+        self.db.addnode(self.classname, newid, propvalues)
+        self.db.addjournal(self.classname, newid, 'create', propvalues)
+
+        self.fireReactors('create', newid, None)
+
+        return newid
+
+    def get(self, nodeid, propname, default=_marker, cache=1):
+        """Get the value of a property on an existing node of this class.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.  'propname' must be the name of a property
+        of this class or a KeyError is raised.
+
+        'cache' indicates whether the transaction cache should be queried
+        for the node. If the node has been modified and you need to
+        determine what its values prior to modification are, you need to
+        set cache=0.
+
+        Attempts to get the "creation" or "activity" properties should
+        do the right thing.
+        """
+        if propname == 'id':
+            return nodeid
+
+        if propname == 'creation':
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                return self.db.getjournal(self.classname, nodeid)[0][1]
+            else:
+                # on the strange chance that there's no journal
+                return date.Date()
+        if propname == 'activity':
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                return self.db.getjournal(self.classname, nodeid)[-1][1]
+            else:
+                # on the strange chance that there's no journal
+                return date.Date()
+        if propname == 'creator':
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                name = self.db.getjournal(self.classname, nodeid)[0][2]
+            else:
+                return None
+            return self.db.user.lookup(name)
+
+        # get the property (raises KeyErorr if invalid)
+        prop = self.properties[propname]
+
+        # get the node's dict
+        d = self.db.getnode(self.classname, nodeid, cache=cache)
+
+        if not d.has_key(propname):
+            if default is _marker:
+                if isinstance(prop, Multilink):
+                    return []
+                else:
+                    # TODO: None isn't right here, I think...
+                    return None
+            else:
+                return default
+
+        return d[propname]
+
+    # XXX not in spec
+    def getnode(self, nodeid, cache=1):
+        ''' Return a convenience wrapper for the node.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        'cache' indicates whether the transaction cache should be queried
+        for the node. If the node has been modified and you need to
+        determine what its values prior to modification are, you need to
+        set cache=0.
+        '''
+        return Node(self, nodeid, cache=cache)
+
+    def set(self, nodeid, **propvalues):
+        """Modify a property on an existing node of this class.
+        
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        Each key in 'propvalues' must be the name of a property of this
+        class or a KeyError is raised.
+
+        All values in 'propvalues' must be acceptable types for their
+        corresponding properties or a TypeError is raised.
+
+        If the value of the key property is set, it must not collide with
+        other key strings or a ValueError is raised.
+
+        If the value of a Link or Multilink property contains an invalid
+        node id, a ValueError is raised.
+
+        These operations trigger detectors and can be vetoed.  Attempts
+        to modify the "creation" or "activity" properties cause a KeyError.
+        """
+        if not propvalues:
+            return
+
+        if propvalues.has_key('creation') or propvalues.has_key('activity'):
+            raise KeyError, '"creation" and "activity" are reserved'
+
+        if propvalues.has_key('id'):
+            raise KeyError, '"id" is reserved'
+
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
+        self.fireAuditors('set', nodeid, propvalues)
+        # Take a copy of the node dict so that the subsequent set
+        # operation doesn't modify the oldvalues structure.
+        try:
+            # try not using the cache initially
+            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid,
+                cache=0))
+        except IndexError:
+            # this will be needed if somone does a create() and set()
+            # with no intervening commit()
+            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+
+        node = self.db.getnode(self.classname, nodeid)
+        if node.has_key(self.db.RETIRED_FLAG):
+            raise IndexError
+        num_re = re.compile('^\d+$')
+        for key, value in propvalues.items():
+            # check to make sure we're not duplicating an existing key
+            if key == self.key and node[key] != value:
+                try:
+                    self.lookup(value)
+                except KeyError:
+                    pass
+                else:
+                    raise ValueError, 'node with key "%s" exists'%value
+
+            # this will raise the KeyError if the property isn't valid
+            # ... we don't use getprops() here because we only care about
+            # the writeable properties.
+            prop = self.properties[key]
+
+            # if the value's the same as the existing value, no sense in
+            # doing anything
+            if node.has_key(key) and value == node[key]:
+                del propvalues[key]
+                continue
+
+            # do stuff based on the prop type
+            if isinstance(prop, Link):
+                link_class = self.properties[key].classname
+                # if it isn't a number, it's a key
+                if type(value) != type(''):
+                    raise ValueError, 'link value must be String'
+                if not num_re.match(value):
+                    try:
+                        value = self.db.classes[link_class].lookup(value)
+                    except (TypeError, KeyError):
+                        raise IndexError, 'new property "%s": %s not a %s'%(
+                            key, value, self.properties[key].classname)
+
+                if not self.db.hasnode(link_class, value):
+                    raise IndexError, '%s has no node %s'%(link_class, value)
+
+                if self.properties[key].do_journal:
+                    # register the unlink with the old linked node
+                    if node[key] is not None:
+                        self.db.addjournal(link_class, node[key], 'unlink',
+                            (self.classname, nodeid, key))
+
+                    # register the link with the newly linked node
+                    if value is not None:
+                        self.db.addjournal(link_class, value, 'link',
+                            (self.classname, nodeid, key))
+
+            elif isinstance(prop, Multilink):
+                if type(value) != type([]):
+                    raise TypeError, 'new property "%s" not a list of ids'%key
+                link_class = self.properties[key].classname
+                l = []
+                for entry in value:
+                    # if it isn't a number, it's a key
+                    if type(entry) != type(''):
+                        raise ValueError, 'new property "%s" link value ' \
+                            'must be a string'%key
+                    if not num_re.match(entry):
+                        try:
+                            entry = self.db.classes[link_class].lookup(entry)
+                        except (TypeError, KeyError):
+                            raise IndexError, 'new property "%s": %s not a %s'%(
+                                key, entry, self.properties[key].classname)
+                    l.append(entry)
+                value = l
+                propvalues[key] = value
+
+                # handle removals
+                if node.has_key(key):
+                    l = node[key]
+                else:
+                    l = []
+                for id in l[:]:
+                    if id in value:
+                        continue
+                    # register the unlink with the old linked node
+                    if self.properties[key].do_journal:
+                        self.db.addjournal(link_class, id, 'unlink',
+                            (self.classname, nodeid, key))
+                    l.remove(id)
+
+                # handle additions
+                for id in value:
+                    if not self.db.hasnode(link_class, id):
+                        raise IndexError, '%s has no node %s'%(
+                            link_class, id)
+                    if id in l:
+                        continue
+                    # register the link with the newly linked node
+                    if self.properties[key].do_journal:
+                        self.db.addjournal(link_class, id, 'link',
+                            (self.classname, nodeid, key))
+                    l.append(id)
+
+            elif isinstance(prop, String):
+                if value is not None and type(value) != type(''):
+                    raise TypeError, 'new property "%s" not a string'%key
+
+            elif isinstance(prop, Password):
+                if not isinstance(value, password.Password):
+                    raise TypeError, 'new property "%s" not a Password'% key
+                propvalues[key] = value
+
+            elif value is not None and isinstance(prop, Date):
+                if not isinstance(value, date.Date):
+                    raise TypeError, 'new property "%s" not a Date'% key
+                propvalues[key] = value
+
+            elif value is not None and isinstance(prop, Interval):
+                if not isinstance(value, date.Interval):
+                    raise TypeError, 'new property "%s" not an Interval'% key
+                propvalues[key] = value
+
+            node[key] = value
+
+        # nothing to do?
+        if not propvalues:
+            return
+
+        # do the set, and journal it
+        self.db.setnode(self.classname, nodeid, node)
+        self.db.addjournal(self.classname, nodeid, 'set', propvalues)
+
+        self.fireReactors('set', nodeid, oldvalues)
+
+    def retire(self, nodeid):
+        """Retire a node.
+        
+        The properties on the node remain available from the get() method,
+        and the node's id is never reused.
+        
+        Retired nodes are not returned by the find(), list(), or lookup()
+        methods, and other nodes may reuse the values of their key properties.
+
+        These operations trigger detectors and can be vetoed.  Attempts
+        to modify the "creation" or "activity" properties cause a KeyError.
+        """
+        if self.db.journaltag is None:
+            raise DatabaseError, 'Database open read-only'
+
+        self.fireAuditors('retire', nodeid, None)
+
+        node = self.db.getnode(self.classname, nodeid)
+        node[self.db.RETIRED_FLAG] = 1
+        self.db.setnode(self.classname, nodeid, node)
+        self.db.addjournal(self.classname, nodeid, 'retired', None)
+
+        self.fireReactors('retire', nodeid, None)
+
+    def history(self, nodeid):
+        """Retrieve the journal of edits on a particular node.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        The returned list contains tuples of the form
+
+            (date, tag, action, params)
+
+        'date' is a Timestamp object specifying the time of the change and
+        'tag' is the journaltag specified when the database was opened.
+        """
+        return self.db.getjournal(self.classname, nodeid)
+
+    # Locating nodes:
+    def hasnode(self, nodeid):
+        '''Determine if the given nodeid actually exists
+        '''
+        return self.db.hasnode(self.classname, nodeid)
+
+    def setkey(self, propname):
+        """Select a String property of this class to be the key property.
+
+        'propname' must be the name of a String property of this class or
+        None, or a TypeError is raised.  The values of the key property on
+        all existing nodes must be unique or a ValueError is raised.
+        """
+        # TODO: validate that the property is a String!
+        self.key = propname
+
+    def getkey(self):
+        """Return the name of the key property for this class or None."""
+        return self.key
+
+    def labelprop(self, default_to_id=0):
+        ''' Return the property name for a label for the given node.
+
+        This method attempts to generate a consistent label for the node.
+        It tries the following in order:
+            1. key property
+            2. "name" property
+            3. "title" property
+            4. first property from the sorted property name list
+        '''
+        k = self.getkey()
+        if  k:
+            return k
+        props = self.getprops()
+        if props.has_key('name'):
+            return 'name'
+        elif props.has_key('title'):
+            return 'title'
+        if default_to_id:
+            return 'id'
+        props = props.keys()
+        props.sort()
+        return props[0]
+
+    # TODO: set up a separate index db file for this? profile?
+    def lookup(self, keyvalue):
+        """Locate a particular node by its key property and return its id.
+
+        If this class has no key property, a TypeError is raised.  If the
+        'keyvalue' matches one of the values for the key property among
+        the nodes in this class, the matching node's id is returned;
+        otherwise a KeyError is raised.
+        """
+        cldb = self.db.getclassdb(self.classname)
+        try:
+            for nodeid in self.db.getnodeids(self.classname, cldb):
+                node = self.db.getnode(self.classname, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                if node[self.key] == keyvalue:
+                    cldb.close()
+                    return nodeid
+        finally:
+            cldb.close()
+        raise KeyError, keyvalue
+
+    # XXX: change from spec - allows multiple props to match
+    def find(self, **propspec):
+        """Get the ids of nodes in this class which link to the given nodes.
+
+        'propspec' consists of keyword args propname={nodeid:1,}   
+          'propname' must be the name of a property in this class, or a
+            KeyError is raised.  That property must be a Link or Multilink
+            property, or a TypeError is raised.
+
+        Any node in this class whose 'propname' property links to any of the
+        nodeids will be returned. Used by the full text indexing, which knows
+        that "foo" occurs in msg1, msg3 and file7, so we have hits on these issues:
+            db.issue.find(messages={'1':1,'3':1}, files={'7':1})
+        """
+        propspec = propspec.items()
+        for propname, nodeids in propspec:
+            # check the prop is OK
+            prop = self.properties[propname]
+            if not isinstance(prop, Link) and not isinstance(prop, Multilink):
+                raise TypeError, "'%s' not a Link/Multilink property"%propname
+            #XXX edit is expensive and of questionable use
+            #for nodeid in nodeids:
+            #    if not self.db.hasnode(prop.classname, nodeid):
+            #        raise ValueError, '%s has no node %s'%(prop.classname, nodeid)
+
+        # ok, now do the find
+        cldb = self.db.getclassdb(self.classname)
+        l = []
+        try:
+            for id in self.db.getnodeids(self.classname, db=cldb):
+                node = self.db.getnode(self.classname, id, db=cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                for propname, nodeids in propspec:
+                    # can't test if the node doesn't have this property
+                    if not node.has_key(propname):
+                        continue
+                    if type(nodeids) is type(''):
+                        nodeids = {nodeids:1}
+                    prop = self.properties[propname]
+                    value = node[propname]
+                    if isinstance(prop, Link) and nodeids.has_key(value):
+                        l.append(id)
+                        break
+                    elif isinstance(prop, Multilink):
+                        hit = 0
+                        for v in value:
+                            if nodeids.has_key(v):
+                                l.append(id)
+                                hit = 1
+                                break
+                        if hit:
+                            break
+        finally:
+            cldb.close()
+        return l
+
+    def stringFind(self, **requirements):
+        """Locate a particular node by matching a set of its String
+        properties in a caseless search.
+
+        If the property is not a String property, a TypeError is raised.
+        
+        The return is a list of the id of all nodes that match.
+        """
+        for propname in requirements.keys():
+            prop = self.properties[propname]
+            if isinstance(not prop, String):
+                raise TypeError, "'%s' not a String property"%propname
+            requirements[propname] = requirements[propname].lower()
+        l = []
+        cldb = self.db.getclassdb(self.classname)
+        try:
+            for nodeid in self.db.getnodeids(self.classname, cldb):
+                node = self.db.getnode(self.classname, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                for key, value in requirements.items():
+                    if node[key] and node[key].lower() != value:
+                        break
+                else:
+                    l.append(nodeid)
+        finally:
+            cldb.close()
+        return l
+
+    def list(self):
+        """Return a list of the ids of the active nodes in this class."""
+        l = []
+        cn = self.classname
+        cldb = self.db.getclassdb(cn)
+        try:
+            for nodeid in self.db.getnodeids(cn, cldb):
+                node = self.db.getnode(cn, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                l.append(nodeid)
+        finally:
+            cldb.close()
+        l.sort()
+        return l
+
+    # XXX not in spec
+    def filter(self, search_matches, filterspec, sort, group, 
+            num_re = re.compile('^\d+$')):
+        ''' Return a list of the ids of the active nodes in this class that
+            match the 'filter' spec, sorted by the group spec and then the
+            sort spec
+        '''
+        cn = self.classname
+
+        # optimise filterspec
+        l = []
+        props = self.getprops()
+        for k, v in filterspec.items():
+            propclass = props[k]
+            if isinstance(propclass, Link):
+                if type(v) is not type([]):
+                    v = [v]
+                # replace key values with node ids
+                u = []
+                link_class =  self.db.classes[propclass.classname]
+                for entry in v:
+                    if entry == '-1': entry = None
+                    elif not num_re.match(entry):
+                        try:
+                            entry = link_class.lookup(entry)
+                        except (TypeError,KeyError):
+                            raise ValueError, 'property "%s": %s not a %s'%(
+                                k, entry, self.properties[k].classname)
+                    u.append(entry)
+
+                l.append((0, k, u))
+            elif isinstance(propclass, Multilink):
+                if type(v) is not type([]):
+                    v = [v]
+                # replace key values with node ids
+                u = []
+                link_class =  self.db.classes[propclass.classname]
+                for entry in v:
+                    if not num_re.match(entry):
+                        try:
+                            entry = link_class.lookup(entry)
+                        except (TypeError,KeyError):
+                            raise ValueError, 'new property "%s": %s not a %s'%(
+                                k, entry, self.properties[k].classname)
+                    u.append(entry)
+                l.append((1, k, u))
+            elif isinstance(propclass, String):
+                # simple glob searching
+                v = re.sub(r'([\|\{\}\\\.\+\[\]\(\)])', r'\\\1', v)
+                v = v.replace('?', '.')
+                v = v.replace('*', '.*?')
+                l.append((2, k, re.compile(v, re.I)))
+            else:
+                l.append((6, k, v))
+        filterspec = l
+
+        # now, find all the nodes that are active and pass filtering
+        l = []
+        cldb = self.db.getclassdb(cn)
+        try:
+            for nodeid in self.db.getnodeids(cn, cldb):
+                node = self.db.getnode(cn, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                # apply filter
+                for t, k, v in filterspec:
+                    # this node doesn't have this property, so reject it
+                    if not node.has_key(k): break
+
+                    if t == 0 and node[k] not in v:
+                        # link - if this node'd property doesn't appear in the
+                        # filterspec's nodeid list, skip it
+                        break
+                    elif t == 1:
+                        # multilink - if any of the nodeids required by the
+                        # filterspec aren't in this node's property, then skip
+                        # it
+                        for value in v:
+                            if value not in node[k]:
+                                break
+                        else:
+                            continue
+                        break
+                    elif t == 2 and (node[k] is None or not v.search(node[k])):
+                        # RE search
+                        break
+                    elif t == 6 and node[k] != v:
+                        # straight value comparison for the other types
+                        break
+                else:
+                    l.append((nodeid, node))
+        finally:
+            cldb.close()
+        l.sort()
+
+        # filter based on full text search
+        if search_matches is not None:
+            k = []
+            l_debug = []
+            for v in l:
+                l_debug.append(v[0])
+                if search_matches.has_key(v[0]):
+                    k.append(v)
+            l = k
+
+        # optimise sort
+        m = []
+        for entry in sort:
+            if entry[0] != '-':
+                m.append(('+', entry))
+            else:
+                m.append((entry[0], entry[1:]))
+        sort = m
+
+        # optimise group
+        m = []
+        for entry in group:
+            if entry[0] != '-':
+                m.append(('+', entry))
+            else:
+                m.append((entry[0], entry[1:]))
+        group = m
+        # now, sort the result
+        def sortfun(a, b, sort=sort, group=group, properties=self.getprops(),
+                db = self.db, cl=self):
+            a_id, an = a
+            b_id, bn = b
+            # sort by group and then sort
+            for list in group, sort:
+                for dir, prop in list:
+                    # sorting is class-specific
+                    propclass = properties[prop]
+
+                    # handle the properties that might be "faked"
+                    # also, handle possible missing properties
+                    try:
+                        if not an.has_key(prop):
+                            an[prop] = cl.get(a_id, prop)
+                        av = an[prop]
+                    except KeyError:
+                        # the node doesn't have a value for this property
+                        if isinstance(propclass, Multilink): av = []
+                        else: av = ''
+                    try:
+                        if not bn.has_key(prop):
+                            bn[prop] = cl.get(b_id, prop)
+                        bv = bn[prop]
+                    except KeyError:
+                        # the node doesn't have a value for this property
+                        if isinstance(propclass, Multilink): bv = []
+                        else: bv = ''
+
+                    # String and Date values are sorted in the natural way
+                    if isinstance(propclass, String):
+                        # clean up the strings
+                        if av and av[0] in string.uppercase:
+                            av = an[prop] = av.lower()
+                        if bv and bv[0] in string.uppercase:
+                            bv = bn[prop] = bv.lower()
+                    if (isinstance(propclass, String) or
+                            isinstance(propclass, Date)):
+                        # it might be a string that's really an integer
+                        try:
+                            av = int(av)
+                            bv = int(bv)
+                        except:
+                            pass
+                        if dir == '+':
+                            r = cmp(av, bv)
+                            if r != 0: return r
+                        elif dir == '-':
+                            r = cmp(bv, av)
+                            if r != 0: return r
+
+                    # Link properties are sorted according to the value of
+                    # the "order" property on the linked nodes if it is
+                    # present; or otherwise on the key string of the linked
+                    # nodes; or finally on  the node ids.
+                    elif isinstance(propclass, Link):
+                        link = db.classes[propclass.classname]
+                        if av is None and bv is not None: return -1
+                        if av is not None and bv is None: return 1
+                        if av is None and bv is None: continue
+                        if link.getprops().has_key('order'):
+                            if dir == '+':
+                                r = cmp(link.get(av, 'order'),
+                                    link.get(bv, 'order'))
+                                if r != 0: return r
+                            elif dir == '-':
+                                r = cmp(link.get(bv, 'order'),
+                                    link.get(av, 'order'))
+                                if r != 0: return r
+                        elif link.getkey():
+                            key = link.getkey()
+                            if dir == '+':
+                                r = cmp(link.get(av, key), link.get(bv, key))
+                                if r != 0: return r
+                            elif dir == '-':
+                                r = cmp(link.get(bv, key), link.get(av, key))
+                                if r != 0: return r
+                        else:
+                            if dir == '+':
+                                r = cmp(av, bv)
+                                if r != 0: return r
+                            elif dir == '-':
+                                r = cmp(bv, av)
+                                if r != 0: return r
+
+                    # Multilink properties are sorted according to how many
+                    # links are present.
+                    elif isinstance(propclass, Multilink):
+                        if dir == '+':
+                            r = cmp(len(av), len(bv))
+                            if r != 0: return r
+                        elif dir == '-':
+                            r = cmp(len(bv), len(av))
+                            if r != 0: return r
+                # end for dir, prop in list:
+            # end for list in sort, group:
+            # if all else fails, compare the ids
+            return cmp(a[0], b[0])
+
+        l.sort(sortfun)
+        return [i[0] for i in l]
+
+    def count(self):
+        """Get the number of nodes in this class.
+
+        If the returned integer is 'numnodes', the ids of all the nodes
+        in this class run from 1 to numnodes, and numnodes+1 will be the
+        id of the next node to be created in this class.
+        """
+        return self.db.countnodes(self.classname)
+
+    # Manipulating properties:
+
+    def getprops(self, protected=1):
+        """Return a dictionary mapping property names to property objects.
+           If the "protected" flag is true, we include protected properties -
+           those which may not be modified.
+
+           In addition to the actual properties on the node, these
+           methods provide the "creation" and "activity" properties. If the
+           "protected" flag is true, we include protected properties - those
+           which may not be modified.
+        """
+        d = self.properties.copy()
+        if protected:
+            d['id'] = String()
+            d['creation'] = hyperdb.Date()
+            d['activity'] = hyperdb.Date()
+            d['creator'] = hyperdb.Link("user")
+        return d
+
+    def addprop(self, **properties):
+        """Add properties to this class.
+
+        The keyword arguments in 'properties' must map names to property
+        objects, or a TypeError is raised.  None of the keys in 'properties'
+        may collide with the names of existing properties, or a ValueError
+        is raised before any properties have been added.
+        """
+        for key in properties.keys():
+            if self.properties.has_key(key):
+                raise ValueError, key
+        self.properties.update(properties)
+
+    def index(self, nodeid):
+        '''Add (or refresh) the node to search indexes
+        '''
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if isinstance(propclass, String) and propclass.indexme:
+                # and index them under (classname, nodeid, property)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                    str(self.get(nodeid, prop)))
+
+    #
+    # Detector interface
+    #
+    def audit(self, event, detector):
+        """Register a detector
+        """
+        l = self.auditors[event]
+        if detector not in l:
+            self.auditors[event].append(detector)
+
+    def fireAuditors(self, action, nodeid, newvalues):
+        """Fire all registered auditors.
+        """
+        for audit in self.auditors[action]:
+            audit(self.db, self, nodeid, newvalues)
+
+    def react(self, event, detector):
+        """Register a detector
+        """
+        l = self.reactors[event]
+        if detector not in l:
+            self.reactors[event].append(detector)
+
+    def fireReactors(self, action, nodeid, oldvalues):
+        """Fire all registered reactors.
+        """
+        for react in self.reactors[action]:
+            react(self.db, self, nodeid, oldvalues)
+
+class FileClass(Class):
+    '''This class defines a large chunk of data. To support this, it has a
+       mandatory String property "content" which is typically saved off
+       externally to the hyperdb.
+
+       The default MIME type of this data is defined by the
+       "default_mime_type" class attribute, which may be overridden by each
+       node if the class defines a "type" String property.
+    '''
+    default_mime_type = 'text/plain'
+
+    def create(self, **propvalues):
+        ''' snaffle the file propvalue and store in a file
+        '''
+        content = propvalues['content']
+        del propvalues['content']
+        newid = Class.create(self, **propvalues)
+        self.db.storefile(self.classname, newid, None, content)
+        return newid
+
+    def get(self, nodeid, propname, default=_marker, cache=1):
+        ''' trap the content propname and get it from the file
+        '''
+
+        poss_msg = 'Possibly a access right configuration problem.'
+        if propname == 'content':
+            try:
+                return self.db.getfile(self.classname, nodeid, None)
+            except IOError, (strerror):
+                # BUG: by catching this we donot see an error in the log.
+                return 'ERROR reading file: %s%s\n%s\n%s'%(
+                        self.classname, nodeid, poss_msg, strerror)
+        if default is not _marker:
+            return Class.get(self, nodeid, propname, default, cache=cache)
+        else:
+            return Class.get(self, nodeid, propname, cache=cache)
+
+    def getprops(self, protected=1):
+        ''' In addition to the actual properties on the node, these methods
+            provide the "content" property. If the "protected" flag is true,
+            we include protected properties - those which may not be
+            modified.
+        '''
+        d = Class.getprops(self, protected=protected).copy()
+        if protected:
+            d['content'] = hyperdb.String()
+        return d
+
+    def index(self, nodeid):
+        ''' Index the node in the search index.
+
+            We want to index the content in addition to the normal String
+            property indexing.
+        '''
+        # perform normal indexing
+        Class.index(self, nodeid)
+
+        # get the content to index
+        content = self.get(nodeid, 'content')
+
+        # figure the mime type
+        if self.properties.has_key('type'):
+            mime_type = self.get(nodeid, 'type')
+        else:
+            mime_type = self.default_mime_type
+
+        # and index!
+        self.db.indexer.add_text((self.classname, nodeid, 'content'), content,
+            mime_type)
+
+# XXX deviation from spec - was called ItemClass
+class IssueClass(Class, roundupdb.IssueClass):
+    # Overridden methods:
+    def __init__(self, db, classname, **properties):
+        """The newly-created class automatically includes the "messages",
+        "files", "nosy", and "superseder" properties.  If the 'properties'
+        dictionary attempts to specify any of these properties or a
+        "creation" or "activity" property, a ValueError is raised.
+        """
+        if not properties.has_key('title'):
+            properties['title'] = hyperdb.String(indexme='yes')
+        if not properties.has_key('messages'):
+            properties['messages'] = hyperdb.Multilink("msg")
+        if not properties.has_key('files'):
+            properties['files'] = hyperdb.Multilink("file")
+        if not properties.has_key('nosy'):
+            properties['nosy'] = hyperdb.Multilink("user")
+        if not properties.has_key('superseder'):
+            properties['superseder'] = hyperdb.Multilink(classname)
+        Class.__init__(self, db, classname, **properties)
+
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.43  2002/07/10 06:30:30  richard
+#...except of course it's nice to use valid Python syntax
+#
 #Revision 1.42  2002/07/10 06:21:38  richard
 #Be extra safe
 #

@@ -15,29 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.22 2002-07-09 03:02:53 richard Exp $
+# $Id: dbinit.py,v 1.23 2002-07-14 02:05:54 richard Exp $
 
 import os
 
 import instance_config
-from roundup import roundupdb
-import select_db
+from select_db import Database, Class, FileClass, IssueClass
 
-from roundup.roundupdb import Class, FileClass
-
-class Database(roundupdb.Database, select_db.Database):
-    ''' Creates a hybrid database from: 
-         . the selected database back-end from select_db
-         . the roundup extensions from roundupdb 
-    ''' 
-    pass 
-
-class IssueClass(roundupdb.IssueClass):
-    ''' issues need the email information
-    '''
-    pass
-
- 
 def open(name=None):
     ''' as from the roundupdb method openDB 
  
@@ -195,6 +179,22 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/07/09 03:02:53  richard
+# More indexer work:
+# - all String properties may now be indexed too. Currently there's a bit of
+#   "issue" specific code in the actual searching which needs to be
+#   addressed. In a nutshell:
+#   + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+#         file = FileClass(db, "file", name=String(), type=String(),
+#             comment=String(indexme="yes"))
+#   + the comment will then be indexed and be searchable, with the results
+#     related back to the issue that the file is linked to
+# - as a result of this work, the FileClass has a default MIME type that may
+#   be overridden in a subclass, or by the use of a "type" property as is
+#   done in the default templates.
+# - the regeneration of the indexes (if necessary) is done once the schema is
+#   set up in the dbinit.
+#
 # Revision 1.21  2002/05/24 04:03:23  richard
 # Added commentage to the dbinit files to help people with their
 # customisation.

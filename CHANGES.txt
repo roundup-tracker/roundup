@@ -37,7 +37,7 @@ Feature:
  . added sorting of checklist HTML display
  . switched to using a session-based web login
  . made mailgw handle set and modify operations on multilinks (bug #579094)
-
+ . all storage-specific code (ie. backend) is now implemented by the backends
 
 2002-06-24 0.4.2
 Fixed:
