@@ -84,8 +84,9 @@ instance is attempted.::
 Instance Schema
 ---------------
 
-Note: if you modify the schema, you'll most likely need to web_interface_to
-reflect_your_changes.
+Note: if you modify the schema, you'll most likely need to edit the
+      `web interface`_ HTML template files to reflect your changes.
+
 An instance schema defines what data is stored in the instance's database. The
 two schemas shipped with Roundup turn it into a typical software bug tracker
 (the extended schema allowing for support issues as well as bugs). Schemas are

@@ -1,8 +1,13 @@
-*Roundup (0.4.1): An Issue-Tracking System for Knowledge Workers*
+Installing Roundup
+==================
 
 `Table of contents`_
 
 - Overview_
+
+  - `Classic Template`_
+  - `Extended Template`_
+
 - Prerequisites_
 
   - `Testing your Python`_
@@ -15,7 +20,46 @@
 Overview
 ========
 
-TODO
+Broken out separately, there are several conceptual pieces to a
+Roundup installation:
+
+Roundup support code
+ Installed into your Python install's lib directory
+
+Roundup scripts
+ These include the email gateway, the roundup
+ HTTP server, the roundup administration command-line interface, etc.
+
+Roundup instances
+ Instances consist of core support files, issues
+ (be they bug reports or otherwise), instance configuration file(s),
+ etc.  Roundup instances also adhere to a specific "Template" which
+ defines the fields usable/assignable on a per-issue basis.  A
+ description of the provided templates follows.
+
+Classic Template
+----------------
+
+The classic template is the one defined in the `Roundup Specification`_. It
+holds issues which have priorities and statuses. Each issue may also have a
+set of messages which are disseminated to the issue's list of nosy users.
+
+
+Extended Template
+-----------------
+
+The extended template adds additional information to issues: product,
+platform, version, targetversion and supportcall.
+There is an additional class for
+handling support calls, which includes a time log, customername, rate and
+source.
+
+The priorty class has different default entries too: "fatal-bug", "bug",
+"usability" and "feature".
+
+Users of this template will want to change the contents of the product
+class as soon as the instance is created.
+
 
 Prerequisites
 =============
@@ -42,24 +86,6 @@ Installation
 ============
 
 Set aside 15-30 minutes.
-
-Broken out separately, there are several conceptual pieces to a
-Roundup installation:
-
-Roundup support code
- Installed into your Python install's lib directory
-
-Roundup scripts
- These include the email gateway, the roundup
- HTTP server, the roundup administration command-line interface, etc.
-
-Roundup instances
- Instances consist of core support files, issues
- (be they bug reports or otherwise), instance configuration file(s),
- etc.  Roundup instances also adhere to a specific "Template" which
- defines the fields usable/assignable on a per-issue basis.  A
- description of the provided templates can be found under the
- 'TODO' section.
 
 1. To install the Roundup support code into your Python tree and
    Roundup scripts into /usr/local/bin::
@@ -89,7 +115,7 @@ Roundup instances
   c.  ``roundup-admin init``
 
       You will be asked a series of questions.  A description of
-      the Roundup-provided templates can be found under TODO::
+      the Roundup-provided templates can be found under the Overview_::
 
           Enter instance home: /opt/roundup/instances/support
           Templates: classic, extended
@@ -157,7 +183,8 @@ Further Reading
 
 If you intend to use Roundup with anything other than the defualt
 templates, if you would like to hack on Roundup, or if you would
-like implementation details, you should read 'TODO'
+like implementation details, you should read `Customising Roundup`_.
+
 
 Platform-Specific Notes
 =======================
@@ -190,5 +217,7 @@ Next: `Getting Started`_
 
 .. _`table of contents`: index.html
 .. _`getting started`: getting_started.html
+.. _`roundup specification`: spec.html
+.. _`customising roundup`: customizing.html
 
-$Id: installation.stx,v 1.2 2002-03-08 23:41:46 richard Exp $
+$Id: installation.stx,v 1.3 2002-03-09 22:46:52 richard Exp $
