@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.90 $
+:Version: $Revision: 1.91 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3110,6 +3110,42 @@ now do all the work::
         db.close()
 
 And that's it!
+
+
+Using an LDAP database for user information
+-------------------------------------------
+
+A script that reads users from an LDAP store using
+http://python-ldap.sf.net/ and then compares the list to the users in the
+roundup user database would be pretty easy to write. You'd then have it run
+once an hour / day (or on demand if you can work that into your LDAP store
+workflow). See the example `Using a UN*X passwd file as the user database`_
+for more information about doing this.
+
+To authenticate off the LDAP store (rather than using the passwords in the
+roundup user database) you'd use the same python-ldap module inside an
+extension to the cgi interface. You'd do this by adding a method called
+"verifyPassword" to the Client class in your tracker's interfaces.py
+module. The method is implemented by default as::
+
+    def verifyPassword(self, userid, password):
+        ''' Verify the password that the user has supplied
+        '''
+        stored = self.db.user.get(self.userid, 'password')
+        if password == stored:
+            return 1
+        if not password and not stored:
+            return 1
+        return 0
+
+So you could reimplement this as something like::
+
+    def verifyPassword(self, userid, password):
+        ''' Verify the password that the user has supplied
+        '''
+        # look up some unique LDAP information about the user
+        username = self.db.user.get(self.userid, 'username')
+        # now verify the password supplied against the LDAP store
 
 
 Enabling display of either message summaries or the entire messages
