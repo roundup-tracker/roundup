@@ -1,7 +1,7 @@
 from roundup import hyperdb, date, password, roundupdb
 import metakit
 import re, marshal, os, sys, weakref, time, calendar
-from roundup.roundup_indexer import RoundupIndexer
+from roundup.indexer import Indexer
 
 _instances = weakref.WeakValueDictionary()
 
@@ -27,7 +27,7 @@ class _Database(hyperdb.Database):
         self.dirty = 0
         self.__RW = 0
         self._db = self.__open()
-        self.indexer = RoundupIndexer(self.config.DATABASE)
+        self.indexer = Indexer(self.config.DATABASE)
         os.umask(0002)
             
     # --- defined in ping's spec
