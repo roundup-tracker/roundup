@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.113 2003-04-10 05:12:41 richard Exp $
+# $Id: client.py,v 1.114 2003-04-24 07:19:59 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -14,7 +14,7 @@ from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
 from roundup.cgi.PageTemplates import PageTemplate
 from roundup.rfc2822 import encode_header
-from roundup.mailgw import uidFromAddress
+from roundup.mailgw import uidFromAddress, openSMTPConnection
 
 class HTTPException(Exception):
       pass
@@ -787,7 +787,7 @@ please visit the following URL:
             try:
                 # send the message as admin so bounces are sent there
                 # instead of to roundup
-                smtp = smtplib.SMTP(self.db.config.MAILHOST)
+                smtp = openSMTPConnection(self.db.config)
                 smtp.sendmail(self.db.config.ADMIN_EMAIL, [to],
                     message.getvalue())
             except socket.error, value:

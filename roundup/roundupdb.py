@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.84 2003-04-14 06:24:01 richard Exp $
+# $Id: roundupdb.py,v 1.85 2003-04-24 07:19:58 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -43,7 +43,8 @@ except ImportError :
             return '%s%s%s <%s>' % (quotes, name, quotes, address)
         return address
 
-import hyperdb
+from roundup import hyperdb
+from roundup.mailgw import openSMTPConnection
 
 # set to indicate to roundup not to actually _send_ email
 # this var must contain a file to write the mail to
@@ -333,7 +334,7 @@ class IssueClass:
             try:
                 # send the message as admin so bounces are sent there
                 # instead of to roundup
-                smtp = smtplib.SMTP(self.db.config.MAILHOST)
+                smtp = openSMTPConnection(self.db.config)
                 smtp.sendmail(self.db.config.ADMIN_EMAIL, sendto,
                     message.getvalue())
             except socket.error, value:

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.117 2003-04-23 12:09:20 richard Exp $
+$Id: mailgw.py,v 1.118 2003-04-24 07:19:58 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -131,6 +131,35 @@ def getparam(str, param):
             if f[:i].strip().lower() == param:
                 return rfc822.unquote(f[i+1:].strip())
     return None
+
+def openSMTPConnection(config):
+    ''' Open an SMTP connection to the mailhost specified in the config
+    '''
+    smtp = smtplib.SMTP(config.MAILHOST)
+
+    # use TLS?
+    use_tls = getattr(config, 'MAILHOST_TLS', 'no')
+    if use_tls == 'yes'
+        # do we have key files too?
+        keyfile = getattr(config, 'MAILHOST_TLS_KEYFILE', None)
+        if keyfile is not None:
+            certfile = getattr(config, 'MAILHOST_TLS_CERTFILE', None)
+            if certfile is not None:
+                args = (keyfile, certfile)
+            else:
+                args = (keyfile, )
+        else:
+            args = ()
+        # start the TLS
+        smtp.starttls(*args)
+
+    # ok, now do we also need to log in?
+    mailuser = getattr(config, 'MAILUSER', None)
+    if mailuser:
+        smtp.login(*config.MAILUSER)
+
+    # that's it, a fully-configured SMTP connection ready to go
+    return smtp
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -345,7 +374,7 @@ class MailGW:
                     m.getvalue()))
         else:
             try:
-                smtp = smtplib.SMTP(self.instance.config.MAILHOST)
+                smtp = openSMTPConnection(self.instance.config)
                 smtp.sendmail(self.instance.config.ADMIN_EMAIL, sendto,
                     m.getvalue())
             except socket.error, value:
@@ -820,12 +849,12 @@ not find a text/plain part to use.
         # attach the files to the issue
         if nodeid:
             # extend the existing files list
-            fileprop = cl.get(nodeid, 'file')
+            fileprop = cl.get(nodeid, 'files')
             fileprop.extend(files)
             props['files'] = fileprop
         else:
             # pre-load the files list
-            props['files'] = fileprop
+            props['files'] = files
 
 
         # 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.2 2003-04-23 11:59:36 richard Exp $
+# $Id: config.py,v 1.3 2003-04-24 07:19:59 richard Exp $
 
 import os
 
@@ -24,6 +24,20 @@ TRACKER_HOME=os.path.split(__file__)[0]
 
 # The SMTP mail host that roundup will use to send mail
 MAILHOST = 'localhost'
+
+# If your SMTP mail host requires a username and password for access, then
+# specify them here.
+# eg. MAILUSER = ('username', 'password')
+MAILUSER = ()
+
+# If your SMTP mail host provides or requires TLS (Transport Layer
+# Security) then set MAILHOST_TLS = 'yes'
+# Optionallly, you may also set MAILHOST_TLS_KEYFILE to the name of a PEM
+# formatted file that contains your private key, and MAILHOST_TLS_CERTFILE
+# to the name of a PEM formatted certificate chain file.
+MAILHOST_TLS = 'no'
+MAILHOST_TLS_KEYFILE = ''
+MAILHOST_TLS_CERTFILE = ''
 
 # The domain name used for email addresses.
 MAIL_DOMAIN = 'your.tracker.email.domain.example'
