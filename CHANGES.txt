@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-??-?? 0.8.0b2
+Fixed:
+- note about how to run roundup demo in Windows
+
+
 2004-12-08 0.8.0b1
 Feature:
 - added MD5 scheme for password hiding
