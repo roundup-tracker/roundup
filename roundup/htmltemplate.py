@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.73 2002-02-15 07:08:44 richard Exp $
+# $Id: htmltemplate.py,v 1.74 2002-02-16 08:39:42 richard Exp $
 
 __doc__ = """
 Template engine.
 """
 
-import os, re, StringIO, urllib, cgi, errno
+import os, re, StringIO, urllib, cgi, errno, types
 
 import hyperdb, date, password
 from i18n import _
@@ -257,7 +257,33 @@ class TemplateFunctions:
         value = self.determine_value(property)
 
         # display
+        if isinstance(propclass, hyperdb.Multilink):
+            linkcl = self.db.classes[propclass.classname]
+            options = linkcl.list()
+            options.sort(sortfunc)
+            height = height or min(len(options), 7)
+            l = ['<select multiple name="%s" size="%s">'%(property, height)]
+            k = linkcl.labelprop()
+            for optionid in options:
+                option = linkcl.get(optionid, k)
+                s = ''
+                if optionid in value:
+                    s = 'selected '
+                if showid:
+                    lab = '%s%s: %s'%(propclass.classname, optionid, option)
+                else:
+                    lab = option
+                if size is not None and len(lab) > size:
+                    lab = lab[:size-3] + '...'
+                lab = cgi.escape(lab)
+                l.append('<option %svalue="%s">%s</option>'%(s, optionid,
+                    lab))
+            l.append('</select>')
+            return '\n'.join(l)
         if isinstance(propclass, hyperdb.Link):
+            # force the value to be a single choice
+            if type(value) is types.ListType:
+                value = value[0]
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
@@ -280,29 +306,6 @@ class TemplateFunctions:
                     lab = lab[:size-3] + '...'
                 lab = cgi.escape(lab)
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
-            l.append('</select>')
-            return '\n'.join(l)
-        if isinstance(propclass, hyperdb.Multilink):
-            linkcl = self.db.classes[propclass.classname]
-            options = linkcl.list()
-            options.sort(sortfunc)
-            height = height or min(len(options), 7)
-            l = ['<select multiple name="%s" size="%s">'%(property, height)]
-            k = linkcl.labelprop()
-            for optionid in options:
-                option = linkcl.get(optionid, k)
-                s = ''
-                if optionid in value:
-                    s = 'selected '
-                if showid:
-                    lab = '%s%s: %s'%(propclass.classname, optionid, option)
-                else:
-                    lab = option
-                if size is not None and len(lab) > size:
-                    lab = lab[:size-3] + '...'
-                lab = cgi.escape(lab)
-                l.append('<option %svalue="%s">%s</option>'%(s, optionid,
-                    lab))
             l.append('</select>')
             return '\n'.join(l)
         return _('[Menu: not a link]')
@@ -768,7 +771,8 @@ class IndexTemplate(TemplateFunctions):
         for nodeid in nodeids:
             # check for a group heading
             if group_names:
-                this_group = [self.cl.get(nodeid, name, _('[no value]')) for name in group_names]
+                this_group = [self.cl.get(nodeid, name, _('[no value]'))
+                    for name in group_names]
                 if this_group != old_group:
                     l = []
                     for name in group_names:
@@ -1064,6 +1068,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.73  2002/02/15 07:08:44  richard
+#  . Alternate email addresses are now available for users. See the MIGRATION
+#    file for info on how to activate the feature.
+#
 # Revision 1.72  2002/02/14 23:39:18  richard
 # . All forms now have "double-submit" protection when Javascript is enabled
 #   on the client-side.

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.10 2002-01-22 07:08:50 richard Exp $
+# $Id: __init__.py,v 1.11 2002-02-16 08:39:42 richard Exp $
 
 __all__ = []
 
@@ -31,7 +31,7 @@ try:
     anydbm = back_anydbm
     __all__.append('anydbm')
 except AssertionError:
-    del back_anydbm
+    pass
 except ImportError:
     pass
 
@@ -51,6 +51,10 @@ except ImportError:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/01/22 07:08:50  richard
+# I was certain I'd already done this (there's even a change note in
+# CHANGES)...
+#
 # Revision 1.9  2001/12/12 02:30:51  richard
 # I fixed the problems with people whose anydbm was using the dbm module at the
 # backend. It turns out the dbm module modifies the file name to append ".db"

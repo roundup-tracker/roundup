@@ -22,6 +22,7 @@ Fixed:
  . All forms now have "double-submit" protection when Javascript is enabled
    on the client-side.
  . #516883 ] mail interface + ANONYMOUS_REGISTER
+ . #516854 ] "My Issues" and redisplay
 
 
 2002-01-24 - 0.4.0
