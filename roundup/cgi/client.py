@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.93 2003-02-18 04:56:29 richard Exp $
+# $Id: client.py,v 1.94 2003-02-18 06:15:21 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -867,6 +867,9 @@ class Client:
         m = []
         for needed in order:
             props = all_props[needed]
+            if not props:
+                # nothing to do
+                continue
             cn, nodeid = needed
 
             if nodeid is not None and int(nodeid) > 0:
@@ -1309,8 +1312,8 @@ class Client:
                     value.append((m.group(1), m.group(2)))
 
                 # make sure the link property is valid
-                if (not isinstance(propdef, hyperdb.Multilink) and
-                        not isinstance(propdef, hyperdb.Link)):
+                if (not isinstance(propdef[propname], hyperdb.Multilink) and
+                        not isinstance(propdef[propname], hyperdb.Link)):
                     raise ValueError, '%s %s is not a link or '\
                         'multilink property'%(cn, propname)
 
@@ -1569,6 +1572,7 @@ class Client:
             cl = self.db.classes[cn]
             if not isinstance(cl, hyperdb.FileClass):
                 continue
+            # we also don't want to create FileClass items with no content
             if not props.get('content', ''):
                 del all_props[(cn, id)]
 

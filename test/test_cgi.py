@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.10 2003-02-17 06:44:01 richard Exp $
+# $Id: test_cgi.py,v 1.11 2003-02-18 06:15:21 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -434,6 +434,12 @@ class FormTestCase(unittest.TestCase):
             {'test-1@link@link': 'blah'})
         self.assertRaises(ValueError, self.parseForm,
             {'test-1@link@link': 'issue'})
+
+    def testLinkNotLink(self):
+        self.assertRaises(ValueError, self.parseForm,
+            {'test-1@link@boolean': 'issue-1'})
+        self.assertRaises(ValueError, self.parseForm,
+            {'test-1@link@string': 'issue-1'})
 
     def testBackwardsCompat(self):
         res = self.parseForm({':note': 'spam'}, 'issue')
