@@ -265,26 +265,73 @@ table.classlist th {
 
 
 /* style for class help display */
-table.classhelp {
-  border-spacing: 0px;
-  border-collapse: separate;
-  width: 100%;
+table.classhelp {      /* the table-layout: fixed;        */ 
+  table-layout: fixed; /* compromises quality for speed   */
+  overflow: hidden;
+  font-size: .9em;
+  padding-bottom: 3em;
 }
 
 table.classhelp th {
-  font-weight: bold;
+  font-weight: normal;
   text-align: left;
-  color: #707040;
+  color: #444444;
+  background-color: #efefef;
+  border-bottom: 1px solid #afafaf;
+  border-top: 1px solid #afafaf;
+  text-transform: uppercase;
+  vertical-align: middle;
+  line-height:1.5em;
 }
 
 table.classhelp td {
-  padding: 2 2 2 2;
-  border: 1px solid black;
+  vertical-align: middle;
+  padding-right: .2em;
+  border-bottom: 1px solid #efefef;
   text-align: left;
-  vertical-align: top;
   empty-cells: show;
 }
 
+table.classhelp td {
+  white-space: nowrap;
+  vertical-align: middle;
+  padding-right: .2em;
+  border-bottom: 1px solid #efefef;
+  text-align: left;
+  empty-cells: show;
+}
+
+table.classhelp tr:hover {
+  background-color: #eeeeee;
+}
+
+label.classhelp-label {
+  cursor: pointer;
+}
+
+#classhelp-controls {
+  position: fixed;
+  display: block;
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: .5em;
+  border-top: 2px solid #444444;
+  background-color: #eeeeee;
+}
+
+#classhelp-controls input.apply {
+  width: 7em;
+  font-weight: bold;
+  margin-right: 2em;
+  margin-left: 2em;
+}
+
+#classhelp-controls input.preview {
+   margin-right: 3em;
+   margin-left: 1em;
+}
 
 /* style for "other" displays */
 table.otherinfo {

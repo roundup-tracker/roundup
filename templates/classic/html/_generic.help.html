@@ -1,91 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-<head>
-<link rel="stylesheet" type="text/css" href="_file/style.css">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
-<script language="JavaScript" 
-        tal:condition="python:request.form.has_key('property')"
-        tal:content="structure string:
+  <head>
+      <link rel="stylesheet" type="text/css" href="_file/style.css" />
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8;" />
+      <tal:block tal:condition="python:request.form.has_key('property')">
+      <title tal:content="string:${request/form/property/value} help">Property</title>
+      <script language="Javascript" type="text/javascript" 
+          tal:content="structure string:
+          // this is the name of the field in the original form that we're working on
+          field = '${request/form/property/value}';" >
+      </script>
+      <script src="_file/help_controls.js" type="text/javascript"><!-- 
+      //--></script>
+      </tal:block>
+  </head>
+ <body class="body" marginwidth="0" marginheight="0" onload="resetList();">
+ <form name="frm_help" action="">
+     
+     <div id="classhelp-controls">
+       <!--input type="button" name="btn_clear" 
+              value="Clear" onClick="clearList()"/ -->
+       <input type="text" name="text_preview" size="24" class="preview"
+              onchange="reviseList(this.value);"/>
+       <input type="button" name="btn_reset" 
+              value=" Cancel " onclick="resetList(); window.close();"/>
+       <input type="button" name="btn_apply" class="apply"
+              value=" Apply " onclick="updateList(); window.close();"/>     
+     </div>
 
-// this is the name of the field in the original form that we're working on
-field = '${request/form/property/value}';
+     <table class="classhelp" 
+     tal:define="props python:request.form['properties'].value.split(',')">
+       <tr>
+           <th>&nbsp;<b>x</b></th>
+           <th tal:repeat="prop props" tal:content="prop"></th>
+       </tr>
+       <tr tal:repeat="item context/list">
+           <td>
+               <input type="checkbox" name="check" 
+               onclick="updatePreview();"
+               tal:define="attr python:item[props[0]]"
+               tal:attributes="value attr; id attr" />
+           </td>
+           <td tal:repeat="prop props">
+               <label class="classhelp-label"
+                      tal:attributes="for python:item[props[0]]" 
+                      tal:content="structure python:item[prop]"></label>
+           </td>
+       </tr>
+       <tr>
+           <th>&nbsp;<b>x</b></th>
+           <th tal:repeat="prop props" tal:content="prop"></th>
+       </tr>
+     </table>
 
-function listClose() {
-  window.close();
-}
-        
-function listClear() {
-  window.opener.document.itemSynopsis[field].value = '';
-}
-        
-function pick(opt) {
-  if (window.opener && !window.opener.closed) {
-    window.opener.document.itemSynopsis[field].value = opt;
-  }
-}
-        
-// add a value to the form field
-function add(opt) {
-  val = window.opener.document.itemSynopsis[field].value;
-  if (/^\s*$$/.test(val)) {
-    newval = opt;   // existing is all whitespace, so just replace
-  } else {
-    newval = val + ', ' + opt;
-  }
-  pick(newval);
-}
-        
-// remove a value from the form field
-function remove(opt) {
-  // ((opt(,\s*)?)|(,\s*opt))
-  replaceStr = new String('(('+opt+'(,\\s*)?)|(,\\s*'+opt+'))');
-  re = new RegExp(replaceStr);
-
-  str = window.opener.document.itemSynopsis[field].value;
-
-  // replace occurences with empty string
-  newstr = str.replace(re, '');
-  pick(newstr);
-}
-">
-</script>
-</head>
-
-<body class="body" marginwidth="0" marginheight="0">
-<form>
-<div style="padding:10px;text-align:center;">
- <script language="javascript">
-  // put up a 'reset' button if the field has values when we pop up this window
-
-  // this is the name of the field in the original form that we're working on
-  orig = window.opener.document.itemSynopsis[field].value;
-  if (/[^\s]/.test(orig)) {
-    reset = '<input type="button" onclick="pick(orig);" ' +
-      'value="Reset to original values" /> | ';
-    document.write(reset);
-  }
- </script>
- <input type="button"
-        tal:attributes="value string:Clear all ${request/form/property/value} values"
-        onclick="listClear();" /> | 
- <input type="button" onclick="listClose();" value="Close this window" />
-</div>
-
-<table class="classhelp"
-       tal:define="props python:request.form['properties'].value.split(',')">
-<tr>
- <th tal:condition="python:request.form.has_key('property')">add/remove</th>
- <th tal:repeat="prop props" tal:content="prop"></th>
-</tr>
-<tr tal:repeat="item context/list">
- <td tal:condition="python:request.form.has_key('property')">
- <input type="button" tal:define="opt python: item[props[0]]" 
-         tal:attributes="onclick string:add('${opt}')" value=" + ">
- <input type="button" tal:define="opt python: item[props[0]]" 
-         tal:attributes="onclick string:remove('${opt}')" value=" - " />
- </td>
- <td tal:repeat="prop props" tal:content="structure python:item[prop]"></td>
-</tr>
-</table>
-</form>
-</body>
+ </form>
+ </body>
 </html>
