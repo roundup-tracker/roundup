@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.35 $
+:Version: $Revision: 1.36 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -651,6 +651,16 @@ the tracker **html** directory. There are several types of files in there:
   a special page just for the user class that renders the registration page
 **style.css**
   a static file that is served up as-is
+
+Note: Remember tyhat you can create any template extension you want to, so 
+if you just want to play around with the templating for new issues, you can
+copy the current "issue.item" template to "issue.test", and then access the
+test template using the ":template" URL argument::
+
+   http://your.tracker.example/tracker/issue?:template=test
+
+and it won't affect your users using the "issue.item" template.
+
 
 How the templates work
 ----------------------
@@ -1807,6 +1817,42 @@ Alter the issue.item template section for messages to::
    </tr>
   </tal:block>
  </table>
+
+Restricting the list of users that are assignable to a task
+-----------------------------------------------------------
+
+1. create a new Role, say "Developer"::
+
+     db.security.addRole(name='Developer', description='A developer')
+
+2. create a new Permission, say "Fixer", specific to "issue"::
+
+     p = db.security.addPermission(name='Fixer', klass='issue',
+         description='User is allowed to be assigned to fix issues')
+
+3. assign the new Permission to your "Developer" Role::
+
+     db.security.addPermissionToRole('Developer', p)
+
+4. use the new Permission in restricting the "assignedto" list in the issue
+   item edit page::
+
+    <select name="assignedto">
+     <option value="-1">- no selection -</option>
+     <tal:block tal:repeat="user db/user/list">
+     <option tal:condition="python:user.hasPermission('Fixer', context.classname)"
+             tal:attributes="value user/id;
+                             selected python:user.id == context.assignedto"
+             tal:content="user/realname"></option>
+     </tal:block>
+    </select>
+
+For extra security, you may wish to overload the hasEditItemPermission method
+on your tracker's interfaces.Client class to enforce the Permission
+requirement::
+
+XXX
+
 
 -------------------
 
