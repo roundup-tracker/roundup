@@ -81,12 +81,12 @@ name:confirm -> :confirm:name
                     timezone=String())
   
   And second - html interface. Add following lines to
-  $TRACKER_HOME/html/user.item template:
+  $TRACKER_HOME/html/user.item template::
   
-	 <tr>
-	  <th>Timezone</th>
-	  <td tal:content="structure context/timezone/field">timezone</td>
-	 </tr>
+     <tr>
+      <th>Timezone</th>
+      <td tal:content="structure context/timezone/field">timezone</td>
+     </tr>
 
   After that all users should be able to provide their timezone information.
   Timezone should be a positive or negative integer - offset from GMT.

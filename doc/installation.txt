@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.41 $
+:Version: $Revision: 1.42 $
 
 .. contents::
 
@@ -215,7 +215,7 @@ There's several to choose from, each with benefits and limitations:
 **mysql**
   Backend for popular RDBMS MySQL. This backend uses MySQL's Berkeley DB
   (transaction safe) table format, so with small amount of data it may be a
-  bit slower than *dbm backends (due to mysql layer's overhead). However with
+  bit slower than \*dbm backends (due to mysql layer's overhead). However with
   lots of data mysql may perform better (due to query optimisation). No actual
   serious benchmarks were made though. For more info on installation of this
   backend see doc/mysql.txt. 

@@ -1,5 +1,5 @@
 PYTHON = /usr/bin/python2
-STXTOHTML = stx2html
+STXTOHTML = rst2html
 
 SOURCE = announcement.txt customizing.txt developers.txt FAQ.txt features.txt \
     glossary.txt implementation.txt index.txt design.txt \

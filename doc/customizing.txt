@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.79 $
+:Version: $Revision: 1.80 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -120,7 +120,8 @@ The configuration variables available are:
  Additional text to include in the "name" part of the ``From:`` address used
  in nosy messages. If the sending user is "Foo Bar", the ``From:`` line is
  usually::
-     "Foo Bar" <issue_tracker@tracker.example>
+
+    "Foo Bar" <issue_tracker@tracker.example>
 
  the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
 
@@ -2918,7 +2919,7 @@ is resolved. To achieve this:
                     priority=Link("priority"), status=Link("status"))
 
 2. Add the new "blockers" property to the issue.item edit page, using
-   something like:
+   something like::
 
     <th nowrap>Waiting On</th>
     <td>

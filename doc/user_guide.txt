@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.14 $
+:Version: $Revision: 1.15 $
 
 .. contents::
 
@@ -108,14 +108,17 @@ XXX: some information about how searching works
 Some fields in the search page (e.g. "Activity" or "Creation date") accept
 ranges of dates. You can specify range of dates in one of two formats:
 
-	1. Native english syntax: 
-		[[From] <value>][ To <value>]
-	   Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
+1. Native english syntax::
 
-	2. "Geek" syntax:
-		[<value>][; <value>]
+    [[From] <value>][ To <value>]
 
-Either first or second <value> can be omitted in both syntaxes.
+   Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
+
+2. "Geek" syntax::
+
+    [<value>][; <value>]
+
+Either first or second ``<value>`` can be omitted in both syntaxes.
 
 For example:
 
@@ -377,14 +380,21 @@ POP:
  In the third case, the gateway reads all messages from the POP server
  specified and submits each in turn to the roundup.mailgw module. The
  server is specified as::
+
     pop username:password@server
 
  The username and password may be omitted::
+
     pop username@server
     pop server
 
  are both valid. The username and/or password will be prompted for if
  not supplied on the command-line.
+
+APOP:
+ Same as POP, but using Authenticated POP::
+
+    apop username:password@server
 
 
 Command Line Tool
