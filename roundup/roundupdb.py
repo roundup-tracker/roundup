@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.111 2004-07-05 11:28:25 a1s Exp $
+# $Id: roundupdb.py,v 1.112 2004-07-14 01:10:51 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -237,7 +237,8 @@ class IssueClass:
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
                                            self.classname, nodeid,
                                            self.db.config.MAIL_DOMAIN)
-            messages.set(msgid, messageid=messageid)
+            if msgid is not None:
+                messages.set(msgid, messageid=messageid)
 
         # compose title
         cn = self.classname
