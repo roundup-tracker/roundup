@@ -91,9 +91,9 @@
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
    <b i18n:translate="">Hello, <span i18n:name="user"
     tal:replace="request/user/username">username</span></b><br>
-   <a tal:attributes="href string:issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}" i18n:translate="">My Issues</a><br>
+   <a tal:attributes="href string:issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}" i18n:translate="">Your Issues</a><br>
    <a tal:attributes="href string:user${request/user/id}"
-    i18n:translate="">My Details</a><br>
+    i18n:translate="">Your Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',
        {'@action':'logout'})" i18n:translate="">Logout</a>
   </p>

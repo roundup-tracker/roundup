@@ -38,7 +38,7 @@
    <b i18n:translate="">Hello,<br><span i18n:name="user"
     tal:content="request/user/username">username</span></b><br>
    <a tal:attributes="href string:user${request/user/id}"
-    i18n:translate="">My Details</a><br>
+    i18n:translate="">Your Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',
        {'@action':'logout'})" i18n:translate="">Logout</a>
   </p>
