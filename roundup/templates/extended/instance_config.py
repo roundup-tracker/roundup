@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.5 2001-08-07 00:24:43 richard Exp $
+# $Id: instance_config.py,v 1.6 2001-10-01 06:10:42 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -36,7 +36,7 @@ if not MAILHOST:
 
 # The domain name used for email addresses.
 if not MAIL_DOMAIN:
-    MAIL_DOMAIN = 'bizarsoftware.com.au'
+    MAIL_DOMAIN = 'fill.me.in.'
 
 # the next two are only used for the standalone HTTP server.
 if not HTTP_HOST:
@@ -54,7 +54,7 @@ TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
 ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
 # The web address that the instance is viewable at
-ISSUE_TRACKER_WEB = 'http://www.bizarsoftware.com.au/cgi-bin/roundup.cgi/issues'
+ISSUE_TRACKER_WEB = 'http://some.useful.url/'
 
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
@@ -64,6 +64,9 @@ LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.4  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
