@@ -651,10 +651,13 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             property = '&amp;property=%s'%property
         if form:
             form = '&amp;form=%s'%form
-        return '<a class="classhelp" href="javascript:help_window(\'%s?'\
-           '@startwith=0&amp;@template=help&amp;properties=%s%s%s\', \'%s\', \
-            \'%s\')">%s</a>'%(self.classname, properties, property, form, width,
-            height, self._(label))
+        help_url = "%s?@startwith=0&amp;@template=help&amp;"\
+                   "properties=%s%s%s" % \
+                   (self.classname, properties, property, form)
+        onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
+                  (help_url, width, height)
+        return '<a class="classhelp" href="%s" onclick="%s">%s</a>' % \
+               (help_url, onclick, self._(label))
 
     def submit(self, label=''"Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
