@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.49 2003-03-26 04:56:21 richard Exp $
+# $Id: rdbms_common.py,v 1.50 2003-03-26 05:28:32 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1781,20 +1781,21 @@ class Class(hyperdb.Class):
         where = []
         args = []
         a = self.db.arg
+        print filterspec
         for k, v in filterspec.items():
             propclass = props[k]
             # now do other where clause stuff
             if isinstance(propclass, Multilink):
                 tn = '%s_%s'%(cn, k)
-                if isinstance(v, type([])):
+                if v in ('-1', ['-1']):
+                    # only match rows that have count(linkid)=0 in the
+                    # corresponding multilink table)
+                    where.append('id not in (select nodeid from %s)'%tn)
+                elif isinstance(v, type([])):
                     frum.append(tn)
                     s = ','.join([a for x in v])
                     where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
                     args = args + v
-                elif v == '-1':
-                    # only match rows that have count(linkid)=0 in the
-                    # corresponding multilink table)
-                    where.append('id not in (select nodeid from %s)'%tn)
                 else:
                     frum.append(tn)
                     where.append('id=%s.nodeid and %s.linkid=%s'%(tn, tn, a))
@@ -1930,6 +1931,7 @@ class Class(hyperdb.Class):
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
         self.db.cursor.execute(sql, args)
         l = self.db.cursor.fetchall()
+        print sql, l
 
         # return the IDs (the first column)
         # XXX The filter(None, l) bit is sqlite-specific... if there's _NO_

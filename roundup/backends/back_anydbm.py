@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.114 2003-03-26 04:56:21 richard Exp $
+#$Id: back_anydbm.py,v 1.115 2003-03-26 05:28:32 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1640,7 +1640,7 @@ class Class(hyperdb.Class):
                 l.append((LINK, k, u))
             elif isinstance(propclass, Multilink):
                 # the value -1 is a special "not set" sentinel
-                if v == '-1':
+                if v in ('-1', ['-1]):
                     v = []
                 elif type(v) is not type([]):
                     v = [v]
