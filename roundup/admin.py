@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.80 2004-10-16 14:51:08 a1s Exp $
+# $Id: admin.py,v 1.81 2004-10-19 08:33:30 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1176,7 +1176,7 @@ Erase it? Y/N: """))
         return 0
 
     def do_reindex(self, args, desre=re.compile('([A-Za-z]+)([0-9]+)')):
-        '''Usage: reindex [classname|designator]*
+        ""'''Usage: reindex [classname|designator]*
         Re-generate a tracker's search indexes.
 
         This will re-generate the search indexes for a tracker. This will
