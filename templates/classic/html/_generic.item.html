@@ -9,12 +9,13 @@
 
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())"
- tal:omit-tag="python:1" i18n:translate=""
->You are not allowed to view this page.</span>
+<p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
+    allowed to view this page.</p>
+
+<div tal:condition="context/is_view_ok">
 
 <form method="POST" onSubmit="return submit_once()"
-      enctype="multipart/form-data" tal:condition="context/is_edit_ok"
+      enctype="multipart/form-data" tal:condition="context/is_view_ok"
       tal:attributes="action context/designator">
 
 <input type="hidden" name="@template" value="item">
@@ -38,21 +39,9 @@
 
 </form>
 
-<table class="form" tal:condition="context/is_only_view_ok">
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
 
-<tr tal:repeat="prop python:db[context._classname].properties()">
- <tal:block tal:condition="python:prop._name not in ('id', 'creator',
-                                  'creation', 'activity')">
-  <th tal:content="prop/_name"></th>
-  <td tal:content="structure python:context[prop._name].field()"></td>
- </tal:block>
-</tr>
-</table>
-
-
-<tal:block tal:condition="python:context.id and context.is_view_ok()">
- <tal:block tal:replace="structure context/history" />
-</tal:block>
+</div>
 
 </td>
 

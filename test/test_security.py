@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.8 2005-01-28 03:51:19 richard Exp $
+# $Id: test_security.py,v 1.9 2005-01-28 04:07:58 richard Exp $
 
 import os, unittest, shutil
 
@@ -124,6 +124,13 @@ class PermissionTest(MyTestCase):
         # *any* access to class
         self.assertEquals(has('Test', user1, 'test'), 1)
         self.assertEquals(has('Test', user2, 'test'), 1)
+
+        # *any* access to item
+        self.assertEquals(has('Test', user1, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user2, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', super, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
+
         # now property test
         self.assertEquals(has('Test', user2, 'test', property='a'), 1)
         self.assertEquals(has('Test', user2, 'test', property='b'), 1)

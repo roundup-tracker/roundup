@@ -25,6 +25,11 @@
 
 <td class="content" metal:fill-slot="content">
 
+<p tal:condition="not:context/is_view_ok" i18n:translate="">You are not
+    allowed to view this page.</p>
+
+<div tal:condition="context/is_view_ok">
+
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data"
       tal:attributes="action context/designator">
@@ -94,7 +99,9 @@
 </table>
 </form>
 
-<tal:block tal:replace="structure context/history" />
+<tal:block tal:condition="context/id" tal:replace="structure context/history" />
+
+</div>
 
 </td>
 
