@@ -1,0 +1,1544 @@
+<html>
+<head>
+<title>Software Carpentry Track: Roundup</title>
+</head>
+<body bgcolor=white>
+
+<table width="100%">
+<tr>
+
+<td align="left">
+<a href="http://www.software-carpentry.com"><img src="images/logo-software-carpentry-standard.gif" alt="[Software Carpentry logo]" border="0"></a>
+</td>
+
+<td align="right">
+<table>
+<tr><td>
+<a href="http://www.acl.lanl.gov"><img src="images//logo-acl-medium.gif" alt="[ACL Logo]" border="0"></a>
+</td></tr>
+<tr><td><hr></td></tr>
+<tr><td>
+<a href="http://www.codesourcery.com"><img src="images/logo-codesourcery-medium.gif" alt="[CodeSourcery Logo]" border="0"></a>
+</td></tr>
+</table>
+</td>
+
+</tr>
+</table>
+
+<hr><p>
+
+<h1 align=center>Roundup</h1>
+<h3 align=center>An Issue-Tracking System for Knowledge Workers</h3>
+<h4 align=center><a href="http://www.lfw.org/ping/">Ka-Ping Yee</a><br>
+<a href="mailto:ping@lfw.org">ping@lfw.org</a></h4>
+<h3 align=center>Implementation Guide</h3>
+
+<h2>Contents</h2>
+
+<ol>
+<li>Introduction
+<li>The Layer Cake
+<li>Hyperdatabase
+    <ol>
+    <li>Dates and Date Arithmetic
+    <li>Nodes and Classes
+    <li>Identifiers and Designators
+    <li>Property Names and Types
+    <li>Interface Specification
+    <li>Application Example
+    </ol>
+<li>Roundup Database
+    <ol>
+    <li>Reserved Classes
+        <ol>
+        <li>Users
+        <li>Messages
+        <li>Files
+        </ol>
+    <li>Item Classes
+    <li>Interface Specification
+    <li>Default Schema
+    </ol>
+<li>Detector Interface
+    <ol>
+    <li>Interface Specification
+    <li>Detector Example
+    </ol>
+<li>Command Interface
+    <ol>
+    <li>Interface Specification
+    <li>Usage Example
+    </ol>
+<li>E-mail User Interface
+    <ol>
+    <li>Message Processing
+    <li>Nosy Lists
+    <li>Setting Properties
+    <li>Workflow Example
+    </ol>
+<li>Web User Interface
+    <ol>
+    <li>Views and View Specifiers
+    <li>Displaying Properties
+    <li>Index Views
+        <ol>
+        <li>Index View Specifiers
+        <li>Filter Section
+        <li>Index Section
+        <li>Sorting
+        </ol>
+    <li>Item Views
+        <ol>
+        <li>Item View Specifiers
+        <li>Editor Section
+        <li>Spool Section
+        </ol>
+    </ol>
+<li>Deployment Scenarios
+<li>Acknowledgements
+</ol>
+
+<p><hr>
+<h2>1. Introduction</h2>
+
+<p>This document presents a description of the components
+of the Roundup system and specifies their interfaces and
+behaviour in sufficient detail to guide an implementation.
+For the philosophy and rationale behind the Roundup design,
+see the first-round Software Carpentry submission for Roundup.
+This document fleshes out that design as well as specifying
+interfaces so that the components can be developed separately.
+
+<p><hr>
+<h2>2. The Layer Cake</h2>
+
+<p>Lots of software design documents come with a picture of
+a cake.  Everybody seems to like them.  I also like cakes
+(i think they are tasty).  So i, too, shall include
+a picture of a cake here.
+
+<p align=center><table cellspacing=0 cellpadding=10 border=0 align=center>
+<tr>
+<td bgcolor="#e8e8e8" align=center>
+<p><font face="helvetica, arial"><small>
+E-mail Client
+</small></font>
+</td>
+<td bgcolor="#e0e0e0" align="center">
+<p><font face="helvetica, arial"><small>
+Web Browser
+</small></font>
+</td>
+<td bgcolor="#e8e8e8" align=center>
+<p><font face="helvetica, arial"><small>
+Detector Scripts
+</small></font>
+</td>
+<td bgcolor="#e0e0e0" align="center">
+<p><font face="helvetica, arial"><small>
+Shell
+</small></font>
+</td>
+<tr>
+<td bgcolor="#d0d0f0" align=center>
+<p><font face="helvetica, arial"><small>
+E-mail User Interface
+</small></font>
+</td>
+<td bgcolor="#f0d0d0" align=center>
+<p><font face="helvetica, arial"><small>
+Web User Interface
+</small></font>
+</td>
+<td bgcolor="#d0f0d0" align=center>
+<p><font face="helvetica, arial"><small>
+Detector Interface
+</small></font>
+</td>
+<td bgcolor="#f0d0f0" align=center>
+<p><font face="helvetica, arial"><small>
+Command Interface
+</small></font>
+</td>
+<tr>
+<td bgcolor="#f0f0d0" colspan=4 align=center>
+<p><font face="helvetica, arial"><small>
+Roundup Database Layer
+</small></font>
+</td>
+<tr>
+<td bgcolor="#d0f0f0" colspan=4 align=center>
+<p><font face="helvetica, arial"><small>
+Hyperdatabase Layer
+</small></font>
+</td>
+<tr>
+<td bgcolor="#e8e8e8" colspan=4 align=center>
+<p><font face="helvetica, arial"><small>
+Storage Layer
+</small></font>
+</td>
+</table>
+
+<p>The colourful parts of the cake are part of our system;
+the faint grey parts of the cake are external components.
+
+<p>I will now proceed to forgo all table manners and
+eat from the bottom of the cake to the top.  You may want
+to stand back a bit so you don't get covered in crumbs.
+
+<p><hr>
+<h2>3. Hyperdatabase</h2>
+
+<p>The lowest-level component to be implemented is the hyperdatabase.
+The hyperdatabase is intended to be
+a flexible data store that can hold configurable data in
+records which we call <em>nodes</em>.
+
+<p>The hyperdatabase is implemented on top of the storage layer,
+an external module for storing its data.  The storage layer could
+be a third-party RDBMS; for a "batteries-included" distribution,
+implementing the hyperdatabase on the standard <tt>bsddb</tt>
+module is suggested.
+
+<h3>3.1. Dates and Date Arithmetic</h3>
+
+<p>Before we get into the hyperdatabase itself, we need a
+way of handling dates.  The hyperdatabase module provides
+Timestamp objects for
+representing date-and-time stamps and Interval objects for
+representing date-and-time intervals.
+
+<p>As strings, date-and-time stamps are specified with
+the date in international standard format
+(<em>yyyy</em>-<em>mm</em>-<em>dd</em>)
+joined to the time (<em>hh</em>:<em>mm</em>:<em>ss</em>)
+by a period (".").  Dates in
+this form can be easily compared and are fairly readable
+when printed.  An example of a valid stamp is
+"<strong>2000-06-24.13:03:59</strong>".
+We'll call this the "full date format".  When Timestamp objects are
+printed as strings, they appear in the full date format with
+the time always given in GMT.  The full date format is always
+exactly 19 characters long.
+
+<p>For user input, some partial forms are also permitted:
+the whole time or just the seconds may be omitted; and the whole date
+may be omitted or just the year may be omitted.  If the time is given,
+the time is interpreted in the user's local time zone.
+The <tt>Date</tt> constructor takes care of these conversions.
+In the following examples, suppose that <em>yyyy</em> is the current year,
+<em>mm</em> is the current month, and <em>dd</em> is the current
+day of the month; and suppose that the user is on Eastern Standard Time.
+
+<ul>
+<li>"<strong>2000-04-17</strong>" means &lt;Date 2000-04-17.00:00:00&gt;
+<li>"<strong>01-25</strong>" means &lt;Date <em>yyyy</em>-01-25.00:00:00&gt;
+<li>"<strong>2000-04-17.03:45</strong>" means &lt;Date 2000-04-17.08:45:00&gt;
+<li>"<strong>08-13.22:13</strong>" means &lt;Date <em>yyyy</em>-08-14.03:13:00&gt;
+<li>"<strong>11-07.09:32:43</strong>" means &lt;Date <em>yyyy</em>-11-07.14:32:43&gt;
+<li>"<strong>14:25</strong>" means
+&lt;Date <em>yyyy</em>-<em>mm</em>-<em>dd</em>.19:25:00&gt;
+<li>"<strong>8:47:11</strong>" means
+&lt;Date <em>yyyy</em>-<em>mm</em>-<em>dd</em>.13:47:11&gt;
+<li>the special date "<strong>.</strong>" means "right now"
+</ul>
+
+<p>Date intervals are specified using the suffixes
+"y", "m", and "d".  The suffix "w" (for "week") means 7 days.
+Time intervals are specified in hh:mm:ss format (the seconds
+may be omitted, but the hours and minutes may not).
+
+<ul>
+<li>"<strong>3y</strong>" means three years
+<li>"<strong>2y 1m</strong>" means two years and one month
+<li>"<strong>1m 25d</strong>" means one month and 25 days
+<li>"<strong>2w 3d</strong>" means two weeks and three days
+<li>"<strong>1d 2:50</strong>" means one day, two hours, and 50 minutes
+<li>"<strong>14:00</strong>" means 14 hours
+<li>"<strong>0:04:33</strong>" means four minutes and 33 seconds
+</ul>
+
+<p>The Date class should understand simple date expressions of the form 
+<em>stamp</em> + <em>interval</em> and <em>stamp</em> - <em>interval</em>.
+When adding or subtracting intervals involving months or years, the
+components are handled separately.  For example, when evaluating
+"<strong>2000-06-25 + 1m 10d</strong>", we first add one month to
+get <strong>2000-07-25</strong>, then add 10 days to get
+<strong>2000-08-04</strong> (rather than trying to decide whether
+<strong>1m 10d</strong> means 38 or 40 or 41 days).
+
+<p>Here is an outline of the Date and Interval classes.
+
+<blockquote>
+<pre><small>class <strong>Date</strong>:
+    def <strong>__init__</strong>(self, spec, offset):
+        """Construct a date given a specification and a time zone offset.
+
+        'spec' is a full date or a partial form, with an optional
+        added or subtracted interval.  'offset' is the local time
+        zone offset from GMT in hours.
+        """
+
+    def <strong>__add__</strong>(self, interval):
+        """Add an interval to this date to produce another date."""
+
+    def <strong>__sub__</strong>(self, interval):
+        """Subtract an interval from this date to produce another date."""
+
+    def <strong>__cmp__</strong>(self, other):
+        """Compare this date to another date."""
+
+    def <strong>__str__</strong>(self):
+        """Return this date as a string in the yyyy-mm-dd.hh:mm:ss format."""
+
+    def <strong>local</strong>(self, offset):
+        """Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone."""
+
+class <strong>Interval</strong>:
+    def <strong>__init__</strong>(self, spec):
+        """Construct an interval given a specification."""
+
+    def <strong>__cmp__</strong>(self, other):
+        """Compare this interval to another interval."""
+        
+    def <strong>__str__</strong>(self):
+        """Return this interval as a string."""
+</small></pre>
+</blockquote>
+
+<p>Here are some examples of how these classes would behave in practice.
+For the following examples, assume that we are on Eastern Standard
+Time and the current local time is 19:34:02 on 25 June 2000.
+
+<blockquote><pre><small
+>&gt;&gt;&gt; <span class="input">Date(".")</span>
+<span class="output">&lt;Date 2000-06-26.00:34:02&gt;</span>
+&gt;&gt;&gt; <span class="input">_.local(-5)</span>
+<span class="output">"2000-06-25.19:34:02"</span>
+&gt;&gt;&gt; <span class="input">Date(". + 2d")</span>
+<span class="output">&lt;Date 2000-06-28.00:34:02&gt;</span>
+&gt;&gt;&gt; <span class="input">Date("1997-04-17", -5)</span>
+<span class="output">&lt;Date 1997-04-17.00:00:00&gt;</span>
+&gt;&gt;&gt; <span class="input">Date("01-25", -5)</span>
+<span class="output">&lt;Date 2000-01-25.00:00:00&gt;</span>
+&gt;&gt;&gt; <span class="input">Date("08-13.22:13", -5)</span>
+<span class="output">&lt;Date 2000-08-14.03:13:00&gt;</span>
+&gt;&gt;&gt; <span class="input">Date("14:25", -5)</span>
+<span class="output">&lt;Date 2000-06-25.19:25:00&gt;</span>
+&gt;&gt;&gt; <span class="input">Interval("  3w  1  d  2:00")</span>
+<span class="output">&lt;Interval 22d 2:00&gt;</span>
+&gt;&gt;&gt; <span class="input">Date(". + 2d") - Interval("3w")</span>
+<span class="output">&lt;Date 2000-06-07.00:34:02&gt;</span
+></small></pre></blockquote>
+
+<h3>3.2. Nodes and Classes</h3>
+
+<p>Nodes contain data in <em>properties</em>.  To Python, these
+properties are presented as the key-value pairs of a dictionary.
+Each node belongs to a <em>class</em> which defines the names
+and types of its properties.  The database permits the creation
+and modification of classes as well as nodes.
+
+<h3>3.3. Identifiers and Designators</h3>
+
+<p>Each node has a numeric identifier which is unique among
+nodes in its class.  The nodes are numbered sequentially
+within each class in order of creation, starting from 1.
+The <em>designator</em>
+for a node is a way to identify a node in the database, and
+consists of the name of the node's class concatenated with
+the node's numeric identifier.
+
+<p>For example, if "spam" and "eggs" are classes, the first
+node created in class "spam" has id 1 and designator "spam1".
+The first node created in class "eggs" also has id 1 but has
+the distinct designator "eggs1".  Node designators are
+conventionally enclosed in square brackets when mentioned
+in plain text.  This permits a casual mention of, say,
+"[patch37]" in an e-mail message to be turned into an active
+hyperlink.
+
+<h3>3.4. Property Names and Types</h3>
+
+<p>Property names must begin with a letter.
+
+<p>A property may be one of five <em>basic types</em>:
+
+<ul>
+<li><em>String</em> properties are for storing arbitrary-length
+strings.
+
+<li><em>Date</em> properties store date-and-time stamps.
+Their values are Timestamp objects.
+
+<li>A <em>Link</em> property refers to a single other node
+selected from a specified class.  The class is part of the property;
+the value is an integer, the id of the chosen node.
+
+<li>A <em>Multilink</em> property refers to possibly many nodes
+in a specified class.  The value is a list of integers.
+</ul>
+
+<p><tt>None</tt> is also a permitted value for any of these property
+types.  An attempt to store <tt>None</tt> into a String property
+stores the empty string; an attempt to store <tt>None</tt>
+into a Multilink property stores an empty list.
+
+<h3>3.5. Interface Specification</h3>
+
+<p>The hyperdb module provides property objects to designate
+the different kinds of properties.  These objects are used when
+specifying what properties belong in classes.
+
+<blockquote><pre><small
+>class <strong>String</strong>:
+    def <strong>__init__</strong>(self):
+        """An object designating a String property."""
+
+class <strong>Date</strong>:
+    def <strong>__init__</strong>(self):
+        """An object designating a Date property."""
+
+class <strong>Link</strong>:
+    def <strong>__init__</strong>(self, classname):
+        """An object designating a Link property that links to
+        nodes in a specified class."""
+
+class <strong>Multilink</strong>:
+    def <strong>__init__</strong>(self, classname):
+        """An object designating a Multilink property that links
+        to nodes in a specified class."""
+</small></pre></blockquote>
+
+<p>Here is the interface provided by the hyperdatabase.
+
+<blockquote><pre><small
+>class <strong>Database</strong>:
+    """A database for storing records containing flexible data types."""
+
+    def <strong>__init__</strong>(self, storagelocator, journaltag):
+        """Open a hyperdatabase given a specifier to some storage.
+
+        The meaning of 'storagelocator' depends on the particular
+        implementation of the hyperdatabase.  It could be a file name,
+        a directory path, a socket descriptor for a connection to a
+        database over the network, etc.
+
+        The 'journaltag' is a token that will be attached to the journal
+        entries for any edits done on the database.  If 'journaltag' is
+        None, the database is opened in read-only mode: the Class.create(),
+        Class.set(), and Class.retire() methods are disabled.
+        """
+
+    def <strong>__getattr__</strong>(self, classname):
+        """A convenient way of calling self.getclass(classname)."""
+
+    def <strong>getclasses</strong>(self):
+        """Return a list of the names of all existing classes."""
+
+    def <strong>getclass</strong>(self, classname):
+        """Get the Class object representing a particular class.
+
+        If 'classname' is not a valid class name, a KeyError is raised.
+        """
+
+class <strong>Class</strong>:
+    """The handle to a particular class of nodes in a hyperdatabase."""
+
+    def <strong>__init__</strong>(self, db, classname, **properties):
+        """Create a new class with a given name and property specification.
+
+        'classname' must not collide with the name of an existing class,
+        or a ValueError is raised.  The keyword arguments in 'properties'
+        must map names to property objects, or a TypeError is raised.
+        """
+
+    # Editing nodes:
+
+    def <strong>create</strong>(self, **propvalues):
+        """Create a new node of this class and return its id.
+
+        The keyword arguments in 'propvalues' map property names to values.
+        The values of arguments must be acceptable for the types of their
+        corresponding properties or a TypeError is raised.  If this class
+        has a key property, it must be present and its value must not
+        collide with other key strings or a ValueError is raised.  Any other
+        properties on this class that are missing from the 'propvalues'
+        dictionary are set to None.  If an id in a link or multilink
+        property does not refer to a valid node, an IndexError is raised.
+        """
+
+    def <strong>get</strong>(self, nodeid, propname):
+        """Get the value of a property on an existing node of this class.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.  'propname' must be the name of a property
+        of this class or a KeyError is raised.
+        """
+
+    def <strong>set</strong>(self, nodeid, **propvalues):
+        """Modify a property on an existing node of this class.
+        
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.  Each key in 'propvalues' must be the name
+        of a property of this class or a KeyError is raised.  All values
+        in 'propvalues' must be acceptable types for their corresponding
+        properties or a TypeError is raised.  If the value of the key
+        property is set, it must not collide with other key strings or a
+        ValueError is raised.  If the value of a Link or Multilink
+        property contains an invalid node id, a ValueError is raised.
+        """
+
+    def <strong>retire</strong>(self, nodeid):
+        """Retire a node.
+        
+        The properties on the node remain available from the get() method,
+        and the node's id is never reused.  Retired nodes are not returned
+        by the find(), list(), or lookup() methods, and other nodes may
+        reuse the values of their key properties.
+        """
+
+    def <strong>history</strong>(self, nodeid):
+        """Retrieve the journal of edits on a particular node.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        The returned list contains tuples of the form
+
+            (date, tag, action, params)
+
+        'date' is a Timestamp object specifying the time of the change and
+        'tag' is the journaltag specified when the database was opened.
+        'action' may be:
+
+            'create' or 'set' -- 'params' is a dictionary of property values
+            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
+            'retire' -- 'params' is None
+        """
+
+    # Locating nodes:
+
+    def <strong>setkey</strong>(self, propname):
+        """Select a String property of this class to be the key property.
+
+        'propname' must be the name of a String property of this class or
+        None, or a TypeError is raised.  The values of the key property on
+        all existing nodes must be unique or a ValueError is raised.
+        """
+
+    def <strong>getkey</strong>(self):
+        """Return the name of the key property for this class or None."""
+
+    def <strong>lookup</strong>(self, keyvalue):
+        """Locate a particular node by its key property and return its id.
+
+        If this class has no key property, a TypeError is raised.  If the
+        'keyvalue' matches one of the values for the key property among
+        the nodes in this class, the matching node's id is returned;
+        otherwise a KeyError is raised.
+        """
+
+    def <strong>find</strong>(self, propname, nodeid):
+        """Get the ids of nodes in this class which link to a given node.
+        
+        'propname' must be the name of a property in this class, or a
+        KeyError is raised.  That property must be a Link or Multilink
+        property, or a TypeError is raised.  'nodeid' must be the id of
+        an existing node in the class linked to by the given property,
+        or an IndexError is raised.
+        """
+
+    def <strong>list</strong>(self):
+        """Return a list of the ids of the active nodes in this class."""
+
+    def <strong>count</strong>(self):
+        """Get the number of nodes in this class.
+
+        If the returned integer is 'numnodes', the ids of all the nodes
+        in this class run from 1 to numnodes, and numnodes+1 will be the
+        id of the next node to be created in this class.
+        """
+
+    # Manipulating properties:
+
+    def <strong>getprops</strong>(self):
+        """Return a dictionary mapping property names to property objects."""
+
+    def <strong>addprop</strong>(self, **properties):
+        """Add properties to this class.
+
+        The keyword arguments in 'properties' must map names to property
+        objects, or a TypeError is raised.  None of the keys in 'properties'
+        may collide with the names of existing properties, or a ValueError
+        is raised before any properties have been added.
+        """</small></pre></blockquote>
+
+<h3>3.6. Application Example</h3>
+
+<p>Here is an example of how the hyperdatabase module would work in practice.
+
+<blockquote><pre><small
+>&gt;&gt;&gt; <span class="input">import hyperdb</span>
+&gt;&gt;&gt; <span class="input">db = hyperdb.Database("foo.db", "ping")</span>
+&gt;&gt;&gt; <span class="input">db</span>
+<span class="output">&lt;hyperdb.Database "foo.db" opened by "ping"&gt;</span>
+&gt;&gt;&gt; <span class="input">hyperdb.Class(db, "status", name=hyperdb.String())</span>
+<span class="output">&lt;hyperdb.Class "status"&gt;</span>
+&gt;&gt;&gt; <span class="input">_.setkey("name")</span>
+&gt;&gt;&gt; <span class="input">db.status.create(name="unread")</span>
+<span class="output">1</span>
+&gt;&gt;&gt; <span class="input">db.status.create(name="in-progress")</span>
+<span class="output">2</span>
+&gt;&gt;&gt; <span class="input">db.status.create(name="testing")</span>
+<span class="output">3</span>
+&gt;&gt;&gt; <span class="input">db.status.create(name="resolved")</span>
+<span class="output">4</span>
+&gt;&gt;&gt; <span class="input">db.status.count()</span>
+<span class="output">4</span>
+&gt;&gt;&gt; <span class="input">db.status.list()</span>
+<span class="output">[1, 2, 3, 4]</span>
+&gt;&gt;&gt; <span class="input">db.status.lookup("in-progress")</span>
+<span class="output">2</span>
+&gt;&gt;&gt; <span class="input">db.status.retire(3)</span>
+&gt;&gt;&gt; <span class="input">db.status.list()</span>
+<span class="output">[1, 2, 4]</span>
+&gt;&gt;&gt; <span class="input">hyperdb.Class(db, "issue", title=hyperdb.String(), status=hyperdb.Link("status"))</span>
+<span class="output">&lt;hyperdb.Class "issue"&gt;</span>
+&gt;&gt;&gt; <span class="input">db.issue.create(title="spam", status=1)</span>
+<span class="output">1</span>
+&gt;&gt;&gt; <span class="input">db.issue.create(title="eggs", status=2)</span>
+<span class="output">2</span>
+&gt;&gt;&gt; <span class="input">db.issue.create(title="ham", status=4)</span>
+<span class="output">3</span>
+&gt;&gt;&gt; <span class="input">db.issue.create(title="arguments", status=2)</span>
+<span class="output">4</span>
+&gt;&gt;&gt; <span class="input">db.issue.create(title="abuse", status=1)</span>
+<span class="output">5</span>
+&gt;&gt;&gt; <span class="input">hyperdb.Class(db, "user", username=hyperdb.Key(), password=hyperdb.String())</span>
+<span class="output">&lt;hyperdb.Class "user"&gt;</span>
+&gt;&gt;&gt; <span class="input">db.issue.addprop(fixer=hyperdb.Link("user"))</span>
+&gt;&gt;&gt; <span class="input">db.issue.getprops()</span>
+<span class="output"
+>{"title": &lt;hyperdb.String&gt;, "status": &lt;hyperdb.Link to "status"&gt;,
+ "user": &lt;hyperdb.Link to "user"&gt;}</span>
+&gt;&gt;&gt; <span class="input">db.issue.set(5, status=2)</span>
+&gt;&gt;&gt; <span class="input">db.issue.get(5, "status")</span>
+<span class="output">2</span>
+&gt;&gt;&gt; <span class="input">db.status.get(2, "name")</span>
+<span class="output">"in-progress"</span>
+&gt;&gt;&gt; <span class="input">db.issue.get(5, "title")</span>
+<span class="output">"abuse"</span>
+&gt;&gt;&gt; <span class="input">db.issue.find("status", db.status.lookup("in-progress"))</span>
+<span class="output">[2, 4, 5]</span>
+&gt;&gt;&gt; <span class="input">db.issue.history(5)</span>
+<span class="output"
+>[(&lt;Date 2000-06-28.19:09:43&gt;, "ping", "create", {"title": "abuse", "status": 1}),
+ (&lt;Date 2000-06-28.19:11:04&gt;, "ping", "set", {"status": 2})]</span>
+&gt;&gt;&gt; <span class="input">db.status.history(1)</span>
+<span class="output"
+>[(&lt;Date 2000-06-28.19:09:43&gt;, "ping", "link", ("issue", 5, "status")),
+ (&lt;Date 2000-06-28.19:11:04&gt;, "ping", "unlink", ("issue", 5, "status"))]</span>
+&gt;&gt;&gt; <span class="input">db.status.history(2)</span>
+<span class="output"
+>[(&lt;Date 2000-06-28.19:11:04&gt;, "ping", "link", ("issue", 5, "status"))]</span>
+</small></pre></blockquote>
+
+<p>For the purposes of journalling, when a Multilink property is
+set to a new list of nodes, the hyperdatabase compares the old
+list to the new list.
+The journal records "unlink" events for all the nodes that appear
+in the old list but not the new list,
+and "link" events for
+all the nodes that appear in the new list but not in the old list.
+
+<p><hr>
+<h2>4. Roundup Database</h2>
+
+<p>The Roundup database layer is implemented on top of the
+hyperdatabase and mediates calls to the database.
+Some of the classes in the Roundup database are considered
+<em>item classes</em>.
+The Roundup database layer adds detectors and user nodes,
+and on items it provides mail spools, nosy lists, and superseders.
+
+<h3>4.1. Reserved Classes</h3>
+
+<p>Internal to this layer we reserve three special classes
+of nodes that are not items.
+
+<h4>4.1.1. Users</h4>
+
+<p>Users are stored in the hyperdatabase as nodes of
+class "user".  The "user" class has the definition:
+
+<blockquote><pre><small
+>hyperdb.Class(db, "user", username=hyperdb.String(),
+                          password=hyperdb.String(),
+                          address=hyperdb.String())
+db.user.setkey("username")</small></pre></blockquote>
+
+<h4>4.1.2. Messages</h4>
+
+<p>E-mail messages are represented by hyperdatabase nodes of class "msg".
+The actual text content of the messages is stored in separate files.
+(There's no advantage to be gained by stuffing them into the
+hyperdatabase, and if messages are stored in ordinary text files,
+they can be grepped from the command line.)  The text of a message is
+saved in a file named after the message node designator (e.g. "msg23")
+for the sake of the command interface (see below).  Attachments are
+stored separately and associated with "file" nodes.
+The "msg" class has the definition:
+
+<blockquote><pre><small
+>hyperdb.Class(db, "msg", author=hyperdb.Link("user"),
+                         recipients=hyperdb.Multilink("user"),
+                         date=hyperdb.Date(),
+                         summary=hyperdb.String(),
+                         files=hyperdb.Multilink("file"))</small
+></pre></blockquote>
+
+<p>The "author" property indicates the author of the message
+(a "user" node must exist in the hyperdatabase for any messages
+that are stored in the system).
+The "summary" property contains a summary of the message for display
+in a message index.
+
+<h4>4.1.3. Files</h4>
+
+<p>Submitted files are represented by hyperdatabase
+nodes of class "file".  Like e-mail messages, the file content
+is stored in files outside the database,
+named after the file node designator (e.g. "file17").
+The "file" class has the definition:
+
+<blockquote><pre><small
+>hyperdb.Class(db, "file", user=hyperdb.Link("user"),
+                          name=hyperdb.String(),
+                          type=hyperdb.String())</small></pre></blockquote>
+
+<p>The "user" property indicates the user who submitted the
+file, the "name" property holds the original name of the file,
+and the "type" property holds the MIME type of the file as received.
+
+<h3>4.2. Item Classes</h3>
+
+<p>All items have the following standard properties:
+
+<blockquote><pre><small
+>title=hyperdb.String()
+messages=hyperdb.Multilink("msg")
+files=hyperdb.Multilink("file")
+nosy=hyperdb.Multilink("user")
+superseder=hyperdb.Multilink("item")</small></pre></blockquote>
+
+<p>Also, two Date properties named "creation" and "activity" are
+fabricated by the Roundup database layer.  By "fabricated" we
+mean that no such properties are actually stored in the
+hyperdatabase, but when properties on items are requested, the
+"creation" and "activity" properties are made available.
+The value of the "creation" property is the date when an item was
+created, and the value of the "activity" property is the
+date when any property on the item was last edited (equivalently,
+these are the dates on the first and last records in the item's journal).
+
+<h3>4.3. Interface Specification</h3>
+
+<p>The interface to a Roundup database delegates most method
+calls to the hyperdatabase, except for the following
+changes and additional methods.
+
+<blockquote><pre><small
+>class <strong>Database</strong>:
+    # Overridden methods:
+
+    def <strong>__init__</strong>(self, storagelocator, journaltag):
+        """When the Roundup database is opened by a particular user,
+        the 'journaltag' is the id of the user's "user" node."""
+
+    def <strong>getclass</strong>(self, classname):
+        """This method now returns an instance of either Class or
+        ItemClass depending on whether an item class is specified."""
+
+    # New methods:
+
+    def <strong>getuid</strong>(self):
+        """Return the id of the "user" node associated with the user
+        that owns this connection to the hyperdatabase."""
+
+class <strong>Class</strong>:
+    # Overridden methods:
+
+    def <strong>create</strong>(self, **propvalues):
+    def <strong>set</strong>(self, **propvalues):
+    def <strong>retire</strong>(self, nodeid):
+        """These operations trigger detectors and can be vetoed.  Attempts
+        to modify the "creation" or "activity" properties cause a KeyError.
+        """
+
+    # New methods:
+
+    def <strong>audit</strong>(self, event, detector):
+    def <strong>react</strong>(self, event, detector):
+        """Register a detector (see below for more details)."""
+
+class <strong>ItemClass</strong>(Class):
+    # Overridden methods:
+
+    def <strong>__init__</strong>(self, db, classname, **properties):
+        """The newly-created class automatically includes the "messages",
+        "files", "nosy", and "superseder" properties.  If the 'properties'
+        dictionary attempts to specify any of these properties or a
+        "creation" or "activity" property, a ValueError is raised."""
+
+    def <strong>get</strong>(self, nodeid, propname):
+    def <strong>getprops</strong>(self):
+        """In addition to the actual properties on the node, these
+        methods provide the "creation" and "activity" properties."""
+
+    # New methods:
+
+    def <strong>addmessage</strong>(self, nodeid, summary, text):
+        """Add a message to an item's mail spool.
+
+        A new "msg" node is constructed using the current date, the
+        user that owns the database connection as the author, and
+        the specified summary text.  The "files" and "recipients"
+        fields are left empty.  The given text is saved as the body
+        of the message and the node is appended to the "messages"
+        field of the specified item.
+        """
+
+    def <strong>sendmessage</strong>(self, nodeid, msgid):
+        """Send a message to the members of an item's nosy list.
+
+        The message is sent only to users on the nosy list who are not
+        already on the "recipients" list for the message.  These users
+        are then added to the message's "recipients" list.
+        """
+</small></pre></blockquote>
+
+<h3>4.4. Default Schema</h3>
+
+<p>The default schema included with Roundup turns it into a
+typical software bug tracker.  The database is set up like this:
+
+<blockquote><pre><small
+>pri = Class(db, "priority", name=hyperdb.String(), order=hyperdb.String())
+pri.setkey("name")
+pri.create(name="critical", order="1")
+pri.create(name="urgent", order="2")
+pri.create(name="bug", order="3")
+pri.create(name="feature", order="4")
+pri.create(name="wish", order="5")
+
+stat = Class(db, "status", name=hyperdb.String(), order=hyperdb.String())
+stat.setkey("name")
+stat.create(name="unread", order="1")
+stat.create(name="deferred", order="2")
+stat.create(name="chatting", order="3")
+stat.create(name="need-eg", order="4")
+stat.create(name="in-progress", order="5")
+stat.create(name="testing", order="6")
+stat.create(name="done-cbb", order="7")
+stat.create(name="resolved", order="8")
+
+Class(db, "keyword", name=hyperdb.String())
+
+Class(db, "issue", fixer=hyperdb.Multilink("user"),
+                   topic=hyperdb.Multilink("keyword"),
+                   priority=hyperdb.Link("priority"),
+                   status=hyperdb.Link("status"))
+</small></pre></blockquote>
+
+<p>(The "order" property hasn't been explained yet.  It
+gets used by the Web user interface for sorting.)
+
+<p>The above isn't as pretty-looking as the schema specification
+in the first-stage submission, but it could be made just as easy
+with the addition of a convenience function like <tt>Choice</tt>
+for setting up the "priority" and "status" classes:
+
+<blockquote><pre><small
+>def Choice(name, *options):
+    cl = Class(db, name, name=hyperdb.String(), order=hyperdb.String())
+    for i in range(len(options)):
+        cl.create(name=option[i], order=i)
+    return hyperdb.Link(name)
+</small></pre></blockquote>
+
+<p><hr>
+<h2>5. Detector Interface</h2>
+
+<p>Detectors are Python functions that are triggered on certain
+kinds of events.  The definitions of the
+functions live in Python modules placed in a directory set aside
+for this purpose.  Importing the Roundup database module also
+imports all the modules in this directory, and the <tt>init()</tt>
+function of each module is called when a database is opened to
+provide it a chance to register its detectors.
+
+<p>There are two kinds of detectors:
+
+<ul>
+<li>an <em>auditor</em> is triggered just before modifying an node
+<li>a <em>reactor</em> is triggered just after an node has been modified
+</ul>
+
+<p>When the Roundup database is about to perform a
+<tt>create()</tt>, <tt>set()</tt>, or <tt>retire()</tt>
+operation, it first calls any auditors that
+have been registered for that operation on that class.
+Any auditor may raise a <tt>Reject</tt> exception
+to abort the operation.
+
+<p>If none of the auditors raises an exception, the database
+proceeds to carry out the operation.  After it's done, it
+then calls all of the reactors that have been registered
+for the operation.
+
+<h3>5.1. Interface Specification</h3>
+
+<p>The <tt>audit()</tt> and <tt>react()</tt> methods
+register detectors on a given class of nodes.
+
+<blockquote><pre><small
+>class Class:
+    def <strong>audit</strong>(self, event, detector):
+        """Register an auditor on this class.
+
+        'event' should be one of "create", "set", or "retire".
+        'detector' should be a function accepting four arguments.
+        """
+
+    def <strong>react</strong>(self, event, detector):
+        """Register a reactor on this class.
+
+        'event' should be one of "create", "set", or "retire".
+        'detector' should be a function accepting four arguments.
+        """
+</small></pre></blockquote>
+
+<p>Auditors are called with the arguments:
+
+<blockquote><pre><small
+>audit(db, cl, nodeid, newdata)</small></pre></blockquote>
+
+where <tt>db</tt> is the database, <tt>cl</tt> is an
+instance of Class or ItemClass within the database, and <tt>newdata</tt>
+is a dictionary mapping property names to values.
+
+For a <tt>create()</tt>
+operation, the <tt>nodeid</tt> argument is <tt>None</tt> and <tt>newdata</tt>
+contains all of the initial property values with which the node
+is about to be created.
+
+For a <tt>set()</tt> operation, <tt>newdata</tt>
+contains only the names and values of properties that are about
+to be changed.
+
+For a <tt>retire()</tt> operation, <tt>newdata</tt> is <tt>None</tt>.
+
+<p>Reactors are called with the arguments:
+
+<blockquote><pre><small
+>react(db, cl, nodeid, olddata)</small></pre></blockquote>
+
+where <tt>db</tt> is the database, <tt>cl</tt> is an
+instance of Class or ItemClass within the database, and <tt>olddata</tt>
+is a dictionary mapping property names to values.
+
+For a <tt>create()</tt>
+operation, the <tt>nodeid</tt> argument is the id of the
+newly-created node and <tt>olddata</tt> is None.
+
+For a <tt>set()</tt> operation, <tt>olddata</tt>
+contains the names and previous values of properties that were changed.
+
+For a <tt>retire()</tt> operation, <tt>nodeid</tt> is the
+id of the retired node and <tt>olddata</tt> is <tt>None</tt>.
+
+<h3>5.2. Detector Example</h3>
+
+<p>Here is an example of detectors written for a hypothetical
+project-management application, where users can signal approval
+of a project by adding themselves to an "approvals" list, and
+a project proceeds when it has three approvals.
+
+<blockquote><pre><small
+># Permit users only to add themselves to the "approvals" list.
+
+def check_approvals(db, cl, id, newdata):
+    if newdata.has_key("approvals"):
+        if cl.get(id, "status") == db.status.lookup("approved"):
+            raise Reject, "You can't modify the approvals list " \
+                          "for a project that has already been approved."
+        old = cl.get(id, "approvals")
+        new = newdata["approvals"]
+        for uid in old:
+            if uid not in new and uid != db.getuid():
+                raise Reject, "You can't remove other users from the "
+                              "approvals list; you can only remove yourself."
+        for uid in new:
+            if uid not in old and uid != db.getuid():
+                raise Reject, "You can't add other users to the approvals "
+                              "list; you can only add yourself."
+
+# When three people have approved a project, change its
+# status from "pending" to "approved".
+
+def approve_project(db, cl, id, olddata):
+    if olddata.has_key("approvals") and len(cl.get(id, "approvals")) == 3:
+        if cl.get(id, "status") == db.status.lookup("pending"):
+            cl.set(id, status=db.status.lookup("approved"))
+
+def init(db):
+    db.project.audit("set", check_approval)
+    db.project.react("set", approve_project)</small
+></pre></blockquote>    
+
+<p>Here is another example of a detector that can allow or prevent
+the creation of new nodes.  In this scenario, patches for a software
+project are submitted by sending in e-mail with an attached file,
+and we want to ensure that there are <tt>text/plain</tt> attachments on
+the message.  The maintainer of the package can then apply the
+patch by setting its status to "applied".
+
+<blockquote><pre><small
+># Only accept attempts to create new patches that come with patch files.
+
+def check_new_patch(db, cl, id, newdata):
+    if not newdata["files"]:
+        raise Reject, "You can't submit a new patch without " \
+                      "attaching a patch file."
+    for fileid in newdata["files"]:
+        if db.file.get(fileid, "type") != "text/plain":
+            raise Reject, "Submitted patch files must be text/plain."
+
+# When the status is changed from "approved" to "applied", apply the patch.
+
+def apply_patch(db, cl, id, olddata):
+    if cl.get(id, "status") == db.status.lookup("applied") and \
+        olddata["status"] == db.status.lookup("approved"):
+        # ...apply the patch...
+
+def init(db):
+    db.patch.audit("create", check_new_patch)
+    db.patch.react("set", apply_patch)</small
+></pre></blockquote>
+
+<p><hr>
+<h2>6. Command Interface</h2>
+
+<p>The command interface is a very simple and minimal interface,
+intended only for quick searches and checks from the shell prompt.
+(Anything more interesting can simply be written in Python using
+the Roundup database module.)
+
+<h3>6.1. Interface Specification</h3>
+
+<p>A single command, <tt>roundup</tt>, provides basic access to
+the hyperdatabase from the command line.
+
+<ul>
+<li><tt>roundup&nbsp;get&nbsp;</tt>[<tt>-list</tt>]<tt>&nbsp;</tt
+><em>designator</em>[<tt>,</tt
+><em>designator</em><tt>,</tt>...]<tt>&nbsp;</tt><em>propname</em>
+<li><tt>roundup&nbsp;set&nbsp;</tt><em>designator</em>[<tt>,</tt
+><em>designator</em><tt>,</tt>...]<tt>&nbsp;</tt><em>propname</em
+><tt>=</tt><em>value</em> ...
+<li><tt>roundup&nbsp;find&nbsp;</tt>[<tt>-list</tt>]<tt>&nbsp;</tt
+><em>classname</em><tt>&nbsp;</tt><em>propname</em>=<em>value</em> ...
+</ul>
+
+<p>Property values are represented as strings in command arguments
+and in the printed results:
+
+<ul>
+<li>Strings are, well, strings.
+
+<li>Date values are printed in the full date format in the local
+time zone, and accepted in the full format or any of the partial
+formats explained above.
+
+<li>Link values are printed as node designators.  When given as
+an argument, node designators and key strings are both accepted.
+
+<li>Multilink values are printed as lists of node designators
+joined by commas.  When given as an argument, node designators
+and key strings are both accepted; an empty string, a single node,
+or a list of nodes joined by commas is accepted.
+</ul>
+
+<p>When multiple nodes are specified to the
+<tt>roundup&nbsp;get</tt> or <tt>roundup&nbsp;set</tt>
+commands, the specified properties are retrieved or set
+on all the listed nodes.
+
+<p>When multiple results are returned by the <tt>roundup&nbsp;get</tt>
+or <tt>roundup&nbsp;find</tt> commands, they are printed one per
+line (default) or joined by commas (with the <tt>-list</tt>) option.
+
+<h3>6.2. Usage Example</h3>
+
+<p>To find all messages regarding in-progress issues that
+contain the word "spam", for example, you could execute the
+following command from the directory where the database
+dumps its files:
+
+<blockquote><pre><small
+>shell% <span class="input">for issue in `roundup find issue status=in-progress`; do</span>
+&gt; <span class="input">grep -l spam `roundup get $issue messages`</span>
+&gt; <span class="input">done</span>
+<span class="output">msg23
+msg49
+msg50
+msg61</span>
+shell%</small></pre></blockquote>
+
+<p>Or, using the <tt>-list</tt> option, this can be written as a single command:
+
+<blockquote><pre><small
+>shell% <span class="input">grep -l spam `roundup get \
+    \`roundup find -list issue status=in-progress\` messages`</span>
+<span class="output">msg23
+msg49
+msg50
+msg61</span>
+shell%</small></pre></blockquote>
+    
+<p><hr>
+<h2>7. E-mail User Interface</h2>
+
+<p>The Roundup system must be assigned an e-mail address
+at which to receive mail.  Messages should be piped to
+the Roundup mail-handling script by the mail delivery
+system (e.g. using an alias beginning with "|" for sendmail).
+
+<h3>7.1. Message Processing</h3>
+
+<p>Incoming messages are examined for multiple parts.
+In a <tt>multipart/mixed</tt> message or part, each subpart is
+extracted and examined.  In a <tt>multipart/alternative</tt>
+message or part, we look for a <tt>text/plain</tt> subpart and
+ignore the other parts.  The <tt>text/plain</tt> subparts are
+assembled to form the textual body of the message, to
+be stored in the file associated with a "msg" class node.
+Any parts of other types are each stored in separate
+files and given "file" class nodes that are linked to
+the "msg" node.
+
+<p>The "summary" property on message nodes is taken from
+the first non-quoting section in the message body.
+The message body is divided into sections by blank lines.
+Sections where the second and all subsequent lines begin
+with a "&gt;" or "|" character are considered "quoting
+sections".  The first line of the first non-quoting 
+section becomes the summary of the message.
+
+<p>All of the addresses in the To: and Cc: headers of the
+incoming message are looked up among the user nodes, and
+the corresponding users are placed in the "recipients"
+property on the new "msg" node.  The address in the From:
+header similarly determines the "author" property of the
+new "msg" node.
+The default handling for
+addresses that don't have corresponding users is to create
+new users with no passwords and a username equal to the
+address.  (The web interface does not permit logins for
+users with no passwords.)  If we prefer to reject mail from
+outside sources, we can simply register an auditor on the
+"user" class that prevents the creation of user nodes with
+no passwords.
+
+<p>The subject line of the incoming message is examined to
+determine whether the message is an attempt to create a new
+item or to discuss an existing item.  A designator enclosed
+in square brackets is sought as the first thing on the
+subject line (after skipping any "Fwd:" or "Re:" prefixes).
+
+<p>If an item designator (class name and id number) is found
+there, the newly created "msg" node is added to the "messages"
+property for that item, and any new "file" nodes are added to
+the "files" property for the item.
+
+<p>If just an item class name is found there, we attempt to
+create a new item of that class with its "messages" property
+initialized to contain the new "msg" node and its "files"
+property initialized to contain any new "file" nodes.
+
+<p>Both cases may trigger detectors (in the first case we
+are calling the <tt>set()</tt> method to add the message to the
+item's spool; in the second case we are calling the
+<tt>create()</tt> method to create a new node).  If an auditor
+raises an exception, the original message is bounced back to
+the sender with the explanatory message given in the exception.
+
+<h3>7.2. Nosy Lists</h3>
+
+<p>A standard detector is provided that watches for additions
+to the "messages" property.  When a new message is added, the
+detector sends it to all the users on the "nosy" list for the
+item that are not already on the "recipients" list of the
+message.  Those users are then appended to the "recipients"
+property on the message, so multiple copies of a message
+are never sent to the same user.  The journal recorded by
+the hyperdatabase on the "recipients" property then provides
+a log of when the message was sent to whom.
+
+<h3>7.3. Setting Properties</h3>
+
+<p>The e-mail interface also provides a simple way to set
+properties on items.  At the end of the subject line,
+<em>propname</em><tt>=</tt><em>value</em> pairs can be
+specified in square brackets, using the same conventions
+as for the <tt>roundup&nbsp;set</tt> shell command.
+
+<p><hr>
+<h2>8. Web User Interface</h2>
+
+<p>The web interface is provided by a CGI script that can be
+run under any web server.  A simple web server can easily be
+built on the standard <tt>CGIHTTPServer</tt> module, and
+should also be included in the distribution for quick
+out-of-the-box deployment.
+
+<p>The user interface is constructed from a number of template
+files containing mostly HTML.  Among the HTML tags in templates
+are interspersed some nonstandard tags, which we use as
+placeholders to be replaced by properties and their values.
+
+<h3>8.1. Views and View Specifiers</h3>
+
+<p>There are two main kinds of views: index views and item views.
+An index view displays a list of items of a particular class,
+optionally sorted and filtered as requested.  An item view
+presents the properties of a particular item for editing
+and displays the message spool for the item.
+
+<p>A <em>view specifier</em> is a string that specifies
+all the options needed to construct a particular view.
+It goes after the URL to the Roundup CGI script or the
+web server to form the complete URL to a view.  When the
+result of selecting a link or submitting a form takes
+the user to a new view, the Web browser should be redirected
+to a canonical location containing a complete view specifier
+so that the view can be bookmarked.
+
+<h3>8.2. Displaying Properties</h3>
+
+<p>Properties appear in the user interface in three contexts:
+in indices, in editors, and as filters.  For each type of
+property, there are several display possibilities.  For example,
+in an index view, a string property may just be printed as
+a plain string, but in an editor view, that property should
+be displayed in an editable field.
+
+<p>The display of a property is handled by functions in
+a <tt>displayers</tt> module.  Each function accepts at
+least three standard arguments -- the database, class name,
+and node id -- and returns a chunk of HTML.
+
+<p>Displayer functions are triggered by <tt>&lt;display&gt;</tt>
+tags in templates.  The <tt>call</tt> attribute of the tag
+provides a Python expression for calling the displayer
+function.  The three standard arguments are inserted in
+front of the arguments given.  For example, the occurrence of
+
+<blockquote><pre><small
+>    &lt;display call="plain('status', max=30)"&gt;
+</small></pre></blockquote>
+
+in a template triggers a call to
+    
+<blockquote><pre><small
+>    plain(db, "issue", 13, "status", max=30)
+</small></pre></blockquote>
+
+when displaying item 13 in the "issue" class.  The displayer
+functions can accept extra arguments to further specify
+details about the widgets that should be generated.  By defining new
+displayer functions, the user interface can be highly customized.
+
+<p>Some of the standard displayer functions include:
+
+<ul>
+<li><strong>plain</strong>: display a String property directly;
+display a Date property in a specified time zone with an option
+to omit the time from the date stamp; for a Link or Multilink
+property, display the key strings of the linked nodes (or the
+ids if the linked class has no key property)
+
+<li><strong>field</strong>: display a property like the
+<strong>plain</strong> displayer above, but in a text field
+to be edited
+
+<li><strong>menu</strong>: for a Link property, display
+a menu of the available choices
+
+<li><strong>link</strong>: for a Link or Multilink property,
+display the names of the linked nodes, hyperlinked to the
+item views on those nodes
+
+<li><strong>count</strong>: for a Multilink property, display
+a count of the number of links in the list
+
+<li><strong>reldate</strong>: display a Date property in terms
+of an interval relative to the current date (e.g. "+ 3w", "- 2d").
+
+<li><strong>download</strong>: show a Link("file") or Multilink("file")
+property using links that allow you to download files
+
+<li><strong>checklist</strong>: for a Link or Multilink property,
+display checkboxes for the available choices to permit filtering
+</ul>
+
+<h3>8.3. Index Views</h3>
+
+<p>An index view contains two sections: a filter section
+and an index section.
+The filter section provides some widgets for selecting
+which items appear in the index.  The index section is
+a table of items.
+
+<h4>8.3.1. Index View Specifiers</h4>
+
+<p>An index view specifier looks like this (whitespace
+has been added for clarity):
+
+<blockquote><pre><small
+>/issue?status=unread,in-progress,resolved&amp;
+        topic=security,ui&amp;
+        :group=+priority&amp;
+        :sort=-activity&amp;
+        :filters=status,topic&amp;
+        :columns=title,status,fixer
+</small></pre></blockquote>
+
+<p>The index view is determined by two parts of the
+specifier: the layout part and the filter part.
+The layout part consists of the query parameters that
+begin with colons, and it determines the way that the
+properties of selected nodes are displayed.
+The filter part consists of all the other query parameters,
+and it determines the criteria by which nodes 
+are selected for display.
+
+<p>The filter part is interactively manipulated with
+the form widgets displayed in the filter section.  The
+layout part is interactively manipulated by clicking
+on the column headings in the table.
+
+<p>The filter part selects the <em>union</em> of the
+sets of items with values matching any specified Link
+properties and the <em>intersection</em> of the sets
+of items with values matching any specified Multilink
+properties.
+
+<p>The example specifies an index of "issue" nodes.
+Only items with a "status" of <em>either</em>
+"unread" or "in-progres" or "resolved" are displayed,
+and only items with "topic" values including <em>both</em>
+"security" <em>and</em> "ui" are displayed.  The items
+are grouped by priority, arranged in ascending order;
+and within groups, sorted by activity, arranged in
+descending order.  The filter section shows filters
+for the "status" and "topic" properties, and the
+table includes columns for the "title", "status", and
+"fixer" properties.
+
+<p>Associated with each item class is a default
+layout specifier.  The layout specifier in the above
+example is the default layout to be provided with
+the default bug-tracker schema described above in
+section 4.4.
+
+<h4>8.3.2. Filter Section</h4>
+
+<p>The template for a filter section provides the
+filtering widgets at the top of the index view.
+Fragments enclosed in <tt>&lt;property&gt;</tt>...<tt>&lt;/property&gt;</tt>
+tags are included or omitted depending on whether the
+view specifier requests a filter for a particular property.
+
+<p>Here's a simple example of a filter template.
+
+<blockquote><pre><small
+>&lt;property name=status&gt;
+    &lt;display call="checklist('status')"&gt;
+&lt;/property&gt;
+&lt;br&gt;
+&lt;property name=priority&gt;
+    &lt;display call="checklist('priority')"&gt;
+&lt;/property&gt;
+&lt;br&gt;
+&lt;property name=fixer&gt;
+    &lt;display call="menu('fixer')"&gt;
+&lt;/property&gt;</small></pre></blockquote>
+
+<h4>8.3.3. Index Section</h4>
+
+<p>The template for an index section describes one row of
+the index table.
+Fragments enclosed in <tt>&lt;property&gt;</tt>...<tt>&lt;/property&gt;</tt>
+tags are included or omitted depending on whether the
+view specifier requests a column for a particular property.
+The table cells should contain <tt>&lt;display&gt;</tt> tags
+to display the values of the item's properties.
+
+<p>Here's a simple example of an index template.
+
+<blockquote><pre><small
+>&lt;tr&gt;
+    &lt;property name=title&gt;
+        &lt;td&gt;&lt;display call="plain('title', max=50)"&gt;&lt;/td&gt;
+    &lt;/property&gt;
+    &lt;property name=status&gt;
+        &lt;td&gt;&lt;display call="plain('status')"&gt;&lt;/td&gt;
+    &lt;/property&gt;
+    &lt;property name=fixer&gt;
+        &lt;td&gt;&lt;display call="plain('fixer')"&gt;&lt;/td&gt;
+    &lt;/property&gt;
+&lt;/tr&gt;</small></pre></blockquote>
+
+<h4>8.3.4. Sorting</h4>
+
+<p>String and Date values are sorted in the natural way.
+Link properties are sorted according to the value of the
+"order" property on the linked nodes if it is present; or
+otherwise on the key string of the linked nodes; or
+finally on the node ids.  Multilink properties are
+sorted according to how many links are present.
+
+<h3>8.4. Item Views</h3>
+
+<p>An item view contains an editor section and a spool section.
+At the top of an item view, links to superseding and superseded
+items are always displayed.
+
+<h4>8.4.1. Item View Specifiers</h4>
+
+<p>An item view specifier is simply the item's designator:
+
+<blockquote><pre><small
+>/patch23
+</small></pre></blockquote>
+
+<h4>8.4.2. Editor Section</h4>
+
+<p>The editor section is generated from a template
+containing <tt>&lt;display&gt;</tt> tags to insert
+the appropriate widgets for editing properties.
+
+<p>Here's an example of a basic editor template.
+
+<blockquote><pre><small
+>&lt;table&gt;
+&lt;tr&gt;
+    &lt;td colspan=2&gt;
+        &lt;display call="field('title', size=60)"&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+    &lt;td&gt;
+        &lt;display call="field('fixer', size=30)"&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;display call="menu('status')&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+    &lt;td&gt;
+        &lt;display call="field('nosy', size=30)"&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+        &lt;display call="menu('priority')&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+    &lt;td colspan=2&gt;
+        &lt;display call="note()"&gt;
+    &lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+</small></pre></blockquote>
+
+<p>As shown in the example, the editor template can also
+request the display of a "note" field, which is a
+text area for entering a note to go along with a change.
+
+<p>When a change is submitted, the system automatically
+generates a message describing the changed properties.
+The message displays all of the property values on the
+item and indicates which ones have changed.
+An example of such a message might be this:
+
+<blockquote><pre><small
+>title: Polly Parrot is dead
+priority: critical
+status: unread -&gt; in-progress
+fixer: (none)
+keywords: parrot,plumage,perch,nailed,dead
+</small></pre></blockquote>
+
+<p>If a note is given in the "note" field, the note is
+appended to the description.  The message is then added
+to the item's message spool (thus triggering the standard
+detector to react by sending out this message to the nosy list).
+
+<h4>8.4.3. Spool Section</h4>
+
+<p>The spool section lists messages in the item's "messages"
+property.  The index of messages displays the "date", "author",
+and "summary" properties on the message nodes, and selecting a
+message takes you to its content.
+
+<p><hr>
+<h2>9. Deployment Scenarios</h2>
+
+<p>The design described above should be general enough
+to permit the use of Roundup for bug tracking, managing
+projects, managing patches, or holding discussions.  By
+using nodes of multiple types, one could deploy a system
+that maintains requirement specifications, catalogs bugs,
+and manages submitted patches, where patches could be
+linked to the bugs and requirements they address.
+
+<p><hr>
+<h2>10. Acknowledgements</h2>
+
+<p>My thanks are due to Christy Heyl for 
+reviewing and contributing suggestions to this paper
+and motivating me to get it done, and to
+Jesse Vincent, Mark Miller, Christopher Simons,
+Jeff Dunmall, Wayne Gramlich, and Dean Tribble for
+their assistance with the first-round submission.
+</td>
+</tr>
+</table>
+
+<p>
+
+<center>
+<table>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/index.html"><b>[Home]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/faq.html"><b>[FAQ]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/license.html"><b>[License]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/contest-rules.html"><b>[Rules]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/sc_config/"><b>[Configure]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/sc_build/"><b>[Build]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/sc_test/"><b>[Test]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/sc_track/"><b>[Track]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/biblio.html"><b>[Resources]</b></a>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;<a href="http://www.software-carpentry.com/lists/"><b>[Archives]</b></a>&nbsp;&nbsp;&nbsp;</td>
+</tr>
+</table>
+</center>
+
+<p><hr>
+<center>Last modified 2001/04/06 11:50:59.9063 US/Mountain</center>
+</BODY>
+</HTML>

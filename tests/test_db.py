@@ -35,9 +35,10 @@ class DBTestCase(unittest.TestCase):
         self.db.issue.create(title="arguments", status='2')
         self.db.issue.create(title="abuse", status='1')
         self.db.issue.addprop(fixer=Link("user"))
-        self.db.issue.getprops()
-#{"title": <hyperdb.String>, "status": <hyperdb.Link to "status">,
-#"user": <hyperdb.Link to "user">}
+        props = self.db.issue.getprops()
+        keys = props.keys()
+        keys.sort()
+        self.assertEqual(keys, ['title', 'status', 'user'], 'wrong prop list')
         self.db.issue.set('5', status=2)
         self.db.issue.get('5', "status")
         self.db.status.get('2', "name")
@@ -47,6 +48,8 @@ class DBTestCase(unittest.TestCase):
         self.db.status.history('1')
         self.db.status.history('2')
 
+    def testExceptions(self):
+        # this tests the exceptions that should be raised
 
 def suite():
    return unittest.makeSuite(DBTestCase, 'test')

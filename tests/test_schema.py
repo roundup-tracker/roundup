@@ -42,9 +42,11 @@ class SchemaTestCase(unittest.TestCase):
 
     def testB_Issue(self):
         issue = Class(self.db, "issue", title=String(), status=Link("status"))
+        self.assert_(issue, 'no class object returned')
 
     def testC_User(self):
         user = Class(self.db, "user", username=String(), password=String())
+        self.assert_(user, 'no class object returned')
         user.setkey("username")
 
 

@@ -1,4 +1,4 @@
-#$Id: back_anydbm.py,v 1.2 2001-07-23 08:20:44 richard Exp $
+#$Id: back_anydbm.py,v 1.3 2001-07-25 01:23:07 richard Exp $
 
 import anydbm, os, marshal
 from roundup import hyperdb, date
@@ -66,7 +66,10 @@ class Database(hyperdb.Database):
             multiple actions
         '''
         path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
-        return anydbm.open(path, mode)
+        if os.path.exists(path):
+            return anydbm.open(path, mode)
+        else:
+            return anydbm.open(path, 'n')
 
     #
     # Nodes
@@ -100,6 +103,7 @@ class Database(hyperdb.Database):
         # convert the marshalled data to instances
         properties = self.classes[classname].properties
         for key in res.keys():
+            if key == self.RETIRED_FLAG: continue
             if properties[key].isDateType:
                 res[key] = date.Date(res[key])
             elif properties[key].isIntervalType:
@@ -197,4 +201,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.2  2001/07/23 08:20:44  richard
+#Moved over to using marshal in the bsddb and anydbm backends.
+#roundup-admin now has a "freshen" command that'll load/save all nodes (not
+# retired - mod hyperdb.Class.list() so it lists retired nodes)
+#
 #
