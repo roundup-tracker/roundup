@@ -1,3 +1,4 @@
+# $Id: back_metakit.py,v 1.41 2003-03-10 20:24:30 kedder Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -34,6 +35,7 @@ from sessions import Sessions, OneTimeKeys
 import re, marshal, os, sys, weakref, time, calendar
 from roundup import indexer
 import locking
+from roundup.date import Range
 
 _dbs = {}
 
@@ -852,7 +854,11 @@ class Class:
         # filterspec is a dict {propname:value}
         # sort and group are (dir, prop) where dir is '+', '-' or None
         #                    and prop is a prop name or None
+
+        timezone = self.db.getUserTimezone()
+
         where = {'_isdel':0}
+        wherehigh = {}
         mlcriteria = {}
         regexes = {}
         orcriteria = {}
@@ -906,8 +912,20 @@ class Class:
                     bv = value
                 where[propname] = bv
             elif isinstance(prop, hyperdb.Date):
-                t = date.Date(value).get_tuple()
-                where[propname] = int(calendar.timegm(t))
+                try:
+                    # Try to filter on range of dates
+                    date_rng = Range(value, date.Date, offset=timezone)
+                    if date_rng.from_value:
+                        t = date_rng.from_value.get_tuple()
+                        where[propname] = int(calendar.timegm(t))
+                    if date_rng.to_value:
+                        t = date_rng.to_value.get_tuple()
+                        wherehigh[propname] = int(calendar.timegm(t))
+                    else:
+                        wherehigh[propname] = None
+                except ValueError:
+                    # If range creation fails - ignore that search parameter
+                    pass                        
             elif isinstance(prop, hyperdb.Interval):
                 where[propname] = str(date.Interval(value))
             elif isinstance(prop, hyperdb.Number):
@@ -917,7 +935,9 @@ class Class:
         v = self.getview()
         #print "filter start at  %s" % time.time() 
         if where:
-            v = v.select(where)
+            where_higherbound = where.copy()
+            where_higherbound.update(wherehigh)
+            v = v.select(where, where_higherbound)
         #print "filter where at  %s" % time.time() 
 
         if mlcriteria:
