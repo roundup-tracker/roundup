@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.135 $
+:Version: $Revision: 1.136 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1284,8 +1284,8 @@ Basic Templating Actions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Roundup's templates consist of special attributes on the HTML tags.
-These attributes form the Template Attribute Language, or TAL. The basic
-TAL commands are:
+These attributes form the `Template Attribute Language`_, or TAL.
+The basic TAL commands are:
 
 **tal:define="variable expression; variable expression; ..."**
    Define a new variable that is local to this tag and its contents. For
@@ -1378,12 +1378,16 @@ making arbitrary blocks of HTML conditional or repeatable (very handy
 for repeating multiple table rows, which would othewise require an
 illegal tag placement to effect the repeat).
 
+.. _TAL:
+.. _Template Attribute Language:
+   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
 
 Templating Expressions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The expressions you may use in the attribute values may be one of the
-following forms:
+Templating Expressions are covered by `Template Attribute Language
+Expression Syntax`_, or TALES. The expressions you may use in the
+attribute values may be one of the following forms:
 
 **Path Expressions** - eg. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the
@@ -1440,6 +1444,9 @@ Modifiers:
    This simply inverts the logical true/false value of another
    expression.
 
+.. _TALES:
+.. _Template Attribute Language Expression Syntax:
+   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TALES%20Specification%201.3
 
 Template Macros
 ~~~~~~~~~~~~~~~
@@ -1450,8 +1457,8 @@ you'll use is the "icing" macro defined in the "page" template.
 
 Macros are generated and used inside your templates using special
 attributes similar to the `basic templating actions`_. In this case,
-though, the attributes belong to the Macro Expansion Template Attribute
-Language, or METAL. The macro commands are:
+though, the attributes belong to the `Macro Expansion Template
+Attribute Language`_, or METAL. The macro commands are:
 
 **metal:define-macro="macro name"**
   Define that the tag and its contents are now a macro that may be
@@ -1497,10 +1504,13 @@ Language, or METAL. The macro commands are:
   where the tag that fills the slot completely replaces the one defined
   as the slot in the macro.
 
-Note that you may not mix METAL and TAL commands on the same tag, but
+Note that you may not mix `METAL`_ and `TAL`_ commands on the same tag, but
 TAL commands may be used freely inside METAL-using tags (so your
 *fill-slots* tags may have all manner of TAL inside them).
 
+.. _METAL:
+.. _Macro Expansion Template Attribute Language:
+   http://dev.zope.org/Wikis/DevSite/Projects/ZPT/METAL%20Specification%201.0
 
 Information available to templates
 ----------------------------------
