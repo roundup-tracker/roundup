@@ -15,9 +15,11 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.17 2001-11-12 22:01:06 richard Exp $
+# $Id: roundupdb.py,v 1.18 2001-11-15 10:36:17 richard Exp $
 
 import re, os, smtplib, socket
+import mimetools, MimeWriter, cStringIO
+import binascii, mimetypes
 
 import hyperdb, date
 
@@ -316,12 +318,8 @@ class IssueClass(Class):
             authaddr = '<%s> '%authaddr
         else:
             authaddr = ''
-        # TODO attachments
-        m = ['Subject: [%s%s] %s'%(cn, nodeid, title)]
-        m.append('To: %s'%', '.join(sendto))
-        m.append('From: %s'%self.ISSUE_TRACKER_EMAIL)
-        m.append('Reply-To: %s'%self.ISSUE_TRACKER_EMAIL)
-        m.append('')
+        # make the message body
+        m = []
         # add author information
         m.append("%s %sadded the comment:"%(authname, authaddr))
         m.append('')
@@ -329,20 +327,60 @@ class IssueClass(Class):
         m.append(self.db.msg.get(msgid, 'content'))
         # "list information" footer
         m.append(self.email_footer(nodeid, msgid))
+
+        # get the files for this message
+        files = self.db.msg.get(msgid, 'files')
+
+        # create the message
+        message = cStringIO.StringIO()
+        writer = MimeWriter.MimeWriter(message)
+        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
+        writer.addheader('To', ', '.join(sendto))
+        writer.addheader('Form', self.ISSUE_TRACKER_EMAIL)
+        writer.addheader('Reply-To:', self.ISSUE_TRACKER_EMAIL)
+        if files:
+            part = writer.startmultipartbody('mixed')
+            part = writer.nextpart()
+            body = part.startbody('text/plain')
+            body.write('\n'.join(m))
+            for fileid in files:
+                name = self.db.file.get(fileid, 'name')
+                type = self.db.file.get(fileid, 'type')
+                content = self.db.file.get(fileid, 'content')
+                part = writer.nextpart()
+                if type == 'text/plain':
+                    part.addheader('Content-Disposition',
+                        'attachment;\n filename="%s"'%name)
+                    part.addheader('Content-Transfer-Encoding', '7bit')
+                    body = part.startbody('text/plain')
+                    body.write(content)
+                else:
+                    type = mimetypes.guess_type(name)[0]
+                    part.addheader('Content-Disposition',
+                        'attachment;\n filename="%s"'%name)
+                    part.addheader('Content-Transfer-Encoding', 'base64')
+                    body = part.startbody(type)
+                body.write(binascii.b2a_base64(content))
+            writer.lastpart()
+        else:
+            body = writer.startbody('text/plain')
+            body.write('\n'.join(m))
+
+        # now try to send the message
         try:
             smtp = smtplib.SMTP(self.MAILHOST)
-            smtp.sendmail(self.ISSUE_TRACKER_EMAIL, sendto, '\n'.join(m))
+            smtp.sendmail(self.ISSUE_TRACKER_EMAIL, sendto, message.getvalue())
         except socket.error, value:
             raise MessageSendError, \
                 "Couldn't send confirmation email: mailhost %s"%value
         except smtplib.SMTPException, value:
             raise MessageSendError, \
-                 "Couldn't send confirmation email: %s"%value
+                "Couldn't send confirmation email: %s"%value
 
     def email_footer(self, nodeid, msgid):
         ''' Add a footer to the e-mail with some useful information
         '''
-        web = self.ISSUE_TRACKER_WEB
+        web = self.ISSUE_TRACKER_WEB + 'issue'+ nodeid
         return '''%s
 Roundup issue tracker
 %s
@@ -351,6 +389,9 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/11/12 22:01:06  richard
+# Fixed issues with nosy reaction and author copies.
+#
 # Revision 1.16  2001/10/30 00:54:45  richard
 # Features:
 #  . #467129 ] Lossage when username=e-mail-address

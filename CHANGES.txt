@@ -13,6 +13,8 @@ Feature:
  . roundup-mailgw now supports unix mailbox and POP as sources of mail.
  . roundup-admin now handles all hyperdb exceptions
  . users may attach files to issues (and support in ext) through the web now
+ . incorporated patch from Roch'e Compaan implementing attachments in nosy
+   e-mail
 
 Fixed:
  . Fixed a bug in HTMLTemplate changes.
