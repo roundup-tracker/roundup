@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.184 2004-07-20 02:07:58 richard Exp $
+# $Id: client.py,v 1.185 2004-07-27 02:30:31 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -654,13 +654,19 @@ class Client:
             action = self.form['@action'].value.lower()
         else:
             return None
+
         try:
-            # get the action, validate it
-            for name, action_klass in self.actions:
-                if name == action:
-                    break
+            if (hasattr(self.instance, 'cgi_actions') and
+                    self.instance.cgi_actions.has_key(action)):
+                # tracker-defined action
+                action_klass = self.instance.cgi_actions[action]
             else:
-                raise ValueError, 'No such action "%s"'%action
+                # go with a default
+                for name, action_klass in self.actions:
+                    if name == action:
+                        break
+                else:
+                    raise ValueError, 'No such action "%s"'%action
 
             # call the mapped action
             if isinstance(action_klass, type('')):

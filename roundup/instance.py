@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.17 2004-07-27 00:57:18 richard Exp $
+# $Id: instance.py,v 1.18 2004-07-27 02:30:31 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -64,15 +64,21 @@ class Tracker:
         self._load_python('schema.py', vars)
         db = vars['db']
 
-        detectors_dir = os.path.join(self.tracker_home, 'detectors')
-        for name in os.listdir(detectors_dir):
-            if not name.endswith('.py'):
-                continue
-            self._load_python(os.path.join('detectors', name), vars)
-            vars['init'](db)
+        self.load_extensions(db, 'detectors')
+
+        self.load_extensions(self, 'extensions')
 
         db.post_init()
         return db
+
+    def load_extensions(self, parent, dirname):
+        dirname = os.path.join(self.tracker_home, dirname)
+        for name in os.listdir(dirname):
+            if not name.endswith('.py'):
+                continue
+            vars = {}
+            self._load_python(os.path.join(dirname, name), vars)
+            vars['init'](parent)
 
     def init(self, adminpw):
         db = self.open('admin')

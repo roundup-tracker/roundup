@@ -10,19 +10,19 @@
 #   actor = Link('user')
 
 # Priorities
-pri = Class(db, "priority", 
+pri = Class(db, "priority",
                 name=String(),
                 order=Number())
 pri.setkey("name")
 
 # Statuses
-stat = Class(db, "status", 
+stat = Class(db, "status",
                 name=String(),
                 order=Number())
 stat.setkey("name")
 
 # Keywords
-keyword = Class(db, "keyword", 
+keyword = Class(db, "keyword",
                 name=String())
 keyword.setkey("name")
 
@@ -35,11 +35,11 @@ query = Class(db, "query",
 
 # add any additional database schema configuration here
 
-user = Class(db, "user", 
+user = Class(db, "user",
                 username=String(),
                 password=Password(),
                 address=String(),
-                realname=String(), 
+                realname=String(),
                 phone=String(),
                 organisation=String(),
                 alternate_addresses=String(),
@@ -50,16 +50,16 @@ user.setkey("username")
 
 # FileClass automatically gets this property in addition to the Class ones:
 #   content = String()    [saved to disk in <tracker home>/db/files/]
-msg = FileClass(db, "msg", 
+msg = FileClass(db, "msg",
                 author=Link("user", do_journal='no'),
-                recipients=Multilink("user", do_journal='no'), 
+                recipients=Multilink("user", do_journal='no'),
                 date=Date(),
-                summary=String(), 
+                summary=String(),
                 files=Multilink("file"),
                 messageid=String(),
                 inreplyto=String())
 
-file = FileClass(db, "file", 
+file = FileClass(db, "file",
                 name=String(),
                 type=String())
 
@@ -69,7 +69,7 @@ file = FileClass(db, "file",
 #   files = Multilink("file")
 #   nosy = Multilink("user")
 #   superseder = Multilink("issue")
-issue = IssueClass(db, "issue", 
+issue = IssueClass(db, "issue",
                 assignedto=Link("user"),
                 topic=Multilink("keyword"),
                 priority=Link("priority"),
