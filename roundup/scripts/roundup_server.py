@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.74 2004-11-22 07:11:30 a1s Exp $
+$Id: roundup_server.py,v 1.75 2004-12-22 06:57:36 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -359,6 +359,7 @@ class ServerConfig(configuration.Config):
 
     def __init__(self, config_file=None):
         configuration.Config.__init__(self, config_file, self.SETTINGS)
+        self.sections.append("trackers")
 
     def _adjust_options(self, config):
         """Add options for tracker homes"""
