@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.2
 # Copyright (c) 2002 ekit.com Inc (http://www.ekit-inc.com/)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.6 2003-04-24 07:19:59 richard Exp $
+# $Id: roundup-reminder,v 1.6.2.1 2004-02-11 00:02:53 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -27,9 +27,6 @@ are currently assigned to them.
 
 TODO: introduce some structure ;)
 TODO: possibly make this more general and configurable...
-
-Note: The instance that this script was designed for has a modified schema!
-      You will want to modify this script to customise it for your own schema!
 '''
 
 import sys, cStringIO, MimeWriter, smtplib
@@ -45,6 +42,18 @@ db = instance.open('admin')
 
 resolved_id = db.status.lookup('resolved')
 
+def listCompare(x, y):
+    "compare two tuples such that order is positive on [0] and negative on [1]"
+    if x[0] < y[0]:
+        return -1
+    if x[0] > y[0]:
+        return 1
+    if x[1] > y[1]:
+        return -1
+    if x[1] < y[1]:
+        return 1
+    return 0
+
 # loop through all the users
 for user_id in db.user.list():
     # make sure we care aboue this user
@@ -58,16 +67,14 @@ for user_id in db.user.list():
     # extract this user's issues
     l = []
     for issue_id in db.issue.find(assignedto=user_id):
-        if db.issue.get(issue_id, 'status') == resolved_id: continue
-        timeliness_id = db.issue.get(issue_id, 'timeliness')
-        if timeliness_id:
-            timeliness = db.timeliness.get(timeliness_id, 'name')
-        else:
-            timeliness = '~~~'
-        l.append((timeliness, db.issue.get(issue_id, 'creation'), issue_id))
+        if db.issue.get(issue_id, 'status') == resolved_id:
+            continue
+        order = db.priority.get(db.issue.get(issue_id, 'priority'), 'order')
+        l.append((order, db.issue.get(issue_id, 'activity'),
+            db.issue.get(issue_id, 'creation'), issue_id))
 
     # sort the issues by timeliness and creation date
-    l.sort()
+    l.sort(listCompare)
     if not l:
         continue
 
@@ -92,17 +99,22 @@ for user_id in db.user.list():
     print >>body, 'Created     ID   Urgency   Title'
     print >>body, '='*75
     #             '2 months    213  immediate cc_daemon barfage
-    for timeliness, creation_date, issue_id in l:
+    old_priority = None
+    for priority_order, activity_date, creation_date, issue_id in l:
+        priority = db.issue.get(issue_id, 'priority')
+        if (priority != old_priority):
+            old_priority = priority
+            print >>body, '    ', db.priority.get(priority,'name')
         # pretty creation
         creation = (date.Date('.') - creation_date).pretty()
         if creation is None:
             creation = creation_date.pretty()
-
-        if not timeliness: timeliness = ''
+        activity = (date.Date('.') - activity_date).pretty()
         title = db.issue.get(issue_id, 'title')
-        if len(title) > 52: title = title[:48] + ' ...'
-        print >>body, '%-11s %-4s %-9s %-52s'%(creation, issue_id,
-            timeliness, title)
+        if len(title) > 42:
+            title = title[:38] + ' ...'
+        print >>body, '%-11s %-4s %-9s %-42s'%(creation, issue_id,
+            activity, title)
 
     # some help to finish off
     print >>body, '''
@@ -125,19 +137,23 @@ and click on "My Issues". Do NOT respond to this message.
         'whenever': ' bgcolor="#ffffff"',
     }
     print >>body, '''<table border>
-<tr><th>Created</th> <th>ID</th> <th>Urgency</th> <th>Title</th></tr>
+<tr><th>Created</th> <th>ID</th> <th>Activity</th> <th>Title</th></tr>
 '''
-    for timeliness, creation_date, issue_id in l:
+    old_priority = None
+    for priority_order, activity_date, creation_date, issue_id in l:
+        priority = db.issue.get(issue_id,'priority')
+        if (priority != old_priority):
+           old_priority = priority
+           print >>body, '<tr><td>-></td><td>-></td><td>-></td><td><b>%s</b></td></tr>'%db.priority.get(priority,'name')
         creation = (date.Date('.') - creation_date).pretty()
         if creation is None:
             creation = creation_date.pretty()
-        if not timeliness_id: timeliness_id = ' '
         title = db.issue.get(issue_id, 'title')
         issue_id = '<a href="%sissue%s">%s</a>'%(db.config.TRACKER_WEB,
             issue_id, issue_id)
-        colour = colours.get(timeliness, '')
-        print >>body, '''<tr%s><td>%s</td><td>%s</td><td>%s</td>
-    <td>%s</td></tr>'''%(colour, creation, issue_id, timeliness, title)
+        activity = (date.Date('.') - activity_date).pretty()
+        print >>body, '''<tr><td>%s</td><td>%s</td><td>%s</td>
+    <td>%s</td></tr>'''%(creation, issue_id, activity, title)
     print >>body, '</table>'
 
     print >>body, '''<p>To view or respond to any of the issues listed
