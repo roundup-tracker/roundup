@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.79 2004-10-08 05:37:44 richard Exp $
+# $Id: admin.py,v 1.80 2004-10-16 14:51:08 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -26,6 +26,7 @@ import sys, os, getpass, getopt, re, UserDict, shutil, rfc822
 from roundup import date, hyperdb, roundupdb, init, password, token, rcsv
 from roundup import __version__ as roundup_version
 import roundup.instance
+from roundup.configuration import CoreConfig
 from roundup.i18n import _
 
 class CommandDict(UserDict.UserDict):
@@ -364,7 +365,11 @@ Command help:
             raise UsageError, _('Instance home parent directory "%(parent)s"'
                 ' does not exist')%locals()
 
-        if os.path.exists(os.path.join(tracker_home, 'config.py')):
+        config_ini_file = os.path.join(tracker_home, CoreConfig.INI_FILE)
+        # check for both old- and new-style configs
+        if filter(os.path.exists, [config_ini_file,
+            os.path.join(tracker_home, 'config.py'),
+        ]):
             ok = raw_input(_(
 """WARNING: There appears to be a tracker in "%(tracker_home)s"!
 If you re-install it, you will lose all the data!
@@ -401,19 +406,30 @@ Erase it? Y/N: """) % locals())
         init.install(tracker_home, templates[template]['path'])
         init.write_select_db(tracker_home, backend)
 
-        print _('''
+        print _("""
  You should now edit the tracker configuration file:
-   %(config_file)s
- ... at a minimum, you must set MAILHOST, TRACKER_WEB, MAIL_DOMAIN and
- ADMIN_EMAIL.
+   %(config_file)s""") % {"config_file": config_ini_file}
 
- If you wish to modify the default schema, you should also edit
- the database initialisation file:
+        # find list of options that need manual adjustments
+        # XXX config._get_unset_options() is marked as private
+        #   (leading underscore).  make it public or don't care?
+        need_set = CoreConfig(tracker_home)._get_unset_options()
+        if need_set:
+            print _(" ... at a minimum, you must set following options:")
+            for section, options in need_set.items():
+                print "   [%s]: %s" % (section, ", ".join(options))
+
+        # note about schema modifications
+        print _("""
+ If you wish to modify the database schema,
+ you should also edit the schema file:
    %(database_config_file)s
+ You may also change the database initialisation file:
+   %(database_init_file)s
  ... see the documentation on customizing for more information.
-''')%{
-    'config_file': os.path.join(tracker_home, 'config.py'),
-    'database_config_file': os.path.join(tracker_home, 'dbinit.py')
+""") % {
+    'database_config_file': os.path.join(tracker_home, 'schema.py'),
+    'database_init_file': os.path.join(tracker_home, 'initial_data.py'),
 }
         return 0
 
@@ -1388,4 +1404,4 @@ if __name__ == '__main__':
     tool = AdminTool()
     sys.exit(tool.main())
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
