@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.60 2002-02-01 07:43:12 grubert Exp $
+$Id: mailgw.py,v 1.61 2002-02-04 09:40:21 grubert Exp $
 '''
 
 
@@ -495,6 +495,8 @@ Unknown address: %s
                         # assume first part is the mail
                         encoding = part.getencoding()
                         if encoding == 'base64':
+                            # BUG: is base64 really used for text encoding or
+                            # are we inserting zip files here. 
                             data = binascii.a2b_base64(part.fp.read())
                         elif encoding == 'quoted-printable':
                             # the quopri module wants to work with files
@@ -775,6 +777,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2002/02/01 07:43:12  grubert
+#  . mailgw checks encoding on first part too.
+#
 # Revision 1.59  2002/01/23 21:43:23  richard
 # tabnuke
 #
