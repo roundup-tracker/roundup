@@ -1,4 +1,21 @@
-# $Id: instance_config.py,v 1.3 2001-08-02 06:38:17 richard Exp $
+#
+# Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
+# This module is free software, and you may redistribute it and/or modify
+# under the same terms as Python, so long as this copyright message and
+# disclaimer are retained in their original form.
+#
+# IN NO EVENT SHALL THE BIZAR SOFTWARE PTY LTD BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
+# OUT OF THE USE OF THIS CODE, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# BIZAR SOFTWARE PTY LTD SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
+# BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+# 
+# $Id: instance_config.py,v 1.4 2001-08-07 00:15:51 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -47,6 +64,12 @@ LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/08/02 06:38:17  richard
+# Roundupdb now appends "mailing list" information to its messages which
+# include the e-mail address and web interface address. Templates may
+# override this in their db classes to include specific information (support
+# instructions, etc).
+#
 # Revision 1.2  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #

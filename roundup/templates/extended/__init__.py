@@ -1,4 +1,21 @@
-# $Id: __init__.py,v 1.5 2001-07-29 07:01:39 richard Exp $
+#
+# Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
+# This module is free software, and you may redistribute it and/or modify
+# under the same terms as Python, so long as this copyright message and
+# disclaimer are retained in their original form.
+#
+# IN NO EVENT SHALL THE BIZAR SOFTWARE PTY LTD BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
+# OUT OF THE USE OF THIS CODE, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# BIZAR SOFTWARE PTY LTD SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
+# BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+# 
+# $Id: __init__.py,v 1.6 2001-08-07 00:15:51 richard Exp $
 
 from instance_config import *
 try:
@@ -10,6 +27,9 @@ from interfaces import *
 
 # 
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.4  2001/07/24 10:46:22  anthonybaxter
 # Added templatebuilder module. two functions - one to pack up the html base,
 # one to unpack it. Packed up the two standard templates into htmlbases.
