@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.21 2004-11-23 23:56:08 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.22 2004-11-25 22:56:14 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -41,7 +41,6 @@ from indexer_dbm import Indexer
 from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Node
-from roundup.date import Range, Date
 
 #
 # Now the database
@@ -385,10 +384,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
-            # if the property doesn't exist, or is the "retired" flag then
-            # it won't be in the properties dict
-            if not properties.has_key(k):
+            if k == self.RETIRED_FLAG:
                 d[k] = v
+                continue
+
+            # if the property doesn't exist then we really don't care
+            if not properties.has_key(k):
                 continue
 
             # get the property spec
@@ -2081,7 +2082,7 @@ class Class(hyperdb.Class):
                     elif isinstance(prop, Date):
                         if type(value) == type(()):
                             print 'warning: invalid date tuple %r'%(value,)
-                            value = Date( "2000-1-1" )
+                            value = date.Date("2000-1-1")
                         value = date.Date(value)
                     elif isinstance(prop, Interval):
                         value = date.Interval(value)
