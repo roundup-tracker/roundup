@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.71 2002-01-23 06:15:24 richard Exp $
+# $Id: htmltemplate.py,v 1.72 2002-02-14 23:39:18 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -708,7 +708,7 @@ class IndexTemplate(TemplateFunctions):
         # display the filter section
         if (show_display_form and 
                 self.instance.FILTER_POSITION in ('top and bottom', 'top')):
-            w('<form action="%s">\n'%self.classname)
+            w('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
@@ -790,7 +790,7 @@ class IndexTemplate(TemplateFunctions):
         # display the filter section
         if (show_display_form and hasattr(self.instance, 'FILTER_POSITION') and
                 self.instance.FILTER_POSITION in ('top and bottom', 'bottom')):
-            w('<form action="%s">\n'%self.classname)
+            w('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_customization)
             # make sure that the sorting doesn't get lost either
@@ -1000,7 +1000,7 @@ class ItemTemplate(TemplateFunctions):
             #  designators...
 
         w = self.client.write
-        w('<form action="%s%s" method="POST" enctype="multipart/form-data">'%(
+        w('<form onSubmit="return submit_once()" action="%s%s" method="POST" enctype="multipart/form-data">'%(
             self.classname, nodeid))
         s = open(os.path.join(self.templates, self.classname+'.item')).read()
         replace = ItemTemplateReplace(self.globals, locals(), self.cl, nodeid)
@@ -1030,7 +1030,7 @@ class NewItemTemplate(TemplateFunctions):
             s = open(os.path.join(self.templates, c+'.newitem')).read()
         except IOError:
             s = open(os.path.join(self.templates, c+'.item')).read()
-        w('<form action="new%s" method="POST" enctype="multipart/form-data">'%c)
+        w('<form onSubmit="return submit_once()" action="new%s" method="POST" enctype="multipart/form-data">'%c)
         for key in form.keys():
             if key[0] == ':':
                 value = form[key].value
@@ -1043,6 +1043,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.71  2002/01/23 06:15:24  richard
+# real (non-string, duh) sorting of lists by node id
+#
 # Revision 1.70  2002/01/23 05:47:57  richard
 # more HTML template cleanup and unit tests
 #

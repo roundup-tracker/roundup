@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.100 2002-01-16 07:02:57 richard Exp $
+# $Id: cgi_client.py,v 1.101 2002-02-14 23:39:18 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -80,6 +80,20 @@ class Client:
         if self.debug:
             self.headers_sent = headers
 
+    single_submit_script = '''
+<script language="javascript">
+submitted = false;
+function submit_once() {
+    if (submitted) {
+        alert("Your request is being processed.\\nPlease be patient.");
+        return 0;
+    }
+    submitted = true;
+    return 1;
+}
+</script>
+'''
+
     def pagehead(self, title, message=None):
         url = self.env['SCRIPT_NAME'] + '/'
         machine = self.env['SERVER_NAME']
@@ -113,10 +127,12 @@ class Client:
 ''')
         else:
             add_links = ''
+        single_submit_script = self.single_submit_script
         self.write(_('''<html><head>
 <title>%(title)s</title>
 <style type="text/css">%(style)s</style>
 </head>
+%(single_submit_script)s
 <body bgcolor=#ffffff>
 %(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
@@ -348,9 +364,9 @@ class Client:
             if self.nodeid:
                 cl = self.db.classes[self.classname]
                 l = cl.get(self.nodeid, 'nosy')
-		if assignedto_id in l:
-		    return
-		props['nosy'] = l
+                if assignedto_id in l:
+                    return
+                props['nosy'] = l
             else:
                 props['nosy'] = []
         if assignedto_id not in props['nosy']:
@@ -746,7 +762,7 @@ class Client:
         self.write(_('''
 <table>
 <tr><td colspan=2 class="strong-header">Existing User Login</td></tr>
-<form action="login_action" method=POST>
+<form onSubmit="return submit_once()" action="login_action" method=POST>
 <input type="hidden" name="__destination_url" value="%(action)s">
 <tr><td align=right>Login name: </td>
     <td><input name="__login_name"></td></tr>
@@ -770,7 +786,7 @@ class Client:
 <p>
 <tr><td colspan=2 class="strong-header">New User Registration</td></tr>
 <tr><td colspan=2><em>marked items</em> are optional...</td></tr>
-<form action="newuser_action" method=POST>
+<form onSubmit="return submit_once()" action="newuser_action" method=POST>
 <input type="hidden" name="__destination_url" value="%(action)s">
 <tr><td align=right><em>Name: </em></td>
     <td><input name="realname" value="%(realname)s"></td></tr>
@@ -1079,10 +1095,12 @@ class ExtendedClient(Client):
 ''')
         else:
             add_links = ''
+        single_submit_script = self.single_submit_script
         self.write(_('''<html><head>
 <title>%(title)s</title>
 <style type="text/css">%(style)s</style>
 </head>
+%(single_submit_script)s
 <body bgcolor=#ffffff>
 %(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
@@ -1182,6 +1200,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.100  2002/01/16 07:02:57  richard
+#  . lots of date/interval related changes:
+#    - more relaxed date format for input
+#
 # Revision 1.99  2002/01/16 03:02:42  richard
 # #503793 ] changing assignedto resets nosy list
 #
