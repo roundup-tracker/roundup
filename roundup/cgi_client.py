@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.117 2002-05-12 23:42:29 richard Exp $
+# $Id: cgi_client.py,v 1.118 2002-05-12 23:46:33 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -691,6 +691,8 @@ function help_window(helpurl, width, height) {
         # NOSY
         if self.form.has_key('__note'):
             note = self.form['__note'].value.strip()
+        if not note:
+            return None, files
         if not props.has_key('messages'):
             return None, files
         if not isinstance(props['messages'], hyperdb.Multilink):
@@ -701,16 +703,11 @@ function help_window(helpurl, width, height) {
             return None, files
 
         # handle the note
-        m = []
-        if note:
-            if '\n' in note:
-                summary = re.split(r'\n\r?', note)[0]
-            else:
-                summary = note
-            m = ['%s\n'%note]
-        elif not files:
-            # don't generate a useless message
-            return None, files
+        if '\n' in note:
+            summary = re.split(r'\n\r?', note)[0]
+        else:
+            summary = note
+        m = ['%s\n'%note]
 
         # handle the messageid
         # TODO: handle inreplyto
@@ -1385,6 +1382,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.117  2002/05/12 23:42:29  richard
+# ehem
+#
 # Revision 1.116  2002/05/02 08:07:49  richard
 # Added the ADD_AUTHOR_TO_NOSY handling to the CGI interface.
 #
