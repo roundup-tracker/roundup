@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.12 2001-10-04 02:16:15 richard Exp $
+# $Id: roundupdb.py,v 1.13 2001-10-21 00:45:15 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -262,13 +262,27 @@ class IssueClass(Class):
             sendto = [self.db.user.get(i, 'address') for i in recipients]
             cn = self.classname
             title = self.get(nodeid, 'title') or '%s message copy'%cn
+            # figure author information
+            authname = self.db.user.get(authid, 'realname')
+            if not authname:
+                authname = self.db.user.get(authid, 'username')
+            authaddr = self.db.user.get(authid, 'address')
+            if authaddr:
+                authaddr = '<%s> '%authaddr
+            else:
+                authaddr = ''
+            # TODO attachments
             m = ['Subject: [%s%s] %s'%(cn, nodeid, title)]
             m.append('To: %s'%', '.join(sendto))
             m.append('Reply-To: %s'%self.ISSUE_TRACKER_EMAIL)
             m.append('')
+            # add author information
+            m.append("%s %sadded the comment:"%(authname, authaddr))
+            m.append('')
+            # add the content
             m.append(self.db.msg.get(msgid, 'content'))
+            # "list information" footer
             m.append(self.email_footer(nodeid, msgid))
-            # TODO attachments
             try:
                 smtp = smtplib.SMTP(self.MAILHOST)
                 smtp.sendmail(self.ISSUE_TRACKER_EMAIL, sendto, '\n'.join(m))
@@ -289,6 +303,9 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/10/04 02:16:15  richard
+# Forgot to pass the protected flag down *sigh*.
+#
 # Revision 1.11  2001/10/04 02:12:42  richard
 # Added nicer command-line item adding: passing no arguments will enter an
 # interactive more which asks for each property in turn. While I was at it, I
