@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.30 2002-09-26 23:59:08 richard Exp $
+# $Id: dbinit.py,v 1.31 2002-10-10 07:17:39 richard Exp $
 
 import os
 
@@ -26,6 +26,7 @@ def open(name=None):
     ''' as from the roundupdb method openDB 
     ''' 
     from roundup.hyperdb import String, Password, Date, Link, Multilink
+    from roundup.hyperdb import Interval, Boolean, Number
 
     # open the database
     db = Database(config, name)
