@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.28 $
+:Version: $Revision: 1.29 $
 
 .. contents::
 
@@ -69,7 +69,7 @@ installation:
 2. then optionally `configure a web interface`_
 3. and optionally `configure an email interface`_
 4. `shared environment steps`_ to take if you're installing on a shared
-    UNIX machine and want to restrict local access to roundup
+   UNIX machine and want to restrict local access to roundup
 
 Most users will only need to follow the first step, since the environment will
 be a trusted one.
@@ -173,11 +173,11 @@ There's several to choose from, each with benefits and limitations:
 **bsddb3**
   Again, this effectively the same as anydbm, but uses the bsddb3 backend.
   This allows it to gain some performance and scaling benefits.
-**sqlite_**
+**sqlite**
   This uses the SQLite_ embedded RDBMS to provide a fast, scaleable backend.
   There are no limitations, and it's much faster and more scaleable than the
   dbm backends.
-**metakit_**
+**metakit**
   This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.
 **gadfly**
