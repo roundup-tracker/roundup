@@ -5,7 +5,8 @@ are given with the most recent entry first.
 Fixed:
  . #600699 ] documentation in doc/getting_started.txt
  . #600700 ] doc/upgrading.txt: no info about 0.4.3
- . #603703 ] way to unassign issues  (backported from 0.5.0)
+ . #603696 ] Mail followup not inserted
+ . #603703 ] way to unassign issues
 
 
 2002-07-25 0.4.3
