@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.34 2001-12-17 03:52:48 richard Exp $
+# $Id: roundupdb.py,v 1.35 2001-12-20 15:43:01 rochecompaan Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -71,8 +71,11 @@ class Database:
             users = self.user.stringFind(username=address)
 
         # couldn't match address or username, so create a new user
-        return self.user.create(username=address, address=address,
-            realname=realname)
+        if create:
+            return self.user.create(username=address, address=address,
+                realname=realname)
+        else:
+            return 0
 
 _marker = []
 # XXX: added the 'creator' faked attribute
@@ -492,6 +495,13 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2001/12/17 03:52:48  richard
+# Implemented file store rollback. As a bonus, the hyperdb is now capable of
+# storing more than one file per node - if a property name is supplied,
+# the file is called designator.property.
+# I decided not to migrate the existing files stored over to the new naming
+# scheme - the FileClass just doesn't specify the property name.
+#
 # Revision 1.33  2001/12/16 10:53:37  richard
 # take a copy of the node dict so that the subsequent set
 # operation doesn't modify the oldvalues structure

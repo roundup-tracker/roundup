@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.85 2001-12-20 06:13:24 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.86 2001-12-20 15:43:01 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -120,10 +120,16 @@ class Client:
         else:
             user_info = _('<a href="login">Login</a>')
         if self.user is not None:
-            add_links = _('''
+            if self.user == 'admin':
+                add_links = _('''
 | Add
 <a href="newissue">Issue</a>,
 <a href="newuser">User</a>
+''')
+            else:
+                add_links = _('''
+| Add
+<a href="newissue">Issue</a>
 ''')
         else:
             add_links = ''
@@ -1059,11 +1065,18 @@ class ExtendedClient(Client):
         else:
             user_info = _('<a href="login">Login</a>')
         if self.user is not None:
-            add_links = _('''
+            if self.user == 'admin':
+                add_links = _('''
 | Add
 <a href="newissue">Issue</a>,
 <a href="newsupport">Support</a>,
 <a href="newuser">User</a>
+''')
+            else:
+                add_links = _('''
+| Add
+<a href="newissue">Issue</a>,
+<a href="newsupport">Support</a>,
 ''')
         else:
             add_links = ''
@@ -1163,6 +1176,16 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.85  2001/12/20 06:13:24  rochecompaan
+# Bugs fixed:
+#   . Exception handling in hyperdb for strings-that-look-like numbers got
+#     lost somewhere
+#   . Internet Explorer submits full path for filename - we now strip away
+#     the path
+# Features added:
+#   . Link and multilink properties are now displayed sorted in the cgi
+#     interface
+#
 # Revision 1.84  2001/12/18 15:30:30  rochecompaan
 # Fixed bugs:
 #  .  Fixed file creation and retrieval in same transaction in anydbm

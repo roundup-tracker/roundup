@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.13 2001-11-26 23:00:53 richard Exp $
+# $Id: interfaces.py,v 1.14 2001-12-20 15:43:01 rochecompaan Exp $
 
 import instance_config
 from roundup import cgi_client, mailgw 
@@ -38,9 +38,13 @@ class MailGW(mailgw.MailGW):
     ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
+    ANONYMOUS_ACCESS = instance_config.ANONYMOUS_ACCESS
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/11/26 23:00:53  richard
+# This config stuff is getting to be a real mess...
+#
 # Revision 1.12  2001/10/22 03:25:01  richard
 # Added configuration for:
 #  . anonymous user access and registration (deny/allow)

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.48 2001-12-20 06:13:24 rochecompaan Exp $
+# $Id: htmltemplate.py,v 1.49 2001-12-20 15:43:01 rochecompaan Exp $
 
 __doc__ = """
 Template engine.
@@ -178,23 +178,24 @@ class TemplateFunctions:
         elif isinstance(propclass, hyperdb.Multilink):
             list = linkcl.list()
             list.sort(sortfunc)
-            height = height or min(len(list), 7)
-            l = ['<select multiple name="%s" size="%s">'%(property, height)]
             k = linkcl.labelprop()
-            for optionid in list:
-                option = linkcl.get(optionid, k)
-                s = ''
-                if optionid in value:
-                    s = 'selected '
-                if showid:
-                    lab = '%s%s: %s'%(propclass.classname, optionid, option)
+            l = []
+            # special treatment for nosy list
+            if property == 'nosy':
+                input_value = []
+            else:
+                input_value = value
+            for v in value:
+                lab = linkcl.get(v, k)
+                if property != 'nosy':
+                    l.append('<a href="issue%s">%s: %s</a>'%(v,v,lab))
                 else:
-                    lab = option
-                if size is not None and len(lab) > size:
-                    lab = lab[:size-3] + '...'
-                l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
-            l.append('</select>')
-            s = '\n'.join(l)
+                    input_value.append(lab)
+            if size is None:
+                size = '10'
+            l.insert(0,'<input name="%s" size="%s" value="%s">'%(property, 
+                size, ','.join(input_value)))
+            s = "<br>\n".join(l)
         else:
             s = 'Plain: bad propclass "%s"'%propclass
         return s
@@ -884,6 +885,16 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.48  2001/12/20 06:13:24  rochecompaan
+# Bugs fixed:
+#   . Exception handling in hyperdb for strings-that-look-like numbers got
+#     lost somewhere
+#   . Internet Explorer submits full path for filename - we now strip away
+#     the path
+# Features added:
+#   . Link and multilink properties are now displayed sorted in the cgi
+#     interface
+#
 # Revision 1.47  2001/11/26 22:55:56  richard
 # Feature:
 #  . Added INSTANCE_NAME to configuration - used in web and email to identify

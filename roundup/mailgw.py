@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.44 2001-12-18 15:30:34 rochecompaan Exp $
+$Id: mailgw.py,v 1.45 2001-12-20 15:43:01 rochecompaan Exp $
 '''
 
 
@@ -86,6 +86,9 @@ class MailGWError(ValueError):
 
 class MailUsageError(ValueError):
     pass
+
+class UnAuthorized(Exception):
+    """ Access denied """
 
 class Message(mimetools.Message):
     ''' subclass mimetools.Message so we can retrieve the parts of the
@@ -147,6 +150,12 @@ class MailGW:
                 m.append(str(value))
                 m.append('\n\nMail Gateway Help\n=================')
                 m.append(fulldoc)
+                m = self.bounce_message(message, sendto, m)
+            except UnAuthorized, value:
+                # just inform the user that he is not authorized
+                sendto = [sendto[0][1]]
+                m = ['']
+                m.append(str(value))
                 m = self.bounce_message(message, sendto, m)
             except:
                 # bounce the message back to the sender with the error message
@@ -366,7 +375,21 @@ Subject was: "%s"
         #
         # handle the users
         #
-        author = self.db.uidFromAddress(message.getaddrlist('from')[0])
+
+        # Don't create users if ANONYMOUS_ACCESS is denied
+        if self.ANONYMOUS_ACCESS == 'deny':
+            create = 0
+        else:
+            create = 1
+        author = self.db.uidFromAddress(message.getaddrlist('from')[0],
+            create=create)
+        if not author:
+            raise UnAuthorized, '''
+You are not a registered user.
+
+Unknown address: %s
+'''%message.getaddrlist('from')[0][1]
+            
         # reopen the database as the author
         username = self.db.user.get(author, 'username')
         self.db = self.instance.open(username)
@@ -638,6 +661,15 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2001/12/18 15:30:34  rochecompaan
+# Fixed bugs:
+#  .  Fixed file creation and retrieval in same transaction in anydbm
+#     backend
+#  .  Cgi interface now renders new issue after issue creation
+#  .  Could not set issue status to resolved through cgi interface
+#  .  Mail gateway was changing status back to 'chatting' if status was
+#     omitted as an argument
+#
 # Revision 1.43  2001/12/15 19:39:01  rochecompaan
 # Oops.
 #
