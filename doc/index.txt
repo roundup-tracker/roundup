@@ -78,7 +78,8 @@ Bernhard Reiter,
 Dougal Scott,
 Stefan Seefeld,
 Jeffrey P Shell,
-Joel Shprentz.
+Joel Shprentz,
+Mike Thompson.
 
 
 

@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2002-10-?? 0.5.2
+- added quotes around python interpreter in windows bat (sf bug 623963)
+- fixed link at end of installation doc (sf bug 623957)
+
+
 2002-10-16 0.5.1
 - highlight rows in groups of three
 - metakit cleanups

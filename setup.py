@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.39 2002-09-23 08:17:50 richard Exp $
+# $Id: setup.py,v 1.40 2002-10-17 00:22:16 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -85,8 +85,8 @@ class build_scripts_create(build_scripts):
             try:
                 if sys.platform == "win32":
                     file.write('@echo off\n'
-                        'if NOT "%%_4ver%%" == "" %(python)s -O -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
-                        'if     "%%_4ver%%" == "" %(python)s -O -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
+                        'if NOT "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
+                        'if     "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
                         % script_vars)
                 else:
                     file.write('#! %(python)s -O\n'

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.32 $
+:Version: $Revision: 1.33 $
 
 .. contents::
 
@@ -423,10 +423,10 @@ Python 2.1.1 as shipped with SuSE7.3 might be missing module
 
 Back to `Table of Contents`_
 
-Next: `Getting Started`_
+Next: `User Guide`_
 
 .. _`table of contents`: index.html
-.. _`getting started`: getting_started.html
+.. _`user guide`: user_guide.html
 .. _`roundup specification`: spec.html
 .. _`tracker configuration`: customizing.html#tracker-configuration
 .. _`customisation documentation`: customizing.html
