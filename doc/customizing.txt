@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.5 $
+:Version: $Revision: 1.6 $
 
 .. contents::
 
@@ -78,13 +78,44 @@ instance is attempted.::
   FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
 
   # Deny or allow anonymous access to the web interface
-  ANONYMOUS_ACCESS = 'deny'
+  ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
 
   # Deny or allow anonymous users to register through the web interface
-  ANONYMOUS_REGISTER = 'deny'
+  ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
+
+  # Deny or allow anonymous users to register through the mail interface
+  ANONYMOUS_REGISTER_MAIL = 'deny'    # either 'deny' or 'allow'
 
   # Send nosy messages to the author of the message
   MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
+
+  # Does the author of a message get placed on the nosy list automatically?
+  # If 'new' is used, then the author will only be added when a message
+  # creates a new issue. If 'yes', then the author will be added on followups
+  # too. If 'no', they're never added to the nosy.
+  ADD_AUTHOR_TO_NOSY = 'new'          # one of 'yes', 'no', 'new'
+
+  # Do the recipients (To:, Cc:) of a message get placed on the nosy list?
+  # If 'new' is used, then the recipients will only be added when a message
+  # creates a new issue. If 'yes', then the recipients will be added on
+  # followups
+  # too. If 'no', they're never added to the nosy.
+  ADD_RECIPIENTS_TO_NOSY = 'new'      # either 'yes', 'no', 'new'
+
+  # Where to place the email signature
+  EMAIL_SIGNATURE_POSITION = 'bottom' # one of 'top', 'bottom', 'none'
+
+  # Keep email citations
+  EMAIL_KEEP_QUOTED_TEXT = 'no'       # either 'yes' or 'no'
+
+  # Preserve the email body as is
+  EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
+
+  # Default class to use in the mailgw if one isn't supplied in email
+  # subjects. To disable, comment out the variable below or leave it blank.
+  # Examples:
+  MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
+  #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
 
 Instance Schema
