@@ -93,6 +93,9 @@ class Security:
         self.addRole(name="Admin", description="An admin user, full privs")
         self.addRole(name="Anonymous", description="An anonymous user")
 
+        ce = self.addPermission(name="Create",
+            description="User may create everthing")
+        self.addPermissionToRole('Admin', ce)
         ee = self.addPermission(name="Edit",
             description="User may edit everthing")
         self.addPermissionToRole('Admin', ee)
