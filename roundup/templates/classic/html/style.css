@@ -112,9 +112,7 @@ table.list th {
   padding: 0 4 0 4;
   color: #404070;
   background-color: #eeeeff;
-  border-right: 1px solid #404070;
-  border-top: 1px solid #404070;
-  border-bottom: 1px solid #404070;
+  border: 1px solid white;
   vertical-align: top;
   empty-cells: show;
 }
@@ -128,8 +126,7 @@ table.list th.group {
 
 table.list td {
   padding: 0 4 0 4;
-  border: 0 2 0 2;
-  border-right: 1px solid #404070;
+  border: 1px solid white;
   color: #404070;
   background-color: white;
   vertical-align: top;
@@ -137,28 +134,17 @@ table.list td {
 }
 
 table.list tr.normal td {
-  background-color: white;
+  background-color: #efefef;
 }
 
 table.list tr.alt td {
   background-color: #efefef;
 }
 
-table.list td:first-child {
-  border-left: 1px solid #404070;
-  border-right: 1px solid #404070;
-}
-
-table.list th:first-child {
-  border-left: 1px solid #404070;
-  border-right: 1px solid #404070;
-}
-
 table.list tr.navigation th {
   text-align: right;
 }
 table.list tr.navigation th:first-child {
-  border-right: none;
   text-align: left;
 }
 

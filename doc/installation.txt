@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.40 $
+:Version: $Revision: 1.41 $
 
 .. contents::
 
@@ -247,6 +247,15 @@ Web Server cgi-bin
 A benefit of using the cgi-bin approach is that it's the easiest way to
 restrict access to your tracker to only use HTTPS. Access will be slower
 than through the `stand-alone web server`_ though.
+
+If you're using IIS on a Windows platform, you'll need to run this command
+for the cgi to work (it turns on the PATH_INFO cgi variable)::
+
+    adsutil.vbs set w3svc/AllowPathInfoForScriptMappings TRUE
+
+The ``adsutil.vbs`` file can be found in either ``c:\inetpub\adminscripts`` 
+or ``c:\winnt\system32\inetsrv\adminsamples\`` or
+``c:\winnt\system32\inetsrv\adminscripts\`` depending on your installation.
 
 Copy the ``cgi-bin/roundup.cgi`` file to your web server's ``cgi-bin``
 directory. You will need to configure it to tell it where your tracker home
