@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.13 2003-03-18 00:37:25 richard Exp $
+# $Id: test_cgi.py,v 1.14 2003-03-26 06:46:17 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -385,6 +385,9 @@ class FormTestCase(unittest.TestCase):
             ({('test', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'number': ['', '']})
 
+    def testInvalidNumber(self):
+        self.assertRaises(ValueError, self.parseForm, {'number': 'hi, mum!'})
+
     def testSetNumber(self):
         self.assertEqual(self.parseForm({'number': '1'}),
             ({('test', None): {'number': 1}}, []))
@@ -414,6 +417,9 @@ class FormTestCase(unittest.TestCase):
         self.assertEqual(self.parseForm({'date': ' '}),
             ({('test', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'date': ['', '']})
+
+    def testInvalidDate(self):
+        self.assertRaises(ValueError, self.parseForm, {'date': '12'})
 
     def testSetDate(self):
         self.assertEqual(self.parseForm({'date': '2003-01-01'}),

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.110 2003-03-26 03:35:00 richard Exp $
+# $Id: client.py,v 1.111 2003-03-26 06:46:17 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1732,36 +1732,41 @@ You should then receive another email with the new password.
                 # other types should be None'd if there's no value
                 value = None
             else:
-                if isinstance(proptype, hyperdb.String):
-                    if (hasattr(value, 'filename') and
-                            value.filename is not None):
-                        # skip if the upload is empty
-                        if not value.filename:
-                            continue
-                        # this String is actually a _file_
-                        # try to determine the file content-type
-                        filename = value.filename.split('\\')[-1]
-                        if propdef.has_key('name'):
-                            props['name'] = filename
-                        # use this info as the type/filename properties
-                        if propdef.has_key('type'):
-                            props['type'] = mimetypes.guess_type(filename)[0]
-                            if not props['type']:
-                                props['type'] = "application/octet-stream"
-                        # finally, read the content
-                        value = value.value
-                    else:
-                        # normal String fix the CRLF/CR -> LF stuff
-                        value = fixNewlines(value)
+                # handle ValueErrors for all these in a similar fashion
+                try:
+                    if isinstance(proptype, hyperdb.String):
+                        if (hasattr(value, 'filename') and
+                                value.filename is not None):
+                            # skip if the upload is empty
+                            if not value.filename:
+                                continue
+                            # this String is actually a _file_
+                            # try to determine the file content-type
+                            fn = value.filename.split('\\')[-1]
+                            if propdef.has_key('name'):
+                                props['name'] = fn
+                            # use this info as the type/filename properties
+                            if propdef.has_key('type'):
+                                props['type'] = mimetypes.guess_type(fn)[0]
+                                if not props['type']:
+                                    props['type'] = "application/octet-stream"
+                            # finally, read the content
+                            value = value.value
+                        else:
+                            # normal String fix the CRLF/CR -> LF stuff
+                            value = fixNewlines(value)
 
-                elif isinstance(proptype, hyperdb.Date):
-                    value = date.Date(value, offset=timezone)
-                elif isinstance(proptype, hyperdb.Interval):
-                    value = date.Interval(value)
-                elif isinstance(proptype, hyperdb.Boolean):
-                    value = value.lower() in ('yes', 'true', 'on', '1')
-                elif isinstance(proptype, hyperdb.Number):
-                    value = float(value)
+                    elif isinstance(proptype, hyperdb.Date):
+                        value = date.Date(value, offset=timezone)
+                    elif isinstance(proptype, hyperdb.Interval):
+                        value = date.Interval(value)
+                    elif isinstance(proptype, hyperdb.Boolean):
+                        value = value.lower() in ('yes', 'true', 'on', '1')
+                    elif isinstance(proptype, hyperdb.Number):
+                        value = float(value)
+                except ValueError, msg:
+                    raise ValueError, _('Error with %s property: %s')%(
+                        propname, msg)
 
             # get the old value
             if nodeid and not nodeid.startswith('-'):
