@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.31 2002-03-22 18:36:00 jhermann Exp $
+# $Id: setup.py,v 1.32 2002-03-27 23:47:58 jhermann Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -85,7 +85,8 @@ class build_scripts_create(build_scripts):
             try:
                 if sys.platform == "win32":
                     file.write('@echo off\n'
-                        '%(python)s -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
+                        'if NOT "%%_4ver%%" == "" %(python)s -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
+                        'if     "%%_4ver%%" == "" %(python)s -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
                         % script_vars)
                 else:
                     file.write('#! %(python)s\n'
@@ -172,6 +173,9 @@ setup(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2002/03/22 18:36:00  jhermann
+# chmod +x for scripts
+#
 # Revision 1.30  2002/01/29 20:07:15  jhermann
 # Conversion to generated script stubs
 #
