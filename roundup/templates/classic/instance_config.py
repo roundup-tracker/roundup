@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.19 2002-07-26 08:26:59 richard Exp $
+# $Id: instance_config.py,v 1.20 2002-08-16 04:28:41 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -38,12 +38,6 @@ if not MAILHOST:
 if not MAIL_DOMAIN:
     MAIL_DOMAIN = 'your.tracker.email.domain.example'
 
-# the next two are only used for the standalone HTTP server.
-if not HTTP_HOST:
-    HTTP_HOST = ''
-if not HTTP_PORT:
-    HTTP_PORT = 9080
-
 # This is the directory that the database is going to be stored in
 DATABASE = os.path.join(INSTANCE_HOME, 'db')
 
@@ -61,9 +55,6 @@ ISSUE_TRACKER_WEB = 'http://your.tracker.url.example/'
 
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-
-# Somewhere for roundup to log stuff internally sent to stdout or stderr
-LOG = os.path.join(INSTANCE_HOME, 'roundup.log')
 
 # Where to place the web filtering HTML on the index page
 FILTER_POSITION = 'bottom'          # one of 'top', 'bottom', 'top and bottom'
@@ -177,6 +168,11 @@ SUPPORT_FILTER = {
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/07/26 08:26:59  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.18  2002/05/25 07:16:25  rochecompaan
 # Merged search_indexing-branch with HEAD
 #
