@@ -27,12 +27,22 @@ class Database(rdbms_common.Database):
         self.cursor = self.conn.cursor()
 
         try:
-            self.database_schema = self.load_dbschema()
+            self.load_dbschema()
         except:
             self.rollback()
             self.database_schema = {}
             self.sql("CREATE TABLE schema (schema TEXT)")
             self.sql("CREATE TABLE ids (name VARCHAR(255), num INT4)")
+            self.sql("CREATE INDEX ids_name_idx ON ids(name)")
+            self.create_version_2_tables()
+
+    def create_version_2_tables(self):
+        self.cursor.execute('CREATE TABLE otks (key VARCHAR(255), '
+            'value VARCHAR(255), __time NUMERIC)')
+        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(key)')
+        self.cursor.execute('CREATE TABLE sessions (key VARCHAR(255), '
+            'last_use NUMERIC, user VARCHAR(255))')
+        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(key)')
 
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)

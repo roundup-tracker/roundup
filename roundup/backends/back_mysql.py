@@ -68,7 +68,7 @@ class Database(Database):
         self.sql("SET AUTOCOMMIT=0")
         self.sql("BEGIN")
         try:
-            self.database_schema = self.load_dbschema()
+            self.load_dbschema()
         except MySQLdb.OperationalError, message:
             if message[0] != ER.NO_DB_ERROR:
                 raise
@@ -82,7 +82,16 @@ class Database(Database):
             #       http://www.mysql.com/doc/en/CREATE_TABLE.html
             self.sql("CREATE TABLE ids (name varchar(255), num INT) TYPE=%s"%
                 self.mysql_backend)
-            self.sql("CREATE INDEX ids_name_idx on ids(name)")
+            self.sql("CREATE INDEX ids_name_idx ON ids(name)")
+            self.create_version_2_tables()
+
+    def create_version_2_tables(self):
+        self.cursor.execute('CREATE TABLE otks (key VARCHAR(255), '
+            'value VARCHAR(255), __time FLOAT(20))')
+        self.cursor.execute('CREATE INDEX otks_key_idx ON otks(key)')
+        self.cursor.execute('CREATE TABLE sessions (key VARCHAR(255), '
+            'last_use FLOAT(20), user VARCHAR(255))')
+        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(key)')
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
@@ -104,13 +113,6 @@ class Database(Database):
         s = repr(self.database_schema)
         self.sql('INSERT INTO schema VALUES (%s)', (s,))
     
-    def load_dbschema(self):
-        self.cursor.execute('SELECT schema FROM schema')
-        schema = self.cursor.fetchone()
-        if schema:
-            return eval(schema[0])
-        return None
-
     def save_journal(self, classname, cols, nodeid, journaldate,
                 journaltag, action, params):
         params = repr(params)

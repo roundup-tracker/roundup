@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.13 2004-02-11 23:55:09 richard Exp $
+# $Id: back_sqlite.py,v 1.14 2004-03-05 00:08:09 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -30,7 +30,7 @@ class Database(rdbms_common.Database):
         self.conn = sqlite.connect(db=db)
         self.cursor = self.conn.cursor()
         try:
-            self.database_schema = self.load_dbschema()
+            self.load_dbschema()
         except sqlite.DatabaseError, error:
             if str(error) != 'no such table: schema':
                 raise
@@ -38,6 +38,15 @@ class Database(rdbms_common.Database):
             self.cursor.execute('create table schema (schema varchar)')
             self.cursor.execute('create table ids (name varchar, num integer)')
             self.cursor.execute('create index ids_name_idx on ids(name)')
+            self.create_version_2_tables()
+
+    def create_version_2_tables(self):
+        self.cursor.execute('create table otks (key varchar, '
+            'value varchar, __time varchar)')
+        self.cursor.execute('create index otks_key_idx on otks(key)')
+        self.cursor.execute('create table sessions (key varchar, '
+            'last_use varchar, user varchar)')
+        self.cursor.execute('create index sessions_key_idx on sessions(key)')
 
     def sql_close(self):
         ''' Squash any error caused by us already having closed the

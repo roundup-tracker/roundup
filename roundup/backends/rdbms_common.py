@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.75 2004-02-11 23:55:09 richard Exp $
+# $Id: rdbms_common.py,v 1.76 2004-03-05 00:08:09 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -19,6 +19,12 @@ sql_* methods, since everything else should be fairly generic. There's
 probably a bit of work to be done if a database is used that actually
 honors column typing, since the initial databases don't (sqlite stores
 everything as a string.)
+
+The schema of the hyperdb being mapped to the database is stored in the
+database itself as a repr()'ed dictionary of information about each Class
+that maps to a table. If that information differs from the hyperdb schema,
+then we update it. We also store in the schema dict a __version__ which
+allows us to upgrade the database schema when necessary. See upgrade_db().
 '''
 __docformat__ = 'restructuredtext'
 
@@ -77,7 +83,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache_lru = []
 
     def sql_open_connection(self):
-        ''' Open a connection to the database, creating it if necessary
+        ''' Open a connection to the database, creating it if necessary.
+
+            Must call self.load_dbschema()
         '''
         raise NotImplemented
 
@@ -106,17 +114,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         return re.sub("'", "''", str(value))
 
+    def load_dbschema(self):
+        ''' Load the schema definition that the database currently implements
+        '''
+        self.cursor.execute('select schema from schema')
+        self.database_schema = eval(self.cursor.fetchone()[0])
+
     def save_dbschema(self, schema):
         ''' Save the schema definition that the database currently implements
         '''
         s = repr(self.database_schema)
         self.sql('insert into schema values (%s)', (s,))
-
-    def load_dbschema(self):
-        ''' Load the schema definition that the database currently implements
-        '''
-        self.cursor.execute('select schema from schema')
-        return eval(self.cursor.fetchone()[0])
 
     def post_init(self):
         ''' Called once the schema initialisation has finished.
@@ -124,6 +132,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             We should now confirm that the schema defined by our "classes"
             attribute actually matches the schema in the database.
         '''
+        self.upgrade_db()
+
         # now detect changes in the schema
         save = 0
         for classname, spec in self.classes.items():
@@ -154,6 +164,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         # commit
         self.conn.commit()
+
+    # update this number when we need to make changes to the SQL structure
+    # of the backen database
+    current_db_version = 2
+    def upgrade_db(self):
+        ''' Update the SQL database to reflect changes in the backend code.
+        '''
+        version = self.database_schema.get('__version', 1)
+        if version == 1:
+            # version 1 doesn't have the OTK, session and indexing in the
+            # database
+            self.create_version_2_tables()
+
+        self.database_schema['__version'] = self.current_db_version
+
 
     def refresh_database(self):
         self.post_init()
