@@ -16,7 +16,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.34 2002-09-26 07:41:54 richard Exp $
+# $Id: admin.py,v 1.35 2002-10-03 06:56:28 richard Exp $
+
+'''Administration commands for maintaining Roundup trackers.
+'''
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -51,7 +54,17 @@ class UsageError(ValueError):
     pass
 
 class AdminTool:
+    ''' A collection of methods used in maintaining Roundup trackers.
 
+        Typically these methods are accessed through the roundup-admin
+        script. The main() method provided on this class gives the main
+        loop for the roundup-admin script.
+
+        Actions are defined by do_*() methods, with help for the action
+        given in the method docstring.
+
+        Additional help may be supplied by help_*() methods.
+    '''
     def __init__(self):
         self.commands = CommandDict()
         for k in AdminTool.__dict__.keys():
@@ -73,14 +86,20 @@ class AdminTool:
             raise UsageError, _('no such class "%(classname)s"')%locals()
 
     def props_from_args(self, args):
+        ''' Produce a dictionary of prop: value from the args list.
+
+            The args list is specified as ``prop=value prop=value ...``.
+        '''
         props = {}
         for arg in args:
             if arg.find('=') == -1:
-                raise UsageError, _('argument "%(arg)s" not propname=value')%locals()
+                raise UsageError, _('argument "%(arg)s" not propname=value'
+                    )%locals()
             try:
                 key, value = arg.split('=')
             except ValueError:
-                raise UsageError, _('argument "%(arg)s" not propname=value')%locals()
+                raise UsageError, _('argument "%(arg)s" not propname=value'
+                    )%locals()
             if value:
                 props[key] = value
             else:
@@ -88,6 +107,8 @@ class AdminTool:
         return props
 
     def usage(self, message=''):
+        ''' Display a simple usage message.
+        '''
         if message:
             message = _('Problem: %(message)s)\n\n')%locals()
         print _('''%(message)sUsage: roundup-admin [options] <command> <arguments>
@@ -106,6 +127,8 @@ Help:
         self.help_commands()
 
     def help_commands(self):
+        ''' List the commands available with their precis help.
+        '''
         print _('Commands:'),
         commands = ['']
         for command in self.commands.values():
@@ -118,11 +141,13 @@ Help:
         print
 
     def help_commands_html(self, indent_re=re.compile(r'^(\s+)\S+')):
-	commands = self.commands.values()
+        ''' Produce an HTML command list.
+        '''
+        commands = self.commands.values()
         def sortfun(a, b):
             return cmp(a.__name__, b.__name__)
         commands.sort(sortfun)
-	for command in commands:
+        for command in commands:
             h = command.__doc__.split('\n')
             name = command.__name__[3:]
             usage = h[0]
@@ -308,7 +333,8 @@ Command help:
         print _('''
  You should now edit the tracker configuration file:
    %(config_file)s
- ... at a minimum, you must set MAILHOST, MAIL_DOMAIN and ADMIN_EMAIL.
+ ... at a minimum, you must set MAILHOST, TRACKER_WEB, MAIL_DOMAIN and
+ ADMIN_EMAIL.
 
  If you wish to modify the default schema, you should also edit the database
  initialisation file:

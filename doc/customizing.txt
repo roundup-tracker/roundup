@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.50 $
+:Version: $Revision: 1.51 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -13,6 +13,9 @@ Customising Roundup
 What You Can Do
 ===============
 
+Before you get too far, it's probably worth having a quick read of the Roundup
+`design documentation`_.
+
 Customisation of Roundup can take one of five forms:
 
 1. `tracker configuration`_ file changes
@@ -20,6 +23,7 @@ Customisation of Roundup can take one of five forms:
 3. "definition" class `database content`_ changes
 4. behavioural changes, through detectors_
 5. `access controls`_
+6. change the `web interface`_
 
 The third case is special because it takes two distinctly different forms
 depending upon whether the tracker has been initialised or not. The other two
@@ -190,44 +194,26 @@ tracker. The "classic" schema looks like this::
 
     pri = Class(db, "priority", name=String(), order=String())
     pri.setkey("name")
-    pri.create(name="critical", order="1")
-    pri.create(name="urgent", order="2")
-    pri.create(name="bug", order="3")
-    pri.create(name="feature", order="4")
-    pri.create(name="wish", order="5")
 
     stat = Class(db, "status", name=String(), order=String())
     stat.setkey("name")
-    stat.create(name="unread", order="1")
-    stat.create(name="deferred", order="2")
-    stat.create(name="chatting", order="3")
-    stat.create(name="need-eg", order="4")
-    stat.create(name="in-progress", order="5")
-    stat.create(name="testing", order="6")
-    stat.create(name="done-cbb", order="7")
-    stat.create(name="resolved", order="8")
 
     keyword = Class(db, "keyword", name=String())
     keyword.setkey("name")
 
-    user = Class(db, "user", username=String(), password=String(),
-        address=String(), realname=String(), phone=String(),
-        organisation=String())
+    user = Class(db, "user", username=String(), organisation=String(),
+        password=String(), address=String(), realname=String(), phone=String())
     user.setkey("username")
-    user.create(username="admin", password=adminpw,
-        address=config.ADMIN_EMAIL)
 
-    msg = FileClass(db, "msg", author=Link("user"), recipients=Multilink
-        ("user"), date=Date(), summary=String(), files=Multilink("file"))
+    msg = FileClass(db, "msg", author=Link("user"), summary=String(),
+        date=Date(), recipients=Multilink("user"), files=Multilink("file"))
 
     file = FileClass(db, "file", name=String(), type=String())
 
-    issue = IssueClass(db, "issue", assignedto=Link("user"),
-        topic=Multilink("keyword"), priority=Link("priority"), status=Link
-        ("status"))
+    issue = IssueClass(db, "issue", topic=Multilink("keyword"),
+        status=Link("status"), assignedto=Link("user"),
+        priority=Link("priority"))
     issue.setkey('title')
-
-XXX security definitions
 
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
@@ -432,6 +418,143 @@ case though, so be careful to use the right one.
 
 See "`adding a new field to the classic schema`_" for an example that requires
 database content changes.
+
+
+Access Controls
+===============
+
+A set of Permissions are built in to the security module by default:
+
+- Edit (everything)
+- View (everything)
+
+The default interfaces define:
+
+- Web Registration
+- Web Access
+- Web Roles
+- Email Registration
+- Email Access
+
+These are hooked into the default Roles:
+
+- Admin (Edit everything, View everything, Web Roles)
+- User (Web Access, Email Access)
+- Anonymous (Web Registration, Email Registration)
+
+And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
+gets the "Anonymous" assigned when the database is initialised on installation.
+The two default schemas then define:
+
+- Edit issue, View issue (both)
+- Edit file, View file (both)
+- Edit msg, View msg (both)
+- Edit support, View support (extended only)
+
+and assign those Permissions to the "User" Role. Put together, these settings
+appear in the ``open()`` function of the tracker ``dbinit.py`` (the following
+is taken from the "minimal" template ``dbinit.py``)::
+
+    #
+    # SECURITY SETTINGS
+    #
+    # new permissions for this schema
+    for cl in ('user', ):
+        db.security.addPermission(name="Edit", klass=cl,
+            description="User is allowed to edit "+cl)
+        db.security.addPermission(name="View", klass=cl,
+            description="User is allowed to access "+cl)
+
+    # and give the regular users access to the web and email interface
+    p = db.security.getPermission('Web Access')
+    db.security.addPermissionToRole('User', p)
+    p = db.security.getPermission('Email Access')
+    db.security.addPermissionToRole('User', p)
+
+    # May users view other user information? Comment these lines out
+    # if you don't want them to
+    p = db.security.getPermission('View', 'user')
+    db.security.addPermissionToRole('User', p)
+
+    # Assign the appropriate permissions to the anonymous user's Anonymous
+    # Role. Choices here are:
+    # - Allow anonymous users to register through the web
+    p = db.security.getPermission('Web Registration')
+    db.security.addPermissionToRole('Anonymous', p)
+    # - Allow anonymous (new) users to register through the email gateway
+    p = db.security.getPermission('Email Registration')
+    db.security.addPermissionToRole('Anonymous', p)
+
+
+New User Roles
+--------------
+
+New users are assigned the Roles defined in the config file as:
+
+- NEW_WEB_USER_ROLES
+- NEW_EMAIL_USER_ROLES
+
+
+Changing Access Controls
+------------------------
+
+You may alter the configuration variables to change the Role that new web or
+email users get, for example to not give them access to the web interface if
+they register through email. 
+
+You may use the ``roundup-admin`` "``security``" command to display the
+current Role and Permission configuration in your tracker.
+
+Adding a new Permission
+~~~~~~~~~~~~~~~~~~~~~~~
+
+When adding a new Permission, you will need to:
+
+1. add it to your tracker's dbinit so it is created
+2. enable it for the Roles that should have it (verify with
+   "``roundup-admin security``")
+3. add it to the relevant HTML interface templates
+4. add it to the appropriate xxxPermission methods on in your tracker
+   interfaces module
+
+Example Scenarios
+~~~~~~~~~~~~~~~~~
+
+**automatic registration of users in the e-mail gateway**
+ By giving the "anonymous" user the "Email Registration" Role, any
+ unidentified user will automatically be registered with the tracker (with
+ no password, so they won't be able to log in through the web until an admin
+ sets them a password). Note: this is the default behaviour in the tracker
+ templates that ship with Roundup.
+
+**anonymous access through the e-mail gateway**
+ Give the "anonymous" user the "Email Access" and ("Edit", "issue") Roles
+ but not giving them the "Email Registration" Role. This means that when an
+ unknown user sends email into the tracker, they're automatically logged in
+ as "anonymous". Since they don't have the "Email Registration" Role, they
+ won't be automatically registered, but since "anonymous" has permission
+ to use the gateway, they'll still be able to submit issues. Note that the
+ Sender information - their email address - will not be available - they're
+ *anonymous*.
+
+**only developers may be assigned issues**
+ Create a new Permission called "Fixer" for the "issue" class. Create a new
+ Role "Developer" which has that Permission, and assign that to the
+ appropriate users. Filter the list of users available in the assignedto
+ list to include only those users. Enforce the Permission with an auditor. See
+ the example `restricting the list of users that are assignable to a task`_.
+
+**only managers may sign off issues as complete**
+ Create a new Permission called "Closer" for the "issue" class. Create a new
+ Role "Manager" which has that Permission, and assign that to the appropriate
+ users. In your web interface, only display the "resolved" issue state option
+ when the user has the "Closer" Permissions. Enforce the Permission with
+ an auditor. This is very similar to the previous example, except that the
+ web interface check would look like::
+
+   <option tal:condition="python:request.user.hasPermission('Closer')"
+           value="resolved">Resolved</option>
+ 
 
 
 Web Interface
@@ -777,9 +900,19 @@ forms:
    stringified. Path expressions may have an optional ``path:`` prefix, though
    they are the default expression type, so it's not necessary.
 
-   XXX | components of expressions
+   If an expression evaluates to ``default`` then the expression is
+   "cancelled" - whatever HTML already exists in the template will remain
+   (tag content in the case of tal:content, attributes in the case of
+   tal:attributes).
 
-   XXX "nothing" and "default"
+   If an expression evaluates to ``nothing`` then the target of the expression
+   is removed (tag content in the case of tal:content, attributes in the case
+   of tal:attributes and the tag itself in the case of tal:replace).
+
+   If an element in the path may not exist, then you can use the ``|``
+   operator in the expression to provide an alternative. So, the expression
+   ``request/form/foo/value | default`` would simply leave the current HTML
+   in place if the "foo" form variable doesn't exist.
 
 **String Expressions** - eg. ``string:hello ${user/name}``
    These expressions are simple string interpolations (though they can be just
@@ -1421,90 +1554,69 @@ through the "journal" method of the item*::
 Defining new web actions
 ------------------------
 
-XXX
+You may define new actions to be triggered by the ``:action`` form variable.
+These are added to the tracker ``interfaces.py`` as methods on the ``Client``
+class. 
+
+Adding action methods takes three steps; first you `define the new action
+method`_, then you `register the action method`_ with the cgi interface so
+it may be triggered by the ``:action`` form variable. Finally you actually
+`use the new action`_ in your HTML form.
+
+See "`setting up a "wizard" (or "druid") for controlled adding of issues`_"
+for an example.
+
+Define the new action method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The action methods have the following interface::
+
+    def myActionMethod(self):
+        ''' Perform some action. No return value is required.
+        '''
+
+The *self* argument is an instance of your tracker ``instance.Client`` class - 
+thus it's mostly implemented by ``roundup.cgi.Client``. See the docstring of
+that class for details of what it can do.
+
+The method will typically check the ``self.form`` variable's contents. It
+may then:
+
+- add information to ``self.ok_message`` or ``self.error_message``
+- change the ``self.template`` variable to alter what the user will see next
+- raise Unauthorised, SendStaticFile, SendFile, NotFound or Redirect
+  exceptions
 
 
-Access Controls
-===============
+Register the action method
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A set of Permissions are built in to the security module by default:
+The method is now written, but isn't available to the user until you add it to
+the `instance.Client`` class ``actions`` variable, like so::
 
-- Edit (everything)
-- View (everything)
+    actions = client.Class.actions + (
+        ('myaction', 'myActionMethod'),
+    )
 
-The default interfaces define:
+This maps the action name "myaction" to the action method we defined.
 
-- Web Registration
-- Web Access
-- Web Roles
-- Email Registration
-- Email Access
 
-These are hooked into the default Roles:
+Use the new action
+~~~~~~~~~~~~~~~~~~
 
-- Admin (Edit everything, View everything, Web Roles)
-- User (Web Access, Email Access)
-- Anonymous (Web Registration, Email Registration)
+In your HTML form, add a hidden form element like so::
 
-And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
-gets the "Anonymous" assigned when the database is initialised on installation.
-The two default schemas then define:
+  <input type="hidden" name=":action" value="myaction">
 
-- Edit issue, View issue (both)
-- Edit file, View file (both)
-- Edit msg, View msg (both)
-- Edit support, View support (extended only)
-
-and assign those Permissions to the "User" Role. New users are assigned the
-Roles defined in the config file as:
-
-- NEW_WEB_USER_ROLES
-- NEW_EMAIL_USER_ROLES
-
-You may alter the configuration variables to change the Role that new web or
-email users get, for example to not give them access to the web interface if
-they register through email.
-
-You may use the ``roundup-admin`` "``security``" command to display the
-current Role and Permission configuration in your tracker.
-
-Adding a new Permission
------------------------
-
-When adding a new Permission, you will need to:
-
-1. add it to your tracker's dbinit so it is created
-2. enable it for the Roles that should have it (verify with
-   "``roundup-admin security``")
-3. add it to the relevant HTML interface templates
-4. add it to the appropriate xxxPermission methods on in your tracker
-   interfaces module
-
-Example Scenarios
------------------
-
-**automatic registration of users in the e-mail gateway**
- By giving the "anonymous" user the "Email Registration" Role, any
- unidentified user will automatically be registered with the tracker (with
- no password, so they won't be able to log in through the web until an admin
- sets them a password). Note: this is the default behaviour in the tracker
- templates that ship with Roundup.
-
-**anonymous access through the e-mail gateway**
- Give the "anonymous" user the "Email Access" and ("Edit", "issue") Roles
- but not giving them the "Email Registration" Role. This means that when an
- unknown user sends email into the tracker, they're automatically logged in
- as "anonymous". Since they don't have the "Email Registration" Role, they
- won't be automatically registered, but since "anonymous" has permission
- to use the gateway, they'll still be able to submit issues. Note that the
- Sender information - their email address - will not be available - they're
- *anonymous*.
-
-XXX more examples needed
+where "myaction" is the name you registered in the previous step.
 
 
 Examples
 ========
+
+.. contents::
+   :local:
+   :depth: 1
 
 Adding a new field to the classic schema
 ----------------------------------------
@@ -2101,7 +2213,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
    hooks to those actions in the "actions" attribute on that class, like so::
 
     actions = client.Class.actions + (
-        ('page1_submit', page1SubmitAction),
+        ('page1_submit', 'page1SubmitAction'),
     )
 
     def page1SubmitAction(self):
@@ -2157,9 +2269,100 @@ matches.
 We also remove the redundant password fields from the ``user.item`` template.
 
 
+Adding a "vacation" flag to users for stopping nosy messages
+------------------------------------------------------------
+
+When users go on vacation and set up vacation email bouncing, you'll start to
+see a lot of messages come back through Roundup "Fred is on vacation". Not
+very useful, and relatively easy to stop.
+
+1. add a "vacation" flag to your users::
+
+         user = Class(db, "user",
+                    username=String(),   password=Password(),
+                    address=String(),    realname=String(),
+                    phone=String(),      organisation=String(),
+                    alternate_addresses=String(),
+                    roles=String(), queries=Multilink("query"),
+                    vacation=Boolean())
+
+2. edit your detector ``nosyreactor.py`` so that the ``nosyreaction()``
+   consists of::
+
+    def nosyreaction(db, cl, nodeid, oldvalues):
+        # send a copy of all new messages to the nosy list
+        for msgid in determineNewMessages(cl, nodeid, oldvalues):
+            try:
+                users = db.user
+                messages = db.msg
+
+                # figure the recipient ids
+                sendto = []
+                r = {}
+                recipients = messages.get(msgid, 'recipients')
+                for recipid in messages.get(msgid, 'recipients'):
+                    r[recipid] = 1
+
+                # figure the author's id, and indicate they've received the
+                # message
+                authid = messages.get(msgid, 'author')
+
+                # possibly send the message to the author, as long as they aren't
+                # anonymous
+                if (db.config.MESSAGES_TO_AUTHOR == 'yes' and
+                        users.get(authid, 'username') != 'anonymous'):
+                    sendto.append(authid)
+                r[authid] = 1
+
+                # now figure the nosy people who weren't recipients
+                nosy = cl.get(nodeid, 'nosy')
+                for nosyid in nosy:
+                    # Don't send nosy mail to the anonymous user (that user
+                    # shouldn't appear in the nosy list, but just in case they
+                    # do...)
+                    if users.get(nosyid, 'username') == 'anonymous':
+                        continue
+                    # make sure they haven't seen the message already
+                    if not r.has_key(nosyid):
+                        # send it to them
+                        sendto.append(nosyid)
+                        recipients.append(nosyid)
+
+                # generate a change note
+                if oldvalues:
+                    note = cl.generateChangeNote(nodeid, oldvalues)
+                else:
+                    note = cl.generateCreateNote(nodeid)
+
+                # we have new recipients
+                if sendto:
+                    # filter out the people on vacation
+                    sendto = [i for i in sendto if not users.get(i, 'vacation', 0)]
+
+                    # map userids to addresses
+                    sendto = [users.get(i, 'address') for i in sendto]
+
+                    # update the message's recipients list
+                    messages.set(msgid, recipients=recipients)
+
+                    # send the message
+                    cl.send_message(nodeid, msgid, note, sendto)
+            except roundupdb.MessageSendError, message:
+                raise roundupdb.DetectorError, message
+
+   Note that this is the standard nosy reaction code, with the small addition
+   of::
+
+    # filter out the people on vacation
+    sendto = [i for i in sendto if not users.get(i, 'vacation', 0)]
+
+   which filters out the users that have the vacation flag set to true.
+
+
 -------------------
 
 Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
+.. _`design documentation`: design.html
 

@@ -16,7 +16,7 @@ You are not allowed to view this page.
  <th>Email address</th>
 </tr>
 <tr tal:repeat="user context/list"
-    tal:attributes="class python:['row-normal', 'row-alt'][repeat['user'].even()]">
+    tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
  <td>
   <a tal:attributes="href string:user${user/id}"
      tal:content="user/username">username</a>

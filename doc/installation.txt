@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.29 $
+:Version: $Revision: 1.30 $
 
 .. contents::
 
@@ -117,7 +117,14 @@ Basic Installation Steps
           Select backend [anydbm]: anydbm
 
       You will now be directed to edit the tracker configuration and
-      initial schema. See `Customising Roundup`_ for details on configuration
+      initial schema.  At a minimum, you must set ``MAILHOST``,
+      ``TRACKER_WEB``, ``MAIL_DOMAIN`` and ``ADMIN_EMAIL``. If you just want
+      to get set up to test things quickly, you can even just set the
+      TRACKER_WEB variable to::
+
+         TRACKER_WEB = 'http://localhost:8080/support/'
+
+      See `Customising Roundup`_ for details on configuration
       and schema changes. Note that you may change any of the configuration
       after you've initialised the tracker - it's just better to have valid
       values for this stuff now.
@@ -131,9 +138,19 @@ Basic Installation Steps
 
       Once this is done, the tracker has been created.
 
-At this point, your tracker is set up, but doesn't have a nice user interface.
-To set that up, we need to `configure a web interface`_ and optionally
-`configure an email interface`_.
+3. At this point, your tracker is set up, but doesn't have a nice user
+   interface. To set that up, we need to `configure a web interface`_ and
+   optionally `configure an email interface`_. To quickly test the web
+   interface, assuming ``TRACKER_WEB`` is set to
+   ``'http://localhost:8080/support/'``::
+
+     roundup-server -p 8080 support=/opt/roundup/trackers/support
+
+   then direct your web browser at:
+
+     http://locahost:8080/support/
+
+   and you should see the tracker interface.
 
 
 Choosing Your Template

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.48 2002-09-27 01:04:38 richard Exp $
+# $Id: client.py,v 1.49 2002-10-03 06:56:29 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -48,23 +48,36 @@ def initialiseSecurity(security):
     security.addPermissionToRole('Admin', p)
 
 class Client:
-    '''
-    A note about login
-    ------------------
+    ''' Instantiate to handle one CGI request.
 
-    If the user has no login cookie, then they are anonymous. There
-    are two levels of anonymous use. If there is no 'anonymous' user, there
-    is no login at all and the database is opened in read-only mode. If the
-    'anonymous' user exists, the user is logged in using that user (though
-    there is no cookie). This allows them to modify the database, and all
-    modifications are attributed to the 'anonymous' user.
+    See inner_main for request processing.
 
-    Once a user logs in, they are assigned a session. The Client instance
-    keeps the nodeid of the session as the "session" attribute.
-
-    Client attributes:
+    Client attributes at instantiation:
         "path" is the PATH_INFO inside the instance (with no leading '/')
         "base" is the base URL for the instance
+        "form" is the cgi form, an instance of FieldStorage from the standard
+               cgi module
+        "additional_headers" is a dictionary of additional HTTP headers that
+               should be sent to the client
+        "response_code" is the HTTP response code to send to the client
+
+    During the processing of a request, the following attributes are used:
+        "error_message" holds a list of error messages
+        "ok_message" holds a list of OK messages
+        "session" is the current user session id
+        "user" is the current user's name
+        "userid" is the current user's id
+        "template" is the current :template context
+        "classname" is the current class context name
+        "nodeid" is the current context item id
+
+    User Identification:
+     If the user has no login cookie, then they are anonymous and are logged
+     in as that user. This typically gives them all Permissions assigned to the
+     Anonymous Role.
+
+     Once a user logs in, they are assigned a session. The Client instance
+     keeps the nodeid of the session as the "session" attribute.
     '''
 
     def __init__(self, instance, request, env, form=None):
@@ -134,7 +147,6 @@ class Client:
             - NotFound       (raised wherever it needs to be)
               percolates up to the CGI interface that called the client
         '''
-        self.content_action = None
         self.ok_message = []
         self.error_message = []
         try:
@@ -167,7 +179,10 @@ class Client:
         except SendStaticFile, file:
             self.serve_static_file(str(file))
         except Unauthorised, message:
-            self.write(self.renderTemplate('page', '', error_message=message))
+            self.classname=None
+            self.template=''
+            self.error_message.append(message)
+            self.write(self.renderContext())
         except NotFound:
             # pass through
             raise

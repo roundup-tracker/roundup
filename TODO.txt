@@ -30,6 +30,8 @@ pending mailgw    Allow multiple email addresses at one gw with different
 
 pending mailgw    Identification of users should have a configurable degree of
                   strictness (ie. turn off username==address matching)
+pending mailgw    Use in-reply-to for determining message lineage when subject
+                  line lets us down
 pending project   switch to a Roundup instance for Roundup bug/feature tracking
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
@@ -44,15 +46,18 @@ pending web       Quick help links next to the property labels giving a
 pending web       clicking on a group header should filter for that type of
                   entry
 pending web       re-enable auth basic http auth
-pending web       search "refinement" - pre-fill the search page with the
-                  current search parameters
-pending web       UNIX init.d script for roundup-server
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
 pending web       automagically link designators
 pending web       add checkbox-based removal/addition for multilink entries
                   (eg "add me"/"remove me" for nosy list)
+pending web       multilink item removal action (with retirement)
+pending web       search "refinement" - pre-fill the search page with the
+                  current search parameters
+pending web       column-heading sort stuff isn't implemented
 
+active  web       UNIX init.d script for roundup-server
 bug     docs      need to mention somewhere how sorting works
+bug     web       query editing isn't fully implemented
 ======= ========= =============================================================
 

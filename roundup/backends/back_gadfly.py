@@ -1,5 +1,6 @@
-# $Id: back_gadfly.py,v 1.27 2002-09-26 03:04:24 richard Exp $
-__doc__ = '''
+# $Id: back_gadfly.py,v 1.28 2002-10-03 06:56:29 richard Exp $
+''' Gadlfy relational database hypderb backend.
+
 About Gadfly
 ============
 
@@ -7,25 +8,6 @@ Gadfly  is  a  collection  of  python modules that provides relational
 database  functionality  entirely implemented in Python. It supports a
 subset  of  the intergalactic standard RDBMS Structured Query Language
 SQL.
-
-
-Basic Structure
-===============
-
-We map roundup classes to relational tables. Automatically detect schema
-changes and modify the gadfly table schemas appropriately. Multilinks
-(which represent a many-to-many relationship) are handled through
-intermediate tables.
-
-Journals are stored adjunct to the per-class tables.
-
-Table names and columns have "_" prepended so the names can't
-clash with restricted names (like "order"). Retirement is determined by the
-__retired__ column being true.
-
-All columns are defined as VARCHAR, since it really doesn't matter what
-type they're defined as. We stuff all kinds of data in there ;) [as long as
-it's marshallable, gadfly doesn't care]
 
 
 Additional Instance Requirements

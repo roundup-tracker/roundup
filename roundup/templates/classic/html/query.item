@@ -1,16 +1,3 @@
-<tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">Query editing</title>
-<td class="page-header-top" metal:fill-slot="body_title">
- <h2>Query editing</h2>
-</td>
-<td class="content" metal:fill-slot="content">
-<span tal:condition="not:context/is_edit_ok">
-You are not allowed to view this page.
-</span>
+<!-- query.item -->
+<span tal:content="structure context/renderQueryForm" />
 
-<span tal:condition="context/is_edit_ok"
-      tal:content="structure context/renderQueryForm" />
-
-</td>
-
-</tal:block>

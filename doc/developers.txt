@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -35,6 +35,46 @@ CVS Access
 
 To get CVS access, contact richard@users.sourceforge.net.
 
+CVS stuff:
+
+1. to tag a release (eg. the pre-release of 0.5.0)::
+
+    cvs tag release-0-5-0-pr1
+
+1. to make a branch (eg. branching for code freeze/release)::
+
+    cvs co -d maint-0-5 -r release-0-5-0-pr1
+    cd maint-0-5 
+    cvs tag -b maint-0-5
+
+2. to check out a branch (eg. the maintenance branch for 0.5.x)::
+
+    cvs co -d maint-0-5 -r maint-0-5
+
+3. to merge changes from the maintenance branch to the trunk, in the
+   directory containing the HEAD checkout::
+
+    cvs up -j maint-0-5
+
+Standard tag names:
+
+*release-maj-min-patch[-sub]*
+  Release of the major.minor.patch release, possibly a beta or pre-release,
+  in which case *sub* will be one of "b*N*" or "pr*N*".
+*maint-maj-min*
+  Maintenance branch for the major.minor release. Patch releases are tagged in
+  this branch.
+
+Typically, release happen like this:
+
+1. work progresses in the HEAD branch until milestones are met,
+2. a series of beta releases are tagged in the HEAD until the code is
+   stable enough to freeze,
+3. the pre-release is tagged in the HEAD, with the resultant code branched
+   to the maintenance branch for that release,
+4. bugs in the release are patched in the maintenance branch, and the final
+   and patch releases are tagged there, and
+5. further major work happens in the HEAD.
 
 Project Rules
 -------------

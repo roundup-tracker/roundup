@@ -1135,34 +1135,29 @@ Displaying Properties
 ~~~~~~~~~~~~~~~~~~~~~
 
 Properties appear in the user interface in three contexts:
-in indices, in editors, and as filters.  For each type of
+in indices, in editors, and as search filters.  For each type of
 property, there are several display possibilities.  For example,
 in an index view, a string property may just be printed as
 a plain string, but in an editor view, that property should
 be displayed in an editable field.
 
 The display of a property is handled by functions in
-a displayers module.  Each function accepts at
-least three standard arguments -- the database, class name,
-and item id -- and returns a chunk of HTML.
+the ``cgi.templating`` module.
 
-Displayer functions are triggered by <display>
-tags in templates.  The call attribute of the tag
-provides a Python expression for calling the displayer
-function.  The three standard arguments are inserted in
-front of the arguments given.  For example, the occurrence of::
+Displayer functions are triggered by ``tal:content`` or ``tal:replace``
+tag attributes in templates.  The value of the attribute
+provides an expression for calling the displayer function.
+For example, the occurrence of::
 
-    <display call="plain('status', max=30)">
+    tal:content="context/status/plain"
 
 in a template triggers a call to::
     
-    plain(db, "issue", 13, "status", max=30)
+    context['status'].plain()
 
-
-when displaying issue 13 in the "issue" class.  The displayer
+where the context would be an item of the "issue" class.  The displayer
 functions can accept extra arguments to further specify
-details about the widgets that should be generated.  By defining new
-displayer functions, the user interface can be highly customized.
+details about the widgets that should be generated.
 
 Some of the standard displayer functions include:
 
@@ -1174,29 +1169,18 @@ plain     display a String property directly;
           to omit the time from the date stamp; for a Link or Multilink
           property, display the key strings of the linked items (or the
           ids if the linked class has no key property)
-field     display a property like the
-          plain displayer above, but in a text field
-          to be edited
-menu      for a Link property, display
-          a menu of the available choices
-link      for a Link or Multilink property,
-          display the names of the linked items, hyperlinked to the
-          issue views on those items
-count     for a Multilink property, display
-          a count of the number of links in the list
-reldate   display a Date property in terms
-          of an interval relative to the current date (e.g. "+ 3w", "- 2d").
-download  show a Link("file") or Multilink("file")
-          property using links that allow you to download files
-checklist for a Link or Multilink property,
-          display checkboxes for the available choices to permit filtering
+field     display a property like the plain displayer above, but in a text
+          field to be edited
+menu      for a Link property, display a menu of the available choices
 ========= ====================================================================
 
-TODO: See the htmltemplate pydoc for a complete list of the functions
+See the `customisation`_ documentation for the complete list.
 
 
 Index Views
 ~~~~~~~~~~~
+
+XXX The following needs to be clearer
 
 An index view contains two sections: a filter section
 and an index section.
@@ -1210,11 +1194,11 @@ Index View Specifiers
 An index view specifier looks like this (whitespace
 has been added for clarity)::
 
-    /issue?status=unread,in-progress,resolved&amp;
-        topic=security,ui&amp;
-        :group=priority&amp;
-        :sort=-activity&amp;
-        :filters=status,topic&amp;
+    /issue?status=unread,in-progress,resolved&
+        topic=security,ui&
+        :group=priority&
+        :sort=-activity&
+        :filters=status,topic&
         :columns=title,status,fixer
 
 
@@ -1256,29 +1240,6 @@ example is the default layout to be provided with
 the default bug-tracker schema described above in
 section 4.4.
 
-Filter Section
-""""""""""""""
-
-The template for a filter section provides the
-filtering widgets at the top of the index view.
-Fragments enclosed in ``<property>...</property>``
-tags are included or omitted depending on whether the
-view specifier requests a filter for a particular property.
-
-Here's a simple example of a filter template::
-
-    <property name=status>
-        <display call="checklist('status')">
-    </property>
-    <br>
-    <property name=priority>
-        <display call="checklist('priority')">
-    </property>
-    <br>
-    <property name=fixer>
-        <display call="menu('fixer')">
-    </property>
-
 Index Section
 """""""""""""
 
@@ -1293,15 +1254,9 @@ to display the values of the issue's properties.
 Here's a simple example of an index template::
 
     <tr>
-        <property name=title>
-            <td><display call="plain('title', max=50)"></td>
-        </property>
-        <property name=status>
-            <td><display call="plain('status')"></td>
-        </property>
-        <property name=fixer>
-            <td><display call="plain('fixer')"></td>
-        </property>
+      <td tal:condition="request/show/title" tal:content="contex/title"></td>
+      <td tal:condition="request/show/status" tal:content="contex/status"></td>
+      <td tal:condition="request/show/fixer" tal:content="contex/fixer"></td>
     </tr>
 
 Sorting
@@ -1340,36 +1295,25 @@ Here's an example of a basic editor template::
 
     <table>
     <tr>
-        <td colspan=2>
-            <display call="field('title', size=60)">
-        </td>
+        <td colspan=2 tal:content="python:context.title.field(size='60')"></td>
     </tr>
     <tr>
-        <td>
-            <display call="field('fixer', size=30)">
-        </td>
-        <td>
-            <display call="menu('status')>
-        </td>
+        <td tal:content="context/fixer/field"></td>
+        <td tal:content="context/status/menu"></td>
     </tr>
     <tr>
-        <td>
-            <display call="field('nosy', size=30)">
-        </td>
-        <td>
-            <display call="menu('priority')>
-        </td>
+        <td tal:content="context/nosy/field"></td>
+        <td tal:content="context/priority/menu"></td>
     </tr>
     <tr>
         <td colspan=2>
-            <display call="note()">
+          <textarea name=":note" rows=5 cols=60></textarea>
         </td>
     </tr>
     </table>
 
-As shown in the example, the editor template can also
-request the display of a "note" field, which is a
-text area for entering a note to go along with a change.
+As shown in the example, the editor template can also include a ":note" field,
+which is a text area for entering a note to go along with a change.
 
 When a change is submitted, the system automatically
 generates a message describing the changed properties.
@@ -1383,7 +1327,7 @@ An example of such a message might be this::
     fixer: (none)
     keywords: parrot,plumage,perch,nailed,dead
 
-If a note is given in the "note" field, the note is
+If a note is given in the ":note" field, the note is
 appended to the description.  The message is then added
 to the issue's message spool (thus triggering the standard
 detector to react by sending out this message to the nosy list).
@@ -1539,25 +1483,16 @@ to perform some action::
         # all ok
 
 Code in the core will make use of these methods, as should code in auditors in
-custom templates. The htmltemplate will implement a new tag, ``<require>``
-which has the form::
+custom templates. The HTML templating may access the access controls through
+the *user* attribute of the *request* variable. It exposes a ``hasPermission()``
+method::
 
-  <require permission="name,name,name" assignedto="$userid" status="open">
-   HTML to display if the user has the permission.
-  <else>
-   HTML to display if the user does not have the permission.
-  </require>
+  tal:condition="python:request.user.hasPermission('Edit', 'issue')"
 
-where:
+or, if the *context* is *issue*, then the following is the same::
 
-- the permission attribute gives a comma-separated list of permission names.
-  These are checked in turn using ``hasPermission`` and requires one to
-  be OK.
-- the other attributes are lookups on the item using ``hasItemPermission``. If
-  the attribute value is "$userid" then the current user's userid is tested.
+  tal:condition="python:request.user.hasPermission('Edit')"
 
-Any of these tests must pass or the ``<require>`` check will fail. The section
-of html within the side of the ``<else>`` that fails is remove from processing.
 
 Authentication of Users
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1605,8 +1540,7 @@ system - automated request handlers running various report/escalation scripts
 privacy - issues that are only visible to some users
     A new property is added to the issue which marks the user or group of
     users who are allowed to view and edit the issue. An auditor will check
-    for edit access, and the htmltemplate <require> tag can check for view
-    access.
+    for edit access, and the template user object can check for view access.
 
 
 Deployment Scenarios
@@ -1638,5 +1572,13 @@ Changes to this document
 - Added section Hyperdatabase Implementations
 - "Item" has been renamed to "Issue" to account for the more specific nature
   of the Class.
+- New Templating
+- Access Controls
 
+------------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
+.. _customisation: customizing.html
 

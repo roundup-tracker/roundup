@@ -6,7 +6,7 @@ Contents
 ========
 
 - Overview_ and Features_
-- Installation_ and `Getting Started`_ (and Upgrading_)
+- Installation_ and Upgrading_
 - `User Guide`_
 - `Customising Roundup`_
 - `Maintaining Roundup Trackers`_

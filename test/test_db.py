@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.57 2002-10-02 19:15:46 gmcm Exp $ 
+# $Id: test_db.py,v 1.58 2002-10-03 06:56:30 richard Exp $ 
 
 import unittest, os, shutil, time
 

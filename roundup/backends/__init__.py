@@ -15,7 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.18 2002-09-23 12:02:53 richard Exp $
+# $Id: __init__.py,v 1.19 2002-10-03 06:56:29 richard Exp $
+
+''' Container for the hyperdb storage backend implementations.
+
+The __all__ variable is constructed containing only the backends which are
+available.
+'''
 
 __all__ = []
 

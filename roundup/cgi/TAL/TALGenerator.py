@@ -237,7 +237,7 @@ class TALGenerator:
             else:
                 self.emit("setGlobal", name, cexpr)
 
-    def emitOnError(self, name, onError):
+    def emitOnError(self, name, onError, TALtag, isend):
         block = self.popProgram()
         key, expr = parseSubstitution(onError)
         cexpr = self.compileExpression(expr)
@@ -246,7 +246,10 @@ class TALGenerator:
         else:
             assert key == "structure"
             self.emit("insertStructure", cexpr, {}, [])
-        self.emitEndTag(name)
+        if TALtag:
+            self.emitOptTag(name, (None, 1), isend)
+        else:
+            self.emitEndTag(name)
         handler = self.popProgram()
         self.emit("onError", block, handler)
 
@@ -471,7 +474,11 @@ class TALGenerator:
             todo["scope"] = 1
         if onError:
             self.pushProgram() # handler
+            if TALtag:
+                self.pushProgram() # start
             self.emitStartTag(name, list(attrlist)) # Must copy attrlist!
+            if TALtag:
+                self.pushProgram() # start
             self.pushProgram() # block
             todo["onError"] = onError
         if define:
@@ -560,7 +567,7 @@ class TALGenerator:
         if condition:
             self.emitCondition(condition)
         if onError:
-            self.emitOnError(name, onError)
+            self.emitOnError(name, onError, optTag and optTag[1], isend)
         if scope:
             self.emit("endScope")
         if defineSlot:

@@ -15,9 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.13 2002-09-26 04:19:53 richard Exp $
+# $Id: __init__.py,v 1.14 2002-10-03 06:56:28 richard Exp $
 
-__doc__ = '''
+''' Roundup - issue tracking for knowledge workers.
+
 This is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces.
 
@@ -28,19 +29,19 @@ other participants. The system will facilitate communication among the
 participants by managing discussions and notifying interested parties when
 issues are edited. 
 
-Roundup's structure is that of a cake:
+Roundup's structure is that of a cake::
 
- _________________________________________________________________________
-|  E-mail Client   |   Web Browser   |   Detector Scripts   |    Shell    |
-|------------------+-----------------+----------------------+-------------|
-|   E-mail User    |    Web User     |      Detector        |   Command   | 
-|-------------------------------------------------------------------------|
-|                         Roundup Database Layer                          |
-|-------------------------------------------------------------------------|
-|                          Hyperdatabase Layer                            |
-|-------------------------------------------------------------------------|
-|                             Storage Layer                               |
- -------------------------------------------------------------------------
+  _________________________________________________________________________
+ |  E-mail Client   |   Web Browser   |   Detector Scripts   |    Shell    |
+ |------------------+-----------------+----------------------+-------------|
+ |   E-mail User    |    Web User     |      Detector        |   Command   | 
+ |-------------------------------------------------------------------------|
+ |                         Roundup Database Layer                          |
+ |-------------------------------------------------------------------------|
+ |                          Hyperdatabase Layer                            |
+ |-------------------------------------------------------------------------|
+ |                             Storage Layer                               |
+  -------------------------------------------------------------------------
 
 The first layer represents the users (chocolate).
 The second layer is the Roundup interface to the users (vanilla).
@@ -48,10 +49,11 @@ The third and fourth layers are the internal Roundup database storage
   mechanisms (strawberry).
 The final, lowest layer is the underlying database storage (rum).
 
-These are implemented in the code in the following manner:
+These are implemented in the code in the following manner::
+
   E-mail User: roundup-mailgw and roundup.mailgw
      Web User: cgi-bin/roundup.cgi or roundup-server over
-               roundup.cgi_client, roundup.cgitb and roundup.htmltemplate
+               roundup.cgi.client and roundup.cgi.template
      Detector: roundup.roundupdb and templates/<template>/detectors
       Command: roundup-admin
    Roundup DB: roundup.roundupdb
@@ -65,6 +67,6 @@ written by Ka-Ping Yee in the "doc" directory. If nothing else, it has a
 much prettier cake :)
 '''
 
-__version__ = '0.5.0pr1'
+__version__ = '0.5.0'
 
 # vim: set filetype=python ts=4 sw=4 et si

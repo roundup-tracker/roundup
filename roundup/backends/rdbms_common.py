@@ -1,4 +1,25 @@
-# $Id: rdbms_common.py,v 1.19 2002-09-26 03:04:24 richard Exp $
+# $Id: rdbms_common.py,v 1.20 2002-10-03 06:56:29 richard Exp $
+''' Relational database (SQL) backend common code.
+
+Basics:
+
+- map roundup classes to relational tables
+- automatically detect schema changes and modify the table schemas
+  appropriately (we store the "database version" of the schema in the
+  database itself as the only row of the "schema" table)
+- multilinks (which represent a many-to-many relationship) are handled through
+  intermediate tables
+- journals are stored adjunct to the per-class tables
+- table names and columns have "_" prepended so the names can't clash with
+  restricted names (like "order")
+- retirement is determined by the __retired__ column being true
+
+Database-specific changes may generally be pushed out to the overridable
+sql_* methods, since everything else should be fairly generic. There's
+probably a bit of work to be done if a database is used that actually
+honors column typing, since the initial databases don't (sqlite stores
+everything as a string, and gadfly stores anything that's marsallable).
+'''
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy

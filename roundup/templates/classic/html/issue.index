@@ -29,7 +29,7 @@ You are not allowed to view this page.
        tal:content="python:i[request.group[1]]" class="group">
    </th>
   </tr>
-  <tr tal:attributes="class python:['normal', 'alt'][repeat['i'].even()]">
+  <tr tal:attributes="class python:['normal', 'alt'][repeat['i'].index%6/3]">
    <td tal:condition="request/show/priority" tal:content="i/priority"></td>
    <td tal:condition="request/show/id" tal:content="i/id"></td>
    <td nowrap tal:condition="request/show/activity"
@@ -44,23 +44,19 @@ You are not allowed to view this page.
    <td tal:condition="request/show/assignedto" tal:content="i/assignedto"></td>
   </tr>
  </tal:block>
- <tr>
-  <td style="padding: 0" tal:attributes="colspan python:len(request.columns)">
-   <table class="list">
-    <tr><th style="text-align: left; border: 0">
-     <a tal:define="prev batch/previous" tal:condition="prev"
-        tal:attributes="href python:request.indexargs_href(request.classname,
-        {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
-     &nbsp;
-    </th>
-    <th style="text-align: right; border: 0">
-     <a tal:define="next batch/next" tal:condition="next"
-        tal:attributes="href python:request.indexargs_href(request.classname,
-         {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
-     &nbsp;
-    </th></tr>
-   </table>
-  </td>
+ <tr class="navigation" tal:define="colspan python:len(request.columns)">
+  <th tal:attributes="colspan python:colspan/2">
+   <a tal:define="prev batch/previous" tal:condition="prev"
+      tal:attributes="href python:request.indexargs_href(request.classname,
+      {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
+   &nbsp;
+  </th>
+  <th tal:attributes="colspan python:colspan/2 + colspan%2">
+   <a tal:define="next batch/next" tal:condition="next"
+      tal:attributes="href python:request.indexargs_href(request.classname,
+      {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
+   &nbsp;
+  </th>
  </tr>
 </table>
 

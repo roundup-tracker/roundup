@@ -15,7 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.17 2002-09-13 08:20:12 richard Exp $
+#$Id: back_bsddb3.py,v 1.18 2002-10-03 06:56:29 richard Exp $
+'''
+This module defines a backend that saves the hyperdatabase in BSDDB3.
+'''
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date

@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.82 2002-09-09 23:55:19 richard Exp $
+# $Id: hyperdb.py,v 1.83 2002-10-03 06:56:29 richard Exp $
 
-__doc__ = """
+"""
 Hyperdatabase implementation, especially field types.
 """
 

@@ -646,7 +646,7 @@ class HTMLItem(HTMLPermissions):
         req.updateFromURL(self._klass.get(self._nodeid, 'url'))
 
         # new template, using the specified classname and request
-        pt = getTemplate(self._db.config.TEMPLATES, req.classname, 'search')
+        pt = Templates(self._db.config.TEMPLATES).get(req.classname, 'search')
 
         # use our fabricated request
         return pt.render(self._client, req.classname, req)
