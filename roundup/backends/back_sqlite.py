@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.23 2004-03-31 23:08:08 richard Exp $
+# $Id: back_sqlite.py,v 1.24 2004-04-07 01:12:26 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -12,6 +12,7 @@ __docformat__ = 'restructuredtext'
 import os, base64, marshal
 
 from roundup import hyperdb, date, password
+from roundup.backends import locking
 from roundup.backends import rdbms_common
 import sqlite
 
@@ -56,6 +57,12 @@ class Database(rdbms_common.Database):
     def open_connection(self):
         # ensure files are group readable and writable
         os.umask(0002)
+
+        # lock the database
+        lockfilenm = os.path.join(self.dir, 'lock')
+        self.lockfile = locking.acquire_lock(lockfilenm)
+        self.lockfile.write(str(os.getpid()))
+        self.lockfile.flush()
 
         (self.conn, self.cursor) = self.sql_open_connection()
 
@@ -210,10 +217,17 @@ class Database(rdbms_common.Database):
             connection.
         '''
         try:
-            self.conn.close()
-        except sqlite.ProgrammingError, value:
-            if str(value) != 'close failed - Connection is closed.':
-                raise
+            try:
+                self.conn.close()
+            except sqlite.ProgrammingError, value:
+                if str(value) != 'close failed - Connection is closed.':
+                    raise
+        finally:
+            # always release the lock
+            if self.lockfile is not None:
+                locking.release_lock(self.lockfile)
+                self.lockfile.close()
+                self.lockfile = None
 
     def sql_rollback(self):
         ''' Squash any error caused by us having closed the connection (and

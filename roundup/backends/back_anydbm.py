@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.140 2004-04-02 05:58:43 richard Exp $
+#$Id: back_anydbm.py,v 1.141 2004-04-07 01:12:25 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -741,7 +741,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if self.lockfile is not None:
             locking.release_lock(self.lockfile)
-        if self.lockfile is not None:
             self.lockfile.close()
             self.lockfile = None
 

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.43 2004-04-05 23:43:04 richard Exp $
+$Id: roundup_server.py,v 1.44 2004-04-07 01:12:26 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -26,7 +26,7 @@ from roundup import version_check
 from roundup import __version__ as roundup_version
 
 import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
-import BaseHTTPServer, socket, errno
+import SocketServer, BaseHTTPServer, socket, errno
 
 # Roundup modules of use here
 from roundup.cgi import cgitb, client
@@ -98,7 +98,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(403, self.path)
         except:
             exc, val, tb = sys.exc_info()
-            if hasattr(socket, 'timeout') and exc == socket.timeout:
+            if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
+                # we can't send socket timeout errors back to the client, duh
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 self.log_message(str(s.getvalue()))
@@ -462,8 +463,12 @@ def run(port=PORT, success_message=None):
         # obtain server before changing user id - allows to use port <
         # 1024 if started as root
         address = (hostname, port)
+        server_klass = BaseHTTPServer.HTTPServer
+        class server_klass(SocketServer.ForkingMixIn,
+                BaseHTTPServer.HTTPServer):
+            pass
         try:
-            httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
+            httpd = server_klass(address, RoundupRequestHandler)
         except socket.error, e:
             if e[0] == errno.EADDRINUSE:
                 raise socket.error, \

@@ -8,6 +8,7 @@ Feature:
 - added isset method to HTMLProperty
 - database export now exports full journals too
 - tracker name at end of page title (sf rfe 926840)
+- roundup-server now uses the ForkingMixin
 
 Fixed:
 - web CSV export was busted (as was any action returning a result)
@@ -22,6 +23,7 @@ Fixed:
 - roundup-admin install checks for existing tracker in target home
 - grouping (and sorting) by multilink in RDBMS backends (sf bug 655702)
 - roundup scripts may now be asked for their version (sf rfe 798657)
+- sqlite backend had stopped using the global lock
 
 
 2004-03-27 0.7.0b2
