@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.39 2001-12-02 05:06:16 richard Exp $
+# $Id: hyperdb.py,v 1.40 2001-12-14 23:42:57 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -101,6 +101,9 @@ class Class:
 
         # do the db-related init stuff
         db.addclass(self)
+
+    def __repr__(self):
+        return '<hypderdb.Class "%s">'%self.classname
 
     # Editing nodes:
 
@@ -868,6 +871,20 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2001/12/02 05:06:16  richard
+# . We now use weakrefs in the Classes to keep the database reference, so
+#   the close() method on the database is no longer needed.
+#   I bumped the minimum python requirement up to 2.1 accordingly.
+# . #487480 ] roundup-server
+# . #487476 ] INSTALL.txt
+#
+# I also cleaned up the change message / post-edit stuff in the cgi client.
+# There's now a clearly marked "TODO: append the change note" where I believe
+# the change note should be added there. The "changes" list will obviously
+# have to be modified to be a dict of the changes, or somesuch.
+#
+# More testing needed.
+#
 # Revision 1.38  2001/12/01 07:17:50  richard
 # . We now have basic transaction support! Information is only written to
 #   the database when the commit() method is called. Only the anydbm
