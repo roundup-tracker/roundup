@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.4 2004-01-07 22:44:44 richard Exp $
+# $Id: client.py,v 1.130.2.5 2004-01-15 00:05:52 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -518,7 +518,9 @@ class Client:
         }
         try:
             # let the template render figure stuff out
-            return pt.render(self, None, None, **args)
+            result = pt.render(self, None, None, **args)
+            self.additional_headers['Content-Type'] = pt.content_type
+            return result
         except NoTemplate, message:
             return '<strong>%s</strong>'%message
         except:

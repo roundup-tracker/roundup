@@ -6,6 +6,8 @@ Fixed:
 - mailgw handling of subject-line errors
 - allow serving of non-"file"-Class file content (eg. paper_file)
 - allow negative (new) ids in getItem
+- fixed content-type when templates are serving up xml (thanks Godefroid
+  Chapelle)
 
 
 2003-12-17 0.6.4
