@@ -125,6 +125,7 @@ Making sure that the ``'issue'`` part matches the class name of the page
 you're editing.
 
 Roundup server 
+--------------
 
 The roundup-server web interface now supports setgid and running on port
 < 1024.
