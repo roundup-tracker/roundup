@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.5 2002-08-23 05:33:32 richard Exp $
+# $Id: back_gadfly.py,v 1.6 2002-08-30 08:35:16 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1463,13 +1463,97 @@ class Class(hyperdb.Class):
         '''
         return self.db.getnodeids(self.classname, retired=0)
 
-    def filter(self, search_matches, filterspec, sort, group, 
-            num_re = re.compile('^\d+$')):
+    def filter(self, search_matches, filterspec, sort, group):
         ''' Return a list of the ids of the active nodes in this class that
             match the 'filter' spec, sorted by the group spec and then the
             sort spec
+
+            "filterspec" is {propname: value(s)}
+            "sort" is ['+propname', '-propname', 'propname', ...]
+            "group is ['+propname', '-propname', 'propname', ...]
+            "search_matches" is {nodeid: marker}
         '''
-        raise NotImplementedError
+        cn = self.classname
+
+        # figure the WHERE clause from the filterspec
+        props = self.getprops()
+        frum = ['_'+cn]
+        where = []
+        args = []
+        for k, v in filterspec.items():
+            propclass = props[k]
+            if isinstance(propclass, Multilink):
+                tn = '%s_%s'%(cn, k)
+                frum.append(tn)
+                if isinstance(v, type([])):
+                    s = ','.join(['?' for x in v])
+                    where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
+                    args = args + v
+                else:
+                    where.append('id=%s.nodeid and %s.linkid = ?'%(tn, tn))
+                    args.append(v)
+            else:
+                if isinstance(v, type([])):
+                    s = ','.join(['?' for x in v])
+                    where.append('_%s in (%s)'%(k, s))
+                    args = args + v
+                else:
+                    where.append('_%s=?'%k)
+                    args.append(v)
+
+        # add results of full text search
+        if search_matches is not None:
+            v = search_matches.keys()
+            s = ','.join(['?' for x in v])
+            where.append('id in (%s)'%s)
+            args = args + v
+
+        # figure the order by clause
+        orderby = []
+        ordercols = []
+        if sort:
+            for entry in sort:
+                if entry[0] != '-':
+                    orderby.append('_'+entry)
+                    ordercols.append(entry)
+                else:
+                    orderby.append('_'+entry[1:]+' desc')
+                    ordercols.append(entry)
+
+        # figure the group by clause
+        groupby = []
+        groupcols = []
+        if group:
+            for entry in group:
+                if entry[0] != '-':
+                    groupby.append('_'+entry)
+                    groupcols.append(entry)
+                else:
+                    groupby.append('_'+entry[1:]+' desc')
+                    groupcols.append(entry[1:])
+
+        # construct the SQL
+        frum = ','.join(frum)
+        where = ' and '.join(where)
+        cols = ['id']
+        if orderby:
+            cols = cols + ordercols
+            order = ' order by %s'%(','.join(orderby))
+        else:
+            order = ''
+        if groupby:
+            cols = cols + groupcols
+            group = ' group by %s'%(','.join(groupby))
+        else:
+            group = ''
+        cols = ','.join(cols)
+        sql = 'select %s from %s where %s%s%s'%(cols, frum, where, order,
+            group)
+        args = tuple(args)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'find', (self, sql, args)
+        cursor = self.db.conn.cursor()
+        cursor.execute(sql, args)
 
     def count(self):
         '''Get the number of nodes in this class.
@@ -1666,6 +1750,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/08/23 05:33:32  richard
+# implemented multilink changes (and a unit test)
+#
 # Revision 1.4  2002/08/23 05:00:38  richard
 # fixed read-only gadfly retire()
 #
