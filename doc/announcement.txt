@@ -1,4 +1,10 @@
-            Roundup 0.3.0 - an issue tracking system
+            Roundup 0.3.0pre1 - an issue tracking system
+
+**PREVIEW RELEASE**
+
+This release is in use by Bizar Software, but has had little testing beyond
+that. It contains several new features which will require migration, so
+we're releasing this preview for the bleeding-edge users.
 
 ** existing users _must_ read the MIGRATION.txt that accompanies the
 source.
@@ -28,8 +34,7 @@ doesn't even need to be "installed" to be operational, though a
 disutils-based install script is provided.
 
 It comes with two issue tracker templates and three database back-ends. 
-Back-ends for relational databases are being developed.
 
-Source is available at the website:
-      http://sourceforge.net/projects/roundup/
+Source and documentation is available at the website:
+      http://roundup.sourceforge.net/
 
