@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.5 2001-07-20 00:22:50 richard Exp $
+# $Id: roundupdb.py,v 1.6 2001-07-20 07:35:55 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -18,6 +18,8 @@ class Database(hyperdb.Database):
 
     def uidFromAddress(self, address):
         ''' address is from the rfc822 module, and therefore is (name, addr)
+
+            user is created if they don't exist in the db already
         '''
         (realname, address) = address
         users = self.user.stringFind(address=address)
@@ -374,6 +376,10 @@ def initDB(storagelocator, password):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/20 00:22:50  richard
+# Priority list changes - removed the redundant TODO and added support. See
+# roundup-devel for details.
+#
 # Revision 1.4  2001/07/19 06:27:07  anthonybaxter
 # fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
 # my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)

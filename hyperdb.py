@@ -1,8 +1,22 @@
-# $Id: hyperdb.py,v 1.4 2001-07-19 06:27:07 anthonybaxter Exp $
+# $Id: hyperdb.py,v 1.5 2001-07-20 07:35:55 richard Exp $
 
-import bsddb, os, cPickle, re, string
+# standard python modules
+import cPickle, re, string
 
+# roundup modules
 import date
+
+
+RETIRED_FLAG = '__hyperdb_retired'
+
+#
+# Here's where we figure which db to use....
+# 
+import hyperdb_bsddb
+Database = hyperdb_bsddb.Database
+hyperdb_bsddb.RETIRED_FLAG = RETIRED_FLAG
+
+
 #
 # Types
 #
@@ -45,165 +59,10 @@ class Multilink(BaseType, Link):
 class DatabaseError(ValueError):
     pass
 
+
 #
-# Now the database
+# The base Class class
 #
-RETIRED_FLAG = '__hyperdb_retired'
-class Database:
-    """A database for storing records containing flexible data types."""
-
-    def __init__(self, storagelocator, journaltag=None):
-        """Open a hyperdatabase given a specifier to some storage.
-
-        The meaning of 'storagelocator' depends on the particular
-        implementation of the hyperdatabase.  It could be a file name,
-        a directory path, a socket descriptor for a connection to a
-        database over the network, etc.
-
-        The 'journaltag' is a token that will be attached to the journal
-        entries for any edits done on the database.  If 'journaltag' is
-        None, the database is opened in read-only mode: the Class.create(),
-        Class.set(), and Class.retire() methods are disabled.
-        """
-        self.dir, self.journaltag = storagelocator, journaltag
-        self.classes = {}
-
-    #
-    # Classes
-    #
-    def __getattr__(self, classname):
-        """A convenient way of calling self.getclass(classname)."""
-        return self.classes[classname]
-
-    def addclass(self, cl):
-        cn = cl.classname
-        if self.classes.has_key(cn):
-            raise ValueError, cn
-        self.classes[cn] = cl
-
-    def getclasses(self):
-        """Return a list of the names of all existing classes."""
-        l = self.classes.keys()
-        l.sort()
-        return l
-
-    def getclass(self, classname):
-        """Get the Class object representing a particular class.
-
-        If 'classname' is not a valid class name, a KeyError is raised.
-        """
-        return self.classes[classname]
-
-    #
-    # Class DBs
-    #
-    def clear(self):
-        for cn in self.classes.keys():
-            db = os.path.join(self.dir, 'nodes.%s'%cn)
-            bsddb.btopen(db, 'n')
-            db = os.path.join(self.dir, 'journals.%s'%cn)
-            bsddb.btopen(db, 'n')
-
-    def getclassdb(self, classname, mode='r'):
-        ''' grab a connection to the class db that will be used for
-            multiple actions
-        '''
-        path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
-        return bsddb.btopen(path, mode)
-
-    def addnode(self, classname, nodeid, node):
-        ''' add the specified node to its class's db
-        '''
-        db = self.getclassdb(classname, 'c')
-        db[nodeid] = cPickle.dumps(node, 1)
-        db.close()
-    setnode = addnode
-
-    def getnode(self, classname, nodeid, cldb=None):
-        ''' add the specified node to its class's db
-        '''
-        db = cldb or self.getclassdb(classname)
-        if not db.has_key(nodeid):
-            raise IndexError, nodeid
-        res = cPickle.loads(db[nodeid])
-        if not cldb: db.close()
-        return res
-
-    def hasnode(self, classname, nodeid, cldb=None):
-        ''' add the specified node to its class's db
-        '''
-        db = cldb or self.getclassdb(classname)
-        res = db.has_key(nodeid)
-        if not cldb: db.close()
-        return res
-
-    def countnodes(self, classname, cldb=None):
-        db = cldb or self.getclassdb(classname)
-        return len(db.keys())
-        if not cldb: db.close()
-        return res
-
-    def getnodeids(self, classname, cldb=None):
-        db = cldb or self.getclassdb(classname)
-        res = db.keys()
-        if not cldb: db.close()
-        return res
-
-    #
-    # Journal
-    #
-    def addjournal(self, classname, nodeid, action, params):
-        ''' Journal the Action
-        'action' may be:
-
-            'create' or 'set' -- 'params' is a dictionary of property values
-            'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
-            'retire' -- 'params' is None
-        '''
-        entry = (nodeid, date.Date(), self.journaltag, action, params)
-        db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
-        if db.has_key(nodeid):
-            s = db[nodeid]
-            l = cPickle.loads(db[nodeid])
-            l.append(entry)
-        else:
-            l = [entry]
-        db[nodeid] = cPickle.dumps(l)
-        db.close()
-
-    def getjournal(self, classname, nodeid):
-        ''' get the journal for id
-        '''
-        db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'r')
-        res = cPickle.loads(db[nodeid])
-        db.close()
-        return res
-
-    def close(self):
-        ''' Close the Database - we must release the circular refs so that
-            we can be del'ed and the underlying bsddb connections closed
-            cleanly.
-        '''
-        self.classes = None
-
-
-    #
-    # Basic transaction support
-    #
-    # TODO: well, write these methods (and then use them in other code)
-    def register_action(self):
-        ''' Register an action to the transaction undo log
-        '''
-
-    def commit(self):
-        ''' Commit the current transaction, start a new one
-        '''
-
-    def rollback(self):
-        ''' Reverse all actions from the current transaction
-        '''
-
-
 class Class:
     """The handle to a particular class of nodes in a hyperdatabase."""
 
@@ -876,53 +735,6 @@ def Choice(name, *options):
         cl.create(name=option[i], order=i)
     return hyperdb.Link(name)
 
-
-if __name__ == '__main__':
-    import pprint
-    db = Database("test_db", "richard")
-    status = Class(db, "status", name=String())
-    status.setkey("name")
-    print db.status.create(name="unread")
-    print db.status.create(name="in-progress")
-    print db.status.create(name="testing")
-    print db.status.create(name="resolved")
-    print db.status.count()
-    print db.status.list()
-    print db.status.lookup("in-progress")
-    db.status.retire(3)
-    print db.status.list()
-    issue = Class(db, "issue", title=String(), status=Link("status"))
-    db.issue.create(title="spam", status=1)
-    db.issue.create(title="eggs", status=2)
-    db.issue.create(title="ham", status=4)
-    db.issue.create(title="arguments", status=2)
-    db.issue.create(title="abuse", status=1)
-    user = Class(db, "user", username=String(), password=String())
-    user.setkey("username")
-    db.issue.addprop(fixer=Link("user"))
-    print db.issue.getprops()
-#{"title": <hyperdb.String>, "status": <hyperdb.Link to "status">,
-#"user": <hyperdb.Link to "user">}
-    db.issue.set(5, status=2)
-    print db.issue.get(5, "status")
-    print db.status.get(2, "name")
-    print db.issue.get(5, "title")
-    print db.issue.find(status = db.status.lookup("in-progress"))
-    print db.issue.history(5)
-# [(<Date 2000-06-28.19:09:43>, "ping", "create", {"title": "abuse", "status": 1}),
-# (<Date 2000-06-28.19:11:04>, "ping", "set", {"status": 2})]
-    print db.status.history(1)
-# [(<Date 2000-06-28.19:09:43>, "ping", "link", ("issue", 5, "status")),
-# (<Date 2000-06-28.19:11:04>, "ping", "unlink", ("issue", 5, "status"))]
-    print db.status.history(2)
-# [(<Date 2000-06-28.19:11:04>, "ping", "link", ("issue", 5, "status"))]
-
-    # TODO: set up some filter tests
-
 #
 # $Log: not supported by cvs2svn $
-# Revision 1.3  2001/07/19 05:52:22  anthonybaxter
-# Added CVS keywords Id and Log to all python files.
-#
-#
 

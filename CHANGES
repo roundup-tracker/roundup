@@ -51,4 +51,5 @@
  . Fixed handling of None String property in grouped list headings
  . Fixed adding new issue with no change note
  . Added an issue priority of support
-
+ . Fixed values in text input fields which contained quotes (") are now
+   quoted.

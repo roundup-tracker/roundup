@@ -1,4 +1,4 @@
-# $Id: roundup_cgi.py,v 1.6 2001-07-20 00:53:20 richard Exp $
+# $Id: roundup_cgi.py,v 1.7 2001-07-20 07:35:55 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -264,7 +264,7 @@ class Client:
                             summary = re.split(r'\n\r?', note)[0]
                         else:
                             summary = note
-                        m.append('\n%s\n'%note)
+                        m.insert(0, '%s\n\n'%note)
                     else:
                         if len(changed) > 1:
                             plural = 's were'
@@ -273,7 +273,7 @@ class Client:
                         summary = 'This %s has been edited through the web '\
                             'and the %s value%s changed.'%(cn,
                             ', '.join(changed), plural)
-                        m.append('\n%s\n'%summary)
+                        m.insert(0, '%s\n\n'%summary)
 
                     # now create the message
                     content = '\n'.join(m)
@@ -488,6 +488,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/20 00:53:20  richard
+# Default index now filters out the resolved issues ;)
+#
 # Revision 1.5  2001/07/20 00:17:16  richard
 # Fixed adding a new issue when there is no __note
 #
