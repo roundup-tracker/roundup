@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.188 2004-10-07 23:13:11 richard Exp $
+# $Id: client.py,v 1.189 2004-10-20 06:30:32 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -234,9 +234,18 @@ class Client:
 # Pragma: no-cache makes Mozilla and its ilk double-load all pages!!
 #            self.additional_headers['Pragma'] = 'no-cache'
 
-            # expire this page 5 seconds from now
-            date = rfc822.formatdate(time.time() + 5)
-            self.additional_headers['Expires'] = date
+            # pages with messages added expire right now
+            # simple views may be cached for a small amount of time
+            # TODO? make page expire time configurable
+            if self.error_message or self.ok_message:
+                date = time.time() - 1
+            else:
+                date = time.time() + 5
+             self.additional_headers['Expires'] = date
+
+
+            date = time.time() + 5
+            self.additional_headers['Expires'] = rfc822.formatdate(date)
 
             # render the content
             self.write_html(self.renderContext())
@@ -814,3 +823,4 @@ class Client:
     def parsePropsFromForm(self, create=0):
         return FormParser(self).parse(create=create)
 
+# vim: set et sts=4 sw=4 :
