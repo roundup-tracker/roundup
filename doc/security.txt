@@ -1,0 +1,180 @@
+===================
+Security Mechanisms
+===================
+
+:Version: $Revision: 1.1 $
+
+Current situation
+=================
+
+Current logical controls:
+
+ANONYMOUS_ACCESS = 'deny'
+ Deny or allow anonymous access to the web interface
+ANONYMOUS_REGISTER = 'deny'
+ Deny or allow anonymous users to register through the web interface
+ANONYMOUS_REGISTER_MAIL = 'deny'
+ Deny or allow anonymous users to register through the mail interface
+
+The web interface implements another level of user-interface security,
+preventing non-admin users from accessing:
+
+ - other user's details pages
+ - listing the base classes (not issues or their user page)
+ - editing base classes
+
+
+Issues
+======
+
+1. The current implementation is ad-hoc, and not complete for all `use cases`_.
+2. Currently it is not possible to allow submission of issues through email
+   but restrict those users from accessing the web interface.
+3. Only one user may perform admin functions.
+4. There is no verification of users in the mail gateway by any means other
+   than the From address. Support for strong signatures should be added.
+
+
+Possible approaches
+===================
+
+Security controls in Roundup could be approached in three ways:
+
+1) at the hyperdb level, with read/write/modify permissions on classes, nodes
+   and node properties for all or specific transitions.
+2) at the user interface level, with access permissions on CGI interface
+   methods, mailgw methods, roundup-admin methods, and so on.
+3) at a logical permission level, checked as needed.
+
+In all cases, the security built into roundup assumes restricted access to the
+hyperdatabase itself, through Operating System controls such as user or group
+permissions.
+
+Hyperdb-level control
+---------------------
+
+Control is implemented at the Class.get, Class.set and Class.create level. All
+other methods must access nodes through these methods. Since all accesses go
+through the database, we can implement deny by default.
+
+Pros:
+
+   - easier to implement as it only affects one module
+   - smaller number of permissions to worry about
+
+Cons:
+
+   - harder to determine the relationship between user interaction and hyperdb
+     permission.
+   - a lot of work to define
+
+User-interface control
+----------------------
+
+The user interfaces would have an extra layer between that which
+parses the request to determine action and the action method. This layer
+controls access. Since it is possible to require methods be registered
+with the security mechanisms to be accessed by the user, deny by default
+is possible.
+
+Pros:
+
+   - much more obvious at the user level what the controls are
+
+Cons:
+
+   - much more work to implement
+   - most user interfaces have multiple uses which can't be covered by a
+     single permission
+
+
+Logical control
+---------------
+
+At each point that requires an action to be performed, the security mechanisms
+are asked if the current user has permission. There is no possibility to have
+default of deny in this situation.
+
+Pros:
+
+   - quite obvious what is going on
+   - is the current system
+
+Cons:
+
+   - large number of possible permissions that may be defined, possibly
+     mirroring actual user interface controls.
+
+
+
+Applying controls to users
+==========================
+
+Individual assignment of Permission to User is unwieldy. The concept of a
+Role, which encompasses several Permissions and may be assigned to many Users,
+is quite well developed in many projects. Roundup will take this path, and
+allow the multiple assignment of Roles to Users, and multiple Permissions to
+Roles. These definitions will be stored in the hyperdb.
+
+
+Use cases
+=========
+
+public
+  end users that can submit bugs, request new features, request support
+developer
+  developers that can fix bugs, implement new features provide support
+manager
+  approvers/managers that can approve new features and signoff bug fixes
+admin
+  administrators that can add users and set user's roles
+system
+  automated request handlers running various report/escalation scripts
+privacy
+  issues that are only visible to some users
+
+
+Discussion
+==========
+
+Date: Thu, 2 May 2002 11:46:56 -0400
+From: David_Byrne@cisgi.com
+To: roundup-devel@lists.sourceforge.net
+I've really appreciated roundup so far.  It has been very easy to create my own
+template that adds functionality for my specific purpose.  One area, for my
+needs, that does not seem to be currently addressed in roundup is roles of
+users.  I have various roles that the users of my instance of roundup can have.
+I have:
+
+1) end users that can submit bugs, request new features, request support.
+2) developers that can fix bugs, implement new features provide support
+3) approvers/managers that can approve new features and signoff bug fixes
+4) administrators that can add users and set users roles
+5) processors - this is isn't totally thought out yet, but for me it would be an
+   automated request handler that would run various production scripts.
+
+Each of these roles need to have specific functionality within the web client
+(and possibly the email client -- but I haven't looked at that much yet).  An
+example is that I don't want end users to be able to assign a specific developer
+to a problem or support issue.  I think that some of my functionality can be
+implemented via the detectors, but I haven't fully researched it yet.
+
+So far, I have added a new class to the database called role which contains the
+various roles outlined above.  I have added a multilink in the user class to the
+new role class.  I have modified the base code in the cgi client to use the new
+admin role when checking for admin instead of using the user id.  I am working
+on implementing the role for access to the individual forms and even specific
+fields on the forms.  Has anyone else done this or seen a need to do this?
+
+I am planning on implementing this as an optional feature - basically the
+security will be handled in a separate module so that a site could implement the
+role functionality or exclude it by using the module that fits their needs.  My
+current changes to the admin checks would be pulled out into a separate
+replaceable module.  So if an implementation did not want to use roles, the
+check would just check the user id to see if it was equal to "admin".  In my
+case, it would check the role of the user to see if it contained the admin role.
+
+If anyone else is interested in this, I will send the patches in when I am
+completed with this.  If anyone else has worked on this (and hopefully gotten
+farther than I), please let me know.
+
