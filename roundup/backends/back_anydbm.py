@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.88 2002-10-07 00:52:51 richard Exp $
+#$Id: back_anydbm.py,v 1.89 2002-10-08 04:11:14 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -366,7 +366,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # get the property spec
             prop = properties[k]
 
-            if isinstance(prop, Password):
+            if isinstance(prop, Password) and v is not None:
                 d[k] = str(v)
             elif isinstance(prop, Date) and v is not None:
                 d[k] = v.serialise()
@@ -397,7 +397,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 d[k] = date.Date(v)
             elif isinstance(prop, Interval) and v is not None:
                 d[k] = date.Interval(v)
-            elif isinstance(prop, Password):
+            elif isinstance(prop, Password) and v is not None:
                 p = password.Password()
                 p.unpack(v)
                 d[k] = p

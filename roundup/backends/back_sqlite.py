@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.6 2002-09-27 01:04:38 richard Exp $
+# $Id: back_sqlite.py,v 1.7 2002-10-08 04:11:16 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -155,7 +155,7 @@ class Database(Database):
                 d[k] = date.Date(v)
             elif isinstance(prop, Interval) and v is not None:
                 d[k] = date.Interval(v)
-            elif isinstance(prop, Password):
+            elif isinstance(prop, Password) and v is not None:
                 p = password.Password()
                 p.unpack(v)
                 d[k] = p

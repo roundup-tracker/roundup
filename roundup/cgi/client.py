@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.50 2002-10-07 00:52:51 richard Exp $
+# $Id: client.py,v 1.51 2002-10-08 04:11:17 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -525,7 +525,8 @@ class Client:
         # make sure we're allowed to be here
         if not self.loginPermission():
             self.make_user_anonymous()
-            raise Unauthorised, _("You do not have permission to login")
+            self.error_message.append(_("You do not have permission to login"))
+            return
 
         # now we're OK, re-open the database for real, using the user
         self.opendb(self.user)
@@ -536,7 +537,12 @@ class Client:
     def verifyPassword(self, userid, password):
         ''' Verify the password that the user has supplied
         '''
-        return password == self.db.user.get(self.userid, 'password')
+        stored = self.db.user.get(self.userid, 'password')
+        if password == stored:
+            return 1
+        if not password and not stored:
+            return 1
+        return 0
 
     def loginPermission(self):
         ''' Determine whether the user has permission to log in.

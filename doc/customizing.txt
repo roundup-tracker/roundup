@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.52 $
+:Version: $Revision: 1.53 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -580,6 +580,10 @@ Example Scenarios
    <option tal:condition="python:request.user.hasPermission('Closer')"
            value="resolved">Resolved</option>
  
+**don't give users who register through email web access**
+ Create a new Role called "Email User" which has all the Permissions of the
+ normal "User" Role minus the "Web Access" Permission. This will allow users
+ to send in emails to the tracker, but not access the web interface.
 
 
 Web Interface
