@@ -25,14 +25,6 @@ pending mailgw    allow commands (feature request #556996)
                   like "help", "dump issue123" (would send all info about
                   issue123, including a digest of all messages, but probably
                   not all files...), "list issue", ...
-pending mailgw    Allow multiple email addresses at one gw with different
-                  default classes and property values (possibly through
-                  command-line args to the mailgw as invoked in the mail
-                  delivery "aliases" file) eg::
-
-                   roundup: "|roundup-mailgw /instances/dev"
-                   vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
-
 pending mailgw    Identification of users should have a configurable degree of
                   strictness (ie. turn off username==address matching)
 pending mailgw    Use in-reply-to for determining message lineage when subject
@@ -56,18 +48,15 @@ pending web       Quick help links next to the property labels giving a
                   form element too, eg. how to use the nosy list edit box.
 pending web       clicking on a group header should filter for that type of
                   entry
-pending web       re-enable auth basic http auth
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
-pending web       add checkbox-based removal/addition for multilink entries
-                  (eg "add me"/"remove me" for nosy list)
 pending web       search "refinement" - pre-fill the search page with the
                   current search parameters
+pending web       query editing isn't fully implemented
 pending web       column-heading sort stuff isn't implemented
 pending web       multilink item removal action with retirement
 pending web       implement a python dict version of the form values
 pending web       implement the request.url attribute?
-pending web       query editing isn't fully implemented
 pending web       UNIX init.d script for roundup-server
 ======= ========= =============================================================
 
