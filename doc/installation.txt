@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.73 $
+:Version: $Revision: 1.74 $
 
 .. contents::
 
@@ -81,6 +81,9 @@ Getting Roundup
 ===============
 
 Download the latest version from http://roundup.sf.net/.
+
+If you're using WinZIP's "classic" interface, make sure the "Use
+folder names" check box is checked before you extract the files.
 
 Testing your Python
 -------------------
