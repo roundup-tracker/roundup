@@ -1221,8 +1221,8 @@ class DateHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
-        return DateHTMLProperty(self._client, self._nodeid, self._prop,
-            self._formname, date.Date('.'))
+        return DateHTMLProperty(self._client, self._classname, self._nodeid,
+            self._prop, self._formname, date.Date('.'))
 
     def field(self, size = 30):
         ''' Render a form edit field for the property
