@@ -1073,11 +1073,11 @@ class StringHTMLProperty(HTMLProperty):
             return '<a href="mailto:%s">%s</a>'%(s, s)
         else:
             s = match.group('item')
-            s1 = match.group('class')
+            s1 = match.group('class').lower()
             s2 = match.group('id')
             try:
                 # make sure s1 is a valid tracker classname
-                cl = self._db.getclass(s1.lower())
+                cl = self._db.getclass(s1)
                 if not cl.hasnode(s2):
                     raise KeyError, 'oops'
                 return '<a href="%s%s">%s</a>'%(s1, s2, s)

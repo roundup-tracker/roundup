@@ -1,8 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-??-?? 0.7.??
+Fixed:
+- handle capitalisation of class names in text hyperlinking (sf bug
+  1101043)
 
-2004-10-06 0.7.11
+
+2005-01-06 0.7.11
 Fixed:
 - index args URL generation broken in .10 (sf bug 1096027)
 - handle NotModified for non-static files (sf patch 1095790)
