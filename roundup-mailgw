@@ -16,75 +16,152 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.11 2001-11-07 05:32:58 richard Exp $
+# $Id: roundup-mailgw,v 1.12 2001-11-08 05:16:55 richard Exp $
 
-import sys
+import sys, os, re
 if int(sys.version[0]) < 2:
     print "Roundup requires Python 2.0 or newer."
     sys.exit(1)
 
-# figure the instance home
-import os
-if len(sys.argv) > 1:
-    instance_home = sys.argv[1]
-else:
-    instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
-if not instance_home:
-    print 'Usage: %s <instance home> [mail spool file]'%sys.argv[0]
+from mimetools import Message
+
+def do_pipe(handler):
+    '''Read a message from standard input and pass it to the mail handler.
+    '''
+    handler.main(sys.stdin)
+    return 0
+
+def do_mailbox(handler, filename):
+    '''Read a series of messages from the specified unix mailbox file and
+    pass each to the mail handler.
+    '''
+    # open the spool file and lock it
+    import fcntl, FCNTL
+    f = open(filename, 'r+')
+    fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
+
+    # handle and clear the mailbox
+    try:
+        from mailbox import UnixMailbox
+        mailbox = UnixMailbox(f, factory=Message)
+        # grab one message
+        message = mailbox.next()
+        while message:
+            # call the instance mail handler
+            handler.handle_Message(message)
+            message = mailbox.next()
+        # nuke the file contents
+        os.ftruncate(f.fileno(), 0)
+    except:
+        import traceback
+        traceback.print_exc()
+        return 1
+    fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
+    return 0
+
+def do_pop(handler, server, user='', password=''):
+    '''Read a series of messages from the specified POP server.
+    '''
+    import getpass, poplib
+    if not user:
+        user = raw_input('User: ')
+    if not password:
+        password = getpass.getpass()
+
+    # open a connection to the server and retrieve all messages
+    server = poplib.POP3(server)
+    server.user(user)
+    server.pass_(password)
+    numMessages = len(server.list()[1])
+    for i in range(numMessages):
+        for j in server.retr(i+1)[1]:
+            s = cStringIO.StringIO('\n'.join(j))
+            s.seek(0)
+            handler.handle_Message(Message(s))
+    return 0
+
+def usage(args, message=None):
+    if message is not None:
+        print message
+    print 'Usage: %s <instance home> [source spec]'%args[0]
     print '''
 The roundup mail gateway may be called in one of two ways:
- . with an instance home as the only argument, or
- . with both an instance home and a mail spool file.
+ . with an instance home as the only argument,
+ . with both an instance home and a mail spool file, or
+ . with both an instance home and a pop server account.
 
-In the first case, the mail gateway reads a single message from the
-standard input and submits the message to the roundup.mailgw module.
+PIPE:
+ In the first case, the mail gateway reads a single message from the
+ standard input and submits the message to the roundup.mailgw module.
 
-In the second case, the gateway reads all messages from the mail spool
-file and submits each in turn to the roundup.mailgw module. The file is
-emptied once all messages have been successfully handled.
+UNIX mailbox:
+ In the second case, the gateway reads all messages from the mail spool
+ file and submits each in turn to the roundup.mailgw module. The file is
+ emptied once all messages have been successfully handled. The file is
+ specified as:
+   mailbox /path/to/mailbox
+
+POP:
+ In the third case, the gateway reads all messages from the POP server
+ specified and submits each in turn to the roundup.mailgw module. The
+ server is specified as:
+    pop username:password@server
+ The username and password may be omitted:
+    pop username@server
+    pop server
+ are both valid. The username and/or password will be prompted for if
+ not supplied on the command-line.
 '''
-    sys.exit(1)
+    return 1
 
-# get the instance
-import roundup.instance
-instance = roundup.instance.open(instance_home)
+def main(args):
+    '''Handle the arguments to the program and initialise environment.
+    '''
+    # figure the instance home
+    if len(args) > 1:
+        instance_home = args[1]
+    else:
+        instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
+    if not instance_home:
+        return usage(args)
 
-# invoke the mail handler
-db = instance.open('admin')
-handler = instance.MailGW(db)
+    # get the instance
+    import roundup.instance
+    instance = roundup.instance.open(instance_home)
 
-# if there's no more arguments, read a single message from stdin
-if len(sys.argv) < 2:
-    handler.main(sys.stdin)
+    # get a mail handler
+    db = instance.open('admin')
+    handler = instance.MailGW(db)
 
-# otherwise, there's a spool file to read from
-import fcntl, FCNTL
-spool_file = sys.argv[2]
+    # if there's no more arguments, read a single message from stdin
+    if len(args) == 2:
+        return do_pipe(handler)
 
-# open the spool file and lock it
-f = open(spool_file, 'r+')
-fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
+    # otherwise, figure what sort of mail source to handle
+    if len(args) < 4:
+        return usage(args, 'Error: not enough source specification information')
+    source, specification = args[2:]
+    if source == 'mailbox':
+        return do_mailbox(handler, specification)
+    elif source == 'pop':
+        m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
+            specification)
+        if m:
+            return do_pop(handler, m.group('server'), m.group('user'),
+                m.group('pass'))
+        return usage(args, 'Error: pop specification not valid')
 
-# handle and clear the mailbox
-try:
-    from mailbox import UnixMailbox
-    import mimetools
-    mailbox = UnixMailbox(f, factory=mimetools.Message)
-    # grab one message
-    message = mailbox.next()
-    while message:
-        # call the instance mail handler
-        handler.handle_Message(message)
-        message = mailbox.next()
-    # nuke the file contents
-    os.ftruncate(f.fileno(), 0)
-except:
-    import traceback
-    traceback.print_exc()
-fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
+    return usage(args, 'Error: The source must be either "mailbox" or "pop"')
+
+# call main
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/11/07 05:32:58  richard
+# More roundup-mailgw usage help.
+#
 # Revision 1.10  2001/11/07 05:30:11  richard
 # Nicer usage message.
 #
