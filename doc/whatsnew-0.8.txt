@@ -16,25 +16,39 @@ In Summary
 
 XXX this section needs more detail
 
-- remove "manual" locking of sqlite database
 - create a new RDBMS cursor after committing
-- roundup-mailgw now logs fatal exceptions rather than mailing them to admin
+- roundup-admin reindex command may now work on single items or classes
+
 - roundup-server options -g and -u accept both ids and names (sf bug 983769)
 - roundup-server now has a configuration file (-C option)
-- added mod_python interface (see installation.txt)
-- added option to turn off registration confirmation via email
-  ("instant_registration" in config) (sf rfe 922209)
-- roundup-admin reindex command may now work on single items or classes
-- record journaltag lookup ("fixes" sf bug 998140)
 - roundup windows service may be installed with command line options
   recognized by roundup-server (but not tracker specification arguments).
   Use this to specify server configuration file for the service.
-- added experimental multi-thread server
-- don't try to import all backends in backends.__init__ unless we *want* to
+
+- added option to turn off registration confirmation via email
+  ("instant_registration" in config) (sf rfe 922209)
+
+
+
+Performance improvements
+========================
+
+We don't try to import all backends in backends.__init__ unless we *want*
+to.
+
+Roundup may now use the Apache mod_python interface (see installation.txt)
+which is much faster than the standard cgi-bin and a little faster than
+roundup-server.
+
+There is now an experimental multi-thread server which should allow faster
+concurrent access.
+
+In the hyperdb, a few other speedups were implemented, such as:
+
+- record journaltag lookup ("fixes" sf bug 998140)
 - unless in debug mode, keep a single persistent connection through a
   single web or mailgw request.
-- extended security.addPermissionToRole to allow skipping the separate
-  getPermission call
+- remove "manual" locking of sqlite database
 
 
 Logging of internal messages
@@ -46,9 +60,15 @@ now configured in a single place in the tracker configuration file.
 The `customization documentation`_ has more details on how this is
 configured.
 
+roundup-mailgw now logs fatal exceptions rather than mailing them to admin.
+
 
 Security Changes
 ================
+
+``security.addPermissionToRole()`` has been extended to allow skipping the
+separate getPermission call.
+
 
 Password Storage
 ----------------
@@ -132,6 +152,8 @@ Web Interface Miscellanea
 
 The web interface has seen some changes:
 
+Editing
+
 Templating
   We implement __nonzero__ for HTMLProperty - properties may now be used in
   boolean conditions (eg ``tal:condition="issue/nosy"`` will be false if
@@ -149,6 +171,14 @@ Templating
 
 Standard templates
   We hide "(list)" popup links when issue is only viewable
+
+  The issue search page now has fields to allow no sorting / grouping of
+  the results.
+
+  The default page.html template now has a search box in the top right
+  corner which performs a full-text search of issues. The "show issue"
+  quick jump form in the sidebar has had its font size reduced to use less
+  space.
 
 Web server
   The builtin web server may now perform HTTP Basic Authentication by

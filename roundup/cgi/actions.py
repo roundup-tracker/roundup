@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.43 2005-02-12 00:47:17 richard Exp $
+#$Id: actions.py,v 1.44 2005-02-13 22:04:31 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -510,13 +510,23 @@ class EditItemAction(EditCommon):
         return activity
 
     def detectCollision(self, user_activity, node_activity):
-        if user_activity:
-            return user_activity < node_activity
+        '''Check for a collision and return the list of props we edited
+        that conflict.'''
+        if user_activity < node_activity:
+            props, links = self.client.parsePropsFromForm()
+            key = (self.classname, self.nodeid)
+            # we really only collide for direct prop edit conflicts
+            return props[key].keys()
         else:
-            return 0
+            return []
 
-    def handleCollision(self):
-        self.client.template = 'collision'
+    def handleCollision(self, props):
+        message = self._('Edit Error: someone else has edited this %s (%s). '
+            'View <a target="new" href="%s%s">their changes</a> '
+            'in a new window.')%(self.classname, ', '.join(props),
+            self.classname, self.nodeid)
+        self.client.error_message.append(message)
+        return
 
     def handle(self):
         """Perform an edit of an item in the database.
@@ -525,10 +535,11 @@ class EditItemAction(EditCommon):
 
         """
         user_activity = self.lastUserActivity()
-        if user_activity and self.detectCollision(user_activity,
-                self.lastNodeActivity()):
-            self.handleCollision()
-            return
+        if user_activity:
+            props = self.detectCollision(user_activity, self.lastNodeActivity())
+            if props:
+                self.handleCollision(props)
+                return
 
         props, links = self.client.parsePropsFromForm()
 

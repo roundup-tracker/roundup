@@ -118,6 +118,10 @@ p.error-message {
   color: white;
   font-weight: bold;
 }
+p.error-message a[href] {
+  color: white;
+  text-decoration: underline;
+}
 
 
 /* style for search forms */
