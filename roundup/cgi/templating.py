@@ -2038,6 +2038,7 @@ env: %(env)s
     def indexargs_url(self, url, args):
         ''' Embed the current index args in a URL
         '''
+        q = urllib.quote
         sc = self.special_char
         l = ['%s=%s'%(k,v) for k,v in args.items()]
 
@@ -2065,7 +2066,7 @@ env: %(env)s
         if self.filter and not specials.has_key('filter'):
             l.append(sc+'filter=%s'%(','.join(self.filter)))
         if self.search_text and not specials.has_key('search_text'):
-            l.append(sc+'search_text=%s'%self.search_text)
+            l.append(sc+'search_text=%s'%q(self.search_text))
         if not specials.has_key('pagesize'):
             l.append(sc+'pagesize=%s'%self.pagesize)
         if not specials.has_key('startwith'):
@@ -2074,7 +2075,6 @@ env: %(env)s
         # finally, the remainder of the filter args in the request
         if self.classname and self.filterspec:
             props = self.client.db.getclass(self.classname).getprops()
-            q = urllib.quote
             for k,v in self.filterspec.items():
                 if not args.has_key(k):
                     if type(v) == type([]):
