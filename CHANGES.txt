@@ -1,9 +1,10 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2003-??-?? 0.6.0??
+2003-08-?? 0.6.0??
 - Fixed editing attributes on FileClass nodes.
-- Query editing now works correctly. (sf bug 621248)
+- Query editing now works correctly (sf bug 621248)
+- roundup-server now logs IP addresses by default (sf bug 778795)
 
 2003-07-29 0.6.0b4
 - plugged cross-site-scripting hole (thanks Jeff Epler)

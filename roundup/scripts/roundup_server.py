@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.24 2003-05-09 02:02:40 richard Exp $
+$Id: roundup_server.py,v 1.25 2003-08-12 01:11:43 richard Exp $
 """
 
 # python version check
@@ -204,6 +204,13 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         c = tracker.Client(tracker, self, env)
         c.main()
 
+    LOG_IPADDRESS = 1
+    def address_string(self):
+        if self.LOG_IPADDRESS:
+            return self.client_address[0]
+        else:
+            host, port = self.client_address
+            return socket.getfqdn(host)
 
 try:
     import win32serviceutil
@@ -301,16 +308,19 @@ def usage(message=''):
     if message:
         message = _('Error: %(error)s\n\n')%{'error': message}
     print _('''%(message)sUsage:
-roundup-server [-n hostname] [-p port] [-l file] [-d file] [name=tracker home]*
+roundup-server [options] [name=tracker home]*
 
+options:
  -n: sets the host name
  -p: sets the port to listen on
  -l: sets a filename to log to (instead of stdout)
  -d: run the server in the background and on UN*X write the server's PID
      to the nominated file. Note: on Windows the PID argument is needed,
      but ignored.
+ -N: log client machine names in access log instead of IP addresses (much
+     slower)
 
- name=tracker home
+name=tracker home:
    Sets the tracker home(s) to use. The name is how the tracker is
    identified in the URL (it's the first part of the URL path). The
    tracker home is the directory that was identified when you did
@@ -381,7 +391,7 @@ def run():
     try:
         # handle the command-line args
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:h')
+            optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:d:l:hN')
         except getopt.GetoptError, e:
             usage(str(e))
 
@@ -393,6 +403,7 @@ def run():
             elif opt == '-d': pidfile = abspath(arg)
             elif opt == '-l': logfile = abspath(arg)
             elif opt == '-h': usage()
+            elif opt == '-N': RoundupRequestHandler.LOG_IPADDRESS = 0
 
         if hasattr(os, 'getuid'):
             # if root, setuid to the running user
