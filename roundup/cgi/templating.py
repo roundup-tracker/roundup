@@ -42,7 +42,7 @@ class Templates:
             else:
                 self.getTemplate(filename, None)
 
-    def get(self, name, extension):
+    def get(self, name, extension=None):
         ''' Interface to get a template, possibly loading a compiled template.
 
             "name" and "extension" indicate the template we're after, which in
@@ -55,12 +55,16 @@ class Templates:
         # default the name to "home"
         if name is None:
             name = 'home'
+        elif extension is None and '.' in name:
+            # split name
+            name, extension = name.split('.')
 
         # find the source, figure the time it was last modified
         if extension:
             filename = '%s.%s'%(name, extension)
         else:
             filename = name
+
         src = os.path.join(self.dir, filename)
         try:
             stime = os.stat(src)[os.path.stat.ST_MTIME]
