@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.58 2002-01-15 00:50:03 richard Exp $
+# $Id: htmltemplate.py,v 1.59 2002-01-17 07:58:24 grubert Exp $
 
 __doc__ = """
 Template engine.
@@ -79,6 +79,7 @@ class TemplateFunctions:
             if value is None: value = ''
             else: value = _('*encrypted*')
         elif isinstance(propclass, hyperdb.Date):
+            # this gives "2002-01-17.06:54:39", maybe replace the "." by a " ".
             value = str(value)
         elif isinstance(propclass, hyperdb.Interval):
             value = str(value)
@@ -453,8 +454,21 @@ class TemplateFunctions:
 
         for id, date, user, action, args in self.cl.history(self.nodeid):
             date_s = str(date).replace("."," ")
+            arg_s = ""
+            if action=='link' and type(args)==type(()):
+                if len(args) == 3:
+                    arg_s += '<a href="%s%s">%s%s %s</a>'% (args[0],args[1],args[0],args[1],args[2])
+                else:
+                    arg_s = str(arg)
+            elif type(args)==type({}):
+                for k in args.keys():
+                    # special treatment of date, maybe links to files, authors, recipient ?
+                    arg_s += '%s: %s,'%(k,str(args[k]))
+            else:
+                arg_s = str(args)
+            # shouldnt _() be used ?
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
-               date_s, user, action, args))
+               date_s, user, action, arg_s))
         l.append('</table>')
         return '\n'.join(l)
 
@@ -884,6 +898,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.58  2002/01/15 00:50:03  richard
+# #502949 ] index view for non-issues and redisplay
+#
 # Revision 1.57  2002/01/14 23:31:21  richard
 # reverted the change that had plain() hyperlinking the link displays -
 # that's what link() is for!
