@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.72 2004-09-29 09:34:26 a1s Exp $
+# $Id: test_mailgw.py,v 1.73 2004-10-24 10:01:58 a1s Exp $
 
 # TODO: test bcc
 
@@ -24,6 +24,7 @@ from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
     parseContent, IgnoreLoop, IgnoreBulk
 from roundup import init, instance, password, rfc2822, __version__
 
+import db_test_base
 
 class Message(rfc822.Message):
     """String-based Message class with equivalence test."""
@@ -95,17 +96,8 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
     def setUp(self):
         MailgwTestCase.count = MailgwTestCase.count + 1
         self.dirname = '_test_mailgw_%s'%self.count
-        try:
-            shutil.rmtree(self.dirname)
-        except OSError, error:
-            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
-        # create the instance
-        init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, 'anydbm')
-        self.instance = tracker = instance.open(self.dirname)
-        if tracker.exists():
-            tracker.nuke()
-        tracker.init(password.Password('sekrit'))
+        # set up and open a tracker
+        self.instance = db_test_base.setupTracker(self.dirname)
 
         # and open the database
         self.db = self.instance.open('admin')
