@@ -31,7 +31,7 @@ You are not allowed to view this page.
  </tr>
  <tr>
   <th>Phone</th>
-  <td tal:content="structure context/phone/field/asdfasdf">phone</td>
+  <td tal:content="structure context/phone/field">phone</td>
  </tr>
  <tr>
   <th>Organisation</th>
