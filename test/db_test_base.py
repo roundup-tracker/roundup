@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.40 2004-07-20 22:56:18 richard Exp $ 
+# $Id: db_test_base.py,v 1.41 2004-07-20 22:59:53 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -965,14 +965,14 @@ class DBTest(MyTestCase):
         ae, filt = self.filteringSetup()
         # ascending
         ae(filt(None, {}, ('+','deadline'), ('+','priority')),
-            ['2', '1', '4', '3'])
+            ['1', '2', '3', '4'])
         ae(filt(None, {}, ('-','deadline'), ('+','priority')),
-            ['2', '4', '1', '3'])
+            ['2', '1', '4', '3'])
         # descending
         ae(filt(None, {}, ('+','deadline'), ('-','priority')),
-            ['3', '1', '4', '2'])
-        ae(filt(None, {}, ('-','deadline'), ('-','priority')),
             ['3', '4', '1', '2'])
+        ae(filt(None, {}, ('-','deadline'), ('-','priority')),
+            ['4', '3', '2', '1'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
