@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.7 2001-07-29 07:01:39 richard Exp $
+# $Id: hyperdb.py,v 1.8 2001-07-29 08:27:40 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -387,7 +387,7 @@ class Class:
         """Return the name of the key property for this class or None."""
         return self.key
 
-    def labelprop(self, nodeid):
+    def labelprop(self):
         ''' Return the property name for a label for the given node.
 
         This method attempts to generate a consistent label for the node.
@@ -551,7 +551,6 @@ class Class:
                     u.append(entry)
                 l.append((1, k, u))
             elif propclass.isStringType:
-                v = v[0]
                 if '*' in v or '?' in v:
                     # simple glob searching
                     v = v.replace('?', '.')
@@ -789,6 +788,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.6  2001/07/29 05:36:14  richard
 # Cleanup of the link label generation.
 #

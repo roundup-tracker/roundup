@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.7 2001-07-29 07:01:39 richard Exp $
+# $Id: cgi_client.py,v 1.8 2001-07-29 08:27:40 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -105,21 +105,28 @@ class Client:
 
     def index_filterspec(self):
         ''' pull the index filter spec from the form
+
+        Links and multilinks want to be lists - the rest are straight
+        strings.
         '''
-        # all the other form args are filters
+        props = self.db.classes[self.classname].getprops()
+        # all the form args not starting with ':' are filters
         filterspec = {}
         for key in self.form.keys():
             if key[0] == ':': continue
+            prop = props[key]
             value = self.form[key]
-            if type(value) == type([]):
-                value = [arg.value for arg in value]
+            if prop.isLinkType or prop.isMultilinkType:
+                if type(value) == type([]):
+                    value = [arg.value for arg in value]
+                else:
+                    value = value.value.split(',')
+                l = filterspec.get(key, [])
+                l = l + value
+                filterspec[key] = l
             else:
-                value = value.value.split(',')
-            l = filterspec.get(key, [])
-            l = l + value
-            filterspec[key] = l
+                filterspec[key] = value.value
         return filterspec
-
 
     default_index_sort = ['-activity']
     default_index_group = ['priority']
@@ -496,6 +503,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.6  2001/07/29 04:04:00  richard
 # Moved some code around allowing for subclassing to change behaviour.
 #

@@ -1,15 +1,16 @@
-# $Id: htmltemplate.py,v 1.8 2001-07-29 07:01:39 richard Exp $
+# $Id: htmltemplate.py,v 1.9 2001-07-29 08:27:40 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
 import hyperdb, date
 
 class Base:
-    def __init__(self, db, templates, classname, nodeid=None, form=None):
+    def __init__(self, db, templates, classname, nodeid=None, form=None,
+            filterspec=None):
         # TODO: really not happy with the way templates is passed on here
         self.db, self.templates = db, templates
         self.classname, self.nodeid = classname, nodeid
-        self.form = form
+        self.form, self.filterspec = form, filterspec
         self.cl = self.db.classes[self.classname]
         self.properties = self.cl.getprops()
 
@@ -57,11 +58,16 @@ class Field(Base):
         to be edited
     '''
     def __call__(self, property, size=None, height=None, showid=0):
-        if not self.nodeid and self.form is None:
+        if not self.nodeid and self.form and self.filterspec is None:
             return '[Field: not called from item]'
         propclass = self.properties[property]
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
+        elif self.filterspec is not None:
+            if propclass.isMultilinkType:
+                value = self.filterspec.get(property, [])
+            else:
+                value = self.filterspec.get(property, '')
         else:
             # TODO: pull the value from the form
             if propclass.isMultilinkType: value = []
@@ -265,6 +271,8 @@ class Checklist(Base):
         propclass = self.properties[property]
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
+        elif self.filterspec is not None:
+            value = self.filterspec.get(property, [])
         else:
             value = []
         if propclass.isLinkType or propclass.isMultilinkType:
@@ -273,7 +281,7 @@ class Checklist(Base):
             k = linkcl.labelprop()
             for optionid in linkcl.list():
                 option = linkcl.get(optionid, k)
-                if optionid in value:
+                if optionid in value or option in value:
                     checked = 'checked'
                 else:
                     checked = ''
@@ -405,22 +413,23 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         columns=[], sort=[], group=[], show_display_form=1, nodeids=None,
         col_re=re.compile(r'<property\s+name="([^>]+)">')):
     globals = {
-        'plain': Plain(db, templates, classname, form={}),
-        'field': Field(db, templates, classname, form={}),
-        'menu': Menu(db, templates, classname, form={}),
-        'link': Link(db, templates, classname, form={}),
-        'count': Count(db, templates, classname, form={}),
-        'reldate': Reldate(db, templates, classname, form={}),
-        'download': Download(db, templates, classname, form={}),
-        'checklist': Checklist(db, templates, classname, form={}),
-        'list': List(db, templates, classname, form={}),
-        'history': History(db, templates, classname, form={}),
-        'submit': Submit(db, templates, classname, form={}),
-        'note': Note(db, templates, classname, form={})
+        'plain': Plain(db, templates, classname, filterspec=filterspec),
+        'field': Field(db, templates, classname, filterspec=filterspec),
+        'menu': Menu(db, templates, classname, filterspec=filterspec),
+        'link': Link(db, templates, classname, filterspec=filterspec),
+        'count': Count(db, templates, classname, filterspec=filterspec),
+        'reldate': Reldate(db, templates, classname, filterspec=filterspec),
+        'download': Download(db, templates, classname, filterspec=filterspec),
+        'checklist': Checklist(db, templates, classname, filterspec=filterspec),
+        'list': List(db, templates, classname, filterspec=filterspec),
+        'history': History(db, templates, classname, filterspec=filterspec),
+        'submit': Submit(db, templates, classname, filterspec=filterspec),
+        'note': Note(db, templates, classname, filterspec=filterspec)
     }
     cl = db.classes[classname]
     properties = cl.getprops()
     w = client.write
+    w('<form>')
 
     try:
         template = open(os.path.join(templates, classname+'.filter')).read()
@@ -431,28 +440,26 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         all_filters = []
     if template and filter:
         # display the filter section
-        w('<form>')
         w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
         w('<tr class="location-bar">')
         w(' <th align="left" colspan="2">Filter specification...</th>')
         w('</tr>')
         replace = IndexTemplateReplace(globals, locals(), filter)
         w(replace.go(template))
-        if columns:
-            w('<input type="hidden" name=":columns" value="%s">'%','.join(columns))
-        if filter:
-            w('<input type="hidden" name=":filter" value="%s">'%','.join(filter))
-        if sort:
-            w('<input type="hidden" name=":sort" value="%s">'%','.join(sort))
-        if group:
-            w('<input type="hidden" name=":group" value="%s">'%','.join(group))
-        for k, v in filterspec.items():
-            if type(v) == type([]): v = ','.join(v)
-            w('<input type="hidden" name="%s" value="%s">'%(k, v))
         w('<tr class="location-bar"><td width="1%%">&nbsp;</td>')
         w('<td><input type="submit" value="Redisplay"></td></tr>')
         w('</table>')
-        w('</form>')
+
+    # If the filters aren't being displayed, then hide their current
+    # value in the form
+    if not filter:
+        for k, v in filterspec.items():
+            if type(v) == type([]): v = ','.join(v)
+            w('<input type="hidden" name="%s" value="%s">'%(k, v))
+
+    # make sure that the sorting doesn't get lost either
+    if sort:
+        w('<input type="hidden" name=":sort" value="%s">'%','.join(sort))
 
     # XXX deviate from spec here ...
     # load the index section template and figure the default columns from it
@@ -540,13 +547,8 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
         return
 
     # now add in the filter/columns/group/etc config table form
-    w('<p><form>')
+    w('<p>')
     w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
-    for k,v in filterspec.items():
-        if type(v) == type([]): v = ','.join(v)
-        w('<input type="hidden" name="%s" value="%s">'%(k, v))
-    if sort:
-        w('<input type="hidden" name=":sort" value="%s">'%','.join(sort))
     names = []
     for name in cl.getprops().keys():
         if name in all_filters or name in all_columns:
@@ -707,6 +709,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.7  2001/07/29 05:36:14  richard
 # Cleanup of the link label generation.
 #
