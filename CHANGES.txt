@@ -18,6 +18,8 @@ Fixed:
 - change AUTOCOMMIT=OFF to AUTOCOMMIT=0 for MySQL (sf bug 1143707)
 - compile message objects in 'setup.py build'
 - use backend datatype for journal timestamps in RDBMSes
+- fixes to the "Using an external password validation source"
+  customisation example (sf bugs 1153640 and 1155108)
 
 
 2005-02-17 0.8.1
