@@ -10,6 +10,8 @@ Feature:
  . you can now use the roundup-admin tool pack the database
 
 Fixed:
+ . makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace does it.
+ . preamble in tepmlateBuilder mentioned htmldata
  . mailgw checks encoding on first part too.
  . the mail gateway now responds with an error message when invalid values 
    for arguments are specified for link or mutlilink properties
