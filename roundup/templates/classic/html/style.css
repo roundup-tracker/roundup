@@ -33,8 +33,7 @@ th {
 }
 
 .location-bar {
-  background-color: #44bb66;
-  color: #ffffff;
+  background-color: #efefef;
   border: none;
 }
 
@@ -60,15 +59,13 @@ th {
 }
 
 .list-header {
-  background-color: #aaccff;
+  background-color: #efefff;
   color: #000000;
   border: none;
 }
 
 .section-bar {
-  background-color: #707070;
-  color: #ffffff;
-  border: 1px solid #404040;
+  background-color: #e0e0e0;
 }
 
 .row-normal {
@@ -87,7 +84,7 @@ th {
 }
 
 .row-in-progress {
-  background-color: #3ccc50;
+  background-color: #94ce9c;
   border: none;
 }
 
