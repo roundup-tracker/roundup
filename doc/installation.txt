@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.65 $
+:Version: $Revision: 1.66 $
 
 .. contents::
 
@@ -93,8 +93,9 @@ installation:
 2. `configuring your first tracker`_ that all installers must follow
 3. then optionally `configure a web interface`_
 4. and optionally `configure an email interface`_
-5. `shared environment steps`_ to take if you're installing on a shared
+5. `UNIX environment steps`_ to take if you're installing on a shared
    UNIX machine and want to restrict local access to roundup
+6. `additional language codecs`_
 
 
 Basic Installation Steps
@@ -272,7 +273,7 @@ There are three web interfaces to choose from:
 3. `Zope product - ZRoundup`_
 
 You may need to give the web server user permission to access the tracker home
-- see the `shared environment steps`_ for information. You may also need to
+- see the `UNIX environment steps`_ for information. You may also need to
 configure your system in some way - see `platform-specific notes`_.
 
 
@@ -394,8 +395,8 @@ submission user's POP account name, password and server.
 On windows, you would set up the command using the windows scheduler.
 
 
-Shared Environment Steps
-------------------------
+UNIX Environment Steps
+----------------------
 
 Each tracker ideally should have its own UNIX group, so create
 a UNIX group (edit ``/etc/group`` or your appropriate NIS map if
@@ -429,6 +430,14 @@ responsibility of running roundup. This user:
 3. runs regular checks (using cron) to ensure the daemon is up
 4. optionally has no login password so that nobody but the "root" user
    may actually login and play with the roundup setup.
+
+
+Additional Language Codecs
+--------------------------
+
+If you intend to send messages to Roundup that use Chinese, Japanese or
+Korean encodings the you'll need to obtain CJKCodecs from
+http://cjkpython.berlios.de/
 
 
 Maintenance
@@ -541,7 +550,7 @@ This is usually done via the following 2 steps:
 Linux
 -----
 
-Make sure you read the instructions under `shared environment steps`_.
+Make sure you read the instructions under `UNIX environment steps`_.
 
 Python 2.1.1 as shipped with SuSE7.3 might be missing module
 ``_weakref``.
@@ -552,7 +561,8 @@ Solaris
 
 You'll need to build Python.
 
-Make sure you read the instructions under `shared environment steps`_.
+Make sure you read the instructions under `UNIX environment steps`_.
+
 
 -------------------------------------------------------------------------------
 

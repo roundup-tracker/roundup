@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.34 2003-11-12 23:29:17 richard Exp $
+$Id: roundup_server.py,v 1.35 2003-12-04 02:43:07 richard Exp $
 """
 
 # python version check
@@ -78,26 +78,28 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(404, self.path)
         except client.Unauthorised:
             self.send_error(403, self.path)
-        except socket.timeout:
-            s = StringIO.StringIO()
-            traceback.print_exc(None, s)
-            self.log_message('%s', s.getvalue())
         except:
-            # it'd be nice to be able to detect if these are going to have
-            # any effect...
-            self.send_response(400)
-            self.send_header('Content-Type', 'text/html')
-            self.end_headers()
-            try:
-                reload(cgitb)
-                self.wfile.write(cgitb.breaker())
-                self.wfile.write(cgitb.html())
-            except:
+            exc, val, tb = sys.exc_info()
+            if hasattr(socket, 'timeout') and exc == socket.timeout:
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
-                self.wfile.write("<pre>")
-                self.wfile.write(cgi.escape(s.getvalue()))
-                self.wfile.write("</pre>\n")
+                self.log_message(str(s.getvalue()))
+            else:
+                # it'd be nice to be able to detect if these are going to have
+                # any effect...
+                self.send_response(400)
+                self.send_header('Content-Type', 'text/html')
+                self.end_headers()
+                try:
+                    reload(cgitb)
+                    self.wfile.write(cgitb.breaker())
+                    self.wfile.write(cgitb.html())
+                except:
+                    s = StringIO.StringIO()
+                    traceback.print_exc(None, s)
+                    self.wfile.write("<pre>")
+                    self.wfile.write(cgi.escape(s.getvalue()))
+                    self.wfile.write("</pre>\n")
         sys.stdin = save_stdin
 
     do_GET = do_POST = run_cgi

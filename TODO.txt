@@ -1,7 +1,6 @@
 This file has been re-purposed to contain specifically the items that need
 doing before the next release:
 
-- postgresql backend
 - full coverage analysis for unit tests
 - migrate to numeric ID values (fixes bug 817217)
 
