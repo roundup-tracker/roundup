@@ -37,9 +37,9 @@ You are not allowed to view this page.
    <td tal:condition="request/show/priority"
        tal:content="python:i.priority.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/id" tal:content="i/id">&nbsp;</td>
-   <td nowrap tal:condition="request/show/creation"
+   <td class="date" tal:condition="request/show/creation"
        tal:content="i/creation/reldate">&nbsp;</td>
-   <td nowrap tal:condition="request/show/activity"
+   <td class="date" tal:condition="request/show/activity"
        tal:content="i/activity/reldate">&nbsp;</td>
    <td tal:condition="request/show/topic"
        tal:content="python:i.topic.plain() or default">&nbsp;</td>

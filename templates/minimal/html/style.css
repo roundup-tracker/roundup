@@ -26,6 +26,7 @@ td.page-header-top {
 
 td.sidebar {
   padding: 1 0 0 1;
+  white-space: nowrap;
 }
 
 td.sidebar p.classblock {

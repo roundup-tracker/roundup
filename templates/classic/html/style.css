@@ -53,6 +53,10 @@ td.content {
   width: 100%;
 }
 
+td.date, th.date { 
+  white-space: nowrap;
+}
+
 p.ok-message {
   background-color: #22bb22;
   padding: 5 5 5 5;
@@ -79,6 +83,7 @@ table.form th {
   text-align: right;
   vertical-align: top;
   font-weight: normal;
+  white-space: nowrap;
 }
 
 table.form th.header {
