@@ -5,6 +5,10 @@ are given with the most recent entry first.
 - added mention of how to give users multiple Roles
 - mention needed trailing "/" in TRACKER_WEB
 - fixed upgrading doc to have CGI changes in the correct order
+- fixed double-close of anydbm backend (sf bug 639030)
+- removed use of string/strop from TAL/TALInterpreter
+- handle KeyboardInterrupt nicely
+- fixed Date and Interval form value handling
 
 
 2002-11-07 0.5.2
