@@ -1,3 +1,5 @@
+# $Id: test_dates.py,v 1.2 2001-07-25 04:34:31 richard Exp $ 
+
 import unittest, time
 
 from roundup.date import Date, Interval
@@ -51,3 +53,7 @@ class DateTestCase(unittest.TestCase):
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')
 
+
+#
+# $Log: not supported by cvs2svn $
+#

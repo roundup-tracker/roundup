@@ -1,3 +1,5 @@
+# $Id: test_schema.py,v 1.3 2001-07-25 04:34:31 richard Exp $ 
+
 import unittest, os, shutil
 
 from roundup.backends import anydbm
@@ -53,3 +55,7 @@ class SchemaTestCase(unittest.TestCase):
 def suite():
    return unittest.makeSuite(SchemaTestCase, 'test')
 
+
+#
+# $Log: not supported by cvs2svn $
+#
