@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.156 2002-08-01 15:06:06 gmcm Exp $
+# $Id: cgi_client.py,v 1.157 2002-08-13 20:16:09 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -186,25 +186,32 @@ function help_window(helpurl, width, height) {
         # figure who the user is
         user_name = self.user
         userid = self.db.user.lookup(user_name)
+        default_queries = 1
+        links = []
+        if user_name != 'anonymous':
+            try:
+                default_queries = self.db.user.get(userid, 'defaultqueries')
+            except KeyError:
+                pass
 
         # figure all the header links
-        if hasattr(self.instance, 'HEADER_INDEX_LINKS'):
-            links = []
-            for name in self.instance.HEADER_INDEX_LINKS:
-                spec = getattr(self.instance, name + '_INDEX')
-                # skip if we need to fill in the logged-in user id and
-                # we're anonymous
-                if (spec['FILTERSPEC'].has_key('assignedto') and
-                        spec['FILTERSPEC']['assignedto'] in ('CURRENT USER',
-                        None) and user_name == 'anonymous'):
-                    continue
-                links.append(self.make_index_link(name))
-        else:
-            # no config spec - hard-code
-            links = [
-                _('All <a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>'),
-                _('Unassigned <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>')
-            ]
+        if default_queries:
+            if hasattr(self.instance, 'HEADER_INDEX_LINKS'):
+                for name in self.instance.HEADER_INDEX_LINKS:
+                    spec = getattr(self.instance, name + '_INDEX')
+                    # skip if we need to fill in the logged-in user id and
+                    # we're anonymous
+                    if (spec['FILTERSPEC'].has_key('assignedto') and
+                            spec['FILTERSPEC']['assignedto'] in ('CURRENT USER',
+                            None) and user_name == 'anonymous'):
+                        continue
+                    links.append(self.make_index_link(name))
+            else:
+                # no config spec - hard-code
+                links = [
+                    _('All <a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>'),
+                    _('Unassigned <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>')
+                ]
 
         user_info = _('<a href="login">Login</a>')
         add_links = ''
@@ -343,9 +350,11 @@ function help_window(helpurl, width, height) {
         return []
 
     def index_sort(self):
-        # first try query string
+        # first try query string / simple form
         x = self.index_arg(':sort')
         if x:
+            if self.index_arg(':descending'):
+                return ['-'+x[0]]
             return x
         # nope - get the specs out of the form
         specs = []
@@ -479,10 +488,8 @@ function help_window(helpurl, width, height) {
         all_columns = self.db.getclass(cn).getprops().keys()
         all_columns.sort()
         index.filter_section('', filter, columns, group, all_columns, sort,
-                             filterspec, pagesize, 0)
+                             filterspec, pagesize, 0, 0)
         self.pagefoot()
-        index.db = index.cl = index.properties = None
-        index.clear()
 
     # XXX deviates from spec - loses the '+' (that's a reserved character
     # in URLS
@@ -524,6 +531,9 @@ function help_window(helpurl, width, height) {
             startwith = int(self.form[':startwith'].value)
         else:
             startwith = 0
+        simpleform = 1
+        if self.form.has_key(':advancedsearch'):
+            simpleform = 0
 
         if self.form.has_key('Query') and self.form['Query'].value == 'Save':
             # format a query string
@@ -562,7 +572,8 @@ function help_window(helpurl, width, height) {
         try:
             index.render(filterspec, search_text, filter, columns, sort, 
                 group, show_customization=show_customization, 
-                show_nodes=show_nodes, pagesize=pagesize, startwith=startwith)
+                show_nodes=show_nodes, pagesize=pagesize, startwith=startwith,
+                simple_search=simpleform)
         except htmltemplate.MissingTemplateError:
             self.basicClassEditPage()
         self.pagefoot()
@@ -699,17 +710,24 @@ function help_window(helpurl, width, height) {
         '''
         cn = self.classname
         cl = self.db.classes[cn]
+        keys = self.form.keys()
+        fromremove = 0
         if self.form.has_key(':multilink'):
-            link = self.form[':multilink'].value
-            designator, linkprop = link.split(':')
-            xtra = ' for <a href="%s">%s</a>' % (designator, designator)
+            # is the multilink there because we came from remove()?
+            if self.form.has_key(':target'):
+                xtra = ''
+                fromremove = 1
+                message = _('%s removed' % self.index_arg(":target")[0])
+            else:
+                link = self.form[':multilink'].value
+                designator, linkprop = link.split(':')
+                xtra = ' for <a href="%s">%s</a>' % (designator, designator)
         else:
             xtra = ''
-
+        
         # possibly perform an edit
-        keys = self.form.keys()
         # don't try to set properties if the user has just logged in
-        if keys and not self.form.has_key('__login_name'):
+        if keys and not fromremove and not self.form.has_key('__login_name'):
             try:
                 userid = self.db.user.lookup(self.user)
                 if not self.db.security.hasPermission('Edit', userid, cn):
@@ -1108,12 +1126,8 @@ function help_window(helpurl, width, height) {
         # ok, so we need to be able to edit everything, or be this node's
         # user
         userid = self.db.user.lookup(self.user)
-        if (not self.db.security.hasPermission('Edit', userid)
-                and self.user != node_user):
-            raise Unauthorised, _("You do not have permission to access"\
-                        " %(action)s.")%{'action': self.classname +
-                        str(self.nodeid)}
-        
+        # removed check on user's permissions - this needs to be done
+	# through require tags in user.item
         #
         # perform any editing
         #
@@ -1160,6 +1174,11 @@ function help_window(helpurl, width, height) {
     def showfile(self):
         ''' display a file
         '''
+	# nothing in xtrapath - edit the file's metadata
+        if self.xtrapath is None:
+            return self.shownode()
+
+        # something in xtrapath - download the file    
         nodeid = self.nodeid
         cl = self.db.classes[self.classname]
         try:
@@ -1170,7 +1189,7 @@ function help_window(helpurl, width, height) {
             mime_type = 'text/plain'
         self.header(headers={'Content-Type': mime_type})
         self.write(cl.get(nodeid, 'content'))
-
+        
     def permission(self):
         '''
         '''
@@ -1472,18 +1491,16 @@ function help_window(helpurl, width, height) {
 
         # now figure which function to call
         path = self.split_path
+        self.xtrapath = None
 
         # default action to index if the path has no information in it
         if not path or path[0] in ('', 'index'):
             action = 'index'
         else:
             action = path[0]
+            if len(path) > 1:
+                self.xtrapath = path[1:]
         self.desired_action = action
-
-        # Everthing ignores path[1:]
-        #  - The file download link generator actually relies on this - it
-        #    appends the name of the file to the URL so the download file name
-        #    is correct, but doesn't actually use it.
 
         # everyone is allowed to try to log in
         if action == 'login_action':
@@ -1546,6 +1563,9 @@ function help_window(helpurl, width, height) {
         if action == 'logout':
             self.logout()
             return
+        if action == 'remove':
+            self.remove()
+            return
 
         # see if we're to display an existing node
         m = dre.match(action)
@@ -1597,6 +1617,31 @@ function help_window(helpurl, width, height) {
             raise NotFound, self.classname
         self.list()
 
+    def remove(self,  dre=re.compile(r'([^\d]+)(\d+)')):
+        target = self.index_arg(':target')[0]
+        m = dre.match(target)
+        if m:
+            classname = m.group(1)
+            nodeid = m.group(2)
+            cl = self.db.getclass(classname)
+            cl.retire(nodeid)
+            # now take care of the reference
+            parentref =  self.index_arg(':multilink')[0]
+            parent, prop = parentref.split(':')
+            m = dre.match(parent)
+            if m:
+                self.classname = m.group(1)
+                self.nodeid = m.group(2)
+                cl = self.db.getclass(self.classname)
+                value = cl.get(self.nodeid, prop)
+                value.remove(nodeid)
+                cl.set(self.nodeid, **{prop:value})
+                func = getattr(self, 'show%s'%self.classname)
+                return func()
+            else:
+                raise NotFound, parent
+        else:
+            raise NotFound, target
 
 class ExtendedClient(Client): 
     '''Includes pages and page heading information that relate to the
@@ -1703,6 +1748,12 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.156  2002/08/01 15:06:06  gmcm
+# Use same regex to split search terms as used to index text.
+# Fix to back_metakit for not changing journaltag on reopen.
+# Fix htmltemplate's do_link so [No <whatever>] strings are href'd.
+# Fix bogus "nosy edited ok" msg - the **d syntax does NOT share d between caller and callee.
+#
 # Revision 1.155  2002/08/01 00:56:22  richard
 # Added the web access and email access permissions, so people can restrict
 # access to users who register through the email interface (for example).

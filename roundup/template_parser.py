@@ -34,7 +34,7 @@ class Property:
     '''
     def __init__(self, attributes):
         self.attributes = attributes
-        self.current = self.structure = []
+        self.current = self.ok = []
     def __len__(self):
         return len(self.current)
     def __getitem__(self, n):
@@ -134,7 +134,7 @@ def display(structure, indent=''):
             l.append('%sDISPLAY: %r'%(indent, entry.attributes))
         elif isinstance(entry, Property):
             l.append('%sPROPERTY: %r'%(indent, entry.attributes))
-            l.append(display(entry.structure, indent+' '))
+            l.append(display(entry.ok, indent+' '))
     return ''.join(l)
 
 if __name__ == '__main__':
