@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.58 2003-08-29 12:43:03 richard Exp $
+# $Id: admin.py,v 1.59 2003-10-24 19:48:05 jlgijsbers Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -277,11 +277,18 @@ Command help:
     def listTemplates(self):
         ''' List all the available templates.
 
-            Look in three places:
-                <prefix>/share/roundup/templates/*
-                <__file__>/../templates/*
-                current dir/*
-                current dir as a template
+        Look in the following places, where the later rules take precedence:
+
+         1. <prefix>/share/roundup/templates/*
+            this should be the standard place to find them when Roundup is
+            installed
+         2. <roundup.admin.__file__>/../templates/*
+            this will be used if Roundup's run in the distro (aka. source)
+            directory
+         3. <current working dir>/*
+            this is for when someone unpacks a 3rd-party template
+         4. <current working dir>
+            this is for someone who "cd"s to the 3rd-party template dir
         '''
         # OK, try <prefix>/share/roundup/templates
         # -- this module (roundup.admin) will be installed in something
