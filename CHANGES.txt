@@ -15,6 +15,9 @@ are given with the most recent entry first.
 - added mysql backend
 - fixes to CGI form handling
 - switch metakit to use "compressed" multilink journal change representation
+- fixed bug in metakit unlink journalling
+- metakit now handles "unset" for most types (not Number and Boolean)
+- fixed bug in metakit search-by-ID
 - applied unicode patch. All data is stored in utf-8. Incoming messages
   converted from any encoding to utf-8, outgoing messages are encoded 
   according to rfc2822 (sf bug 568873)

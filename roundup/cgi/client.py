@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.71 2003-01-15 22:39:07 richard Exp $
+# $Id: client.py,v 1.72 2003-01-20 23:05:19 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1254,10 +1254,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             # surrounding whitespace
             value = value.value.strip()
 
-        if isinstance(proptype, hyperdb.String):
-            # fix the CRLF/CR -> LF stuff
-            value = fixNewlines(value)
-        elif isinstance(proptype, hyperdb.Password):
+        # handle by type now
+        if isinstance(proptype, hyperdb.Password):
             if not value:
                 # ignore empty password values
                 continue
@@ -1270,16 +1268,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             if value != confirm.value:
                 raise ValueError, 'Password and confirmation text do not match'
             value = password.Password(value)
-        elif isinstance(proptype, hyperdb.Date):
-            if value:
-                value = date.Date(value)
-            else:
-                value = None
-        elif isinstance(proptype, hyperdb.Interval):
-            if value:
-                value = date.Interval(value)
-            else:
-                value = None
+
         elif isinstance(proptype, hyperdb.Link):
             # see if it's the "no selection" choice
             if value == '-1' or not value:
@@ -1354,14 +1343,24 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 value = existing
                 value.sort()
 
-        elif isinstance(proptype, hyperdb.Boolean):
-            value = value.lower() in ('yes', 'true', 'on', '1')
-        elif isinstance(proptype, hyperdb.Number):
-            value = int(value)
-
-        # register this as received if required?
-        if propname in required and value is not None:
-            required.remove(propname)
+        # other types should be None'd if there's no value
+        elif value:
+            if isinstance(proptype, hyperdb.String):
+                # fix the CRLF/CR -> LF stuff
+                value = fixNewlines(value)
+            elif isinstance(proptype, hyperdb.Date):
+                value = date.Date(value)
+            elif isinstance(proptype, hyperdb.Interval):
+                value = date.Interval(value)
+            elif isinstance(proptype, hyperdb.Boolean):
+                value = value.lower() in ('yes', 'true', 'on', '1')
+            elif isinstance(proptype, hyperdb.Number):
+                value = int(value)
+        else:
+            # if we're creating, just don't include this property
+            if not nodeid:
+                continue
+            value = None
 
         # get the old value
         if nodeid:
@@ -1373,22 +1372,39 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 if not properties.has_key(propname):
                     raise
 
-            # existing may be None, which won't equate to empty strings
-            if not existing and not value:
-                continue
-
-            # existing will come out unsorted in some cases
+            # make sure the existing multilink is sorted
             if isinstance(proptype, hyperdb.Multilink):
                 existing.sort()
+
+            # "missing" existing values may not be None
+            if not existing:
+                if isinstance(proptype, hyperdb.String) and not existing:
+                    # some backends store "missing" Strings as empty strings
+                    existing = None
+                elif isinstance(proptype, hyperdb.Number) and not existing:
+                    # some backends store "missing" Numbers as 0 :(
+                    existing = 0
+                elif isinstance(proptype, hyperdb.Boolean) and not existing:
+                    # likewise Booleans
+                    existing = 0
 
             # if changed, set it
             if value != existing:
                 props[propname] = value
         else:
             # don't bother setting empty/unset values
-            if not value:
+            if value is None:
                 continue
+            elif isinstance(proptype, hyperdb.Multilink) and value == []:
+                continue
+            elif isinstance(proptype, hyperdb.String) and value == '':
+                continue
+
             props[propname] = value
+
+        # register this as received if required?
+        if propname in required and value is not None:
+            required.remove(propname)
 
     # see if all the required properties have been supplied
     if required:
@@ -1399,5 +1415,4 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         raise ValueError, 'Required %s %s not supplied'%(p, ', '.join(required))
 
     return props
-
 
