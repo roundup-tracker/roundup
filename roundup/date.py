@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.47 2003-03-10 00:22:20 richard Exp $
+# $Id: date.py,v 1.48 2003-03-10 20:32:53 kedder Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -621,14 +621,18 @@ class Range:
         <Range from None to 2003-03-09.20:00:00>
 
     """
-    def __init__(self, spec, type, **params):
-        """Initializes Range of type <type> from given <spec> string.
+    def __init__(self, spec, Type, **params):
+        """Initializes Range of type <Type> from given <spec> string.
         
         Sets two properties - from_value and to_value. None assigned to any of
         this properties means "infinitum" (-infinitum to from_value and
-        +infinitum to to_value)        
+        +infinitum to to_value)
+
+        The Type parameter here should be class itself (e.g. Date), not a
+        class instance.
+        
         """
-        self.range_type = type
+        self.range_type = Type
         re_range = r'(?:^|(?:from)?(.+?))(?:to(.+?)$|$)'
         re_geek_range = r'(?:^|(.+?))(?:;(.+?)$|$)'
         # Check which syntax to use
@@ -641,9 +645,9 @@ class Range:
         if mch_range:
             self.from_value, self.to_value = mch_range.groups()
             if self.from_value:
-                self.from_value = type(self.from_value.strip(), **params)
+                self.from_value = Type(self.from_value.strip(), **params)
             if self.to_value:
-                self.to_value = type(self.to_value.strip(), **params)
+                self.to_value = Type(self.to_value.strip(), **params)
         else:
             raise ValueError, "Invalid range"
 
