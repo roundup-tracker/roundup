@@ -26,6 +26,7 @@ Feature:
   ("instant_registration" in config) (sf rfe 922209)
 - roundup-admin reindex command may now work on single items or classes
 - multiple selection Link/Multilink search field (thanks Marlon van den Berg)
+- relaxed hyperlinking in web interface (accept "issue123" or "Issue 123")
 
 
 2004-??-?? 0.7.7

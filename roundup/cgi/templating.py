@@ -1088,7 +1088,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
                           r'(?P<email>[-+=%/\w\.]+@[\w\.\-]+)|'
-                          r'(?P<item>(?P<class>[a-z_]+)(?P<id>\d+)))')
+                          r'(?P<item>(?P<class>[A-Za-z_]+)(\s*)?(?P<id>\d+)))')
     def _hyper_repl(self, match):
         if match.group('url'):
             s = match.group('url')
@@ -1098,7 +1098,7 @@ class StringHTMLProperty(HTMLProperty):
             return '<a href="mailto:%s">%s</a>'%(s, s)
         else:
             s = match.group('item')
-            s1 = match.group('class')
+            s1 = match.group('class').lower()
             s2 = match.group('id')
             try:
                 # make sure s1 is a valid tracker classname
