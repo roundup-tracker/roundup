@@ -1,4 +1,4 @@
-            Roundup 0.3.1b1 - an issue tracking system
+            Roundup 0.4.0b1 - an issue tracking system
 
 If you are upgrading from pre-0.3.0, please read MIGRATION.txt.
 
