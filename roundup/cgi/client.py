@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130 2003-08-13 23:51:59 richard Exp $
+# $Id: client.py,v 1.131 2003-08-28 01:39:15 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -995,14 +995,14 @@ You should then receive another email with the new password.
         try:
             props, links = self.parsePropsFromForm()
         except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
+            self.error_message.append(_('Parse Error: ') + str(message))
             return
 
         # handle the props
         try:
             message = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError), message:
-            self.error_message.append(_('Error: ') + str(message))
+            self.error_message.append(_('Apply Error: ') + str(message))
             return
 
         # commit now that all the tricky stuff is done
@@ -1252,10 +1252,10 @@ You should then receive another email with the new password.
             found[nodeid] = 1
 
             # see if the node exists
-            if cl.hasnode(nodeid):
-                exists = 1
-            else:
+            if nodeid in ('x', 'X') or not cl.hasnode(nodeid):
                 exists = 0
+            else:
+                exists = 1
 
             # confirm correct weight
             if len(idlessprops) != len(values):
