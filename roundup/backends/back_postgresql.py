@@ -90,6 +90,7 @@ class Database(rdbms_common.Database):
     arg = '%s'
 
     def sql_open_connection(self):
+        raise NotImplementedError, "Please don't use me just yet..."
         db = getattr(self.config, 'POSTGRESQL_DATABASE')
         try:
             conn = psycopg.connect(**db)
