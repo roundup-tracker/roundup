@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.62 2002-08-21 07:07:27 richard Exp $
+#$Id: back_anydbm.py,v 1.63 2002-08-22 04:42:28 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -495,8 +495,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'packjournal', (self, pack_before)
 
-        pack_before = pack_before.get_tuple()
-
         classes = self.getclasses()
 
         # figure the class db type
@@ -514,6 +512,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 for entry in journal:
                     (nodeid, date_stamp, self.journaltag, action, 
                         params) = entry
+                    date_stamp = date.Date(date_stamp)
                     if date_stamp > pack_before or action == 'create':
                         l.append(entry)
                     elif action == 'set':
@@ -1172,9 +1171,9 @@ class Class(hyperdb.Class):
                 # figure the journal entry
                 l = []
                 if add:
-                    l.append(('add', add))
+                    l.append(('+', add))
                 if remove:
-                    l.append(('remove', remove))
+                    l.append(('-', remove))
                 if l:
                     journalvalues[propname] = tuple(l)
 
@@ -1912,6 +1911,15 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.62  2002/08/21 07:07:27  richard
+#In preparing to turn back on link/unlink journal events (by default these
+#are turned off) I've:
+#- fixed back_anydbm so it can journal those events again (had broken it
+#  with recent changes)
+#- changed the serialisation format for dates and intervals to use a
+#  numbers-only (and sign for Intervals) string instead of tuple-of-ints.
+#  Much smaller.
+#
 #Revision 1.61  2002/08/19 02:53:27  richard
 #full database export and import is done
 #
