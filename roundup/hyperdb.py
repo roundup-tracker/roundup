@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: hyperdb.py,v 1.107 2004-11-25 22:51:06 richard Exp $
+# $Id: hyperdb.py,v 1.107.2.1 2005-03-03 22:12:35 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -494,20 +494,20 @@ class Class:
         raise NotImplementedError
 
     def find(self, **propspec):
-        """Get the ids of nodes in this class which link to the given nodes.
+        '''Get the ids of items in this class which link to the given items.
 
-        'propspec' consists of keyword args propname={nodeid:1,}
+        'propspec' consists of keyword args propname=itemid or
+                   propname={<itemid 1>:1, <itemid 2>:1, ...}
         'propname' must be the name of a property in this class, or a
-        KeyError is raised.  That property must be a Link or Multilink
-        property, or a TypeError is raised.
+                   KeyError is raised.  That property must be a Link or
+                   Multilink property, or a TypeError is raised.
 
-        Any node in this class whose 'propname' property links to any of the
-        nodeids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7, so we have hits on these
-        issues:
+        Any item in this class whose 'propname' property links to any of
+        the itemids will be returned. Examples::
 
+            db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
-        """
+        '''
         raise NotImplementedError
 
     def filter(self, search_matches, filterspec, sort=(None,None),

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.142.2.6 2005-03-02 14:09:30 a1s Exp $
+# $Id: rdbms_common.py,v 1.142.2.7 2005-03-03 22:12:36 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1885,19 +1885,18 @@ class Class(hyperdb.Class):
         return str(row[0])
 
     def find(self, **propspec):
-        '''Get the ids of nodes in this class which link to the given nodes.
+        '''Get the ids of items in this class which link to the given items.
 
-        'propspec' consists of keyword args propname=nodeid or
-                   propname={nodeid:1, }
+        'propspec' consists of keyword args propname=itemid or
+                   propname={<itemid 1>:1, <itemid 2>: 1, ...}
         'propname' must be the name of a property in this class, or a
                    KeyError is raised.  That property must be a Link or
                    Multilink property, or a TypeError is raised.
 
-        Any node in this class whose 'propname' property links to any of the
-        nodeids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7, so we have hits on these
-        issues:
+        Any item in this class whose 'propname' property links to any of
+        the itemids will be returned. Examples::
 
+            db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
         # shortcut

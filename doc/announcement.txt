@@ -5,10 +5,12 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 This 0.8.2 release adds one feature and fixes some bugs:
 
 Feature:
+
 - roundup-server automatically redirects from trackers list
   to the tracker page if there is only one tracker
 
 Fixed:
+
 - added content to ZRoundup refresh.txt file (sf bug 1147622)
 - fix invalid reference to csv.colon_separated
 - correct URL to What's New in setup.py meta-data

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.77.2.6 2005-03-03 04:47:35 richard Exp $
+# $Id: setup.py,v 1.77.2.7 2005-03-03 22:12:35 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -347,7 +347,7 @@ the "Software Upgrade" guidelines given in the maintenance documentation.
         'download_url': 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         'packages': packagelist,
         'classifiers': [
-            'Development Status :: 5 - Stable',
+            'Development Status :: 5 - Production/Stable',
             'Environment :: Console',
             'Environment :: Web Environment',
             'Intended Audience :: End Users/Desktop',

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.179.2.6 2005-02-14 05:40:54 richard Exp $
+#$Id: back_anydbm.py,v 1.179.2.7 2005-03-03 22:12:35 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1431,16 +1431,15 @@ class Class(hyperdb.Class):
         '''Get the ids of items in this class which link to the given items.
 
         'propspec' consists of keyword args propname=itemid or
-                   propname={itemid:1, }
+                   propname={<itemid 1>:1, <itemid 2>: 1, ...}
         'propname' must be the name of a property in this class, or a
                    KeyError is raised.  That property must be a Link or
                    Multilink property, or a TypeError is raised.
 
-        Any item in this class whose 'propname' property links to any of the
-        itemids will be returned. Used by the full text indexing, which knows
-        that "foo" occurs in msg1, msg3 and file7, so we have hits on these
-        issues:
+        Any item in this class whose 'propname' property links to any of
+        the itemids will be returned. Examples::
 
+            db.issue.find(messages='1')
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
         propspec = propspec.items()
