@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.63 2004-04-25 22:19:14 richard Exp $
+# $Id: setup.py,v 1.64 2004-05-05 02:05:43 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,16 +217,12 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-No, really, this is a BETA and if you don't follow the upgrading steps,
-particularly the bit about BACKING UP YOUR DATA, I'm NOT GOING TO BE HELD
-RESPONSIBLE. This release is NOT FOR GENERAL USE.
+This release introduces far too many features to list here so I've put
+together a What's New page:
 
-I would *greatly* appreciate people giving this release a whirl with a
-copy of their existing setup. It's only through real-world testing of
-beta releases that we can ensure that older trackers will be OK.
+  http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
 
-This release introduces far too many features to list here. Some
-highlights:
+Some highlights:
 
 - added postgresql backend
 - trackers using postgresql or mysql backends may have many users

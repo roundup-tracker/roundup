@@ -1,37 +1,6 @@
-This is the second beta release of Roundup version 0.7. It fixes some bugs
-in the previous beta release:
-
-- mysql and postgresql schema mutation now handle added Multilinks
-- web CSV export was busted (as was any action returning a result)
-- MultiMapping deviated from the Zope C implementation in a number of
-  places (thanks Toby Sargeant)
-- MySQL and Postgresql use BOOL/BOOLEAN for Boolean types
-- OTK generation was busted (thanks Stuart D. Gathman)
-- export and import now include journals (incompatible with export < 0.7)
-- added "download_url" method to generate a correctly quoted URL for file
-  download links (sf bug 927745)
-- all uses of TRACKER_WEB now ensure it ends with a '/'
-- roundup-admin install checks for existing tracker in target home
-- grouping (and sorting) by multilink in RDBMS backends (sf bug 655702)
-- roundup scripts may now be asked for their version (sf rfe 798657)
-- sqlite backend had stopped using the global lock
-- better check for anonymous viewing of user items (sf bug 933510)
-- stop Interval from displaying an empty string (sf bug 934022)
-- fixed storage of some datatypes in some RDBMS backends
-
-If you're upgrading from an older version of Roundup you *must* follow
-the "Software Upgrade" guidelines given in the maintenance documentation.
-
-No, really, this is a BETA and if you don't follow the upgrading steps,
-particularly the bit about BACKING UP YOUR DATA, I'm NOT GOING TO BE HELD
-RESPONSIBLE. This release is NOT FOR GENERAL USE.
-
-I would *greatly* appreciate people giving this release a whirl with a
-copy of their existing setup. It's only through real-world testing of
-beta releases that we can ensure that older trackers will be OK.
-
-Version 0.7 introduces far too many features to list here. I've put
-together a What's New page:
+I'm proud to release this 7th major feature release of Roundup. Version 0.7
+introduces far too many features to list here so I've put together a What's
+New page:
 
   http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
 
@@ -45,6 +14,9 @@ Some highlights:
 - HTML templating permission checks are greatly simplified
 - database exports now include full journals
 - IMAP support in the mail gateway
+
+If you're upgrading from an older version of Roundup you *must* follow
+the "Software Upgrade" guidelines given in the maintenance documentation.
 
 Roundup requires python 2.1.3 or later for correct operation.
 
