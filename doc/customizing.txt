@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.112 $
+:Version: $Revision: 1.113 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3680,6 +3680,53 @@ different priorities, like::
    }
 
 and so on, with far less offensive colours :)
+
+Editing multiple items in an index view
+---------------------------------------
+
+To edit the status of all items in the item index view, edit the
+``issue.item.html``:
+
+1. add a form around the listing table, so at the top it reads::
+
+    <form method="POST" tal:attributes="action request/classname">
+     <table class="list">
+
+   and at the bottom of that table::
+
+     </table>
+    </form
+
+   making sure you match the ``</table>`` from the list table, not the
+   navigation table or the subsequent form table.
+
+2. in the display for the issue property, change::
+
+    <td tal:condition="request/show/status"
+        tal:content="python:i.status.plain() or default">&nbsp;</td>
+
+   to::
+
+    <td tal:condition="request/show/status"
+        tal:content="structure i/status/field">&nbsp;</td>
+
+   this will result in an edit field for the status property.
+
+3. after the ``tal:block`` which lists the actual index items (marked by
+   ``tal:repeat="i batch"``) add a new table row::
+
+    <tr>
+     <td tal:attributes="colspan python:len(request.columns)">
+      <input type="submit" value=" Save Changes ">
+      <input type="hidden" name="@action" value="edit">
+      <tal:block replace="structure request/indexargs_form" />
+     </td>
+    </tr>
+
+   which gives us a submit button, indicates that we are performing an edit
+   on any changed statuses and the final block will make sure that the
+   current index view parameters (filtering, columns, etc) will be used in 
+   rendering the next page (the results of the editing).
 
 -------------------
 
