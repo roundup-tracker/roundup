@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.44 2004-04-07 01:12:26 richard Exp $
+$Id: roundup_server.py,v 1.45 2004-04-09 01:31:16 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -99,10 +99,7 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         except:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
-                # we can't send socket timeout errors back to the client, duh
-                s = StringIO.StringIO()
-                traceback.print_exc(None, s)
-                self.log_message(str(s.getvalue()))
+                self.log_error('timeout')
             else:
                 # it'd be nice to be able to detect if these are going to have
                 # any effect...

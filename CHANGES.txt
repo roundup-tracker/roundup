@@ -136,6 +136,12 @@ Cleanup:
     class
 
 
+2004-??-?? 0.6.9
+Fixed:
+- paging in classhelp popup was broken
+- socket timeout error logging can fail
+
+
 2004-04-01 0.6.8
 Fixed:
 - existing trackers (ie. live ones) may be used as templates for new
