@@ -7,6 +7,7 @@ are given with the most recent entry first.
 - fixed rdbms table update detection logic (sf bug 703297)
 - required String properties not being flagged (thanks Ajit George)
 - only look for CSV files when importing (thanks Dan Grassi)
+- can now unset values in CSV editing (sf bug 704788)
 
 
 2003-02-27 0.5.6
