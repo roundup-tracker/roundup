@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.33 2002-09-26 07:39:21 richard Exp $
+# $Id: admin.py,v 1.34 2002-09-26 07:41:54 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -579,7 +579,7 @@ Command help:
             value = cl.get(nodeid, key)
             print _('%(key)s: %(value)s')%locals()
 
-    def do_create(self, args):
+    def do_create(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
         '''Usage: create classname property=value ...
         Create a new entry of a given class.
 
@@ -642,7 +642,15 @@ Command help:
                 except ValueError, message:
                     raise UsageError, _('"%(value)s": %(message)s')%locals()
             elif isinstance(proptype, hyperdb.Password):
-                props[propname] = password.Password(value)
+                m = pwre.match(value)
+                if m:
+                    # password is being given to us encrypted
+                    p = password.Password()
+                    p.scheme = m.group(1)
+                    p.password = m.group(2)
+                    props[propname] = p
+                else:
+                    props[propname] = password.Password(value)
             elif isinstance(proptype, hyperdb.Multilink):
                 props[propname] = value.split(',')
             elif isinstance(proptype, hyperdb.Boolean):
