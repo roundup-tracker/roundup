@@ -1053,7 +1053,7 @@ class DateHTMLProperty(HTMLProperty):
             return ''
 
         # figure the interval
-        interval = date.Date('.') - self._value
+        interval = self._value - date.Date('.')
         if pretty:
             return interval.pretty()
         return str(interval)
