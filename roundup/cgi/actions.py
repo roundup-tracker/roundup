@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.40.2.1 2004-12-15 00:03:36 richard Exp $
+#$Id: actions.py,v 1.40.2.2 2005-01-05 22:13:28 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -158,14 +158,13 @@ class SearchAction(Action):
                 # edit the old way, only one query per name
                 try:
                     qid = self.db.query.lookup(queryname)
-                    if not self.hasPermission('Edit', self.classname,
-                            itemid=qid):
+                    if not self.hasPermission('Edit', 'query', itemid=qid):
                         raise exceptions.Unauthorised, self._(
                             "You do not have permission to edit queries")
                     self.db.query.set(qid, klass=self.classname, url=url)
                 except KeyError:
                     # create a query
-                    if not self.hasPermission('Create', self.classname):
+                    if not self.hasPermission('Create', 'query'):
                         raise exceptions.Unauthorised, self._(
                             "You do not have permission to store queries")
                     qid = self.db.query.create(name=queryname,
@@ -187,14 +186,13 @@ class SearchAction(Action):
                     for qid in qids:
                         if queryname != self.db.query.get(qid, 'name'):
                             continue
-                        if not self.hasPermission('Edit', self.classname,
-                                itemid=qid):
+                        if not self.hasPermission('Edit', 'query', itemid=qid):
                             raise exceptions.Unauthorised, self._(
                             "You do not have permission to edit queries")
                         self.db.query.set(qid, klass=self.classname, url=url)
                 else:
                     # create a query
-                    if not self.hasPermission('Create', self.classname):
+                    if not self.hasPermission('Create', 'query'):
                         raise exceptions.Unauthorised, self._(
                             "You do not have permission to store queries")
                     qid = self.db.query.create(name=queryname,
@@ -492,7 +490,7 @@ class EditCommon(Action):
         Base behaviour is to check the user can edit this class. No additional
         property checks are made.
         """
-        return self.hasPermission('Create', self.classname)
+        return self.hasPermission('Create')
 
 class EditItemAction(EditCommon):
     def lastUserActivity(self):
