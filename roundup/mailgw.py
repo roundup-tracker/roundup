@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.116 2003-04-17 06:51:44 richard Exp $
+$Id: mailgw.py,v 1.117 2003-04-23 12:09:20 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -817,6 +817,16 @@ not find a text/plain part to use.
                 name = "unnamed"
             files.append(self.db.file.create(type=mime_type, name=name,
                 content=data, **file_props))
+        # attach the files to the issue
+        if nodeid:
+            # extend the existing files list
+            fileprop = cl.get(nodeid, 'file')
+            fileprop.extend(files)
+            props['files'] = fileprop
+        else:
+            # pre-load the files list
+            props['files'] = fileprop
+
 
         # 
         # create the message if there's a message body (content)
