@@ -21,6 +21,7 @@ be replaced with a call to Database.getuid().
 might still need to create an index "create index ids_name_idx on 
 ids(name)".
 
+
 Migrating from 0.6.x to 0.6.3
 =============================
 
