@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27.2.5 2004-08-07 22:19:14 richard Exp $
+#$Id: actions.py,v 1.27.2.6 2004-11-05 05:14:35 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -667,7 +667,7 @@ class ConfRegoAction(Action):
             return
 
         # log the new user in
-        self.client.user = self.db.user.get(self.userid, 'username')
+        self.user = self.client.user = self.db.user.get(self.userid, 'username')
         # re-open the database for real, using the user
         self.client.opendb(self.client.user)
 
