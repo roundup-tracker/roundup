@@ -1,5 +1,5 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.11 2001-08-03 00:59:34 richard Exp $
+# $Id: roundup-admin,v 1.12 2001-08-03 01:28:33 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -381,7 +381,7 @@ def main():
             password = getpass.getpass('  password: ')
 
     # get the instance
-    instance = imp.load_module('instance', None, instance_home, ('', '', 5))
+    instance = imp.load_package('instance', instance_home)
 
     function = figureCommands().get(command, None)
 
@@ -404,6 +404,11 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/03 00:59:34  richard
+# Instance import now imports the instance using imp.load_module so that
+# we can have instance homes of "roundup" or other existing python package
+# names.
+#
 # Revision 1.10  2001/07/30 08:12:17  richard
 # Added time logging and file uploading to the templates.
 #
