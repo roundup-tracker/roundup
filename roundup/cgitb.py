@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.9 2002-01-08 11:56:24 richard Exp $
+# $Id: cgitb.py,v 1.10 2002-01-16 04:49:45 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -50,7 +50,7 @@ def html(context=5):
 <table width="100%%" bgcolor="#d8bbff" cellspacing=0 cellpadding=2 border=0>
 <tr><td>%s %s</td></tr></table>''' % (link, call)
 
-        if file is None:
+        if index is None or file is None:
             traceback.append('<p>' + level)
             continue
 
@@ -124,6 +124,9 @@ def handler():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/01/08 11:56:24  richard
+# missed an import _
+#
 # Revision 1.8  2002/01/05 02:22:32  richard
 # i18n'ification
 #
