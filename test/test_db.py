@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.79 2003-03-18 00:50:24 richard Exp $ 
+# $Id: test_db.py,v 1.80 2003-03-18 23:28:16 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -256,6 +256,12 @@ class anydbmDBTestCase(MyTestCase):
         self.db.user.set(nid, age=3)
         self.assertNotEqual(self.db.user.get(nid, 'age'), 1)
         self.db.user.set(nid, age=1.0)
+        self.assertEqual(self.db.user.get(nid, 'age'), 1)
+        self.db.user.set(nid, age=0)
+        self.assertEqual(self.db.user.get(nid, 'age'), 0)
+
+        nid = self.db.user.create(username='bar', age=0)
+        self.assertEqual(self.db.user.get(nid, 'age'), 0)
 
     def testNumberUnset(self):
         nid = self.db.user.create(username='foo', age=1)
@@ -889,14 +895,16 @@ class metakitReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, metakit)
 
 def suite():
+    p = []
+
     l = [
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
+    p.append('anydbm')
     #return unittest.TestSuite(l)
 
     from roundup import backends
-    p = []
     if hasattr(backends, 'mysql'):
         from roundup.backends import mysql
         try:
