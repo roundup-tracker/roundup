@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.10 2002-07-14 23:17:24 richard Exp $
+#$Id: indexer.py,v 1.11 2002-07-18 11:17:30 gmcm Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
@@ -49,7 +49,7 @@ class Indexer:
         elif os.path.exists(version):
             version = open(version).read()
             # check the value and reindex if it's not the latest
-            if version != '1':
+            if version.strip() != '1':
                 self.force_reindex()
 
     def force_reindex(self):
@@ -333,6 +333,9 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.10  2002/07/14 23:17:24  richard
+#oops
+#
 #Revision 1.9  2002/07/14 06:11:16  richard
 #Some TODOs
 #

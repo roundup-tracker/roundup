@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.75 2002-07-14 02:05:53 richard Exp $
+# $Id: hyperdb.py,v 1.76 2002-07-18 11:17:30 gmcm Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -110,6 +110,17 @@ class Multilink:
         ' more useful for dumps '
         return '<%s to "%s">'%(self.__class__, self.classname)
 
+class Boolean:
+    """An object designating a boolean property"""
+    def __repr__(self):
+        'more useful for dumps'
+        return '<%s>' % self.__class__
+    
+class Number:
+    """An object designating a numeric property"""
+    def __repr__(self):
+        'more useful for dumps'
+        return '<%s>' % self.__class__
 #
 # Support for splitting designators
 #
@@ -580,6 +591,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.75  2002/07/14 02:05:53  richard
+# . all storage-specific code (ie. backend) is now implemented by the backends
+#
 # Revision 1.74  2002/07/10 00:24:10  richard
 # braino
 #

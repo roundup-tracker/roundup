@@ -455,6 +455,17 @@ class Class:
                 setattr(row, key, str(value))
                 changes[key] = str(oldvalue)
                 propvalues[key] = str(value)
+                
+            elif value is not None and isinstance(prop, hyperdb.Number):
+                setattr(row, key, int(value))
+                changes[key] = oldvalue
+                propvalues[key] = value
+                
+            elif value is not None and isinstance(prop, hyperdb.Boolean):
+                bv = value != 0
+                setattr(row, key, bv)
+                changes[key] = oldvalue
+                propvalues[key] = value
 
             oldnode[key] = oldvalue
 
@@ -660,6 +671,14 @@ class Class:
                 v = v.replace('*', '.*?')
                 regexes[propname] = re.compile(v, re.I)
             elif propname == 'id':
+                where[propname] = int(value)
+            elif isinstance(prop, hyperdb.Boolean):
+                if type(value) is _STRINGTYPE:
+                    bv = value.lower() in ('yes', 'true', 'on', '1')
+                else:
+                    bv = value
+                where[propname] = bv
+            elif isinstance(prop, hyperdb.Number):
                 where[propname] = int(value)
             else:
                 where[propname] = str(value)
@@ -891,6 +910,8 @@ _converters = {
     hyperdb.Multilink : _fetchML,
     hyperdb.Interval  : date.Interval,
     hyperdb.Password  : _fetchPW,
+    hyperdb.Boolean   : lambda n: n,
+    hyperdb.Number    : lambda n: n,
 }                
 
 class FileName(hyperdb.String):
@@ -904,6 +925,8 @@ _typmap = {
     hyperdb.Multilink : 'V',
     hyperdb.Interval  : 'S',
     hyperdb.Password  : 'S',
+    hyperdb.Boolean   : 'I',
+    hyperdb.Number    : 'I',
 }
 class FileClass(Class):
     ' like Class but with a content property '

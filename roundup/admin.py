@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.17 2002-07-14 06:05:50 richard Exp $
+# $Id: admin.py,v 1.18 2002-07-18 11:17:30 gmcm Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -439,6 +439,10 @@ Command help:
                     props[key] = value
                 elif isinstance(proptype, hyperdb.Multilink):
                     props[key] = value.split(',')
+                elif isinstance(proptype, hyperdb.Boolean):
+                    props[key] = value.lower() in ('yes', 'true', 'on', '1')
+                elif isinstance(proptype, hyperdb.Number):
+                    props[key] = int(value)
 
             # try the set
             try:
@@ -611,6 +615,10 @@ Command help:
                 props[propname] = password.Password(value)
             elif isinstance(proptype, hyperdb.Multilink):
                 props[propname] = value.split(',')
+            elif isinstance(proptype, hyperdb.Boolean):
+                props[propname] = value.lower() in ('yes', 'true', 'on', '1')
+            elif isinstance(proptype, hyperdb.Number):
+                props[propname] = int(value)
 
         # check for the key property
         propname = cl.getkey()
@@ -1123,6 +1131,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/07/14 06:05:50  richard
+#  . fixed the date module so that Date(". - 2d") works
+#
 # Revision 1.16  2002/07/09 04:19:09  richard
 # Added reindex command to roundup-admin.
 # Fixed reindex on first access.

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.100 2002-07-18 07:01:54 richard Exp $
+# $Id: htmltemplate.py,v 1.101 2002-07-18 11:17:30 gmcm Exp $
 
 __doc__ = """
 Template engine.
@@ -107,6 +107,10 @@ class TemplateFunctions:
             value = str(value)
         elif isinstance(propclass, hyperdb.Interval):
             value = str(value)
+        elif isinstance(propclass, hyperdb.Number):
+            value = str(value)
+        elif isinstance(propclass, hyperdb.Boolean):
+            value = value and "Yes" or "No"
         elif isinstance(propclass, hyperdb.Link):
             if value:
                 if lookup:
@@ -199,6 +203,11 @@ class TemplateFunctions:
                 value = cgi.escape(str(value))
                 value = '&quot;'.join(value.split('"'))
             s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
+        elif isinstance(propclass, hyperdb.Boolean):
+            checked = value and "checked" or ""
+            s = '<input type="checkbox" name="%s" %s>'%(property, checked)
+        elif isinstance(propclass, hyperdb.Number):
+            s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
         elif isinstance(propclass, hyperdb.Password):
             s = '<input type="password" name="%s" size="%s">'%(property, size)
         elif isinstance(propclass, hyperdb.Link):
@@ -268,7 +277,7 @@ class TemplateFunctions:
             property, rows, cols, value)
 
     def do_menu(self, property, size=None, height=None, showid=0,
-            additional=[]):
+            additional=[], **conditions):
         ''' For a Link/Multilink property, display a menu of the available
             choices
 
@@ -297,8 +306,8 @@ class TemplateFunctions:
             if linkcl.getprops().has_key('order'):  
                 sort_on = 'order'  
             else:  
-                sort_on = linkcl.labelprop()  
-            options = linkcl.filter(None, {}, [sort_on], []) 
+                sort_on = linkcl.labelprop()
+            options = linkcl.filter(None, conditions, [sort_on], []) 
             height = height or min(len(options), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
             k = linkcl.labelprop(1)
@@ -337,8 +346,8 @@ class TemplateFunctions:
             if linkcl.getprops().has_key('order'):  
                 sort_on = 'order'  
             else:  
-                sort_on = linkcl.labelprop()  
-            options = linkcl.filter(None, {}, [sort_on], []) 
+                sort_on = linkcl.labelprop() 
+            options = linkcl.filter(None, conditions, [sort_on], []) 
             for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -1135,6 +1144,18 @@ class IndexTemplate(TemplateFunctions):
                 op = "equals&nbsp;"
                 xtra = ""
                 val = filterspec.get(nm, '')
+            elif isinstance(propdescr, hyperdb.Boolean):
+                op = "is&nbsp;"
+                xtra = ""
+                val = filterspec.get(nm, None)
+                if val is not None:
+                    val = 'True' and val or 'False'
+                else:
+                    val = ''
+            elif isinstance(propdescr, hyperdb.Number):
+                op = "equals&nbsp;"
+                xtra = ""
+                val = str(filterspec.get(nm, ''))
             else:
                 w('<td></td><td></td><td></td></tr>')
                 continue
@@ -1341,6 +1362,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.100  2002/07/18 07:01:54  richard
+# minor bugfix
+#
 # Revision 1.99  2002/07/17 12:39:10  gmcm
 # Saving, running & editing queries.
 #

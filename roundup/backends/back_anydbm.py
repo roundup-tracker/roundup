@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.47 2002-07-14 23:18:20 richard Exp $
+#$Id: back_anydbm.py,v 1.48 2002-07-18 11:17:31 gmcm Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -29,7 +29,7 @@ from blobfiles import FileStorage
 from roundup.indexer import Indexer
 from locking import acquire_lock, release_lock
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError
+    Multilink, DatabaseError, Boolean, Number
 
 #
 # Now the database
@@ -730,6 +730,18 @@ class Class(hyperdb.Class):
                 if value is not None and not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'%key
 
+            elif isinstance(prop, Number):
+                try:
+                    int(value)
+                except TypeError:
+                    raise TypeError, 'new property "%s" not numeric' % propname
+
+            elif isinstance(prop, Boolean):
+                try:
+                    int(value)
+                except TypeError:
+                    raise TypeError, 'new property "%s" is not boolean' % propname
+
         # make sure there's data where there needs to be
         for key, prop in self.properties.items():
             if propvalues.has_key(key):
@@ -1011,6 +1023,18 @@ class Class(hyperdb.Class):
                         'Interval'%propname
                 propvalues[propname] = value
 
+            elif value is not None and isinstance(prop, Number):
+                try:
+                    int(value)
+                except TypeError:
+                    raise TypeError, 'new property "%s" not numeric' % propname
+
+            elif value is not None and isinstance(prop, Boolean):
+                try:
+                    int(value)
+                except TypeError:
+                    raise TypeError, 'new property "%s" not boolean' % propname
+
             node[propname] = value
 
         # nothing to do?
@@ -1291,6 +1315,14 @@ class Class(hyperdb.Class):
                 v = v.replace('?', '.')
                 v = v.replace('*', '.*?')
                 l.append((2, k, re.compile(v, re.I)))
+            elif isinstance(propclass, Boolean):
+                if type(v) is type(''):
+                    bv = v.lower() in ('yes', 'true', 'on', '1')
+                else:
+                    bv = v
+                l.append((6, k, bv))
+            elif isinstance(propclass, Number):
+                l.append((6, k, int(v)))
             else:
                 l.append((6, k, v))
         filterspec = l
@@ -1456,6 +1488,12 @@ class Class(hyperdb.Class):
                         elif dir == '-':
                             r = cmp(len(bv), len(av))
                             if r != 0: return r
+                    elif isinstance(propclass, Number) or isinstance(propclass, Boolean):
+                        if dir == '+':
+                            r = cmp(av, bv)
+                        elif dir == '-':
+                            r = cmp(bv, av)
+                        
                 # end for dir, prop in list:
             # end for list in sort, group:
             # if all else fails, compare the ids
@@ -1638,6 +1676,10 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.47  2002/07/14 23:18:20  richard
+#. fixed the journal bloat from multilink changes - we just log the add or
+#  remove operations, not the whole list
+#
 #Revision 1.46  2002/07/14 06:06:34  richard
 #Did some old TODOs
 #
