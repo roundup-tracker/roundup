@@ -6,6 +6,7 @@ Fixed:
 - note about how to run roundup demo in Windows (sf bug 1082090)
 - fix API for templating utils extensions - remove "utils" arg (sf bug 1081981)
 - back_sqlite.py is missing "import time" (sf bug 1081959)
+- fix (list) popup (sf bug 1083570)
 
 
 2004-12-08 0.8.0b1
@@ -60,6 +61,7 @@ Fixed:
 - apply IE caching "fix" to automatically serve up all pages expired
 - fix typo (sf patch 1076629)
 - fix hyperlinking of items (sf bug 1080251)
+- fix roundup-admin find command handling of Multilinks
 
 
 2004-10-26 0.7.9
