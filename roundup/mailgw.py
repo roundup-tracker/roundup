@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.17 2001-10-09 07:25:59 richard Exp $
+$Id: mailgw.py,v 1.18 2001-10-11 06:38:57 richard Exp $
 '''
 
 
@@ -106,9 +106,9 @@ class Message(mimetools.Message):
         s.seek(0)
         return Message(s)
 
-subject_re = re.compile(r'(\[?(fwd|re):\s*)*'
-    r'(\[(?P<classname>[^\d]+)(?P<nodeid>\d+)?\])'
-    r'(?P<title>[^\[]+)(\[(?P<args>.+?)\])?', re.I)
+subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re)\s*\W?\s*)*'
+    r'\s*(\[(?P<classname>[^\d]+)(?P<nodeid>\d+)?\])'
+    r'\s*(?P<title>[^\[]+)(\[(?P<args>.+?)\])?', re.I)
 
 class MailGW:
     def __init__(self, db):
@@ -133,7 +133,7 @@ class MailGW:
             sendto = [message.getaddrlist('from')[0][1]]
             m = ['Subject: Failed issue tracker submission', '']
             m.append(str(value))
-            m.append('\nMail Gateway Help\n=================')
+            m.append('\n\nMail Gateway Help\n=================')
             m.append(fulldoc)
         except:
             # bounce the message back to the sender with the error message
@@ -197,12 +197,26 @@ database.
 Valid class names are: %s
 Subject was: "%s"
 '''%(classname, ', '.join(self.db.getclasses()), subject)
+
+        # If there's no nodeid, check to see if this is a followup and
+        # maybe someone's responded to the initial mail that created an
+        # entry. Try to find the matching nodes with the same title, and
+        # use the _last_ one matched (since that'll _usually_ be the most
+        # recent...)
+        if not nodeid and m.group('refwd'):
+            l = cl.stringFind(title=title)
+            if l:
+                nodeid = l[-1]
+
+        # start of the props
         properties = cl.getprops()
         props = {}
+
+        # handle the args
         args = m.group('args')
         if args:
-            for prop in string.split(m.group('args'), ';'):
-                try:
+            for prop in string.split(args, ';'):
+                Try:
                     key, value = prop.split('=')
                 except ValueError, message:
                     raise MailUsageError, '''
@@ -289,7 +303,7 @@ Subject was: "%s"
             if content is None:
                 raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part o use.
+not find a text/plain part to use.
 '''
 
         elif content_type[:10] == 'multipart/':
@@ -308,13 +322,13 @@ not find a text/plain part o use.
             if content is None:
                 raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part o use.
+not find a text/plain part to use.
 '''
 
         elif content_type != 'text/plain':
             raise MailUsageError, '''
 Roundup requires the submission to be plain text. The message parser could
-not find a text/plain part o use.
+not find a text/plain part to use.
 '''
 
         else:
@@ -402,6 +416,10 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.16  2001/10/05 02:23:24  richard
 #  . roundup-admin create now prompts for property info if none is supplied
 #    on the command-line.

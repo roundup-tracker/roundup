@@ -15,6 +15,13 @@ pre-release 1. Users who downloaded that release MUST download this release.
 Source and documentation is available at the website:
       http://roundup.sourceforge.net/
 
+Release Info (via download page):
+     https://sourceforge.net/project/showfiles.php?group_id=31577
+
+Mailing lists - the place to ask questions:
+     https://sourceforge.net/mail/?group_id=31577
+
+
 
 About Roundup
 =============
