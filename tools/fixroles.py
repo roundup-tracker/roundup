@@ -22,8 +22,8 @@ class AdminTool(admin.AdminTool):
         The admin user gets "Admin", the anonymous user gets "Anonymous"
         and all other users get "User".
         '''
-	# get the user class
-	cl = self.get_class('user')
+        # get the user class
+        cl = self.get_class('user')
         for userid in cl.list():
             username = cl.get(userid, 'username')
             if username == 'admin':
@@ -32,7 +32,7 @@ class AdminTool(admin.AdminTool):
                 roles = 'Anonymous'
             else:
                 roles = 'User'
-	    cl.set(userid, roles=roles)
+            cl.set(userid, roles=roles)
         return 0
 
 if __name__ == '__main__':
