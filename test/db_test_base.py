@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.28 2004-05-16 09:35:50 richard Exp $ 
+# $Id: db_test_base.py,v 1.29 2004-06-08 05:35:07 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -960,11 +960,13 @@ class DBTest(MyTestCase):
 
         # grab the export
         export = {}
+        journals = {}
         for cn,klass in self.db.classes.items():
             names = klass.getprops().keys()
             cl = export[cn] = [names+['is retired']]
             for id in klass.getnodeids():
                 cl.append(klass.export_list(names, id))
+            journals[cn] = klass.export_journals()
 
         # shut down this db and nuke it
         self.db.close()
@@ -983,6 +985,7 @@ class DBTest(MyTestCase):
             for itemprops in items[1:]:
                 maxid = max(maxid, int(klass.import_list(names, itemprops)))
             self.db.setid(cn, str(maxid+1))
+            klass.import_journals(journals[cn])
 
         # compare with snapshot of the database
         for cn, items in orig.items():
