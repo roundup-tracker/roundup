@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.129 2003-08-12 01:26:08 richard Exp $
+# $Id: client.py,v 1.130 2003-08-13 23:51:59 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -473,6 +473,7 @@ class Client:
             raise NotFound, designator
 
         # we just want to serve up the file named
+        self.opendb('admin')
         file = self.db.file
         self.additional_headers['Content-Type'] = file.get(nodeid, 'type')
         self.write(file.get(nodeid, 'content'))

@@ -10,6 +10,7 @@ are given with the most recent entry first.
 - sort multilinks a little better for grouping (sf bug 772935)
 - batch the (list) listings at 500 entries per page (sf bug 759906)
 - don't have RDBMS backends list retired nodes (sf bug 767319)
+- fix file downloading
 
 
 2003-07-29 0.6.0b4
