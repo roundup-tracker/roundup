@@ -735,8 +735,8 @@ class HTMLItem(HTMLPermissions):
 class HTMLUser(HTMLItem):
     ''' Accesses through the *user* (a special case of item)
     '''
-    def __init__(self, client, classname, nodeid):
-        HTMLItem.__init__(self, client, 'user', nodeid)
+    def __init__(self, client, classname, nodeid, anonymous=0):
+        HTMLItem.__init__(self, client, 'user', nodeid, anonymous)
         self._default_classname = client.classname
 
         # used for security checks
