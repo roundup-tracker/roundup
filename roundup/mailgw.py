@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.96 2002-10-15 06:51:32 richard Exp $
+$Id: mailgw.py,v 1.97 2002-10-15 07:25:49 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -153,6 +153,7 @@ class MailGW:
         '''
         s = cStringIO.StringIO()
         s.write(sys.stdin.read())
+        s.seek(0)
         self.main(s)
         return 0
 
@@ -328,34 +329,20 @@ class MailGW:
         body = part.startbody('text/plain')
         body.write('\n'.join(error))
 
-        # reconstruct the original message
-        m = cStringIO.StringIO()
-        w = MimeWriter.MimeWriter(m)
-        # default the content_type, just in case...
-        content_type = 'text/plain'
-        # add the headers except the content-type
+        # attach the original message to the returned message
+        part = writer.nextpart()
+        part.addheader('Content-Disposition','attachment')
+        part.addheader('Content-Description','Message you sent')
+        body = part.startbody('text/plain')
         for header in message.headers:
-            header_name = header.split(':')[0]
-            if header_name.lower() == 'content-type':
-                content_type = message.getheader(header_name)
-            elif message.getheader(header_name):
-                w.addheader(header_name, message.getheader(header_name))
-        # now attach the message body
-        body = w.startbody(content_type)
+            body.write(header)
+        body.write('\n')
         try:
             message.rewindbody()
         except IOError, message:
             body.write("*** couldn't include message body: %s ***"%message)
         else:
             body.write(message.fp.read())
-
-        # attach the original message to the returned message
-        part = writer.nextpart()
-        part.addheader('Content-Disposition','attachment')
-        part.addheader('Content-Description','Message you sent')
-        part.addheader('Content-Transfer-Encoding', '7bit')
-        body = part.startbody('message/rfc822')
-        body.write(m.getvalue())
 
         writer.lastpart()
         return msg
