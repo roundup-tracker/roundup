@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.133 2003-10-04 11:21:47 jlgijsbers Exp $
+$Id: mailgw.py,v 1.134 2003-10-24 14:59:38 jlgijsbers Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -1036,7 +1036,7 @@ def uidFromAddress(db, address, create=1, **user_props):
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         eol=re.compile(r'[\r\n]+'), 
-        signature=re.compile(r'^[>|\s]*[-_]+\s*$'),
+        signature=re.compile(r'^[>|\s]*-- $'),
         original_msg=re.compile(r'^[>|\s]*-----\s?Original Message\s?-----$')):
     ''' The message body is divided into sections by blank lines.
         Sections where the second and all subsequent lines begin with a ">"

@@ -8,13 +8,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.53 2003-09-15 19:37:28 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.54 2003-10-24 14:59:38 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
 from cStringIO import StringIO
 
-from roundup.mailgw import MailGW, Unauthorized, uidFromAddress
+from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, parseContent
 from roundup import init, instance, rfc2822
 
 NEEDS_INSTANCE = 1
@@ -993,10 +993,27 @@ This is a test confirmation of registration.
         handler.main(message)
 
         self.db.user.lookup('johannes')
-    
+
+
+class ParseContentTestCase(unittest.TestCase):
+    def testSignatureRemoval(self):
+        summary, content = parseContent('''Testing, testing.
+
+-- 
+Signature''', 1, 0)
+        self.assertEqual(content, 'Testing, testing.')
+
+    def testKeepMultipleHyphens(self):
+        body = '''Testing, testing.
+
+----
+Testing, testing.'''
+        summary, content = parseContent(body, 1, 0)
+        self.assertEqual(body, content)
+
 def suite():
-    l = [unittest.makeSuite(MailgwTestCase),
-    ]
+    l = [#unittest.makeSuite(MailgwTestCase),
+         unittest.makeSuite(ParseContentTestCase)]
     return unittest.TestSuite(l)
 
 
