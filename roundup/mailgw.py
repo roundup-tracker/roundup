@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.92 2002-09-26 03:03:18 richard Exp $
+$Id: mailgw.py,v 1.93 2002-09-26 22:15:54 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -483,17 +483,24 @@ Subject was: "%s"
         author = uidFromAddress(self.db, message.getaddrlist('from')[0],
             create=create)
 
-        # no author? means we're not author
+        # if we're not recognised, and we don't get added as a user, then we
+        # must be anonymous
         if not author:
-            raise Unauthorized, '''
+            author = anonid
+
+        # make sure the author has permission to use the email interface
+        if not self.db.security.hasPermission('Email Access', author):
+            if author == anonid:
+                # we're anonymous and we need to be a registered user
+                raise Unauthorized, '''
 You are not a registered user.
 
 Unknown address: %s
 '''%message.getaddrlist('from')[0][1]
-
-        # make sure the author has permission to use the email interface
-        if not self.db.security.hasPermission('Email Access', author):
-            raise Unauthorized, 'You are not permitted to access this tracker.'
+            else:
+                # we're registered and we're _still_ not allowed access
+                raise Unauthorized, 'You are not permitted to access '\
+                    'this tracker.'
 
         # make sure they're allowed to edit this class of information
         if not self.db.security.hasPermission('Edit', author, classname):

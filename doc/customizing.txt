@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.47 $
+:Version: $Revision: 1.48 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1483,6 +1483,27 @@ When adding a new Permission, you will need to:
 4. add it to the appropriate xxxPermission methods on in your tracker
    interfaces module
 
+Example Scenarios
+-----------------
+
+**automatic registration of users in the e-mail gateway**
+ By giving the "anonymous" user the "Email Registration" Role, any
+ unidentified user will automatically be registered with the tracker (with
+ no password, so they won't be able to log in through the web until an admin
+ sets them a password). Note: this is the default behaviour in the tracker
+ templates that ship with Roundup.
+
+**anonymous access through the e-mail gateway**
+ Give the "anonymous" user the "Email Access" and ("Edit", "issue") Roles
+ but not giving them the "Email Registration" Role. This means that when an
+ unknown user sends email into the tracker, they're automatically logged in
+ as "anonymous". Since they don't have the "Email Registration" Role, they
+ won't be automatically registered, but since "anonymous" has permission
+ to use the gateway, they'll still be able to submit issues. Note that the
+ Sender information - their email address - will not be available - they're
+ *anonymous*.
+
+XXX more examples needed
 
 
 Examples
