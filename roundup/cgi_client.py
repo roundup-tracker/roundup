@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.97 2002-01-11 23:22:29 richard Exp $
+# $Id: cgi_client.py,v 1.98 2002-01-14 02:20:14 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -44,21 +44,7 @@ class Client:
     'anonymous' user exists, the user is logged in using that user (though
     there is no cookie). This allows them to modify the database, and all
     modifications are attributed to the 'anonymous' user.
-
-
-    Customisation
-    -------------
-      FILTER_POSITION - one of 'top', 'bottom', 'top and bottom'
-      ANONYMOUS_ACCESS - one of 'deny', 'allow'
-      ANONYMOUS_REGISTER - one of 'deny', 'allow'
-
-    from the roundup class:
-      INSTANCE_NAME - defaults to 'Roundup issue tracker'
-
     '''
-    FILTER_POSITION = 'bottom'       # one of 'top', 'bottom', 'top and bottom'
-    ANONYMOUS_ACCESS = 'deny'        # one of 'deny', 'allow'
-    ANONYMOUS_REGISTER = 'deny'      # one of 'deny', 'allow'
 
     def __init__(self, instance, request, env, form=None):
         self.instance = instance
@@ -104,7 +90,7 @@ class Client:
             message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
             message = ''
-        style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
+        style = open(os.path.join(self.instance.TEMPLATES, 'style.css')).read()
         user_name = self.user or ''
         if self.user == 'admin':
             admin_links = _(' | <a href="list_classes">Class List</a>' \
@@ -286,7 +272,7 @@ class Client:
         cn = self.classname
         cl = self.db.classes[cn]
         self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
-            'classname': cn, 'instancename': self.INSTANCE_NAME})
+            'classname': cn, 'instancename': self.instance.INSTANCE_NAME})
         if sort is None: sort = self.index_arg(':sort')
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
@@ -295,7 +281,7 @@ class Client:
         if show_customization is None:
             show_customization = self.customization_widget()
 
-        index = htmltemplate.IndexTemplate(self, self.TEMPLATES, cn)
+        index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
         index.render(filterspec, filter, columns, sort, group,
             show_customization=show_customization)
         self.pagefoot()
@@ -342,7 +328,8 @@ class Client:
         nodeid = self.nodeid
 
         # use the template to display the item
-        item = htmltemplate.ItemTemplate(self, self.TEMPLATES, self.classname)
+        item = htmltemplate.ItemTemplate(self, self.instance.TEMPLATES,
+            self.classname)
         item.render(nodeid)
 
         self.pagefoot()
@@ -561,7 +548,7 @@ class Client:
                 self.nodeid = nid
                 self.pagehead('%s: %s'%(self.classname.capitalize(), nid),
                     message)
-                item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 
+                item = htmltemplate.ItemTemplate(self, self.instance.TEMPLATES, 
                     self.classname)
                 item.render(nid)
                 self.pagefoot()
@@ -575,7 +562,7 @@ class Client:
             self.classname.capitalize()}, message)
 
         # call the template
-        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+        newitem = htmltemplate.NewItemTemplate(self, self.instance.TEMPLATES,
             self.classname)
         newitem.render(self.form)
 
@@ -609,7 +596,7 @@ class Client:
              self.classname.capitalize()}, message)
 
         # call the template
-        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+        newitem = htmltemplate.NewItemTemplate(self, self.instance.TEMPLATES,
             self.classname)
         newitem.render(self.form)
 
@@ -647,7 +634,7 @@ class Client:
 
         self.pagehead(_('New %(classname)s')%{'classname':
              self.classname.capitalize()}, message)
-        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+        newitem = htmltemplate.NewItemTemplate(self, self.instance.TEMPLATES,
             self.classname)
         newitem.render(self.form)
         self.pagefoot()
@@ -707,7 +694,7 @@ class Client:
         self.pagehead(_('User: %(user)s')%{'user': node_user}, message)
 
         # use the template to display the item
-        item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 'user')
+        item = htmltemplate.ItemTemplate(self, self.instance.TEMPLATES, 'user')
         item.render(self.nodeid)
         self.pagefoot()
 
@@ -760,7 +747,7 @@ class Client:
     <td><input type="submit" value="Log In"></td></tr>
 </form>
 ''')%locals())
-        if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
+        if self.user is None and self.instance.ANONYMOUS_REGISTER == 'deny':
             self.write('</table>')
             self.pagefoot()
             return
@@ -953,7 +940,7 @@ class Client:
         if action == 'newuser_action':
             # if we don't have a login and anonymous people aren't allowed to
             # register, then spit up the login form
-            if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
+            if self.instance.ANONYMOUS_REGISTER == 'deny' and self.user is None:
                 if action == 'login':
                     self.login()         # go to the index after login
                 else:
@@ -968,7 +955,7 @@ class Client:
                 action = 'index'
 
         # no login or registration, make sure totally anonymous access is OK
-        elif self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
+        elif self.instance.ANONYMOUS_ACCESS == 'deny' and self.user is None:
             if action == 'login':
                 self.login()             # go to the index after login
             else:
@@ -1058,7 +1045,7 @@ class ExtendedClient(Client):
             message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
             message = ''
-        style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
+        style = open(os.path.join(self.instance.TEMPLATES, 'style.css')).read()
         user_name = self.user or ''
         if self.user == 'admin':
             admin_links = _(' | <a href="list_classes">Class List</a>' \
@@ -1178,6 +1165,14 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.97  2002/01/11 23:22:29  richard
+#  . #502437 ] rogue reactor and unittest
+#    in short, the nosy reactor was modifying the nosy list. That code had
+#    been there for a long time, and I suspsect it was there because we
+#    weren't generating the nosy list correctly in other places of the code.
+#    We're now doing that, so the nosy-modifying code can go away from the
+#    nosy reactor.
+#
 # Revision 1.96  2002/01/10 05:26:10  richard
 # missed a parsePropsFromForm in last update
 #

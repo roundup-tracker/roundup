@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.12 2001-12-17 03:52:48 richard Exp $ 
+# $Id: test_db.py,v 1.13 2002-01-14 02:20:15 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -41,15 +41,29 @@ class MyTestCase(unittest.TestCase):
     def tearDown(self):
         if os.path.exists('_test_dir'):
             shutil.rmtree('_test_dir')
-    
+
+class config:
+    DATABASE='_test_dir'
+    MAILHOST = 'localhost'
+    MAIL_DOMAIN = 'fill.me.in.'
+    INSTANCE_NAME = 'Roundup issue tracker'
+    ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+    ISSUE_TRACKER_WEB = 'http://some.useful.url/'
+    ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+    FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
+    ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
+    ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
+    MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
+    EMAIL_SIGNATURE_POSITION = 'bottom'
+
 class anydbmDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.makedirs('_test_dir/files')
-        self.db = anydbm.Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = anydbm.Database(config, 'test')
         setupSchema(self.db, 1)
 
     def testChanges(self):
@@ -173,12 +187,12 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.makedirs('_test_dir/files')
-        db = anydbm.Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        db = anydbm.Database(config, 'test')
         setupSchema(db, 1)
-        self.db = anydbm.Database('_test_dir')
+        self.db = anydbm.Database(config)
         setupSchema(self.db, 0)
 
     def testExceptions(self):
@@ -195,22 +209,22 @@ class bsddbDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.makedirs('_test_dir/files')
-        self.db = bsddb.Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = bsddb.Database(config, 'test')
         setupSchema(self.db, 1)
 
 class bsddbReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.makedirs('_test_dir/files')
-        db = bsddb.Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        db = bsddb.Database(config, 'test')
         setupSchema(db, 1)
-        self.db = bsddb.Database('_test_dir')
+        self.db = bsddb.Database(config)
         setupSchema(self.db, 0)
 
 
@@ -218,22 +232,22 @@ class bsddb3DBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb3
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.makedirs('_test_dir/files')
-        self.db = bsddb3.Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = bsddb3.Database(config, 'test')
         setupSchema(self.db, 1)
 
 class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
         from roundup.backends import bsddb3
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.makedirs('_test_dir/files')
-        db = bsddb3.Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        db = bsddb3.Database(config, 'test')
         setupSchema(db, 1)
-        self.db = bsddb3.Database('_test_dir')
+        self.db = bsddb3.Database(config)
         setupSchema(self.db, 0)
 
 
@@ -260,6 +274,13 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/12/17 03:52:48  richard
+# Implemented file store rollback. As a bonus, the hyperdb is now capable of
+# storing more than one file per node - if a property name is supplied,
+# the file is called designator.property.
+# I decided not to migrate the existing files stored over to the new naming
+# scheme - the FileClass just doesn't specify the property name.
+#
 # Revision 1.11  2001/12/10 23:17:20  richard
 # Added transaction tests to test_db
 #

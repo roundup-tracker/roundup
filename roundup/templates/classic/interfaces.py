@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.11 2002-01-02 02:32:38 richard Exp $
+# $Id: interfaces.py,v 1.12 2002-01-14 02:20:15 richard Exp $
 
 import instance_config
 from roundup import cgi_client, mailgw 
@@ -24,24 +24,19 @@ class Client(cgi_client.Client):
     ''' derives basic CGI implementation from the standard module, 
         with any specific extensions 
     ''' 
-    INSTANCE_NAME = instance_config.INSTANCE_NAME
-    TEMPLATES = instance_config.TEMPLATES
-    FILTER_POSITION = instance_config.FILTER_POSITION
-    ANONYMOUS_ACCESS = instance_config.ANONYMOUS_ACCESS
-    ANONYMOUS_REGISTER = instance_config.ANONYMOUS_REGISTER
+    pass
 
 class MailGW(mailgw.MailGW): 
     ''' derives basic mail gateway implementation from the standard module, 
         with any specific extensions 
     ''' 
-    INSTANCE_NAME = instance_config.INSTANCE_NAME
-    ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
-    ADMIN_EMAIL = instance_config.ADMIN_EMAIL
-    MAILHOST = instance_config.MAILHOST
-    ANONYMOUS_REGISTER = instance_config.ANONYMOUS_REGISTER
+    pass
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/01/02 02:32:38  richard
+# ANONYMOUS_ACCESS -> ANONYMOUS_REGISTER
+#
 # Revision 1.10  2001/12/20 15:43:01  rochecompaan
 # Features added:
 #  .  Multilink properties are now displayed as comma separated values in

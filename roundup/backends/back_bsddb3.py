@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.10 2001-11-21 02:34:18 richard Exp $
+#$Id: back_bsddb3.py,v 1.11 2002-01-14 02:20:15 richard Exp $
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date, password
@@ -26,9 +26,10 @@ from roundup import hyperdb, date, password
 class Database(hyperdb.Database):
     """A database for storing records containing flexible data types."""
 
-    def __init__(self, storagelocator, journaltag=None):
+    def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
 
+        The 'storagelocator' is obtained from config.DATABASE.
         The meaning of 'storagelocator' depends on the particular
         implementation of the hyperdatabase.  It could be a file name,
         a directory path, a socket descriptor for a connection to a
@@ -39,7 +40,8 @@ class Database(hyperdb.Database):
         None, the database is opened in read-only mode: the Class.create(),
         Class.set(), and Class.retire() methods are disabled.
         """
-        self.dir, self.journaltag = storagelocator, journaltag
+        self.config, self.journaltag = config, journaltag
+        self.dir = config.DATABASE
         self.classes = {}
 
     #
@@ -201,6 +203,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.10  2001/11/21 02:34:18  richard
+#Added a target version field to the extended issue schema
+#
 #Revision 1.9  2001/10/09 23:58:10  richard
 #Moved the data stringification up into the hyperdb.Class class' get, set
 #and create methods. This means that the data is also stringified for the

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.2 2002-01-11 23:22:29 richard Exp $
+# $Id: test_mailgw.py,v 1.3 2002-01-14 02:20:15 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -73,7 +73,7 @@ This is a test submission of a new issue.
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
         # TODO: fix the damn config - this is apalling
-        self.instance.IssueClass.MESSAGES_TO_AUTHOR = 'yes'
+        self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         handler.main(message)
 
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
@@ -188,6 +188,14 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/01/11 23:22:29  richard
+#  . #502437 ] rogue reactor and unittest
+#    in short, the nosy reactor was modifying the nosy list. That code had
+#    been there for a long time, and I suspsect it was there because we
+#    weren't generating the nosy list correctly in other places of the code.
+#    We're now doing that, so the nosy-modifying code can go away from the
+#    nosy reactor.
+#
 # Revision 1.1  2002/01/02 02:31:38  richard
 # Sorry for the huge checkin message - I was only intending to implement #496356
 # but I found a number of places where things had been broken by transactions:

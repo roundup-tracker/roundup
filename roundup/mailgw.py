@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.50 2002-01-11 22:59:01 richard Exp $
+$Id: mailgw.py,v 1.51 2002-01-14 02:20:15 richard Exp $
 '''
 
 
@@ -172,7 +172,7 @@ class MailGW:
                 m = self.bounce_message(message, sendto, m)
         else:
             # very bad-looking message - we don't even know who sent it
-            sendto = [self.ADMIN_EMAIL]
+            sendto = [self.instance.ADMIN_EMAIL]
             m = ['Subject: badly formed message from mail gateway']
             m.append('')
             m.append('The mail gateway retrieved a message which has no From:')
@@ -185,11 +185,11 @@ class MailGW:
         # now send the message
         if SENDMAILDEBUG:
             open(SENDMAILDEBUG, 'w').write('From: %s\nTo: %s\n%s\n'%(
-                self.ADMIN_EMAIL, ', '.join(sendto), m.getvalue()))
+                self.instance.ADMIN_EMAIL, ', '.join(sendto), m.getvalue()))
         else:
             try:
-                smtp = smtplib.SMTP(self.MAILHOST)
-                smtp.sendmail(self.ADMIN_EMAIL, sendto, m.getvalue())
+                smtp = smtplib.SMTP(self.instance.MAILHOST)
+                smtp.sendmail(self.instance.ADMIN_EMAIL, sendto, m.getvalue())
             except socket.error, value:
                 raise MailGWError, "Couldn't send error email: "\
                     "mailhost %s"%value
@@ -206,7 +206,7 @@ class MailGW:
         writer = MimeWriter.MimeWriter(msg)
         writer.addheader('Subject', subject)
         writer.addheader('From', '%s <%s>'% (self.instance.INSTANCE_NAME,
-                                            self.ISSUE_TRACKER_EMAIL))
+                                            self.instance.ISSUE_TRACKER_EMAIL))
         writer.addheader('To', ','.join(sendto))
         writer.addheader('MIME-Version', '1.0')
         part = writer.startmultipartbody('mixed')
@@ -391,7 +391,7 @@ Subject was: "%s"
         #
 
         # Don't create users if ANONYMOUS_REGISTER is denied
-        if self.ANONYMOUS_REGISTER == 'deny':
+        if self.instance.ANONYMOUS_REGISTER == 'deny':
             create = 0
         else:
             create = 1
@@ -417,7 +417,7 @@ Unknown address: %s
 
         # now update the recipients list
         recipients = []
-        tracker_email = self.ISSUE_TRACKER_EMAIL.lower()
+        tracker_email = self.instance.ISSUE_TRACKER_EMAIL.lower()
         for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
             r = recipient[1].strip().lower()
             if r == tracker_email or not r:
@@ -432,7 +432,7 @@ Unknown address: %s
         # generate a messageid if there isn't one
         if not messageid:
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                classname, nodeid, self.MAIL_DOMAIN)
+                classname, nodeid, self.instance.MAIL_DOMAIN)
 
         #
         # now handle the body - find the message
@@ -730,6 +730,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.50  2002/01/11 22:59:01  richard
+#  . #502342 ] pipe interface
+#
 # Revision 1.49  2002/01/10 06:19:18  richard
 # followup lines directly after a quoted section were being eaten.
 #

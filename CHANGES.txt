@@ -13,6 +13,11 @@ Fixed:
  . #502342 ] pipe interface
  . #502437 ] rogue reactor and unittest
  . re-enabled dumbdbm when using python >2.1.1 (ie 2.1.2, 2.2)
+ . changed all config accesses so they access either the instance or the
+   config attriubute on the db. This means that all config is obtained from
+   instance_config instead of the mish-mash of classes. This will make
+   switching to a ConfigParser setup easier too, I hope.
+
 
 2002-01-08 - 0.4.0b1
 Feature:

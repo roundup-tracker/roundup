@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.46 2002-01-07 10:42:23 richard Exp $
+# $Id: hyperdb.py,v 1.47 2002-01-14 02:20:15 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -98,9 +98,11 @@ transaction.
     # flag to set on retired entries
     RETIRED_FLAG = '__hyperdb_retired'
 
-    def __init__(self, storagelocator, journaltag=None):
+    # XXX deviates from spec: storagelocator is obtained from the config
+    def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
 
+        The 'storagelocator' is obtained from config.DATABASE.
         The meaning of 'storagelocator' depends on the particular
         implementation of the hyperdatabase.  It could be a file name,
         a directory path, a socket descriptor for a connection to a
@@ -1027,6 +1029,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.46  2002/01/07 10:42:23  richard
+# oops
+#
 # Revision 1.45  2002/01/02 04:18:17  richard
 # hyperdb docstrings
 #

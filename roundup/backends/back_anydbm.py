@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.21 2002-01-02 02:31:38 richard Exp $
+#$Id: back_anydbm.py,v 1.22 2002-01-14 02:20:15 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -40,9 +40,10 @@ class Database(hyperdb.Database):
         . perhaps detect write collisions (related to above)?
 
     """
-    def __init__(self, storagelocator, journaltag=None):
+    def __init__(self, config, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
 
+        The 'storagelocator' is obtained from config.DATABASE.
         The meaning of 'storagelocator' depends on the particular
         implementation of the hyperdatabase.  It could be a file name,
         a directory path, a socket descriptor for a connection to a
@@ -53,7 +54,8 @@ class Database(hyperdb.Database):
         None, the database is opened in read-only mode: the Class.create(),
         Class.set(), and Class.retire() methods are disabled.
         """
-        self.dir, self.journaltag = storagelocator, journaltag
+        self.config, self.journaltag = config, journaltag
+        self.dir = config.DATABASE
         self.classes = {}
         self.cache = {}         # cache of nodes loaded or created
         self.dirtynodes = {}    # keep track of the dirty nodes by class
@@ -404,6 +406,21 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.21  2002/01/02 02:31:38  richard
+#Sorry for the huge checkin message - I was only intending to implement #496356
+#but I found a number of places where things had been broken by transactions:
+# . modified ROUNDUPDBSENDMAILDEBUG to be SENDMAILDEBUG and hold a filename
+#   for _all_ roundup-generated smtp messages to be sent to.
+# . the transaction cache had broken the roundupdb.Class set() reactors
+# . newly-created author users in the mailgw weren't being committed to the db
+#
+#Stuff that made it into CHANGES.txt (ie. the stuff I was actually working
+#on when I found that stuff :):
+# . #496356 ] Use threading in messages
+# . detectors were being registered multiple times
+# . added tests for mailgw
+# . much better attaching of erroneous messages in the mail gateway
+#
 #Revision 1.20  2001/12/18 15:30:34  rochecompaan
 #Fixed bugs:
 # .  Fixed file creation and retrieval in same transaction in anydbm

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.38 2002-01-10 05:57:45 richard Exp $
+# $Id: roundupdb.py,v 1.39 2002-01-14 02:20:15 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -237,10 +237,6 @@ class DetectorError(RuntimeError):
 
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class):
-    # configuration
-    MESSAGES_TO_AUTHOR = 'no'
-    INSTANCE_NAME = 'Roundup issue tracker'
-    EMAIL_SIGNATURE_POSITION = 'bottom'
 
     # Overridden methods:
 
@@ -303,7 +299,7 @@ class IssueClass(Class):
 
         # possibly send the message to the author, as long as they aren't
         # anonymous
-        if (self.MESSAGES_TO_AUTHOR == 'yes' and
+        if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' and
                 users.get(authid, 'username') != 'anonymous'):
             sendto.append(authid)
         r[authid] = 1
@@ -332,7 +328,7 @@ class IssueClass(Class):
             # this is an old message that didn't get a messageid, so
             # create one
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                self.classname, nodeid, self.MAIL_DOMAIN)
+                self.classname, nodeid, self.db.config.MAIL_DOMAIN)
             messages.set(msgid, messageid=messageid)
 
         # update the message's recipients list
@@ -356,7 +352,7 @@ class IssueClass(Class):
         m = ['']
 
         # put in roundup's signature
-        if self.EMAIL_SIGNATURE_POSITION == 'top':
+        if self.db.config.EMAIL_SIGNATURE_POSITION == 'top':
             m.append(self.email_signature(nodeid, msgid))
 
         # add author information
@@ -374,7 +370,7 @@ class IssueClass(Class):
             m.append(change_note)
 
         # put in roundup's signature
-        if self.EMAIL_SIGNATURE_POSITION == 'bottom':
+        if self.db.config.EMAIL_SIGNATURE_POSITION == 'bottom':
             m.append(self.email_signature(nodeid, msgid))
 
         # get the files for this message
@@ -385,9 +381,10 @@ class IssueClass(Class):
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', '%s <%s>'%(authname, self.ISSUE_TRACKER_EMAIL))
-        writer.addheader('Reply-To', '%s <%s>'%(self.INSTANCE_NAME,
-            self.ISSUE_TRACKER_EMAIL))
+        writer.addheader('From', '%s <%s>'%(authname,
+            self.db.config.ISSUE_TRACKER_EMAIL))
+        writer.addheader('Reply-To', '%s <%s>'%(self.db.config.INSTANCE_NAME,
+            self.db.config.ISSUE_TRACKER_EMAIL))
         writer.addheader('MIME-Version', '1.0')
         if messageid:
             writer.addheader('Message-Id', messageid)
@@ -431,13 +428,14 @@ class IssueClass(Class):
         # now try to send the message
         if SENDMAILDEBUG:
             open(SENDMAILDEBUG, 'w').write('FROM: %s\nTO: %s\n%s\n'%(
-                self.ADMIN_EMAIL, ', '.join(sendto), message.getvalue()))
+                self.db.config.ADMIN_EMAIL,', '.join(sendto),message.getvalue()))
         else:
             try:
                 # send the message as admin so bounces are sent there
                 # instead of to roundup
-                smtp = smtplib.SMTP(self.MAILHOST)
-                smtp.sendmail(self.ADMIN_EMAIL, sendto, message.getvalue())
+                smtp = smtplib.SMTP(self.db.config.MAILHOST)
+                smtp.sendmail(self.db.config.ADMIN_EMAIL, sendto,
+                    message.getvalue())
             except socket.error, value:
                 raise MessageSendError, \
                     "Couldn't send confirmation email: mailhost %s"%value
@@ -448,8 +446,9 @@ class IssueClass(Class):
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information
         '''
-        web = self.ISSUE_TRACKER_WEB + 'issue'+ nodeid
-        email = '"%s" <%s>'%(self.INSTANCE_NAME, self.ISSUE_TRACKER_EMAIL)
+        web = self.db.config.ISSUE_TRACKER_WEB + 'issue'+ nodeid
+        email = '"%s" <%s>'%(self.db.config.INSTANCE_NAME,
+            self.db.config.ISSUE_TRACKER_EMAIL)
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)
 
@@ -530,6 +529,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2002/01/10 05:57:45  richard
+# namespace clobberation
+#
 # Revision 1.37  2002/01/08 04:12:05  richard
 # Changed message-id format to "<%s.%s.%s%s@%s>" so it complies with RFC822
 #

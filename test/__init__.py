@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.10 2002-01-05 02:09:46 richard Exp $
+# $Id: __init__.py,v 1.11 2002-01-14 02:20:15 richard Exp $
 
 import unittest
 import os, tempfile
@@ -26,14 +26,14 @@ import test_init, test_token, test_mailgw
 
 def go():
     suite = unittest.TestSuite((
-        test_dates.suite(),
-        test_schema.suite(),
+#        test_dates.suite(),
+#        test_schema.suite(),
         test_db.suite(),
-        test_init.suite(),
-        test_multipart.suite(),
-        test_mailsplit.suite(),
+#        test_init.suite(),
+#        test_multipart.suite(),
+#        test_mailsplit.suite(),
         test_mailgw.suite(),
-        test_token.suite(),
+#        test_token.suite(),
     ))
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
@@ -41,6 +41,9 @@ def go():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/01/05 02:09:46  richard
+# make setup abort if tests fail
+#
 # Revision 1.9  2002/01/02 02:31:38  richard
 # Sorry for the huge checkin message - I was only intending to implement #496356
 # but I found a number of places where things had been broken by transactions:

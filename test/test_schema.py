@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_schema.py,v 1.6 2001-12-03 21:33:39 richard Exp $ 
+# $Id: test_schema.py,v 1.7 2002-01-14 02:20:15 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -23,15 +23,29 @@ from roundup.backends import anydbm
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, Class
 
+class config:
+    DATABASE='_test_dir'
+    MAILHOST = 'localhost'
+    MAIL_DOMAIN = 'fill.me.in.'
+    INSTANCE_NAME = 'Roundup issue tracker'
+    ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+    ISSUE_TRACKER_WEB = 'http://some.useful.url/'
+    ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+    FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
+    ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
+    ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
+    MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
+    EMAIL_SIGNATURE_POSITION = 'bottom'
+
 class SchemaTestCase(unittest.TestCase):
     def setUp(self):
         class Database(anydbm.Database):
             pass
         # remove previous test, ignore errors
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
-        os.mkdir('_test_dir')
-        self.db = Database('_test_dir', 'test')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = Database(config, 'test')
         self.db.clear()
 
     def tearDown(self):
@@ -75,6 +89,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/12/03 21:33:39  richard
+# Fixes so the tests use commit and not close
+#
 # Revision 1.5  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.

@@ -27,10 +27,9 @@ If you used the extended schema, the file is in:
 
  <roundup source>/roundup/templates/extended/dbinit.py 
 
-If you have modified your dbinit.py file, you may use encoded passwords:
-
- 1. Edit the dbinit.py file in your instance home directory. Find the lines
- which define the msg class:
+If you have modified your dbinit.py file, you need to edit the dbinit.py
+file in your instance home directory. Find the lines which define the msg
+class:
 
     msg = FileClass(db, "msg",
                     author=Link("user"), recipients=Multilink("user"),
@@ -45,17 +44,23 @@ If you have modified your dbinit.py file, you may use encoded passwords:
                     files=Multilink("file"),
                     messageid=String(),  inreplyto=String())
 
+Also, configuration is being cleaned up. This means that your dbinit.py will
+also need to be changed in the open function. If you haven't changed your
+dbinit.py, the above copy will be enough. If you have, you'll need to change
+the line (round line 50):
+
+    db = Database(instance_config.DATABASE, name)
+
+to:
+
+    db = Database(instance_config, name)
+
+
 Configuration
 -------------
 INSTANCE_NAME and EMAIL_SIGNATURE_POSITION have been added to the
 instance_config.py. Simplest solution is to copy the default values from
 template in the core source.
-
-INSTANCE_NAME needs to be added to the Client class in your interfaces.py
-file. INSTANCE_NAME and ANONYMOUS_REGISTER need to be added to the MailGW
-class in your interfaces.py file. In both cases if might be easier to just
-copy the file from the core source (roundup/templates/[schema]/interfaces.py)
-where schema is "classic" or "extended".
 
 
 CGI script roundup.cgi
