@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: test_mysql.py,v 1.12 2004-09-26 11:30:56 a1s Exp $
+# $Id: test_mysql.py,v 1.13 2004-09-26 15:18:28 a1s Exp $
 
 import unittest, os, shutil, time, imp
 
@@ -79,11 +79,11 @@ def test_suite():
         return suite
 
     from roundup.backends import mysql
+    import MySQLdb
     try:
-        # Check if we can run mysql tests
-        import MySQLdb
-        db = mysql.Database(config, 'admin')
-        db.close()
+        # Check if we can connect to the server.
+        # use db_exists() to make a connection, ignore it's return value
+        mysql.db_exists(config)
     except (MySQLdb.MySQLError, DatabaseError), msg:
         print "Skipping mysql tests (%s)"%msg
     else:
