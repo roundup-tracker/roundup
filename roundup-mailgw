@@ -16,15 +16,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.15 2001-11-30 13:16:37 rochecompaan Exp $
+# $Id: roundup-mailgw,v 1.16 2001-11-30 18:23:55 jhermann Exp $
 
 import sys, os, re, cStringIO
 if int(sys.version[0]) < 2:
     print "Roundup requires Python 2.0 or newer."
     sys.exit(1)
 
-from roundup import mailgw
-Message = mailgw.Message
+from roundup.mailgw import Message
 
 def do_pipe(handler):
     '''Read a message from standard input and pass it to the mail handler.
@@ -169,6 +168,11 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/11/30 13:16:37  rochecompaan
+# Fixed bug. Mail gateway was not using the extended Message class
+# resulting in failed submissions when mails were processed from a Unix
+# mailbox
+#
 # Revision 1.14  2001/11/13 21:44:44  richard
 #  . re-open the database as the author in mail handling
 #
