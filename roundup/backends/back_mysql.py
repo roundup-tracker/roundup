@@ -117,7 +117,7 @@ class Database(Database):
         hyperdb.Link   : 'INTEGER',
         hyperdb.Interval  : 'VARCHAR(255)',
         hyperdb.Password  : 'VARCHAR(255)',
-        hyperdb.Boolean   : 'INTEGER',
+        hyperdb.Boolean   : 'BOOL',
         hyperdb.Number    : 'REAL',
     }
 

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.86 2004-03-24 04:57:25 richard Exp $
+# $Id: rdbms_common.py,v 1.87 2004-03-31 07:25:14 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -231,7 +231,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Link   : 'INTEGER',
         hyperdb.Interval  : 'VARCHAR(255)',
         hyperdb.Password  : 'VARCHAR(255)',
-        hyperdb.Boolean   : 'INTEGER',
+        hyperdb.Boolean   : 'BOOLEAN',
         hyperdb.Number    : 'REAL',
     }
     def determine_columns(self, properties):
@@ -611,7 +611,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         hyperdb.Link   : int,
         hyperdb.Interval  : lambda x: x.serialise(),
         hyperdb.Password  : str,
-        hyperdb.Boolean   : int,
+        hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',
         hyperdb.Number    : lambda x: x,
     }
     def addnode(self, classname, nodeid, node):

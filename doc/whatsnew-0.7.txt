@@ -309,9 +309,8 @@ New configuration options
 Typed columns in RDBMS backends
 -------------------------------
 
-The MySQL (and Postgresql for that matter) backend now creates tables with
-appropriate column datatypes (not just varchar). Sqlite got the typing
-too, but it ignores the datatypes :)
+The SQLite, MySQL and Postgresql backends now create tables with
+appropriate column datatypes (not just varchar).
 
 Your database will be automatically migrated to use the new schemas, but
 it will take time. It's probably a good idea to make sure you do this as
@@ -363,7 +362,7 @@ New auditor fixes Outlook bug
 The new optional auditor ``detectors/emailauditor.py`` fires whenever a
 new file entity is created.
 
-If the file is of type message/rfc822, we tack onthe extension .eml.
+If the file is of type message/rfc822, we tack on the extension .mht.
 
 The reason for this is that Microsoft Internet Explorer will not open
 things with a .eml attachment, as they deem it 'unsafe'. Worse yet,

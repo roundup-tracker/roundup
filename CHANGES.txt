@@ -6,6 +6,7 @@ Fixed:
 - CSV export was busted (as was any action returning a result)
 - MultiMapping deviated from the Zope C implementation in a number of
   places (thanks Toby Sargeant)
+- MySQL and Postgresql use BOOL/BOOLEAN for Boolean types
 
 
 2004-03-27 0.7.0b2
