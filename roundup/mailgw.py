@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.46 2002-01-02 02:31:38 richard Exp $
+$Id: mailgw.py,v 1.47 2002-01-02 02:32:38 richard Exp $
 '''
 
 
@@ -387,7 +387,7 @@ Subject was: "%s"
         #
 
         # Don't create users if ANONYMOUS_REGISTER is denied
-        if self.ANONYMOUS_ACCESS == 'deny':
+        if self.ANONYMOUS_REGISTER == 'deny':
             create = 0
         else:
             create = 1
@@ -708,6 +708,21 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.46  2002/01/02 02:31:38  richard
+# Sorry for the huge checkin message - I was only intending to implement #496356
+# but I found a number of places where things had been broken by transactions:
+#  . modified ROUNDUPDBSENDMAILDEBUG to be SENDMAILDEBUG and hold a filename
+#    for _all_ roundup-generated smtp messages to be sent to.
+#  . the transaction cache had broken the roundupdb.Class set() reactors
+#  . newly-created author users in the mailgw weren't being committed to the db
+#
+# Stuff that made it into CHANGES.txt (ie. the stuff I was actually working
+# on when I found that stuff :):
+#  . #496356 ] Use threading in messages
+#  . detectors were being registered multiple times
+#  . added tests for mailgw
+#  . much better attaching of erroneous messages in the mail gateway
+#
 # Revision 1.45  2001/12/20 15:43:01  rochecompaan
 # Features added:
 #  .  Multilink properties are now displayed as comma separated values in

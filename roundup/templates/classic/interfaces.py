@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.10 2001-12-20 15:43:01 rochecompaan Exp $
+# $Id: interfaces.py,v 1.11 2002-01-02 02:32:38 richard Exp $
 
 import instance_config
 from roundup import cgi_client, mailgw 
@@ -38,10 +38,18 @@ class MailGW(mailgw.MailGW):
     ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
-    ANONYMOUS_ACCESS = instance_config.ANONYMOUS_ACCESS
+    ANONYMOUS_REGISTER = instance_config.ANONYMOUS_REGISTER
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/12/20 15:43:01  rochecompaan
+# Features added:
+#  .  Multilink properties are now displayed as comma separated values in
+#     a textbox
+#  .  The add user link is now only visible to the admin user
+#  .  Modified the mail gateway to reject submissions from unknown
+#     addresses if ANONYMOUS_ACCESS is denied
+#
 # Revision 1.9  2001/11/26 23:00:53  richard
 # This config stuff is getting to be a real mess...
 #
