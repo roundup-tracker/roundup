@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.10 $
+:Version: $Revision: 1.161.2.11 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3689,6 +3689,7 @@ resolved. To achieve this:
 
    The contents of the detector should be something like this::
 
+
     def blockresolution(db, cl, nodeid, newvalues):
         ''' If the issue has blockers, don't allow it to be resolved.
         '''
@@ -3719,18 +3720,21 @@ resolved. To achieve this:
         if newvalues['status'] == resolved_id:
             raise ValueError, "This issue can't be resolved until %s resolved."%s
 
-    def resolveblockers(db, cl, nodeid, newvalues):
+
+    def resolveblockers(db, cl, nodeid, oldvalues):
         ''' When we resolve an issue that's a blocker, remove it from the
             blockers list of the issue(s) it blocks.
         '''
-        if not newvalues.has_key('status'):
+        newstatus = cl.get(nodeid,'status')
+
+        # no change?
+        if oldvalues.get('status', None) == newstatus:
             return
 
-        # get the resolved state ID
         resolved_id = db.status.lookup('resolved')
 
         # interesting?
-        if newvalues['status'] != resolved_id:
+        if newstatus != resolved_id:
             return
 
         # yes - find all the blocked issues, if any, and remove me from
@@ -3741,7 +3745,6 @@ resolved. To achieve this:
             if nodeid in blockers:
                 blockers.remove(nodeid)
                 cl.set(issueid, blockers=blockers)
-
 
     def init(db):
         # might, in an obscure situation, happen in a create

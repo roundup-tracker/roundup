@@ -52,6 +52,10 @@ Class.get() instead.
 0.8.0 New tracker layout
 ------------------------
 
+You will need to remove any reference to the "Web Registration" and
+"Email Registration" Permissions from your dbinit.py file before running
+the "genconfig" command.
+
 The ``config.py`` file has been replaced by ``config.ini``. You may use the
 roundup-admin command "genconfig" to generate a new config file::
 
@@ -110,6 +114,10 @@ assignation of the Edit Permission::
     for cl in 'issue', 'file', 'msg', 'query', 'keyword':
         p = db.security.getPermission('Create', cl)
         db.security.addPermissionToRole('User', p)
+
+You should remove any reference to the "Web Registration" and "Email
+Registration" Permissions from your schema.py file as the "Create" "user"
+Permission replaces them.
 
 You will need to explicitly let anonymous users access the web interface so
 that regular users are able to see the login form. Note that almost all

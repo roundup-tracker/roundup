@@ -57,6 +57,7 @@ Fixed:
 - removed rlog module (py 2.3 is minimum version now)
 - fixed class "help" listing paging (sf bug 1106329)
 - nicer error looking up values of None (response to sf bug 1108697)
+- added "imapServer.py" script (sf patch 934567)
 - fallback for (list) popups if javascript disabled (sf patch 1101626)
 
 
