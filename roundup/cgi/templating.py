@@ -21,7 +21,7 @@ from __future__ import nested_scopes
 
 import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
 
-from roundup import hyperdb, date, rcsv, support
+from roundup import hyperdb, date, csv, support
 from roundup import i18n
 from roundup.i18n import _
 
@@ -575,12 +575,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
     def csv(self):
         ''' Return the items of this class as a chunk of CSV text.
         '''
-        if rcsv.error:
-            return rcsv.error
-
         props = self.propnames()
         s = StringIO.StringIO()
-        writer = rcsv.writer(s, rcsv.comma_separated)
+        writer = csv.writer(s)
         writer.writerow(props)
         for nodeid in self._klass.list():
             l = []

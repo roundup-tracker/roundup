@@ -1,8 +1,8 @@
-#$Id: actions.py,v 1.44 2005-02-13 22:04:31 richard Exp $
+#$Id: actions.py,v 1.45 2005-02-15 00:23:30 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
-from roundup import hyperdb, token, date, password, rcsv
+from roundup import hyperdb, token, date, password, csv
 from roundup.i18n import _
 import roundup.exceptions
 from roundup.cgi import exceptions, templating
@@ -253,11 +253,6 @@ class EditCSVAction(Action):
         removed lines are retired.
 
         """
-        # get the CSV module
-        if rcsv.error:
-            self.client.error_message.append(self._(rcsv.error))
-            return
-
         cl = self.db.classes[self.classname]
         idlessprops = cl.getprops(protected=0).keys()
         idlessprops.sort()
@@ -265,7 +260,7 @@ class EditCSVAction(Action):
 
         # do the edit
         rows = StringIO.StringIO(self.form['rows'].value)
-        reader = rcsv.reader(rows, rcsv.comma_separated)
+        reader = csv.reader(rows)
         found = {}
         line = 0
         for values in reader:
@@ -946,7 +941,7 @@ class ExportCSVAction(Action):
             # all done, return a dummy string
             return 'dummy'
 
-        writer = rcsv.writer(self.client.request.wfile)
+        writer = csv.writer(self.client.request.wfile)
         writer.writerow(columns)
 
         # and search
