@@ -59,7 +59,7 @@ as::
 
   :action :required :template :remove:messages ...
 
-should become:
+should become::
 
   @action @required @template @remove@messages ...
 

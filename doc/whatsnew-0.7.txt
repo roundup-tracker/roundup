@@ -211,7 +211,7 @@ Quoting of URLs and HTML
 ------------------------
 
 Templates that wish to offer file downloads may now use a new
-``download_url`` method:
+``download_url`` method::
 
  <tr tal:repeat="file context/files">
   <td>

@@ -48,3 +48,5 @@ Once a release is built, follow these steps:
 6. Send doc/announcement.txt to python-announce@python.org
 7. Notify any other news services as appropriate...
 
+   http://freshmeat.net/projects/roundup/
+

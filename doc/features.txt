@@ -8,13 +8,13 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
 *simple to install*
  - installation (including web interface) takes about 30 minutes
+ - the instant-gratification Demo Mode takes as long to set up as it
+   takes to type ``python demo.py`` :)
  - two templates included in the distribution for you to base your tracker on
- - doesn't need *any* additional support software - python (2.1+) is enough to
-   get you going
+ - requires *no* additional support software - python (2.1+) is
+   enough to get you going
  - easy to set up higher-performance storage backends like sqlite_,
    metakit_, mysql and postgresql
- - the really impatient can try the instant-gratification Demo Mode (``python
-   demo.py``)
 
 *simple to use*
  - accessible through the web, email, command-line or Python programs
