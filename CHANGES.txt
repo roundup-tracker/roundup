@@ -36,6 +36,9 @@ Fixed:
  . fixed doc/index.html to include the quoting in the mail alias.
  . fixed the backends __init__ so we can pydoc the backend modules
  . web i/f reports "note added" if there are no changes but a note is entered
+ . we were assuming database files created by anydbm had the same name, but
+   this is not the case for dbm. We now perform a much better check _and_
+   cope with the anydbm implementation module changing too!
 
 
 2001-11-23 - 0.3.0 

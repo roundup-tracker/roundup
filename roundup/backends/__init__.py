@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.8 2001-12-10 22:20:01 richard Exp $
+# $Id: __init__.py,v 1.9 2001-12-12 02:30:51 richard Exp $
 
 __all__ = []
 
@@ -30,25 +30,32 @@ try:
     __all__.append('anydbm')
 except AssertionError:
     del back_anydbm
-except:
+except ImportError:
     pass
 
 try:
     import back_bsddb
     bsddb = back_bsddb
     __all__.append('bsddb')
-except:
+except ImportError:
     pass
 
 try:
     import back_bsddb3
     bsddb3 = back_bsddb3
     __all__.append('bsddb3')
-except:
+except ImportError:
     pass
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/12/10 22:20:01  richard
+# Enabled transaction support in the bsddb backend. It uses the anydbm code
+# where possible, only replacing methods where the db is opened (it uses the
+# btree opener specifically.)
+# Also cleaned up some change note generation.
+# Made the backends package work with pydoc too.
+#
 # Revision 1.7  2001/12/10 00:57:38  richard
 # From CHANGES:
 #  . Added the "display" command to the admin tool - displays a node's values

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.14 2001-12-10 22:20:01 richard Exp $
+#$Id: back_anydbm.py,v 1.15 2001-12-12 02:30:51 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -23,7 +23,7 @@ versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
 serious bugs, and is not available)
 '''
 
-import anydbm, os, marshal
+import whichdb, anydbm, os, marshal
 from roundup import hyperdb, date, password
 
 #
@@ -88,21 +88,45 @@ class Database(hyperdb.Database):
     # Class DBs
     #
     def clear(self):
+        '''Delete all database contents
+        '''
         for cn in self.classes.keys():
-            db = os.path.join(self.dir, 'nodes.%s'%cn)
-            anydbm.open(db, 'n')
-            db = os.path.join(self.dir, 'journals.%s'%cn)
-            anydbm.open(db, 'n')
+            for type in 'nodes', 'journals':
+                path = os.path.join(self.dir, 'journals.%s'%cn)
+                if os.path.exists(path):
+                    os.remove(path)
+                elif os.path.exists(path+'.db'):    # dbm appends .db
+                    os.remove(path+'.db')
 
     def getclassdb(self, classname, mode='r'):
         ''' grab a connection to the class db that will be used for
             multiple actions
         '''
+        # determine which DB wrote the class file
         path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
-        if os.path.exists(path):
-            return anydbm.open(path, mode)
-        else:
+        db_type = whichdb.whichdb(path)
+        if not db_type:
+            # dbm appends ".db"
+            db_type = whichdb.whichdb(path+'.db')
+        db_type = whichdb.whichdb(path)
+
+        # if we can't identify it and it exists...
+        if not db_type and os.path.exists(path) or os.path.exists(path+'.db'):
+            raise hyperdb.DatabaseError, \
+                "Couldn't identify the database type"
+
+        # new database? let anydbm pick the best dbm
+        if not db_type:
             return anydbm.open(path, 'n')
+
+        # open the database with the correct module
+        try:
+            dbm = __import__(db_type)
+        except:
+            raise hyperdb.DatabaseError, \
+                "Couldn't open database - the required module '%s'"\
+                "is not available"%db_type
+        return dbm.open(path, mode)
 
     #
     # Nodes
@@ -254,6 +278,13 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.14  2001/12/10 22:20:01  richard
+#Enabled transaction support in the bsddb backend. It uses the anydbm code
+#where possible, only replacing methods where the db is opened (it uses the
+#btree opener specifically.)
+#Also cleaned up some change note generation.
+#Made the backends package work with pydoc too.
+#
 #Revision 1.13  2001/12/02 05:06:16  richard
 #. We now use weakrefs in the Classes to keep the database reference, so
 #  the close() method on the database is no longer needed.
