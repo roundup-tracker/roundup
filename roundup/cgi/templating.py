@@ -8,6 +8,10 @@ todo = '''
 - Add class.find() too
 - NumberHTMLProperty should support numeric operations
 - LinkHTMLProperty should handle comparisons to strings (cf. linked name)
+- HTMLRequest.default(self, sort, group, filter, columns, **filterspec):
+  """Set the request's view arguments to the given values when no
+     values are found in the CGI environment.
+  """
 '''
 
 __docformat__ = 'restructuredtext'
