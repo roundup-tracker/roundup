@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.20 2001-12-18 15:30:34 rochecompaan Exp $
+#$Id: back_anydbm.py,v 1.21 2002-01-02 02:31:38 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -187,23 +187,25 @@ class Database(hyperdb.Database):
             print 'savenode', (self, classname, nodeid, node)
         self.transactions.append((self._doSaveNode, (classname, nodeid, node)))
 
-    def getnode(self, classname, nodeid, db=None):
+    def getnode(self, classname, nodeid, db=None, cache=1):
         ''' get a node from the database
         '''
         if DEBUG:
             print 'getnode', (self, classname, nodeid, cldb)
-        # try the cache
-        cache = self.cache.setdefault(classname, {})
-        if cache.has_key(nodeid):
-            return cache[nodeid]
+        if cache:
+            # try the cache
+            cache = self.cache.setdefault(classname, {})
+            if cache.has_key(nodeid):
+                return cache[nodeid]
 
         # get from the database and save in the cache
         if db is None:
             db = self.getclassdb(classname)
         if not db.has_key(nodeid):
-            raise IndexError, nodeid
+            raise IndexError, "no such %s %s"%(classname, nodeid)
         res = marshal.loads(db[nodeid])
-        cache[nodeid] = res
+        if cache:
+            cache[nodeid] = res
         return res
 
     def hasnode(self, classname, nodeid, db=None):
@@ -402,6 +404,15 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.20  2001/12/18 15:30:34  rochecompaan
+#Fixed bugs:
+# .  Fixed file creation and retrieval in same transaction in anydbm
+#    backend
+# .  Cgi interface now renders new issue after issue creation
+# .  Could not set issue status to resolved through cgi interface
+# .  Mail gateway was changing status back to 'chatting' if status was
+#    omitted as an argument
+#
 #Revision 1.19  2001/12/17 03:52:48  richard
 #Implemented file store rollback. As a bonus, the hyperdb is now capable of
 #storing more than one file per node - if a property name is supplied,

@@ -73,13 +73,16 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.45 2001-12-20 15:43:01 rochecompaan Exp $
+$Id: mailgw.py,v 1.46 2002-01-02 02:31:38 richard Exp $
 '''
 
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
+import time, random
 import traceback, MimeWriter
 import hyperdb, date, password
+
+SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
 class MailGWError(ValueError):
     pass
@@ -180,14 +183,18 @@ class MailGW:
                 subject='Badly formed message from mail gateway')
 
         # now send the message
-        try:
-            smtp = smtplib.SMTP(self.MAILHOST)
-            smtp.sendmail(self.ADMIN_EMAIL, sendto, m.getvalue())
-        except socket.error, value:
-            raise MailGWError, "Couldn't send confirmation email: "\
-                "mailhost %s"%value
-        except smtplib.SMTPException, value:
-            raise MailGWError, "Couldn't send confirmation email: %s"%value
+        if SENDMAILDEBUG:
+            open(SENDMAILDEBUG, 'w').write('From: %s\nTo: %s\n%s\n'%(
+                self.ADMIN_EMAIL, ', '.join(sendto), m.getvalue()))
+        else:
+            try:
+                smtp = smtplib.SMTP(self.MAILHOST)
+                smtp.sendmail(self.ADMIN_EMAIL, sendto, m.getvalue())
+            except socket.error, value:
+                raise MailGWError, "Couldn't send error email: "\
+                    "mailhost %s"%value
+            except smtplib.SMTPException, value:
+                raise MailGWError, "Couldn't send error email: %s"%value
 
     def bounce_message(self, message, sendto, error,
             subject='Failed issue tracker submission'):
@@ -210,20 +217,24 @@ class MailGW:
         # reconstruct the original message
         m = cStringIO.StringIO()
         w = MimeWriter.MimeWriter(m)
+        # default the content_type, just in case...
+        content_type = 'text/plain'
+        # add the headers except the content-type
         for header in message.headers:
             header_name = header.split(':')[0]
-            if message.getheader(header_name):
-                w.addheader(header_name,message.getheader(header_name))
-        body = w.startbody('text/plain')
-        try:
-            message.fp.seek(0)
-        except:
-            pass
+            if header_name.lower() == 'content-type':
+                content_type = message.getheader(header_name)
+            elif message.getheader(header_name):
+                w.addheader(header_name, message.getheader(header_name))
+        # now attach the message body
+        body = w.startbody(content_type)
+        message.rewindbody()
         body.write(message.fp.read())
 
         # attach the original message to the returned message
         part = writer.nextpart()
         part.addheader('Content-Disposition','attachment')
+        part.addheader('Content-Description','Message that caused the error')
         part.addheader('Content-Transfer-Encoding', '7bit')
         body = part.startbody('message/rfc822')
         body.write(m.getvalue())
@@ -371,12 +382,11 @@ Subject was: "%s"
                         else:
                             props[key] = [v]
 
-
         #
         # handle the users
         #
 
-        # Don't create users if ANONYMOUS_ACCESS is denied
+        # Don't create users if ANONYMOUS_REGISTER is denied
         if self.ANONYMOUS_ACCESS == 'deny':
             create = 0
         else:
@@ -389,6 +399,10 @@ You are not a registered user.
 
 Unknown address: %s
 '''%message.getaddrlist('from')[0][1]
+
+        # the author may have been created - make sure the change is
+        # committed before we reopen the database
+        self.db.commit()
             
         # reopen the database as the author
         username = self.db.user.get(author, 'username')
@@ -401,11 +415,24 @@ Unknown address: %s
         recipients = []
         tracker_email = self.ISSUE_TRACKER_EMAIL.lower()
         for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
-            if recipient[1].strip().lower() == tracker_email:
+            r = recipient[1].strip().lower()
+            if r == tracker_email or not r:
                 continue
             recipients.append(self.db.uidFromAddress(recipient))
 
+        #
+        # handle message-id and in-reply-to
+        #
+        messageid = message.getheader('message-id')
+        inreplyto = message.getheader('in-reply-to') or ''
+        # generate a messageid if there isn't one
+        if not messageid:
+            messageid = "%s.%s.%s%s-%s"%(time.time(), random.random(),
+                classname, nodeid, self.MAIL_DOMAIN)
+
+        #
         # now handle the body - find the message
+        #
         content_type =  message.gettype()
         attachments = []
         if content_type == 'multipart/mixed':
@@ -487,13 +514,17 @@ not find a text/plain part to use.
 
         summary, content = parseContent(content)
 
-        # handle the files
+        # 
+        # handle the attachments
+        #
         files = []
         for (name, mime_type, data) in attachments:
             files.append(self.db.file.create(type=mime_type, name=name,
                 content=data))
 
+        #
         # now handle the db stuff
+        #
         if nodeid:
             # If an item designator (class name and id number) is found there,
             # the newly created "msg" node is added to the "messages" property
@@ -536,10 +567,11 @@ not find a text/plain part to use.
                     props['nosy'].append(assignedto)
             except:
                 pass
-                
+
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
-                content=content, files=files)
+                content=content, files=files, messageid=messageid,
+                inreplyto=inreplyto)
             try:
                 messages = cl.get(nodeid, 'messages')
             except IndexError:
@@ -569,7 +601,8 @@ There was a problem with the message you sent:
             # contain any new "file" nodes. 
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
-                content=content, files=files)
+                content=content, files=files, messageid=messageid,
+                inreplyto=inreplyto)
 
             # pre-set the issue to unread
             if properties.has_key('status') and not props.has_key('status'):
@@ -585,8 +618,10 @@ There was a problem with the message you sent:
             if properties.has_key('title') and not props.has_key('title'):
                 props['title'] = title
 
-            # pre-load the messages list and nosy list
+            # pre-load the messages list
             props['messages'] = [message_id]
+
+            # set up (clean) the nosy list
             nosy = props.get('nosy', [])
             n = {}
             for value in nosy:
@@ -596,18 +631,30 @@ There was a problem with the message you sent:
                     continue
                 if n.has_key(nid): continue
                 n[nid] = 1
-            props['nosy'] = n.keys() + recipients
+            props['nosy'] = n.keys()
+            # add on the recipients of the message
+            for recipient in recipients:
+                if not n.has_key(recipient):
+                    props['nosy'].append(recipient)
+                    n[recipient] = 1
+
             # add the author to the nosy list
             if not n.has_key(author):
                 props['nosy'].append(author)
                 n[author] = 1
+
             # add assignedto to the nosy list
-            try:
-                assignedto = self.db.user.lookup(props['assignedto'])
+            if properties.has_key('assignedto') and props.has_key('assignedto'):
+                try:
+                    assignedto = self.db.user.lookup(props['assignedto'])
+                except KeyError:
+                    raise MailUsageError, '''
+There was a problem with the message you sent:
+   Assignedto user '%s' doesn't exist
+'''%props['assignedto']
                 if not n.has_key(assignedto):
                     props['nosy'].append(assignedto)
-            except:
-                pass
+                    n[assignedto] = 1
 
             # and attempt to create the new node
             try:
@@ -661,6 +708,14 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.45  2001/12/20 15:43:01  rochecompaan
+# Features added:
+#  .  Multilink properties are now displayed as comma separated values in
+#     a textbox
+#  .  The add user link is now only visible to the admin user
+#  .  Modified the mail gateway to reject submissions from unknown
+#     addresses if ANONYMOUS_ACCESS is denied
+#
 # Revision 1.44  2001/12/18 15:30:34  rochecompaan
 # Fixed bugs:
 #  .  Fixed file creation and retrieval in same transaction in anydbm

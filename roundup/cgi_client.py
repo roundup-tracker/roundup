@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.87 2001-12-23 23:18:49 richard Exp $
+# $Id: cgi_client.py,v 1.88 2002-01-02 02:31:38 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
-import binascii, Cookie, time
+import binascii, Cookie, time, random
 
 import roundupdb, htmltemplate, date, hyperdb, password
 from roundup.i18n import _
@@ -456,11 +456,16 @@ class Client:
             # don't generate a useless message
             return None, files
 
+        # handle the messageid
+        # TODO: handle inreplyto
+        messageid = "%s.%s.%s%s-%s"%(time.time(), random.random(),
+            classname, nodeid, self.MAIL_DOMAIN)
+
         # now create the message, attaching the files
         content = '\n'.join(m)
         message_id = self.db.msg.create(author=self.getuid(),
             recipients=[], date=date.Date('.'), summary=summary,
-            content=content, files=files)
+            content=content, files=files, messageid=messageid)
 
         # update the messages property
         return message_id, files
@@ -1163,6 +1168,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.87  2001/12/23 23:18:49  richard
+# We already had an admin-specific section of the web heading, no need to add
+# another one :)
+#
 # Revision 1.86  2001/12/20 15:43:01  rochecompaan
 # Features added:
 #  .  Multilink properties are now displayed as comma separated values in

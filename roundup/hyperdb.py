@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.43 2001-12-20 06:13:24 rochecompaan Exp $
+# $Id: hyperdb.py,v 1.44 2002-01-02 02:31:38 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -240,18 +240,23 @@ class Class:
         self.db.addjournal(self.classname, newid, 'create', propvalues)
         return newid
 
-    def get(self, nodeid, propname, default=_marker):
+    def get(self, nodeid, propname, default=_marker, cache=1):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
+
+        'cache' indicates whether the transaction cache should be queried
+        for the node. If the node has been modified and you need to
+        determine what its values prior to modification are, you need to
+        set cache=0.
         """
         if propname == 'id':
             return nodeid
 
         # get the node's dict
-        d = self.db.getnode(self.classname, nodeid)
+        d = self.db.getnode(self.classname, nodeid, cache=cache)
         if not d.has_key(propname) and default is not _marker:
             return default
 
@@ -271,10 +276,18 @@ class Class:
         return d[propname]
 
     # XXX not in spec
-    def getnode(self, nodeid):
-        ''' Return a convenience wrapper for the node
+    def getnode(self, nodeid, cache=1):
+        ''' Return a convenience wrapper for the node.
+
+        'nodeid' must be the id of an existing node of this class or an
+        IndexError is raised.
+
+        'cache' indicates whether the transaction cache should be queried
+        for the node. If the node has been modified and you need to
+        determine what its values prior to modification are, you need to
+        set cache=0.
         '''
-        return Node(self, nodeid)
+        return Node(self, nodeid, cache=cache)
 
     def set(self, nodeid, **propvalues):
         """Modify a property on an existing node of this class.
@@ -824,20 +837,21 @@ class Class:
 class Node:
     ''' A convenience wrapper for the given node
     '''
-    def __init__(self, cl, nodeid):
+    def __init__(self, cl, nodeid, cache=1):
         self.__dict__['cl'] = cl
         self.__dict__['nodeid'] = nodeid
+        self.cache = cache
     def keys(self, protected=1):
         return self.cl.getprops(protected=protected).keys()
     def values(self, protected=1):
         l = []
         for name in self.cl.getprops(protected=protected).keys():
-            l.append(self.cl.get(self.nodeid, name))
+            l.append(self.cl.get(self.nodeid, name, cache=self.cache))
         return l
     def items(self, protected=1):
         l = []
         for name in self.cl.getprops(protected=protected).keys():
-            l.append((name, self.cl.get(self.nodeid, name)))
+            l.append((name, self.cl.get(self.nodeid, name, cache=self.cache)))
         return l
     def has_key(self, name):
         return self.cl.getprops().has_key(name)
@@ -845,7 +859,7 @@ class Node:
         if self.__dict__.has_key(name):
             return self.__dict__[name]
         try:
-            return self.cl.get(self.nodeid, name)
+            return self.cl.get(self.nodeid, name, cache=self.cache)
         except KeyError, value:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
@@ -853,7 +867,7 @@ class Node:
         # nope, no such attribute
         raise AttributeError, str(value)
     def __getitem__(self, name):
-        return self.cl.get(self.nodeid, name)
+        return self.cl.get(self.nodeid, name, cache=self.cache)
     def __setattr__(self, name, value):
         try:
             return self.cl.set(self.nodeid, **{name: value})
@@ -875,6 +889,16 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.43  2001/12/20 06:13:24  rochecompaan
+# Bugs fixed:
+#   . Exception handling in hyperdb for strings-that-look-like numbers got
+#     lost somewhere
+#   . Internet Explorer submits full path for filename - we now strip away
+#     the path
+# Features added:
+#   . Link and multilink properties are now displayed sorted in the cgi
+#     interface
+#
 # Revision 1.42  2001/12/16 10:53:37  richard
 # take a copy of the node dict so that the subsequent set
 # operation doesn't modify the oldvalues structure

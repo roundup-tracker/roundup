@@ -15,20 +15,21 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.35 2001-12-20 15:43:01 rochecompaan Exp $
+# $Id: roundupdb.py,v 1.36 2002-01-02 02:31:38 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
 """
 
-import re, os, smtplib, socket, copy
+import re, os, smtplib, socket, copy, time, random
 import mimetools, MimeWriter, cStringIO
 import base64, mimetypes
 
 import hyperdb, date
 
 # set to indicate to roundup not to actually _send_ email
-ROUNDUPDBSENDMAILDEBUG = os.environ.get('ROUNDUPDBSENDMAILDEBUG', '')
+# this var must contain a file to write the mail to
+SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
 class DesignatorError(ValueError):
     pass
@@ -72,6 +73,7 @@ class Database:
 
         # couldn't match address or username, so create a new user
         if create:
+            print 'CREATING USER', address
             return self.user.create(username=address, address=address,
                 realname=realname)
         else:
@@ -110,9 +112,16 @@ class Class(hyperdb.Class):
             raise KeyError, '"creation" and "activity" are reserved'
         for audit in self.auditors['set']:
             audit(self.db, self, nodeid, propvalues)
-        # take a copy of the node dict so that the subsequent set
-        # operation doesn't modify the oldvalues structure
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+        # Take a copy of the node dict so that the subsequent set
+        # operation doesn't modify the oldvalues structure.
+        try:
+            # try not using the cache initially
+            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid,
+                cache=0))
+        except IndexError:
+            # this will be needed if somone does a create() and set()
+            # with no intervening commit()
+            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
         hyperdb.Class.set(self, nodeid, **propvalues)
         for react in self.reactors['set']:
             react(self.db, self, nodeid, oldvalues)
@@ -127,7 +136,7 @@ class Class(hyperdb.Class):
         for react in self.reactors['retire']:
             react(self.db, self, nodeid, None)
 
-    def get(self, nodeid, propname, default=_marker):
+    def get(self, nodeid, propname, default=_marker, cache=1):
         """Attempts to get the "creation" or "activity" properties should
         do the right thing.
         """
@@ -153,9 +162,10 @@ class Class(hyperdb.Class):
                 return None
             return self.db.user.lookup(name)
         if default is not _marker:
-            return hyperdb.Class.get(self, nodeid, propname, default)
+            return hyperdb.Class.get(self, nodeid, propname, default,
+                cache=cache)
         else:
-            return hyperdb.Class.get(self, nodeid, propname)
+            return hyperdb.Class.get(self, nodeid, propname, cache=cache)
 
     def getprops(self, protected=1):
         """In addition to the actual properties on the node, these
@@ -176,12 +186,16 @@ class Class(hyperdb.Class):
     def audit(self, event, detector):
         """Register a detector
         """
-        self.auditors[event].append(detector)
+        l = self.auditors[event]
+        if detector not in l:
+            self.auditors[event].append(detector)
 
     def react(self, event, detector):
         """Register a detector
         """
-        self.reactors[event].append(detector)
+        l = self.reactors[event]
+        if detector not in l:
+            self.reactors[event].append(detector)
 
 
 class FileClass(Class):
@@ -194,15 +208,15 @@ class FileClass(Class):
         self.db.storefile(self.classname, newid, None, content)
         return newid
 
-    def get(self, nodeid, propname, default=_marker):
+    def get(self, nodeid, propname, default=_marker, cache=1):
         ''' trap the content propname and get it from the file
         '''
         if propname == 'content':
             return self.db.getfile(self.classname, nodeid, None)
         if default is not _marker:
-            return Class.get(self, nodeid, propname, default)
+            return Class.get(self, nodeid, propname, default, cache=cache)
         else:
-            return Class.get(self, nodeid, propname)
+            return Class.get(self, nodeid, propname, cache=cache)
 
     def getprops(self, protected=1):
         ''' In addition to the actual properties on the node, these methods
@@ -270,25 +284,28 @@ class IssueClass(Class):
         
         These users are then added to the message's "recipients" list.
         """
+        users = self.db.user
+        messages = self.db.msg
+        files = self.db.file
+
         # figure the recipient ids
-        recipients = self.db.msg.get(msgid, 'recipients')
+        sendto = []
         r = {}
-        for recipid in recipients:
+        recipients = messages.get(msgid, 'recipients')
+        for recipid in messages.get(msgid, 'recipients'):
             r[recipid] = 1
-        rlen = len(recipients)
 
         # figure the author's id, and indicate they've received the message
-        authid = self.db.msg.get(msgid, 'author')
+        authid = messages.get(msgid, 'author')
 
         # get the current nosy list, we'll need it
         nosy = self.get(nodeid, 'nosy')
 
-        # ... but duplicate the message to the author as long as it's not
-        # the anonymous user
+        # possibly send the message to the author, as long as they aren't
+        # anonymous
         if (self.MESSAGES_TO_AUTHOR == 'yes' and
-                self.db.user.get(authid, 'username') != 'anonymous'):
-            if not r.has_key(authid):
-                recipients.append(authid)
+                users.get(authid, 'username') != 'anonymous'):
+            sendto.append(authid)
         r[authid] = 1
 
         # now figure the nosy people who weren't recipients
@@ -296,26 +313,40 @@ class IssueClass(Class):
             # Don't send nosy mail to the anonymous user (that user
             # shouldn't appear in the nosy list, but just in case they
             # do...)
-            if self.db.user.get(nosyid, 'username') == 'anonymous': continue
+            if users.get(nosyid, 'username') == 'anonymous':
+                continue
+            # make sure they haven't seen the message already
             if not r.has_key(nosyid):
+                # send it to them
+                sendto.append(nosyid)
                 recipients.append(nosyid)
 
         # no new recipients
-        if rlen == len(recipients):
+        if not sendto:
             return
 
+        # determine the messageid and inreplyto of the message
+        inreplyto = messages.get(msgid, 'inreplyto')
+        messageid = messages.get(msgid, 'messageid')
+        if not messageid:
+            # this is an old message that didn't get a messageid, so
+            # create one
+            messageid = "%s.%s.%s%s-%s"%(time.time(), random.random(),
+                self.classname, nodeid, self.MAIL_DOMAIN)
+            messages.set(msgid, messageid=messageid)
+
         # update the message's recipients list
-        self.db.msg.set(msgid, recipients=recipients)
+        messages.set(msgid, recipients=recipients)
 
         # send an email to the people who missed out
-        sendto = [self.db.user.get(i, 'address') for i in recipients]
+        sendto = [users.get(i, 'address') for i in sendto]
         cn = self.classname
         title = self.get(nodeid, 'title') or '%s message copy'%cn
         # figure author information
-        authname = self.db.user.get(authid, 'realname')
+        authname = users.get(authid, 'realname')
         if not authname:
-            authname = self.db.user.get(authid, 'username')
-        authaddr = self.db.user.get(authid, 'address')
+            authname = users.get(authid, 'username')
+        authaddr = users.get(authid, 'address')
         if authaddr:
             authaddr = ' <%s>'%authaddr
         else:
@@ -336,7 +367,7 @@ class IssueClass(Class):
         m.append('')
 
         # add the content
-        m.append(self.db.msg.get(msgid, 'content'))
+        m.append(messages.get(msgid, 'content'))
 
         # add the change note
         if change_note:
@@ -347,7 +378,7 @@ class IssueClass(Class):
             m.append(self.email_signature(nodeid, msgid))
 
         # get the files for this message
-        files = self.db.msg.get(msgid, 'files')
+        files = messages.get(msgid, 'files')
 
         # create the message
         message = cStringIO.StringIO()
@@ -358,6 +389,10 @@ class IssueClass(Class):
         writer.addheader('Reply-To', '%s <%s>'%(self.INSTANCE_NAME,
             self.ISSUE_TRACKER_EMAIL))
         writer.addheader('MIME-Version', '1.0')
+        if messageid:
+            writer.addheader('Message-Id', messageid)
+        if inreplyto:
+            writer.addheader('In-Reply-To', inreplyto)
 
         # attach files
         if files:
@@ -366,9 +401,9 @@ class IssueClass(Class):
             body = part.startbody('text/plain')
             body.write('\n'.join(m))
             for fileid in files:
-                name = self.db.file.get(fileid, 'name')
-                mime_type = self.db.file.get(fileid, 'type')
-                content = self.db.file.get(fileid, 'content')
+                name = files.get(fileid, 'name')
+                mime_type = files.get(fileid, 'type')
+                content = files.get(fileid, 'content')
                 part = writer.nextpart()
                 if mime_type == 'text/plain':
                     part.addheader('Content-Disposition',
@@ -394,21 +429,21 @@ class IssueClass(Class):
             body.write('\n'.join(m))
 
         # now try to send the message
-        try:
-            if ROUNDUPDBSENDMAILDEBUG:
-                print 'From: %s\nTo: %s\n%s\n=-=-=-=-=-=-=-='%(
-                    self.ADMIN_EMAIL, sendto, message.getvalue())
-            else:
+        if SENDMAILDEBUG:
+            open(SENDMAILDEBUG, 'w').write('FROM: %s\nTO: %s\n%s\n'%(
+                self.ADMIN_EMAIL, ', '.join(sendto), message.getvalue()))
+        else:
+            try:
+                # send the message as admin so bounces are sent there
+                # instead of to roundup
                 smtp = smtplib.SMTP(self.MAILHOST)
-                # send the message as admin so bounces are sent there instead
-                # of to roundup
                 smtp.sendmail(self.ADMIN_EMAIL, sendto, message.getvalue())
-        except socket.error, value:
-            raise MessageSendError, \
-                "Couldn't send confirmation email: mailhost %s"%value
-        except smtplib.SMTPException, value:
-            raise MessageSendError, \
-                "Couldn't send confirmation email: %s"%value
+            except socket.error, value:
+                raise MessageSendError, \
+                    "Couldn't send confirmation email: mailhost %s"%value
+            except smtplib.SMTPException, value:
+                raise MessageSendError, \
+                    "Couldn't send confirmation email: %s"%value
 
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information
@@ -495,6 +530,14 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2001/12/20 15:43:01  rochecompaan
+# Features added:
+#  .  Multilink properties are now displayed as comma separated values in
+#     a textbox
+#  .  The add user link is now only visible to the admin user
+#  .  Modified the mail gateway to reject submissions from unknown
+#     addresses if ANONYMOUS_ACCESS is denied
+#
 # Revision 1.34  2001/12/17 03:52:48  richard
 # Implemented file store rollback. As a bonus, the hyperdb is now capable of
 # storing more than one file per node - if a property name is supplied,

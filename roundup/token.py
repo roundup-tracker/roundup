@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001 Richard Jones.
+# Copyright (c) 2001 Richard Jones, richard@bofh.asn.au.
 # This module is free software, and you may redistribute it and/or modify
 # under the same terms as Python, so long as this copyright message and
 # disclaimer are retained in their original form.
@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # 
-# $Id: token.py,v 1.1 2001-12-31 05:09:20 richard Exp $
+# $Id: token.py,v 1.2 2002-01-02 02:31:38 richard Exp $
 #
 
 __doc__ = """
@@ -113,6 +113,10 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/12/31 05:09:20  richard
+# Added better tokenising to roundup-admin - handles spaces and stuff. Can
+# use quoting or backslashes. See the roundup.token pydoc.
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si

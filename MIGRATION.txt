@@ -1,13 +1,54 @@
 Migrating to newer versions of Roundup
 ======================================
 
-
-Migrating from 0.2.x to 0.3.x
-=============================
-
 Please read each section carefully and edit your instance home files
 accordingly.
 
+This file contains information for users upgrading from:
+  0.3.x -> 0.4.x
+  0.2.x -> 0.3.x
+
+
+Migrating from 0.3.x to 0.4.x
+=============================
+
+Message-ID and In-Reply-To addition
+-----------------------------------
+0.4.0 adds the tracking of messages by message-id and allows threading
+using in-reply-to. Most e-mail clients support threading using this
+feature, and we hope to add support for it to the web gateway. If you
+have not edited the dbinit.py file in your instance home directory, you may
+simply copy the new dbinit.py file from the core code. If you used the
+classic schema, the interfaces file is in:
+
+ <roundup source>/roundup/templates/classic/dbinit.py
+
+If you used the extended schema, the file is in:
+
+ <roundup source>/roundup/templates/extended/dbinit.pybinit.py needs updating from the original. 
+
+If you have modified your dbinit.py file, you may use encoded passwords:
+
+ 1. Edit the dbinit.py file in your instance home directory. Find the lines
+ which define the msg class:
+
+    msg = FileClass(db, "msg",
+                    author=Link("user"), recipients=Multilink("user"),
+                    date=Date(),         summary=String(),
+                    files=Multilink("file"))
+
+ and add the messageid and inreplyto properties like so:
+
+    msg = FileClass(db, "msg",
+                    author=Link("user"), recipients=Multilink("user"),
+                    date=Date(),         summary=String(),
+                    files=Multilink("file"),
+                    messageid=String(),  inreplyto=String())
+
+
+
+Migrating from 0.2.x to 0.3.x
+=============================
 
 Cookie Authentication changes
 -----------------------------
