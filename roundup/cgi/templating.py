@@ -1018,6 +1018,9 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
             return cmp(self._value, other._value)
         return cmp(self._value, other)
 
+    def __nonzero__(self):
+        return not not self._value
+
     def isset(self):
         '''Is my _value not None?'''
         return self._value is not None
