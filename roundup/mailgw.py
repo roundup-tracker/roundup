@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.19 2001-10-11 23:43:04 richard Exp $
+$Id: mailgw.py,v 1.20 2001-10-17 23:13:19 richard Exp $
 '''
 
 
@@ -290,14 +290,16 @@ Subject was: "%s"
                     # try name on Content-Type
                     name = part.getparam('name')
                     # this is just an attachment
-                    data = part.fp.read()
                     encoding = part.getencoding()
                     if encoding == 'base64':
-                        data = binascii.a2b_base64(data)
+                        data = binascii.a2b_base64(part.fp.read())
                     elif encoding == 'quoted-printable':
-                        data = quopri.decode(data)
+                        # the quopri module wants to work with files
+                        decoded = cStringIO.StringIO()
+                        quopri.decode(part.fp, decoded)
+                        data = decoded.getvalue()
                     elif encoding == 'uuencoded':
-                        data = binascii.a2b_uu(data)
+                        data = binascii.a2b_uu(part.fp.read())
                     attachments.append((name, part.gettype(), data))
 
             if content is None:
@@ -416,6 +418,10 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/10/11 23:43:04  richard
+# Implemented the comma-separated printing option in the admin tool.
+# Fixed a typo (more of a vim-o actually :) in mailgw.
+#
 # Revision 1.18  2001/10/11 06:38:57  richard
 # Initial cut at trying to handle people responding to CC'ed messages that
 # create an issue.
