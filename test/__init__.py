@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.14 2002-01-22 00:12:06 richard Exp $
+# $Id: __init__.py,v 1.15 2002-01-22 00:12:20 richard Exp $
 
 import unittest
 import os, tempfile
@@ -26,14 +26,14 @@ import test_init, test_token, test_mailgw, test_htmltemplate
 
 def go():
     suite = unittest.TestSuite((
-#        test_dates.suite(),
-#        test_schema.suite(),
-#        test_db.suite(),
-#        test_init.suite(),
-#        test_multipart.suite(),
-#        test_mailsplit.suite(),
-#        test_mailgw.suite(),
-#        test_token.suite(),
+        test_dates.suite(),
+        test_schema.suite(),
+        test_db.suite(),
+        test_init.suite(),
+        test_multipart.suite(),
+        test_mailsplit.suite(),
+        test_mailgw.suite(),
+        test_token.suite(),
         test_htmltemplate.suite(),
     ))
     runner = unittest.TextTestRunner()
@@ -42,6 +42,10 @@ def go():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/01/22 00:12:06  richard
+# Wrote more unit tests for htmltemplate, and while I was at it, I polished
+# off the implementation of some of the functions so they behave sanely.
+#
 # Revision 1.13  2002/01/21 11:05:48  richard
 # New tests for htmltemplate (well, it's a beginning)
 #
