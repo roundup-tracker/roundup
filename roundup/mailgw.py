@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.12 2001-08-08 01:27:00 richard Exp $
+$Id: mailgw.py,v 1.13 2001-08-12 06:32:36 richard Exp $
 '''
 
 
@@ -219,15 +219,15 @@ Subject argument list refers to an invalid property: "%s"
 
 Subject was: "%s"
 '''%(key, subject)
-                if type.isStringType:
+                if isinstance(type, hyperdb.String):
                     props[key] = value 
-                elif type.isDateType:
+                elif isinstance(type, hyperdb.Date):
                     props[key] = date.Date(value)
-                elif type.isIntervalType:
+                elif isinstance(type, hyperdb.Interval):
                     props[key] = date.Interval(value)
-                elif type.isLinkType:
+                elif isinstance(type, hyperdb.Link):
                     props[key] = value
-                elif type.isMultilinkType:
+                elif isinstance(type, hyperdb.Multilink):
                     props[key] = value.split(',')
 
         # handle the users
@@ -398,6 +398,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/08/08 01:27:00  richard
+# Added better error handling to mailgw.
+#
 # Revision 1.11  2001/08/08 00:08:03  richard
 # oops ;)
 #

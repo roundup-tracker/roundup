@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.18 2001-08-07 00:24:42 richard Exp $
+# $Id: htmltemplate.py,v 1.19 2001-08-12 06:32:36 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -48,21 +48,21 @@ class Plain(Base):
             value = self.cl.get(self.nodeid, property)
         else:
             # TODO: pull the value from the form
-            if propclass.isMultilinkType: value = []
+            if isinstance(propclass, hyperdb.Multilink): value = []
             else: value = ''
-        if propclass.isStringType:
+        if isinstance(propclass, hyperdb.String):
             if value is None: value = ''
             else: value = str(value)
-        elif propclass.isDateType:
+        elif isinstance(propclass, hyperdb.Date):
             value = str(value)
-        elif propclass.isIntervalType:
+        elif isinstance(propclass, hyperdb.Interval):
             value = str(value)
-        elif propclass.isLinkType:
+        elif isinstance(propclass, hyperdb.Link):
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
             if value: value = str(linkcl.get(value, k))
             else: value = '[unselected]'
-        elif propclass.isMultilinkType:
+        elif isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
             value = ', '.join([linkcl.get(i, k) for i in value])
@@ -83,18 +83,18 @@ class Field(Base):
             # TODO: remove this from the code ... it's only here for
             # handling schema changes, and they should be handled outside
             # of this code...
-            if propclass.isMultilinkType and value is None:
+            if isinstance(propclass, hyperdb.Multilink) and value is None:
                 value = []
         elif self.filterspec is not None:
-            if propclass.isMultilinkType:
+            if isinstance(propclass, hyperdb.Multilink):
                 value = self.filterspec.get(property, [])
             else:
                 value = self.filterspec.get(property, '')
         else:
             # TODO: pull the value from the form
-            if propclass.isMultilinkType: value = []
+            if isinstance(propclass, hyperdb.Multilink): value = []
             else: value = ''
-        if (propclass.isStringType or propclass.isDateType or
+        if isinstance((propclass.isStringType or propclass, hyperdb.Date) or
                 propclass.isIntervalType):
             size = size or 30
             if value is None:
@@ -103,7 +103,7 @@ class Field(Base):
                 value = cgi.escape(value)
                 value = '&quot;'.join(value.split('"'))
             s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
-        elif propclass.isLinkType:
+        elif isinstance(propclass, hyperdb.Link):
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
@@ -121,7 +121,7 @@ class Field(Base):
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
             l.append('</select>')
             s = '\n'.join(l)
-        elif propclass.isMultilinkType:
+        elif isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             list = linkcl.list()
             height = height or min(len(list), 7)
@@ -154,9 +154,9 @@ class Menu(Base):
             value = self.cl.get(self.nodeid, property)
         else:
             # TODO: pull the value from the form
-            if propclass.isMultilinkType: value = []
+            if isinstance(propclass, hyperdb.Multilink): value = []
             else: value = None
-        if propclass.isLinkType:
+        if isinstance(propclass, hyperdb.Link):
             linkcl = self.db.classes[propclass.classname]
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
@@ -168,7 +168,7 @@ class Menu(Base):
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid, option))
             l.append('</select>')
             return '\n'.join(l)
-        if propclass.isMultilinkType:
+        if isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             list = linkcl.list()
             height = height or min(len(list), 7)
@@ -203,16 +203,16 @@ class Link(Base):
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
         else:
-            if propclass.isMultilinkType: value = []
+            if isinstance(propclass, hyperdb.Multilink): value = []
             else: value = ''
-        if propclass.isLinkType:
+        if isinstance(propclass, hyperdb.Link):
             if value is None:
                 return '[not assigned]'
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
             linkvalue = linkcl.get(value, k)
             return '<a href="%s%s">%s</a>'%(linkcl, value, linkvalue)
-        if propclass.isMultilinkType:
+        if isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             k = linkcl.labelprop()
             l = []
@@ -231,7 +231,7 @@ class Count(Base):
             return '[Count: not called from item]'
         propclass = self.properties[property]
         value = self.cl.get(self.nodeid, property)
-        if propclass.isMultilinkType:
+        if isinstance(propclass, hyperdb.Multilink):
             return str(len(value))
         return '[Count: not a Multilink]'
 
@@ -246,7 +246,7 @@ class Reldate(Base):
         if not self.nodeid and self.form is None:
             return '[Reldate: not called from item]'
         propclass = self.properties[property]
-        if not propclass.isDateType:
+        if isinstance(not propclass, hyperdb.Date):
             return '[Reldate: not a Date]'
         if self.nodeid:
             value = self.cl.get(self.nodeid, property)
@@ -271,11 +271,11 @@ class Download(Base):
             return '[Download: not called from item]'
         propclass = self.properties[property]
         value = self.cl.get(self.nodeid, property)
-        if propclass.isLinkType:
+        if isinstance(propclass, hyperdb.Link):
             linkcl = self.db.classes[propclass.classname]
             linkvalue = linkcl.get(value, k)
             return '<a href="%s%s">%s</a>'%(linkcl, value, linkvalue)
-        if propclass.isMultilinkType:
+        if isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             l = []
             for value in value:
@@ -297,7 +297,7 @@ class Checklist(Base):
             value = self.filterspec.get(property, [])
         else:
             value = []
-        if propclass.isLinkType or propclass.isMultilinkType:
+        if isinstance(propclass.isLinkType or propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
             l = []
             k = linkcl.labelprop()
@@ -328,7 +328,7 @@ class List(Base):
     '''
     def __call__(self, property, **args):
         propclass = self.properties[property]
-        if not propclass.isMultilinkType:
+        if isinstance(not propclass, hyperdb.Multilink):
             return '[List: not a Multilink]'
         fp = StringIO.StringIO()
         args['show_display_form'] = 0
@@ -385,7 +385,7 @@ class IndexTemplateReplace:
             r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
             r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)):
         return replace.sub(self, text)
-        
+
     def __call__(self, m, filter=None, columns=None, sort=None, group=None):
         if m.group('name'):
             if m.group('name') in self.props:
@@ -536,7 +536,7 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
                 l = []
                 for name in group_names:
                     prop = properties[name]
-                    if prop.isLinkType:
+                    if isinstance(prop, hyperdb.Link):
                         group_cl = db.classes[prop.classname]
                         key = group_cl.getkey()
                         value = cl.get(nodeid, name)
@@ -544,7 +544,7 @@ def index(client, templates, db, classname, filterspec={}, filter=[],
                             l.append('[unselected %s]'%prop.classname)
                         else:
                             l.append(group_cl.get(cl.get(nodeid, name), key))
-                    elif prop.isMultilinkType:
+                    elif isinstance(prop, hyperdb.Multilink):
                         group_cl = db.classes[prop.classname]
                         key = group_cl.getkey()
                         for value in cl.get(nodeid, name):
@@ -740,6 +740,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.17  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

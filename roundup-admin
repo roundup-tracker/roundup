@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.15 2001-08-07 00:24:42 richard Exp $
+# $Id: roundup-admin,v 1.16 2001-08-12 06:32:36 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -174,15 +174,15 @@ def do_set(db, args):
         properties = cl.getprops()
         for key, value in props.items():
             type =  properties[key]
-            if type.isStringType:
+            if isinstance(type, hyperdb.String):
                 continue
-            elif type.isDateType:
+            elif isinstance(type, hyperdb.Date):
                 props[key] = date.Date(value)
-            elif type.isIntervalType:
+            elif isinstance(type, hyperdb.Interval):
                 props[key] = date.Interval(value)
-            elif type.isLinkType:
+            elif isinstance(type, hyperdb.Link):
                 props[key] = value
-            elif type.isMultilinkType:
+            elif isinstance(type, hyperdb.Multilink):
                 props[key] = value.split(',')
         apply(cl.set, (nodeid, ), props)
     return 0
@@ -238,15 +238,15 @@ def do_create(db, args):
     for prop in args[1:]:
         key, value = prop.split('=')
         type =  properties[key]
-        if type.isStringType:
+        if isinstance(type, hyperdb.String):
             props[key] = value 
-        elif type.isDateType:
+        elif isinstance(type, hyperdb.Date):
             props[key] = date.Date(value)
-        elif type.isIntervalType:
+        elif isinstance(type, hyperdb.Interval):
             props[key] = date.Interval(value)
-        elif type.isLinkType:
+        elif isinstance(type, hyperdb.Link):
             props[key] = value
-        elif type.isMultilinkType:
+        elif isinstance(type, hyperdb.Multilink):
             props[key] = value.split(',')
     print apply(cl.create, (), props)
     return 0
@@ -312,7 +312,7 @@ def do_freshen(db, args):
 #        for nodeid in cl.list():
 #            node = {}
 #            for name, type in properties:
-#                if type.isMultilinkType:
+# isinstance(               if type, hyperdb.Multilink):
 #                    node[name] = cl.get(nodeid, name, [])
 #                else:
 #                    node[name] = cl.get(nodeid, name, None)
@@ -422,6 +422,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.14  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

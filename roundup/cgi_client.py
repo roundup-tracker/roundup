@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.19 2001-08-07 00:24:42 richard Exp $
+# $Id: cgi_client.py,v 1.20 2001-08-12 06:32:36 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 
@@ -124,7 +124,7 @@ class Client:
             if key[0] == ':': continue
             prop = props[key]
             value = self.form[key]
-            if prop.isLinkType or prop.isMultilinkType:
+            if isinstance(prop.isLinkType or prop, hyperdb.Multilink):
                 if type(value) == type([]):
                     value = [arg.value for arg in value]
                 else:
@@ -205,13 +205,13 @@ class Client:
                     if not cl.properties.has_key(key):
                         continue
                     proptype = cl.properties[key]
-                    if proptype.isStringType:
+                    if isinstance(proptype, hyperdb.String):
                         value = str(self.form[key].value).strip()
-                    elif proptype.isDateType:
+                    elif isinstance(proptype, hyperdb.Date):
                         value = date.Date(str(self.form[key].value))
-                    elif proptype.isIntervalType:
+                    elif isinstance(proptype, hyperdb.Interval):
                         value = date.Interval(str(self.form[key].value))
-                    elif proptype.isLinkType:
+                    elif isinstance(proptype, hyperdb.Link):
                         value = str(self.form[key].value).strip()
                         # handle key values
                         link = cl.properties[key].classname
@@ -221,7 +221,7 @@ class Client:
                             except:
                                 raise ValueError, 'property "%s": %s not a %s'%(
                                     key, value, link)
-                    elif proptype.isMultilinkType:
+                    elif isinstance(proptype, hyperdb.Multilink):
                         value = self.form[key]
                         if type(value) != type([]):
                             value = [i.strip() for i in str(value.value).split(',')]
@@ -299,13 +299,13 @@ class Client:
             if not cl.properties.has_key(key):
                 continue
             proptype = cl.properties[key]
-            if proptype.isStringType:
+            if isinstance(proptype, hyperdb.String):
                 value = self.form[key].value.strip()
-            elif proptype.isDateType:
+            elif isinstance(proptype, hyperdb.Date):
                 value = date.Date(self.form[key].value.strip())
-            elif proptype.isIntervalType:
+            elif isinstance(proptype, hyperdb.Interval):
                 value = date.Interval(self.form[key].value.strip())
-            elif proptype.isLinkType:
+            elif isinstance(proptype, hyperdb.Link):
                 value = self.form[key].value.strip()
                 # handle key values
                 link = cl.properties[key].classname
@@ -315,7 +315,7 @@ class Client:
                     except:
                         raise ValueError, 'property "%s": %s not a %s'%(
                             key, value, link)
-            elif proptype.isMultilinkType:
+            elif isinstance(proptype, hyperdb.Multilink):
                 value = self.form[key]
                 if type(value) != type([]):
                     value = [i.strip() for i in value.value.split(',')]
@@ -402,14 +402,14 @@ class Client:
                     m.append('\n-------')
                     first = 0
                 value = cl.get(nid, name, None)
-                if prop.isLinkType:
+                if isinstance(prop, hyperdb.Link):
                     link = self.db.classes[prop.classname]
                     key = link.labelprop(default_to_id=1)
                     if value is not None and key:
                         value = link.get(value, key)
                     else:
                         value = '-'
-                elif prop.isMultilinkType:
+                elif isinstance(prop, hyperdb.Multilink):
                     if value is None: value = []
                     l = []
                     link = self.db.classes[prop.classname]
@@ -556,6 +556,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.18  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.

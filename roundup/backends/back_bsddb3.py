@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.6 2001-08-07 00:24:42 richard Exp $
+#$Id: back_bsddb3.py,v 1.7 2001-08-12 06:32:36 richard Exp $
 
 import bsddb3, os, marshal
 from roundup import hyperdb, date
@@ -99,9 +99,9 @@ class Database(hyperdb.Database):
         # convert the instance data to builtin types
         properties = self.classes[classname].properties
         for key in properties.keys():
-            if properties[key].isDateType:
+            if isinstance(properties[key], hyperdb.Date):
                 node[key] = node[key].get_tuple()
-            elif properties[key].isIntervalType:
+            elif isinstance(properties[key], hyperdb.Interval):
                 node[key] = node[key].get_tuple()
 
         # now save the marshalled data
@@ -120,9 +120,9 @@ class Database(hyperdb.Database):
         # convert the marshalled data to instances
         properties = self.classes[classname].properties
         for key in properties.keys():
-            if properties[key].isDateType:
+            if isinstance(properties[key], hyperdb.Date):
                 res[key] = date.Date(res[key])
-            elif properties[key].isIntervalType:
+            elif isinstance(properties[key], hyperdb.Interval):
                 res[key] = date.Interval(res[key])
 
         if not cldb: db.close()
@@ -219,6 +219,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.6  2001/08/07 00:24:42  richard
+#stupid typo
+#
 #Revision 1.5  2001/08/07 00:15:51  richard
 #Added the copyright/license notice to (nearly) all files at request of
 #Bizar Software.

@@ -86,7 +86,6 @@ in general:
   . more unit tests
   . more back-ends
   . better error handling (nicer messages for users)
-  . possibly revert the entire damn thing to 1.5.2 ... :(
 hyperdb:
   . transaction support
   . more efficient reverse lookups

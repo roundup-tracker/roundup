@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.14 2001-08-07 00:24:42 richard Exp $
+# $Id: hyperdb.py,v 1.15 2001-08-12 06:32:36 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -27,41 +27,37 @@ import date
 #
 # Types
 #
-class BaseType:
-    isStringType = 0
-    isDateType = 0
-    isIntervalType = 0
-    isLinkType = 0
-    isMultilinkType = 0
-
-class String(BaseType):
-    def __init__(self):
-        """An object designating a String property."""
-        pass
+class String:
+    """An object designating a String property."""
     def __repr__(self):
         return '<%s>'%self.__class__
-    isStringType = 1
 
-class Date(BaseType, String):
-    isDateType = 1
+class Date:
+    """An object designating a Date property."""
+    def __repr__(self):
+        return '<%s>'%self.__class__
 
-class Interval(BaseType, String):
-    isIntervalType = 1
+class Interval:
+    """An object designating an Interval property."""
+    def __repr__(self):
+        return '<%s>'%self.__class__
 
-class Link(BaseType):
+class Link:
+    """An object designating a Link property that links to a
+       node in a specified class."""
     def __init__(self, classname):
-        """An object designating a Link property that links to
-        nodes in a specified class."""
         self.classname = classname
     def __repr__(self):
         return '<%s to "%s">'%(self.__class__, self.classname)
-    isLinkType = 1
 
-class Multilink(BaseType, Link):
+class Multilink:
     """An object designating a Multilink property that links
        to nodes in a specified class.
     """
-    isMultilinkType = 1
+    def __init__(self, classname):
+        self.classname = classname
+    def __repr__(self):
+        return '<%s to "%s">'%(self.__class__, self.classname)
 
 class DatabaseError(ValueError):
     pass
@@ -143,10 +139,9 @@ class Class:
                 raise KeyError, '"%s" has no property "%s"'%(self.classname,
                     key)
 
-            if prop.isLinkType:
+            if isinstance(prop, Link):
                 if type(value) != type(''):
                     raise ValueError, 'link value must be String'
-#                value = str(value)
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
                 if not num_re.match(value):
@@ -163,7 +158,7 @@ class Class:
                 self.db.addjournal(link_class, value, 'link',
                     (self.classname, newid, key))
 
-            elif prop.isMultilinkType:
+            elif isinstance(prop, Multilink):
                 if type(value) != type([]):
                     raise TypeError, 'new property "%s" not a list of ids'%key
                 link_class = self.properties[key].classname
@@ -190,22 +185,22 @@ class Class:
                     self.db.addjournal(link_class, id, 'link',
                         (self.classname, newid, key))
 
-            elif prop.isStringType:
+            elif isinstance(prop, String):
                 if type(value) != type(''):
                     raise TypeError, 'new property "%s" not a string'%key
 
-            elif prop.isDateType:
+            elif isinstance(prop, Date):
                 if not hasattr(value, 'isDate'):
                     raise TypeError, 'new property "%s" not a Date'% key
 
-            elif prop.isIntervalType:
+            elif isinstance(prop, Interval):
                 if not hasattr(value, 'isInterval'):
                     raise TypeError, 'new property "%s" not an Interval'% key
 
         for key, prop in self.properties.items():
             if propvalues.has_key(key):
                 continue
-            if prop.isMultilinkType:
+            if isinstance(prop, Multilink):
                 propvalues[key] = []
             else:
                 propvalues[key] = None
@@ -224,7 +219,6 @@ class Class:
         """
         if propname == 'id':
             return nodeid
-#        nodeid = str(nodeid)
         d = self.db.getnode(self.classname, nodeid)
         if not d.has_key(propname) and default is not _marker:
             return default
@@ -263,7 +257,6 @@ class Class:
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
 
-#        nodeid = str(nodeid)
         node = self.db.getnode(self.classname, nodeid)
         if node.has_key(self.db.RETIRED_FLAG):
             raise IndexError
@@ -282,8 +275,7 @@ class Class:
 
             prop = self.properties[key]
 
-            if prop.isLinkType:
-#                value = str(value)
+            if isinstance(prop, Link):
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
                 if type(value) != type(''):
@@ -308,7 +300,7 @@ class Class:
                     self.db.addjournal(link_class, value, 'link',
                         (self.classname, nodeid, key))
 
-            elif prop.isMultilinkType:
+            elif isinstance(prop, Multilink):
                 if type(value) != type([]):
                     raise TypeError, 'new property "%s" not a list of ids'%key
                 link_class = self.properties[key].classname
@@ -348,15 +340,15 @@ class Class:
                         (self.classname, nodeid, key))
                     l.append(id)
 
-            elif prop.isStringType:
+            elif isinstance(prop, String):
                 if value is not None and type(value) != type(''):
                     raise TypeError, 'new property "%s" not a string'%key
 
-            elif prop.isDateType:
+            elif isinstance(prop, Date):
                 if not hasattr(value, 'isDate'):
                     raise TypeError, 'new property "%s" not a Date'% key
 
-            elif prop.isIntervalType:
+            elif isinstance(prop, Interval):
                 if not hasattr(value, 'isInterval'):
                     raise TypeError, 'new property "%s" not an Interval'% key
 
@@ -374,7 +366,6 @@ class Class:
         Retired nodes are not returned by the find(), list(), or lookup()
         methods, and other nodes may reuse the values of their key properties.
         """
-#        nodeid = str(nodeid)
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
         node = self.db.getnode(self.classname, nodeid)
@@ -469,10 +460,9 @@ class Class:
         """
         propspec = propspec.items()
         for propname, nodeid in propspec:
-#            nodeid = str(nodeid)
             # check the prop is OK
             prop = self.properties[propname]
-            if not prop.isLinkType and not prop.isMultilinkType:
+            if not isinstance(prop, Link) and not isinstance(prop, Multilink):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
             if not self.db.hasnode(prop.classname, nodeid):
                 raise ValueError, '%s has no node %s'%(link_class, nodeid)
@@ -485,11 +475,10 @@ class Class:
             if node.has_key(self.db.RETIRED_FLAG):
                 continue
             for propname, nodeid in propspec:
-#                nodeid = str(nodeid)
                 property = node[propname]
-                if prop.isLinkType and nodeid == property:
+                if isinstance(prop, Link) and nodeid == property:
                     l.append(id)
-                elif prop.isMultilinkType and nodeid in property:
+                elif isinstance(prop, Multilink) and nodeid in property:
                     l.append(id)
         cldb.close()
         return l
@@ -503,7 +492,7 @@ class Class:
         """
         for propname in requirements.keys():
             prop = self.properties[propname]
-            if not prop.isStringType:
+            if isinstance(not prop, String):
                 raise TypeError, "'%s' not a String property"%propname
         l = []
         cldb = self.db.getclassdb(self.classname)
@@ -546,7 +535,7 @@ class Class:
         props = self.getprops()
         for k, v in filterspec.items():
             propclass = props[k]
-            if propclass.isLinkType:
+            if isinstance(propclass, Link):
                 if type(v) is not type([]):
                     v = [v]
                 # replace key values with node ids
@@ -562,7 +551,7 @@ class Class:
                     u.append(entry)
 
                 l.append((0, k, u))
-            elif propclass.isMultilinkType:
+            elif isinstance(propclass, Multilink):
                 if type(v) is not type([]):
                     v = [v]
                 # replace key values with node ids
@@ -577,7 +566,7 @@ class Class:
                                 k, entry, self.properties[k].classname)
                     u.append(entry)
                 l.append((1, k, u))
-            elif propclass.isStringType:
+            elif isinstance(propclass, String):
                 if '*' in v or '?' in v:
                     # simple glob searching
                     v = v.replace('?', '.')
@@ -680,13 +669,13 @@ class Class:
                     propclass = properties[prop]
 
                     # String and Date values are sorted in the natural way
-                    if propclass.isStringType:
+                    if isinstance(propclass, String):
                         # clean up the strings
                         if av and av[0] in string.uppercase:
                             av = an[prop] = av.lower()
                         if bv and bv[0] in string.uppercase:
                             bv = bn[prop] = bv.lower()
-                    if propclass.isStringType or propclass.isDateType:
+                    if isinstance(propclass.isStringType or propclass, Date):
                         if dir == '+':
                             r = cmp(av, bv)
                             if r != 0: return r
@@ -698,7 +687,7 @@ class Class:
                     # the "order" property on the linked nodes if it is
                     # present; or otherwise on the key string of the linked
                     # nodes; or finally on  the node ids.
-                    elif propclass.isLinkType:
+                    elif isinstance(propclass, Link):
                         link = db.classes[propclass.classname]
                         if av is None and bv is not None: return -1
                         if av is not None and bv is None: return 1
@@ -730,7 +719,7 @@ class Class:
 
                     # Multilink properties are sorted according to how many
                     # links are present.
-                    elif propclass.isMultilinkType:
+                    elif isinstance(propclass, Multilink):
                         if dir == '+':
                             r = cmp(len(av), len(bv))
                             if r != 0: return r
@@ -817,6 +806,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.13  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
