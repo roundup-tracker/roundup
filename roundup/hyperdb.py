@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.62 2002-04-03 07:05:50 richard Exp $
+# $Id: hyperdb.py,v 1.63 2002-04-15 23:25:15 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -353,7 +353,7 @@ class Class:
             raise DatabaseError, 'Database open read-only'
 
         # new node's id
-        newid = str(self.count() + 1)
+        newid = self.db.newid(self.classname)
 
         # validate propvalues
         num_re = re.compile('^\d+$')
@@ -1127,6 +1127,10 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.62  2002/04/03 07:05:50  richard
+# d'oh! killed retirement of nodes :(
+# all better now...
+#
 # Revision 1.61  2002/04/03 06:11:51  richard
 # Fix for old databases that contain properties that don't exist any more.
 #
