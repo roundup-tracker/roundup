@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.76 2003-02-06 05:43:47 richard Exp $
+# $Id: client.py,v 1.77 2003-02-07 04:49:13 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -95,6 +95,8 @@ class Client:
         # this is the "cookie path" for this tracker (ie. the path part of
         # the "base" url)
         self.cookie_path = urlparse.urlparse(self.base)[2]
+        self.cookie_name = 'roundup_session_' + re.sub('[^a-zA-Z]', '',
+            self.instance.config.TRACKER_NAME)
 
         # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
@@ -227,11 +229,11 @@ class Client:
         user = 'anonymous'
 
         # bump the "revision" of the cookie since the format changed
-        if (cookie.has_key('roundup_user_2') and
-                cookie['roundup_user_2'].value != 'deleted'):
+        if (cookie.has_key(self.cookie_name) and
+                cookie[self.cookie_name].value != 'deleted'):
 
             # get the session key from the cookie
-            self.session = cookie['roundup_user_2'].value
+            self.session = cookie[self.cookie_name].value
             # get the user from the session
             try:
                 # update the lifetime datestamp
@@ -486,8 +488,8 @@ class Client:
 
         # generate the cookie path - make sure it has a trailing '/'
         self.additional_headers['Set-Cookie'] = \
-          'roundup_user_2=%s; expires=%s; Path=%s;'%(self.session, expire,
-            self.cookie_path)
+          '%s=%s; expires=%s; Path=%s;'%(self.cookie_name, self.session,
+            expire, self.cookie_path)
 
     def make_user_anonymous(self):
         ''' Make us anonymous
@@ -583,8 +585,8 @@ class Client:
         # construct the logout cookie
         now = Cookie._getdate()
         self.additional_headers['Set-Cookie'] = \
-           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
-            self.cookie_path)
+           '%s=deleted; Max-Age=0; expires=%s; Path=%s;'%(self.cookie_name,
+            now, self.cookie_path)
 
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
