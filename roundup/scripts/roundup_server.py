@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.72 2004-11-02 09:07:08 a1s Exp $
+$Id: roundup_server.py,v 1.73 2004-11-02 10:02:05 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -403,7 +403,7 @@ class ServerConfig(configuration.Config):
         if self["MULTIPROCESS"] == "debug":
             trackers = None
         else:
-            trackers = dict([(name, roundup.instance.open(home))
+            trackers = dict([(name, roundup.instance.open(home, optimize=1))
                 for (name, home) in tracker_homes])
         # build customized request handler class
         class RequestHandler(RoundupRequestHandler):
