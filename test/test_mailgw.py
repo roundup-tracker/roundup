@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.17 2002-05-02 07:56:34 richard Exp $
+# $Id: test_mailgw.py,v 1.18 2002-05-15 03:27:16 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -25,9 +25,13 @@ class DiffHelper:
         '''
         if s1 == s2:
             return
-        # under python2.1 we allow a difference of one trailing empty line.
+
+        # under python2.[12] we allow a difference of one trailing empty line.
         if sys.version_info[0:2] == (2,1):
             if s1+'\n' == s2:
+                return
+        if sys.version_info[0:2] == (2,2):
+            if s1 == s2+'\n':
                 return
         
         l1=s1.split('\n')
@@ -56,7 +60,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
     schema = 'classic'
     def setUp(self):
         MailgwTestCase.count = MailgwTestCase.count + 1
-        self.dirname = '_test_%s'%self.count
+        self.dirname = '_test_mailgw_%s'%self.count
         try:
             shutil.rmtree(self.dirname)
         except OSError, error:
@@ -97,7 +101,9 @@ This is a test submission of a new issue.
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
-        self.assertEqual(self.db.issue.get(nodeid, 'nosy'), ['2', '3'])
+        l = self.db.issue.get(nodeid, 'nosy')
+        l.sort()
+        self.assertEqual(l, ['2', '3'])
 
     def testNewIssueNosy(self):
         self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
@@ -116,7 +122,9 @@ This is a test submission of a new issue.
         if os.path.exists(os.environ['SENDMAILDEBUG']):
             error = open(os.environ['SENDMAILDEBUG']).read()
             self.assertEqual('no error', error)
-        self.assertEqual(self.db.issue.get(nodeid, 'nosy'), ['2', '3'])
+        l = self.db.issue.get(nodeid, 'nosy')
+        l.sort()
+        self.assertEqual(l, ['2', '3'])
 
     def testAlternateAddress(self):
         message = cStringIO.StringIO('''Content-Type: text/plain;
@@ -191,7 +199,7 @@ This is a test submission of a new issue.
 ----------
 assignedto: richard
 messages: 1
-nosy: mary, Chef, richard
+nosy: Chef, mary, richard
 status: unread
 title: Testing...
 ___________________________________________________
@@ -226,10 +234,10 @@ This is a followup
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
-TO: chef@bork.bork.bork, mary@test, john@test
+TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
-To: chef@bork.bork.bork, mary@test, john@test
+To: chef@bork.bork.bork, john@test, mary@test
 From: richard <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
@@ -313,10 +321,10 @@ This is a followup
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
-TO: chef@bork.bork.bork, mary@test, john@test
+TO: chef@bork.bork.bork, john@test, mary@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
-To: chef@bork.bork.bork, mary@test, john@test
+To: chef@bork.bork.bork, john@test, mary@test
 From: richard <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
@@ -453,10 +461,10 @@ This is a followup
 
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
-TO: john@test, chef@bork.bork.bork, richard@test
+TO: chef@bork.bork.bork, john@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
-To: john@test, chef@bork.bork.bork, richard@test
+To: chef@bork.bork.bork, john@test, richard@test
 From: john <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
@@ -682,6 +690,14 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/05/02 07:56:34  richard
+# . added option to automatically add the authors and recipients of messages
+#   to the nosy lists with the options ADD_AUTHOR_TO_NOSY (default 'new') and
+#   ADD_RECIPIENTS_TO_NOSY (default 'new'). These settings emulate the current
+#   behaviour. Setting them to 'yes' will add the author/recipients to the nosy
+#   on messages that create issues and followup messages.
+# . added missing documentation for a few of the config option values
+#
 # Revision 1.16  2002/03/19 21:58:11  grubert
 #  . for python2.1 test_mailgw compareString allows an extra trailing empty line (for quopri.
 #

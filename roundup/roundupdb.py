@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.51 2002-04-08 03:46:42 richard Exp $
+# $Id: roundupdb.py,v 1.52 2002-05-15 03:27:16 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -423,6 +423,9 @@ class IssueClass(Class):
         # get the files for this message
         message_files = messages.get(msgid, 'files')
 
+        # make sure the To line is always the same (for testing mostly)
+        sendto.sort()
+
         # create the message
         message = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
@@ -480,7 +483,8 @@ class IssueClass(Class):
         # now try to send the message
         if SENDMAILDEBUG:
             open(SENDMAILDEBUG, 'w').write('FROM: %s\nTO: %s\n%s\n'%(
-                self.db.config.ADMIN_EMAIL,', '.join(sendto),message.getvalue()))
+                self.db.config.ADMIN_EMAIL,
+                ', '.join(sendto),message.getvalue()))
         else:
             try:
                 # send the message as admin so bounces are sent there
@@ -535,6 +539,7 @@ class IssueClass(Class):
                 key = link.labelprop(default_to_id=1)
                 if key:
                     value = [link.get(entry, key) for entry in value]
+                value.sort()
                 value = ', '.join(value)
             m.append('%s: %s'%(propname, value))
         m.insert(0, '----------')
@@ -620,6 +625,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.51  2002/04/08 03:46:42  richard
+# make it work
+#
 # Revision 1.50  2002/04/08 03:40:31  richard
 #  . added a "detectors" directory for people to put their useful auditors and
 #    reactors in. Note - the roundupdb.IssueClass.sendmessage method has been

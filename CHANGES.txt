@@ -40,6 +40,8 @@ Fixed:
  . file upload broke if you didn't supply a change note
  . fixed SCRIPT_NAME in ZRoundup for instances not at top level of Zope
    (thanks dman)
+ . fixed some sorting issues that were breaking some unit tests under py2.2
+ . mailgw test output dir was confusing the init test (but only on 2.2 *shrug*)
 
 
 2002-03-25 - 0.4.1
