@@ -15,6 +15,7 @@ Fixed:
 - added content to ZRoundup refresh.txt file (sf bug 1147622)
 - fix invalid reference to csv.colon_separated
 - correct URL to What's New in setup.py meta-data
+- change AUTOCOMMIT=OFF to AUTOCOMMIT=0 for MySQL (sf bug 1143707)
 
 
 2005-02-17 0.8.1
