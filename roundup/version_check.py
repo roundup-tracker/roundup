@@ -16,16 +16,20 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: version_check.py,v 1.1 2001-12-13 00:20:01 richard Exp $
+# $Id: version_check.py,v 1.2 2001-12-14 21:34:06 richard Exp $
 
 import sys
-if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1,1):
+if not hasattr(sys, 'version_info') or sys.version_info[:3] < (2,1,1):
     print "Content-Type: text/plain\n"
     print "Roundup requires Python 2.1.1 or newer."
     sys.exit(0)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/12/13 00:20:01  richard
+#  . Centralised the python version check code, bumped version to 2.1.1 (really
+#    needs to be 2.1.2, but that isn't released yet :)
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
