@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mailsplit.py,v 1.9 2002-01-10 06:19:20 richard Exp $
+# $Id: test_mailsplit.py,v 1.10 2002-04-23 16:18:18 rochecompaan Exp $
 
 import unittest, cStringIO
 
@@ -44,9 +44,10 @@ issue_tracker@foo.com wrote:
 blah blah blah signature
 userfoo@foo.com
 '''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah')
         self.assertEqual(content, 'blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah\nblah blah blah blah blah blah blah blah blah blah blah!')
+
 
     def testPostComment(self):
         s = '''
@@ -73,48 +74,138 @@ blah blah blah blah blah blah blah blah blah blah blah!
 blah blah blah signature
 userfoo@foo.com
 '''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah')
         self.assertEqual(content, 'blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah\nblah blah blah blah blah blah blah blah blah blah blah!')
 
+
+    def testKeepCitation(self):
+        s = '''
+blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah
+blah blah blah blah blah blah blah blah blah blah blah!
+
+issue_tracker@foo.com wrote:
+> blah blah blah blahblah blahblah blahblah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah?  blah blah blah blah blah
+> blah blah blah blah blah blah blah...  blah blah blah blah.  blah blah
+> blah blah blah blah?  blah blah blah blah blah blah!  blah blah!
+>
+> -------
+> nosy: userfoo, userken
+> _________________________________________________
+> Roundup issue tracker
+> issue_tracker@foo.com
+> http://foo.com/cgi-bin/roundup.cgi/issue_tracker/
+
+--
+blah blah blah signature
+userfoo@foo.com
+'''
+        summary, content = parseContent(s, 1, 0)
+        self.assertEqual(summary, 'blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah')
+        self.assertEqual(content, '''\
+blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah
+blah blah blah blah blah blah blah blah blah blah blah!
+
+issue_tracker@foo.com wrote:
+> blah blah blah blahblah blahblah blahblah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah?  blah blah blah blah blah
+> blah blah blah blah blah blah blah...  blah blah blah blah.  blah blah
+> blah blah blah blah?  blah blah blah blah blah blah!  blah blah!
+>
+> -------
+> nosy: userfoo, userken
+> _________________________________________________
+> Roundup issue tracker
+> issue_tracker@foo.com
+> http://foo.com/cgi-bin/roundup.cgi/issue_tracker/''')
+
+
+    def testKeepBody(self):
+        s = '''
+blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah
+blah blah blah blah blah blah blah blah blah blah blah!
+
+issue_tracker@foo.com wrote:
+> blah blah blah blahblah blahblah blahblah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah?  blah blah blah blah blah
+> blah blah blah blah blah blah blah...  blah blah blah blah.  blah blah
+> blah blah blah blah?  blah blah blah blah blah blah!  blah blah!
+>
+> -------
+> nosy: userfoo, userken
+> _________________________________________________
+> Roundup issue tracker
+> issue_tracker@foo.com
+> http://foo.com/cgi-bin/roundup.cgi/issue_tracker/
+
+--
+blah blah blah signature
+userfoo@foo.com
+'''
+        summary, content = parseContent(s, 0, 1)
+        self.assertEqual(summary, 'blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah')
+        self.assertEqual(content, '''
+blah blah blah blah... blah blah? blah blah blah blah blah. blah blah blah
+blah blah blah blah blah blah blah blah blah blah blah!
+
+issue_tracker@foo.com wrote:
+> blah blah blah blahblah blahblah blahblah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah?  blah blah blah blah blah
+> blah blah blah blah blah blah blah...  blah blah blah blah.  blah blah
+> blah blah blah blah?  blah blah blah blah blah blah!  blah blah!
+>
+> -------
+> nosy: userfoo, userken
+> _________________________________________________
+> Roundup issue tracker
+> issue_tracker@foo.com
+> http://foo.com/cgi-bin/roundup.cgi/issue_tracker/
+
+--
+blah blah blah signature
+userfoo@foo.com
+''')
+
+
     def testSimple(self):
         s = '''testing'''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'testing')
         self.assertEqual(content, 'testing')
 
     def testParagraphs(self):
         s = '''testing\n\ntesting\n\ntesting'''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'testing')
         self.assertEqual(content, 'testing\n\ntesting\n\ntesting')
 
     def testSimpleFollowup(self):
         s = '''>hello\ntesting'''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'testing')
         self.assertEqual(content, 'testing')
 
     def testSimpleFollowupParas(self):
         s = '''>hello\ntesting\n\ntesting\n\ntesting'''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, 'testing')
         self.assertEqual(content, 'testing\n\ntesting\n\ntesting')
 
     def testEmpty(self):
         s = ''
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, '')
         self.assertEqual(content, '')
 
     def testIndentationSummary(self):
         s = '    Four space indent.\n\n    Four space indent.\nNo indent.'
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(summary, '    Four space indent.')
 
     def testIndentationContent(self):
         s = '    Four space indent.\n\n    Four space indent.\nNo indent.'
-        summary, content = parseContent(s)
+        summary, content = parseContent(s, 0, 0)
         self.assertEqual(content, s)
 
 def suite():
@@ -123,6 +214,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/01/10 06:19:20  richard
+# followup lines directly after a quoted section were being eaten.
+#
 # Revision 1.8  2001/10/28 23:22:28  richard
 # fixed bug #474749 ] Indentations lost
 #
