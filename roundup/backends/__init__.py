@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.27 2004-04-05 23:43:03 richard Exp $
+# $Id: __init__.py,v 1.27.2.1 2004-10-11 05:46:12 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
 
@@ -36,7 +36,10 @@ for backend in ['anydbm', ('mysql', 'MySQLdb'), ('bsddb', '_bsddb'),
         globals()[backend] = __import__('back_%s'%backend, globals())
         __all__.append(backend)
     except ImportError, e:
-        if not str(e).startswith('No module named %s'%backend_module):
-            raise
+        if str(e).startswith('No module named %s'%backend_module):
+            continue
+        if str(e).startswith('No module named %s'%backend):
+            continue
+        raise
 
 # vim: set filetype=python ts=4 sw=4 et si
