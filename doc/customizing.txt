@@ -1819,7 +1819,23 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
             in the standard ``strftime`` call (see the `Python Library
             Reference: time module`__)
 menu        only on Link and Multilink properties - render a form select
-            list for this property
+            list for this property. Takes a number of optional arguments
+
+            size
+               is used to limit the length of the list labels
+            height
+               is used to set the <select> tag's "size" attribute
+            showid
+               includes the item ids in the list labels
+            additional
+               lists properties which should be included in the label
+            sort_on
+                indicates the property to sort the list on as (direction,
+                property) where direction is '+' or '-'.
+
+            The remaining keyword arguments are used as conditions for
+            filtering the items in the list - they're passed as the
+            "filterspec" argument to a Class.filter() call.
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
 isset       returns True if the property has been set to a value
@@ -2479,7 +2495,7 @@ the due date, or causing automatic actions to fire if the due date passes.
     (in the heading row)
       <th tal:condition="request/show/due_date">Due Date</th>
     (in the data row)
-      <td tal:condition="request/show/priority" tal:content="i/due_date" />
+      <td tal:condition="request/show/due_date" tal:content="i/due_date" />
 
 4. add the property to the issue.search.html page::
 

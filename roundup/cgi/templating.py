@@ -1503,6 +1503,18 @@ class LinkHTMLProperty(HTMLProperty):
             sort_on=None, **conditions):
         ''' Render a form select list for this property
 
+            "size" is used to limit the length of the list labels
+            "height" is used to set the <select> tag's "size" attribute
+            "showid" includes the item ids in the list labels
+            "additional" lists properties which should be included in the
+                label
+            "sort_on" indicates the property to sort the list on as
+                (direction, property) where direction is '+' or '-'.
+            
+            The remaining keyword arguments are used as conditions for
+            filtering the items in the list - they're passed as the
+            "filterspec" argument to a Class.filter() call.
+
             If not editable, just display the value via plain().
         '''
         self.view_check()
@@ -1656,6 +1668,18 @@ class MultilinkHTMLProperty(HTMLProperty):
     def menu(self, size=None, height=None, showid=0, additional=[],
             sort_on=None, **conditions):
         ''' Render a form select list for this property
+
+            "size" is used to limit the length of the list labels
+            "height" is used to set the <select> tag's "size" attribute
+            "showid" includes the item ids in the list labels
+            "additional" lists properties which should be included in the
+                label
+            "sort_on" indicates the property to sort the list on as
+                (direction, property) where direction is '+' or '-'.
+            
+            The remaining keyword arguments are used as conditions for
+            filtering the items in the list - they're passed as the
+            "filterspec" argument to a Class.filter() call.
 
             If not editable, just display the value via plain().
         '''
