@@ -1,0 +1,30 @@
+.TH ROUNDUP-SERVER 1 "27 July 2004"
+.SH NAME
+roundup-demo \- create a roundup "demo" tracker and launch its web interface
+.SH SYNOPSIS
+\fBroundup-demo\fP [\fIbackend\fP [\fBnuke\fP]]
+.SH OPTIONS
+.TP
+\fBnuke\fP
+Create a fresh demo tracker (deleting the existing one if any). If the
+additional \fIbackend\fP argument is specified, the new demo tracker will
+use the backend named (one of "anydbm", "sqlite", "metakit", "mysql" or
+"postgresql"; subject to availability on your system).
+.TH DESCRIPTION
+This command creates a fresh demo tracker for you to experiment with. The
+email features of Roundup will be turned off (so the nosy feature won't
+send email). It does this by removing the \fInosyreaction.py\fP module
+from the demo tracker's \fIdetectors\fP directory.
+
+If you wish, you may modify the demo tracker by editing its configuration
+files and HTML templates. See the \fIcustomisation\fP manual for
+information about how to do that.
+
+Once you've fiddled with the demo tracker, you may use it as a template for
+creating your real, live tracker. Simply run the \fIroundup-admin\fP
+command to install the tracker from inside the demo tracker home directory,
+and it will be listed as an available template for installation. No data
+will be copied over.
+.SH AUTHOR
+This manpage was written by Richard Jones
+<richard@users.sourceforge.net>.
