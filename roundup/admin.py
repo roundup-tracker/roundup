@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.68.2.1 2004-06-13 00:40:55 richard Exp $
+# $Id: admin.py,v 1.68.2.2 2004-06-23 22:59:17 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -612,32 +612,15 @@ Command help:
         # handle the propname=value argument
         props = self.props_from_args(args[1:])
 
-        # if the value isn't a number, look up the linked class to get the
-        # number
+        # convert the user-input value to a value used for find()
         for propname, value in props.items():
-            num_re = re.compile('^\d+$')
-            if value == '-1':
-                props[propname] = None
-            elif not num_re.match(value):
-                # get the property
-                try:
-                    property = cl.properties[propname]
-                except KeyError:
-                    raise UsageError, _('%(classname)s has no property '
-                        '"%(propname)s"')%locals()
-
-                # make sure it's a link
-                if (not isinstance(property, hyperdb.Link) and not
-                        isinstance(property, hyperdb.Multilink)):
-                    raise UsageError, _('You may only "find" link properties')
-
-                # get the linked-to class and look up the key property
-                link_class = self.db.getclass(property.classname)
-                try:
-                    props[propname] = link_class.lookup(value)
-                except TypeError:
-                    raise UsageError, _('%(classname)s has no key property"')%{
-                        'classname': link_class.classname}
+            if ',' in value:
+                values = value.split(',')
+            else:
+                values = []
+            d = props[propname] = {}
+            for value in values:
+                d[hyperdb.rawToHyperdb(self.db, cl, None, propname, value)] = 1
 
         # now do the find 
         try:
