@@ -7,6 +7,13 @@ accordingly.
 
 .. contents::
 
+Migrating from 0.4.2 to 0.4.3
+=============================
+
+Nothing needs to be done when migrating from 0.4.2 to 0.4.3.
+
+
+
 Migrating from 0.4.1 to 0.4.2
 =============================
 
