@@ -16,12 +16,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.52 2001-12-12 21:47:45 richard Exp $
+# $Id: roundup-admin,v 1.53 2001-12-13 00:20:00 richard Exp $
 
-import sys
-if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1):
-    print 'Roundup requires python 2.1 or later.'
-    sys.exit(1)
+# python version check
+from roundup import version_check
 
 import string, os, getpass, getopt, re, UserDict
 try:
@@ -980,6 +978,12 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2001/12/12 21:47:45  richard
+#  . Message author's name appears in From: instead of roundup instance name
+#    (which still appears in the Reply-To:)
+#  . envelope-from is now set to the roundup-admin and not roundup itself so
+#    delivery reports aren't sent to roundup (thanks Patrick Ohly)
+#
 # Revision 1.51  2001/12/10 00:57:38  richard
 # From CHANGES:
 #  . Added the "display" command to the admin tool - displays a node's values

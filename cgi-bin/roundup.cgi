@@ -16,14 +16,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.21 2001-12-02 05:06:16 richard Exp $
+# $Id: roundup.cgi,v 1.22 2001-12-13 00:20:01 richard Exp $
 
 # python version check
-import sys
-if not hasattr(sys, 'version_info') or sys.version_info[:2] < (2,1):
-    print "Content-Type: text/plain\n"
-    print "Roundup requires Python 2.1 or newer."
-    sys.exit(0)
+from roundup import version_check
 
 #
 ##  Configuration
@@ -200,6 +196,20 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/12/02 05:06:16  richard
+# . We now use weakrefs in the Classes to keep the database reference, so
+#   the close() method on the database is no longer needed.
+#   I bumped the minimum python requirement up to 2.1 accordingly.
+# . #487480 ] roundup-server
+# . #487476 ] INSTALL.txt
+#
+# I also cleaned up the change message / post-edit stuff in the cgi client.
+# There's now a clearly marked "TODO: append the change note" where I believe
+# the change note should be added there. The "changes" list will obviously
+# have to be modified to be a dict of the changes, or somesuch.
+#
+# More testing needed.
+#
 # Revision 1.20  2001/11/26 22:55:56  richard
 # Feature:
 #  . Added INSTANCE_NAME to configuration - used in web and email to identify

@@ -23,6 +23,8 @@ Feature:
  . Message author's name appears in From: instead of roundup instance name
    (which still appears in the Reply-To:)
  . Added a Zope frontend for roundup.
+ . Centralised the python version check code, bumped version to 2.1.1 (really
+   needs to be 2.1.2, but that isn't released yet :)
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
