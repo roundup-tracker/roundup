@@ -89,6 +89,9 @@ def db_exists(config):
 class Database(rdbms_common.Database):
     arg = '%s'
 
+    # used by some code to switch styles of query
+    implements_intersect = 1
+
     def sql_open_connection(self):
         db = getattr(self.config, 'POSTGRESQL_DATABASE')
         try:

@@ -105,6 +105,9 @@ def db_exists(config):
 class Database(Database):
     arg = '%s'
 
+    # used by some code to switch styles of query
+    implements_intersect = 0
+
     # Backend for MySQL to use.
     # InnoDB is faster, but if you're running <4.0.16 then you'll need to
     # use BDB to pass all unit tests.

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.27.2.2 2004-10-07 06:33:57 richard Exp $
+# $Id: back_sqlite.py,v 1.27.2.3 2005-01-04 01:38:12 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -19,6 +19,10 @@ import sqlite
 class Database(rdbms_common.Database):
     # char to use for positional arguments
     arg = '%s'
+
+    # used by some code to switch styles of query
+    implements_intersect = 1
+
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'VARCHAR(255)',
         hyperdb.Date   : 'VARCHAR(30)',
