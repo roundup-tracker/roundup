@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.3 2002-01-08 05:26:32 rochecompaan Exp $
+# $Id: admin.py,v 1.4 2002-01-14 06:51:09 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -535,18 +535,18 @@ Command help:
 
             if isinstance(proptype, hyperdb.Date):
                 try:
-                    props[key] = date.Date(value)
+                    props[propname] = date.Date(value)
                 except ValueError, message:
                     raise UsageError, _('"%(value)s": %(message)s')%locals()
             elif isinstance(proptype, hyperdb.Interval):
                 try:
-                    props[key] = date.Interval(value)
+                    props[propname] = date.Interval(value)
                 except ValueError, message:
                     raise UsageError, _('"%(value)s": %(message)s')%locals()
             elif isinstance(proptype, hyperdb.Password):
-                props[key] = password.Password(value)
+                props[propname] = password.Password(value)
             elif isinstance(proptype, hyperdb.Multilink):
-                props[key] = value.split(',')
+                props[propname] = value.split(',')
 
         # check for the key property
         propname = cl.getkey()
@@ -995,6 +995,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/01/08 05:26:32  rochecompaan
+# Missing "self" in props_from_args
+#
 # Revision 1.2  2002/01/07 10:41:44  richard
 # #500140 ] AdminTool.get_class() returns nothing
 #

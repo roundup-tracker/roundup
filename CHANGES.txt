@@ -19,6 +19,7 @@ Fixed:
    switching to a ConfigParser setup easier too, I hope.
  . #502951 ] adding new properties to old database
  . #502953 ] nosy-like treatment of other multilinks
+ . #503164 ] create and passwords
 
 
 2002-01-08 - 0.4.0b1
