@@ -8,12 +8,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.18 2003-08-11 11:28:31 jlgijsbers Exp $
+# $Id: test_cgi.py,v 1.19 2003-09-07 20:37:33 jlgijsbers Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client
 from roundup import init, instance, password, hyperdb, date
+
+NEEDS_INSTANCE = 1
 
 class FileUpload:
     def __init__(self, content, filename):
@@ -65,9 +67,8 @@ class FormTestCase(unittest.TestCase):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, 'anydbm')
-        init.initialise(self.dirname, 'sekrit')
+        shutil.copytree('_empty_instance', self.dirname)
+        
         # check we can load the package
         self.instance = instance.open(self.dirname)
         # and open the database

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.50 2003-09-07 18:27:47 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.51 2003-09-07 20:37:33 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -16,6 +16,8 @@ from cStringIO import StringIO
 
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress
 from roundup import init, instance, rfc2822
+
+NEEDS_INSTANCE = 1
 
 class Message(rfc822.Message):
     """String-based Message class with equivalence test."""
@@ -77,9 +79,8 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
         # create the instance
-        init.install(self.dirname, 'templates/classic')
-        init.write_select_db(self.dirname, 'anydbm')
-        init.initialise(self.dirname, 'sekrit')
+        shutil.copytree('_empty_instance', self.dirname)
+        
         # check we can load the package
         self.instance = instance.open(self.dirname)
         # and open the database

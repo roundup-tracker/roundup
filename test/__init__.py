@@ -15,11 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.18 2002-09-10 00:19:54 richard Exp $
+# $Id: __init__.py,v 1.19 2003-09-07 20:37:33 jlgijsbers Exp $
 
-import os, tempfile, unittest, shutil
+import os, tempfile, unittest, shutil, errno
 import roundup.roundupdb
 roundup.roundupdb.SENDMAILDEBUG=os.environ['SENDMAILDEBUG']=tempfile.mktemp()
+
+from roundup import init
 
 # figure all the modules available
 dir = os.path.split(__file__)[0]
@@ -30,12 +32,36 @@ for file in os.listdir(dir):
 	test_mods[name] = __import__(file[:-3], globals(), locals(), [])
 all_tests = test_mods.keys()
 
+dirname = '_empty_instance'
+def create_empty_instance():
+    remove_empty_instance()
+    init.install(dirname, 'templates/classic')
+    init.write_select_db(dirname, 'anydbm')
+    init.initialise(dirname, 'sekrit')
+
+def remove_empty_instance():
+    try:
+        shutil.rmtree(dirname)
+    except OSError, error:
+        if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
 def go(tests=all_tests):
-    l = []
-    for name in tests:
-        l.append(test_mods[name].suite())
-    suite = unittest.TestSuite(l)
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
+    try:
+        l = []
+        needs_instance = 0
+        for name in tests:
+            mod = test_mods[name]
+            if hasattr(mod, 'NEEDS_INSTANCE'):
+                needs_instance = 1
+            l.append(test_mods[name].suite())
+
+        if needs_instance:
+            create_empty_instance()
+
+        suite = unittest.TestSuite(l)
+        runner = unittest.TextTestRunner()
+        runner.run(suite)
+    finally:
+        remove_empty_instance()
 
 # vim: set filetype=python ts=4 sw=4 et si
