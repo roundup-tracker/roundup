@@ -1,0 +1,2 @@
+The existence of this file enables the Zope product refresh option.
+Read the Zope documentation for more info about product refresh.
