@@ -13,8 +13,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: roundup_mailgw.py,v 1.15 2004-05-06 01:12:24 richard Exp $
+#
+# $Id: roundup_mailgw.py,v 1.16 2004-05-12 17:50:58 a1s Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -44,7 +44,7 @@ The roundup mail gateway may be called in one of four ways:
  . with both an instance home and a mail spool file, or
  . with both an instance home and a POP/APOP server account.
  . with both an instance home and a IMAP/IMAPS server account.
- 
+
 It also supports optional -C and -S arguments that allows you to set a
 fields for a class created by the roundup-mailgw. The default class if
 not specified is msg, but the other classes: issue, file, user can
@@ -88,12 +88,12 @@ IMAP:
  It also allows you to specify a specific mailbox other than INBOX using
  this format:
     imap username:password@server mailbox
- 
+
 IMAPS:
- Connect to an IMAP server over ssl. 
+ Connect to an IMAP server over ssl.
  This supports the same notation as IMAP.
     imaps username:password@server [mailbox]
- 
+
 ''')
     return 1
 
@@ -120,7 +120,7 @@ def main(argv):
         instance_home = args[0]
     else:
         instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
-    if not instance_home:
+    if not (instance_home and os.path.isdir(instance_home)):
         return usage(argv)
 
     # get the instance
