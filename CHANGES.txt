@@ -9,6 +9,7 @@ are given with the most recent entry first.
 - revert StringHTMLProperty to not hyperlink text by default
 - fixes to CGI form handling
 - fix unlink bug in metakit backend
+- fixed metakit searching by ID
 
 
 2003-01-10 0.5.4

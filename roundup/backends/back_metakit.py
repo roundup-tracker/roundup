@@ -858,7 +858,7 @@ class Class:
         if regexes:
             def ff(row, r=regexes):
                 for propname, regex in r.items():
-                    val = getattr(row, propname)
+                    val = str(getattr(row, propname))
                     if not regex.search(val):
                         return 0
                 return 1
