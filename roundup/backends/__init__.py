@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.26 2004-02-11 23:55:08 richard Exp $
+# $Id: __init__.py,v 1.27 2004-04-05 23:43:03 richard Exp $
 
 '''Container for the hyperdb storage backend implementations.
 
@@ -26,8 +26,8 @@ __docformat__ = 'restructuredtext'
 
 __all__ = []
 
-for backend in ['anydbm', ('mysql', 'MySQLdb'), 'bsddb', 'bsddb3', 'sqlite',
-                'metakit', ('postgresql', 'psycopg')]:
+for backend in ['anydbm', ('mysql', 'MySQLdb'), ('bsddb', '_bsddb'),
+        'bsddb3', 'sqlite', 'metakit', ('postgresql', 'psycopg')]:
     if len(backend) == 2:
         backend, backend_module = backend
     else:

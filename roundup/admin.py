@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.66 2004-04-05 06:24:06 richard Exp $
+# $Id: admin.py,v 1.67 2004-04-05 23:43:03 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1314,7 +1314,7 @@ Date format is "YYYY-MM-DD" eg:
 
     def main(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:')
+            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:v')
         except getopt.GetoptError, e:
             self.usage(str(e))
             return 1
@@ -1333,6 +1333,9 @@ Date format is "YYYY-MM-DD" eg:
         for opt, arg in opts:
             if opt == '-h':
                 self.usage()
+                return 0
+            if opt == '-v':
+                print '%s (python %s)'%(roundup_version, sys.version.split()[0])
                 return 0
             if opt == '-i':
                 self.tracker_home = arg

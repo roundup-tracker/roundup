@@ -17,12 +17,13 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.42 2004-04-05 00:54:23 richard Exp $
+$Id: roundup_server.py,v 1.43 2004-04-05 23:43:04 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
 # python version check
 from roundup import version_check
+from roundup import __version__ as roundup_version
 
 import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
 import BaseHTTPServer, socket, errno
@@ -350,6 +351,7 @@ Usage:
 roundup-server [options] [name=tracker home]*
 
 options:
+ -v: print version and exit
  -n: sets the host name
  -p: sets the port to listen on (default: %(port)s)
  -u: sets the uid to this user after listening on the port
@@ -397,9 +399,9 @@ def daemonize(pidfile):
         pidfile = open(pidfile, 'w')
         pidfile.write(str(pid))
         pidfile.close()
-        os._exit(0)         
+        os._exit(0)
 
-    os.chdir("/")         
+    os.chdir("/")
     os.umask(0)
 
     # close off sys.std(in|out|err), redirect to devnull so the file
@@ -426,7 +428,7 @@ def run(port=PORT, success_message=None):
 
     try:
         # handle the command-line args
-        options = 'n:p:u:d:l:hN'
+        options = 'n:p:u:d:l:hNv'
         if RoundupService:
             options += 'c'
 
@@ -439,6 +441,9 @@ def run(port=PORT, success_message=None):
         group = None
         for (opt, arg) in optlist:
             if opt == '-n': hostname = arg
+            elif opt == '-v':
+                print '%s (python %s)'%(roundup_version, sys.version.split()[0])
+                return
             elif opt == '-p': port = int(arg)
             elif opt == '-u': user = arg
             elif opt == '-g': group = arg

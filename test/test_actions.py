@@ -57,7 +57,7 @@ class ShowActionTestCase(ActionTestCase):
             raise self.failureException, excName
 
     def testShowAction(self):
-        self.client.db.config.TRACKER_WEB = 'BASE/'
+        self.client.base = 'BASE/'
 
         action = ShowAction(self.client)
         self.assertRaises(ValueError, action.handle)
