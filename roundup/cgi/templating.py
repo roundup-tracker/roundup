@@ -61,13 +61,21 @@ class StaticTranslationService:
     def translate(self, domain, msgid, mapping=None,
         context=None, target_language=None, default=None
     ):
-        _msg = i18n.ugettext(msgid).encode(self.OUTPUT_ENCODING)
+        _msg = self.gettext(msgid)
         #print ("TRANSLATE", msgid, _msg, mapping, context)
         _msg = TALInterpreter.interpolate(_msg, mapping)
         return _msg
 
-GlobalTranslationService.setGlobalTranslationService(
-    StaticTranslationService())
+    def gettext(self, msgid):
+        return i18n.ugettext(msgid).encode(self.OUTPUT_ENCODING)
+
+    def ngettext(self, singular, plural, number):
+        return i18n.ungettext(singular, plural, number).encode(
+            self.OUTPUT_ENCODING)
+
+translationService = StaticTranslationService()
+
+GlobalTranslationService.setGlobalTranslationService(translationService)
 
 ### templating
 
@@ -1311,6 +1319,8 @@ class DateHTMLProperty(HTMLProperty):
             anonymous=0, offset=None):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
                 value, anonymous=anonymous)
+        if self._value:
+            self._value.setTranslator(translationService)
         self._offset = offset
 
     def plain(self):
@@ -1397,6 +1407,13 @@ class DateHTMLProperty(HTMLProperty):
             self._prop, self._formname, self._value, offset=offset)
 
 class IntervalHTMLProperty(HTMLProperty):
+    def __init__(self, client, classname, nodeid, prop, name, value,
+            anonymous=0):
+        HTMLProperty.__init__(self, client, classname, nodeid, prop,
+            name, value, anonymous)
+        if self._value:
+            self._value.setTranslator(translationService)
+
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
