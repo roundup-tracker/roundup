@@ -19,8 +19,7 @@
   </head>
  <body class="body" onload="resetList();">
  <form name="frm_help" tal:attributes="action request/base"
-       tal:define="start python:int(request.form['@startwith'].value);
-                   batch python:utils.Batch(context.list(), 500, start);
+       tal:define="batch request/batch;
                    props python:request.form['properties'].value.split(',')">
 
      <div id="classhelp-controls">
