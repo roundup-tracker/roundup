@@ -40,6 +40,7 @@ Fixed:
   discarding of the message
 - mailgw can override the MAIL_DEFAULT_CLASS
 - handle Py2.3+ datetime objects as Date specs (sf bug 971300)
+- use row locking in MySQL newid() (sf bug 1034211)
 
 
 2004-07-21 0.7.6

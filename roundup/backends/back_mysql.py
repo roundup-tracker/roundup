@@ -437,8 +437,8 @@ class Database(Database):
     def newid(self, classname):
         ''' Generate a new id for the given class
         '''
-        # get the next ID
-        sql = 'select num from ids where name=%s'%self.arg
+        # get the next ID - "FOR UPDATE" will lock the row for us
+        sql = 'select num from ids where name=%s FOR UPDATE'%self.arg
         self.sql(sql, (classname, ))
         newid = int(self.cursor.fetchone()[0])
 
