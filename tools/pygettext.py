@@ -9,7 +9,7 @@ try:
     import fintl
     _ = fintl.gettext
 except ImportError:
-    def _(s): return s
+    _ = lambda s: s
 
 
 __doc__ = _("""pygettext -- Python equivalent of xgettext(1)
@@ -138,6 +138,7 @@ import os
 import sys
 import time
 import getopt
+import token
 import tokenize
 
 __version__ = '1.1'
@@ -274,7 +275,12 @@ class TokenEater:
             self.__state = self.__waiting
         elif ttype == tokenize.STRING:
             self.__data.append(safe_eval(tstring))
-        # TBD: should we warn if we seen anything else?
+        elif ttype not in [tokenize.COMMENT, token.INDENT, token.DEDENT,
+                           token.NEWLINE, tokenize.NL]:
+            # warn if we seen anything else than STRING or whitespace
+            print >>sys.stderr, _('*** %(file)s:%(lineno)s: Seen unexpected token "%(token)s"') % {
+                'token': tstring, 'file': self.__curfile, 'lineno': self.__lineno}
+            self.__state = self.__waiting
 
     def set_filename(self, filename):
         self.__curfile = filename
@@ -459,3 +465,6 @@ if __name__ == '__main__':
     main()
     # some more test strings
     _(u'a unicode string')
+    _('*** Seen unexpected token "%(token)s"' % {'token': 'test'})
+    _('more' 'than' 'one' 'string')
+
