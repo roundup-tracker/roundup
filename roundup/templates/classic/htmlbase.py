@@ -5,10 +5,16 @@
 fileDOTindex = """<!-- dollarId: file.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
 <tr>
     <property name="name">
-        <td><display call="link('name')"></td>
+        <td><display call="link('name', is_download=1)"></td>
     </property>
     <property name="type">
         <td><display call="plain('type')"></td>
+    </property>
+    <property name="creator">
+        <td><display call="plain('creator')"></td>
+    </property>
+    <property name="creation">
+        <td><display call="plain('creation')"></td>
     </property>
 </tr>
 """
