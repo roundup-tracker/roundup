@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.90 2002-05-25 07:16:24 rochecompaan Exp $
+# $Id: htmltemplate.py,v 1.91 2002-05-31 00:08:02 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -60,7 +60,7 @@ class TemplateFunctions:
         self.cl = None
         self.properties = None
 
-    def do_plain(self, property, escape=0):
+    def do_plain(self, property, escape=0, lookup=1):
         ''' display a String property directly;
 
             display a Date property in a specified time zone with an option to
@@ -68,6 +68,8 @@ class TemplateFunctions:
 
             for a Link or Multilink property, display the key strings of the
             linked nodes (or the ids if the linked class has no key property)
+            when the lookup argument is true, otherwise just return the
+            linked ids
         '''
         if not self.nodeid and self.form is None:
             return _('[Field: not called from item]')
@@ -101,19 +103,23 @@ class TemplateFunctions:
         elif isinstance(propclass, hyperdb.Interval):
             value = str(value)
         elif isinstance(propclass, hyperdb.Link):
-            linkcl = self.db.classes[propclass.classname]
-            k = linkcl.labelprop()
             if value:
-                value = linkcl.get(value, k)
+                if lookup:
+                    linkcl = self.db.classes[propclass.classname]
+                    k = linkcl.labelprop()
+                    value = linkcl.get(value, k)
             else:
                 value = _('[unselected]')
         elif isinstance(propclass, hyperdb.Multilink):
-            linkcl = self.db.classes[propclass.classname]
-            k = linkcl.labelprop()
-            labels = []
-            for v in value:
-                labels.append(linkcl.get(v, k))
-            value = ', '.join(labels)
+            if lookup:
+                linkcl = self.db.classes[propclass.classname]
+                k = linkcl.labelprop()
+                labels = []
+                for v in value:
+                    labels.append(linkcl.get(v, k))
+                value = ', '.join(labels)
+            else:
+                value = ', '.join(value)
         else:
             value = _('Plain: bad propclass "%(propclass)s"')%locals()
         if escape:
@@ -1170,6 +1176,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.90  2002/05/25 07:16:24  rochecompaan
+# Merged search_indexing-branch with HEAD
+#
 # Revision 1.89  2002/05/15 06:34:47  richard
 # forgot to fix the templating for last change
 #
