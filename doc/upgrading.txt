@@ -123,8 +123,9 @@ own details by adding the following to ``schema.py``::
 0.8.0 Use of TemplatingUtils
 ----------------------------
 
-If you used custom python functions in TemplatingUtils, they need to 
+If you used custom python functions in TemplatingUtils, they must
 be moved from interfaces.py to a new file in the ``extensions`` directory. 
+
 Each Function that should be available through TAL needs to be defined
 as a toplevel function in the newly created file. Furthermore you
 add an inititialization function, that registers the functions with the 

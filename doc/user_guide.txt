@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.29 $
+:Version: $Revision: 1.30 $
 
 .. contents::
 
@@ -169,7 +169,7 @@ The ``<value>`` may also be an interval, as described in the next section.
 Searching of "-2m; -1m" on activity field gives you issues which were
 active between period of time since 2 months up-till month ago.
 
-Other possible examples (consider local time is 2003-03-08.22:07:48)::
+Other possible examples (consider local time is 2003-03-08.22:07:48):
 
 - "from 2-12 to 4-2" means
   <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>

@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.152 $
+:Version: $Revision: 1.153 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -52,300 +52,225 @@ html/               Web interface templates, images and style sheets
 Tracker Configuration
 =====================
 
-The ``config.py`` located in your tracker home contains the basic
+The ``config.ini`` located in your tracker home contains the basic
 configuration for the web and e-mail components of roundup's interfaces.
-As the name suggests, this file is a Python module. This means that any
-valid python expression may be used in the file. Mostly though, you'll
-be setting the configuration variables to string values. Python string
-values must be quoted with either single or double quotes::
 
-   'this is a string'
-   "this is also a string - use it when the value has 'single quotes'"
-   this is not a string - it's not quoted
+The followin taken from the `Python Library Reference`__ (May 20, 2004)
+section "ConfigParser -- Configuration file parser":
 
-Python strings may use formatting that's almost identical to C string
-formatting. The ``%`` operator is used to perform the formatting, like
-so::
+ The configuration file consists of sections, led by a "[section]" header
+ and followed by "name = value" entries, with line continuations on a
+ newline with leading whitespace. Note that leading whitespace is removed
+ from values. The optional values can contain format strings which
+ refer to other values in the same section. Lines beginning with "#" or ";"
+ are ignored and may be used to provide comments. 
 
-    'roundup-admin@%s'%MAIL_DOMAIN
+ For example::
 
-this will create a string ``'roundup-admin@tracker.domain.example'`` if
-MAIL_DOMAIN is set to ``'tracker.domain.example'``.
+   [My Section]
+   foodir: %(dir)s/whatever
+   dir=frob
 
-You'll also note some values are set to::
+ would resolve the "%(dir)s" to the value of "dir" ("frob" in this case).
 
-   os.path.join(TRACKER_HOME, 'db')
-
-or similar. This creates a new string which holds the path to the
-``'db'`` directory in the TRACKER_HOME directory. This is just a
-convenience so if the TRACKER_HOME changes you don't have to edit
-multiple valoues.
+__ http://docs.python.org/lib/module-ConfigParser.html
 
 The configuration variables available are:
 
-**TRACKER_HOME** - ``os.path.split(__file__)[0]``
- The tracker home directory. The above default code will automatically
- determine the tracker home for you, so you can just leave it alone.
+Section **main**
+ database -- ``db``
+  Database directory path. The path may be either absolute or relative
+  to the directory containig this config file.
 
-**MAILHOST** - ``'localhost'``
- The SMTP mail host that roundup will use to send e-mail.
+ templates -- ``html``
+  Path to the HTML templates directory. The path may be either absolute
+  or relative to the directory containig this config file.
 
-**MAILUSER** - ``()``
- If your SMTP mail host requires a username and password for access, then
- specify them here. eg. ``MAILUSER = ('username', 'password')``
+ admin_email -- ``roundup-admin``
+  Email address that roundup will complain to if it runs into trouble.
 
-**MAILHOST_TLS** - ``'no'``
- If your SMTP mail host provides or requires TLS (Transport Layer
- Security) then set ``MAILHOST_TLS = 'yes'``
+ dispatcher_email -- ``roundup-admin``
+  The 'dispatcher' is a role that can get notified of new items to the
+  database. It is used by the ERROR_MESSAGES_TO config setting.
 
-**MAILHOST_TLS_KEYFILE** - ``''``
- If you're using TLS, you may also set MAILHOST_TLS_KEYFILE to the name of
- a PEM formatted file that contains your private key.
+ email_from_tag -- default *blank*
+  Additional text to include in the "name" part of the From: address used
+  in nosy messages. If the sending user is "Foo Bar", the From: line
+  is usually: ``"Foo Bar" <issue_tracker@tracker.example>``
+  the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
+  ``"Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>``
 
-**MAILHOST_TLS_CERTFILE** - ``''``
- If you're using TLS and have specified a MAILHOST_TLS_KEYFILE, you may
- also set MAILHOST_TLS_CERTFILE to the name of a PEM formatted certificate
- chain file.
+ new_web_user_roles -- ``User``
+  Roles that a user gets when they register with Web User Interface.
+  This is a comma-separated list of role names (e.g. ``Admin,User``).
 
-**MAIL_DOMAIN** - ``'tracker.domain.example'``
- The domain name used for email addresses.
+ new_email_user_roles -- ``User``
+  Roles that a user gets when they register with Email Gateway.
+  This is a comma-separated string of role names (e.g. ``Admin,User``).
 
-**DATABASE** - ``os.path.join(TRACKER_HOME, 'db')``
- This is the directory that the database is going to be stored in. By default
- it is in the tracker home.
+ error_messages_to -- ``user``
+  Send error message emails to the ``dispatcher``, ``user``, or ``both``?
+  The dispatcher is configured using the DISPATCHER_EMAIL setting.
+  Allowed values: ``dispatcher``, ``user``, or ``both``
 
-**TEMPLATES** - ``os.path.join(TRACKER_HOME, 'html')``
- This is the directory that the HTML templates reside in. By default they are
- in the tracker home.
+ html_version -- ``html4``
+  HTML version to generate. The templates are ``html4`` by default.
+  If you wish to make them xhtml, then you'll need to change this
+  var to ``xhtml`` too so all auto-generated HTML is compliant.
+  Allowed values: ``html4``, ``xhtml``
 
-**STATIC_FILES** - e.g. ``os.path.join(TRACKER_HOME, 'files')``
- This *optional* variable defines the directory that static files are served
- from (files with the URL ``/@@file/<filename>``). If this is not defined,
- then static files are served from the TEMPLATES directory.
+ timezone -- ``0``
+  Numeric timezone offset used when users do not choose their own
+  in their settings.
 
-**TRACKER_NAME** - ``'Roundup issue tracker'``
- A descriptive name for your roundup tracker. This is sent out in e-mails and
- appears in the heading of CGI pages.
+ instant_registration -- ``yes``
+  Register new users instantly, or require confirmation via
+  email?
+  Allowed values: ``yes``, ``no``
 
-**TRACKER_EMAIL** - ``'issue_tracker@%s'%MAIL_DOMAIN``
- The email address that e-mail sent to roundup should go to. Think of it as the
- tracker's personal e-mail address.
+Section **tracker**
+ name -- ``Roundup issue tracker``
+  A descriptive name for your roundup instance.
 
-**TRACKER_WEB** - ``'http://tracker.example/cgi-bin/roundup.cgi/bugs/'``
- The web address that the tracker is viewable at. This will be included in
- information sent to users of the tracker. The URL **must** include the
- cgi-bin part or anything else that is required to get to the home page of
- the tracker. You **must** include a trailing '/' in the URL.
+ web -- ``http://host.example/demo/``
+  The web address that the tracker is viewable at.
+  This will be included in information sent to users of the tracker.
+  The URL MUST include the cgi-bin part or anything else
+  that is required to get to the home page of the tracker.
+  You MUST include a trailing '/' in the URL.
 
-**ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
- The email address that roundup will complain to if it runs into trouble.
+ email -- ``issue_tracker``
+  Email address that mail to roundup should go to.
 
-**EMAIL_FROM_TAG** - ``''``
- Additional text to include in the "name" part of the ``From:`` address used
- in nosy messages. If the sending user is "Foo Bar", the ``From:`` line is
- usually::
+Section **rdbms**
+ Settings in this section are used by Postgresql and MySQL backends only
 
-    "Foo Bar" <issue_tracker@tracker.example>
+ name -- ``roundup``
+  Name of the database to use.
 
- The EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
+ host -- ``localhost``
+  Database server host.
 
-    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
+ port -- default *blank*
+  TCP port number of the database server. Postgresql usually resides on
+  port 5432 (if any), for MySQL default port number is 3306. Leave this
+  option empty to use backend default.
 
-**ERROR_MESSAGES_TO** - ``'user'``, ``'dispatcher'`` or ``'both'``
- Sends error messages to the dispatcher, user, or both. It will use the
- ``DISPATCHER_EMAIL`` address if set, otherwise it'll use the
- ``ADMIN_EMAIL`` address.
+ user -- ``roundup``
+  Database user name that Roundup should use.
 
-**DISPATCHER_EMAIL** - ``''``
-  The email address that Roundup will issue all error messages to. This is
-  also useful if you want to switch your 'new message' notification to
-  a central user. 
+ password -- ``roundup``
+  Database user password.
 
-**LOGGGING_CONFIG** - ``os.path.join(TRACKER_HOME, 'logging.ini')``
-  This variable activates logging of Roundup's internal messages using the
-  standard python ``logging`` module. The module is configured using the
-  indicated configuration file. See the `admin guide`_ for more detail.
+Section **logging**
+ config -- default *blank*
+  Path to configuration file for standard Python logging module. If this
+  option is set, logging configuration is loaded from specified file;
+  options 'filename' and 'level' in this section are ignored. The path may
+  be either absolute or relative to the directory containig this config file.
 
-**LOGGING_FILENAME** - ``'/path/to/log file'``
-  This variable activates logging of Roundup's internal messages using a
-  built-in minimal logging service which appends messages to the indicated
-  file. See the `admin guide`_ for more detail.
+ filename -- default *blank*
+  Log file name for minimal logging facility built into Roundup.  If no file
+  name specified, log messages are written on stderr. If above 'config'
+  option is set, this option has no effect. The path may be either absolute
+  or relative to the directory containig this config file.
 
-**LOGGING_LEVEL** - ``'DEBUG'``, ``'INFO'``, ``'WARNING'`` or ``'ERROR'``
-  This variable determines the level of messages logged by the built-in
-  logging service - messages of the level named and higher will be sent to
-  the ``LOGGING_FILENAME`` file. Not used when the ``LOGGGING_CONFIG``
-  variable is set. See the `admin guide`_ for more detail.
+ level -- ``ERROR``
+  Minimal severity level of messages written to log file. If above 'config'
+  option is set, this option has no effect.
+  Allowed values: ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``
 
-**MESSAGES_TO_AUTHOR** - ``'new'``, ``'yes'`` or``'no'``
- Send nosy messages to the author of the message?
- If 'new' is used, then the author will only be sent the message when the
- message creates a new issue. If 'yes' then the author will always be sent
- a copy of the message they wrote.
+Section **mail**
+ Outgoing email options. Used for nosy messages, password reset and
+ registration approval requests.
 
-**ADD_AUTHOR_TO_NOSY** - ``'new'``, ``'yes'`` or ``'no'``
- Does the author of a message get placed on the nosy list automatically?
- If ``'new'`` is used, then the author will only be added when a message
- creates a new issue. If ``'yes'``, then the author will be added on followups
- too. If ``'no'``, they're never added to the nosy.
+ domain -- ``localhost``
+  Domain name used for email addresses.
 
-**ADD_RECIPIENTS_TO_NOSY** - ``'new'``, ``'yes'`` or ``'no'``
- Do the recipients (To:, Cc:) of a message get placed on the nosy list?
- If ``'new'`` is used, then the recipients will only be added when a message
- creates a new issue. If ``'yes'``, then the recipients will be added on
- followups too. If ``'no'``, they're never added to the nosy.
+ host -- default *blank*
+  SMTP mail host that roundup will use to send mail
 
-**EMAIL_SIGNATURE_POSITION** - ``'top'``, ``'bottom'`` or ``'none'``
- Where to place the email signature in messages that Roundup generates.
+ username -- default *blank*
+  SMTP login name. Set this if your mail host requires authenticated access.
+  If username is not empty, password (below) MUST be set!
 
-**EMAIL_KEEP_QUOTED_TEXT** - ``'yes'`` or ``'no'``
- Keep email citations. Citations are the part of e-mail which the sender has
- quoted in their reply to previous e-mail with ``>`` or ``|`` characters at
- the start of the line.
+ password -- default *blank*
+  SMTP login password.
+  Set this if your mail host requires authenticated access.
 
-**EMAIL_LEAVE_BODY_UNCHANGED** - ``'no'``
- Preserve the email body as is. Enabiling this will cause the entire message
- body to be stored, including all citations, signatures and Outlook-quoted
- sections (ie. "Original Message" blocks). It should be either ``'yes'``
- or ``'no'``.
+ tls -- ``no``
+  If your SMTP mail host provides or requires TLS (Transport Layer Security)
+  then you may set this option to 'yes'.
+  Allowed values: ``yes``, ``no``
 
-**MAIL_DEFAULT_CLASS** - ``'issue'`` or ``''``
- Default class to use in the mailgw if one isn't supplied in email
- subjects. To disable, comment out the variable below or leave it blank.
+ tls_keyfile -- default *blank*
+  If TLS is used, you may set this option to the name of a PEM formatted
+  file that contains your private key. The path may be either absolute or
+  relative to the directory containig this config file.
 
-**HTML_VERSION** -  ``'html4'`` or ``'xhtml'``
- HTML version to generate. The templates are html4 by default. If you
- wish to make them xhtml, then you'll need to change this var to 'xhtml'
- too so all auto-generated HTML is compliant.
+ tls_certfile -- default *blank*
+  If TLS is used, you may set this option to the name of a PEM formatted
+  certificate chain file. The path may be either absolute or relative
+  to the directory containig this config file.
 
-**EMAIL_CHARSET** - ``utf-8`` (or ``iso-8859-1`` for Eudora users)
- Character set to encode email headers with. We use utf-8 by default, as
- it's the most flexible. Some mail readers (eg. Eudora) can't cope with
- that, so you might need to specify a more limited character set (eg.
- 'iso-8859-1'.
+ charset -- utf-8
+  Character set to encode email headers with. We use utf-8 by default, as
+  it's the most flexible. Some mail readers (eg. Eudora) can't cope with
+  that, so you might need to specify a more limited character set
+  (eg. iso-8859-1).
 
-**DEFAULT_TIMEZONE** - ``0``
- Numeric hour timezone offest to be used when displaying local times.
- The default timezone is used when users do not choose their own in
- their settings.
+ debug -- default *blank*
+  Setting this option makes Roundup to write all outgoing email messages
+  to this file *instead* of sending them. This option has the same effect
+  as environment variable SENDMAILDEBUG. Environment variable takes
+  precedence. The path may be either absolute or relative to the directory
+  containig this config file.
 
-The default config.py is given below - as you
-can see, the MAIL_DOMAIN must be edited before any interaction with the
-tracker is attempted.::
+Section **mailgw**
+ Roundup Mail Gateway options
 
-    # roundup home is this package's directory
-    TRACKER_HOME=os.path.split(__file__)[0]
+ keep_quoted_text -- ``yes``
+  Keep email citations when accepting messages. Setting this to ``no`` strips
+  out "quoted" text from the message. Signatures are also stripped.
+  Allowed values: ``yes``, ``no``
 
-    # The SMTP mail host that roundup will use to send mail
-    MAILHOST = 'localhost'
+ leave_body_unchanged -- ``no``
+  Preserve the email body as is - that is, keep the citations *and*
+  signatures.
+  Allowed values: ``yes``, ``no``
 
-    # The domain name used for email addresses.
-    MAIL_DOMAIN = 'your.tracker.email.domain.example'
+ default_class -- ``issue``
+  Default class to use in the mailgw if one isn't supplied in email subjects.
+  To disable, leave the value blank.
 
-    # This is the directory that the database is going to be stored in
-    DATABASE = os.path.join(TRACKER_HOME, 'db')
+Section **nosy**
+ Nosy messages sending
 
-    # This is the directory that the HTML templates reside in
-    TEMPLATES = os.path.join(TRACKER_HOME, 'html')
+ messages_to_author -- ``no``
+  Send nosy messages to the author of the message.
+  Allowed values: ``yes``, ``no``, ``new``
 
-    # Optional: the directory that static files are served from (files with
-    # the URL /@@file/<filename>). If this is not defined, then static files
-    # are served from the TEMPLATES directory.
-    # STATIC_FILES = os.path.join(TRACKER_HOME, 'files')
+ signature_position -- ``bottom``
+  Where to place the email signature.
+  Allowed values: ``top``, ``bottom``, ``none``
 
-    # A descriptive name for your roundup tracker
-    TRACKER_NAME = 'Roundup issue tracker'
+ add_author -- ``new``
+  Does the author of a message get placed on the nosy list automatically?
+  If ``new`` is used, then the author will only be added when a message
+  creates a new issue. If ``yes``, then the author will be added on
+  followups too. If ``no``, they're never added to the nosy.
+  Allowed values: ``yes``, ``no``, ``new``
+  
+ add_recipients -- ``new``
+  Do the recipients (``To:``, ``Cc:``) of a message get placed on the nosy
+  list?  If ``new`` is used, then the recipients will only be added when a
+  message creates a new issue. If ``yes``, then the recipients will be added
+  on followups too. If ``no``, they're never added to the nosy.
+  Allowed values: ``yes``, ``no``, ``new``
 
-    # The email address that mail to roundup should go to
-    TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
+You may generate a new default config file using the ``roundup-admin
+genconfig`` command.
 
-    # The web address that the tracker is viewable at. This will be
-    # included in information sent to users of the tracker. The URL MUST
-    # include the cgi-bin part or anything else that is required to get
-    # to the home page of the tracker. You MUST include a trailing '/'
-    # in the URL.
-    TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
-
-    # The email address that roundup will complain to if it runs into
-    # trouble
-    ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-
-    # These variables define where to log Roundup's internal messages to.
-    # You have two choices - either using the standard Python logging module
-    # or a minimal logging facility built into Roundup. The former is activated
-    # when you provide a LOGGING_CONFIG variable below which contains the
-    # configuration of the logging module. The latter is activated when you
-    # provide the LOGGING_FILENAME and optionally LOGGING_LEVEL variables. If
-    # none of these variables are defined then only errors will be logged, and
-    # they will go to stderr. See the Admin Guide for more detail.
-    # LOGGGING_CONFIG = os.path.join(TRACKER_HOME, 'logging.ini')
-    # or,
-    # LOGGING_FILENAME = '/path/to/log file'
-    # LOGGING_LEVEL = 'INFO'   # one of 'DEBUG', 'INFO', 'WARNING', 'ERROR'
-
-    # Additional text to include in the "name" part of the From: address
-    # used in nosy messages. If the sending user is "Foo Bar", the From:
-    # line is usually: "Foo Bar" <issue_tracker@tracker.example>
-    # the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
-    #    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
-    EMAIL_FROM_TAG = ""
-
-    # Send nosy messages to the author of the message
-    MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
-
-    # Does the author of a message get placed on the nosy list
-    # automatically? If 'new' is used, then the author will only be
-    # added when a message creates a new issue. If 'yes', then the
-    # author will be added on followups too. If 'no', they're never
-    # added to the nosy.
-    ADD_AUTHOR_TO_NOSY = 'new'          # one of 'yes', 'no', 'new'
-
-    # Do the recipients (To:, Cc:) of a message get placed on the nosy
-    # list? If 'new' is used, then the recipients will only be added
-    # when a message creates a new issue. If 'yes', then the recipients
-    # will be added on followups too. If 'no', they're never added to
-    # the nosy.
-    ADD_RECIPIENTS_TO_NOSY = 'new'      # either 'yes', 'no', 'new'
-
-    # Where to place the email signature
-    EMAIL_SIGNATURE_POSITION = 'bottom' # one of 'top', 'bottom', 'none'
-
-    # Keep email citations
-    EMAIL_KEEP_QUOTED_TEXT = 'no'       # either 'yes' or 'no'
-
-    # Preserve the email body as is
-    EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
-
-    # Default class to use in the mailgw if one isn't supplied in email
-    # subjects. To disable, comment out the variable below or leave it
-    # blank. Examples:
-    MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
-    #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
-
-    # HTML version to generate. The templates are html4 by default. If you
-    # wish to make them xhtml, then you'll need to change this var to 'xhtml'
-    # too so all auto-generated HTML is compliant.
-    HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
-
-    # Character set to encode email headers with. We use utf-8 by default, as
-    # it's the most flexible. Some mail readers (eg. Eudora) can't cope with
-    # that, so you might need to specify a more limited character set (eg.
-    # 'iso-8859-1'.
-    EMAIL_CHARSET = 'utf-8'
-    #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
-
-    # You may specify a different default timezone, for use when users do not
-    # choose their own in their settings.
-    DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
-
-    # 
-    # SECURITY DEFINITIONS
-    #
-    # define the Roles that a user gets when they register with the
-    # tracker these are a comma-separated string of role names (e.g.
-    # 'Admin,User')
-    NEW_WEB_USER_ROLES = 'User'
-    NEW_EMAIL_USER_ROLES = 'User'
 
 Tracker Schema
 ==============
@@ -957,6 +882,7 @@ from ``roundup.cgi.client`` - which handles the rest of the access
 through its ``main()`` method. This means that you can do pretty much
 anything you want as a web interface to your tracker.
 
+
 Repercussions of changing the tracker schema
 ---------------------------------------------
 
@@ -967,6 +893,7 @@ the web interface knows about it:
    have properties added or removed,
 2. The "page" template may require links to be changed, as might the
    "home" page's content arguments.
+
 
 How requests are processed
 --------------------------
@@ -993,6 +920,7 @@ In some situations, exceptions occur:
 - NotFound       (raised wherever it needs to be)
     this exception percolates up to the CGI interface that called the
     client
+
 
 Determining web context
 -----------------------
@@ -1283,7 +1211,6 @@ actual content, otherwise we remove them from all_props before
 returning.
 
 
-
 Default templates
 -----------------
 
@@ -1447,6 +1374,7 @@ illegal tag placement to effect the repeat).
 .. _Template Attribute Language:
    http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TAL%20Specification%201.4
 
+
 Templating Expressions
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1512,6 +1440,7 @@ Modifiers:
 .. _TALES:
 .. _Template Attribute Language Expression Syntax:
    http://dev.zope.org/Wikis/DevSite/Projects/ZPT/TALES%20Specification%201.3
+
 
 Template Macros
 ~~~~~~~~~~~~~~~
@@ -2128,6 +2057,7 @@ An example of batching::
 ... which will produce a table with four columns containing the items of
 the "keyword" class (well, their "name" anyway).
 
+
 Displaying Properties
 ---------------------
 
@@ -2180,6 +2110,7 @@ ascending order; and within groups, sorted by activity, arranged in
 descending order. The filter section shows filters for the "status" and
 "topic" properties, and the table includes columns for the "title",
 "status", and "fixer" properties.
+
 
 Searching Views
 ---------------
@@ -2392,6 +2323,7 @@ templating through the "journal" method of the item*::
 
 *where each journal entry is an HTMLJournalEntry.*
 
+
 Defining new web actions
 ------------------------
 
@@ -2472,6 +2404,45 @@ override the content type indicated to the user by calling ``setHeader``::
 This example indicates that the value sent back to the user is actually
 comma-separated value content (eg. something to be loaded into a
 spreadsheet or database).
+
+
+8-bit character set support in Web interface
+--------------------------------------------
+
+The web interface uses UTF-8 default. It may be overridden in both forms
+and a browser cookie.
+
+- In forms, use the ``@charset`` variable.
+- To use the cookie override, have the ``roundup_charset`` cookie set.
+
+In both cases, the value is a valid charset name (eg. ``utf-8`` or
+``kio8-r``).
+
+Inside Roundup, all strings are stored and processed in utf-8.
+Unfortunately, some older browsers do not work properly with
+utf8-encoded pages (e.g. Netscape Navigator 4 displays wrong
+characters in form fields).  This version allows to change
+the character set for http transfers.  To do so, you may add
+the following code to your ``page.html`` template::
+
+ <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
+  <a tal:attributes="href python:request.indexargs_href(uri,
+   {'@charset':'utf-8'})">utf-8</a>
+  <a tal:attributes="href python:request.indexargs_href(uri,
+   {'@charset':'koi8-r'})">koi8-r</a>
+ </tal:block>
+
+(substitute ``koi8-r`` with appropriate charset for your language).
+Charset preference is kept in the browser cookie ``roundup_charset``.
+
+Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
+should be changed to include actual character set name::
+
+ <meta http-equiv="Content-Type"
+  tal:attributes="content string:text/html;; charset=${request/client/charset}"
+ />
+
+The charset is also sent in the http header.
 
 
 Examples
@@ -2962,8 +2933,6 @@ be able to give a summary of the total time spent on a particular issue.
    perform such calculations. We do this by adding a method to the
    TemplatingUtils class in our tracker ``interfaces.py`` module::
 
-   XXX update this example for TemplatingUtils -> extensions
-
     class TemplatingUtils:
         ''' Methods implemented on this class will be available to HTML
             templates through the 'utils' variable.
@@ -2976,6 +2945,8 @@ be able to give a summary of the total time spent on a particular issue.
             for time in times:
                 total += time.period._value
             return total
+
+   XXX update this example for TemplatingUtils -> extensions
 
    Replace the ``pass`` line if one appears in your TemplatingUtils
    class. As indicated in the docstrings, we will be able to access the
