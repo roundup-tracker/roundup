@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.16 $
+:Version: $Revision: 1.17 $
 
 .. contents::
 
@@ -32,15 +32,15 @@ in server behind apache and link it into your web tree
 How do I put Roundup behind Apache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We have a project (foo) running on ``foohost.com:8888``.
-We want ``http://foohost.com/FooIssues`` to use the roundup server, so we 
-set that up on port 8888 on ``foohost.com`` with the ``config.py`` line::
+We have a project (foo) running on ``tracker.example:8080``.
+We want ``http://tracker.example/issues`` to use the roundup server, so we 
+set that up on port 8080 on ``tracker.example`` with the ``config.py`` line::
 
-  TRACKER_WEB = 'http://foohost.com/FooIssues/'
+  TRACKER_WEB = 'http://tracker.example/issues/'
 
 We have a "foo_issues" tracker and we run the server with::
 
-  roundup-server -p 8888 foo_issues=/home/roundup/trackers/foo_issues 
+  roundup-server -p 8080 issues=/home/roundup/trackers/issues 
 
 Then, on the Apache machine (eg. redhat 7.3 with apache 1.3), in
 ``/etc/httpd/conf/httpd.conf`` uncomment::
@@ -51,29 +51,26 @@ and::
 
   AddModule mod_proxy.c
 
-Then add::
+Then add
 
   # roundup stuff (added manually)
   <IfModule mod_proxy.c>
-
-  RewriteEngine on
-  
-  # General Roundup
-  RewriteRule ^/Roundup$  Roundup/    [R]
-  RewriteRule ^/Roundup/(.*)$ http://foohost.com:8888/$1   [P,L]
-  
-  # Handle Foo Issues
-  RewriteRule ^/FooIssues$  FooIssues/    [R]
-  RewriteRule ^/FooIssues/(.*)$ http://foohost.com:8888/foo_issues/$1 [P,L]
-  
+  # proxy through one tracker
+  ProxyPass /issue/ http://tracker.example:8080/issues/
+  # proxy through all tracker(*)
+  #ProxyPass /roundup/ http://tracker.example:8080/
   </IfModule>
 
 Then restart Apache. Now Apache will proxy the request on to the
 roundup-server.
 
-You need to add the last 3 RewriteRule lines for each tracker that you have.
+Note that if you're proxying multiple trackers, you'll need to use the
+second ProxyPass rule described above. It will mean that your TRACKER_WEB
+will change to::
 
-You can now firewall off port 8888 from the rest of the world.
+  TRACKER_WEB = 'http://tracker.example/roundup/issues/'
+
+Once you're done, you can firewall off port 8080 from the rest of the world.
 
 
 Roundup runs very slowly on my XP machine when accessed from the Internet
