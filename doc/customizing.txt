@@ -2963,9 +2963,9 @@ need to override the standard ``verifyPassword`` method defined in
             return 0
 
     class Client(client.Client):
-        actions = client.Client.actions + (
-            ('login', ExternalPasswordLoginAction)
-        )
+        actions = (
+            ('login', ExternalPasswordLoginAction),
+        ) + client.Client.actions
 
 What this does is look through the file, line by line, looking for a
 name that matches.
