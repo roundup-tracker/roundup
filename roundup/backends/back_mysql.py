@@ -466,7 +466,7 @@ class Database(Database):
         ''' Generate a new id for the given class
         '''
         # get the next ID
-        sql = 'select num from ids where name=%s'%self.arg
+        sql = 'select num from ids where name=%s FOR UPDATE'%self.arg
         if __debug__:
             print >>hyperdb.DEBUG, 'newid', (self, sql, classname)
         self.cursor.execute(sql, (classname, ))
