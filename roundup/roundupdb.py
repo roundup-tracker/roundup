@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.81 2003-02-17 06:45:38 richard Exp $
+# $Id: roundupdb.py,v 1.82 2003-02-24 05:16:57 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -130,9 +130,16 @@ class IssueClass:
 
         # possibly send the message to the author, as long as they aren't
         # anonymous
-        if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' and
-                users.get(authid, 'username') != 'anonymous'):
-            sendto.append(authid)
+        if (users.get(authid, 'username') != 'anonymous' and
+                not r.has_key(authid)):
+            if self.db.config.MESSAGES_TO_AUTHOR == 'yes':
+                # always CC the author of the message
+                sendto.append(authid)
+                recipients.append(authid)
+            elif self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues:
+                # only CC the author if the issue is new
+                sendto.append(authid)
+                recipients.append(authid)
         r[authid] = 1
 
         # now deal with cc people.
