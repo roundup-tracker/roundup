@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.32 2001-10-16 03:36:21 richard Exp $
+# $Id: cgi_client.py,v 1.33 2001-10-17 00:18:41 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -513,10 +513,7 @@ class Client:
         user = base64.encodestring('%s:%s'%(self.user, password))[:-1]
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
-        cookie = Cookie.SmartCookie()
-        cookie['roundup_user'] = user
-        cookie['roundup_user']['path'] = path
-        self.header({'Set-Cookie': str(cookie)})
+        self.header({'Set-Cookie': 'roundup_user=%s; Path=%s;'%(user, path)})
         return self.index()
 
     def make_user_anonymous(self):
@@ -532,12 +529,9 @@ class Client:
         # construct the logout cookie
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
-        cookie = Cookie.SmartCookie()
-        cookie['roundup_user'] = 'deleted'
-        cookie['roundup_user']['path'] = path
-        cookie['roundup_user']['expires'] = 0
-        cookie['roundup_user']['max-age'] = 0
-        self.header({'Set-Cookie': str(cookie)})
+        now = Cookie._getdate()
+        self.header({'Set-Cookie':
+            'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
         return self.index()
 
     def newuser_action(self, message=None):
@@ -555,10 +549,7 @@ class Client:
         user = base64.encodestring('%s:%s'%(self.user, password))[:-1]
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME'],
             ''))
-        cookie = Cookie.SmartCookie()
-        cookie['roundup_user'] = user
-        cookie['roundup_user']['path'] = path
-        self.header({'Set-Cookie': str(cookie)})
+        self.header({'Set-Cookie': 'roundup_user=%s; Path=%s;'%(user, path)})
         return self.index()
 
     def main(self, dre=re.compile(r'([^\d]+)(\d+)'),
@@ -780,6 +771,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2001/10/16 03:36:21  richard
+# CGI interface wasn't handling checkboxes at all.
+#
 # Revision 1.31  2001/10/14 10:55:00  richard
 # Handle empty strings in HTML template Link function
 #
