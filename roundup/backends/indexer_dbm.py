@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.2 2004-11-05 05:10:07 richard Exp $
+#$Id: indexer_dbm.py,v 1.3 2005-01-04 16:48:46 jlgijsbers Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -23,6 +23,7 @@ __docformat__ = 'restructuredtext'
 
 import os, shutil, re, mimetypes, marshal, zlib, errno
 from roundup.hyperdb import Link, Multilink
+from roundup.backends.indexer_common import Indexer
 
 stopwords = [
 "A", "AND", "ARE", "AS", "AT", "BE", "BUT", "BY",
@@ -36,7 +37,7 @@ for word in stopwords:
     is_stopword[word] = None
 is_stopword = is_stopword.has_key
 
-class Indexer:
+class Indexer(Indexer):
     '''Indexes information from roundup's hyperdb to allow efficient
     searching.
 
@@ -150,70 +151,6 @@ class Indexer:
         # than 3 characters since those short words appear all over the
         # place
         return re.findall(r'\b\w{2,25}\b', text)
-
-    def search(self, search_terms, klass, ignore={},
-            dre=re.compile(r'([^\d]+)(\d+)')):
-        '''Display search results looking for [search, terms] associated
-        with the hyperdb Class "klass". Ignore hits on {class: property}.
-
-        "dre" is a helper, not an argument.
-        '''
-        # do the index lookup
-        hits = self.find(search_terms)
-        if not hits:
-            return {}
-
-        designator_propname = {}
-        for nm, propclass in klass.getprops().items():
-            if isinstance(propclass, Link) or isinstance(propclass, Multilink):
-                designator_propname[propclass.classname] = nm
-
-        # build a dictionary of nodes and their associated messages
-        # and files
-        nodeids = {}      # this is the answer
-        propspec = {}     # used to do the klass.find
-        for propname in designator_propname.values():
-            propspec[propname] = {}   # used as a set (value doesn't matter)
-        for classname, nodeid, property in hits.values():
-            # skip this result if we don't care about this class/property
-            if ignore.has_key((classname, property)):
-                continue
-
-            # if it's a property on klass, it's easy
-            if classname == klass.classname:
-                if not nodeids.has_key(nodeid):
-                    nodeids[nodeid] = {}
-                continue
-
-            # make sure the class is a linked one, otherwise ignore
-            if not designator_propname.has_key(classname):
-                continue
-
-            # it's a linked class - set up to do the klass.find
-            linkprop = designator_propname[classname]   # eg, msg -> messages
-            propspec[linkprop][nodeid] = 1
-
-        # retain only the meaningful entries
-        for propname, idset in propspec.items():
-            if not idset:
-                del propspec[propname]
-        
-        # klass.find tells me the klass nodeids the linked nodes relate to
-        for resid in klass.find(**propspec):
-            resid = str(resid)
-            if not nodeids.has_key(id):
-                nodeids[resid] = {}
-            node_dict = nodeids[resid]
-            # now figure out where it came from
-            for linkprop in propspec.keys():
-                for nodeid in klass.get(resid, linkprop):
-                    if propspec[linkprop].has_key(nodeid):
-                        # OK, this node[propname] has a winner
-                        if not node_dict.has_key(linkprop):
-                            node_dict[linkprop] = [nodeid]
-                        else:
-                            node_dict[linkprop].append(nodeid)
-        return nodeids
 
     # we override this to ignore not 2 < word < 25 and also to fix a bug -
     # the (fail) case.

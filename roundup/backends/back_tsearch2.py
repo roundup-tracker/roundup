@@ -9,6 +9,7 @@ from roundup.support import ensureParentsExist
 from roundup.backends import back_postgresql, tsearch2_setup, indexer_rdbms
 from roundup.backends.back_postgresql import db_create, db_nuke, db_command
 from roundup.backends.back_postgresql import pg_command, db_exists, Class, IssueClass, FileClass
+from roundup.backends.indexer_common import _isLink, Indexer
 
 # XXX: Should probably be on the Class class.
 def _indexedProps(spec):
@@ -23,10 +24,6 @@ def _getQueryDict(spec):
     query_dict['tablename'] = "_%(classname)s" % query_dict
     query_dict['triggername'] = "%(tablename)s_tsvectorupdate" % query_dict
     return query_dict
-
-def _isLink(propclass):
-    return (isinstance(propclass, hyperdb.Link) or
-            isinstance(propclass, hyperdb.Multilink))
 
 class Database(back_postgresql.Database):
     def __init__(self, config, journaltag=None):
@@ -86,86 +83,16 @@ class Database(back_postgresql.Database):
         cols.append(('idxFTI', 'tsvector'))
         return cols, mls
         
-class Indexer:
+class Indexer(Indexer):
     def __init__(self, db):
         self.db = db
 
-    def force_reindex(self):
-        pass
-        
+    # This indexer never needs to reindex.
     def should_reindex(self):
-        pass
+        return False
 
-    def save_index(self):
-        pass
-
-    def add_text(self, identifier, text, mime_type=None):
-        pass
-
-    def close(self):
-        pass
-    
-    def search(self, search_terms, klass, ignore={},
-               dre=re.compile(r'([^\d]+)(\d+)')):
-        '''Display search results looking for [search, terms] associated
-        with the hyperdb Class "klass". Ignore hits on {class: property}.
-
-        "dre" is a helper, not an argument.
-        '''
-        # do the index lookup
-        hits = self.find(search_terms, klass)
-        if not hits:
-            return {}
-
-        designator_propname = {}
-        for nm, propclass in klass.getprops().items():
-            if (isinstance(propclass, hyperdb.Link)
-                or isinstance(propclass, hyperdb.Multilink)):
-                designator_propname[propclass.classname] = nm
-
-        # build a dictionary of nodes and their associated messages
-        # and files
-        nodeids = {}      # this is the answer
-        propspec = {}     # used to do the klass.find
-        for propname in designator_propname.values():
-            propspec[propname] = {}   # used as a set (value doesn't matter)
-
-        for classname, nodeid in hits:
-            # if it's a property on klass, it's easy
-            if classname == klass.classname:
-                if not nodeids.has_key(nodeid):
-                    nodeids[nodeid] = {}
-                continue
-
-            # make sure the class is a linked one, otherwise ignore
-            if not designator_propname.has_key(classname):
-                continue
-
-            # it's a linked class - set up to do the klass.find
-            linkprop = designator_propname[classname]   # eg, msg -> messages
-            propspec[linkprop][nodeid] = 1
-
-        # retain only the meaningful entries
-        for propname, idset in propspec.items():
-            if not idset:
-                del propspec[propname]
-        
-        # klass.find tells me the klass nodeids the linked nodes relate to
-        for resid in klass.find(**propspec):
-            resid = str(resid)
-            if not nodeids.has_key(id):
-                nodeids[resid] = {}
-            node_dict = nodeids[resid]
-            # now figure out where it came from
-            for linkprop in propspec.keys():
-                for nodeid in klass.get(resid, linkprop):
-                    if propspec[linkprop].has_key(nodeid):
-                        # OK, this node[propname] has a winner
-                        if not node_dict.has_key(linkprop):
-                            node_dict[linkprop] = [nodeid]
-                        else:
-                            node_dict[linkprop].append(nodeid)
-        return nodeids
+    def getHits(self, search_terms, klass):
+        return self.find(search_terms, klass)    
     
     def find(self, search_terms, klass):
         if not search_terms:
@@ -178,7 +105,7 @@ class Indexer:
             if _isLink(propclass):
                 nodeids.extend(self.tsearchQuery(propclass.classname, search_terms))
 
-        return nodeids
+        return dict(enumerate(nodeids))
 
     def tsearchQuery(self, classname, search_terms):
         query = """SELECT id FROM _%(classname)s
@@ -196,8 +123,25 @@ class Indexer:
         if 'type' in klass.getprops():
             nodeids = [nodeid for nodeid in nodeids
                        if klass.get(nodeid, 'type') == 'text/plain']
-            
-        return [(classname, nodeid) for nodeid in nodeids]
+
+        # XXX: We haven't implemented property-level search, so I'm just faking
+        # it here with a property named 'XXX'. We still need to fix the other
+        # backends and indexer_common.Indexer.search to only want to unpack two
+        # values.
+        return [(classname, nodeid, 'XXX') for nodeid in nodeids]
+
+    # These only exist to satisfy the interface that's expected from indexers.
+    def force_reindex(self):
+        pass
+    
+    def save_index(self):
+        pass
+
+    def add_text(self, identifier, text, mime_type=None):
+        pass
+
+    def close(self):
+        pass
 
 class FileClass(hyperdb.FileClass, Class):
     '''This class defines a large chunk of data. To support this, it has a
