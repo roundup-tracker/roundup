@@ -1,5 +1,5 @@
 =================================================
-SC-Track Roundup 0.5.8 - an issue tracking system
+SC-Track Roundup 0.5.9 - an issue tracking system
 =================================================
 
 This is a bugfix release for version 0.5.x - if you're upgrading from before
@@ -14,8 +14,13 @@ sqlite backend are encouraged to upgrade sqlite to version 2.7.3. Python
 
 This release has:
 
-- a couple of bug fixes
-- a couple of major speed-ups for web users
+- backported XSS message cleaning fix (sf bug 757128)
+- only clean sessions once per hour (backport from HEAD)
+- remember the session db type (much faster session db opening)
+- backported last-modified and if-modified-since header support for static
+  files (ie. style.css etc.) from HEAD
+- changed rdbms_common to fix sql backends under Py2.3
+- don't open the database in cgi if it's not necessary
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
