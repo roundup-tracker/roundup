@@ -1804,9 +1804,13 @@ class ShowDict:
     ''' A convenience access to the :columns index parameters
     '''
     def __init__(self, columns):
-        self.columns = {}
-        for col in columns:
-            self.columns[col] = 1
+        if columns:
+            self.columns = {}
+            for col in columns:
+                self.columns[col] = 1
+        else:
+            self.__getitem__ = lambda name: 1
+
     def __getitem__(self, name):
         return self.columns.has_key(name)
 
