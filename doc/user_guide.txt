@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.10 $
+:Version: $Revision: 1.11 $
 
 .. contents::
 
@@ -186,13 +186,13 @@ For example,
 
    Subject: Re: [issue2] we're out of widgets [nosy=+richard]
 
-- setting the nosy list to just you::
+- setting the nosy list to just you and cliff::
 
-   Subject: Re: [issue2] we're out of widgets [nosy=richard]
+   Subject: Re: [issue2] we're out of widgets [nosy=richard,cliff]
 
-- removing yourself from a nosy list::
+- removing yourself from a nosy list and setting the priority::
 
-   Subject: Re: [issue2] we're out of widgets [nosy=-richard]
+   Subject: Re: [issue2] we're out of widgets [nosy=-richard;priority=bug]
 
 In all cases, the message relates to issue 2. The ``Re:`` prefix is stripped
 off.

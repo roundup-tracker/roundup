@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.31 $
+:Version: $Revision: 1.32 $
 
 .. contents::
 
@@ -79,7 +79,8 @@ Basic Installation Steps
 ------------------------
 
 1. To install the Roundup support code into your Python tree and
-   Roundup scripts into /usr/local/bin::
+   Roundup scripts into /usr/local/bin. You need to have write permissions
+   for these locations, eg. being root on unix::
 
        python setup.py install
 
@@ -89,6 +90,11 @@ Basic Installation Steps
    ``/opt/roundup/bin``::
 
        python setup.py install --install-scripts=/opt/roundup/bin
+
+   You can also use the ``--prefix`` option to use a completely different
+   base directory, if you do not want to use administrator rights. If you
+   choose to do this, take note of the message at the end of installation
+   and modify the python path accordingly.
 
 2. To create a Roundup tracker (necessary to do before you can
    use the software in any real fashion):
