@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# $Id: roundup-admin,v 1.1 2001-07-23 03:46:48 richard Exp $
+# $Id: roundup-admin,v 1.2 2001-07-23 08:20:44 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -254,6 +254,16 @@ def main():
             classname, nodeid = roundupdb.splitDesignator(designator)
             db.getclass(classname).retire(nodeid)
 
+    elif command == 'freshen':
+        n, db = determineLogin(instance, argv, n)
+        for classname, cl in db.classes.items():
+            properties = cl.properties.keys()
+            for nodeid in cl.list():
+                node = {}
+                for name in properties:
+                    node[name] = cl.get(nodeid, name)
+                db.setnode(classname, nodeid, node)
+
     else:
         print "Unknown command '%s'"%command
         usage()
@@ -267,6 +277,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/23 03:46:48  richard
+# moving the bin files to facilitate out-of-the-boxness
+#
 # Revision 1.1  2001/07/22 11:15:45  richard
 # More Grande Splite stuff
 #

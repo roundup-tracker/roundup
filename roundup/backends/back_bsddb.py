@@ -1,8 +1,6 @@
-#$Id: back_bsddb.py,v 1.2 2001-07-23 07:56:05 richard Exp $
+#$Id: back_bsddb.py,v 1.3 2001-07-23 08:20:44 richard Exp $
 
 import bsddb, os, marshal
-# handle the older cPickle'd data
-import cPickle
 from roundup import hyperdb, date
 
 #
@@ -77,14 +75,17 @@ class Database(hyperdb.Database):
         ''' add the specified node to its class's db
         '''
         db = self.getclassdb(classname, 'c')
+
         # convert the instance data to builtin types
         properties = self.classes[classname].properties
-        for key in res.keys():
+        for key in properties.keys():
             if properties[key].isDateType:
-                res[key] = res[key].get_tuple()
+                node[key] = node[key].get_tuple()
             elif properties[key].isIntervalType:
-                res[key] = res[key].get_tuple()
-        db[nodeid] = marshal.dumps(node, 1)
+                node[key] = node[key].get_tuple()
+
+        # now save the marshalled data
+        db[nodeid] = marshal.dumps(node)
         db.close()
     setnode = addnode
 
@@ -94,20 +95,15 @@ class Database(hyperdb.Database):
         db = cldb or self.getclassdb(classname)
         if not db.has_key(nodeid):
             raise IndexError, nodeid
-        try:
-            res = marshal.loads(db[nodeid])
-            # convert the marshalled data to instances
-            properties = self.classes[classname].properties
-            for key in res.keys():
-                if properties[key].isDateType:
-                    res[key] = date.Date(res[key])
-                elif properties[key].isIntervalType:
-                    res[key] = date.Interval(res[key])
-        except ValueError, message:
-            if str(message) != 'bad marshal data':
-                raise
-            # handle the older cPickle'd data
-            res = cPickle.loads(db[nodeid])
+        res = marshal.loads(db[nodeid])
+
+        # convert the marshalled data to instances
+        properties = self.classes[classname].properties
+        for key in res.keys():
+            if properties[key].isDateType:
+                res[key] = date.Date(res[key])
+            elif properties[key].isIntervalType:
+                res[key] = date.Interval(res[key])
 
         if not cldb: db.close()
         return res
@@ -143,7 +139,7 @@ class Database(hyperdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        entry = (nodeid, date.Date().journal_tuple(), self.journaltag, action,
+        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
             params)
         db = bsddb.btopen(os.path.join(self.dir, 'journals.%s'%classname), 'c')
         if db.has_key(nodeid):
@@ -170,7 +166,7 @@ class Database(hyperdb.Database):
         res = []
         for entry in journal:
             (nodeid, date_stamp, self.journaltag, action, params) = entry
-            date_obj = date.Date(set=date_stamp)
+            date_obj = date.Date(date_stamp)
             res.append((nodeid, date_obj, self.journaltag, action, params))
         db.close()
         return res
@@ -201,6 +197,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.2  2001/07/23 07:56:05  richard
+#Storing only marshallable data in the db - no nasty pickled class references.
+#
 #Revision 1.1  2001/07/23 07:22:13  richard
 #*sigh* some databases have _foo.so as their underlying implementation.
 #This time for sure, Rocky.

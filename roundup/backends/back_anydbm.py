@@ -1,6 +1,6 @@
-#$Id: back_anydbm.py,v 1.1 2001-07-23 07:22:13 richard Exp $
+#$Id: back_anydbm.py,v 1.2 2001-07-23 08:20:44 richard Exp $
 
-import anydbm, os, cPickle
+import anydbm, os, marshal
 from roundup import hyperdb, date
 
 #
@@ -68,11 +68,24 @@ class Database(hyperdb.Database):
         path = os.path.join(os.getcwd(), self.dir, 'nodes.%s'%classname)
         return anydbm.open(path, mode)
 
+    #
+    # Nodes
+    #
     def addnode(self, classname, nodeid, node):
         ''' add the specified node to its class's db
         '''
         db = self.getclassdb(classname, 'c')
-        db[nodeid] = cPickle.dumps(node, 1)
+
+        # convert the instance data to builtin types
+        properties = self.classes[classname].properties
+        for key in properties.keys():
+            if properties[key].isDateType:
+                node[key] = node[key].get_tuple()
+            elif properties[key].isIntervalType:
+                node[key] = node[key].get_tuple()
+
+        # now save the marshalled data
+        db[nodeid] = marshal.dumps(node)
         db.close()
     setnode = addnode
 
@@ -82,7 +95,16 @@ class Database(hyperdb.Database):
         db = cldb or self.getclassdb(classname)
         if not db.has_key(nodeid):
             raise IndexError, nodeid
-        res = cPickle.loads(db[nodeid])
+        res = marshal.loads(db[nodeid])
+
+        # convert the marshalled data to instances
+        properties = self.classes[classname].properties
+        for key in res.keys():
+            if properties[key].isDateType:
+                res[key] = date.Date(res[key])
+            elif properties[key].isIntervalType:
+                res[key] = date.Interval(res[key])
+
         if not cldb: db.close()
         return res
 
@@ -117,22 +139,35 @@ class Database(hyperdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        entry = (nodeid, date.Date(), self.journaltag, action, params)
+        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
+            params)
         db = anydbm.open(os.path.join(self.dir, 'journals.%s'%classname), 'c')
         if db.has_key(nodeid):
             s = db[nodeid]
-            l = cPickle.loads(db[nodeid])
+            l = marshal.loads(db[nodeid])
             l.append(entry)
         else:
             l = [entry]
-        db[nodeid] = cPickle.dumps(l)
+        db[nodeid] = marshal.dumps(l)
         db.close()
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
         '''
-        db = anydbm.open(os.path.join(self.dir, 'journals.%s'%classname), 'r')
-        res = cPickle.loads(db[nodeid])
+        # attempt to open the journal - in some rare cases, the journal may
+        # not exist
+        try:
+            db = anydbm.open(os.path.join(self.dir, 'journals.%s'%classname),
+                'r')
+        except anydbm.open, error:
+            if error.args[0] != 2: raise
+            return []
+        journal = marshal.loads(db[nodeid])
+        res = []
+        for entry in journal:
+            (nodeid, date_stamp, self.journaltag, action, params) = entry
+            date_obj = date.Date(date_stamp)
+            res.append((nodeid, date_obj, self.journaltag, action, params))
         db.close()
         return res
 
@@ -162,7 +197,4 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
-#Revision 1.1  2001/07/23 07:15:57  richard
-#Moved the backends into the backends package. Anydbm hasn't been tested at all.
-#
 #
