@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.5 2001-08-29 06:23:59 richard Exp $
+# $Id: test_init.py,v 1.6 2001-09-29 23:48:06 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -30,12 +30,16 @@ class MyTestCase(unittest.TestCase):
             shutil.rmtree(self.dirname)
         except OSError, error:
             if error.errno != errno.ENOENT: raise
+        except WindowsError, error:
+            if error.errno != 3: raise
 
     def tearDown(self):
         try:
             shutil.rmtree(self.dirname)
         except OSError, error:
             if error.errno != errno.ENOENT: raise
+        except WindowsError, error:
+            if error.errno != 3: raise
 
 class ClassicTestCase(MyTestCase):
     backend = 'anydbm'
@@ -136,6 +140,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/08/29 06:23:59  richard
+# Disabled the bsddb3 module entirely in the unit testing. See CHANGES for
+# details.
+#
 # Revision 1.4  2001/08/07 00:24:43  richard
 # stupid typo
 #

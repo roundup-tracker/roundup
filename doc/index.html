@@ -30,6 +30,11 @@
         <li><a href="#web">Web Interface</a>
         <li><a href="#mail">E-Mail Gateway</a>
     </ul>
+<li><a href="#custom">Customising Roundup</a>
+    <ul>
+        <li><a href="#custinst">Instance Schema</a>
+        <li><a href="#custweb">Web Interface</a>
+    </ul>
 <li><a href="spec.html">Roundup's Design Document</a> ("Implementation Guide")
 <li><a href="#ack">Acknowledgements</a>
 </ul>
@@ -83,7 +88,8 @@ ie. "./roundup-admin init".
 
 <h3><a name="instance">The Instance</a></h3>
 
-We'll be referring to the term "instance" a lot from now on. An instance is
+We'll be referring to the term <em>instance</em> a lot from now on. An
+instance is
 a directory in your filesystem that is where all the information about a
 live issue tracker database is stored. The data that is entered as issues,
 the users who access the database and the definition of the database itself
@@ -240,36 +246,103 @@ To add issues, use one of the following interfaces:
     contents of the e-mail.
 </ol>
 
-<p><br>
+<p><hr>
 <h2><a name="guide">User Guide</a></h2>
 <h3><a name="cmd">Command Line Tool</a></h3>
 
 Usage:
 <tt>roundup-admin [-i instance home] [-u login] [-c] &lt;command&gt;
     &lt;arguments&gt;</tt>
+
 <p>
-<dl>
-<dt>Commands:
-<dd>create classname property=value ...
-<dd>find classname propname=value ...
-<dd>freshen
-<dd>get property designator[,designator]*
-<dd>history designator
-<dd>init [template [backend [admin password]]]
-<dd>list classname [property]
-<dd>retire designator[,designator]*
-<dd>set designator[,designator]* propname=value ...
-<dd>spec classname
-<dt>Help:
-<dd>roundup-admin -h
-<dd>roundup-admin help                       -- this help
-<dd>roundup-admin help <command>             -- command-specific help
-<dd>roundup-admin morehelp                   -- even more detailed help
-<dt>Options:
-<dd>-i instance home  -- specify the issue tracker "home directory" to administer
-<dd>-u                -- the user[:password] to use for commands
-<dd>-c                -- when outputting lists of data, just comma-separate them
-</dl>
+<table><tr><th colspan=2>Options:</th></tr>
+   <tr><td>-i instance home </td><td>specify the issue tracker "home directory" to administer
+   </td></tr>
+   <tr><td>-u               </td><td>the user[:password] to use for commands
+   </td></tr>
+   <tr><td>-c               </td><td>when outputting lists of data, just comma-separate them
+    </td></tr>
+</table>
+
+<p>
+<table border=1 cellspacing=0>
+<tr><th colspan=2>Command Help</th></tr>
+<tr><td valign=top><strong>history</strong></td>
+    <td><tt>history designator</tt><br>
+    Lists the journal entries for the node identified by the designator.
+</td></tr>
+    
+<tr><td valign=top><strong>find</strong></td>
+    <td><tt>find classname propname=value ...</tt><br>
+    Find the nodes of the given class with a given property value. The
+    value may be either the nodeid of the linked node, or its key value.
+</td></tr>
+    
+<tr><td valign=top><strong>list</strong></td>
+    <td><tt>list classname [property]</tt><br>
+    Lists all instances of the given class along. If the property is not
+    specified, the  "label" property is used. The label property is tried
+    in order: the key, "name", "title" and then the first property,
+    alphabetically.
+</td></tr>
+    
+<tr><td valign=top><strong>retire</strong></td>
+    <td><tt>retire designator[,designator]*</tt><br>
+    This action indicates that a particular node is not to be retrieved by
+    the list or find commands, and its key value may be re-used.
+</td></tr>
+    
+<tr><td valign=top><strong>create</strong></td>
+    <td><tt>create classname property=value ...</tt><br>
+    This creates a new entry of the given class using the property
+    name=value arguments provided on the command line after the "create"
+    command.
+</td></tr>
+    
+<tr><td valign=top><strong>get</strong></td>
+    <td><tt>get property designator[,designator]*</tt><br>
+    Retrieves the property value of the nodes specified by the designators.
+</td></tr>
+    
+<tr><td valign=top><strong>spec</strong></td>
+    <td><tt>spec classname</tt><br>
+    This lists the properties for a given class.
+</td></tr>
+    
+<tr><td valign=top><strong>set</strong></td>
+    <td><tt>set designator[,designator]* propname=value ...</tt><br>
+    Sets the property to the value for all designators given.
+</td></tr>
+    
+<tr><td valign=top><strong>init</strong></td>
+    <td><tt>init [template [backend [admin password]]]</tt><br>
+    The command will prompt for the instance home directory (if not supplied
+    through INSTANCE_HOME or the -i option. The template, backend and admin
+    password may be specified on the command-line as arguments, in that order.
+</td></tr>
+    
+<tr><td valign=top><strong>freshen</strong></td>
+    <td><tt>freshen</tt><br>
+        <strong>**DO NOT USE**</strong>
+        <p>
+    This currently kills databases!!!!
+    <p>
+    This action should generally not be used. It reads in an instance
+    database and writes it again. In the future, is may also update
+    instance code to account for changes in templates. It's probably wise
+    not to use it anyway. Until we're sure it won't break things...
+</td></tr>
+
+<tr><td><strong>help</strong></td>
+    <td><tt>help [command]</tt><br>
+    Short help about roundup-admin or the specific command.
+    </td></tr>
+
+<tr><td><strong>morehelp</strong></td>
+    <td><tt>morehelp</tt><br>
+    All available help from the roundup-admin tool.
+    </td></tr>
+</table>
 
 <p>
 All commands (except help) require an instance specifier. This is just the path
@@ -289,6 +362,17 @@ printed results:
     <li>Strings are, well, strings.
     <li>Date values are printed in the full date format in the local time zone, and
    accepted in the full format or any of the partial formats explained below.
+<table>
+    <tr><th>Input of...</th><th>Means...</th></tr>
+    <tr><td>"2000-04-17.03:45"</td><td>2000-04-17.08:45:00</td></tr>
+    <tr><td>"2000-04-17"</td><td>2000-04-17.00:00:00</td></tr>
+    <tr><td>"01-25"</td><td>yyyy-01-25.00:00:00</td></tr>
+    <tr><td>"08-13.22:13"</td><td>yyyy-08-14.03:13:00</td></tr>
+    <tr><td>"11-07.09:32:43"</td><td>yyyy-11-07.14:32:43</td></tr>
+    <tr><td>"14:25"</td><td>yyyy-mm-dd.19:25:00</td></tr>
+    <tr><td>"8:47:11"</td><td>yyyy-mm-dd.13:47:11</td></tr>
+    <tr><td>"."</td><td>"right now"</td></tr>
+</table>
    <li>Link values are printed as node designators. When given as an argument,
    node designators and key strings are both accepted.
    <li>Multilink values are printed as lists of node designators joined by commas.
@@ -312,97 +396,6 @@ login may be specified as either "name" or "name:password".
 </ul>
 If either the name or password is not supplied, they are obtained from the
 command-line. 
-<p>
-Date format examples:
-<table>
-    <tr><th>Input of...</th><th>Means...</th></tr>
-    <tr><td>"2000-04-17.03:45"</td><td>2000-04-17.08:45:00</td></tr>
-    <tr><td>"2000-04-17"</td><td>2000-04-17.00:00:00</td></tr>
-    <tr><td>"01-25"</td><td>yyyy-01-25.00:00:00</td></tr>
-    <tr><td>"08-13.22:13"</td><td>yyyy-08-14.03:13:00</td></tr>
-    <tr><td>"11-07.09:32:43"</td><td>yyyy-11-07.14:32:43</td></tr>
-    <tr><td>"14:25"</td><td>yyyy-mm-dd.19:25:00</td></tr>
-    <tr><td>"8:47:11"</td><td>yyyy-mm-dd.13:47:11</td></tr>
-    <tr><td>"."</td><td>"right now"</td></tr>
-</table>
-
-<h4>Specific Command help</h4>
-
-<pre>
-history:
-    Usage: history designator
-    Show the history entries of a designator.
-
-    Lists the journal entries for the node identified by the designator.
-    
-find:
-    Usage: find classname propname=value ...
-    Find the nodes of the given class with a given property value.
-
-    Find the nodes of the given class with a given property value. The
-    value may be either the nodeid of the linked node, or its key value.
-    
-list:
-    Usage: list classname [property]
-    List the instances of a class.
-
-    Lists all instances of the given class along. If the property is not
-    specified, the  "label" property is used. The label property is tried
-    in order: the key, "name", "title" and then the first property,
-    alphabetically.
-    
-retire:
-    Usage: retire designator[,designator]*
-    Retire the node specified by designator.
-
-    This action indicates that a particular node is not to be retrieved by
-    the list or find commands, and its key value may be re-used.
-    
-create:
-    Usage: create classname property=value ...
-    Create a new entry of a given class.
-
-    This creates a new entry of the given class using the property
-    name=value arguments provided on the command line after the "create"
-    command.
-    
-get:
-    Usage: get property designator[,designator]*
-    Get the given property of one or more designator(s).
-
-    Retrieves the property value of the nodes specified by the designators.
-    
-spec:
-    Usage: spec classname
-    Show the properties for a classname.
-
-    This lists the properties for a given class.
-    
-set:
-    Usage: set designator[,designator]* propname=value ...
-    Set the given property of one or more designator(s).
-
-    Sets the property to the value for all designators given.
-    
-init:
-    Usage: init [template [backend [admin password]]]
-    Initialise a new Roundup instance.
-
-    The command will prompt for the instance home directory (if not supplied
-    through INSTANCE_HOME or the -i option. The template, backend and admin
-    password may be specified on the command-line as arguments, in that order.
-    
-freshen:
-    Usage: freshen
-    Freshen an existing instance.  **DO NOT USE**
-
-    This currently kills databases!!!!
-
-    This action should generally not be used. It reads in an instance
-    database and writes it again. In the future, is may also update
-    instance code to account for changes in templates. It's probably wise
-    not to use it anyway. Until we're sure it won't break things...
-</pre>
 
 <h3><a name="web">Web Interface</a></h3>
 T.B.D.
@@ -462,6 +455,164 @@ an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
 <p><hr>
+<h2><a name="custom">Customising Roundup</a></h2>
+
+Instances have the following structure:
+<table>
+    <tr><td valign=top><strong>dbinit.py</strong></td>
+        <td>Holds the instance schema</td></tr>
+    <tr><td valign=top><strong>instance_config.py</strong></td>
+        <td>Holds the basic instance configuration</td></tr>
+    <tr><td valign=top><strong>interfaces.py</strong></td>
+        <td>Defines the Web and E-Mail interfaces for the instance</td></tr>
+    <tr><td valign=top><strong>select_db.py</strong></td>
+        <td>Selects the database back-end for the instance</td></tr>
+    <tr><td valign=top><strong>db/</strong></td>
+        <td>Holds the instance's database</td></tr>
+    <tr><td valign=top><strong>db/files/</strong></td>
+        <td>Holds the instance's upload files and messages</td></tr>
+    <tr><td valign=top><strong>detectors/</strong></td>
+        <td>Auditors and reactors for this instance</td></tr>
+    <tr><td valign=top><strong>html/</strong></td>
+        <td>Web interface templates, images and style sheets</td></tr>
+</table>
+
+<h3><a name="custinst">Instance Schema</a></h3>
+An instance schema defines what data is stored in the instance's database.
+The two schemas shipped with Roundup turn it into a typical software bug
+tracker (the extended schema allowing for support issues as well as bugs).
+Schemas are defined using Python code. The "classic" schema looks like
+this:
+<p>
+<pre>
+    pri = Class(db, "priority", name=String(), order=String())
+    pri.setkey("name")
+    pri.create(name="critical", order="1")
+    pri.create(name="urgent", order="2")
+    pri.create(name="bug", order="3")
+    pri.create(name="feature", order="4")
+    pri.create(name="wish", order="5")
+
+    stat = Class(db, "status", name=String(), order=String())
+    stat.setkey("name")
+    stat.create(name="unread", order="1")
+    stat.create(name="deferred", order="2")
+    stat.create(name="chatting", order="3")
+    stat.create(name="need-eg", order="4")
+    stat.create(name="in-progress", order="5")
+    stat.create(name="testing", order="6")
+    stat.create(name="done-cbb", order="7")
+    stat.create(name="resolved", order="8")
+
+    keyword = Class(db, "keyword", name=String())
+    keyword.setkey("name")
+
+    user = Class(db, "user", username=String(), password=String(),
+        address=String(), realname=String(), phone=String(), organisation=String())
+    user.setkey("username")
+    user.create(username="admin", password=adminpw, address=instance_config.ADMIN_EMAIL)
+
+    msg = FileClass(db, "msg", author=Link("user"), recipients=Multilink("user"), 
+        date=Date(), summary=String(), files=Multilink("file"))
+
+    file = FileClass(db, "file", name=String(), type=String())
+
+    issue = IssueClass(db, "issue", assignedto=Link("user"),
+        topic=Multilink("keyword"), priority=Link("priority"), status=Link("status"))
+    issue.setkey('title')
+</pre>
+
+<h4>Class, FileClass, IssueClass - creating a new information store</h4>
+A <em>Class</em> defines a particular class (or type) of data that will be
+stored in the database. In the instance above, we've defined 7 classes of
+information:
+<dl>
+    <dt><strong>priority</strong>
+    <dd>Defines the possible levels of urgency for issues.
+    <dt><strong>status</strong>
+    <dd>Defines the possible states of processing the issue may be in.
+    <dt><strong>keyword</strong>
+    <dd>Initially empty, will hold keywords useful for searching issues.
+    <dt><strong>user</strong>
+    <dd>Initially holding the "admin" user, will eventually have an entry
+    for all users using roundup.
+    <dt><strong>msg</strong>
+    <dd>Initially empty, will all e-mail messages sent to or generated by roundup.
+    <dt><strong>file</strong>
+    <dd>Initially empty, will all files attached to issues.
+    <dt><strong>issue</strong>
+    <dd>Initially emtyp, this is where the issue information is stored.
+</dl>
+<p>
+We define the "priority" and "status" classes to allow two things: reduction in the
+amount of information stored on the issue and more powerful, accurate
+searching of issues by priority and status. By only requiring a link on
+the issue (which is stored as a single number) we reduce the chance
+that someone mis-types a priority or status - or simply makes a new one
+up.
+<p>
+
+<strong>Class</strong>
+<br>
+Class is the basic store of information.
+
+<p>
+
+<strong>FileClass</strong>
+<br>
+FileClasses save their "content" attribute off in a separate file from the
+rest of the database. This reduces the number of large entries in the
+database, which generally makes databases more efficient, and also allows
+us to use command-line tools to operate on the files. They are stored in
+the files sub-directory of the db directory in your instance.
+
+<p>
+
+<strong>IssueClass</strong>
+<br>
+IssueClasses automatically include the "messages", "files", "nosy", and
+"superseder" properties.
+<p>
+The messages and files properties list the links to the messages and files
+related to the issue. The nosy property is a list of links to users who
+wish to be informed of changes to the issue - they get "CC'ed" e-mails when
+messages are sent to or generated by the issue. The nosy reactor (in the
+detectors directory) handles this action. The superceder link indicates an
+issue which has superceded this one.
+<p>
+They also have the dynamically generated
+"creation", "activity" and "creator" properties.
+<p>
+The value of the "creation" property is the date when an item was created,
+and the value of the "activity" property is the date when any property on
+the item was last edited (equivalently, these are the dates on the first
+and last records in the item's journal). The "creator" property holds a
+link to the user that created the issue.
+
+<h4>setkey(property)</h4>
+Select a String property of the class to be the key property. The key
+property muse be unique, and allows references to the items in the class by
+the content of the key property. That is, we can refer to users by their
+username, e.g. let's say that there's an issue in roundup, issue 23. There's
+also a user, richard who happens to be user 2. To assign an issue to him,
+we could do either of:
+<p>
+<blockquote><tt>roundup-admin set issue assignedto=2</tt></blockquote>
+<p>
+or
+<p>
+<blockquote><tt>roundup-admin set issue
+        assignedto=richard</tt></blockquote>
+<p>
+Note, the same thing can be done in the web and e-mail interfaces.
+
+<h4>create(information)</h4>
+Create an item in the database. This is generally used to create items in
+the "definitional" classes like "priority" and "status".
+
+<h3><a name="custweb">Web Interface</a></h3>
+
+<p><hr>
 <h2><a name="ack">Acknowledgements</a></h2>
 
 Go Ping, you rock! Also, go Bizar Software for letting me implement this
@@ -469,7 +620,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.3 2001-09-29 13:44:44 richard Exp $
+$Id: index.html,v 1.4 2001-09-29 23:48:06 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
