@@ -61,7 +61,7 @@ communicate with roundup as. All email from roundup will continue to be sent
 to their primary address.
 
 If you have not edited the dbinit.py file in your instance home directory,
-YOU MAY Simply copy the new dbinit.py file from the core code. If you used
+you may simply copy the new dbinit.py file from the core code. If you used
 the classic schema, the interfaces file is in:
 
  <roundup source>/roundup/templates/classic/dbinit.py
