@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.8 2002-02-06 03:47:16 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.9 2002-02-15 07:08:45 richard Exp $ 
 
 import unittest, cgi, time
 
@@ -37,13 +37,15 @@ class Class:
             return 'the key'+nodeid
         elif attribute == 'html':
             return '<html>hello, I am HTML</html>'
+        elif attribute == 'multiline':
+            return 'hello\nworld'
     def list(self):
         return ['1', '2']
     def getprops(self):
         return {'string': String(), 'date': Date(), 'interval': Interval(),
             'link': Link('other'), 'multilink': Multilink('other'),
             'password': Password(), 'html': String(), 'key': String(),
-            'novalue': String(), 'filename': String()}
+            'novalue': String(), 'filename': String(), 'multiline': String()}
     def labelprop(self):
         return 'key'
 
@@ -140,9 +142,29 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_field('multilink', size=10),
             '<input name="multilink" size="10" value="the key1,the key2">')
 
+#    def do_multiline(self, property, rows=5, cols=40)
+    def testMultiline_string(self):
+        self.assertEqual(self.tf.do_multiline('multiline'),
+            '<textarea name="multiline" rows="5" cols="40">'
+            'hello\nworld</textarea>')
+        self.assertEqual(self.tf.do_multiline('multiline', rows=10),
+            '<textarea name="multiline" rows="10" cols="40">'
+            'hello\nworld</textarea>')
+        self.assertEqual(self.tf.do_multiline('multiline', cols=10),
+            '<textarea name="multiline" rows="5" cols="10">'
+            'hello\nworld</textarea>')
+
+    def testMultiline_nonstring(self):
+        s = _('[Multiline: not a string]')
+        self.assertEqual(self.tf.do_multiline('date'), s)
+        self.assertEqual(self.tf.do_multiline('interval'), s)
+        self.assertEqual(self.tf.do_multiline('password'), s)
+        self.assertEqual(self.tf.do_multiline('link'), s)
+        self.assertEqual(self.tf.do_multiline('multilink'), s)
+
 #    def do_menu(self, property, size=None, height=None, showid=0):
     def testMenu_nonlinks(self):
-    	s = _('[Menu: not a link]')
+        s = _('[Menu: not a link]')
         self.assertEqual(self.tf.do_menu('string'), s)
         self.assertEqual(self.tf.do_menu('date'), s)
         self.assertEqual(self.tf.do_menu('interval'), s)
@@ -236,7 +258,7 @@ class NodeCase(unittest.TestCase):
 
     def testReldate_date(self):
         self.assertEqual(self.tf.do_reldate('date'), '- 2y 1m')
-	date = self.tf.cl.get('1', 'date')
+        date = self.tf.cl.get('1', 'date')
         self.assertEqual(self.tf.do_reldate('date', pretty=1), date.pretty())
 
 #    def do_download(self, property):
@@ -247,7 +269,7 @@ class NodeCase(unittest.TestCase):
     def testDownload_string(self):
         self.assertEqual(self.tf.do_download('string'),
             '<a href="test_class1/Node 1: I am a string">Node 1: '
-	    'I am a string</a>')
+            'I am a string</a>')
 
     def testDownload_file(self):
         self.assertEqual(self.tf.do_download('filename', is_download=1),
@@ -268,7 +290,7 @@ class NodeCase(unittest.TestCase):
     def testDownload_multilink(self):
         self.assertEqual(self.tf.do_download('multilink'),
             '<a href="other1/the key1">the key1</a>, '
-	    '<a href="other2/the key2">the key2</a>')
+            '<a href="other2/the key2">the key2</a>')
 
 #    def do_checklist(self, property, reverse=0):
     def testChecklink_nonlinks(self):
@@ -314,6 +336,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/02/06 03:47:16  richard
+#  . #511586 ] unittest FAIL: testReldate_date
+#
 # Revision 1.7  2002/01/23 20:09:41  jhermann
 # Proper fix for failing test
 #

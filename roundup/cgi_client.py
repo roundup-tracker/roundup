@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.101 2002-02-14 23:39:18 richard Exp $
+# $Id: cgi_client.py,v 1.102 2002-02-15 07:08:44 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -778,7 +778,7 @@ function submit_once() {
             return
         values = {'realname': '', 'organisation': '', 'address': '',
             'phone': '', 'username': '', 'password': '', 'confirm': '',
-            'action': action}
+            'action': action, 'alternate_addresses': ''}
         if newuser_form is not None:
             for key in newuser_form.keys():
                 values[key] = newuser_form[key].value
@@ -789,11 +789,13 @@ function submit_once() {
 <form onSubmit="return submit_once()" action="newuser_action" method=POST>
 <input type="hidden" name="__destination_url" value="%(action)s">
 <tr><td align=right><em>Name: </em></td>
-    <td><input name="realname" value="%(realname)s"></td></tr>
+    <td><input name="realname" value="%(realname)s" size=40></td></tr>
 <tr><td align=right><em>Organisation: </em></td>
-    <td><input name="organisation" value="%(organisation)s"></td></tr>
+    <td><input name="organisation" value="%(organisation)s" size=40></td></tr>
 <tr><td align=right>E-Mail Address: </td>
-    <td><input name="address" value="%(address)s"></td></tr>
+    <td><input name="address" value="%(address)s" size=40></td></tr>
+<tr><td align=right><em>Alternate E-mail Addresses: </em></td>
+    <td><textarea name="alternate_addresses" rows=5 cols=40>%(alternate_addresses)s</textarea></td></tr>
 <tr><td align=right><em>Phone: </em></td>
     <td><input name="phone" value="%(phone)s"></td></tr>
 <tr><td align=right>Preferred Login name: </td>
@@ -1200,6 +1202,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.101  2002/02/14 23:39:18  richard
+# . All forms now have "double-submit" protection when Javascript is enabled
+#   on the client-side.
+#
 # Revision 1.100  2002/01/16 07:02:57  richard
 #  . lots of date/interval related changes:
 #    - more relaxed date format for input

@@ -6,6 +6,9 @@ Feature:
  . #503204 ] mailgw needs a default class
    - partially done - the setting of additional properties can wait for a
      better configuration system.
+ . Alternate email addresses are now available for users. See the MIGRATION
+   file for info on how to activate the feature.
+
 
 Fixed:
  . Clean up mail handling, multipart handling.

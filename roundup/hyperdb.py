@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.53 2002-01-22 07:21:13 richard Exp $
+# $Id: hyperdb.py,v 1.54 2002-02-15 07:08:44 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -846,7 +846,7 @@ class Class:
                     else:
                         continue
                     break
-                elif t == 2 and not v.search(node[k]):
+                elif t == 2 and node[k] is None or not v.search(node[k]):
                     # RE search
                     break
                 elif t == 6 and node[k] != v:
@@ -1066,6 +1066,14 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.53  2002/01/22 07:21:13  richard
+# . fixed back_bsddb so it passed the journal tests
+#
+# ... it didn't seem happy using the back_anydbm _open method, which is odd.
+# Yet another occurrance of whichdb not being able to recognise older bsddb
+# databases. Yadda yadda. Made the HYPERDBDEBUG stuff more sane in the
+# process.
+#
 # Revision 1.52  2002/01/21 16:33:19  rochecompaan
 # You can now use the roundup-admin tool to pack the database
 #

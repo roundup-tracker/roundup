@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.43 2002-02-14 22:33:15 richard Exp $
+# $Id: roundupdb.py,v 1.44 2002-02-15 07:08:44 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -42,6 +42,23 @@ def splitDesignator(designator, dre=re.compile(r'([^\d]+)(\d+)')):
     return m.group(1), m.group(2)
 
 
+def extractUserFromList(users):
+    '''Given a list of users, try to extract the first non-anonymous user
+       and return that user, otherwise return None
+    '''
+    if len(users) > 1:
+        # make sure we don't match the anonymous or admin user
+        for user in users:
+            if user == '1': continue
+            if self.user.get(user, 'username') == 'anonymous': continue
+            # first valid match will do
+            return user
+        # well, I guess we have no choice
+        return user[0]
+    elif users:
+        return users[0]
+    return None
+
 class Database:
     def getuid(self):
         """Return the id of the "user" node associated with the user
@@ -54,26 +71,25 @@ class Database:
             user is created if they don't exist in the db already
         '''
         (realname, address) = address
-        users = self.user.stringFind(address=address)
-        for dummy in range(2):
-            if len(users) > 1:
-                # make sure we don't match the anonymous or admin user
-                for user in users:
-                    if user == '1': continue
-                    if self.user.get(user, 'username') == 'anonymous': continue
-                    # first valid match will do
-                    return user
-                # well, I guess we have no choice
-                return user[0]
-            elif users:
-                return users[0]
-            # try to match the username to the address (for local
-            # submissions where the address is empty)
-            users = self.user.stringFind(username=address)
+
+        # try a straight match of the address
+        user = extractUserFromList(self.user.stringFind(address=address))
+        if user is not None: return user
+
+        # try the user alternate addresses if possible
+        props = self.user.getprops()
+        if props.has_key('alternate_addresses'):
+            users = self.user.filter({'alternate_addresses': address},
+                [], [])
+            user = extractUserFromList(users)
+            if user is not None: return user
+
+        # try to match the username to the address (for local
+        # submissions where the address is empty)
+        user = extractUserFromList(self.user.stringFind(username=address))
 
         # couldn't match address or username, so create a new user
         if create:
-            print 'CREATING USER', address
             return self.user.create(username=address, address=address,
                 realname=realname)
         else:
@@ -571,6 +587,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.43  2002/02/14 22:33:15  richard
+#  . Added a uniquely Roundup header to email, "X-Roundup-Name"
+#
 # Revision 1.42  2002/01/21 09:55:14  rochecompaan
 # Properties in change note are now sorted
 #

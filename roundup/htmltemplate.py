@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.72 2002-02-14 23:39:18 richard Exp $
+# $Id: htmltemplate.py,v 1.73 2002-02-15 07:08:44 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -216,6 +216,27 @@ class TemplateFunctions:
             s = _('Plain: bad propclass "%(propclass)s"')%locals()
         return s
 
+    def do_multiline(self, property, rows=5, cols=40):
+        ''' display a string property in a multiline text edit field
+        '''
+        if not self.nodeid and self.form is None and self.filterspec is None:
+            return _('[Multiline: not called from item]')
+
+        propclass = self.properties[property]
+
+        # make sure this is a link property
+        if not isinstance(propclass, hyperdb.String):
+            return _('[Multiline: not a string]')
+
+        # get the value
+        value = self.determine_value(property)
+        if value is None:
+            value = ''
+
+        # display
+        return '<textarea name="%s" rows="%s" cols="%s">%s</textarea>'%(
+            property, rows, cols, value)
+
     def do_menu(self, property, size=None, height=None, showid=0):
         ''' for a Link property, display a menu of the available choices
         '''
@@ -389,7 +410,7 @@ class TemplateFunctions:
         '''
         if not self.nodeid:
             return _('[Download: not called from item]')
-	return self.do_link(property, is_download=1)
+        return self.do_link(property, is_download=1)
 
 
     def do_checklist(self, property, **args):
@@ -1043,6 +1064,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.72  2002/02/14 23:39:18  richard
+# . All forms now have "double-submit" protection when Javascript is enabled
+#   on the client-side.
+#
 # Revision 1.71  2002/01/23 06:15:24  richard
 # real (non-string, duh) sorting of lists by node id
 #

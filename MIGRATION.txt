@@ -22,6 +22,44 @@ ANONYMOUS_REGISTER_MAIL rather than overloading ANONYMOUS_REGISTER. If the
 variable doesn't exist, then ANONYMOUS_REGISTER is tested as before.
 
 
+Alternate E-Mail Addresses
+--------------------------
+
+If you add the property "alternate_addresses" to your user class, your users
+will be able to register alternate email addresses that they may use to
+communicate with roundup as. All email from roundup will continue to be sent
+to their primary address.
+
+If you have not edited the dbinit.py file in your instance home directory,
+you may simply copy the new dbinit.py file from the core code. If you used
+the classic schema, the interfaces file is in:
+
+ <roundup source>/roundup/templates/classic/dbinit.py
+
+If you used the extended schema, the file is in:
+
+ <roundup source>/roundup/templates/extended/dbinit.py 
+
+If you have modified your dbinit.py file, you need to edit the dbinit.py
+file in your instance home directory. Find the lines which define the user
+class:
+
+    user = Class(db, "msg",
+                    username=String(),   password=Password(),
+		    address=String(),    realname=String(), 
+		    phone=String(),      organisation=String(),
+		    alternate_addresses=String())
+
+You will also want to add the property to the user's details page. The
+template for this is the "user.item" file in your instance home "html"
+directory. Similar to above, you may copy the file from the roundup source if
+you haven't modified it. Otherwise, add the following to the template:
+
+   <display call="multiline('alternate_addresses')">
+
+with appropriate labelling etc. See the standard template for an idea.
+
+
 
 Migrating from 0.3.x to 0.4.x
 =============================

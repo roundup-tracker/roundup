@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.14 2002-01-14 02:20:15 richard Exp $
+# $Id: dbinit.py,v 1.15 2002-02-15 07:08:44 richard Exp $
 
 import os
 
@@ -63,7 +63,8 @@ def open(name=None):
     user = Class(db, "user", 
                     username=String(),   password=Password(),
                     address=String(),    realname=String(), 
-                    phone=String(),      organisation=String())
+                    phone=String(),      organisation=String(),
+                    alternate_addresses=String())
     user.setkey("username")
 
     msg = FileClass(db, "msg", 
@@ -122,6 +123,15 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/01/14 02:20:15  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.13  2002/01/02 02:31:38  richard
 # Sorry for the huge checkin message - I was only intending to implement #496356
 # but I found a number of places where things had been broken by transactions:
