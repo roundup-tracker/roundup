@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.18 2004-03-26 06:31:50 richard Exp $
+#$Id: actions.py,v 1.19 2004-03-26 18:18:31 wc2so1 Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -482,7 +482,7 @@ class EditItemAction(_EditAction):
         See parsePropsFromForm and _editnodes for special variables.
 
         """
-        user_activity = self.lastUserActvity()
+        user_activity = self.lastUserActivity()
         if user_activity and self.detectCollision(user_activity,
                 self.lastNodeActivity()):
             self.handleCollision()
