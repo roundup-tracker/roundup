@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.149 $
+:Version: $Revision: 1.150 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1848,6 +1848,12 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
             format (eg. "yesterday")
 menu        only on Link and Multilink properties - render a form select
             list for this property
+sorted      only on Multilink properties - produce a list of the linked
+            items sorted by some property, for example::
+            
+                python:context.files.sorted('creation')
+
+            Will list the files by upload date.
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
 isset       returns True if the property has been set to a value

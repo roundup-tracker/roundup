@@ -1648,6 +1648,12 @@ class MultilinkHTMLProperty(HTMLProperty):
         value = self._value[num]
         return HTMLItem(self._client, self._prop.classname, value)
 
+    def sorted(self, property):
+        ''' Return this multilink sorted by the given property '''
+        value = list(self._value[num])
+        value.sort(lambda a,b:cmp(a[property], b[property]))
+        return value
+
     def __contains__(self, value):
         ''' Support the "in" operator. We have to make sure the passed-in
             value is a string first, not a HTMLProperty.
