@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.7 2004-03-24 06:18:59 richard Exp $ 
+# $Id: test_postgresql.py,v 1.8 2004-03-25 02:16:08 richard Exp $ 
 
 import unittest
 
@@ -105,7 +105,7 @@ class postgresqlSessionTest(postgresqlOpener, RDBMSTest):
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'postgresql'):
-        print "Skipping mysql tests"
+        print "Skipping postgresql tests"
         return suite
 
     # make sure we start with a clean slate
