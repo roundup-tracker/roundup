@@ -5,6 +5,10 @@ Migrating to newer versions of Roundup
 Migrating from 0.2.x to 0.3.x
 =============================
 
+Please read each section carefully and edit your instance home files
+accordingly.
+
+
 Cookie Authentication changes
 -----------------------------
 0.3.0 introduces cookie authentication - you will need to copy the

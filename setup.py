@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.24 2001-11-06 22:32:15 jhermann Exp $
+# $Id: setup.py,v 1.25 2001-11-21 23:42:54 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -42,7 +42,7 @@ for t in templates:
 
 
 setup ( name = "roundup", 
-        version = "0.3.0pre3",
+        version = "0.3.0",
         description = "Roundup issue tracking system.",
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
@@ -56,6 +56,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/11/06 22:32:15  jhermann
+# Install roundup.cgi to share/roundup
+#
 # Revision 1.23  2001/10/17 06:04:00  richard
 # Beginnings of an interactive mode for roundup-admin
 #

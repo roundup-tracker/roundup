@@ -209,24 +209,42 @@ This software will work through apache or stand-alone.
 
 <strong>Apache:</strong>
 <ol>
-    <li>Make sure roundup.cgi is executable. Edit it at the top -
+<li>The CGI script is found in the cgi-bin directory of the roundup
+    distribution.
+</li>
+<li>Make sure roundup.cgi is executable. Edit it at the top -
     ROUNDUP_INSTANCE_HOMES needs to know about your instance.
-    <li>Edit your <tt>/etc/httpd/conf/httpd.conf</tt> and make sure that the
-        <tt>/home/httpd/html/roundup/roundup.cgi</tt> script will be treated as a CGI
+</li>
+<li>Edit your /etc/httpd/conf/httpd.conf and make sure that the
+    /home/httpd/html/roundup/roundup.cgi script will be treated as a CGI
     script.
-    <li>Add the following to your <tt>/etc/httpd/conf/httpd.conf</tt>:
-<pre>
-------8<------- snip here ------8<-------
-RewriteEngine on
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=HTTP_CGI_AUTHORIZATION:%1,t=application/x-httpd-cgi,l]
-------8<------- snip here ------8<-------
-</pre>
-   note: the RewriteRule must be on one line - no breaks
-   <li>Re-start your apache to re-load the config
-   <li>Load up the page <tt>/roundup/roundup.cgi/&lt;instance name&gt;/index</tt> where
+</li>
+<li>Re-start your apache to re-load the config if necessary.
+</li>
+<li>Load up the page "/roundup/roundup.cgi/<instance name>/index" where
     instance name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
+</li>
+<li>To use the CGI script unchanged, which allows much easier updates,
+    add these directives to your "httpd.conf":
+    <pre>
+        SetEnv ROUNDUP_LOG "/var/log/roundup.log"
+        SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/instances/Default"
+        SetEnv ROUNDUP_DEBUG "0"
+</pre>
+</li>
+<li>On Windows, write a batch file "roundup.bat" similar to the one below
+    and place it into your cgi-bin directory:
+    <pre>
+        @echo off
+        set ROUNDUP_LOG=c:\Python21\share\roundup\cgi.log
+        set ROUNDUP_INSTANCE_HOMES=Default=c:\Python21\share\roundup\instances\Default;
+        set ROUNDUP_DEBUG=0
+        c:\Python21\python.exe c:\Python21\share\roundup\cgi-bin\roundup.cgi
+</pre>
+</li>
 </ol>
+
+
 
 
 <h2><a name="users">Users</a></h2>
@@ -1183,7 +1201,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.18 2001-11-07 05:38:57 richard Exp $
+$Id: index.html,v 1.19 2001-11-21 23:42:54 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
