@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.63 2003-10-07 07:17:54 anthonybaxter Exp $
+# $Id: rdbms_common.py,v 1.64 2003-10-07 08:34:58 anthonybaxter Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -191,7 +191,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if old_spec[0] != new_spec[0]:
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class setting keyprop', `spec[0]`
-            # XXX turn on indexing for the key property
+            # XXX turn on indexing for the key property. 
 
         # detect multilinks that have been removed, and drop their table
         old_has = {}
@@ -1630,7 +1630,8 @@ class Class(hyperdb.Class):
         None, or a TypeError is raised.  The values of the key property on
         all existing nodes must be unique or a ValueError is raised.
         '''
-        # XXX create an index on the key prop column
+        # XXX create an index on the key prop column. We should also 
+        # record that we've created this index in the schema somewhere.
         prop = self.getprops()[propname]
         if not isinstance(prop, String):
             raise TypeError, 'key properties must be String'
