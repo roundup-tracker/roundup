@@ -14,6 +14,7 @@ active   hyperdb: add tests for Number and Boolean
                   - htmltemplate
                   - schema
                   - db
+pending  hyperdb: make creator, creation and activity available pre-commit
 pending  instance: including much simpler upgrade path and the use of
                    non-Python configuration files (ConfigParser)
 pending  instance: cleanup to support config (feature request #498658)
