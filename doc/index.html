@@ -1009,11 +1009,7 @@ nodes, hyperlinked to the item views on those nodes.
 For other properties, link to this node with the property as the text.
 <p>
 <em>Options:</em><br>
-property (property name) - the property to use in the second case.<br>
-is_download (boolean) - to be used for links te <em>file</em> class nodes -
-this indicates that the URL should have the specified property (usually
-<em>name</em>) appended so that the download has the correct name (instead
-of the node designator.)
+property (property name) - the property to use in the second case.
 </td></tr>
 
 <tr><td valign="top"><strong>count</strong></td>
@@ -1037,8 +1033,13 @@ pretty (boolean) - display the relative date in an English form.
 </td></tr>
 
 <tr><td valign="top"><strong>download</strong></td>
-<td>Show a Link("file") or Multilink("file")
-property using links that allow you to download files.
+<td>For a Link or Multilink property, display the names of the linked
+nodes, hyperlinked to the item views on those nodes.
+<p>
+For other properties, link to this node with the property as the text.
+<p>
+In all cases, append the name (key property) of the item to the path so it
+is the name of the file being downloaded.
 <p>
 <em>Arguments:</em><br>
 property (property name) - the property to use.
@@ -1303,7 +1304,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.26 2002-01-16 04:54:27 richard Exp $
+$Id: index.html,v 1.27 2002-01-23 05:10:27 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>

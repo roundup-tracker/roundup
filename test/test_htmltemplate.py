@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.4 2002-01-22 22:46:22 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.5 2002-01-23 05:10:28 richard Exp $ 
 
 import unittest, cgi
 
@@ -139,10 +139,11 @@ class NodeCase(unittest.TestCase):
 
 #    def do_menu(self, property, size=None, height=None, showid=0):
     def testMenu_nonlinks(self):
-        self.assertEqual(self.tf.do_menu('string'), _('[Menu: not a link]'))
-        self.assertEqual(self.tf.do_menu('date'), _('[Menu: not a link]'))
-        self.assertEqual(self.tf.do_menu('interval'), _('[Menu: not a link]'))
-        self.assertEqual(self.tf.do_menu('password'), _('[Menu: not a link]'))
+    	s = _('[Menu: not a link]')
+        self.assertEqual(self.tf.do_menu('string'), s)
+        self.assertEqual(self.tf.do_menu('date'), s)
+        self.assertEqual(self.tf.do_menu('interval'), s)
+        self.assertEqual(self.tf.do_menu('password'), s)
 
     def testMenu_link(self):
         self.assertEqual(self.tf.do_menu('link'), '''<select name="link">
@@ -235,12 +236,46 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_reldate('date', pretty=1),
             ' 1 January 2000')
 
+#    def do_download(self, property):
+    def testDownload_novalue(self):
+        self.assertEqual(self.tf.do_download('novalue'),
+            _('[no %(propname)s]')%{'propname':'novalue'.capitalize()})
+
+    def testDownload_string(self):
+        self.assertEqual(self.tf.do_download('string'),
+            '<a href="test_class1/Node 1: I am a string">Node 1: '
+	    'I am a string</a>')
+
+    def testDownload_file(self):
+        self.assertEqual(self.tf.do_download('filename', is_download=1),
+            '<a href="test_class1/file.foo">file.foo</a>')
+
+    def testDownload_date(self):
+        self.assertEqual(self.tf.do_download('date'),
+            '<a href="test_class1/2000-01-01.00:00:00">2000-01-01.00:00:00</a>')
+
+    def testDownload_interval(self):
+        self.assertEqual(self.tf.do_download('interval'),
+            '<a href="test_class1/- 3d">- 3d</a>')
+
+    def testDownload_link(self):
+        self.assertEqual(self.tf.do_download('link'),
+            '<a href="other1/the key">the key</a>')
+
+    def testDownload_multilink(self):
+        self.assertEqual(self.tf.do_download('multilink'),
+            '<a href="other1/the key">the key</a>, '
+	    '<a href="other2/the key">the key</a>')
+
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2002/01/22 22:46:22  richard
+# more htmltemplate cleanups and unit tests
+#
 # Revision 1.3  2002/01/22 06:35:40  richard
 # more htmltemplate tests and cleanup
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.68 2002-01-22 22:55:28 richard Exp $
+# $Id: htmltemplate.py,v 1.69 2002-01-23 05:10:27 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -389,20 +389,7 @@ class TemplateFunctions:
         '''
         if not self.nodeid:
             return _('[Download: not called from item]')
-        propclass = self.properties[property]
-        value = self.cl.get(self.nodeid, property)
-        if isinstance(propclass, hyperdb.Link):
-            linkcl = self.db.classes[propclass.classname]
-            linkvalue = linkcl.get(value, k)
-            return '<a href="%s%s">%s</a>'%(linkcl, value, linkvalue)
-        if isinstance(propclass, hyperdb.Multilink):
-            linkcl = self.db.classes[propclass.classname]
-            l = []
-            for value in value:
-                linkvalue = linkcl.get(value, k)
-                l.append('<a href="%s%s">%s</a>'%(linkcl, value, linkvalue))
-            return ', '.join(l)
-        return _('[Download: not a link]')
+	return self.do_link(property, is_download=1)
 
 
     def do_checklist(self, property, **args):
@@ -468,7 +455,7 @@ class TemplateFunctions:
         if not isinstance(propcl, hyperdb.Multilink):
             return _('[List: not a Multilink]')
         value = self.cl.get(self.nodeid, property)
-	value.sort()
+        value.sort()
         if reverse:
             value.reverse()
 
@@ -505,6 +492,7 @@ class TemplateFunctions:
 
         comments = {}
         history = self.cl.history(self.nodeid)
+        history.sort()
         if direction == 'descending':
             history.reverse()
         for id, evt_date, user, action, args in history:
@@ -1048,6 +1036,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.68  2002/01/22 22:55:28  richard
+#  . htmltemplate list() wasn't sorting...
+#
 # Revision 1.67  2002/01/22 22:46:22  richard
 # more htmltemplate cleanups and unit tests
 #
