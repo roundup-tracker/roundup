@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: init.py,v 1.32 2004-10-16 14:45:12 a1s Exp $
+# $Id: init.py,v 1.33 2004-11-03 09:44:16 a1s Exp $
 
 """Init (create) a roundup instance.
 """
@@ -64,20 +64,20 @@ def install(instance_home, template):
        the directory holding the template to use in creating the instance data
 
     The instance_home directory will be created using the files found in
-    the named template (roundup.templates.<name>). A standard instance_home
+    the named template (roundup.templates.<name>). A usual instance_home
     contains:
 
-    config.py
-      simple configuration of things like the email address for the
-      mail gateway, the mail domain, the mail host, ...
-    dbinit.py and select_db.py
-      defines the schema for the hyperdatabase and indicates which
-      backend to use.
+    config.ini
+      tracker configuration file
+    schema.py
+      database schema definition
+    initial_data.py
+      database initialization script, used to populate the database
+      with 'roundup-admin init' command
     interfaces.py
-      defines the CGI Client and mail gateway MailGW classes that are
+      (optional, not installed from standard templates) defines
+      the CGI Client and mail gateway MailGW classes that are
       used by roundup.cgi, roundup-server and roundup-mailgw.
-    __init__.py
-      ties together all the instance information into one interface
     db/
       the actual database that stores the instance's data
     html/
