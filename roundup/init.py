@@ -1,3 +1,5 @@
+# $Id: init.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+
 import os, shutil, sys
 
 def copytree(src, dst, symlinks=0):
@@ -43,3 +45,6 @@ def init(instance, template, adminpw):
     instance = __import__(instance)
     instance.init(adminpw)
 
+#
+# $Log: not supported by cvs2svn $
+#

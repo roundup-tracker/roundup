@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.1 2001-07-22 11:58:35 richard Exp $
+# $Id: htmltemplate.py,v 1.2 2001-07-22 12:09:32 richard Exp $
 
 import os, re, StringIO, urllib, cgi
 
@@ -702,18 +702,6 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
-# Revision 1.5  2001/07/20 07:34:43  richard
-# Quote the value put in the text input value attribute.
+# Revision 1.1  2001/07/22 11:58:35  richard
+# More Grande Splite
 #
-# Revision 1.4  2001/07/19 06:27:07  anthonybaxter
-# fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
-# my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
-# strings in a commit message. I'm a twonk.
-#
-# Also broke the help string in two.
-#
-# Revision 1.3  2001/07/19 05:52:22  anthonybaxter
-# Added CVS keywords Id and Log to all python files.
-#
-#
-

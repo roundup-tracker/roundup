@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.1 2001-07-22 11:58:35 richard Exp $
+# $Id: hyperdb.py,v 1.2 2001-07-22 12:09:32 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -735,13 +735,6 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
-# Revision 1.6  2001/07/20 08:20:24  richard
-# Fixed a bug in the filter - wrong variable names in the error message.
-# Recognised that the filter has an outstanding bug. Hrm. we need a bug tracker
-# for this project :)
+# Revision 1.1  2001/07/22 11:58:35  richard
+# More Grande Splite
 #
-# Revision 1.5  2001/07/20 07:35:55  richard
-# largish changes as a start of splitting off bits and pieces to allow more
-# flexible installation / database back-ends
-#
-

@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.1 2001-07-22 11:58:35 richard Exp $
+# $Id: cgi_client.py,v 1.2 2001-07-22 12:09:32 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -489,25 +489,6 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
-# Revision 1.7  2001/07/20 07:35:55  richard
-# largish changes as a start of splitting off bits and pieces to allow more
-# flexible installation / database back-ends
+# Revision 1.1  2001/07/22 11:58:35  richard
+# More Grande Splite
 #
-# Revision 1.6  2001/07/20 00:53:20  richard
-# Default index now filters out the resolved issues ;)
-#
-# Revision 1.5  2001/07/20 00:17:16  richard
-# Fixed adding a new issue when there is no __note
-#
-# Revision 1.4  2001/07/19 06:27:07  anthonybaxter
-# fixing (manually) the (dollarsign)Log(dollarsign) entries caused by
-# my using the magic (dollarsign)Id(dollarsign) and (dollarsign)Log(dollarsign)
-# strings in a commit message. I'm a twonk.
-#
-# Also broke the help string in two.
-#
-# Revision 1.3  2001/07/19 05:52:22  anthonybaxter
-# Added CVS keywords Id and Log to all python files.
-#
-#
-
