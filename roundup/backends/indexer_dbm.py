@@ -14,7 +14,7 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer_dbm.py,v 1.3 2005-01-04 16:48:46 jlgijsbers Exp $
+#$Id: indexer_dbm.py,v 1.4 2005-01-05 22:14:21 jlgijsbers Exp $
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
@@ -184,7 +184,7 @@ class Indexer(Indexer):
                         del hits[fileid]
         if hits is None:
             return {}
-        return hits
+        return hits.values()
 
     segments = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_-!"
     def load_index(self, reload=0, wordlist=None):

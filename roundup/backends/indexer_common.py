@@ -32,7 +32,7 @@ class Indexer:
         propspec = {}     # used to do the klass.find
         for propname in designator_propname.values():
             propspec[propname] = {}   # used as a set (value doesn't matter)
-        for classname, nodeid, property in hits.values():
+        for classname, nodeid, property in hits:
             # skip this result if we don't care about this class/property
             if ignore.has_key((classname, property)):
                 continue

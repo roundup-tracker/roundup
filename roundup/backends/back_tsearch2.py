@@ -98,14 +98,14 @@ class Indexer(Indexer):
         if not search_terms:
             return None
 
-        nodeids = self.tsearchQuery(klass.classname, search_terms)
+        hits = self.tsearchQuery(klass.classname, search_terms)
         designator_propname = {}
 
         for nm, propclass in klass.getprops().items():
             if _isLink(propclass):
-                nodeids.extend(self.tsearchQuery(propclass.classname, search_terms))
+                hits.extend(self.tsearchQuery(propclass.classname, search_terms))
 
-        return dict(enumerate(nodeids))
+        return hits
 
     def tsearchQuery(self, classname, search_terms):
         query = """SELECT id FROM _%(classname)s

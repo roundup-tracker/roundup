@@ -126,15 +126,7 @@ class Indexer(Indexer):
 
             self.db.cursor.execute(sql, tuple(map(int, r)))
 
-        # self.search_index has the results as {some id: identifier} ...
-        # sigh
-        r = {}
-        k = 0
-        for c,n,p in self.db.cursor.fetchall():
-            key = (str(c), str(n), str(p))
-            r[k] = key
-            k += 1
-        return r
+        return self.db.cursor.fetchall()
 
     def save_index(self):
         # the normal RDBMS backend transaction mechanisms will handle this
