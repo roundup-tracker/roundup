@@ -42,7 +42,8 @@ distribution (at http://www.activestate.com/Products/ActivePython/), or you'll
 have to install the win32all package separately (get it from
 http://starship.python.net/crew/mhammond/win32/).
 
-Non-Python2.3 users may need to `install the "CSV" module`_.
+If you're using a version of Python older than 2.3, you may need 
+to `install the "CSV" module`_.
 
 Install the "CSV" module
 ------------------------
