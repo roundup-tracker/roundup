@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.22 2004-11-03 01:34:20 richard Exp $
+# $Id: demo.py,v 1.23 2004-11-06 15:05:47 a1s Exp $
 
 import errno
 import os
@@ -55,7 +55,7 @@ def install_demo(home, backend, template):
     init.write_select_db(home, backend)
 
     # figure basic params for server
-    hostname = socket.gethostname()
+    hostname = 'localhost'
     # pick a fairly odd, random port
     port = 8917
     while 1:
