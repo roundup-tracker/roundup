@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.45 2003-03-21 04:02:12 richard Exp $
+# $Id: admin.py,v 1.46 2003-03-23 06:07:05 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -95,11 +95,11 @@ class AdminTool:
             if arg.find('=') == -1:
                 raise UsageError, _('argument "%(arg)s" not propname=value'
                     )%locals()
-            try:
-                key, value = arg.split('=')
-            except ValueError:
+            l = arg.split('=')
+            if len(l) < 2:
                 raise UsageError, _('argument "%(arg)s" not propname=value'
                     )%locals()
+            key, value = l[0], '='.join(l[1:])
             if value:
                 props[key] = value
             else:
@@ -751,7 +751,7 @@ Command help:
 
         Lists all instances of the given class. If the properties are not
         specified, all properties are displayed. By default, the column widths
-        are the width of the property names. The width may be explicitly defined
+        are the width of the largest value. The width may be explicitly defined
         by defining the property as "name:width". For example::
           roundup> table priority id,name:10
           Id Name
@@ -759,6 +759,17 @@ Command help:
           2  bug       
           3  usability 
           4  feature   
+
+        Also to make the width of the column the width of the label,
+        leave a trailing : without a width on the property. E.G.
+          roundup> table priority id,name:
+          Id Name
+          1  fata
+          2  bug       
+          3  usab
+          4  feat
+
+        will result in a the 4 character wide "Name" column.
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
@@ -790,10 +801,19 @@ Command help:
         for spec in prop_names:
             if ':' in spec:
                 name, width = spec.split(':')
-                props.append((name, int(width)))
+               if width == '':
+                    props.append((name, len(spec)))
+               else:
+                    props.append((name, int(width)))
             else:
-                props.append((spec, len(spec)))
-
+               # this is going to be slow
+               maxlen = len(spec)
+               for nodeid in cl.list():
+                    curlen = len(str(cl.get(nodeid, spec)))
+                   if curlen > maxlen:
+                       maxlen = curlen
+                props.append((spec, maxlen))
+               
         # now display the heading
         print ' '.join([name.capitalize().ljust(width) for name,width in props])
 

@@ -72,6 +72,7 @@ Fixed:
 - added example HTML tempating for vacation flag (sf bug 701722)
 - only look for CSV files when importing (thanks Dan Grassi)
 - can now unset values in CSV editing (sf bug 704788)
+- finally, tables autosize columns (sf bug 609070)
 
 
 2003-??-?? 0.5.7
