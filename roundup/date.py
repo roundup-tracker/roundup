@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.42 2003-02-07 02:33:34 richard Exp $
+# $Id: date.py,v 1.43 2003-02-23 19:05:14 kedder Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -253,8 +253,9 @@ class Date:
             d = int(info['d'])
             if info['y'] is not None:
                 y = int(info['y'])
-            # time defaults to 00:00:00 now
-            H = M = S = 0
+            # time defaults to 00:00:00 GMT - offset (local midnight)
+            H = -offset
+            M = S = 0
 
         # override hour, minute, second parts
         if info['H'] is not None and info['M'] is not None:
