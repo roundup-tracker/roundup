@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.2 2004-05-16 23:44:32 richard Exp $
+# $Id: setup.py,v 1.64.2.3 2004-05-27 22:17:23 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,18 +217,14 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-This release fixes some bugs in the previous release:
+0.7.3 is a SECURITY FIX release of Roundup. All users are encouraged
+to upgrade immediately.
 
-- anydbm sorting with None values (sf bug 952853)
-- roundup-server -g option not recognised (sf bug 952310)
-- HTML templating isset() inverted (sf bug 951779)
-- otks manager missing (sf bug 952931)
-- mention DEFAULT_TIMEZONE requirement in upgrading doc (sf bug 952932)
-- fix DateHTMLProperty so local() can override user timezone (sf bug
-  953678)
-- fix anydbm sort/group direction handling, and make RDBMS sort/group use
-  Link'ed "order" properties (sf bug 953148)
-- fix Interval editing (sf bug 954891)
+This release also fixes a few minor bugs:
+
+- add "checked" to truth values for Boolean input
+- fixed import in metakit backend
+- fix SearchAction use of Class.filter(), and clarify API docs for same
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",

@@ -13,6 +13,19 @@ steps.
 
 .. contents::
 
+Migrating from 0.7.2 to 0.7.3
+=============================
+
+0.7.3 Configuration
+-------------------
+
+If you choose, you may specify the directory from which static files are
+served (those which use the URL component ``@@file``). Currently the
+directory defaults to the ``TEMPLATES`` configuration variable. You may
+define a new variable, ``STATIC_FILES`` which overrides this value for
+static files.
+
+
 Migrating from 0.7.0 to 0.7.2
 =============================
 
