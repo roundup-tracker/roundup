@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 Current Situation and Issues
 ============================
@@ -138,9 +138,6 @@ I'm envisaging an infrastructure layer where each template has the following
 "root level" (that is, directly accessible in the TALES namespace) variables
 defined:
 
-*user*
-  The current user node as an HTMLItem instance
-
 *class*
   The current class of node being displayed as an HTMLClass instance
 
@@ -158,6 +155,11 @@ defined:
      name, thus "user/name" and "user/name/menu" will still work - the latter
      will pull information from the form if it can.
 
+  this is a dangerous attribute, and may cause us pain the long run (its name
+  may clash with other top-level variables ... it already clashed with the
+  proposed *user* variable). It might be safer to go with just *class* and
+  *item*, actually...
+
 *form*
   The current CGI form information as a mapping of form argument name to value
 
@@ -167,6 +169,7 @@ defined:
    - the current index information (``filterspec``, ``filter`` args,
      ``properties``, etc) parsed out of the form. 
    - methods for easy filterspec link generation
+   - *user*, the current user node as an HTMLItem instance
 
 *instance*
   The current instance
@@ -180,15 +183,7 @@ defined:
 *modules*
   python modules made available (XXX: not sure what's actually in there tho)
 
-Accesses through the *user*::
-
-    class HTMLUser:
-        def hasPermission(self, ...)
-
-(note that the other permission check implemented by the security module may
- be implemented easily in a tal:condition, so isn't needed here)
-
-Accesses through a class (either through *class* or *db.<classname>*):
+Accesses through a class (either through *class* or *db.<classname>*)::
 
     class HTMLClass:
         def __getattr__(self, attr):
@@ -281,6 +276,14 @@ Multilink HTMLProperty
     class Request:
         def __init__(self, ...)
         def filterspec(self, ...)
+
+Accesses through the *user* attribute of *request*::
+
+    class HTMLUser(HTMLItem):
+        def hasPermission(self, ...)
+
+(note that the other permission check implemented by the security module may
+ be implemented easily in a tal:condition, so isn't needed here)
 
 Template files
 ~~~~~~~~~~~~~~
