@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.25 2002-08-22 00:14:18 richard Exp $
+# $Id: roundup.cgi,v 1.26 2002-09-04 01:58:33 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -99,7 +99,7 @@ def checkconfig():
     if logname:
         LOG = open(logname, 'a')
 
-    # ROUNDUP_DEBUG is checked directly in "roundup.cgi_client"
+    # ROUNDUP_DEBUG is checked directly in "roundup.cgi.client"
 
 
 #
@@ -142,20 +142,20 @@ def main(out, err):
         else:
             instance_home = ROUNDUP_INSTANCE_HOMES[instance]
             instance = roundup.instance.open(instance_home)
-            from roundup import cgi_client
-            client = instance.Client(instance, request, os.environ)
+            from roundup.cgi import client
+            c = instance.Client(instance, request, os.environ)
             try:
-                client.main()
-            except cgi_client.Unauthorised:
+                c.main()
+            except client.Unauthorised:
                 request.send_response(403)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
                 out.write('Unauthorised')
-            except cgi_client.NotFound:
+            except client.NotFound:
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
-                out.write('Not found: %s'%client.path)
+                out.write('Not found: %s'%c.path)
 
     else:
         import urllib
@@ -198,6 +198,9 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2002/08/22 00:14:18  richard
+# Fix to be able to report errors even if the cgi module can't be imported(!)
+#
 # Revision 1.24  2002/01/05 02:21:22  richard
 # fixes
 #
