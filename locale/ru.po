@@ -1,7 +1,7 @@
 # Russian message file for Roundup Issue Tracker
 # alexander smishlajev <alex@tycobka.lv>, 2004
 #
-# $Id: ru.po,v 1.7.2.1 2005-03-03 09:52:03 a1s Exp $
+# $Id: ru.po,v 1.7.2.2 2005-03-29 16:28:23 a1s Exp $
 #
 # roundup.pot revision 1.10.2.1
 #
@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Roundup 0.7.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2005-03-03 09:56+0200\n"
-"PO-Revision-Date: 2005-03-03 11:50FLE Standard Time\n"
+"PO-Revision-Date: 2005-03-29 19:01+0300\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -1148,8 +1148,8 @@ msgid ""
 "Edit Error: someone else has edited this %s (%s). View <a target=\"new\" "
 "href=\"%s%s\">their changes</a> in a new window."
 msgstr ""
-"Ошибка редактирования: %s (%s) изменил другой пользователь. "
-"<a target=\"new\" href=\"%s%s\">Просмотреть эти изменения</a> в другом окне."
+"Ошибка редактирования: %s (%s) изменил другой пользователь. <a target=\"new"
+"\" href=\"%s%s\">Просмотреть эти изменения</a> в другом окне."
 
 #: ../roundup/cgi/actions.py:548
 #, python-format
@@ -1332,9 +1332,9 @@ msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
 "items: %(get_items)f secs. Filtering: %(filtering)f secs.%(endtag)s\n"
 msgstr ""
-"%(starttag)sКешированные элементы: %(cache_hits)d, "
-"вычисленные: %(cache_misses)d. Загрузка объектов: %(get_items)f сек. "
-"Фильтрация: %(filtering)f сек.%(endtag)s\n"
+"%(starttag)sКешированные элементы: %(cache_hits)d, вычисленные: %"
+"(cache_misses)d. Загрузка объектов: %(get_items)f сек. Фильтрация: %"
+"(filtering)f сек.%(endtag)s\n"
 
 #: ../roundup/cgi/form_parser.py:283
 #, python-format
@@ -1505,8 +1505,8 @@ msgid ""
 "Not a date spec: \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or "
 "\"yyyy-mm-dd.HH:MM:SS.SSS\""
 msgstr ""
-"Дата должна быть в формате \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", "
-"\"HH:MM:SS\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
+"Дата должна быть в формате \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS"
+"\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
 
 #: ../roundup/date.py:235
 #, python-format
@@ -1514,9 +1514,8 @@ msgid ""
 "%r not a date / time spec \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" "
 "or \"yyyy-mm-dd.HH:MM:SS.SSS\""
 msgstr ""
-"Неверное значение даты/времени: %r.  Дата должна быть в формате "
-"\"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" или "
-"\"yyyy-mm-dd.HH:MM:SS.SSS\""
+"Неверное значение даты/времени: %r.  Дата должна быть в формате \"yyyy-mm-dd"
+"\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" или \"yyyy-mm-dd.HH:MM:SS.SSS\""
 
 #: ../roundup/date.py:533
 msgid ""
@@ -1668,7 +1667,7 @@ msgstr "заглавие"
 
 #: ../roundup/roundupdb.py:142
 msgid "assignedto"
-msgstr "назначено"
+msgstr "исполнитель"
 
 #: ../roundup/roundupdb.py:142
 msgid "priority"
@@ -1783,8 +1782,8 @@ msgid ""
 "    imaps username:password@server [mailbox]\n"
 "\n"
 msgstr ""
-"Вызов: %(program)s [-v] [-c] [[-C класс] -S поле=значение]* <каталог трекера> "
-"[почтовый ящик]\n"
+"Вызов: %(program)s [-v] [-c] [[-C класс] -S поле=значение]* <каталог "
+"трекера> [почтовый ящик]\n"
 "\n"
 "Ключи:\n"
 " -v: показать номер версии и выйти\n"
@@ -2083,6 +2082,7 @@ msgstr ""
 "Извините, в этой операционной системе работа в фоновом режиме невозможна"
 
 #: ../roundup/scripts/roundup_server.py:719
+#, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Сервер Roundup готов к работе по адресу %(HOST)s:%(PORT)s"
 
@@ -2304,7 +2304,7 @@ msgstr "Автор"
 
 #: ../templates/classic/html/issue.index.html:25
 msgid "Assigned&nbsp;To"
-msgstr "Назначено"
+msgstr "Исполнитель"
 
 #: ../templates/classic/html/issue.index.html:89
 msgid "Download as CSV"
@@ -2370,7 +2370,7 @@ msgstr "Рассылка извещений"
 
 #: ../templates/classic/html/issue.item.html:69
 msgid "Assigned To"
-msgstr "Назначено"
+msgstr "Исполнитель"
 
 #: ../templates/classic/html/issue.item.html:71
 msgid "Topics"
@@ -2534,11 +2534,11 @@ msgstr "не закрыт"
 
 #: ../templates/classic/html/issue.search.html:143
 msgid "Assigned to:"
-msgstr "Назначено:"
+msgstr "Исполнитель:"
 
 #: ../templates/classic/html/issue.search.html:146
 msgid "assigned to me"
-msgstr "назначено мне"
+msgstr "поручено мне"
 
 #: ../templates/classic/html/issue.search.html:148
 msgid "unassigned"
@@ -3049,21 +3049,3 @@ msgstr "Привет,<br>${user}"
 #: ../templates/minimal/html/user.item.html:3
 msgid "User editing - ${tracker}"
 msgstr "Редактирование карточки пользователя - ${tracker}"
-
-#~ msgid "Error: A user with the username \"%(username)s\" already exists"
-#~ msgstr "Ошибка: Имя \"%(username)s\" уже занято"
-
-#~ msgid "Incorrect password"
-#~ msgstr "Неправильный пароль"
-
-#~ msgid "Not a date spec: %s"
-#~ msgstr "Дата должна быть в формате %s"
-
-#~ msgid "%r not a date spec (%s)"
-#~ msgstr "%r не соответствует формату даты (%s)"
-
-#~ msgid "windows service option must be the only one"
-#~ msgstr "Ключ сервиса windows должен быть единственным"
-
-#~ msgid "logfile *must* be specified if pidfile is"
-#~ msgstr "Если указан pidfile, требуется указать logfile"
