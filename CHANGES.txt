@@ -5,6 +5,9 @@ are given with the most recent entry first.
 - added quotes around python interpreter in windows bat (sf bug 623963)
 - fixed link at end of installation doc (sf bug 623957)
 - handle "classname" URL path errors cleaner (generate a 404)
+- added CGI :remove:<propname> and :add:<propname> which specify item ids to
+  remove / add in <propname> multilink.
+- bugfix in boolean templating
 
 
 2002-10-16 0.5.1
