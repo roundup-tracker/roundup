@@ -15,14 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.93 2002-06-27 12:05:25 gmcm Exp $
+# $Id: htmltemplate.py,v 1.94 2002-06-27 15:38:53 gmcm Exp $
 
 __doc__ = """
 Template engine.
 """
 
 import os, re, StringIO, urllib, cgi, errno, types, urllib
-
 import hyperdb, date
 from i18n import _
 
@@ -59,6 +58,11 @@ class TemplateFunctions:
         self.db = None
         self.cl = None
         self.properties = None
+
+    def clear(self):
+        for key in TemplateFunctions.__dict__.keys():
+            if key[:3] == 'do_':
+                del self.globals[key[3:]]
 
     def do_plain(self, property, escape=0, lookup=1):
         ''' display a String property directly;
@@ -199,10 +203,12 @@ class TemplateFunctions:
         elif isinstance(propclass, hyperdb.Password):
             s = '<input type="password" name="%s" size="%s">'%(property, size)
         elif isinstance(propclass, hyperdb.Link):
-            sortfunc = self.make_sort_function(propclass.classname)
             linkcl = self.db.classes[propclass.classname]
-            options = linkcl.list()
-            options.sort(sortfunc)
+            if linkcl.getprops().has_key('order'):  
+                sort_on = 'order'  
+            else:  
+                sort_on = linkcl.labelprop()  
+            options = linkcl.filter(None, {}, [sort_on], []) 
             # TODO: make this a field display, not a menu one!
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop(1)
@@ -289,8 +295,11 @@ class TemplateFunctions:
         # display
         if isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
-            options = linkcl.list()
-            options.sort(sortfunc)
+            if linkcl.getprops().has_key('order'):  
+                sort_on = 'order'  
+            else:  
+                sort_on = linkcl.labelprop()  
+            options = linkcl.filter(None, {}, [sort_on], []) 
             height = height or min(len(options), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
             k = linkcl.labelprop(1)
@@ -326,8 +335,11 @@ class TemplateFunctions:
             if value is None:
                 s = 'selected '
             l.append(_('<option %svalue="-1">- no selection -</option>')%s)
-            options = linkcl.list()
-            options.sort(sortfunc)
+            if linkcl.getprops().has_key('order'):  
+                sort_on = 'order'  
+            else:  
+                sort_on = linkcl.labelprop()  
+            options = linkcl.filter(None, {}, [sort_on], []) 
             for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
@@ -759,7 +771,7 @@ class IndexTemplateReplace:
                 return ''
         if m.group('display'):
             command = m.group('command')
-            return eval(command, self.globals, self.locals)
+            return eval(command, self.globals, self.locals) 
         return '*** unhandled match: %s'%str(m.groupdict())
 
 class IndexTemplate(TemplateFunctions):
@@ -785,7 +797,6 @@ class IndexTemplate(TemplateFunctions):
         self.filterspec = filterspec
 
         w = self.client.write
-
         # get the filter template
         try:
             filter_template = open(os.path.join(self.templates,
@@ -922,6 +933,7 @@ class IndexTemplate(TemplateFunctions):
             w('</form>\n')
 
         self.db = self.cl = self.properties = None
+        self.clear()
 
     def node_matches(self, match, colspan):
         ''' display the files and messages for a node that matched a
@@ -955,7 +967,6 @@ class IndexTemplate(TemplateFunctions):
 
     def filter_section(self, template, search_text, filter, columns, group, 
             all_filters, all_columns, show_customization):
-
         w = self.client.write
 
         # wrap the template in a single table to ensure the whole widget
@@ -1172,6 +1183,7 @@ class ItemTemplate(TemplateFunctions):
         w(replace.go(s))
         w('</form>')
         self.cl = self.db = self.properties = None
+        self.clear()
 
 
 class NewItemTemplate(TemplateFunctions):
@@ -1208,9 +1220,16 @@ class NewItemTemplate(TemplateFunctions):
         w(replace.go(s))
         w('</form>')
         self.cl = self.db = None
+        self.clear()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.93  2002/06/27 12:05:25  gmcm
+# Default labelprops to id.
+# In history, make sure there's a .item before making a link / multilink into an href.
+# Also in history, cgi.escape String properties.
+# Clean up some of the reference cycles.
+#
 # Revision 1.92  2002/06/11 04:57:04  richard
 # Added optional additional property to display in a Multilink form menu.
 #
