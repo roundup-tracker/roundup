@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.12 2004-03-22 07:45:39 richard Exp $
+# $Id: password.py,v 1.13 2004-05-10 22:32:17 richard Exp $
 
 """Password handling (encoding, decoding).
 """
 __docformat__ = 'restructuredtext'
 
-import sha, re, string, random
+import sha, md5, re, string, random
 try:
     import crypt
 except:
@@ -39,6 +39,8 @@ def encodePassword(plaintext, scheme, other=None):
         plaintext = ""
     if scheme == 'SHA':
         s = sha.sha(plaintext).hexdigest()
+    elif scheme == 'MD5':
+        s = md5.md5(plaintext).hexdigest()
     elif scheme == 'crypt' and crypt is not None:
         if other is not None:
             salt = other[:2]
@@ -59,8 +61,8 @@ def generatePassword(length=8):
 class Password:
     '''The class encapsulates a Password property type value in the database. 
 
-    The encoding of the password is one if None, 'SHA' or 'plaintext'. The
-    encodePassword function is used to actually encode the password from
+    The encoding of the password is one if None, 'SHA', 'MD5' or 'plaintext'.
+    The encodePassword function is used to actually encode the password from
     plaintext. The None encoding is used in legacy databases where no
     encoding scheme is identified.
 
@@ -137,6 +139,13 @@ class Password:
 def test():
     # SHA
     p = Password('sekrit')
+    assert p == 'sekrit'
+    assert p != 'not sekrit'
+    assert 'sekrit' == p
+    assert 'not sekrit' != p
+
+    # MD5
+    p = Password('sekrit', 'MD5')
     assert p == 'sekrit'
     assert p != 'not sekrit'
     assert 'sekrit' == p
