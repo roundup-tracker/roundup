@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.4 2002-09-10 01:07:06 richard Exp $
+#$Id: __init__.py,v 1.5 2002-09-11 07:10:08 richard Exp $
 
 def init(db):
     ''' execute the init functions of all the modules in this directory
@@ -26,8 +26,9 @@ def init(db):
         sys.path.insert(0, this_dir)
         for file in os.listdir(this_dir):
             file, ext = os.path.splitext(file)
-            if file == '__init__': continue
-            if ext in ('.py', '.pyc'):
+            if file == '__init__':
+                continue
+            if ext in '.py':
                 module = __import__(file)
                 module.init(db)
     finally:
