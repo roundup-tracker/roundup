@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.86 2002-04-03 05:54:31 richard Exp $
+# $Id: htmltemplate.py,v 1.87 2002-04-03 06:12:46 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -354,7 +354,7 @@ class TemplateFunctions:
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
-            linkvalue = cgi.escape(linkcl.get(value, k))
+            linkvalue = cgi.escape(str(linkcl.get(value, k)))
             if showid:
                 label = value
                 title = ' title="%s"'%linkvalue
@@ -373,7 +373,7 @@ class TemplateFunctions:
             k = linkcl.labelprop()
             l = []
             for value in value:
-                linkvalue = cgi.escape(linkcl.get(value, k))
+                linkvalue = cgi.escape(str(linkcl.get(value, k)))
                 if showid:
                     label = value
                     title = ' title="%s"'%linkvalue
@@ -478,7 +478,7 @@ class TemplateFunctions:
         l = []
         k = linkcl.labelprop()
         for optionid in linkcl.list():
-            option = cgi.escape(linkcl.get(optionid, k))
+            option = cgi.escape(str(linkcl.get(optionid, k)))
             if optionid in value or option in value:
                 checked = 'checked'
             else:
@@ -1128,6 +1128,14 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.86  2002/04/03 05:54:31  richard
+# Fixed serialisation problem by moving the serialisation step out of the
+# hyperdb.Class (get, set) into the hyperdb.Database.
+#
+# Also fixed htmltemplate after the showid changes I made yesterday.
+#
+# Unit tests for all of the above written.
+#
 # Revision 1.85  2002/04/02 01:40:58  richard
 #  . link() htmltemplate function now has a "showid" option for links and
 #    multilinks. When true, it only displays the linked node id as the anchor
