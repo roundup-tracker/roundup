@@ -70,3 +70,14 @@ Fixes:
  . Fixed a bug in the hyperdb filter - wrong variable names in the error
    message.
 
+
+2001-07-?? - 0.2.1
+Fixes:
+ . Fixed bug in init command - templatebuilder was assuming existence of
+   "html" directory in instance home.
+ . Fixed INSTALL.txt to reflect some changes in the installation and test
+   procedure. Whatdya know, "setup.py install" does the script install.
+   There you go...
+ . Fixed some non-string node ids in cgi_client now that the hyperdb is
+   strict about such things.
+
