@@ -62,4 +62,5 @@
    out-of-the-box
  . Added the "classic" template - a direct implementation of the Roundup
    spec. Well, as close as we're going to get, anyway.
-
+ . Added command-line arg handling to roundup-server so it's more useful 
+   out-of-the-box.
