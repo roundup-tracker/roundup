@@ -23,8 +23,9 @@
  <td>
   <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
   <span tal:replace="structure python:db.issue.classhelp('id,title', label='list', width=500)" />
-  <span tal:condition="context/superseder">
-   <br>View: <span tal:replace="structure python:context.superseder.link(showid=1)" />
+  <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
+   <br>View: <a tal:attributes="href string:issue${sup/id}"
+                tal:content="sup/id"></a>
   </span>
  </td>
  <th nowrap>Nosy List</th>

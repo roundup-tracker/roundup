@@ -202,7 +202,17 @@ class HTMLDatabase:
         l = self._client.db.classes.keys()
         l.sort()
         return [HTMLClass(self._client, cn) for cn in l]
-        
+
+def lookupIds(db, prop, ids, num_re=re.compile('-?\d+')):
+    cl = db.getclass(prop.classname)
+    l = []
+    for entry in ids:
+        if num_re.match(entry):
+            l.append(entry)
+        else:
+            l.append(cl.lookup(entry))
+    return l
+
 class HTMLClass:
     ''' Accesses through a class (either through *class* or *db.<classname>*)
     '''
@@ -232,13 +242,29 @@ class HTMLClass:
         prop = self._props[item]
 
         # look up the correct HTMLProperty class
+        form = self._client.form
         for klass, htmlklass in propclasses:
-            if isinstance(prop, hyperdb.Multilink):
-                value = []
+            if not isinstance(prop, klass):
+                continue
+            if form.has_key(item):
+                if isinstance(prop, hyperdb.Multilink):
+                    value = lookupIds(self._db, prop,
+                        handleListCGIValue(form[item]))
+                elif isinstance(prop, hyperdb.Link):
+                    value = form[item].value.strip()
+                    if value:
+                        value = lookupIds(self._db, prop, [value])[0]
+                    else:
+                        value = None
+                else:
+                    value = form[item].value.strip() or None
             else:
-                value = None
-            if isinstance(prop, klass):
-                return htmlklass(self._client, '', prop, item, value)
+                if isinstance(prop, hyperdb.Multilink):
+                    value = []
+                else:
+                    value = None
+            print (prop, value)
+            return htmlklass(self._client, '', prop, item, value)
 
         # no good
         raise KeyError, item
@@ -987,7 +1013,10 @@ def handleListCGIValue(value):
     if isinstance(value, type([])):
         return [value.value for value in value]
     else:
-        return value.value.split(',')
+        value = value.value.strip()
+        if not value:
+            return []
+        return value.split(',')
 
 class ShowDict:
     ''' A convenience access to the :columns index parameters

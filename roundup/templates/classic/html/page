@@ -61,7 +61,7 @@
    <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
    <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
    <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
-   <a tal:attributes="href python:request.indexargs_href(request.url,
+   <a tal:attributes="href python:request.indexargs_href('',
        {':action':'logout'})">Logout</a>
   </p>
  </td>

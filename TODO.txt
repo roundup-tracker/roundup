@@ -41,9 +41,7 @@ pending web: Quick help links next to the property labels giving a
 pending web: clicking on a group header should filter for that type of entry
 pending web: re-enable auth by basic http auth
 pending web: search "refinement"
-             - pre-fill the search page with the current search parameters)
-             - add a drop-down with all queries which fills form with selected
-               query values
+             - pre-fill the search page with the current search parameters
 pending web: UNIX init.d script for roundup-server
 pending web: rewritten documentation (can come after the beta though so stuff
              is settled) ... including relevant file names in customisation doc
