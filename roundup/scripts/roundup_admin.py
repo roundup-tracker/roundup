@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_admin.py,v 1.4 2002-09-10 01:07:06 richard Exp $
+# $Id: roundup_admin.py,v 1.5 2003-04-24 04:27:32 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -26,6 +26,10 @@ from roundup.i18n import _
 import sys
 
 def run():
+    # time out after a minute if we can
+    import socket
+    if hasattr(socket, 'setdefaulttimeout'):
+        socket.setdefaulttimeout(60)
     tool = AdminTool()
     sys.exit(tool.main())
 
