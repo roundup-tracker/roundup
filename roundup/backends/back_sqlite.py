@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.33 2004-10-07 06:30:20 richard Exp $
+# $Id: back_sqlite.py,v 1.34 2004-10-08 05:37:44 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -17,10 +17,10 @@ from roundup.backends import rdbms_common
 import sqlite
 
 def db_exists(config):
-    return os.path.exists(os.path.join(config.TRACKER_HOME, 'db', 'db'))
+    return os.path.exists(os.path.join(config.DATABASE, 'db'))
 
 def db_nuke(config):
-    shutil.rmtree(os.path.join(config.TRACKER_HOME, 'db'))
+    shutil.rmtree(config.DATABASE)
 
 class Database(rdbms_common.Database):
     # char to use for positional arguments

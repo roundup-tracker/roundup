@@ -102,7 +102,9 @@ class Database(rdbms_common.Database):
 
         try:
             self.load_dbschema()
-        except:
+        except psycopg.ProgrammingError, message:
+            if '"schema" does not exist' not in str(message):
+                raise
             self.rollback()
             self.init_dbschema()
             self.sql("CREATE TABLE schema (schema TEXT)")

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.78 2004-07-28 05:00:30 richard Exp $
+# $Id: admin.py,v 1.79 2004-10-08 05:37:44 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -453,8 +453,13 @@ Erase it? Y/N: """))
             if ok.strip().lower() != 'y':
                 return 0
 
+            backend = tracker.get_backend_name()
+
             # nuke it
             tracker.nuke()
+
+            # re-write the backend select file
+            init.write_select_db(tracker_home, backend)
 
         # GO
         tracker.init(password.Password(adminpw))

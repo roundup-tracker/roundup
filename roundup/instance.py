@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.23 2004-09-29 07:26:17 a1s Exp $
+# $Id: instance.py,v 1.24 2004-10-08 05:37:44 richard Exp $
 
 '''Tracker handling (open tracker).
 
@@ -39,11 +39,15 @@ class Tracker:
         self.cgi_actions = {}
         self.templating_utils = {}
 
-    def get_backend(self):
+    def get_backend_name(self):
         o = __builtins__['open']
         f = o(os.path.join(self.tracker_home, 'db', 'backend_name'))
         name = f.readline().strip()
         f.close()
+        return name
+
+    def get_backend(self):
+        name = self.get_backend_name()
         return getattr(backends, name)
 
     def open(self, name):

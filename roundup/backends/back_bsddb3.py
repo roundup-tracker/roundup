@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_bsddb3.py,v 1.26 2004-07-27 01:59:28 richard Exp $
+#$Id: back_bsddb3.py,v 1.27 2004-10-08 05:37:44 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in BSDDB3.
 '''
 __docformat__ = 'restructuredtext'
@@ -27,10 +27,10 @@ from roundup import hyperdb, date
 from back_anydbm import Database, Class, FileClass, IssueClass
 
 def db_exists(config):
-    return os.path.exists(os.path.join(config.TRACKER_HOME, 'db', 'nodes.user'))
+    return os.path.exists(os.path.join(config.DATABASE, 'nodes.user'))
 
 def db_nuke(config):
-    shutil.rmtree(os.path.join(config.TRACKER_HOME, 'db'))
+    shutil.rmtree(config.DATABASE)
 
 #
 # Now the database
@@ -48,6 +48,8 @@ class Database(Database):
                 except os.error, error:
                     if error.errno != errno.ENOENT:
                         raise
+        # reset id sequences
+        os.remove(os.path.join(os.getcwd(), self.dir, '_ids'))
 
     def getclassdb(self, classname, mode='r'):
         ''' grab a connection to the class db that will be used for

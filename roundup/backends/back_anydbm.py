@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.172 2004-09-29 07:09:13 a1s Exp $
+#$Id: back_anydbm.py,v 1.173 2004-10-08 05:37:44 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -46,12 +46,12 @@ from roundup.date import Range
 def db_exists(config):
     # check for the user db
     for db in 'nodes.user nodes.user.db'.split():
-        if os.path.exists(os.path.join(config.TRACKER_HOME, 'db', db)):
+        if os.path.exists(os.path.join(config.DATABASE, db)):
             return 1
     return 0
 
 def db_nuke(config):
-    shutil.rmtree(os.path.join(config.TRACKER_HOME, 'db'))
+    shutil.rmtree(config.DATABASE)
 
 #
 # Now the database
@@ -185,6 +185,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     os.remove(path)
                 elif os.path.exists(path+'.db'):    # dbm appends .db
                     os.remove(path+'.db')
+        # reset id sequences
+        path = os.path.join(os.getcwd(), self.dir, '_ids')
+        if os.path.exists(path):
+            os.remove(path)
+        elif os.path.exists(path+'.db'):    # dbm appends .db
+            os.remove(path+'.db')
 
     def getclassdb(self, classname, mode='r'):
         ''' grab a connection to the class db that will be used for

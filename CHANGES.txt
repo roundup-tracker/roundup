@@ -29,6 +29,10 @@ Feature:
 - relaxed hyperlinking in web interface (accept "issue123" or "Issue 123")
 - record journaltag lookup ("fixes" sf bug 998140)
 
+Fixed:
+- postgres backend open doesn't hide corruption in schema (sf bug 956375)
+- *dbm-style backends nuke() method now clear id counters
+
 
 2004-??-?? 0.7.7
 Fixed:
