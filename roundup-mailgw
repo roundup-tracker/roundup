@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.13 2001-11-09 01:05:55 richard Exp $
+# $Id: roundup-mailgw,v 1.14 2001-11-13 21:44:44 richard Exp $
 
 import sys, os, re, cStringIO
 if int(sys.version[0]) < 2:
@@ -140,7 +140,7 @@ def main(args):
 
     # get a mail handler
     db = instance.open('admin')
-    handler = instance.MailGW(db)
+    handler = instance.MailGW(instance, db)
 
     # if there's no more arguments, read a single message from stdin
     if len(args) == 2:
@@ -168,6 +168,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/11/09 01:05:55  richard
+# Fixed bug #479511 ] mailgw to pop once engelbert gruber tested the POP
+# gateway.
+#
 # Revision 1.12  2001/11/08 05:16:55  richard
 # Rolled roundup-popgw into roundup-mailgw. Cleaned mailgw up significantly,
 # tested unix mailbox some more. POP still untested.

@@ -36,7 +36,7 @@ Fixed:
  . fixed nosy reaction and author copy handling
  . errors in nosy reaction will be propogated now (were effectively being
    squashed)
-
+ . re-open the database as the author in mail handling
 
 2001-10-23 - 0.3.0 pre 3
 Feature:

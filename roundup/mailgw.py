@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.32 2001-11-12 22:04:29 richard Exp $
+$Id: mailgw.py,v 1.33 2001-11-13 21:44:44 richard Exp $
 '''
 
 
@@ -114,7 +114,8 @@ subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re)\s*\W?\s*)*'
     r'\s*(?P<title>[^\[]+)(\[(?P<args>.+?)\])?', re.I)
 
 class MailGW:
-    def __init__(self, db):
+    def __init__(self, instance, db):
+        self.instance = instance
         self.db = db
 
     def main(self, fp):
@@ -294,6 +295,11 @@ Subject was: "%s"
         # handle the users
         #
         author = self.db.uidFromAddress(message.getaddrlist('from')[0])
+        # reopen the database as the author
+        username = self.db.user.get(author, 'username')
+        self.db.close()
+        self.db = self.instance.open(username)
+        # now update the recipients list
         recipients = []
         tracker_email = self.ISSUE_TRACKER_EMAIL.lower()
         for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
@@ -515,6 +521,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2001/11/12 22:04:29  richard
+# oops, left debug in there
+#
 # Revision 1.31  2001/11/12 22:01:06  richard
 # Fixed issues with nosy reaction and author copies.
 #
