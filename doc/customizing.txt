@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.98 $
+:Version: $Revision: 1.99 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3515,6 +3515,24 @@ Scalability
     A way out will be to link from the topics to the users which
     selected these topics a nosy topics. This will eliminate the
     loop over all users.
+
+
+Adding action links to the index page
+-------------------------------------
+
+Add a column to the item.index.html template.
+
+Resolving the issue::
+
+  <a tal:attributes="href
+     string:issue${i/id}?:status=resolved&:action=edit">resolve</a>
+
+"Take" the issue::
+
+  <a tal:attributes="href
+     string:issue${i/id}?:assignedto=${user/id}&:action=edit">take</a>
+
+... and so on
 
 -------------------
 
