@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.171 2004-04-20 21:57:10 richard Exp $
+# $Id: client.py,v 1.172 2004-04-22 22:16:36 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -6,6 +6,7 @@ __docformat__ = 'restructuredtext'
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, stat, rfc822
+
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
@@ -97,6 +98,8 @@ class Client:
     # pagesize, startwith
 
     def __init__(self, instance, request, env, form=None):
+        # re-seed the random number generator
+        random.seed()
         if __debug__:
             hyperdb.traceMark()
         self.start = time.time()
@@ -612,8 +615,15 @@ class Client:
 
         Also store away the user's login info against the session.
         """
-        # TODO generate a much, much stronger session key ;)
-        self.session = binascii.b2a_base64(repr(random.random())).strip()
+        sessions = self.db.getSessionManager()
+
+        # generate a session key
+        s = '%s%s'%(time.time(), random.random())
+        print s
+        self.session = binascii.b2a_base64(s).strip()
+        while sessions.exists(self.session):
+            s = '%s%s'%(time.time(), random.random())
+            self.session = binascii.b2a_base64(s).strip()
 
         # clean up the base64
         if self.session[-1] == '=':
@@ -623,7 +633,6 @@ class Client:
                 self.session = self.session[:-1]
 
         # insert the session in the sessiondb
-        sessions = self.db.getSessionManager()
         sessions.set(self.session, user=user)
         self.db.commit()
 
