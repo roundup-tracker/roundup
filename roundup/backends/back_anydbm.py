@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.24 2002-01-21 16:33:20 rochecompaan Exp $
+#$Id: back_anydbm.py,v 1.25 2002-01-22 05:06:08 rochecompaan Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -352,6 +352,15 @@ class Database(hyperdb.Database):
                         params) = entry
                     if date_stamp > pack_before or action == 'create':
                         l.append(entry)
+                    elif action == 'set':
+                        # grab the last set entry to keep information on
+                        # activity
+                        last_set_entry = entry
+                date_stamp = last_set_entry[1]
+                # if the last set entry was made after the pack date
+                # then it is already in the list
+                if date_stamp < pack_before:
+                    l.append(last_set_entry)
                 db[key] = marshal.dumps(l)
             if db_type == 'gdbm':
                 db.reorganize()
@@ -444,6 +453,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.24  2002/01/21 16:33:20  rochecompaan
+#You can now use the roundup-admin tool to pack the database
+#
 #Revision 1.23  2002/01/18 04:32:04  richard
 #Rollback was breaking because a message hadn't actually been written to the file. Needs
 #more investigation.

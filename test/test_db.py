@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.16 2002-01-21 16:33:20 rochecompaan Exp $ 
+# $Id: test_db.py,v 1.17 2002-01-22 05:06:09 rochecompaan Exp $ 
 
 import unittest, os, shutil
 
@@ -241,13 +241,16 @@ class anydbmDBTestCase(MyTestCase):
 
     def testPack(self):
         self.db.issue.create(title="spam", status='1')
+        self.db.commit()
         self.db.issue.set('1', status='2')
+        self.db.commit()
+        self.db.issue.set('1', status='3')
         self.db.commit()
 
         pack_before = date.Date(". + 1d")
         self.db.pack(pack_before)
         journal = self.db.getjournal('issue', '1')
-        self.assertEqual(1, len(journal))
+        self.assertEqual(2, len(journal))
 
     def testRetire(self):
         pass
@@ -344,6 +347,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/01/21 16:33:20  rochecompaan
+# You can now use the roundup-admin tool to pack the database
+#
 # Revision 1.15  2002/01/19 13:16:04  rochecompaan
 # Journal entries for link and multilink properties can now be switched on
 # or off.
