@@ -2460,13 +2460,6 @@ is also done in the ``open()`` function of ``dbinit.py``.
 There are currently two loops which set up permissions and then assign
 them to various roles. Simply add the new "category" to both lists::
 
-    # new permissions for this schema
-    for cl in 'issue', 'file', 'msg', 'user', 'category':
-        db.security.addPermission(name="Edit", klass=cl,
-            description="User is allowed to edit "+cl)
-        db.security.addPermission(name="View", klass=cl,
-            description="User is allowed to access "+cl)
-
     # Assign the access and edit permissions for issue, file and message
     # to regular users now
     for cl in 'issue', 'file', 'msg', 'category':
@@ -2475,24 +2468,8 @@ them to various roles. Simply add the new "category" to both lists::
         p = db.security.getPermission('Edit', cl)
         db.security.addPermissionToRole('User', p)
 
-So you are in effect doing the following (with 'cl' substituted by its
-value)::
-
-    db.security.addPermission(name="Edit", klass='category',
-        description="User is allowed to edit "+'category')
-    db.security.addPermission(name="View", klass='category',
-        description="User is allowed to access "+'category')
-
-which is creating two permission types; that of editing and viewing
-"category" objects respectively. Then the following lines assign those
-new permissions to the "User" role, so that normal users can view and
-edit "category" objects::
-
-    p = db.security.getPermission('View', 'category')
-    db.security.addPermissionToRole('User', p)
-
-    p = db.security.getPermission('Edit', 'category')
-    db.security.addPermissionToRole('User', p)
+These lines assign the View and Edit Permissions to the "User" role, so
+that normal users can view and edit "category" objects.
 
 This is all the work that needs to be done for the database. It will
 store categories, and let users view and edit them. Now on to the

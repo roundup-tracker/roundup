@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.5 2004-06-24 09:56:49 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.6 2004-07-01 03:58:34 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1947,11 +1947,12 @@ class FileClass(Class, hyperdb.FileClass):
 
     def index(self, nodeid):
         Class.index(self, nodeid)
-        mimetype = self.get(nodeid, 'type')
-        if not mimetype:
-            mimetype = self.default_mime_type
+        try:
+            mime_type = self.get(nodeid, 'type', self.default_mime_type)
+        except KeyError:
+            mime_type = self.default_mime_type
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                    self.get(nodeid, 'content'), mimetype)
+            str(self.get(nodeid, 'content')), mime_type)
  
 class IssueClass(Class, roundupdb.IssueClass):
     ''' The newly-created class automatically includes the "messages",

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.12 2004-06-28 23:15:39 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.13 2004-07-01 03:58:34 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -708,6 +708,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if isinstance(params, type({})):
                 if action in ('set', 'create'):
                     params = self.serialise(classname, params)
+            journaldate = journaldate.serialise()
             l.append((nodeid, journaldate, journaltag, action, params))
         db = self.getCachedJournalDB(classname)
         db[nodeid] = marshal.dumps(l)
@@ -2183,11 +2184,12 @@ class FileClass(Class, hyperdb.FileClass):
         Pass on the content-type property for the content property.
         '''
         Class.index(self, nodeid)
-        mimetype = self.get(nodeid, 'type')
-        if not mimetype:
-            mimetype = self.default_mime_type
+        try:
+            mime_type = self.get(nodeid, 'type', self.default_mime_type)
+        except KeyError:
+            mime_type = self.default_mime_type
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                    self.get(nodeid, 'content'), mimetype)
+            str(self.get(nodeid, 'content')), mime_type)
 
 # deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):

@@ -1,5 +1,5 @@
-STXTOHTML = rst2html
-STXTOHT = rst2ht.py
+STXTOHTML = rst2html.py
+STXTOHT = python /usr/bin/rst2ht.py
 WEBDIR = ../../htdocs/htdocs/doc-0.7
 
 SOURCE = announcement.txt customizing.txt developers.txt FAQ.txt features.txt \
