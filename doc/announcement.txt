@@ -14,7 +14,7 @@ A lot has been done since 0.4:
 
 - new backend for metakit (thanks Gordon McMillan)
 - new backend for gadfly (it's as done as it's going to get)
-- further split the *dbm backends from the core code, allowing easier
+- further split the dbm backends from the core code, allowing easier
   non-dict-like backends (eg metakit, RDB)
 - implemented and used the new access control mechanisms (Permissions, Roles)
 - switched templating to use Zope's PageTemplates (yay!)
