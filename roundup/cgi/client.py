@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.18 2002-09-06 05:53:02 richard Exp $
+# $Id: client.py,v 1.19 2002-09-06 07:21:31 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -326,7 +326,7 @@ class Client:
                 '<li>'.join(pt._v_errors))
         except:
             # everything else
-            return cgitb.html()
+            return cgitb.pt_html()
 
     def content(self):
         ''' Callback used by the page template to render the content of 
@@ -903,10 +903,9 @@ class Client:
             return 0
         return 1
 
-    def XXXremove_action(self,  dre=re.compile(r'([^\d]+)(\d+)')):
+    def remove_action(self,  dre=re.compile(r'([^\d]+)(\d+)')):
         # XXX I believe this could be handled by a regular edit action that
         # just sets the multilink...
-        # XXX handle this !
         target = self.index_arg(':target')[0]
         m = dre.match(target)
         if m:

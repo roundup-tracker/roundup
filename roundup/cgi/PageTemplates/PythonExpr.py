@@ -14,7 +14,7 @@
 """Generic Python Expression Handler
 """
 
-__version__='$Revision: 1.1 $'[11:-2]
+__version__='$Revision: 1.2 $'[11:-2]
 
 from TALES import CompilerError
 from string import strip, split, join, replace, lstrip
@@ -60,7 +60,7 @@ class PythonExpr:
         return names
 
     def __call__(self, econtext):
-        __traceback_info__ = self.expr
+        __traceback_info__ = 'python expression "%s"'%self.expr
         f = self._f
         f.func_globals.update(self._bind_used_names(econtext))        
         return f()

@@ -17,7 +17,7 @@ Page Template-specific implementation of TALES, with handlers
 for Python expressions, string literals, and paths.
 """
 
-__version__='$Revision: 1.1 $'[11:-2]
+__version__='$Revision: 1.2 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
@@ -112,7 +112,8 @@ class SubPathExpr:
                     # If the value isn't a string, assume it's a sequence
                     # of path names.
                     path[i:i+1] = list(val)
-        __traceback_info__ = base = self._base
+        base = self._base
+        __traceback_info__ = 'sub path expression "%s"'%base
         if base == 'CONTEXTS':
             ob = econtext.contexts
         else:
@@ -271,8 +272,8 @@ def restrictedTraverse(self, path, securityManager,
     object = self
     #print 'TRAVERSE', (object, path)
     while path:
-        __traceback_info__ = REQUEST
         name = path.pop()
+        __traceback_info__ = 'looking for "%s"'%name
 
         if isinstance(name, TupleType):
             object = apply(object, name)

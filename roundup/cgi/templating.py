@@ -98,7 +98,7 @@ def getTemplate(dir, name, extension, classname=None, request=None):
     # compile the template
     templates[key] = pt = RoundupPageTemplate()
     pt.write(open(src).read())
-    pt.id = name
+    pt.id = filename
     pt.mtime = time.time()
     return pt
 

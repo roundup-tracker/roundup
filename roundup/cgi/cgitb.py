@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.1 2002-08-30 08:28:44 richard Exp $
+# $Id: cgitb.py,v 1.2 2002-09-06 07:21:31 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -15,6 +15,43 @@ def breaker():
     return ('<body bgcolor="white">' +
             '<font color="white" size="-5"> > </font> ' +
             '</table>' * 5)
+
+def niceDict(indent, dict):
+    l = []
+    for k,v in dict.items():
+        l.append('%s%s: %r'%(indent,k,v))
+    return '\n'.join(l)
+
+def pt_html(context=5):
+    import cgi
+    etype, evalue = sys.exc_type, sys.exc_value
+    if type(etype) is types.ClassType:
+        etype = etype.__name__
+    pyver = 'Python ' + string.split(sys.version)[0] + '<br>' + sys.executable
+    head = pydoc.html.heading(
+        '<font size=+1><strong>%s</strong>: %s</font>'%(etype, evalue),
+        '#ffffff', '#777777', pyver)
+
+    head = head + _('<p>A problem occurred in your template</p><pre>')
+
+    l = []
+    for frame, file, lnum, func, lines, index in inspect.trace(context):
+        args, varargs, varkw, locals = inspect.getargvalues(frame)
+        if locals.has_key('__traceback_info__'):
+            ti = locals['__traceback_info__']
+            l.append(str(ti))
+        if locals.has_key('__traceback_supplement__'):
+            ts = locals['__traceback_supplement__']
+            if len(ts) == 2:
+                supp, context = ts
+                l.append('in template %r'%context.id)
+            elif len(ts) == 3:
+                supp, context, info = ts
+                l.append('in expression %r\n%s\n%s\n'%(info,
+                    niceDict('    ', context.global_vars),
+                    niceDict('    ', context.local_vars)))
+                # context._scope_stack))
+    return head + cgi.escape('\n'.join(l)) + '</pre><p>&nbsp;</p>'
 
 def html(context=5):
     etype, evalue = sys.exc_type, sys.exc_value
@@ -34,7 +71,8 @@ def html(context=5):
     traceback = []
     for frame, file, lnum, func, lines, index in inspect.trace(context):
         if file is None:
-            link = '&lt;file is None - probably inside <tt>eval</tt> or <tt>exec</tt>&gt;'
+            link = '''&lt;file is None - probably inside <tt>eval</tt> or
+                    <tt>exec</tt>&gt;'''
         else:
             file = os.path.abspath(file)
             link = '<a href="file:%s">%s</a>' % (file, pydoc.html.escape(file))
@@ -54,7 +92,7 @@ def html(context=5):
             traceback.append('<p>' + level)
             continue
 
-        # do a fil inspection
+        # do a file inspection
         names = []
         def tokeneater(type, token, start, end, line, names=names):
             if type == tokenize.NAME and token not in keyword.kwlist:
@@ -68,7 +106,8 @@ def html(context=5):
 
         try:
             tokenize.tokenize(linereader, tokeneater)
-        except IndexError: pass
+        except IndexError:
+            pass
         lvals = []
         for name in names:
             if name in frame.f_code.co_varnames:
@@ -83,11 +122,11 @@ def html(context=5):
                 else:
                     value = _('<em>undefined</em>')
                 name = '<em>global</em> <strong>%s</strong>' % name
-            lvals.append('%s&nbsp;= %s' % (name, value))
+            lvals.append('%s&nbsp;= %s'%(name, value))
         if lvals:
             lvals = string.join(lvals, ', ')
-            lvals = indent + '''
-<small><font color="#909090">%s</font></small><br>''' % lvals
+            lvals = indent + '<small><font color="#909090">%s'\
+                '</font></small><br>'%lvals
         else:
             lvals = ''
 
@@ -124,6 +163,9 @@ def handler():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/08/30 08:28:44  richard
+# New CGI interface support
+#
 # Revision 1.10  2002/01/16 04:49:45  richard
 # Handle a special case that the CGI interface tickles. I need to check if
 # this needs fixing in python's core.
