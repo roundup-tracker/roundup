@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.28 2002-09-11 23:54:25 richard Exp $
+# $Id: client.py,v 1.29 2002-09-12 06:02:45 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1141,6 +1141,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                         raise ValueError, _('property "%(propname)s": '
                             '%(value)s not a %(classname)s')%{'propname':key, 
                             'value': value, 'classname': link}
+                    except TypeError, message:
+                        raise ValueError, _('you may only enter ID values '
+                            'for property "%(propname)s": %(message)s'%{
+                            'propname':key, 'message': message}
         elif isinstance(proptype, hyperdb.Multilink):
             if isinstance(value, type([])):
                 # it's a list of MiniFieldStorages
@@ -1160,6 +1164,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                         raise ValueError, _('property "%(propname)s": '
                             '"%(value)s" not an entry of %(classname)s')%{
                             'propname':key, 'value': entry, 'classname': link}
+                    except TypeError, message:
+                        raise ValueError, _('you may only enter ID values '
+                            'for property "%(propname)s": %(message)s'%{
+                            'propname':key, 'message': message}
                 l.append(entry)
             l.sort()
             value = l
