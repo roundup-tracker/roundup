@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.30 2004-07-27 00:57:18 richard Exp $
+# $Id: init.py,v 1.31 2004-09-29 07:13:44 richard Exp $
 
 """Init (create) a roundup instance.
 """
@@ -83,6 +83,8 @@ def install(instance_home, template):
       the html templates that are used by the CGI Client
     detectors/
       the auditor and reactor modules for this instance
+    extensions/
+      code extensions to Roundup
     '''
     # At the moment, it's just a copy
     copytree(template, instance_home)

@@ -16,6 +16,12 @@ steps.
 Migrating from 0.7.1 to 0.8.0
 =============================
 
+0.8.0 new tracker layout
+------------------------
+
+XXX describe any mandatory changes to tracker layout
+
+
 0.8.0 8-bit character set support
 ---------------------------------
 
