@@ -3,7 +3,7 @@
 
 Stolen from CGIHTTPServer
 
-$Id: roundup-server,v 1.5 2001-07-24 01:07:59 richard Exp $
+$Id: roundup-server,v 1.6 2001-07-29 07:01:39 richard Exp $
 
 """
 import sys
@@ -261,6 +261,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/24 01:07:59  richard
+# Added command-line arg handling to roundup-server so it's more useful
+# out-of-the-box.
+#
 # Revision 1.4  2001/07/23 10:31:45  richard
 # disabled the reloading until it can be done properly
 #
@@ -278,4 +282,4 @@ if __name__ == '__main__':
 # More Grande Splite stuff
 #
 #
-
+# vim: set filetype=python ts=4 sw=4 et si

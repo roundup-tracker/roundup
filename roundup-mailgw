@@ -1,6 +1,5 @@
 #! /usr/bin/python
-
-# $ID: $
+# $Id: roundup-mailgw,v 1.2 2001-07-29 07:01:39 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -30,8 +29,11 @@ handler.main(sys.stdin)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/23 03:46:48  richard
+# moving the bin files to facilitate out-of-the-boxness
+#
 # Revision 1.1  2001/07/22 11:15:45  richard
 # More Grande Splite stuff
 #
 #
-
+# vim: set filetype=python ts=4 sw=4 et si

@@ -1,6 +1,5 @@
 #! /usr/bin/env python
-
-# $Id: setup.py,v 1.5 2001-07-28 00:39:18 richard Exp $
+# $Id: setup.py,v 1.6 2001-07-29 07:01:39 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -31,6 +30,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/28 00:39:18  richard
+# changes for the 0.2.1 distribution build.
+#
 # Revision 1.4  2001/07/27 07:20:17  richard
 # Makefile is now obsolete - setup does what it used to do.
 #
@@ -42,3 +44,5 @@ setup ( name = "roundup",
 # Made setup.py executable, added id and log.
 #
 #
+#
+# vim: set filetype=python ts=4 sw=4 et si

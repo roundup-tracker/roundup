@@ -1,4 +1,4 @@
-# $Id: interfaces.py,v 1.1 2001-07-23 23:16:01 richard Exp $
+# $Id: interfaces.py,v 1.2 2001-07-29 07:01:39 richard Exp $
 
 import instance_config
 from roundup import cgi_client, mailgw 
@@ -20,6 +20,8 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/07/23 23:16:01  richard
+# Split off the interfaces (CGI, mailgw) into a separate file from the DB stuff.
 #
-
-
+#
+# vim: set filetype=python ts=4 sw=4 et si

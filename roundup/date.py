@@ -1,4 +1,4 @@
-# $Id: date.py,v 1.4 2001-07-25 04:09:34 richard Exp $
+# $Id: date.py,v 1.5 2001-07-29 07:01:39 richard Exp $
 
 import time, re, calendar
 
@@ -355,6 +355,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/25 04:09:34  richard
+# Fixed offset handling (shoulda read the spec a little better)
+#
 # Revision 1.3  2001/07/23 07:56:05  richard
 # Storing only marshallable data in the db - no nasty pickled class references.
 #
@@ -364,3 +367,5 @@ if __name__ == '__main__':
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
+#
+# vim: set filetype=python ts=4 sw=4 et si

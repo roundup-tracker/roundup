@@ -1,4 +1,4 @@
-# $Id: hyperdb.py,v 1.6 2001-07-29 05:36:14 richard Exp $
+# $Id: hyperdb.py,v 1.7 2001-07-29 07:01:39 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -789,6 +789,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/29 05:36:14  richard
+# Cleanup of the link label generation.
+#
 # Revision 1.5  2001/07/29 04:05:37  richard
 # Added the fabricated property "id".
 #
@@ -806,3 +809,5 @@ def Choice(name, *options):
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
+#
+# vim: set filetype=python ts=4 sw=4 et si

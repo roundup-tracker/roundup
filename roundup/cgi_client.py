@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.6 2001-07-29 04:04:00 richard Exp $
+# $Id: cgi_client.py,v 1.7 2001-07-29 07:01:39 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -496,6 +496,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/29 04:04:00  richard
+# Moved some code around allowing for subclassing to change behaviour.
+#
 # Revision 1.5  2001/07/28 08:16:52  richard
 # New issue form handles lack of note better now.
 #
@@ -511,3 +514,5 @@ class Client:
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
+#
+# vim: set filetype=python ts=4 sw=4 et si

@@ -55,7 +55,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.4 2001-07-28 06:43:02 richard Exp $
+$Id: mailgw.py,v 1.5 2001-07-29 07:01:39 richard Exp $
 '''
 
 
@@ -297,6 +297,9 @@ class MailGW:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/28 06:43:02  richard
+# Multipart message class has the getPart method now. Added some tests for it.
+#
 # Revision 1.3  2001/07/28 00:34:34  richard
 # Fixed some non-string node ids.
 #
@@ -304,3 +307,4 @@ class MailGW:
 # Final commit of Grande Splite
 #
 #
+# vim: set filetype=python ts=4 sw=4 et si

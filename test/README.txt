@@ -1,6 +1,6 @@
-$Id: README.txt,v 1.1 2001-07-27 07:16:21 richard Exp $
+$Id: README.txt,v 1.2 2001-07-29 07:01:39 richard Exp $
 
-Structre of the tests:
+Structure of the tests:
 
    1   Test date classes
    1.1 Date
@@ -21,6 +21,9 @@ Structre of the tests:
 
 ------
 $Log: not supported by cvs2svn $
+Revision 1.1  2001/07/27 07:16:21  richard
+rename for consistency
+
 Revision 1.1  2001/07/27 06:55:07  richard
 moving tests -> test
 

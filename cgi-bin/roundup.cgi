@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-# $Id: roundup.cgi,v 1.4 2001-07-23 04:47:27 anthonybaxter Exp $
+# $Id: roundup.cgi,v 1.5 2001-07-29 07:01:39 richard Exp $
 
 # python version check
 import sys
@@ -111,6 +110,10 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/23 04:47:27  anthonybaxter
+# renamed ROUNDUPS to ROUNDUP_INSTANCE_HOMES
+# sys.exit(0) if python version wrong.
+#
 # Revision 1.3  2001/07/23 04:33:30  richard
 # brought the CGI instance config dict in line with roundup-server
 #
@@ -121,3 +124,4 @@ sys.stdout, sys.stderr = out, err
 # More Grande Splite
 #
 #
+# vim: set filetype=python ts=4 sw=4 et si

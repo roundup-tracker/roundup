@@ -74,6 +74,7 @@ roundup.py:
   . getopt() for command line
 hyperdb:
   . transaction support
+  . more efficient reverse lookups
 roundupdb:
   . split the file storage into multiple dirs?
 roundup-mailgw:

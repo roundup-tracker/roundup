@@ -1,4 +1,4 @@
-# $Id: test_dates.py,v 1.2 2001-07-29 06:42:20 richard Exp $ 
+# $Id: test_dates.py,v 1.3 2001-07-29 07:01:39 richard Exp $ 
 
 import unittest, time
 
@@ -66,6 +66,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/29 06:42:20  richard
+# Added Interval tests.
+#
 # Revision 1.1  2001/07/27 06:55:07  richard
 # moving tests -> test
 #
@@ -73,3 +76,4 @@ def suite():
 # Added id and log to tests files...
 #
 #
+# vim: set filetype=python ts=4 sw=4 et si

@@ -1,4 +1,4 @@
-# $Id: init.py,v 1.7 2001-07-28 07:59:53 richard Exp $
+# $Id: init.py,v 1.8 2001-07-29 07:01:39 richard Exp $
 
 import os, shutil, sys, errno
 
@@ -57,6 +57,10 @@ from roundup.backends.back_%s import Database'''%backend
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/07/28 07:59:53  richard
+# Replaced errno integers with their module values.
+# De-tabbed templatebuilder.py
+#
 # Revision 1.6  2001/07/24 11:18:25  anthonybaxter
 # oops. left a print in
 #
@@ -80,3 +84,4 @@ from roundup.backends.back_%s import Database'''%backend
 # Final commit of Grande Splite
 #
 #
+# vim: set filetype=python ts=4 sw=4 et si

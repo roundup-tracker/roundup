@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.4 2001-07-29 04:05:37 richard Exp $
+# $Id: roundupdb.py,v 1.5 2001-07-29 07:01:39 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -247,6 +247,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/07/29 04:05:37  richard
+# Added the fabricated property "id".
+#
 # Revision 1.3  2001/07/23 07:14:41  richard
 # Moved the database backends off into backends.
 #
@@ -256,3 +259,5 @@ class IssueClass(Class):
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
+#
+# vim: set filetype=python ts=4 sw=4 et si

@@ -1,4 +1,4 @@
-# $Id: cgitb.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+# $Id: cgitb.py,v 1.3 2001-07-29 07:01:39 richard Exp $
 
 import sys, os, types, string, keyword, linecache, tokenize, inspect, pydoc
 
@@ -115,6 +115,11 @@ def handler():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/22 12:09:32  richard
+# Final commit of Grande Splite
+#
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
+#
+# vim: set filetype=python ts=4 sw=4 et si
