@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.26 2002-09-09 23:55:19 richard Exp $
+# $Id: dbinit.py,v 1.27 2002-09-11 01:18:24 richard Exp $
 
 import os
 
@@ -128,8 +128,8 @@ def open(name=None):
     # - Allow anonymous users access to the "issue" class of data
     #   Note: this also grants access to related information like files,
     #         messages, statuses etc that are linked to issues
-    #p = db.security.getPermission('View', 'issue')
-    #db.security.addPermissionToRole('Anonymous', p)
+    p = db.security.getPermission('View', 'issue')
+    db.security.addPermissionToRole('Anonymous', p)
     # - Allow anonymous users access to edit the "issue" class of data
     #   Note: this also grants access to create related information like
     #         files and messages etc that are linked to issues
