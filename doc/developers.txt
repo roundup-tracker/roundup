@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.8 $
+:Version: $Revision: 1.9 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -106,6 +106,246 @@ The administrators of the project reserve the right to boot developers who
 consistently check in code which is either broken or takes the codebase in
 directions that have not been agreed to.
 
+Internationalization Notes
+--------------------------
+
+How stuff works:
+
+1. Strings that may require translation (messages in human language)
+   are marked in the source code.  This step is discussed in
+   `Marking Strings for Translation`_ section.
+
+2. These strings are all extracted into Message Template File
+   ``locale/roundup.pot`` (_`POT` file).  See `Extracting Translatable
+   Messages`_ below.
+
+3. Language teams use POT file to make Message Files for national
+   languages (_`PO` files).  All PO files for Roundup are kept in
+   the ``locale`` directory.  Names of these files are target
+   locale names, usually just 2-letter language codes.  `Translating
+   Messages`_ section of this chapter gives useful hints for
+   message translators.
+
+4. Translated Message Files are compiled into binary form (_`MO` files)
+   and stored in ``locale`` directory (but not kept in the `Roundup
+   CVS`_ repository, as they may be easily made from PO files).
+   See `Compiling Message Catalogs`_ section.
+
+5. Roundup installer creates runtime locale structure on the file
+   system, putting MO files in their appropriate places.
+
+6. Runtime internationalization (_`I18N`) services use these MO files
+   to translate program messages into language selected by current
+   Roundup user.  Roundup command line interface uses locale name
+   set in OS environment variable ``LANGUAGE``, ``LC_ALL``,
+   ``LC_MESSAGES``, or ``LANG`` (in that order).  Roundup Web User
+   Interface uses language selected by currently authenticated user.
+
+Additional details may be found in `GNU gettext`_ and Python `gettext
+module`_ documentation.
+
+`Roundup source distribution`_ includes POT and PO files for message
+translators, and also pre-built MO files to facilitate installations
+from source.  Roundup binary distribution includes MO files only.
+
+.. _GNU gettext:
+
+GNU gettext package
+^^^^^^^^^^^^^^^^^^^
+
+This chapter is full of references to GNU `gettext package`_.
+GNU gettext is a "must have" for nearly all steps of internationalizing
+any program, and it's manual is definetely a recommended reading
+for people involved in `I18N`_.
+
+There are GNU gettext ports to all major OS platforms.
+Windows binaries are available from `GNU mirror sites`_.
+
+Roundup does not use GNU gettext at runtime, but it's tools
+are used for `extracting translatable messages`_, `compiling
+message catalogs`_ and, optionally, for `translating messages`_.
+
+Note that ``gettext`` package in some OS distributions means just
+runtime tools and libraries.  In such cases gettext development tools
+are usually distributed in separate package named ``gettext-devel``.
+
+Marking Strings for Translation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Strings that need translation must be marked in the source code.
+Following subsections explain how this is done in different cases.
+
+If translatable string is used as a format string, it is recommended
+to always use *named* format specifiers::
+
+  _('Index of %(classname)s') % locals()
+
+This helps translators to better understand the context of the
+message and, in Python, remove format specifier altogether (which
+is sometimes useful, especially in singular cases of `Plural Forms`_).
+
+When there is more than one format specifier in the translatable
+format string, named format specifiers *must* be used almost always,
+because translation may require different order of items.
+
+It is better to *not* mark for translation strings that are not
+locale-dependent, as this makes it more difficult to keep track
+of translation completeness.  For example, string ``</ol></body></html>``
+(in ``index()`` method of the request handler in ``roundup_server``
+script) has no human readable parts at all, and needs no translations.
+Such strings are left untranslated in PO files, and are reported
+as such by PO status checkers (e.g. ``msgfmt --statistics``).
+
+Command Line Interfaces
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Scripts and routines run from the command line use "static" language
+defined by environment variables recognized by ``gettext`` module
+from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
+``LANG``).  Primarilly, these are ``roundup-admin`` script and
+``admin.py`` module, but also help texts and startup error messages
+in other scripts and their supporting modules.
+
+For these interfaces, Python ``gettext`` engine must be initialized
+to use Roundup message catalogs.  This is normally done by including
+the following line in the module imports::
+
+  from i18n import _, ngettext
+
+Simple translations are automatically marked by calls to builtin
+message translation function ``_()``::
+
+  print _("This message is translated")
+
+Translations for messages whose grammatical depends on a number
+must be done by ``ngettext()`` function::
+
+  print ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked)
+
+User Interfaces
+~~~~~~~~~~~~~~~
+
+*(not yet)*
+
+This includes Mail Gateway and Web User Interfaces, where translation
+depends on the language of current Roundup User.  These translations
+will be done by the tracker configuration object.  Translatable strings
+will be automatically marked by calls to the ``_()`` and ``ngettext()``
+methods of that object::
+
+  self.config._("This message is translated")
+  self.config.ngettext("Nuked %i file", "Nuked %i files",
+      number_of_files_nuked)
+
+Deferred Translations
+~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes translatable strings appear in the source code in untranslated
+form [#note_admin.py]_ and must be translated elsewhere.
+Example::
+
+  for meal in ("spam", "egg", "beacon"):
+      print _(meal)
+
+In such cases, strings must be marked for translation without actual
+call to the translating function.  To mark these strings, we use Python
+feature of automatic concatenation of adjacent strings and different
+types of string quotes::
+
+  strings_to_translate = (
+      ''"This string will be translated",
+      ""'me too',
+      ''r"\raw string",
+      ''"""
+      multiline string"""
+  )
+
+.. [#note_admin.py] In current Roundup sources, this feature is
+   extensively used in the ``admin`` module using method docstrings
+   as help messages.
+
+Extracting Translatable Messages
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The most common tool for message extraction is ``xgettext`` utility
+from `GNU gettext package`_.  Unfortunately, this utility has no means
+of `Deferred Translations`_ in Python sources.  There is ``xpot`` tool
+from Francois Pinard free `PO utilities`_ that allows to mark strings
+for deferred translations, but it does not handle `plural forms`_.
+
+Roundup overcomes these limitations by using both of these utilities.
+This means that you need both `GNU gettext`_ tools and `PO utilities`_
+to build the Message Template File yourself.
+
+Latest Message Template File is kept in `Roundup CVS`_ and distributed
+with `Roundup Source`_.  If you wish to rebuild the template yourself,
+make sure that you have both ``xpot`` and ``xgettext`` installed and
+just run ``gmake`` (or ``make``, if you are on a `GNU`_ system like
+`linux`_ or `cygwin`_) in the ``locale`` directory.
+
+Translating Messages
+^^^^^^^^^^^^^^^^^^^^
+
+Gettext Message File (`PO`_ file) is a plain text file, that can be created
+by simple copying ``roundup.pot`` to new .po file, like this::
+
+  $ cp roundup.pot ru.po
+
+The name of PO file is target locale name, usually just 2-letter language
+code (``ru`` for Russian in the above example).  Alternatively, PO file
+may be initialized by ``msginit`` utility from `GNU gettext`_ tools::
+
+  $ msginit -i roundup.pot
+
+``msginit`` will check your current locale, and initialize the header
+entry, setting language name, rules for `plural forms`_ and, if available,
+translator's name and email address.  The name for PO file is also chosen
+based on current locale.
+
+Next, you will need to edit this file, filling all ``msgstr`` lines with
+translations of the above ``msgid`` entries.  PO file is a plain text
+file that can be edited with any text editor.  However, there are several
+tools that may help you with this process:
+
+ - ``po-mode`` for `emacs`_.  One of `GNU gettext`_ tools.  Very handy,
+   definitely recommended if you are comfortable with emacs.  Cannot
+   handle `plural forms`_ per se, but allows to edit them in simple
+   text mode.
+
+ - `po filetype plugin`_ for `vim`_.  Does not do as much as ``po-mode``,
+   but helps in finding untranslated and fuzzy strings, and checking
+   code references.  Please contact `alexander smishlajev`_ if you
+   prefer this, as i have patched this plugin a bit.  I have also
+   informed the original plugin author about these changes, but got
+   no reply so far.
+
+ - `poEdit`_ by Vaclav Slavik.  Nice cross-platform GUI editor.
+   Unfortunately, it does not handle `plural forms`_.  Even worse,
+   it deletes all messages with plural forms when the file is saved.
+   Still, it may be useful to initially translate most of the messages
+   and add plural form messages later.
+
+ - `KBabel`_.  Being part of `KDE`_, it works in X windows only.
+    At the first glance looks pretty hairy, with all bells and whistles.
+    Haven't had much experience with it, though.
+
+Compiling Message Catalogs
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Message catalogs (`PO`_ files) must be compiled into binary form
+(`MO`_ files) before they can be used in the application.  This
+compilation is handled by ``msgfmt`` utility from `GNU gettext`_
+tools.  ``GNUmakefile`` in the ``locale`` directory automatically
+compiles all existing message catalogs after updating them from
+Roundup source files.  If you wish to rebuild an individual `MO`_
+file without making everything else, you may, for example::
+
+  $ msgfmt --statistics -o ru.mo ru.po
+
+This way, message translators can check their `PO`_ files without
+extracting strings from source.  (Note: String extraction requires
+additional utility that is not part of `GNU gettext`_.  See `Extracting
+Translatable Messages`_.)
 
 -----------------
 
@@ -115,3 +355,30 @@ Back to `Table of Contents`_
 .. _`Customising Roundup`: customizing.html
 .. _`Roundup's Design Document`: spec.html
 .. _`implementation notes`: implementation.html
+
+
+.. _External hyperlink targets:
+
+.. _alexander smishlajev:
+.. _als: http://sourceforge.net/users/a1s/
+.. _cygwin: http://www.cygwin.com/
+.. _emacs: http://www.gnu.org/software/emacs/
+.. _gettext package: http://www.gnu.org/software/gettext/
+.. _gettext module: http://docs.python.org/lib/module-gettext.html
+.. _GNU: http://www.gnu.org/
+.. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
+.. _KBabel: http://i18n.kde.org/tools/kbabel/
+.. _KDE: http://www.kde.org/
+.. _linux: http://www.linux.org/
+.. _Plural Forms:
+    http://www.gnu.org/software/gettext/manual/html_node/gettext_150.html
+.. _po filetype plugin:
+    http://vim.sourceforge.net/scripts/script.php?script_id=695
+.. _PO utilities: http://po-utils.progiciels-bpi.ca/
+.. _poEdit: http://poedit.sourceforge.net/
+.. _Roundup CVS: http://sourceforge.net/cvs/?group_id=31577
+.. _Roundup Source:
+.. _Roundup source distribution:
+.. _Roundup binary distribution:
+    http://sourceforge.net/project/showfiles.php?group_id=31577
+.. _vim: http://www.vim.org/
