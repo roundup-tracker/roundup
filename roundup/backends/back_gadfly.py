@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.33 2003-03-09 21:37:37 richard Exp $
+# $Id: back_gadfly.py,v 1.34 2003-03-14 02:51:25 richard Exp $
 ''' Gadlfy relational database hypderb backend.
 
 About Gadfly
@@ -154,6 +154,8 @@ class Database(rdbms_common.Database):
         new_has = new_spec.properties.has_key
 
         new_spec = new_spec.schema()
+        new_spec[1].sort()
+        old_spec[1].sort()
         if new_spec == old_spec:
             # no changes
             return 0
