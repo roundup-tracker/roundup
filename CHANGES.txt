@@ -2,7 +2,9 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2003-08-?? 0.6.1
+Fixed:
 - Add note about installing cgi-bin with a different interpreter
+- Importing wasn't setting None values explicitly when it should have been
 
 
 2003-08-08 0.6.0

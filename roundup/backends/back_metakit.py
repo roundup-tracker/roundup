@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.47 2003-05-09 01:47:50 richard Exp $
+# $Id: back_metakit.py,v 1.47.2.1 2003-08-26 00:12:28 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -1208,6 +1208,9 @@ class Class:
                 # is the item retired?
                 if int(value):
                     d['_isdel'] = 1
+                continue
+            elif value is None:
+                d[propname] = None
                 continue
 
             prop = properties[propname]
