@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.70 2004-10-30 08:23:51 a1s Exp $
+$Id: roundup_server.py,v 1.71 2004-10-30 08:43:06 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -422,8 +422,6 @@ else:
 
     # allow the win32
     import win32service
-    import win32event
-    import win32file
 
     class SvcShutdown(Exception):
         pass
@@ -486,7 +484,6 @@ def usage(message=''):
  -d <PIDfile>  run the server in the background and write the server's PID
                to the file indicated by PIDfile. The -l option *must* be
                specified if -d is used.'''
-    port=DEFAULT_PORT
     if message:
         message += '\n'
     print _('''%(message)sUsage: roundup-server [options] [name=tracker home]*
@@ -500,6 +497,8 @@ Options:
  -p <port>     set the port to listen on (default: %(port)s)
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)
+ -t <mode>     multiprocess mode (default: %(mp_def)s).
+               Allowed values: %(mp_types)s.
 %(os_part)s
 
 Long options:
@@ -536,8 +535,13 @@ How to use "name=tracker home":
    "roundup-admin init". You may specify any number of these name=home
    pairs on the command-line. Make sure the name part doesn't include
    any url-unsafe characters like spaces, as these confuse IE.
-''')%locals()
-    #sys.exit(0)
+''') % {
+    "message": message,
+    "os_part": os_part,
+    "port": DEFAULT_PORT,
+    "mp_def": DEFAULT_MULTIPROCESS,
+    "mp_types": ", ".join(MULTIPROCESS_TYPES),
+}
 
 
 def daemonize(pidfile):
