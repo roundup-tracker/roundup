@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.57 $
+:Version: $Revision: 1.58 $
 
 .. contents::
 
@@ -325,6 +325,23 @@ name=home values on the command-line after all the other options.
 
 To make the server run in the background, use the "-d" option, specifying the
 name of a file to write the server process id (pid) to.
+
+To run the server proxied through apache (to take advantage of SSL or other
+apache features), use the following configuration lines::
+
+  LoadModule proxy_module libexec/apache2/mod_proxy.so
+  LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
+  LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
+
+  <Location /prometheus/>
+    ProxyPass http://192.168.1.2:9090/roundup/
+    AuthType Basic
+    AuthName Roundup
+    AuthUserFile /some/place/htpasswd
+    Require valid-user
+  </Location>
+
+Changing the ProxyPass line to point to the server you're running.
 
 
 Zope Product - ZRoundup
