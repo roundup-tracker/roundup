@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.31 2004-11-20 11:31:42 a1s Exp $
+# $Id: __init__.py,v 1.32 2004-11-29 02:07:59 anthonybaxter Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -43,11 +43,12 @@ def get_backend(name):
     try:
         module = __import__(module_name, vars)
     except:
-        # import failed, but the (empty) module is already
-        # placed in sys.modules and package globals;
+        # import failed, but in versions prior to 2.4, a (broken) 
+        # module is left in sys.modules and package globals;
         # next import would success although the module is unusable
-        del sys.modules['.'.join((__name__, module_name))]
-        del vars[module_name]
+        if sys.version_info < (2, 4):
+            del sys.modules['.'.join((__name__, module_name))]
+            del vars[module_name]
         raise
     else:
         vars[name] = module
