@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.64 2004-03-19 04:58:52 richard Exp $
+# $Id: back_metakit.py,v 1.65 2004-03-19 05:27:55 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -448,7 +448,7 @@ class Class(hyperdb.Class):
             raise ValueError, "Need something to create!"
         self.fireAuditors('create', None, propvalues)
         newid = self.create_inner(**propvalues)
-        # self.set() (called in self.create_inner()) does reactors)
+        self.fireReactors('create', newid, None)
         return newid
 
     def create_inner(self, **propvalues):
@@ -524,14 +524,17 @@ class Class(hyperdb.Class):
         If the value of a Link or Multilink property contains an invalid
         node id, a ValueError is raised.
         '''
+        self.fireAuditors('set', nodeid, propvalues)
+        propvalues, oldnode = self.set_inner(nodeid, **propvalues)
+        self.fireReactors('set', nodeid, oldnode)
+
+    def set_inner(self, nodeid, **propvalues):
+        '''Called outside of auditors'''
         isnew = 0
         if propvalues.has_key('#ISNEW'):
             isnew = 1
             del propvalues['#ISNEW']
-        if not isnew:
-            self.fireAuditors('set', nodeid, propvalues)
-        if not propvalues:
-            return propvalues
+
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
         if self.db.journaltag is None:
@@ -763,7 +766,7 @@ class Class(hyperdb.Class):
 
         # nothing to do?
         if not propvalues:
-            return propvalues
+            return propvalues, oldnode
         if not propvalues.has_key('activity'):
             row.activity = int(time.time())
         if not propvalues.has_key('actor'):
@@ -775,15 +778,14 @@ class Class(hyperdb.Class):
                 row.creator = int(self.db.getuid())
 
         self.db.dirty = 1
+
         if self.do_journal:
             if isnew:
-                self.db.addjournal(self.classname, nodeid, _CREATE, {})
-                self.fireReactors('create', nodeid, None)
+                self.db.addjournal(self.classname, nodeid, _CREATE, changes)
             else:
                 self.db.addjournal(self.classname, nodeid, _SET, changes)
-                self.fireReactors('set', nodeid, oldnode)
 
-        return propvalues
+        return propvalues, oldnode
     
     def retire(self, nodeid):
         '''Retire a node.
@@ -1718,44 +1720,51 @@ class FileClass(Class, hyperdb.FileClass):
             properties['type'] = hyperdb.String()
         Class.__init__(self, db, classname, **properties)
 
+    def gen_filename(self, nodeid):
+        nm = '%s%s' % (self.classname, nodeid)
+        sd = str(int(int(nodeid) / 1000))
+        d = os.path.join(self.db.config.DATABASE, 'files', self.classname, sd)
+        if not os.path.exists(d):
+            os.makedirs(d)
+        return os.path.join(d, nm)
+
     def get(self, nodeid, propname, default=_marker, cache=1):
-        x = Class.get(self, nodeid, propname, default)
-        poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
-            if x.startswith('file:'):
-                fnm = x[5:]
-                try:
-                    f = open(fnm, 'rb')
-                except IOError, (strerror):
-                    # XXX by catching this we donot see an error in the log.
-                    return 'ERROR reading file: %s%s\n%s\n%s'%(
-                            self.classname, nodeid, poss_msg, strerror)
-                x = f.read()
-                f.close()
+            poss_msg = 'Possibly an access right configuration problem.'
+            fnm = self.gen_filename(nodeid)
+            try:
+                f = open(fnm, 'rb')
+            except IOError, (strerror):
+                # XXX by catching this we donot see an error in the log.
+                return 'ERROR reading file: %s%s\n%s\n%s'%(
+                        self.classname, nodeid, poss_msg, strerror)
+            x = f.read()
+            f.close()
+        else:
+            x = Class.get(self, nodeid, propname, default)
         return x
 
     def create(self, **propvalues):
         if not propvalues:
             raise ValueError, "Need something to create!"
         self.fireAuditors('create', None, propvalues)
+
         content = propvalues['content']
         del propvalues['content']
+
         newid = Class.create_inner(self, **propvalues)
         if not content:
             return newid
-        nm = bnm = '%s%s' % (self.classname, newid)
-        sd = str(int(int(newid) / 1000))
-        d = os.path.join(self.db.config.DATABASE, 'files', self.classname, sd)
-        if not os.path.exists(d):
-            os.makedirs(d)
-        nm = os.path.join(d, nm)
+
+        # figure a filename
+        nm = self.gen_filename(newid)
         open(nm, 'wb').write(content)
-        self.set(newid, content = 'file:'+nm)
+
         mimetype = propvalues.get('type', self.default_mime_type)
         self.db.indexer.add_text((self.classname, newid, 'content'), content,
             mimetype)
-        def undo(fnm=nm, action1=os.remove, indexer=self.db.indexer):
-            action1(fnm)
+        def undo(fnm=nm):
+            os.remove(fnm)
         self.rollbackaction(undo)
         return newid
 
