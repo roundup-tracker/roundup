@@ -1,3 +1,5 @@
+import cgi
+
 class HTTPException(Exception):
     pass
 
