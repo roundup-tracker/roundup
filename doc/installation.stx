@@ -2,45 +2,193 @@
 
 `Table of contents`_
 
-1. Prerequisites_
-2. `Getting Roundup`_
-3. `Installing Roundup`_
+- Overview_
+- Prerequisites_
 
+  - `Testing your Python`_
+
+- `Getting Roundup`_
+- `Installation`_
+- `Further Reading`_
+- `Platform-Specific Notes`_
+
+Overview
+========
+
+TODO
 
 Prerequisites
--------------
+=============
 
-Python 2.1.1 is required for the correct operation of roundup.
+Python 2.1.1 or newer with a functioning anydbm or bsddb module.
 
 Download the latest version from http://www.python.org/.
 
 
+Testing your Python
+-------------------
+
+Run ``"python -c 'import test;test.go()'"`` and make sure there
+are no errors.  If there are errors, please let us know!
+
+
 Getting Roundup
----------------
+===============
 
 Download the latest version from http://roundup.sf.net/.
 
-Installing Roundup
-------------------
 
-Run:
+Installation
+============
 
-- "``python setup.py install``"
-- If you would prefer the scripts installed in somewhere other than
-  "``/usr/local/bin``", add "``--install-scripts=<dir>``" to the
-  command::
+Set aside 15-30 minutes.
 
-     python setup.py install --install-scripts=<dir>
+Broken out separately, there are several conceptual pieces to a
+Roundup installation:
 
-- This command gives all the options available for
-  installation::
+Roundup support code
+ Installed into your Python install's lib directory
 
-      python setup.py install --help
+Roundup scripts
+ These include the email gateway, the roundup
+ HTTP server, the roundup administration command-line interface, etc.
 
+Roundup instances
+ Instances consist of core support files, issues
+ (be they bug reports or otherwise), instance configuration file(s),
+ etc.  Roundup instances also adhere to a specific "Template" which
+ defines the fields usable/assignable on a per-issue basis.  A
+ description of the provided templates can be found under the
+ 'TODO' section.
+
+1. To install the Roundup support code into your Python tree and
+   Roundup scripts into /usr/local/bin::
+
+       python setup.py install
+
+   If you would like to place the Roundup scripts in a directory other
+   than ``/usr/local/bin``, use the ``--install-scripts`` option as follows,
+   replacing ``/opt/roundup/bin`` with the location where you would like
+   the scripts to reside::
+
+       python setup.py install --install-scripts=/opt/roundup/bin
+
+2. To create a Roundup instance (necessary to do before you can
+   use the software in any real fashion):
+
+   a. (Optional) If you intend to keep your roundup instances
+      under one top level directory which does not exist yet,
+      you should create that directory now.  Example:
+
+         mkdir /opt/roundup/instances
+
+   b. Either add the Roundup script location to your ``PATH``
+      environment variable or specify the full path to
+      the command in the next step.
+
+  c.  ``roundup-admin init``
+
+      You will be asked a series of questions.  A description of
+      the Roundup-provided templates can be found under TODO::
+
+          Enter instance home: /opt/roundup/instances/support
+          Templates: classic, extended
+          Select template [classic]: classic
+          Back ends: anydbm, bsddb
+          Select backend [anydbm]: anydbm
+          Admin Password:
+                 Confirm:
+
+3. Each instance ideally should have its own UNIX group, so create
+   a UNIX group (edit ``/etc/group`` or your appropriate NIS map if
+   you're using NIS).  To continue with my examples so far, I would
+   create the UNIX group 'support', although the name of the UNIX
+   group does not have to be the same as the instance name.  To this
+   'support' group I then add all of the UNIX usernames who will be
+   working with this Roundup instance.  In addition to 'real' users,
+   the Roundup email gateway will need to have permissions to this
+   area as well, so add the user your mail service runs as to the
+   group.  The UNIX group might then look like::
+
+        support:*:1002:jblaine,samh,geezer,mail
+
+   If you intend to use the web interface (as most people do), you
+   should also add the username your web server runs as to the group.
+   My group now looks like this::
+
+        support:*:1002:jblaine,samh,geezer,mail,apache
+
+4. Configure your new instance by editing the file ``instance_config.py``
+   located in the instance home you specified in step 2c above.  This
+   file is Python code and must adhere to Python syntax rules, but
+   don't be daunted if you do not know Python - it should look pretty
+   straightfoward if you carefully read the comments in the file.
+
+5. There are two supported ways to get emailed issues into the
+   Roundup instance.  You should pick ONE of the following, both
+   of which will continue my example setup from above:
+
+   a. Set up a mail alias called "support" as::
+
+       "|/opt/roundup/bin/roundup-mailgw /opt/roundup/instances/support"
+
+      If you use Sendmail's ``smrsh`` mechanism, please read the notes
+      under 'Platform-Specific Notes'
+
+   b. OR... Configure roundup-mailgw to run every 10 minutes or
+      so via ``cron``.  My cron job would be (these 2 lines all on one
+      line)::
+
+       10 * * * * /opt/roundup/bin/roundup-mailgw
+                /opt/roundup/instances/support /var/mail/support
+
+6. TODO (mention perms)
+
+7. Test the email gateway.  Under most flavors of UNIX, this
+   can be done by::
+
+     echo test | mail -s '[issue] test' support@YOUR_DOMAIN_HERE
+
+TODO (finish)
+
+
+Further Reading
+===============
+
+If you intend to use Roundup with anything other than the defualt
+templates, if you would like to hack on Roundup, or if you would
+like implementation details, you should read 'TODO'
+
+Platform-Specific Notes
+=======================
+
+Sendmail smrsh
+--------------
+
+If you use Sendmail's ``smrsh`` mechanism, you will need to tell
+smrsh that roundup-mailgw is a valid/trusted mail handler
+before it will work.
+
+This is usually done via the following 2 steps:
+
+1. make a symlink in ``/etc/smrsh`` called ``roundup-mailgw``
+   which points to the full path of your actual ``roundup-mailgw``
+   script.
+
+2. change your alias to ``"|roundup-mailgw <instance_home>"``
+
+
+Linux
+-----
+
+Python 2.1.1 as shipped with SuSE7.3 might be missing module
+``_weakref``.
+
+-------------------------------------------------------------------------------
 
 Next: `Getting Started`_
 
 .. _`table of contents`: index.html
 .. _`getting started`: getting_started.html
 
-$Id: installation.stx,v 1.1 2002-02-21 06:22:00 richard Exp $
+$Id: installation.stx,v 1.2 2002-03-08 23:41:46 richard Exp $
