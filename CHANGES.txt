@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 2002-??-?? 0.?.?
 Fixed:
+ . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
 
 
