@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.116 2004-07-02 05:22:09 richard Exp $
+# $Id: rdbms_common.py,v 1.117 2004-07-02 08:15:01 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -476,7 +476,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.sql(sql)
 
     def create_journal_table(self, spec):
-        ''' create the journal table for a class given the spec and 
+        ''' create the journal table for a class given the spec and
             already-determined cols
         '''
         # journal table
@@ -981,7 +981,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             self.config.logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(classname,
                 nodeid, journaldate, journaltag, action, params))
-    
+
         # make the journalled data marshallable
         if isinstance(params, type({})):
             self._journal_marshal(params, classname)
@@ -1009,7 +1009,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.config.logging.getLogger('hyperdb').debug('addjournal %s%s %r %s %s %r'%(
                     classname, nodeid, journaldate, journaltag, action,
                     params))
-        
+
             # make the journalled data marshallable
             if isinstance(params, type({})):
                 self._journal_marshal(params, classname)
@@ -1168,7 +1168,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 #
 class Class(hyperdb.Class):
     ''' The handle to a particular class of nodes in a hyperdatabase.
-        
+
         All methods except __repr__ and getnode must be implemented by a
         concrete backend Class.
     '''
@@ -1223,13 +1223,13 @@ class Class(hyperdb.Class):
 
         The values of arguments must be acceptable for the types of their
         corresponding properties or a TypeError is raised.
-        
+
         If this class has a key property, it must be present and its value
         must not collide with other key strings or a ValueError is raised.
-        
+
         Any other properties on this class that are missing from the
         'propvalues' dictionary are set to None.
-        
+
         If an id in a link or multilink property does not refer to a valid
         node, an IndexError is raised.
         '''
@@ -1237,7 +1237,7 @@ class Class(hyperdb.Class):
         newid = self.create_inner(**propvalues)
         self.fireReactors('create', newid, None)
         return newid
-    
+
     def create_inner(self, **propvalues):
         ''' Called by create, in-between the audit and react calls.
         '''
@@ -1432,7 +1432,7 @@ class Class(hyperdb.Class):
 
     def set(self, nodeid, **propvalues):
         '''Modify a property on an existing node of this class.
-        
+
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
 
@@ -1452,11 +1452,11 @@ class Class(hyperdb.Class):
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
         propvalues = self.set_inner(nodeid, **propvalues)
         self.fireReactors('set', nodeid, oldvalues)
-        return propvalues        
+        return propvalues
 
     def set_inner(self, nodeid, **propvalues):
         ''' Called by set, in-between the audit and react calls.
-        ''' 
+        '''
         if not propvalues:
             return propvalues
 
@@ -1651,10 +1651,10 @@ class Class(hyperdb.Class):
 
     def retire(self, nodeid):
         '''Retire a node.
-        
+
         The properties on the node remain available from the get() method,
         and the node's id is never reused.
-        
+
         Retired nodes are not returned by the find(), list(), or lookup()
         methods, and other nodes may reuse the values of their key properties.
         '''
@@ -1702,7 +1702,7 @@ class Class(hyperdb.Class):
             self.db.addjournal(self.classname, nodeid, 'restored', None)
 
         self.fireReactors('restore', nodeid, None)
-        
+
     def is_retired(self, nodeid):
         '''Return true if the node is rerired
         '''
@@ -1713,7 +1713,7 @@ class Class(hyperdb.Class):
 
     def destroy(self, nodeid):
         '''Destroy a node.
-        
+
         WARNING: this method should never be used except in extremely rare
                  situations where there could never be links to the node being
                  deleted
@@ -1918,7 +1918,7 @@ class Class(hyperdb.Class):
         properties in a caseless search.
 
         If the property is not a String property, a TypeError is raised.
-        
+
         The return is a list of the id of all nodes that match.
         '''
         where = []
@@ -1948,7 +1948,7 @@ class Class(hyperdb.Class):
     def getnodeids(self, retired=None):
         ''' Retrieve all the ids of the nodes for a particular Class.
 
-            Set retired=None to get all nodes. Otherwise it'll get all the 
+            Set retired=None to get all nodes. Otherwise it'll get all the
             retired or non-retired nodes, depending on the flag.
         '''
         # flip the sense of the 'retired' flag if we don't want all of them
@@ -2060,7 +2060,8 @@ class Class(hyperdb.Class):
                         s = ','.join([a for x in v])
                         where.append('(_%s._%s in (%s))'%(cn, k, s))
                         args = args + v
-                    where.append(' or '.join(l))
+                    if l:
+                        where.append(' or '.join(l))
                 else:
                     if v in ('-1', None):
                         v = None
@@ -2086,7 +2087,7 @@ class Class(hyperdb.Class):
                             args.append(dc(date_rng.to_value))
                     except ValueError:
                         # If range creation fails - ignore that search parameter
-                        pass                        
+                        pass
             elif isinstance(propclass, Interval):
                 # filter using the __<prop>_int__ column
                 if isinstance(v, type([])):
@@ -2105,7 +2106,7 @@ class Class(hyperdb.Class):
                             args.append(date_rng.to_value.as_seconds())
                     except ValueError:
                         # If range creation fails - ignore that search parameter
-                        pass                        
+                        pass
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -2384,7 +2385,7 @@ class Class(hyperdb.Class):
         if not self.hasnode(newid):
             self.db.addnode(self.classname, newid, d) # insert
         else:
-            self.db.setnode(self.classname, newid, d) # update 
+            self.db.setnode(self.classname, newid, d) # update
 
         # retire?
         if retire:
@@ -2427,7 +2428,7 @@ class Class(hyperdb.Class):
 
     def import_journals(self, entries):
         '''Import a class's journal.
-        
+
         Uses setjournal() to set the journal for each item.'''
         properties = self.getprops()
         d = {}
