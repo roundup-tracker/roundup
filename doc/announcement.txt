@@ -2,9 +2,34 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.8 is a bug fix release, patching a problem in the 0.7.7 release:
+0.7.9 is a bug fix release (with one feature cleaning up and API
+inconsistency):
 
-- Clean out sessions / otks tables when migrating
+Feature:
+- DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
+
+Fixed:
+- popup listing uses filter args (thanks Marlon van den Berg)
+- fixed editing of message contents
+- loosened the detection of issue cross-references in messages
+- open CSV files in "universal newline" mode
+- s/Modifed/Modified (thanks donfu)
+- applied patch fixing some form handling issues in ZRoundup (thanks Chris
+  Withers)
+- enforce View Permission when serving file content (sf bug 1050470)
+- don't index common words (sf bug 1046612)
+- set the current username correctly after rego (sf bug 1048398)
+- don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
+- TAL expressions like 'request/show/whatever' return True
+  if the request does not contain explicit @columns list
+- NumberHTMLProperty should return '' not "None" if not set (thanks
+  William)
+- ensure multilink ordering in RDBMS backends (thanks Marcus Priesch, sf
+  bug 950963)
+- always honor indexme property on Strings (sf patch 1063711)
+- make hyperdb value parsing errors readable in mailgw errors
+- make anydbm journal export handle removed properties
+- allow use of XML templates again
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

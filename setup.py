@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.8 2004-10-11 05:25:46 richard Exp $
+# $Id: setup.py,v 1.64.2.9 2004-11-26 00:02:56 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,27 +217,34 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-This is a bug fix release, including:
+This is a bug fix release (with one feature cleaning up and API
+inconsistency):
 
-- ZRoundup's search interface works now (sf bug 994957)
-- fixed history display when "ascending"
-- removed references to py2.3+ boolean values (sf bug 995682)
-- fix static file path normalisation in security check (thanks David Linke)
-- less specific messages for login failures (thanks Chris Withers)
-- Reject raised against email messages should result in email rejection, not
-  discarding of the message
-- mailgw can override the MAIL_DEFAULT_CLASS
-- handle Py2.3+ datetime objects as Date specs (sf bug 971300)
-- use row locking in MySQL newid() (sf bug 1034211)
-- add sanity check for sort and group on same property (sf bug 1033477)
-- extend OTK and session table value cols to TEXT (sf bug 1031271)
-- fix lookup of REMOTE_USER (sf bug 1002923)
-- new Interval props weren't created properly in rdbms
-- date.Interval() now accepts an Interval as a spec (sf bug 1041266)
-- handle deleted properties in RDBMS history
-- apply timezone in correct direction in user input (sf bug 1013097)
-- more efficient find() in RDBMS (sf bug 1012781)
-- pydotorg-specific change to mailgw to handle bizzaro permissions ;)
+Feature:
+- DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
+
+Fixed:
+- popup listing uses filter args (thanks Marlon van den Berg)
+- fixed editing of message contents
+- loosened the detection of issue cross-references in messages
+- open CSV files in "universal newline" mode
+- s/Modifed/Modified (thanks donfu)
+- applied patch fixing some form handling issues in ZRoundup (thanks Chris
+  Withers)
+- enforce View Permission when serving file content (sf bug 1050470)
+- don't index common words (sf bug 1046612)
+- set the current username correctly after rego (sf bug 1048398)
+- don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
+- TAL expressions like 'request/show/whatever' return True
+  if the request does not contain explicit @columns list
+- NumberHTMLProperty should return '' not "None" if not set (thanks
+  William)
+- ensure multilink ordering in RDBMS backends (thanks Marcus Priesch, sf
+  bug 950963)
+- always honor indexme property on Strings (sf patch 1063711)
+- make hyperdb value parsing errors readable in mailgw errors
+- make anydbm journal export handle removed properties
+- allow use of XML templates again
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
