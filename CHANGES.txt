@@ -10,7 +10,9 @@ Fixed:
 - fix CGI editCSV action to handle metakit's integer itemids
 - apply fix for "remove" links from Klamer Schutte
 - added permission check on "remove" link while I was there..
-- applied CSV fix for python2.3 (thanks Paul Dubois for the patch)
+- applied CSV fix for python2.3 (sf bug 790363)
+- fixed form padding in LHS menu (sf bug 790502)
+- fixed upgrading docs for timezones (sf bug 790498)
 
 
 2003-08-08 0.6.0

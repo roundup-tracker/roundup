@@ -27,16 +27,19 @@ td.page-header-top {
 td.sidebar {
   padding: 1 0 0 1;
 }
+td.sidebar form {
+     margin: 0 0 0 0;
+}
 
 td.sidebar p.classblock {
-  padding: 0 5 0 5;
+  padding: 2 5 2 5;
   margin: 1 1 1 1;
   border: 1px solid #444444;
   background-color: #eeeeee;
 }
 
 td.sidebar p.userblock {
-  padding: 0 5 0 5;
+  padding: 2 5 2 5;
   margin: 1 1 1 1;
   border: 1px solid #444444;
   background-color: #eeeeff;
@@ -354,3 +357,4 @@ table.otherinfo th {
   text-align: left;
 }
 /* SHA: 1c2bdea9d2295da079168403292e5c9039bb5088 */
+/* SHA: 35d16ca4398e028f1b19902aadff924ffec27146 */
