@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.23 2001-09-10 09:47:18 richard Exp $
+# $Id: htmltemplate.py,v 1.24 2001-09-27 06:45:58 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -40,7 +40,7 @@ class Plain(Base):
         for a Link or Multilink property, display the key strings of the
         linked nodes (or the ids if the linked class has no key property)
     '''
-    def __call__(self, property):
+    def __call__(self, property, escape=0):
         if not self.nodeid and self.form is None:
             return '[Field: not called from item]'
         propclass = self.properties[property]
@@ -68,6 +68,8 @@ class Plain(Base):
             value = ', '.join([linkcl.get(i, k) for i in value])
         else:
             s = 'Plain: bad propclass "%s"'%propclass
+        if escape:
+            return cgi.escape(value)
         return value
 
 class Field(Base):
@@ -745,6 +747,11 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/09/10 09:47:18  richard
+# Fixed bug in the generation of links to Link/Multilink in indexes.
+#   (thanks Hubert Hoegl)
+# Added AssignedTo to the "classic" schema's item page.
+#
 # Revision 1.22  2001/08/30 06:01:17  richard
 # Fixed missing import in mailgw :(
 #

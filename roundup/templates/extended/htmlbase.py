@@ -192,7 +192,7 @@ msgDOTindex = """<!-- dollarId: msg.index,v 1.1 2001/07/23 04:21:20 richard Exp 
     </property>
 </tr>
 <tr bgcolor="ffeaff">
-    <td colspan=2><xmp><display call="plain('content')"></xmp></td>
+    <td colspan=2><pre><display call="plain('content', escape=1)"></pre></td>
 </tr>
 """
 
