@@ -326,7 +326,7 @@ class HTMLClass(HTMLPermissions):
 
         # get the list and sort it nicely
         l = self._klass.list()
-        sortfunc = make_sort_function(self._db, self._prop.classname)
+        sortfunc = make_sort_function(self._db, self.classname)
         l.sort(sortfunc)
 
         l = [klass(self._client, self.classname, x) for x in l]
