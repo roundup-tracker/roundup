@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.42 2001-10-23 23:56:03 richard Exp $
+# $Id: cgi_client.py,v 1.43 2001-10-24 00:01:42 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -521,19 +521,19 @@ class Client:
 <tr><td colspan=2><em>marked items</em> are optional...</td></tr>
 <form action="newuser_action" method=POST>
 <tr><td align=right><em>Name: </em></td>
-    <td><input name="__newuser_realname"></td></tr>
+    <td><input name="realname"></td></tr>
 <tr><td align=right><em>Organisation: </em></td>
-    <td><input name="__newuser_organisation"></td></tr>
+    <td><input name="organisation"></td></tr>
 <tr><td align=right>E-Mail Address: </td>
-    <td><input name="__newuser_address"></td></tr>
+    <td><input name="address"></td></tr>
 <tr><td align=right><em>Phone: </em></td>
-    <td><input name="__newuser_phone"></td></tr>
+    <td><input name="phone"></td></tr>
 <tr><td align=right>Preferred Login name: </td>
-    <td><input name="__newuser_username"></td></tr>
+    <td><input name="username"></td></tr>
 <tr><td align=right>Password: </td>
-    <td><input type="password" name="__newuser_password"></td></tr>
+    <td><input type="password" name="password"></td></tr>
 <tr><td align=right>Password Again: </td>
-    <td><input type="password" name="__newuser_confirm"></td></tr>
+    <td><input type="password" name="confirm"></td></tr>
 <tr><td></td>
     <td><input type="submit" value="Register"></td></tr>
 </form>
@@ -657,13 +657,12 @@ class Client:
         if action == 'login_action':
             return self.login_action()
 
-        # if we don't have a login and anonymous people aren't allowed to
-        # register, then spit up the login form
-        if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
-            return self.login()
-
         # allow anonymous people to register
         if action == 'newuser_action':
+            # if we don't have a login and anonymous people aren't allowed to
+            # register, then spit up the login form
+            if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
+                return self.login()
             return self.newuser_action()
 
         # make sure totally anonymous access is OK
@@ -849,6 +848,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.42  2001/10/23 23:56:03  richard
+# HTML typo
+#
 # Revision 1.41  2001/10/23 23:52:35  richard
 # Fixed lock-out logic, thanks Roch'e for pointing out the problems.
 #
