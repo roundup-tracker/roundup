@@ -1,0 +1,3 @@
+#!/usr/bin/env python
+import zlib, base64, sys
+print base64.encodestring(zlib.compress(sys.stdin.read()))

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.41 2004-04-05 00:51:45 richard Exp $
+$Id: roundup_server.py,v 1.42 2004-04-05 00:54:23 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -63,6 +63,8 @@ LOGFILE = None
 ##  end configuration
 #
 
+# "default" favicon.ico
+# generate by using "icotool" and tools/base64
 import zlib, base64
 favico = zlib.decompress(base64.decodestring('''
 eJztjr1PmlEUh59XgVoshdYPWorFIhaRFq0t9pNq37b60lYSTRzcTFw6GAfj5gDYaF0dTB0MxMSE
