@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.38 $
+:Version: $Revision: 1.39 $
 
 .. contents::
 
@@ -304,7 +304,7 @@ Configure an Email Interface
 ----------------------------
 
 If you don't want to use the email component of Roundup, then remove the
-"``nosyreator.py``" module from your tracker "``detectors``" directory.
+"``nosyreaction.py``" module from your tracker "``detectors``" directory.
 
 There are three supported ways to get emailed issues into the
 Roundup tracker.  You should pick ONE of the following, all
