@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.84 2004-03-22 07:45:39 richard Exp $
+# $Id: rdbms_common.py,v 1.85 2004-03-24 03:07:52 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -200,11 +200,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return 0
 
         if version == 1:
+            # change the schema structure
+            self.database_schema = {'tables': self.database_schema}
+
+            # version 1 didn't have the actor column (note that in
+            # MySQL this will also transition the tables to typed columns)
+            self.add_actor_column()
+
             # version 1 doesn't have the OTK, session and indexing in the
             # database
             self.create_version_2_tables()
-            # version 1 also didn't have the actor column
-            self.add_actor_column()
 
         self.database_schema['version'] = self.current_db_version
         return 1
@@ -236,10 +241,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             instance of a hyperdb "type" _or_ a string repr of that type.
         '''
         cols = [
-            ('_actor', 'INTEGER'),
-            ('_activity', 'DATE'),
-            ('_creator', 'INTEGER'),
-            ('_creation', 'DATE')
+            ('_actor', self.hyperdb_to_sql_datatypes[hyperdb.Link]),
+            ('_activity', self.hyperdb_to_sql_datatypes[hyperdb.Date]),
+            ('_creator', self.hyperdb_to_sql_datatypes[hyperdb.Link]),
+            ('_creation', self.hyperdb_to_sql_datatypes[hyperdb.Date]),
         ]
         mls = []
         # add the multilinks separately
@@ -338,8 +343,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         return 1
 
     def create_class_table(self, spec):
-        ''' create the class table for the given spec
-        '''
+        '''Create the class table for the given Class "spec". Creates the
+        indexes too.'''
         cols, mls = self.determine_columns(spec.properties.items())
 
         # add on our special columns
@@ -459,14 +464,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def create_multilink_table_indexes(self, spec, ml):
         # create index on linkid
         index_sql = 'create index %s_%s_l_idx on %s_%s(linkid)'%(
-                        spec.classname, ml, spec.classname, ml)
+            spec.classname, ml, spec.classname, ml)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_index', (self, index_sql)
         self.cursor.execute(index_sql)
 
         # create index on nodeid
         index_sql = 'create index %s_%s_n_idx on %s_%s(nodeid)'%(
-                        spec.classname, ml, spec.classname, ml)
+            spec.classname, ml, spec.classname, ml)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_index', (self, index_sql)
         self.cursor.execute(index_sql)
@@ -752,7 +757,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     sql_to_hyperdb_value = {
         hyperdb.String : str,
-        hyperdb.Date   : date.Date,
+        hyperdb.Date   : lambda x:date.Date(str(x).replace(' ', '.')),
 #        hyperdb.Link   : int,      # XXX numeric ids
         hyperdb.Link   : str,
         hyperdb.Interval  : date.Interval,
@@ -932,7 +937,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         sql = 'insert into %s__journal (%s) values (%s,%s,%s,%s,%s)'%(
             classname, cols, a, a, a, a, a)
         if __debug__:
-            print >>hyperdb.DEBUG, 'addjournal', (self, sql, entry)
+            print >>hyperdb.DEBUG, 'save_journal', (self, sql, entry)
         self.cursor.execute(sql, entry)
 
     def load_journal(self, classname, cols, nodeid):

@@ -191,83 +191,142 @@ class Database(Database):
         self.cursor.execute(sql, ('__textids', 1))
 
     def add_actor_column(self):
-        ''' While we're adding the actor column, we need to update the
+        '''While we're adding the actor column, we need to update the
         tables to have the correct datatypes.'''
-        assert 0, 'FINISH ME!'
+        for klass in self.classes.values():
+            cn = klass.classname
+            properties = klass.getprops()
+            old_spec = self.database_schema['tables'][cn]
 
-        for spec in self.classes.values():
-            new_has = spec.properties.has_key
-            new_spec = spec.schema()
-            new_spec[1].sort()
-            old_spec[1].sort()
-            if not force and new_spec == old_spec:
-                # no changes
-                return 0
+            execute = self.cursor.execute
 
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class FIRING'
+            # figure the non-Multilink properties to copy over
+            propnames = ['activity', 'creation', 'creator']
 
-            # detect multilinks that have been removed, and drop their table
-            old_has = {}
-            for name,prop in old_spec[1]:
-                old_has[name] = 1
-                if new_has(name) or not isinstance(prop, hyperdb.Multilink):
+            # figure actions based on data type
+            for name, s_prop in old_spec[1]:
+                # s_prop is a repr() string of a hyperdb type object
+                if s_prop.find('Multilink') == -1:
+                    if properties.has_key(name):
+                        propnames.append(name)
                     continue
-                # it's a multilink, and it's been removed - drop the old
-                # table. First drop indexes.
-                self.drop_multilink_table_indexes(spec.classname, ml)
-                sql = 'drop table %s_%s'%(spec.classname, prop)
-                if __debug__:
-                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
-                self.cursor.execute(sql)
-            old_has = old_has.has_key
+                tn = '%s_%s'%(cn, name)
 
-            # now figure how we populate the new table
-            if adding_actor:
-                fetch = ['_activity', '_creation', '_creator']
-            else:
-                fetch = ['_actor', '_activity', '_creation', '_creator']
-            properties = spec.getprops()
-            for propname,x in new_spec[1]:
-                prop = properties[propname]
-                if isinstance(prop, hyperdb.Multilink):
-                    if force or not old_has(propname):
-                        # we need to create the new table
-                        self.create_multilink_table(spec, propname)
-                elif old_has(propname):
-                    # we copy this col over from the old table
-                    fetch.append('_'+propname)
+                if properties.has_key(name):
+                    # grabe the current values
+                    sql = 'select linkid, nodeid from %s'%tn
+                    if __debug__:
+                        print >>hyperdb.DEBUG, 'migration', (self, sql)
+                    execute(sql)
+                    rows = self.cursor.fetchall()
+
+                # drop the old table
+                self.drop_multilink_table_indexes(cn, name)
+                sql = 'drop table %s'%tn
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'migration', (self, sql)
+                execute(sql)
+
+                if properties.has_key(name):
+                    # re-create and populate the new table
+                    self.create_multilink_table(klass, name)
+                    sql = '''insert into %s (linkid, nodeid) values 
+                        (%s, %s)'''%(tn, self.arg, self.arg)
+                    for linkid, nodeid in rows:
+                        execute(sql, (int(linkid), int(nodeid)))
+
+            # figure the column names to fetch
+            fetch = ['_%s'%name for name in propnames]
 
             # select the data out of the old table
             fetch.append('id')
             fetch.append('__retired__')
             fetchcols = ','.join(fetch)
-            cn = spec.classname
             sql = 'select %s from _%s'%(fetchcols, cn)
             if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', (self, sql)
+                print >>hyperdb.DEBUG, 'migration', (self, sql)
             self.cursor.execute(sql)
-            olddata = self.cursor.fetchall()
 
-            # TODO: update all the other index dropping code
+            # unserialise the old data
+            olddata = []
+            propnames = propnames + ['id', '__retired__']
+            for entry in self.cursor.fetchall():
+                l = []
+                olddata.append(l)
+                for i in range(len(propnames)):
+                    name = propnames[i]
+                    v = entry[i]
+
+                    if name in ('id', '__retired__'):
+                        l.append(int(v))
+                        continue
+                    prop = properties[name]
+                    if isinstance(prop, Date) and v is not None:
+                        v = date.Date(v)
+                    elif isinstance(prop, Interval) and v is not None:
+                        v = date.Interval(v)
+                    elif isinstance(prop, Password) and v is not None:
+                        v = password.Password(encrypted=v)
+                    elif (isinstance(prop, Boolean) or 
+                            isinstance(prop, Number)) and v is not None:
+                        v = float(v)
+
+                    # convert to new MySQL data type
+                    prop = properties[name]
+                    if v is not None:
+                        v = self.hyperdb_to_sql_value[prop.__class__](v)
+                    l.append(v)
+
             self.drop_class_table_indexes(cn, old_spec[0])
 
             # drop the old table
-            self.cursor.execute('drop table _%s'%cn)
+            execute('drop table _%s'%cn)
 
             # create the new table
-            self.create_class_table(spec)
+            self.create_class_table(klass)
 
-            # do the insert of the old data - the new columns will have
-            # NULL values
+            # do the insert of the old data
             args = ','.join([self.arg for x in fetch])
             sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
             if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
+                print >>hyperdb.DEBUG, 'migration', (self, sql)
             for entry in olddata:
-                self.cursor.execute(sql, tuple(entry))
+                if __debug__:
+                    print >>hyperdb.DEBUG, '... data', entry
+                execute(sql, tuple(entry))
 
-        return 1
+            # now load up the old journal data
+            cols = ','.join('nodeid date tag action params'.split())
+            sql = 'select %s from %s__journal'%(cols, cn)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'migration', (self, sql)
+            execute(sql)
+
+            olddata = []
+            for nodeid, journaldate, journaltag, action, params in \
+                    self.cursor.fetchall():
+                nodeid = int(nodeid)
+                journaldate = date.Date(journaldate)
+                params = eval(params)
+                olddata.append((nodeid, journaldate, journaltag, action,
+                    params))
+
+            # drop journal table and indexes
+            self.drop_journal_table_indexes(cn)
+            sql = 'drop table %s__journal'%cn
+            if __debug__:
+                print >>hyperdb.DEBUG, 'migration', (self, sql)
+            execute(sql)
+
+            # re-create journal table
+            self.create_journal_table(klass)
+            for nodeid, journaldate, journaltag, action, params in olddata:
+                self.save_journal(cn, cols, nodeid, journaldate,
+                    journaltag, action, params)
+
+            # make sure the normal schema update code doesn't try to
+            # change things 
+            self.database_schema['tables'][cn] = klass.schema()
 
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)

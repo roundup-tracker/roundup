@@ -301,7 +301,7 @@ def lookupKeys(linkcl, key, ids, num_re=re.compile('-?\d+')):
     l = []
     for entry in ids:
         if num_re.match(entry):
-            l.append(cl.get(entry, key))
+            l.append(linkcl.get(entry, key))
         else:
             l.append(entry)
     return l

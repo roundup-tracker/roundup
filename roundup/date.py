@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.61 2004-03-22 07:45:39 richard Exp $
+# $Id: date.py,v 1.62 2004-03-24 03:07:51 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -117,15 +117,15 @@ class Date:
         except:
             raise ValueError, 'Unknown spec %r'%spec
 
-    usagespec='[yyyy]-[mm]-[dd].[H]H:MM[:SS][offset]'
+    usagespec='[yyyy]-[mm]-[dd].[H]H:MM[:SS.SSS][offset]'
     def set(self, spec, offset=0, date_re=re.compile(r'''
             ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
             |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
             (?P<n>\.)?                                     # .
-            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
+            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d(\.\d+)?))?)?  # hh:mm:ss
             (?P<o>.+)?                                     # offset
             ''', re.VERBOSE), serialised_re=re.compile(r'''
-            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)
+            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d(\.\d+)?)
             ''', re.VERBOSE), add_granularity=0):
         ''' set the date to the value in spec
         '''
@@ -134,8 +134,9 @@ class Date:
         if m is not None:
             # we're serialised - easy!
             g = m.groups()
-            (self.year, self.month, self.day, self.hour, self.minute,
-                self.second) = map(int, g[:6])
+            (self.year, self.month, self.day, self.hour, self.minute) = \
+                map(int, g[:5])
+            self.second = float(g[5])
             return
 
         # not serialised data, try usual format
@@ -174,7 +175,8 @@ class Date:
             H = int(info['H']) - offset
             M = int(info['M'])
             S = 0
-            if info['S'] is not None: S = int(info['S'])
+            if info['S'] is not None:
+                S = float(info['S'])
 
         if add_granularity:
             S = S - 1
@@ -191,7 +193,8 @@ class Date:
             try:
                 self.applyInterval(Interval(info['o'], allowdate=0))
             except ValueError:
-                raise ValueError, _('Not a date spec: %s' % self.usagespec)
+                raise ValueError, _('%r not a date spec (%s)')%(spec,
+                    self.usagespec)
 
     def addInterval(self, interval):
         ''' Add the interval to this date, returning the date tuple
@@ -203,7 +206,8 @@ class Date:
         day = self.day + sign * interval.day
         hour = self.hour + sign * interval.hour
         minute = self.minute + sign * interval.minute
-        second = self.second + sign * interval.second
+        # Intervals work on whole seconds
+        second = int(self.second) + sign * interval.second
 
         # now cope with under- and over-flow
         # first do the time
@@ -283,7 +287,8 @@ class Date:
             self.minute, self.second, 0, 0, 0))
         b = calendar.timegm((other.year, other.month, other.day,
             other.hour, other.minute, other.second, 0, 0, 0))
-        diff = a - b
+        # intervals work in whole seconds
+        diff = int(a - b)
         if diff > 0:
             sign = 1
         else:
@@ -413,11 +418,13 @@ class Interval:
             if len(spec) == 7:
                 self.sign, self.year, self.month, self.day, self.hour, \
                     self.minute, self.second = spec
+                self.second = int(self.second)
             else:
                 # old, buggy spec form
                 self.sign = sign
                 self.year, self.month, self.day, self.hour, self.minute, \
                     self.second = spec
+                self.second = int(self.second)
 
     def set(self, spec, allowdate=1, interval_re=re.compile('''
             \s*(?P<s>[-+])?         # + or -
