@@ -20,7 +20,7 @@ Fixed:
  . bug #477104 ] HTML tag error in roundup-server
  . bug #477107 ] HTTP header problem
  . bug #477687 ] conforming html
-
+ . bug #474372 ] Netscape 4.77 do not render Support form
 
 2001-10-23 - 0.3.0 pre 3
 Feature:
