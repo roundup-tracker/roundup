@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.39 2004-07-03 23:05:15 richard Exp $ 
+# $Id: db_test_base.py,v 1.40 2004-07-20 22:56:18 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -693,6 +693,7 @@ class DBTest(MyTestCase):
         i1 = self.db.issue.create(files=[f1, f2])
         self.db.commit()
         d = self.db.indexer.search(['hello'], self.db.issue)
+        self.assert_(d.has_key(i1))
         d[i1]['files'].sort()
         self.assertEquals(d, {i1: {'files': [f1, f2]}})
         self.assertEquals(self.db.indexer.search(['world'], self.db.issue),
@@ -841,7 +842,7 @@ class DBTest(MyTestCase):
                 {'title': 'issue two', 'status': '1', 'assignedto': '2',
                     'foo': date.Interval('1d'), 'priority': '3',
                     'deadline': date.Date('2003-02-16.22:50')},
-                    {'title': 'issue three', 'status': '1', 'priority': '2',
+                {'title': 'issue three', 'status': '1', 'priority': '2',
                     'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
                 {'title': 'non four', 'status': '3',
                     'foo': date.Interval('0:10'), 'priority': '2',
@@ -894,7 +895,7 @@ class DBTest(MyTestCase):
         ae(filt(None, {'nosy': '2'}, ('+','id'), (None,None)), ['3'])
         ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
         ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
-            ('-', 'activity')), ['4', '3'])
+            ('-', 'deadline')), ['4', '3'])
 
     def testFilteringMany(self):
         ae, filt = self.filteringSetup()

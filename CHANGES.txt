@@ -33,6 +33,11 @@ Fixed:
 - document the STATIC_FILES config var
 - implement the HTTP HEAD command (sf bug 992544)
 - fix journal export of files to remove content from CSV files
+- API clarification. Previously, the anydbm/bsddb/metakit filter() methods
+  had required exact matches to Multilink argument lists. The RDBMS
+  backends treated Multilink matches like all other data types - matching
+  any of the Multilink argument list is good enough. The latter behaviour
+  is implemented across the board now.
 
 
 2004-06-24 0.7.5

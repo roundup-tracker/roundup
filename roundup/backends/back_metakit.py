@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.79 2004-07-20 05:58:07 richard Exp $
+# $Id: back_metakit.py,v 1.80 2004-07-20 22:56:18 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1313,12 +1313,12 @@ class Class(hyperdb.Class):
             def ff(row, ml=mlcriteria):
                 for propname, values in ml.items():
                     sv = getattr(row, propname)
-                    if not values and sv:
-                        return 0
+                    if not values and not sv:
+                        return 1
                     for id in values:
-                        if sv.find(fid=id) == -1:
-                            return 0
-                return 1
+                        if sv.find(fid=id) != -1:
+                            return 1
+                return 0
             iv = v.filter(ff)
             v = v.remapwith(iv)
 
