@@ -13,13 +13,13 @@ Migrating from 0.5 to 0.6
 0.6.0 Configuration
 -------------------
 
-- Introduced EMAIL_FROM_TAG config variable. This value is inserted into
-  the From: line of nosy email. If the sending user is "Foo Bar", the
-  From: line is usually::
+Introduced EMAIL_FROM_TAG config variable. This value is inserted into
+the From: line of nosy email. If the sending user is "Foo Bar", the
+From: line is usually::
 
      "Foo Bar" <issue_tracker@tracker.example>
 
-  the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
+the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
 
      "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
@@ -34,43 +34,48 @@ one-size-fits-all, so it'll work even if you've added/removed detectors.
 0.6.0 Form handling changes
 ---------------------------
 
-XXX Form handling changed significantly! Document it!
+Roundup's form handling capabilities have been significantly expanded. This
+should not affect users of 0.5 installations - but if you find you're
+getting errors from form submissions, please ask for help on the Roundup
+users mailing list:
 
-lose :multilink
-name:confirm -> :confirm:name
+  http://lists.sourceforge.net/lists/listinfo/roundup-users
+
+See the customisation doc section on "Form Values" for documentation of the
+new form variables possible.
 
 
 0.6.0 Multilingual character set support
 ----------------------------------------
 
-- Added internationalization support. This is done via encoding all data
-  stored in roundup database to utf-8 (unicode encoding). To support utf-8 in
-  web interface you should add the folowing line to your tracker's html/page
-  and html/_generic.help files inside <head> tag::
+Added internationalization support. This is done via encoding all data
+stored in roundup database to utf-8 (unicode encoding). To support utf-8 in
+web interface you should add the folowing line to your tracker's html/page
+and html/_generic.help files inside <head> tag::
   
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-  Since latin characters in utf-8 has the same codes as in ASCII table, this
-  modification is optional for users who use only plain latin characters. 
+Since latin characters in utf-8 have the same codes as in ASCII table, this
+modification is optional for users who use only plain latin characters. 
 
-  After this modification, you will be able to see and enter any world
-  character via web interface. Data received via mail interface also converted
-  to utf-8, however only new messages will be converted. If your roundup
-  database contains some of non-ASCII characters in one of 8-bit encoding,
-  they will not be visible in new unicode environment. Some of such data (e.g.
-  user names, keywords, etc)  can be edited by administrator, the others
-  (e.g. messages' contents) is not editable via web interface. Currently there
-  is no tool for converting such data, the only solution is to close
-  appropriate old issues and create new ones with the same content.
+After this modification, you will be able to see and enter any world
+character via web interface. Data received via mail interface also converted
+to utf-8, however only new messages will be converted. If your roundup
+database contains some of non-ASCII characters in one of 8-bit encoding,
+they will not be visible in new unicode environment. Some of such data (e.g.
+user names, keywords, etc)  can be edited by administrator, the others
+(e.g. messages' contents) is not editable via web interface. Currently there
+is no tool for converting such data, the only solution is to close
+appropriate old issues and create new ones with the same content.
 
-0.6.0 User' timezone support
-----------------------------
+0.6.0 User timezone support
+---------------------------
 
-- From version 0.6.0 roundup supports displaying of Date data in user' local
-  timezone if he/she has provided timezone information. To make it possible
-  some modification to tracker's schema and HTML templates are required.
-  First you should add string property 'timezone' to user class in dbinit.py
-  like this::
+From version 0.6.0 roundup supports displaying of Date data in user' local
+timezone if he/she has provided timezone information. To make it possible
+some modification to tracker's schema and HTML templates are required.
+First you should add string property 'timezone' to user class in dbinit.py
+like this::
   
     user = Class(db, "user", 
                     username=String(),   password=Password(),
@@ -80,41 +85,41 @@ name:confirm -> :confirm:name
                     queries=Multilink('query'), roles=String(),
                     timezone=String())
   
-  And second - html interface. Add following lines to
-  $TRACKER_HOME/html/user.item template::
+And second - html interface. Add following lines to
+$TRACKER_HOME/html/user.item template::
   
      <tr>
       <th>Timezone</th>
       <td tal:content="structure context/timezone/field">timezone</td>
      </tr>
 
-  After that all users should be able to provide their timezone information.
-  Timezone should be a positive or negative integer - offset from GMT.
+After that all users should be able to provide their timezone information.
+Timezone should be a positive or negative integer - offset from GMT.
 
-  After providing timezone, roundup will show all dates values, found in web
-  and mail interfaces in local time. It will also accept any Date info in
-  local time, convert and store it in GMT.
+After providing timezone, roundup will show all dates values, found in web
+and mail interfaces in local time. It will also accept any Date info in
+local time, convert and store it in GMT.
 
-  However you are not forced to make these modifications. By default roundup
-  will assume timezone=0 and will work as previous versions did.
+However you are not forced to make these modifications. By default roundup
+will assume timezone=0 and will work as previous versions did.
 
 
 0.6.0 Notes for metakit backend users
 -------------------------------------
 
-- Roundup 0.6.0 introduced searching on ranges of dates and intervals. To
-  support it, some modifications to interval storing routine were made. So if
-  your tracker uses metakit backend and your db schema contains intervals
-  property, searches on that property will not be accurate for db items that
-  was stored before roundup' upgrade. However all new records should be
-  searchable on intervals.
+Roundup 0.6.0 introduced searching on ranges of dates and intervals. To
+support it, some modifications to interval storing routine were made. So if
+your tracker uses metakit backend and your db schema contains intervals
+property, searches on that property will not be accurate for db items that
+was stored before roundup' upgrade. However all new records should be
+searchable on intervals.
 
-  It is possible to convert your database to new format: you can export and
-  import back all your data (consult "Migrating backends" in "Maintenance"
-  documentation). After this operation all your interval properties should
-  become searchable.
+It is possible to convert your database to new format: you can export and
+import back all your data (consult "Migrating backends" in "Maintenance"
+documentation). After this operation all your interval properties should
+become searchable.
 
-  Users of backends others than metakit should not worry about this issue.
+Users of backends others than metakit should not worry about this issue.
 
 
 Migrating from 0.4.x to 0.5.0

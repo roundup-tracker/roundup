@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.116 2003-05-09 03:32:41 richard Exp $
+# $Id: client.py,v 1.117 2003-05-09 04:04:27 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1434,10 +1434,12 @@ You should then receive another email with the new password.
               - property on the current context item
 
              <designator>:<propname>
-              - property on the indicated item
+              - property on the indicated item (for editing related
+                information)
 
              <classname>-<N>:<propname>
-              - property on the Nth new item of classname
+              - property on the Nth new item of classname (generally for
+                creating new items to attach to the current item)
 
             Once we have determined the "propname", we check to see if it
             is one of the special form values:
