@@ -15,17 +15,17 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: init.py,v 1.34 2004-11-09 23:12:12 richard Exp $
+# $Id: init.py,v 1.35 2004-11-24 07:03:47 a1s Exp $
 
 """Init (create) a roundup instance.
 """
 __docformat__ = 'restructuredtext'
 
-import os, sys, errno, rfc822
+import os, errno, rfc822
 
-import roundup.instance
 from roundup import install_util, password
 from roundup.configuration import CoreConfig
+from roundup.i18n import _
 
 def copytree(src, dst, symlinks=0):
     """Recursively copy a directory tree using copyDigestedFile().
@@ -98,8 +98,7 @@ def install(instance_home, template):
     # if there is no config.ini or old-style config.py
     # installed from the template, write default config text
     config_ini_file = os.path.join(instance_home, CoreConfig.INI_FILE)
-    if not (os.path.isfile(config_ini_file)
-            or os.path.isfile(os.path.join(instance_home, 'config.py'))):
+    if not os.path.isfile(config_ini_file):
         config = CoreConfig()
         config.save(config_ini_file)
 
@@ -127,6 +126,12 @@ def loadTemplateInfo(dir):
     '''
     ti = os.path.join(dir, 'TEMPLATE-INFO.txt')
     if not os.path.exists(ti):
+        return None
+
+    if os.path.exists(os.path.join(dir, 'config.py')):
+        print _("WARNING: directory '%s'\n"
+            "\tcontains old-style template - ignored"
+            ) % os.path.abspath(dir)
         return None
 
     # load up the template's information
