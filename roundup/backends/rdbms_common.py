@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.16 2002-09-24 07:39:52 richard Exp $
+# $Id: rdbms_common.py,v 1.17 2002-09-25 04:56:21 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1663,6 +1663,10 @@ class Class(hyperdb.Class):
             property value to match is a list, any one of the values in the
             list may match for that property to match.
         '''
+        # just don't bother if the full-text search matched diddly
+        if search_matches == {}:
+            return []
+
         cn = self.classname
 
         # figure the WHERE clause from the filterspec
@@ -1776,6 +1780,7 @@ class Class(hyperdb.Class):
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
+        print sql
         self.db.cursor.execute(sql, args)
         l = self.db.cursor.fetchall()
 
