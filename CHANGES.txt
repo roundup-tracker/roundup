@@ -36,6 +36,13 @@ Fixed:
 - removed safeget() from the API (sf bug 994750)
 
 
+2004-10-?? 0.7.9
+Fixed:
+- popup listing uses filter args (thanks Marlon van den Berg)
+- fixed editing of message contents
+- loosened the detection of issue cross-references in messages
+
+
 2004-10-15 0.7.8
 Fixed:
 - Clean out sessions / otks tables when migrating
