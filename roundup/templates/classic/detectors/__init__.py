@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.7 2003-02-20 07:04:55 richard Exp $
+#$Id: __init__.py,v 1.8 2003-02-24 04:12:15 richard Exp $
 
 import sys, os, imp
 
@@ -31,7 +31,6 @@ def init(db):
         if ext == '.py':
             module = imp.load_module(name, open(path), file,
                 ('.py', 'r', imp.PY_SOURCE))
-            print (name, open(path), file, module)
             module.init(db)
 
 # vim: set filetype=python ts=4 sw=4 et si
