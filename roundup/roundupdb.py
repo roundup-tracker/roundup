@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.48 2002-03-18 18:32:00 rochecompaan Exp $
+# $Id: roundupdb.py,v 1.49 2002-03-19 06:41:49 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -402,8 +402,7 @@ class IssueClass(Class):
         content = cStringIO.StringIO('\n'.join(m))
         content_encoded = cStringIO.StringIO()
         quopri.encode(content, content_encoded, 0)
-        content_encoded.seek(0)
-        content_encoded = content_encoded.read()
+        content_encoded = content_encoded.getvalue()
 
         # get the files for this message
         message_files = messages.get(msgid, 'files')
@@ -605,6 +604,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.48  2002/03/18 18:32:00  rochecompaan
+# All messages sent to the nosy list are now encoded as quoted-printable.
+#
 # Revision 1.47  2002/02/27 03:16:02  richard
 # Fixed a couple of dodgy bits found by pychekcer.
 #
