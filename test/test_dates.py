@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_dates.py,v 1.33 2004-09-29 07:27:09 richard Exp $
+#
+# $Id: test_dates.py,v 1.34 2004-11-29 14:30:55 a1s Exp $
 from __future__ import nested_scopes
 
 import unittest, time
@@ -170,6 +170,7 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval(' - 1 d 2:50 ')), '- 1d 2:50')
         ae(str(Interval(' 14:00 ')), '+ 14:00')
         ae(str(Interval(' 0:04:33 ')), '+ 0:04:33')
+        ae(str(Interval(8.*3600)), '+ 08:00')
 
     def testIntervalInitDate(self):
         ae = self.assertEqual
@@ -338,7 +339,7 @@ class DateTestCase(unittest.TestCase):
         ae(str(Date('2003-5', add_granularity=1)), '2003-05-31.23:59:59')
         ae(str(Interval('+1w', add_granularity=1)), '+ 14d')
         ae(str(Interval('-2m 3w', add_granularity=1)), '- 2m 14d')
-        
+
     def testIntervalPretty(self):
         def ae(spec, pretty):
             self.assertEqual(Interval(spec).pretty(), pretty)
@@ -361,7 +362,7 @@ class DateTestCase(unittest.TestCase):
         ae('01:45:00', 'in 1 3/4 hours')
         ae('01:30:00', 'in 1 1/2 hours')
         ae('01:29:00', 'in 1 1/4 hours')
-        ae('01:00:00', 'in an hour')        
+        ae('01:00:00', 'in an hour')
         ae('00:30:00', 'in 1/2 an hour')
         ae('00:15:00', 'in 1/4 hour')
         ae('00:02:00', 'in 2 minutes')
@@ -389,4 +390,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python ts=4 sw=4 et si :
