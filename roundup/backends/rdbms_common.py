@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.27.2.8 2003-03-24 04:53:14 richard Exp $
+# $Id: rdbms_common.py,v 1.27.2.9 2003-06-24 08:18:19 anthonybaxter Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -720,13 +720,16 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             Set retired=None to get all nodes. Otherwise it'll get all the 
             retired or non-retired nodes, depending on the flag.
         '''
-        # flip the sense of the flag if we don't want all of them
+        # flip the sense of the 'retired' flag if we don't want all of them
         if retired is not None:
-            retired = not retired
-        sql = 'select id from _%s where __retired__ <> %s'%(classname, self.arg)
+            args = (((retired==0) and 1) or 0,)
+            sql = 'select id from _%s where __retired__ <> %s'%(classname, self.arg)
+        else:
+            args = ()
+            sql = 'select id from _%s'%(classname,)
         if __debug__:
-            print >>hyperdb.DEBUG, 'getnodeids', (self, sql, retired)
-        self.cursor.execute(sql, (retired,))
+            print >>hyperdb.DEBUG, 'getnodeids', (self, sql, args)
+        self.cursor.execute(sql, args)
         return [x[0] for x in self.cursor.fetchall()]
 
     def addjournal(self, classname, nodeid, action, params, creator=None,
