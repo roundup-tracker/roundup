@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.9 2002-09-03 05:46:21 richard Exp $
+# $Id: back_gadfly.py,v 1.10 2002-09-03 06:08:50 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1040,6 +1040,7 @@ class Class(hyperdb.Class):
                 return self.db.user.lookup(name)
             except KeyError:
                 # the journaltag user doesn't exist any more
+                return None
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
@@ -1757,6 +1758,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/09/03 05:46:21  richard
+# handle disappearing users for journaltags
+#
 # Revision 1.8  2002/09/03 02:53:53  richard
 # Fixed nasty bug that was preventing changes to multilinks going through.
 #
