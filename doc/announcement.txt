@@ -62,6 +62,6 @@ doesn't even need to be "installed" to be operational, though a
 disutils-based install script is provided.
 
 It comes with two issue tracker templates (a classic bug/feature tracker and
-a minimal skeleton) and seven database back-ends (anydbm, bsddb, bsddb3,
-sqlite, metakit, mysql and postgresql).
+a minimal skeleton) and five database back-ends (anydbm, sqlite, metakit,
+mysql and postgresql).
 
