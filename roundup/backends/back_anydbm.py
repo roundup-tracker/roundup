@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.48 2002-07-18 11:17:31 gmcm Exp $
+#$Id: back_anydbm.py,v 1.49 2002-07-18 11:41:10 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1024,16 +1024,28 @@ class Class(hyperdb.Class):
                 propvalues[propname] = value
 
             elif value is not None and isinstance(prop, Number):
+                # TODO: should we store floats too?
                 try:
                     int(value)
                 except TypeError:
                     raise TypeError, 'new property "%s" not numeric' % propname
 
             elif value is not None and isinstance(prop, Boolean):
-                try:
-                    int(value)
-                except TypeError:
-                    raise TypeError, 'new property "%s" not boolean' % propname
+                if isinstance(value, type('')):
+                    s = value.lower()
+                    if s in ('0', 'false', 'no'):
+                        value = 0
+                    elif s in ('1', 'true', 'yes'):
+                        value = 1
+                    else:
+                        raise TypeError, 'new property "%s" not '\
+                            'boolean'%propname
+                else:
+                    try:
+                        int(value)
+                    except TypeError:
+                        raise TypeError, 'new property "%s" not '\
+                            'boolean'%propname
 
             node[propname] = value
 
@@ -1676,6 +1688,11 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.48  2002/07/18 11:17:31  gmcm
+#Add Number and Boolean types to hyperdb.
+#Add conversion cases to web, mail & admin interfaces.
+#Add storage/serialization cases to back_anydbm & back_metakit.
+#
 #Revision 1.47  2002/07/14 23:18:20  richard
 #. fixed the journal bloat from multilink changes - we just log the add or
 #  remove operations, not the whole list
