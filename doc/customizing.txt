@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.142 $
+:Version: $Revision: 1.143 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3022,9 +3022,9 @@ need to override the standard ``verifyPassword`` method defined in
             return 0
 
     class Client(client.Client):
-        actions = client.Client.actions + (
-            ('login', ExternalPasswordLoginAction)
-        )
+        actions = (
+            ('login', ExternalPasswordLoginAction),
+        ) + client.Client.actions
 
 What this does is look through the file, line by line, looking for a
 name that matches.
