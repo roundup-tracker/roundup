@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.14 2001-10-27 00:22:35 richard Exp $
+# $Id: roundup.cgi,v 1.15 2001-10-29 23:55:44 richard Exp $
 
 # python version check
 import sys
@@ -90,7 +90,7 @@ def main(out, err):
         for instance in ROUNDUP_INSTANCE_HOMES.keys():
             w('<li><a href="%s/%s/index">%s</a>\n'%(
                 os.environ['SCRIPT_NAME'], urllib.quote(instance),
-                instance))
+                cgi.escape(instance)))
         w('</ol></body></html>')
 
 #
@@ -111,6 +111,9 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/10/27 00:22:35  richard
+# Fixed some URL issues in roundup.cgi, again thanks Juergen Hermann.
+#
 # Revision 1.13  2001/10/05 02:23:24  richard
 #  . roundup-admin create now prompts for property info if none is supplied
 #    on the command-line.

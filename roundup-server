@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.16 2001-10-27 00:12:21 richard Exp $
+$Id: roundup-server,v 1.17 2001-10-29 23:55:44 richard Exp $
 
 """
 import sys
@@ -109,7 +109,7 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         w('<body><h1>Roundup instances index</h1><ol>\n')
         for instance in self.ROUNDUP_INSTANCE_HOMES.keys():
             w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
-                instance))
+                cgi.escape(instance)))
         w('</ol></body></html>')
 
     def inner_run_cgi(self):
@@ -261,6 +261,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/10/27 00:12:21  richard
+# Fixed roundup-server for windows, thanks Juergen Hermann.
+#
 # Revision 1.15  2001/10/12 02:23:26  richard
 # Didn't clean up after myself :)
 #
