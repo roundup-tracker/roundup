@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: i18n.py,v 1.11 2004-10-23 14:03:34 a1s Exp $
+# $Id: i18n.py,v 1.12 2004-10-23 14:20:57 a1s Exp $
 
 """
 RoundUp Internationalization (I18N)
@@ -164,10 +164,10 @@ def get_translation(language=None, tracker_home=None,
     mofiles = []
     # locale directory paths
     system_locale = gettext_module._default_localedir
-    if tracker_home is not None:
-        tracker_locale = os.path.join(tracker_home, "locale")
-    else:
+    if tracker_home is None:
         tracker_locale = None
+    else:
+        tracker_locale = os.path.join(tracker_home, "locale")
     # get the list of locales
     locales = find_locales(language)
     # add mofiles found in the tracker, then in the system locale directory
@@ -185,7 +185,9 @@ def get_translation(language=None, tracker_home=None,
     mofiles = filter(None, mofiles)
     if mofiles:
         translator = translation_class(open(mofiles[0], "rb"))
-        for mofile in mofiles:
+        for mofile in mofiles[1:]:
+            # note: current implementation of gettext_module
+            #   always adds fallback to the end of the fallback chain.
             translator.add_fallback(translation_class(open(mofile, "rb")))
     else:
         translator = null_translation_class()
