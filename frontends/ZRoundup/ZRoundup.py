@@ -14,19 +14,23 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.3 2001-12-12 23:55:00 richard Exp $
+# $Id: ZRoundup.py,v 1.4 2002-01-10 03:38:16 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
-This frontend works by providing a thin layer that sits between Zope and the regular CGI
-interface of roundup, providing the web frontend with the minimum of effort.
+This frontend works by providing a thin layer that sits between Zope and the
+regular CGI interface of roundup, providing the web frontend with the minimum
+of effort.
 
-This means that the regular CGI interface does all authentication quite independently of
-Zope.
+This means that the regular CGI interface does all authentication quite
+independently of Zope. The roundup code is kept in memory though, and it
+runs in the same server as all your other Zope stuff, so it does have _some_
+advantages over regular CGI :)
 
-It also means that any requests which specify :filter, :columns or :sort _must_ be done
-using a GET, so that this interface can re-parse the QUERY_STRING. Zope interprets the
-':' as a special character, and the special args are lost to it.
+It also means that any requests which specify :filter, :columns or :sort
+_must_ be done using a GET, so that this interface can re-parse the
+QUERY_STRING. Zope interprets the ':' as a special character, and the special
+args are lost to it.
 '''
 from Globals import InitializeClass, HTMLFile
 from OFS.SimpleItem import Item
@@ -40,7 +44,8 @@ modulesecurity = ModuleSecurityInfo()
 import roundup.instance
 from roundup import cgi_client
 
-modulesecurity.declareProtected('View management screens', 'manage_addZRoundupForm')
+modulesecurity.declareProtected('View management screens',
+    'manage_addZRoundupForm')
 manage_addZRoundupForm = HTMLFile('dtml/manage_addZRoundupForm', globals())
 
 modulesecurity.declareProtected('Add Z Roundups', 'manage_addZRoundup')
@@ -87,8 +92,8 @@ class FormWrapper:
         return self.form.keys()
 
 class ZRoundup(Item, PropertyManager, Implicit, Persistent):
-    '''An instance of this class provides an interface between Zope and roundup for one
-       roundup instance
+    '''An instance of this class provides an interface between Zope and
+       roundup for one roundup instance
     '''
     meta_type =  'Z Roundup'
     security = ClassSecurityInfo()
@@ -163,6 +168,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/12/12 23:55:00  richard
+# Fixed some problems with user editing
+#
 # Revision 1.2  2001/12/12 23:33:58  richard
 # added some implementation notes
 #
