@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - reset ID counters if the database is cleared (thanks William)
 - apply IE caching "fix" to automatically serve up all pages expired
+- fix typo (sf patch 1076629)
 
 
 2004-10-26 0.7.9

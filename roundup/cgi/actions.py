@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27.2.6 2004-11-05 05:14:35 richard Exp $
+#$Id: actions.py,v 1.27.2.7 2004-12-07 23:31:00 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -801,7 +801,7 @@ class LoginAction(Action):
             self.client.userid = self.db.user.lookup(self.client.user)
         except KeyError:
             name = self.client.user
-            self.client.error_message.append(_('Ivalid login'))
+            self.client.error_message.append(_('Invalid login'))
             self.client.make_user_anonymous()
             return
 
