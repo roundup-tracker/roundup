@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.7 $
+:Version: $Revision: 1.8 $
 
 Current Situation and Issues
 ============================
@@ -104,11 +104,12 @@ TALES - TAL Expression Language
   that form the tag attribute values. TALES expressions come in three
   flavours:
 
-  Path Expressions - eg. ``foo/bar/frozz``
+  Path Expressions - eg. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the path
-   ``foo/bar/frozz`` is broken into parts ``foo``, ``bar`` and ``frozz``. The
-   ``foo`` part is the root of the expression. We then look for a ``bar``
-   attribute on foo, or failing that, a bar item (as in foo['bar']). If that
+   ``item/status/checklist`` is broken into parts ``item``, ``status``
+   and ``checklist``. The ``item`` part is the root of the expression.
+   We then look for a ``status`` attribute on ``item``, or failing that, a
+   ``status`` item (as in ``item['status']``). If that
    fails, the path expression fails. When we get to the end, the object we're
    left with is evaluated to get a string - methods are called, objects are
    stringified. Path expressions may have an optional ``path:`` prefix, though
@@ -121,8 +122,9 @@ TALES - TAL Expression Language
 
   Python Expressions - eg. ``python: 1+1``
    These expressions give the full power of Python. All the "root level"
-   variables are available, so ``python:foo.bar.frozz()`` might be equivalent
-   to ``foo/bar/frozz``, assuming that ``frozz`` is a method.
+   variables are available, so ``python:item.status.checklist()`` would be
+   equivalent to ``item/status/checklist``, assuming that ``checklist`` is
+   a method.
 
 PageTemplates
   The PageTemplates module glues together TAL and TALES.
