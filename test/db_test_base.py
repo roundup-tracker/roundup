@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.6 2003-11-11 11:19:18 richard Exp $ 
+# $Id: db_test_base.py,v 1.7 2003-11-12 03:42:13 richard Exp $ 
 
-import unittest, os, shutil, errno, imp, sys, time
+import unittest, os, shutil, errno, imp, sys, time, pprint
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node
@@ -615,12 +615,19 @@ class DBTest(MyTestCase):
         got = self.db.issue.find(status='1')
         got.sort()
         self.assertEqual(got, ids)
+        got = self.db.issue.find(status={'1':1})
+        got.sort()
+        self.assertEqual(got, ids)
 
         # none
         self.assertEqual(self.db.issue.find(status='4'), [])
+        self.assertEqual(self.db.issue.find(status={'4':1}), [])
 
         # should match first and third
         got = self.db.issue.find(assignedto=None)
+        got.sort()
+        self.assertEqual(got, ids)
+        got = self.db.issue.find(assignedto={None:1})
         got.sort()
         self.assertEqual(got, ids)
 
@@ -630,9 +637,13 @@ class DBTest(MyTestCase):
         ids.append(oddid)
         ids.sort()
         self.assertEqual(got, ids)
+        got = self.db.issue.find(status={'1':1}, nosy={'2':1})
+        got.sort()
+        self.assertEqual(got, ids)
 
         # none
         self.assertEqual(self.db.issue.find(status='4', nosy='3'), [])
+        self.assertEqual(self.db.issue.find(status={'4':1}, nosy={'3':1}), [])
 
     def testStringFind(self):
         ids = []
@@ -852,7 +863,7 @@ class SchemaTest(MyTestCase):
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.db.commit(); self.db.close()
 
-        # change the key to fooz
+        # change the key to fooz on a
         self.init_amodkey()
         self.assertEqual(self.db.a.get(aid, 'name'), 'apple')
         self.assertEqual(self.db.a.get(aid, 'fooz'), None)

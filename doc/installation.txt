@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.63 $
+:Version: $Revision: 1.64 $
 
 .. contents::
 
@@ -242,8 +242,12 @@ There's several to choose from, each with benefits and limitations:
 **mysql**
   Backend for popular RDBMS MySQL. According to benchmarks, this backend works
   much faster than any of \*dbm ones, but slightly slower than metakit and
-  sqlite. A good scalability is not a property of this backend for now,
-  though. For more info on backend installation see doc/mysql.txt. 
+  sqlite. For more info on backend installation see doc/mysql.txt. 
+**postgresql**
+  Backend for popular RDBMS PostgreSQL. According to benchmarks, this
+  backend works much faster than any of \*dbm ones and mysql, but slightly
+  slower than metakit and sqlite.
+  For more info on backend installation see doc/postgresql.txt. 
 **metakit**
   This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.

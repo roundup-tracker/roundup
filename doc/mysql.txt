@@ -2,7 +2,7 @@
 MySQL Backend
 =============
 
-:version: $Revision: 1.5 $
+:version: $Revision: 1.6 $
 
 This notes detail the MySQL backend for the Roundup issue tracker.
 
@@ -18,6 +18,8 @@ to install:
    if you have no other choice)
 2. Python MySQL interface - http://sourceforge.net/projects/mysql-python
 
+:Note: the InnoDB implementation has a bug that Roundup tickles. See
+       http://bugs.mysql.com/bug.php?id=1810
 
 Running the MySQL tests
 =======================

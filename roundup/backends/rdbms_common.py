@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.68 2003-11-12 01:00:58 richard Exp $
+# $Id: rdbms_common.py,v 1.69 2003-11-12 03:42:12 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1783,8 +1783,8 @@ class Class(hyperdb.Class):
         'propspec' consists of keyword args propname=nodeid or
                    propname={nodeid:1, }
         'propname' must be the name of a property in this class, or a
-        KeyError is raised.  That property must be a Link or Multilink
-        property, or a TypeError is raised.
+                   KeyError is raised.  That property must be a Link or
+                   Multilink property, or a TypeError is raised.
 
         Any node in this class whose 'propname' property links to any of the
         nodeids will be returned. Used by the full text indexing, which knows
@@ -1816,6 +1816,8 @@ class Class(hyperdb.Class):
         for prop, values in propspec:
             if not isinstance(props[prop], hyperdb.Link):
                 continue
+            if type(values) is type({}) and len(values) == 1:
+                values = values.keys()[0]
             if type(values) is type(''):
                 allvalues += (values,)
                 where.append('_%s = %s'%(prop, a))

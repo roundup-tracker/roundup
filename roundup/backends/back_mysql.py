@@ -49,9 +49,12 @@ def db_exists(config):
 class Database(Database):
     arg = '%s'
 
-    # backend for MySQL to use
-    mysql_backend = 'InnoDB'
-    #mysql_backend = 'BDB'    # much slower, only use if you have no choice
+    # Backend for MySQL to use.
+    # InnoDB is faster, but has a bug in its rollback machinery that causes
+    # some selects in subsequent transactions to fail. BDB does not have
+    # this bug, but is apparently much slower.
+    #mysql_backend = 'InnoDB'
+    mysql_backend = 'BDB'
     
     def sql_open_connection(self):
         db = getattr(self.config, 'MYSQL_DATABASE')

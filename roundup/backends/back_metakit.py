@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.51 2003-10-07 11:58:57 anthonybaxter Exp $
+# $Id: back_metakit.py,v 1.52 2003-11-12 03:42:12 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -140,7 +140,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
         if tblid == -1:
             tblid = self.tables.append(name=tablenm)
         if creator is None:
-            creator = self.getuid()
+            creator = int(self.getuid())
         else:
             try:
                 creator = int(creator)
@@ -628,7 +628,7 @@ class Class:
             if not row.creation:
                 row.creation = int(time.time())
             if not row.creator:
-                row.creator = self.db.getuid()
+                row.creator = int(self.db.getuid())
 
         self.db.dirty = 1
         if self.do_journal:
@@ -734,6 +734,11 @@ class Class:
         if not isinstance(prop, hyperdb.String):
             raise TypeError, "%s is not a String" % propname
 
+        # TODO: metakit needs to be able to cope with the key property
+        # *changing*, which it can't do at present. At the moment, it
+        # creates the key prop index once, with no record of the name of
+        # the property for the index.
+
         # first setkey for this run
         self.keyname = propname
         iv = self.db._db.view('_%s' % self.classname)
@@ -814,7 +819,10 @@ class Class:
             else:
                 d = {}
                 for id in ids.keys():
-                    d[int(id)] = 1
+                    if id is None:
+                        d[0] = 1
+                    else:
+                        d[int(id)] = 1
                 ids = d
             prop = self.ruprops[propname]
             view = self.getview()
