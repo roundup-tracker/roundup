@@ -4,12 +4,14 @@ are given with the most recent entry first.
 2004-??-?? 0.7.0b2
 Feature:
 - added CSV export to index pages
+- added new reactor, filereactor.py, that works around a bug in IE. See 
+  filereactor.py for more info.
+- added dispatcher functionality - see upgrading.txt for more info
 
 Fixed:
 - Boolean HTML templating was broken
 - Link HTML templating field() was broken
 - Fix reporting of test inclusion in postgresql test
-
 
 2004-03-24 0.7.0b1
 Major new features:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.6 2004-03-25 19:27:15 eparker Exp $
+# $Id: config.py,v 1.7 2004-03-25 22:38:55 eparker Exp $
 
 import os
 
@@ -68,12 +68,18 @@ DISPATCHER_EMAIL = ADMIN_EMAIL
 
 # Additional text to include in the "name" part of the From: address used
 # in nosy messages. If the sending user is "Foo Bar", the From: line is
-# usually:
-#    "Foo Bar" <issue_tracker@tracker.example>
+# usually: "Foo Bar" <issue_tracker@tracker.example>
 # the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
 #    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 EMAIL_FROM_TAG = ""
 
+# 
+# SECURITY DEFINITIONS
+#
+# define the Roles that a user gets when they register with the tracker
+# these are a comma-separated string of role names (e.g. 'Admin,User')
+NEW_WEB_USER_ROLES = 'User'
+NEW_EMAIL_USER_ROLES = 'User'
 
 # Send error messages to the dispatcher, user, or both?
 # If 'dispatcher', error message notifications will only be sent to the dispatcher.
@@ -81,11 +87,8 @@ EMAIL_FROM_TAG = ""
 # If 'both',       error message notifications will be sent to both individuals.
 ERROR_MESSAGES_TO = 'user'
 
-# Send nosy messages to the author of the message?
-# If 'new' is used, then the author will only be sent the message when the
-# message creates a new issue. If 'yes' then the author will always be sent
-# a copy of the message they wrote.
-MESSAGES_TO_AUTHOR = 'no'           # one of 'yes', 'no', 'new'
+# Send nosy messages to the author of the message
+MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
 
 # Does the author of a message get placed on the nosy list automatically?
 # If 'new' is used, then the author will only be added when a message
@@ -127,14 +130,5 @@ HTML_VERSION = 'html4'         # either 'html4' or 'xhtml'
 # 'iso-8859-1'.
 EMAIL_CHARSET = 'utf-8'
 #EMAIL_CHARSET = 'iso-8859-1'   # use this instead for Eudora users
-
-
-# 
-# SECURITY DEFINITIONS
-#
-# define the Roles that a user gets when they register with the tracker
-# these are a comma-separated string of role names (e.g. 'Admin,User')
-NEW_WEB_USER_ROLES = 'User'
-NEW_EMAIL_USER_ROLES = 'User'
 
 # vim: set filetype=python ts=4 sw=4 et si

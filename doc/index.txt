@@ -49,6 +49,7 @@ implement this system on their time.
 
 Thanks also to the many people on the mailing list, in the sourceforge
 project and those who just report bugs:
+Eddie Parker,
 Thomas Arendsen Hein,
 Anthony Baxter,
 Cameron Blackwood,

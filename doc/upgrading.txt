@@ -13,20 +13,6 @@ accordingly. Note that there is information about upgrade procedures in the
 Migrating from 0.7 to 0.8
 =========================
 
-
-0.8.0 Added filereactor detector
---------------------------------
-
-This reactor is not installed by default, but rather can be found in the source
-directory, under the detectors/ directory.
-
-In it, it contains a workaround for an Internet Explorer limitation, regarding
-.eml and .mht files. It is tested to work with both Internet Explorer 6 and
-Mozilla's Firefox. 
-
-Read the description inside of the reactor itself, for more information.
-
-
 0.8.0 Added Dispatcher role
 ---------------------------
 

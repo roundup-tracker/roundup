@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.120 $
+:Version: $Revision: 1.121 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -135,6 +135,11 @@ The configuration variables available are:
 **ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
  The email address that roundup will complain to if it runs into trouble.
 
+**DISPATCHER_EMAIL** - ``ADMIN_EMAIL``
+  The email address that roundup will issue all error messages to. This is
+  also useful, if you want to switch your 'new message' notification to
+  a central user. 
+
 **EMAIL_FROM_TAG** - ``''``
  Additional text to include in the "name" part of the ``From:`` address used
  in nosy messages. If the sending user is "Foo Bar", the ``From:`` line is
@@ -145,6 +150,9 @@ The configuration variables available are:
  The EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
 
     "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
+
+**ERROR_MESSAGES_TO** - ``'user'``, ``'dispatcher'`` or ``'both'``
+ Sends error messages to the dispatcher, user, or both.
 
 **MESSAGES_TO_AUTHOR** - ``'new'``, ``'yes'`` or``'no'``
  Send nosy messages to the author of the message?
@@ -2811,7 +2819,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
     </form>
 
    Note that later in the form, I test the value of "cat" include form
-   elements that are appropriate. For exsample::
+   elements that are appropriate. For example::
 
     <tal:block tal:condition="python:cat in '6 10 13 14 15 16 17'.split()">
      <tr>
