@@ -8,13 +8,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.1 2002-01-21 11:05:48 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.2 2002-01-22 00:12:07 richard Exp $ 
 
 import unittest, cgi
 
 from roundup.htmltemplate import TemplateFunctions
 from roundup import date
-from roundup.hyperdb import String, Date, Interval, Link, Multilink
+from roundup import password
+from roundup.hyperdb import String, Password, Date, Interval, Link, Multilink
 
 class Class:
     def get(self, nodeid, attribute, default=None):
@@ -28,6 +29,8 @@ class Class:
             return '1'
         elif attribute == 'multilink':
             return ['1', '2']
+        elif attribute == 'password':
+            return password.Password('sekrit')
         elif attribute == 'key':
             return 'the key'
         elif attribute == 'html':
@@ -37,7 +40,7 @@ class Class:
     def getprops(self):
         return {'string': String(), 'date': Date(), 'interval': Interval(),
             'link': Link('other'), 'multilink': Multilink('other'),
-            'html': String(), 'key': String()}
+            'password': Password(), 'html': String(), 'key': String()}
     def labelprop(self):
         return 'key'
 
@@ -63,6 +66,9 @@ class NodeCase(unittest.TestCase):
         s = 'Node 1: I am a string'
         self.assertEqual(self.tf.do_plain('string'), s)
 
+    def testPlain_password(self):
+        self.assertEqual(self.tf.do_plain('password'), '*encrypted*')
+
     def testPlain_html(self):
         s = '<html>hello, I am HTML</html>'
         self.assertEqual(self.tf.do_plain('html', escape=0), s)
@@ -82,22 +88,37 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_plain('multilink'), '1, 2')
 
 
-#    def do_field(self, property, size=None, height=None, showid=0):
+#    def do_field(self, property, size=None, showid=0):
     def testField_string(self):
         self.assertEqual(self.tf.do_field('string'),
             '<input name="string" value="Node 1: I am a string" size="30">')
+        self.assertEqual(self.tf.do_field('string', size=10),
+            '<input name="string" value="Node 1: I am a string" size="10">')
+
+    def testField_password(self):
+        self.assertEqual(self.tf.do_field('password'),
+            '<input type="password" name="password" size="30">')
+        self.assertEqual(self.tf.do_field('password', size=10),
+            '<input type="password" name="password" size="10">')
 
     def testField_html(self):
         self.assertEqual(self.tf.do_field('html'), '<input name="html" '
             'value="&lt;html&gt;hello, I am HTML&lt;/html&gt;" size="30">')
+        self.assertEqual(self.tf.do_field('html', size=10),
+            '<input name="html" value="&lt;html&gt;hello, I am '
+            'HTML&lt;/html&gt;" size="10">')
 
     def testField_date(self):
         self.assertEqual(self.tf.do_field('date'),
             '<input name="date" value="2000-01-01.00:00:00" size="30">')
+        self.assertEqual(self.tf.do_field('date', size=10),
+            '<input name="date" value="2000-01-01.00:00:00" size="10">')
 
     def testField_interval(self):
         self.assertEqual(self.tf.do_field('interval'),
             '<input name="interval" value="- 3d" size="30">')
+        self.assertEqual(self.tf.do_field('interval', size=10),
+            '<input name="interval" value="- 3d" size="10">')
 
     def testField_link(self):
         self.assertEqual(self.tf.do_field('link'), '''<select name="link">
@@ -108,7 +129,46 @@ class NodeCase(unittest.TestCase):
 
     def testField_multilink(self):
         self.assertEqual(self.tf.do_field('multilink'),
+            '<input name="multilink" size="30" value="the key,the key">')
+        self.assertEqual(self.tf.do_field('multilink', size=10),
             '<input name="multilink" size="10" value="the key,the key">')
+
+#    def do_menu(self, property, size=None, height=None, showid=0):
+    def testMenu_link(self):
+        self.assertEqual(self.tf.do_menu('link'), '''<select name="link">
+<option value="-1">- no selection -</option>
+<option selected value="1">the key</option>
+<option value="2">the key</option>
+</select>''')
+        self.assertEqual(self.tf.do_menu('link', size=6),
+            '''<select name="link">
+<option value="-1">- no selection -</option>
+<option selected value="1">the...</option>
+<option value="2">the...</option>
+</select>''')
+        self.assertEqual(self.tf.do_menu('link', showid=1),
+            '''<select name="link">
+<option value="-1">- no selection -</option>
+<option selected value="1">other1: the key</option>
+<option value="2">other2: the key</option>
+</select>''')
+
+    def testMenu_multilink(self):
+        self.assertEqual(self.tf.do_menu('multilink', height=10),
+            '''<select multiple name="multilink" size="10">
+<option selected value="1">the key</option>
+<option selected value="2">the key</option>
+</select>''')
+        self.assertEqual(self.tf.do_menu('multilink', size=6, height=10),
+            '''<select multiple name="multilink" size="10">
+<option selected value="1">the...</option>
+<option selected value="2">the...</option>
+</select>''')
+        self.assertEqual(self.tf.do_menu('multilink', showid=1),
+            '''<select multiple name="multilink" size="2">
+<option selected value="1">other1: the key</option>
+<option selected value="2">other2: the key</option>
+</select>''')
 
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
@@ -116,6 +176,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/01/21 11:05:48  richard
+# New tests for htmltemplate (well, it's a beginning)
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si

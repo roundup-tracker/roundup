@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.64 2002-01-21 03:25:59 richard Exp $
+# $Id: htmltemplate.py,v 1.65 2002-01-22 00:12:06 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -109,43 +109,61 @@ class TemplateFunctions:
             return s
         return StructuredText(s,level=1,header=0)
 
-    def do_field(self, property, size=None, height=None, showid=0):
+    def determine_value(self, property):
+        '''determine the value of a property using the node, form or
+           filterspec
+        '''
+        propclass = self.properties[property]
+        if self.nodeid:
+            value = self.cl.get(self.nodeid, property, None)
+            if isinstance(propclass, hyperdb.Multilink) and value is None:
+                return []
+            return value
+        elif self.filterspec is not None:
+            if isinstance(propclass, hyperdb.Multilink):
+                return self.filterspec.get(property, [])
+            else:
+                return self.filterspec.get(property, '')
+        # TODO: pull the value from the form
+        if isinstance(propclass, hyperdb.Multilink):
+            return []
+        else:
+            return ''
+
+    def make_sort_function(self, classname):
+        '''Make a sort function for a given class
+        '''
+        linkcl = self.db.classes[classname]
+        if linkcl.getprops().has_key('order'):
+            sort_on = 'order'
+        else:
+            sort_on = linkcl.labelprop()
+        def sortfunc(a, b, linkcl=linkcl, sort_on=sort_on):
+            return cmp(linkcl.get(a, sort_on), linkcl.get(b, sort_on))
+        return sortfunc
+
+    def do_field(self, property, size=None, showid=0):
         ''' display a property like the plain displayer, but in a text field
             to be edited
+
+            Note: if you would prefer an option list style display for
+            link or multilink editing, use menu().
         '''
         if not self.nodeid and self.form is None and self.filterspec is None:
             return _('[Field: not called from item]')
+
+        if size is None:
+            size = 30
+
         propclass = self.properties[property]
-        if (isinstance(propclass, hyperdb.Link) or
-            isinstance(propclass, hyperdb.Multilink)):
-            linkcl = self.db.classes[propclass.classname]
-            def sortfunc(a, b, cl=linkcl):
-                if cl.getprops().has_key('order'):
-                    sort_on = 'order'
-                else:
-                    sort_on = cl.labelprop()
-                r = cmp(cl.get(a, sort_on), cl.get(b, sort_on))
-                return r
-        if self.nodeid:
-            value = self.cl.get(self.nodeid, property, None)
-            # TODO: remove this from the code ... it's only here for
-            # handling schema changes, and they should be handled outside
-            # of this code...
-            if isinstance(propclass, hyperdb.Multilink) and value is None:
-                value = []
-        elif self.filterspec is not None:
-            if isinstance(propclass, hyperdb.Multilink):
-                value = self.filterspec.get(property, [])
-            else:
-                value = self.filterspec.get(property, '')
-        else:
-            # TODO: pull the value from the form
-            if isinstance(propclass, hyperdb.Multilink): value = []
-            else: value = ''
+
+        # get the value
+        value = self.determine_value(property)
+
+        # now display
         if (isinstance(propclass, hyperdb.String) or
                 isinstance(propclass, hyperdb.Date) or
                 isinstance(propclass, hyperdb.Interval)):
-            size = size or 30
             if value is None:
                 value = ''
             else:
@@ -153,15 +171,78 @@ class TemplateFunctions:
                 value = '&quot;'.join(value.split('"'))
             s = '<input name="%s" value="%s" size="%s">'%(property, value, size)
         elif isinstance(propclass, hyperdb.Password):
-            size = size or 30
             s = '<input type="password" name="%s" size="%s">'%(property, size)
         elif isinstance(propclass, hyperdb.Link):
+            sortfunc = self.make_sort_function(propclass.classname)
+            linkcl = self.db.classes[propclass.classname]
+            options = linkcl.list()
+            options.sort(sortfunc)
+            # TODO: make this a field display, not a menu one!
             l = ['<select name="%s">'%property]
             k = linkcl.labelprop()
             if value is None:
                 s = 'selected '
             else:
                 s = ''
+            l.append(_('<option %svalue="-1">- no selection -</option>')%s)
+            for optionid in options:
+                option = linkcl.get(optionid, k)
+                s = ''
+                if optionid == value:
+                    s = 'selected '
+                if showid:
+                    lab = '%s%s: %s'%(propclass.classname, optionid, option)
+                else:
+                    lab = option
+                if size is not None and len(lab) > size:
+                    lab = lab[:size-3] + '...'
+                lab = cgi.escape(lab)
+                l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
+            l.append('</select>')
+            s = '\n'.join(l)
+        elif isinstance(propclass, hyperdb.Multilink):
+            sortfunc = self.make_sort_function(propclass.classname)
+            linkcl = self.db.classes[propclass.classname]
+            list = linkcl.list()
+            list.sort(sortfunc)
+            l = []
+            # map the id to the label property
+            if not showid:
+                k = linkcl.labelprop()
+                value = [linkcl.get(v, k) for v in value]
+            value = cgi.escape(','.join(value))
+            s = '<input name="%s" size="%s" value="%s">'%(property, size, value)
+        else:
+            s = _('Plain: bad propclass "%(propclass)s"')%locals()
+        return s
+
+    def do_menu(self, property, size=None, height=None, showid=0):
+        ''' for a Link property, display a menu of the available choices
+        '''
+        if not self.nodeid and self.form is None and self.filterspec is None:
+            return _('[Field: not called from item]')
+
+        propclass = self.properties[property]
+
+        # make sure this is a link property
+        if not (isinstance(propclass, hyperdb.Link) or
+                isinstance(propclass, hyperdb.Multilink)):
+            return _('[Menu: not a link]')
+
+        # sort function
+        sortfunc = self.make_sort_function(propclass.classname)
+
+        # get the value
+        value = self.determine_value(property)
+
+        # display
+        if isinstance(propclass, hyperdb.Link):
+            linkcl = self.db.classes[propclass.classname]
+            l = ['<select name="%s">'%property]
+            k = linkcl.labelprop()
+            s = ''
+            if value is None:
+                s = 'selected '
             l.append(_('<option %svalue="-1">- no selection -</option>')%s)
             options = linkcl.list()
             options.sort(sortfunc)
@@ -176,60 +257,18 @@ class TemplateFunctions:
                     lab = option
                 if size is not None and len(lab) > size:
                     lab = lab[:size-3] + '...'
+                lab = cgi.escape(lab)
                 l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
-            l.append('</select>')
-            s = '\n'.join(l)
-        elif isinstance(propclass, hyperdb.Multilink):
-            list = linkcl.list()
-            list.sort(sortfunc)
-            l = []
-            # map the id to the label property
-            # TODO: allow reversion to the older <select> box style display
-            if not showid:
-                k = linkcl.labelprop()
-                value = [linkcl.get(v, k) for v in value]
-            if size is None:
-                size = '10'
-            l.insert(0,'<input name="%s" size="%s" value="%s">'%(property, 
-                size, ','.join(value)))
-            s = "<br>\n".join(l)
-        else:
-            s = _('Plain: bad propclass "%(propclass)s"')%locals()
-        return s
-
-    def do_menu(self, property, size=None, height=None, showid=0):
-        ''' for a Link property, display a menu of the available choices
-        '''
-        propclass = self.properties[property]
-        if self.nodeid:
-            value = self.cl.get(self.nodeid, property)
-        else:
-            # TODO: pull the value from the form
-            if isinstance(propclass, hyperdb.Multilink): value = []
-            else: value = None
-        if isinstance(propclass, hyperdb.Link):
-            linkcl = self.db.classes[propclass.classname]
-            l = ['<select name="%s">'%property]
-            k = linkcl.labelprop()
-            s = ''
-            if value is None:
-                s = 'selected '
-            l.append(_('<option %svalue="-1">- no selection -</option>')%s)
-            for optionid in linkcl.list():
-                option = linkcl.get(optionid, k)
-                s = ''
-                if optionid == value:
-                    s = 'selected '
-                l.append('<option %svalue="%s">%s</option>'%(s, optionid, option))
             l.append('</select>')
             return '\n'.join(l)
         if isinstance(propclass, hyperdb.Multilink):
             linkcl = self.db.classes[propclass.classname]
-            list = linkcl.list()
-            height = height or min(len(list), 7)
+            options = linkcl.list()
+            options.sort(sortfunc)
+            height = height or min(len(options), 7)
             l = ['<select multiple name="%s" size="%s">'%(property, height)]
             k = linkcl.labelprop()
-            for optionid in list:
+            for optionid in options:
                 option = linkcl.get(optionid, k)
                 s = ''
                 if optionid in value:
@@ -240,7 +279,9 @@ class TemplateFunctions:
                     lab = option
                 if size is not None and len(lab) > size:
                     lab = lab[:size-3] + '...'
-                l.append('<option %svalue="%s">%s</option>'%(s, optionid, option))
+                lab = cgi.escape(lab)
+                l.append('<option %svalue="%s">%s</option>'%(s, optionid,
+                    lab))
             l.append('</select>')
             return '\n'.join(l)
         return _('[Menu: not a link]')
@@ -1002,6 +1043,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.64  2002/01/21 03:25:59  richard
+# oops
+#
 # Revision 1.63  2002/01/21 02:59:10  richard
 # Fixed up the HTML display of history so valid links are actually displayed.
 # Oh for some unit tests! :(
