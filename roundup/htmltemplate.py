@@ -15,10 +15,27 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.103 2002-07-20 19:29:10 gmcm Exp $
+# $Id: htmltemplate.py,v 1.104 2002-07-25 07:14:05 richard Exp $
 
 __doc__ = """
 Template engine.
+
+Three types of template files exist:
+  .index           used by IndexTemplate
+  .item            used by ItemTemplate and NewItemTemplate
+  .filter          used by IndexTemplate
+
+Templating works by instantiating one of the *Template classes above,
+passing in a handle to the cgi client, identifying the class and the
+template source directory.
+
+The *Template class reads in the appropriate template text, and when the
+render() method is called, the template text is fed to an re.sub which
+calls the subfunc and then all the funky do_* methods as required.
+
+Templating is tested by the test_htmltemplate unit test suite. If you add
+a template function, add a test for all data types or the angry pink bunny
+will hunt you down.
 """
 
 import os, re, StringIO, urllib, cgi, errno, types, urllib
@@ -819,7 +836,8 @@ class TemplateFunctions:
             if k[0] != ':':
                 filterspec[k] = v
         ixtmplt = IndexTemplate(self.client, self.templates, classname)
-        qform = '<form onSubmit="return submit_once()" action="%s%s">\n'%(self.classname,self.nodeid)
+        qform = '<form onSubmit="return submit_once()" action="%s%s">\n'%(
+            self.classname,self.nodeid)
         qform += ixtmplt.filter_form(query.get('search_text', ''),
                                      query.get(':filter', []),
                                      query.get(':columns', []),
@@ -830,46 +848,67 @@ class TemplateFunctions:
                                      pagesize)
         ixtmplt.clear()
         return qform + '</table>\n'
-        
+
+    # 
+    # templating subtitution methods
+    #
+    def execute_template(self, text):
+        ''' do the replacement of the template stuff with useful
+            information
+        '''
+        replace = re.compile(
+            r'((<require\s+(?P<cond>.+?)>(?P<ok>.+?)'
+                r'(<else>(?P<fail>.*?))?</require>)|'
+            r'(<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
+            r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
+        return replace.sub(self.subfunc, text)
+
+    #
+    # secutiry <require> tag handling
+    #
+    condre = re.compile('(\w+?)\s*=\s*"([^"]+?)"')
+    def handle_require(self, condition, ok, fail):
+        userid = self.db.user.lookup(self.client.user)
+        security = self.db.security
+
+        # get the conditions
+        l = self.condre.findall(condition)
+        d = {}
+        for k,v in l:
+            d[k] = v
+
+        # see if one of the permissions are available
+        if d.has_key('permission'):
+            l.remove(('permission', d['permission']))
+            for value in d['permission'].split(','):
+                if security.hasClassPermission(self.classname, value, userid):
+                    # just passing the permission is OK
+                    return self.execute_template(ok)
+
+        # try the attr conditions until one is met
+        for propname, value in d.items():
+            if propname == 'permission':
+                continue
+            if not security.hasNodePermission(self.classname, self.nodeid,
+                    **{value: userid}):
+                break
+        else:
+            if l:
+                # there were tests, and we didn't fail any of them so we're OK
+                return self.execute_template(ok)
+
+        # nope, fail
+        return self.execute_template(fail)
 
 #
 #   INDEX TEMPLATES
 #
-class IndexTemplateReplace:
-    '''Regular-expression based parser that turns the template into HTML. 
-    '''
-    def __init__(self, globals, locals, props):
-        self.globals = globals
-        self.locals = locals
-        self.props = props
-
-    replace=re.compile(
-        r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
-        r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
-    def go(self, text):
-        newtext = self.replace.sub(self, text)
-        self.locals = self.globals = None
-        return newtext
-
-    def __call__(self, m, search_text=None, filter=None, columns=None,
-            sort=None, group=None):
-        if m.group('name'):
-            if m.group('name') in self.props:
-                text = m.group('text')
-                replace = self.__class__(self.globals, {}, self.props)
-                return replace.go(text)
-            else:
-                return ''
-        if m.group('display'):
-            command = m.group('command')
-            return eval(command, self.globals, self.locals)
-        return '*** unhandled match: %s'%str(m.groupdict())
-
 class IndexTemplate(TemplateFunctions):
     '''Templating functionality specifically for index pages
     '''
     def __init__(self, client, templates, classname):
         TemplateFunctions.__init__(self)
+        self.globals['handle_require'] = self.handle_require
         self.client = client
         self.instance = client.instance
         self.templates = templates
@@ -883,7 +922,7 @@ class IndexTemplate(TemplateFunctions):
     def clear(self):
         self.db = self.cl = self.properties = None
         TemplateFunctions.clear(self)
-        
+
     def buildurl(self, filterspec, search_text, filter, columns, sort, group, pagesize):
         d = {'pagesize':pagesize, 'pagesize':pagesize, 'classname':self.classname}
         d['filter'] = ','.join(map(urllib.quote,filter))
@@ -927,12 +966,16 @@ class IndexTemplate(TemplateFunctions):
                     l.append(name)
             columns = l
 
+        # TODO this is for the RE replacer func, and could probably be done
+        # better
+        self.props = columns
+
         # display the filter section
         if (show_display_form and 
                 self.instance.FILTER_POSITION in ('top and bottom', 'top')):
             w('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
-            self.filter_section(search_text, filter, columns, group, all_columns, sort, filterspec,
-                                pagesize, startwith)
+            self.filter_section(search_text, filter, columns, group,
+                all_columns, sort, filterspec, pagesize, startwith)
 
         # now display the index section
         w('<table width=100% border=0 cellspacing=0 cellpadding=2>\n')
@@ -940,10 +983,11 @@ class IndexTemplate(TemplateFunctions):
         for name in columns:
             cname = name.capitalize()
             if show_display_form:
-                sb = self.sortby(name, filterspec, columns, filter, group, sort, pagesize, startwith)
+                sb = self.sortby(name, filterspec, columns, filter, group,
+                    sort, pagesize, startwith)
                 anchor = "%s?%s"%(self.classname, sb)
-                w('<td><span class="list-header"><a href="%s">%s</a></span></td>\n'%(
-                    anchor, cname))
+                w('<td><span class="list-header"><a href="%s">%s</a>'
+                    '</span></td>\n'%(anchor, cname))
             else:
                 w('<td><span class="list-header">%s</span></td>\n'%cname)
         w('</tr>\n')
@@ -1005,9 +1049,7 @@ class IndexTemplate(TemplateFunctions):
                         old_group = this_group
 
                 # display this node's row
-                replace = IndexTemplateReplace(self.globals, locals(), columns)
-                self.nodeid = nodeid
-                w(replace.go(template))
+                w(replace.execute_template(template))
                 if matches:
                     self.node_matches(matches[nodeid], len(columns))
                 self.nodeid = None
@@ -1015,27 +1057,52 @@ class IndexTemplate(TemplateFunctions):
         w('</table>\n')
         # the previous and next links
         if nodeids:
-            baseurl = self.buildurl(filterspec, search_text, filter, columns, sort, group, pagesize)
+            baseurl = self.buildurl(filterspec, search_text, filter,
+                columns, sort, group, pagesize)
             if startwith > 0:
-                prevurl = '<a href="%s&:startwith=%s">&lt;&lt; Previous page</a>' % \
-                          (baseurl, max(0, startwith-pagesize)) 
+                prevurl = '<a href="%s&:startwith=%s">&lt;&lt; '\
+                    'Previous page</a>'%(baseurl, max(0, startwith-pagesize)) 
             else:
                 prevurl = "" 
             if startwith + pagesize < len(nodeids):
-                nexturl = '<a href="%s&:startwith=%s">Next page &gt;&gt;</a>' % (baseurl, startwith+pagesize)
+                nexturl = '<a href="%s&:startwith=%s">Next page '\
+                    '&gt;&gt;</a>'%(baseurl, startwith+pagesize)
             else:
                 nexturl = ""
             if prevurl or nexturl:
-                w('<table width="100%%"><tr><td width="50%%" align="center">%s</td><td width="50%%" align="center">%s</td></tr></table>\n' % (prevurl, nexturl))
+                w('''<table width="100%%"><tr>
+                      <td width="50%%" align="center">%s</td>
+                      <td width="50%%" align="center">%s</td>
+                     </tr></table>\n'''%(prevurl, nexturl))
 
         # display the filter section
         if (show_display_form and hasattr(self.instance, 'FILTER_POSITION') and
                 self.instance.FILTER_POSITION in ('top and bottom', 'bottom')):
-            w('<form onSubmit="return submit_once()" action="%s">\n'%self.classname)
-            self.filter_section(search_text, filter, columns, group, all_columns, sort, filterspec,
-                                pagesize, startwith)
-
+            w('<form onSubmit="return submit_once()" action="%s">\n'%
+                self.classname)
+            self.filter_section(search_text, filter, columns, group,
+                all_columns, sort, filterspec, pagesize, startwith)
         self.clear()
+
+    def subfunc(self, m, search_text=None, filter=None, columns=None,
+            sort=None, group=None):
+        ''' called as part of the template replacement
+        '''
+        if m.group('cond'):
+            # call the template handler for require
+            require = self.globals['handle_require']
+            return self.handle_require(m.group('cond'), m.group('ok'),
+                m.group('fail'))
+        if m.group('name'):
+            if m.group('name') in self.props:
+                text = m.group('text')
+                return self.execute_template(text)
+            else:
+                return ''
+        if m.group('display'):
+            command = m.group('command')
+            return eval(command, self.globals, {})
+        return '*** unhandled match: %s'%str(m.groupdict())
 
     def node_matches(self, match, colspan):
         ''' display the files and messages for a node that matched a
@@ -1066,9 +1133,8 @@ class IndexTemplate(TemplateFunctions):
                 '&nbsp;&nbsp;Matched files: %s</td></tr>\n')%(
                     colspan, ', '.join(file_links)))
 
-    def filter_form(self, search_text, filter, columns, group, all_columns, sort, filterspec,
-                       pagesize):
-
+    def filter_form(self, search_text, filter, columns, group, all_columns,
+            sort, filterspec, pagesize):
         sortspec = {}
         for i in range(len(sort)):
             mod = ''
@@ -1183,9 +1249,8 @@ class IndexTemplate(TemplateFunctions):
 
         return '\n'.join(rslt)
     
-    def filter_section(self, search_text, filter, columns, group, all_columns, sort, filterspec,
-                       pagesize, startwith):
-
+    def filter_section(self, search_text, filter, columns, group, all_columns,
+            sort, filterspec, pagesize, startwith):
         w = self.client.write        
         w(self.filter_form(search_text, filter, columns, group, all_columns,
                            sort, filterspec, pagesize))
@@ -1252,45 +1317,12 @@ class IndexTemplate(TemplateFunctions):
         w(':sort=%s'%','.join(m[:2]))
         return '&'.join(l)
 
-# 
-#   ITEM TEMPLATES
-#
-class ItemTemplateReplace:
-    '''Regular-expression based parser that turns the template into HTML. 
-    '''
-    def __init__(self, globals, locals, cl, nodeid):
-        self.globals = globals
-        self.locals = locals
-        self.cl = cl
-        self.nodeid = nodeid
-
-    replace=re.compile(
-        r'((<property\s+name="(?P<name>[^>]+)">(?P<text>.+?)</property>)|'
-        r'(?P<display><display\s+call="(?P<command>[^"]+)">))', re.I|re.S)
-    def go(self, text):
-        newtext = self.replace.sub(self, text)
-        self.globals = self.locals = self.cl = None
-        return newtext
-
-    def __call__(self, m, filter=None, columns=None, sort=None, group=None):
-        if m.group('name'):
-            if self.nodeid and self.cl.get(self.nodeid, m.group('name')):
-                replace = ItemTemplateReplace(self.globals, {}, self.cl,
-                    self.nodeid)
-                return replace.go(m.group('text'))
-            else:
-                return ''
-        if m.group('display'):
-            command = m.group('command')
-            return eval(command, self.globals, self.locals)
-        return '*** unhandled match: %s'%str(m.groupdict())
-
-
 class ItemTemplate(TemplateFunctions):
     '''Templating functionality specifically for item (node) display
     '''
     def __init__(self, client, templates, classname):
         TemplateFunctions.__init__(self)
+        self.globals['handle_require'] = self.handle_require
         self.client = client
         self.instance = client.instance
         self.templates = templates
@@ -1319,18 +1351,36 @@ class ItemTemplate(TemplateFunctions):
         w('<form onSubmit="return submit_once()" action="%s%s" method="POST" enctype="multipart/form-data">'%(
             self.classname, nodeid))
         s = open(os.path.join(self.templates, self.classname+'.item')).read()
-        replace = ItemTemplateReplace(self.globals, locals(), self.cl, nodeid)
-        w(replace.go(s))
+        w(self.execute_template(s))
         w('</form>')
         
         self.clear()
 
+    def subfunc(self, m, search_text=None, filter=None, columns=None,
+            sort=None, group=None):
+        ''' called as part of the template replacement
+        '''
+        if m.group('cond'):
+            # call the template handler for require
+            require = self.globals['handle_require']
+            return self.handle_require(m.group('cond'), m.group('ok'),
+                m.group('fail'))
+        if m.group('name'):
+            if self.nodeid and self.cl.get(self.nodeid, m.group('name')):
+                return self.execute_template(m.group('text'))
+            else:
+                return ''
+        if m.group('display'):
+            command = m.group('command')
+            return eval(command, self.globals, {})
+        return '*** unhandled match: %s'%str(m.groupdict())
 
-class NewItemTemplate(TemplateFunctions):
+class NewItemTemplate(ItemTemplate):
     '''Templating functionality specifically for NEW item (node) display
     '''
     def __init__(self, client, templates, classname):
         TemplateFunctions.__init__(self)
+        self.globals['handle_require'] = self.handle_require
         self.client = client
         self.instance = client.instance
         self.templates = templates
@@ -1360,14 +1410,16 @@ class NewItemTemplate(TemplateFunctions):
                 if type(value) != type([]): value = [value]
                 for value in value:
                     w('<input type="hidden" name="%s" value="%s">'%(key, value))
-        replace = ItemTemplateReplace(self.globals, locals(), None, None)
-        w(replace.go(s))
+        w(self.execute_template(s))
         w('</form>')
         
         self.clear()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.103  2002/07/20 19:29:10  gmcm
+# Fixes/improvements to the search form & saved queries.
+#
 # Revision 1.102  2002/07/18 23:07:08  richard
 # Unit tests and a few fixes.
 #

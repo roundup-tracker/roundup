@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.52 2002-07-19 03:36:34 richard Exp $
+#$Id: back_anydbm.py,v 1.53 2002-07-25 07:14:06 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -24,7 +24,7 @@ serious bugs, and is not available)
 '''
 
 import whichdb, anydbm, os, marshal, re, weakref, string, copy
-from roundup import hyperdb, date, password, roundupdb
+from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
 from roundup.indexer import Indexer
 from locking import acquire_lock, release_lock
@@ -66,6 +66,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
         self.indexer = Indexer(self.dir)
+        self.security = security.Security(self)
         # ensure files are group readable and writable
         os.umask(0002)
 
@@ -751,7 +752,7 @@ class Class(hyperdb.Class):
                     except (TypeError, KeyError):
                         raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, link_class)
-                elif not self.db.hasnode(link_class, value):
+                elif not self.db.getclass(link_class).hasnode(value):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
                 # save off the value
@@ -785,12 +786,13 @@ class Class(hyperdb.Class):
                 propvalues[key] = value
 
                 # handle additions
-                for id in value:
-                    if not self.db.hasnode(link_class, id):
-                        raise IndexError, '%s has no node %s'%(link_class, id)
+                for nodeid in value:
+                    if not self.db.getclass(link_class).hasnode(nodeid):
+                        raise IndexError, '%s has no node %s'%(link_class,
+                            nodeid)
                     # register the link with the newly linked node
                     if self.do_journal and self.properties[key].do_journal:
-                        self.db.addjournal(link_class, id, 'link',
+                        self.db.addjournal(link_class, nodeid, 'link',
                             (self.classname, newid, key))
 
             elif isinstance(prop, String):
@@ -1005,7 +1007,7 @@ class Class(hyperdb.Class):
                         raise IndexError, 'new property "%s": %s not a %s'%(
                             propname, value, self.properties[propname].classname)
 
-                if not self.db.hasnode(link_class, value):
+                if not self.db.getclass(link_class).hasnode(value):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
                 if self.do_journal and self.properties[propname].do_journal:
@@ -1062,7 +1064,7 @@ class Class(hyperdb.Class):
 
                 # handle additions
                 for id in value:
-                    if not self.db.hasnode(link_class, id):
+                    if not self.db.getclass(link_class).hasnode(id):
                         raise IndexError, '%s has no node %s'%(link_class, id)
                     if id in l:
                         continue
@@ -1277,10 +1279,6 @@ class Class(hyperdb.Class):
             prop = self.properties[propname]
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
-            #XXX edit is expensive and of questionable use
-            #for nodeid in nodeids:
-            #    if not self.db.hasnode(prop.classname, nodeid):
-            #        raise ValueError, '%s has no node %s'%(prop.classname, nodeid)
 
         # ok, now do the find
         cldb = self.db.getclassdb(self.classname)
@@ -1778,6 +1776,15 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.52  2002/07/19 03:36:34  richard
+#Implemented the destroy() method needed by the session database (and possibly
+#others). At the same time, I removed the leading underscores from the hyperdb
+#methods that Really Didn't Need Them.
+#The journal also raises IndexError now for all situations where there is a
+#request for the journal of a node that doesn't have one. It used to return
+#[] in _some_ situations, but not all. This _may_ break code, but the tests
+#pass...
+#
 #Revision 1.51  2002/07/18 23:07:08  richard
 #Unit tests and a few fixes.
 #

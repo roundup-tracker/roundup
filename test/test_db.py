@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.36 2002-07-19 03:36:34 richard Exp $ 
+# $Id: test_db.py,v 1.37 2002-07-25 07:14:06 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -28,12 +28,13 @@ def setupSchema(db, create, module):
     status = module.Class(db, "status", name=String())
     status.setkey("name")
     user = module.Class(db, "user", username=String(), password=Password(),
-        assignable=Boolean(), age=Number())
+        assignable=Boolean(), age=Number(), roles=Multilink('role'))
+    user.setkey("username")
     file = module.FileClass(db, "file", name=String(), type=String(),
         comment=String(indexme="yes"))
     issue = module.IssueClass(db, "issue", title=String(indexme="yes"),
         status=Link("status"), nosy=Multilink("user"), deadline=Date(),
-        foo=Interval(), files=Multilink("file"))
+        foo=Interval(), files=Multilink("file"), assignedto=Link('user'))
     session = module.Class(db, 'session', title=String())
     session.disableJournalling()
     db.post_init()
@@ -113,13 +114,13 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(self.db.issue.get('1', "foo"), a)
 
     def testBooleanChange(self):
-        self.db.user.create(username='foo', assignable=1)
-        self.db.user.create(username='foo', assignable=0)
-        a = self.db.user.get('1', 'assignable')
-        self.db.user.set('1', assignable=0)
-        self.assertNotEqual(self.db.user.get('1', 'assignable'), a)
-        self.db.user.set('1', assignable=0)
-        self.db.user.set('1', assignable=1)
+        userid = self.db.user.create(username='foo', assignable=1)
+        self.db.user.create(username='foo2', assignable=0)
+        a = self.db.user.get(userid, 'assignable')
+        self.db.user.set(userid, assignable=0)
+        self.assertNotEqual(self.db.user.get(userid, 'assignable'), a)
+        self.db.user.set(userid, assignable=0)
+        self.db.user.set(userid, assignable=1)
 
     def testNumberChange(self):
         self.db.user.create(username='foo', age='1')
@@ -129,15 +130,14 @@ class anydbmDBTestCase(MyTestCase):
         self.db.user.set('1', age='1.0')
 
     def testNewProperty(self):
-        ' make sure a new property is added ok '
         self.db.issue.create(title="spam", status='1')
         self.db.issue.addprop(fixer=Link("user"))
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['activity', 'creation', 'creator', 'deadline',
-            'files', 'fixer', 'foo', 'id', 'messages', 'nosy', 'status',
-            'superseder', 'title'])
+        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+            'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
+            'nosy', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
 
     def testRetire(self):
@@ -193,11 +193,9 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(num_files2, self.db.numfiles())
 
     def testDestroyNoJournalling(self):
-        ' test destroy on a class with no journalling '
         self.innerTestDestroy(klass=self.db.session)
 
     def testDestroyJournalling(self):
-        ' test destroy on a class with journalling '
         self.innerTestDestroy(klass=self.db.issue)
 
     def innerTestDestroy(self, klass):
@@ -332,8 +330,8 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(action, 'create')
         keys = params.keys()
         keys.sort()
-        self.assertEqual(keys, ['deadline', 'files', 'fixer', 'foo',
-            'messages', 'nosy', 'status', 'superseder', 'title'])
+        self.assertEqual(keys, ['assignedto', 'deadline', 'files', 'fixer',
+            'foo', 'messages', 'nosy', 'status', 'superseder', 'title'])
         self.assertEqual(None,params['deadline'])
         self.assertEqual(None,params['fixer'])
         self.assertEqual(None,params['foo'])
@@ -455,7 +453,6 @@ class anydbmReadOnlyDBTestCase(MyTestCase):
         setupSchema(self.db2, 0, anydbm)
 
     def testExceptions(self):
-        ' make sure exceptions are raised on writes to a read-only db '
         # this tests the exceptions that should be raised
         ar = self.assertRaises
 
@@ -606,6 +603,15 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2002/07/19 03:36:34  richard
+# Implemented the destroy() method needed by the session database (and possibly
+# others). At the same time, I removed the leading underscores from the hyperdb
+# methods that Really Didn't Need Them.
+# The journal also raises IndexError now for all situations where there is a
+# request for the journal of a node that doesn't have one. It used to return
+# [] in _some_ situations, but not all. This _may_ break code, but the tests
+# pass...
+#
 # Revision 1.35  2002/07/18 23:07:08  richard
 # Unit tests and a few fixes.
 #

@@ -11,6 +11,7 @@ pending  hyperdb: range searching of values (dates in particular)
            comparison functions: lt, le, eq, ge, gt. eq and
            [value, value, ...] implies "in"
 pending  hyperdb: make creator, creation and activity available pre-commit
+pending  hyperdb: migrate "id" property to be Number type
 pending  instance: including much simpler upgrade path and the use of
                    non-Python configuration files (ConfigParser)
 pending  instance: cleanup to support config (feature request #498658)
@@ -28,7 +29,7 @@ pending  mailgw: Allow multiple email addresses at one gw with different default
                    roundup: "|roundup-mailgw /instances/dev"
                    vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
 pending  project: switch to a Roundup instance for Roundup bug/feature tracking
-active   security: finish doc/security.txt (RJ)
+active   security: finish doc/security.txt
 pending  security: implement and use the new logical control mechanisms
 pending  security: at least an LDAP user database implementation
 pending  security: authenticate over a secure connection
@@ -42,7 +43,6 @@ pending  web: Quick help links next to the property labels giving a
               description of the property. Combine with help for the actual
               form element too, eg. how to use the nosy list edit box.
 pending  web: feature request #507842
-active   web: saving of named queries (GM)
 
 ongoing  any bugs
 
@@ -53,4 +53,5 @@ done hyperdb: fix the journal bloat (RJ)
 done hyperdb: add Boolean and Number types (GM)
 done mailgw: better help message (feature request #558562) (RJ)
 done security: switch to sessions for web authentication (RJ)
+done web: saving of named queries (GM)
 

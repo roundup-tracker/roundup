@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.143 2002-07-20 19:29:10 gmcm Exp $
+# $Id: cgi_client.py,v 1.144 2002-07-25 07:14:05 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -32,6 +32,16 @@ class Unauthorised(ValueError):
 
 class NotFound(ValueError):
     pass
+
+def initialiseSecurity(security):
+    ''' Create some Permissions and Roles on the security object
+
+        This function is directly invoked by security.Security.__init__()
+        as a part of the Security object instantiation.
+    '''
+    newid = security.addPermission(name="Web Registration",
+        description="User may register through the web")
+    security.addPermissionToRole('Anonymous', newid)
 
 class Client:
     '''
@@ -1613,6 +1623,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.143  2002/07/20 19:29:10  gmcm
+# Fixes/improvements to the search form & saved queries.
+#
 # Revision 1.142  2002/07/18 11:17:30  gmcm
 # Add Number and Boolean types to hyperdb.
 # Add conversion cases to web, mail & admin interfaces.

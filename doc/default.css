@@ -1,8 +1,8 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2002-06-24 00:57:23 $
-:version: $Revision: 1.5 $
+:date: $Date: 2002-07-25 07:14:05 $
+:version: $Revision: 1.6 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
@@ -160,3 +160,11 @@ table.docinfo {
 table.footnote {
   border-left: solid thin black ;
   padding-left: 0.5ex }
+
+@media print {
+ h1 {page-break-before: always; }
+ h1, h2, h3, h4, h5, h6 { page-break-after: avoid; page-break-inside: avoid; }
+ blockquote, pre { page-break-inside: avoid; }
+ ul, ol, dl { page-break-before: avoid; }
+}
+

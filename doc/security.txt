@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 Current situation
 =================
@@ -41,6 +41,9 @@ Issues
    than the From address. Support for strong identification through digital
    signatures should be added.
 5. The command-line tool has no logical controls.
+6. The anonymous control needs revising - there should only be one way to be
+   an anonymous user, not two (currently there is user==None and
+   user=='anonymous).
 
 
 Possible approaches
@@ -138,8 +141,8 @@ with specific nodes by way of their user-linked properties.
 
 A security module defines::
 
-    class InMemoryImmutableClass(hyperdb.Class):
-        ''' Don't allow changes to this class's nodes.
+    class InMemoryClass(hyperdb.Class):
+        ''' Just be an in-memory class
         '''
         def __init__(self, db, classname, **properties):
             ''' Set up an in-memory store for the nodes of this class
@@ -154,20 +157,21 @@ A security module defines::
             '''
 
         def set(self, *args):
-            raise ValueError, "%s are immutable"%self.__class__.__name__
+            ''' Set values on the node
+            '''
 
-    class PermissionClass(InMemoryImmutableClass):
+    class PermissionClass(InMemoryClass):
         ''' Include the default attributes:
             - name (String)
-            - classname (String)
+            - klass (String)
             - description (String)
 
-            The classname may be unset, indicating that this permission is not
+            The klass may be unset, indicating that this permission is not
             locked to a particular class. That means there may be multiple
             Permissions for the same name for different classes.
         '''
 
-    class RoleClass(InMemoryImmutableClass):
+    class RoleClass(InMemoryClass):
         ''' Include the default attributes:
             - name (String, key)
             - description (String)
@@ -179,32 +183,6 @@ A security module defines::
             ''' Initialise the permission and role classes, and add in the
                 base roles (for admin user).
             '''
-            # use a weak ref to avoid circularity
-            self.db = weakref.proxy(db)
-
-            # create the permission class instance (we only need one))
-            self.permission = PermissionClass(db, "permission")
-
-            # create the role class instance (we only need one)
-            self.role = RoleClass(db, "role")
-
-            # the default Roles
-            self.addRole(name="User", description="A regular user, no privs")
-            self.addRole(name="Admin", description="An admin user, full privs")
-            self.addRole(name="No Rego",
-                description="A user who can't register")
-
-            ee = self.addPermission(name="Edit",
-                description="User may edit everthing")
-            self.addPermissionToRole('Admin', ee)
-            ae = self.addPermission(name="Assign",
-                description="User may be assigned to anything")
-            self.addPermissionToRole('Admin', ae)
-
-            # initialise the permissions and roles needed for the UIs
-            from roundup import cgi_client, mailgw
-            cgi_client.initialiseSecurity(self)
-            mailgw.initialiseSecurity(self)
 
         def hasClassPermission(self, db, classname, permission, userid):
             ''' Look through all the Roles, and hence Permissions, and see if
@@ -212,18 +190,16 @@ A security module defines::
 
             '''
 
-        def hasNodePermission(self, db, classname, nodeid, userid, properties):
+        def hasNodePermission(self, db, classname, nodeid, **propspec):
             ''' Check the named properties of the given node to see if the
                 userid appears in them. If it does, then the user is granted
                 this permission check.
 
-                'propspec' consists of a list of property names. The property
-                names must be the name of a property of classname, or a
-                KeyError is raised.  That property must be a Link or Multilink
-                property, or a TypeError is raised.
+                'propspec' consists of a set of properties and values that
+                must be present on the given node for access to be granted.
 
-                If the property is a Link, the userid must match the property
-                value. If the property is a Multilink, the userid must appear
+                If a property is a Link, the value must match the property
+                value. If a property is a Multilink, the value must appear
                 in the Multilink list.
             '''
 
@@ -251,13 +227,9 @@ permissions like so (this example is ``cgi_client.py``)::
             This function is directly invoked by security.Security.__init__()
             as a part of the Security object instantiation.
         '''
-        newid = security.addPermission(name="Web Access",
-            description="User may use the web interface")
-        security.addToRole('User', newid)
-        security.addToRole('No Rego', newid)
         newid = security.addPermission(name="Web Registration",
-            description="User may register through the web")
-        security.addToRole('User', newid)
+            description="Anonymous users may register through the web")
+        security.addToRole('Anonymous', newid)
 
 The instance dbinit module then has in ``open()``::
 
@@ -266,10 +238,10 @@ The instance dbinit module then has in ``open()``::
     db = Database(instance_config, name)
 
     # add some extra permissions and associate them with roles
-    ei = db.security.addPermission(name="Edit", classname="issue",
+    ei = db.security.addPermission(name="Edit", klass="issue",
                     description="User is allowed to edit issues")
     db.security.addPermissionToRole('User', ei)
-    ai = db.security.addPermission(name="Assign", classname="issue",
+    ai = db.security.addPermission(name="Assign", klass="issue",
                     description="User may be assigned to issues")
     db.security.addPermissionToRole('User', ei)
 
@@ -284,29 +256,65 @@ In the dbinit ``init()``::
     r = db.getclass('role').lookup('User')
     user.create(username="anonymous", roles=[r])
 
-Then in the code that matters, calls to ``hasPermission`` are made to
-determine if the user has permission to perform some action::
+Then in the code that matters, calls to ``hasClassPermission`` and
+``hasNodePermission`` are made to determine if the user has permission
+to perform some action::
 
-    if db.security.hasClassPermission('issue', 'Edit', self.user):
+    if db.security.hasClassPermission('issue', 'Edit', userid):
         # all ok
 
-    if db.security.hasNodePermission('issue', nodeid, self.user,
-            ['assignedto']):
+    if db.security.hasNodePermission('issue', nodeid, assignedto=userid):
         # all ok
 
-The htmltemplate will implement a new tag, <permission> which has the form::
+Code in the core will make use of these methods, as should code in auditors in
+custom templates. The htmltemplate will implement a new tag, ``<require>``
+which has the form::
 
-  <permission require=name,name,name node=assignedto>
+  <require permission="name,name,name" assignedto="$userid" status="open">
    HTML to display if the user has the permission.
   <else>
    HTML to display if the user does not have the permission.
-  </permission>
+  </require>
 
-where the require attribute gives a comma-separated list of permission names
-which are required, and the node attribute gives a comma-separated list of
-node properties whose value must match the current user's id. Either of these
-tests must pass or the permission check will fail. The section of html within
-the side of the ``<else>`` that fails is remove from processing.
+where:
+
+- the permission attribute gives a comma-separated list of permission names.
+  These are checked in turn using ``hasClassPermission`` and requires one to
+  be OK.
+- the other attributes are lookups on the node using ``hasNodePermission``. If
+  the attribute value is "$userid" then the current user's userid is tested.
+
+Any of these tests must pass or the ``<require>`` check will fail. The section
+of html within the side of the ``<else>`` that fails is remove from processing.
+
+Implementation as shipped
+-------------------------
+
+A set of Permissions are built in to the security module by default:
+
+- Edit (everything)
+- Access (everything)
+- Assign (everything)
+
+The default interfaces define:
+
+- Web Registration
+- Email Registration
+
+These are hooked into the default Roles:
+
+- Admin (Edit everything, Access everything, Assign everything)
+- User ()
+- Anonymous (Web Registration, Email Registration)
+
+And finally, the "admin" user gets the "Admin" Role, and the "anonymous" user
+gets the "Anonymous" assigned when the database is initialised on installation.
+The two default schemas then define:
+
+- Edit issue, Access issue (both)
+- Edit support, Access support (extended only)
+
+and assign those Permissions to the "User" Role.
 
 
 Authentication of Users
@@ -320,6 +328,14 @@ The exact mechanism of registering the digital signature should be flexible,
 with perhaps a level of trust. Users who supply their signature through their
 first message into the tracker should be at a lower level of trust to those
 who supply their signature to an admin for submission to their user details.
+
+
+Anonymous Users
+---------------
+
+The "anonymous" user must always exist, and defines the access permissions for
+anonymous users. The three ANONYMOUS_ configuration variables are subsumed by
+this new functionality.
 
 
 Action

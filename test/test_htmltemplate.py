@@ -8,17 +8,17 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.17 2002-07-18 23:07:07 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.18 2002-07-25 07:14:06 richard Exp $ 
 
-import unittest, cgi, time
+import unittest, cgi, time, os, shutil
 
 from roundup import date, password
-from roundup.htmltemplate import TemplateFunctions
+from roundup.htmltemplate import TemplateFunctions, IndexTemplate, ItemTemplate
 from roundup.i18n import _
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, Boolean, Number
 
-class Class:
+class TestClass:
     def get(self, nodeid, attribute, default=None):
         if attribute == 'string':
             return 'Node %s: I am a string'%nodeid
@@ -62,26 +62,23 @@ class Class:
     def labelprop(self, default_to_id=0):
         return 'key'
 
-class Database:
-    classes = {'other': Class()}
+class TestDatabase:
+    classes = {'other': TestClass()}
     def getclass(self, name):
         return Class()
     def __getattr(self, name):
         return Class()
 
-class Client:
-    write = None
-
-class NodeCase(unittest.TestCase):
+class FunctionCase(unittest.TestCase):
     def setUp(self):
         ''' Set up the harness for calling the individual tests
         '''
         self.tf = tf = TemplateFunctions()
         tf.nodeid = '1'
-        tf.cl = Class()
+        tf.cl = TestClass()
         tf.classname = 'test_class'
         tf.properties = tf.cl.getprops()
-        tf.db = Database()
+        tf.db = TestDatabase()
 
 #    def do_plain(self, property, escape=0):
     def testPlain_string(self):
@@ -400,7 +397,7 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
             '<a href="javascript:help_window(\'classhelp?classname=theclass'
             '&properties=prop1,prop2\', \'400\', \'400\')"><b>(?)</b></a>')
 
-#    def do_multiline(self, property, rows=5, cols=40)
+#    def do_email(self, property, rows=5, cols=40)
     def testEmail_string(self):
         self.assertEqual(self.tf.do_email('email'), 'test at foo domain example')
 
@@ -414,12 +411,147 @@ the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
         self.assertEqual(self.tf.do_email('boolean'), s)
         self.assertEqual(self.tf.do_email('number'), s)
 
+
+from test_db import setupSchema, MyTestCase, config
+
+class Client:
+    user = 'admin'
+
+class IndexTemplateCase(unittest.TestCase):
+    def setUp(self):
+        from roundup.backends import anydbm
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = anydbm.Database(config, 'test')
+        setupSchema(self.db, 1, anydbm)
+
+        client = Client()
+        client.db = self.db
+        client.instance = None
+        self.tf = tf = IndexTemplate(client, '', 'issue')
+        tf.props = ['title']
+
+        # admin user
+        r = str(self.db.role.lookup('Admin'))
+        self.db.user.create(username="admin", roles=[r])
+        r = str(self.db.role.lookup('User'))
+        self.db.user.create(username="anonymous", roles=[r])
+
+    def testBasic(self):
+        self.assertEqual(self.tf.execute_template('hello'), 'hello')
+
+    def testValue(self):
+        self.tf.nodeid = self.db.issue.create(title="spam", status='1')
+        self.assertEqual(self.tf.execute_template('<display call="plain(\'title\')">'), 'spam')
+
+    def testColumnSelection(self):
+        self.tf.nodeid = self.db.issue.create(title="spam", status='1')
+        self.assertEqual(self.tf.execute_template('<property name="title">'
+            '<display call="plain(\'title\')"></property>'
+            '<property name="bar">hello</property>'), 'spam')
+        self.tf.props = ['bar']
+        self.assertEqual(self.tf.execute_template('<property name="title">'
+            '<display call="plain(\'title\')"></property>'
+            '<property name="bar">hello</property>'), 'hello')
+
+    def testSecurityPass(self):
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">hello<else>foo</require>'), 'hello')
+
+    def testSecurityPassValue(self):
+        self.tf.nodeid = self.db.issue.create(title="spam", status='1')
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">'
+            '<display call="plain(\'title\')">'
+            '<else>not allowed</require>'), 'spam')
+
+    def testSecurityFail(self):
+        self.tf.client.user = 'anonymous'
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">hello<else>foo</require>'), 'foo')
+
+    def testSecurityFailValue(self):
+        self.tf.nodeid = self.db.issue.create(title="spam", status='1')
+        self.tf.client.user = 'anonymous'
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">allowed<else>'
+            '<display call="plain(\'title\')"></require>'), 'spam')
+
+    def tearDown(self):
+        if os.path.exists('_test_dir'):
+            shutil.rmtree('_test_dir')
+
+
+class ItemTemplateCase(unittest.TestCase):
+    def setUp(self):
+        ''' Set up the harness for calling the individual tests
+        '''
+        from roundup.backends import anydbm
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = anydbm.Database(config, 'test')
+        setupSchema(self.db, 1, anydbm)
+
+        client = Client()
+        client.db = self.db
+        client.instance = None
+        self.tf = tf = IndexTemplate(client, '', 'issue')
+        tf.nodeid = self.db.issue.create(title="spam", status='1')
+
+        # admin user
+        r = str(self.db.role.lookup('Admin'))
+        self.db.user.create(username="admin", roles=[r])
+        r = str(self.db.role.lookup('User'))
+        self.db.user.create(username="anonymous", roles=[r])
+
+    def testBasic(self):
+        self.assertEqual(self.tf.execute_template('hello'), 'hello')
+
+    def testValue(self):
+        self.assertEqual(self.tf.execute_template('<display call="plain(\'title\')">'), 'spam')
+
+    def testSecurityPass(self):
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">hello<else>foo</require>'), 'hello')
+
+    def testSecurityPassValue(self):
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">'
+            '<display call="plain(\'title\')">'
+            '<else>not allowed</require>'), 'spam')
+
+    def testSecurityFail(self):
+        self.tf.client.user = 'anonymous'
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">hello<else>foo</require>'), 'foo')
+
+    def testSecurityFailValue(self):
+        self.tf.client.user = 'anonymous'
+        self.assertEqual(self.tf.execute_template(
+            '<require permission="Edit">allowed<else>'
+            '<display call="plain(\'title\')"></require>'), 'spam')
+
+    def tearDown(self):
+        if os.path.exists('_test_dir'):
+            shutil.rmtree('_test_dir')
+
 def suite():
-   return unittest.makeSuite(NodeCase, 'test')
+    return unittest.TestSuite([
+        unittest.makeSuite(FunctionCase, 'test'),
+        unittest.makeSuite(IndexTemplateCase, 'test'),
+        unittest.makeSuite(ItemTemplateCase, 'test'),
+    ])
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/07/18 23:07:07  richard
+# Unit tests and a few fixes.
+#
 # Revision 1.16  2002/07/09 05:20:09  richard
 #  . added email display function - mangles email addrs so they're not so easily
 #    scraped from the web
