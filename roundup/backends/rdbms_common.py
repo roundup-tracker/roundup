@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.17 2002-09-25 04:56:21 richard Exp $
+# $Id: rdbms_common.py,v 1.18 2002-09-25 05:27:29 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1780,7 +1780,6 @@ class Class(hyperdb.Class):
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
-        print sql
         self.db.cursor.execute(sql, args)
         l = self.db.cursor.fetchall()
 
