@@ -1,5 +1,5 @@
-// initial values for either Nosy, Superceder, Topic and Waiting On,
-// depecding on which has called
+// initial values for either Nosy, Superseder, Topic and Waiting On,
+// depending on which has called
 
 original_field = window.opener.document.itemSynopsis[field].value;
 
@@ -118,7 +118,7 @@ function resetList() {
 
 function writePreview(val) {
    // writes a value to the text_preview
-   document.forms[0].text_preview.value = val;
+   document.frm_help.text_preview.value = val;
 }
 
 function focusField(name) {
