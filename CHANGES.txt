@@ -62,6 +62,7 @@ Fixed:
 - ensure multilink ordering in RDBMS backends (thanks Marcus Priesch, sf
   bug 950963)
 - always honor indexme property on Strings (sf patch 1063711)
+- make hyperdb value parsing errors readable in mailgw errors
 
 
 2004-10-15 0.7.8
