@@ -8,12 +8,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.21 2003-10-25 22:53:26 richard Exp $
+# $Id: test_cgi.py,v 1.22 2004-02-11 21:34:31 jlgijsbers Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.cgi import client
-from roundup.cgi.client import FormError
+from roundup.cgi.errors import FormError
+from roundup.cgi.FormParser import FormParser
 from roundup import init, instance, password, hyperdb, date
 
 NEEDS_INSTANCE = 1
@@ -89,7 +90,7 @@ class FormTestCase(unittest.TestCase):
 
         # compile the labels re
         classes = '|'.join(self.db.classes.keys())
-        self.FV_SPECIAL = re.compile(client.Client.FV_LABELS%classes,
+        self.FV_SPECIAL = re.compile(FormParser.FV_LABELS%classes,
             re.VERBOSE)
 
     def parseForm(self, form, classname='test', nodeid=None):
