@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.85 2002-04-02 01:40:58 richard Exp $
+# $Id: htmltemplate.py,v 1.86 2002-04-03 05:54:31 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -357,10 +357,11 @@ class TemplateFunctions:
             linkvalue = cgi.escape(linkcl.get(value, k))
             if showid:
                 label = value
-		title = ' title="%s"'%linkvalue
-		# note ... this should be urllib.quote(linkcl.get(value, k))
+                title = ' title="%s"'%linkvalue
+                # note ... this should be urllib.quote(linkcl.get(value, k))
             else:
                 label = linkvalue
+                title = ''
             if is_download:
                 return '<a href="%s%s/%s"%s>%s</a>'%(linkname, value,
                     linkvalue, title, label)
@@ -376,9 +377,10 @@ class TemplateFunctions:
                 if showid:
                     label = value
                     title = ' title="%s"'%linkvalue
-		    # note ... this should be urllib.quote(linkcl.get(value, k))
+                    # note ... this should be urllib.quote(linkcl.get(value, k))
                 else:
                     label = linkvalue
+                    title = ''
                 if is_download:
                     l.append('<a href="%s%s/%s"%s>%s</a>'%(linkname, value,
                         linkvalue, title, label))
@@ -1126,6 +1128,12 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.85  2002/04/02 01:40:58  richard
+#  . link() htmltemplate function now has a "showid" option for links and
+#    multilinks. When true, it only displays the linked node id as the anchor
+#    text. The link value is displayed as a tooltip using the title anchor
+#    attribute.
+#
 # Revision 1.84  2002/03/29 19:41:48  rochecompaan
 #  . Fixed display of mutlilink properties when using the template
 #    functions, menu and plain.

@@ -15,14 +15,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.19 2002-02-25 14:34:31 grubert Exp $ 
+# $Id: test_db.py,v 1.20 2002-04-03 05:54:31 richard Exp $ 
 
 import unittest, os, shutil
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, Class, DatabaseError
 from roundup.roundupdb import FileClass
-from roundup import date
+from roundup import date, password
 
 def setupSchema(db, create):
     status = Class(db, "status", name=String())
@@ -84,7 +84,11 @@ class anydbmDBTestCase(MyTestCase):
 
         a = self.db.issue.get('5', "deadline")
         self.db.issue.set('5', deadline=date.Date())
-        self.assertNotEqual(a, self.db.issue.get('5', "deadline"))
+        b = self.db.issue.get('5', "deadline")
+        self.db.commit()
+        self.assertNotEqual(a, b)
+        self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
+        self.db.issue.set('5', deadline=date.Date())
 
         a = self.db.issue.get('5', "foo")
         self.db.issue.set('5', foo=date.Interval('-1d'))
@@ -97,6 +101,17 @@ class anydbmDBTestCase(MyTestCase):
         self.db.issue.history('5')
         self.db.status.history('1')
         self.db.status.history('2')
+
+    def testSerialisation(self):
+        self.db.issue.create(title="spam", status='1',
+            deadline=date.Date(), foo=date.Interval('-1d'))
+        self.db.commit()
+        assert isinstance(self.db.issue.get('1', 'deadline'), date.Date)
+        assert isinstance(self.db.issue.get('1', 'foo'), date.Interval)
+        self.db.user.create(username="fozzy",
+            password=password.Password('t. bear'))
+        self.db.commit()
+        assert isinstance(self.db.user.get('1', 'password'), password.Password)
 
     def testTransactions(self):
         # remember the number of items we started
@@ -324,7 +339,8 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
 
 
 def suite():
-    l = [unittest.makeSuite(anydbmDBTestCase, 'test'),
+    l = [
+         unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
 
@@ -346,6 +362,11 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/02/25 14:34:31  grubert
+#  . use blobfiles in back_anydbm which is used in back_bsddb.
+#    change test_db as dirlist does not work for subdirectories.
+#    ATTENTION: blobfiles now creates subdirectories for files.
+#
 # Revision 1.18  2002/01/22 07:21:13  richard
 # . fixed back_bsddb so it passed the journal tests
 #

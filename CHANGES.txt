@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-0.4.2
+2002-04-?? 0.4.2
 Feature:
  . link() htmltemplate function now has a "showid" option for links and
    multilinks. When true, it only displays the linked node id as the anchor
@@ -18,6 +18,7 @@ Feature:
 
 Fixed:
  . stop sending blank (whitespace-only) notes
+ . cleanup of serialisation for database storage
 
 
 2002-03-25 - 0.4.1

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.59 2002-03-12 22:52:26 richard Exp $
+# $Id: hyperdb.py,v 1.60 2002-04-03 05:54:31 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -171,10 +171,50 @@ transaction.
         '''
         raise NotImplementedError
 
+    def serialise(self, classname, node):
+        '''Copy the node contents, converting non-marshallable data into
+           marshallable data.
+        '''
+        if DEBUG: print 'serialise', classname, node
+        properties = self.getclass(classname).getprops()
+        d = {}
+        for k, v in node.items():
+            prop = properties[k]
+
+            if isinstance(prop, Password):
+                d[k] = str(v)
+            elif isinstance(prop, Date) and v is not None:
+                d[k] = v.get_tuple()
+            elif isinstance(prop, Interval) and v is not None:
+                d[k] = v.get_tuple()
+            else:
+                d[k] = v
+        return d
+
     def setnode(self, classname, nodeid, node):
         '''Change the specified node.
         '''
         raise NotImplementedError
+
+    def unserialise(self, classname, node):
+        '''Decode the marshalled node data
+        '''
+        if DEBUG: print 'unserialise', classname, node
+        properties = self.getclass(classname).getprops()
+        d = {}
+        for k, v in node.items():
+            prop = properties[k]
+            if isinstance(prop, Date) and v is not None:
+                d[k] = date.Date(v)
+            elif isinstance(prop, Interval) and v is not None:
+                d[k] = date.Interval(v)
+            elif isinstance(prop, Password):
+                p = password.Password()
+                p.unpack(v)
+                d[k] = p
+            else:
+                d[k] = v
+        return d
 
     def getnode(self, classname, nodeid, db=None, cache=1):
         '''Get a node from the database.
@@ -396,17 +436,6 @@ class Class:
                 # TODO: None isn't right here, I think...
                 propvalues[key] = None
 
-        # convert all data to strings
-        for key, prop in self.properties.items():
-            if isinstance(prop, Date):
-                if propvalues[key] is not None:
-                    propvalues[key] = propvalues[key].get_tuple()
-            elif isinstance(prop, Interval):
-                if propvalues[key] is not None:
-                    propvalues[key] = propvalues[key].get_tuple()
-            elif isinstance(prop, Password):
-                propvalues[key] = str(propvalues[key])
-
         # done
         self.db.addnode(self.classname, newid, propvalues)
         self.db.addjournal(self.classname, newid, 'create', propvalues)
@@ -442,20 +471,6 @@ class Class:
                     return None
             else:
                 return default
-
-        # possibly convert the marshalled data to instances
-        if isinstance(prop, Date):
-            if d[propname] is None:
-                return None
-            return date.Date(d[propname])
-        elif isinstance(prop, Interval):
-            if d[propname] is None:
-                return None
-            return date.Interval(d[propname])
-        elif isinstance(prop, Password):
-            p = password.Password()
-            p.unpack(d[propname])
-            return p
 
         return d[propname]
 
@@ -605,17 +620,17 @@ class Class:
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
                     raise TypeError, 'new property "%s" not a Password'% key
-                propvalues[key] = value = str(value)
+                propvalues[key] = value
 
             elif value is not None and isinstance(prop, Date):
                 if not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'% key
-                propvalues[key] = value = value.get_tuple()
+                propvalues[key] = value
 
             elif value is not None and isinstance(prop, Interval):
                 if not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'% key
-                propvalues[key] = value = value.get_tuple()
+                propvalues[key] = value
 
             node[key] = value
 
@@ -1097,6 +1112,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.59  2002/03/12 22:52:26  richard
+# more pychecker warnings removed
+#
 # Revision 1.58  2002/02/27 03:23:16  richard
 # Ran it through pychecker, made fixes
 #

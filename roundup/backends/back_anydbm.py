@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.30 2002-02-27 03:40:59 richard Exp $
+#$Id: back_anydbm.py,v 1.31 2002-04-03 05:54:31 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -177,6 +177,7 @@ class Database(FileStorage, hyperdb.Database):
         if hyperdb.DEBUG:
             print 'setnode', (self, classname, nodeid, node)
         self.dirtynodes.setdefault(classname, {})[nodeid] = 1
+
         # can't set without having already loaded the node
         self.cache[classname][nodeid] = node
         self.savenode(classname, nodeid, node)
@@ -204,9 +205,17 @@ class Database(FileStorage, hyperdb.Database):
             db = self.getclassdb(classname)
         if not db.has_key(nodeid):
             raise IndexError, "no such %s %s"%(classname, nodeid)
+
+        # decode
         res = marshal.loads(db[nodeid])
+
+        # reverse the serialisation
+        res = self.unserialise(classname, res)
+
+        # store off in the cache
         if cache:
             cache[nodeid] = res
+
         return res
 
     def hasnode(self, classname, nodeid, db=None):
@@ -380,11 +389,17 @@ class Database(FileStorage, hyperdb.Database):
             db = self.databases[db_name] = self.getclassdb(classname, 'c')
 
         # now save the marshalled data
-        db[nodeid] = marshal.dumps(node)
+        db[nodeid] = marshal.dumps(self.serialise(classname, node))
 
     def _doSaveJournal(self, classname, nodeid, action, params):
+        # serialise first
+        if action in ('set', 'create'):
+            params = self.serialise(classname, params)
+
+        # create the journal entry
         entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
             params)
+
         if hyperdb.DEBUG:
             print '_doSaveJournal', entry
 
@@ -397,11 +412,13 @@ class Database(FileStorage, hyperdb.Database):
 
         # now insert the journal entry
         if db.has_key(nodeid):
+            # append to existing
             s = db[nodeid]
             l = marshal.loads(s)
             l.append(entry)
         else:
             l = [entry]
+
         db[nodeid] = marshal.dumps(l)
 
     def _doStoreFile(self, name, **databases):
@@ -425,6 +442,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.30  2002/02/27 03:40:59  richard
+#Ran it through pychecker, made fixes
+#
 #Revision 1.29  2002/02/25 14:34:31  grubert
 # . use blobfiles in back_anydbm which is used in back_bsddb.
 #   change test_db as dirlist does not work for subdirectories.
