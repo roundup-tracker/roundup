@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.8 2003-03-24 02:51:22 richard Exp $
+# $Id: roundup_mailgw.py,v 1.9 2003-03-24 02:56:30 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -69,7 +69,8 @@ POP:
  not supplied on the command-line.
 
 APOP:
- Same as POP, but using Authenticated POP
+ Same as POP, but using Authenticated POP:
+    apop username:password@server
 
 ''')
     return 1
@@ -122,8 +123,15 @@ def main(argv):
                 return handler.do_pop(m.group('server'), m.group('user'),
                     m.group('pass'))
             return usage(argv, _('Error: pop specification not valid'))
+        elif source == 'apop':
+            m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
+                specification)
+            if m:
+                return handler.do_apop(m.group('server'), m.group('user'),
+                    m.group('pass'))
+            return usage(argv, _('Error: apop specification not valid'))
 
-        return usage(argv, _('Error: The source must be either "mailbox" or "pop"'))
+        return usage(argv, _('Error: The source must be either "mailbox", "pop" or "apop"'))
     finally:
         db.close()
 

@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.112 2003-03-24 02:51:21 richard Exp $
+$Id: mailgw.py,v 1.113 2003-03-24 02:54:35 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -219,7 +219,7 @@ class MailGW:
     def do_apop(self, server, user='', password=''):
         ''' Do authentication POP
         '''
-        self.do_pop(server, user, password, apop=1):
+        self.do_pop(server, user, password, apop=1)
 
     def do_pop(self, server, user='', password='', apop=0):
         '''Read a series of messages from the specified POP server.
