@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.7 2004-07-21 01:25:55 richard Exp $
+# $Id: setup.py,v 1.64.2.8 2004-10-11 05:25:46 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -219,25 +219,25 @@ the "Software Upgrade" guidelines given in the maintenance documentation.
 
 This is a bug fix release, including:
 
-- rdbms backend full text search failure after import (sf bug 980314)
-- rdbms backends not filtering correctly on link=None
-- fix anydbm journal import (sf bug 983166)
-- handle postgresql bug in SQL generation (sf bug 984591)
-- fix dates-from-Dates (sf bug 984604)
-- fix messageid generated when msgid is None for send_message (sf bug 987933)
-- make user permissions check more sane (fix search page for anonymous)
-- fixed RDBMS filter() for no matches from full-text search (sf bug 990778)
-- fixed DateHTMLProperty for invalid date entry (sf bug 986538)
-- fixed external password source example (sf bug 986601)
-- document the STATIC_FILES config var
-- implement the HTTP HEAD command (sf bug 992544)
-- fix journal export of files to remove content from CSV files
-- API clarification. Previously, the anydbm/bsddb/metakit filter() methods
-  had required exact matches to Multilink argument lists. The RDBMS
-  backends treated Multilink matches like all other data types - matching
-  any of the Multilink argument list is good enough. The latter behaviour
-  is implemented across the board now.
-- fix metakit handling of filter on Link==None
+- ZRoundup's search interface works now (sf bug 994957)
+- fixed history display when "ascending"
+- removed references to py2.3+ boolean values (sf bug 995682)
+- fix static file path normalisation in security check (thanks David Linke)
+- less specific messages for login failures (thanks Chris Withers)
+- Reject raised against email messages should result in email rejection, not
+  discarding of the message
+- mailgw can override the MAIL_DEFAULT_CLASS
+- handle Py2.3+ datetime objects as Date specs (sf bug 971300)
+- use row locking in MySQL newid() (sf bug 1034211)
+- add sanity check for sort and group on same property (sf bug 1033477)
+- extend OTK and session table value cols to TEXT (sf bug 1031271)
+- fix lookup of REMOTE_USER (sf bug 1002923)
+- new Interval props weren't created properly in rdbms
+- date.Interval() now accepts an Interval as a spec (sf bug 1041266)
+- handle deleted properties in RDBMS history
+- apply timezone in correct direction in user input (sf bug 1013097)
+- more efficient find() in RDBMS (sf bug 1012781)
+- pydotorg-specific change to mailgw to handle bizzaro permissions ;)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
