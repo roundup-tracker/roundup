@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.24 2001-10-10 03:54:57 richard Exp $
+# $Id: hyperdb.py,v 1.25 2001-10-11 00:17:51 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -215,7 +215,7 @@ class Class:
             if isinstance(prop, Multilink):
                 propvalues[key] = []
             else:
-                propvalues[key] = ''
+                propvalues[key] = None
 
         # convert all data to strings
         for key, prop in self.properties.items():
@@ -849,6 +849,11 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/10/10 03:54:57  richard
+# Added database importing and exporting through CSV files.
+# Uses the csv module from object-craft for exporting if it's available.
+# Requires the csv module for importing.
+#
 # Revision 1.23  2001/10/09 23:58:10  richard
 # Moved the data stringification up into the hyperdb.Class class' get, set
 # and create methods. This means that the data is also stringified for the

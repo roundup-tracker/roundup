@@ -1,18 +1,24 @@
             Roundup 0.3.0pre1 - an issue tracking system
 
-**PREVIEW RELEASE**
+                        **PREVIEW RELEASE**
 
 This release is in use by Bizar Software, but has had little testing beyond
 that. It contains several new features which will require migration, so
 we're releasing this preview for the bleeding-edge users.
 
-** existing users _must_ read the MIGRATION.txt that accompanies the
+**NOTE** existing users _must_ read the MIGRATION.txt that accompanies the
 source.
 
 This release includes several bug fixes and usability improvements. It
 switches the CGI interface authentication over from HTTP Basic to cookie
-based. It introduces encoded password storage. For a more detailed in
-the CHANGES file accompanying the source.
+based. It introduces encoded password storage. See the CHANGES file accompanying the source for more detail.
+
+Source and documentation is available at the website:
+      http://roundup.sourceforge.net/
+
+
+About Roundup
+=============
 
 Roundup is a simple-to-use and -install issue-tracking system with 
 command-line, web and e-mail interfaces. It is based on the winning design 
@@ -34,7 +40,3 @@ doesn't even need to be "installed" to be operational, though a
 disutils-based install script is provided.
 
 It comes with two issue tracker templates and three database back-ends. 
-
-Source and documentation is available at the website:
-      http://roundup.sourceforge.net/
-
