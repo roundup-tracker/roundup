@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.69 2001-11-29 23:19:51 richard Exp $
+# $Id: cgi_client.py,v 1.70 2001-11-30 00:06:29 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -98,62 +98,60 @@ class Client:
         if port != '80': machine = machine + ':' + port
         base = urlparse.urlunparse(('http', machine, url, None, None, None))
         if message is not None:
-            message = '<div class="system-msg">%s</div>'%message
+            message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
             message = ''
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
         user_name = self.user or ''
         if self.user == 'admin':
-            admin_links = ' | <a href="list_classes">Class List</a>' \
-                          ' | <a href="user">User List</a>'
+            admin_links = _(' | <a href="list_classes">Class List</a>' \
+                          ' | <a href="user">User List</a>')
         else:
             admin_links = ''
         if self.user not in (None, 'anonymous'):
             userid = self.db.user.lookup(self.user)
-            user_info = '''
-<a href="issue?assignedto=%s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
-<a href="user%s">My Details</a> | <a href="logout">Logout</a>
-'''%(userid, userid)
+            user_info = _('''
+<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
+''')%locals()
         else:
             user_info = _('<a href="login">Login</a>')
         if self.user is not None:
-            add_links = '''
+            add_links = _('''
 | Add
 <a href="newissue">Issue</a>,
 <a href="newuser">User</a>
-'''
+''')
         else:
             add_links = ''
-        self.write('''<html><head>
-<title>%s</title>
-<style type="text/css">%s</style>
+        self.write(_('''<html><head>
+<title>%(title)s</title>
+<style type="text/css">%(style)s</style>
 </head>
 <body bgcolor=#ffffff>
-%s
+%(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%s</strong></big></td>
-<td align=right valign=bottom>%s</td></tr>
+<tr class="location-bar"><td><big><strong>%(title)s</strong></big></td>
+<td align=right valign=bottom>%(user_name)s</td></tr>
 <tr class="location-bar">
 <td align=left>All
 <a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
 | Unassigned
 <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>
-%s
-%s</td>
-<td align=right>%s</td>
+%(add_links)s
+%(admin_links)s</td>
+<td align=right>%(user_info)s</td>
 </table>
-'''%(title, style, message, title, user_name, add_links, admin_links,
-    user_info))
+''')%locals())
 
     def pagefoot(self):
         if self.debug:
-            self.write('<hr><small><dl>')
-            self.write('<dt><b>Path</b></dt>')
+            self.write(_('<hr><small><dl><dt><b>Path</b></dt>'))
             self.write('<dd>%s</dd>'%(', '.join(map(repr, self.split_path))))
             keys = self.form.keys()
             keys.sort()
             if keys:
-                self.write('<dt><b>Form entries</b></dt>')
+                self.write(_('<dt><b>Form entries</b></dt>'))
                 for k in self.form.keys():
                     v = self.form.getvalue(k, "<empty>")
                     if type(v) is type([]):
@@ -162,13 +160,13 @@ class Client:
                     self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
             keys = self.headers_sent.keys()
             keys.sort()
-            self.write('<dt><b>Sent these HTTP headers</b></dt>')
+            self.write(_('<dt><b>Sent these HTTP headers</b></dt>'))
             for k in keys:
                 v = self.headers_sent[k]
                 self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
             keys = self.env.keys()
             keys.sort()
-            self.write('<dt><b>CGI environment</b></dt>')
+            self.write(_('<dt><b>CGI environment</b></dt>'))
             for k in keys:
                 v = self.env[k]
                 self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
@@ -337,9 +335,10 @@ class Client:
                     cl.set(self.nodeid, **props)
                     self._post_editnode(self.nodeid, changed)
                     # and some nice feedback for the user
-                    message = '%s edited ok'%', '.join(changed)
+                    message = _('%(changes)s edited ok')%{'changes':
+                        ', '.join(changed)}
                 else:
-                    message = 'nothing changed'
+                    message = _('nothing changed')
             except:
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
@@ -396,7 +395,8 @@ class Client:
                 user.set(self.nodeid, **props)
                 self._post_editnode(self.nodeid, changed)
                 # and some feedback for the user
-                message = '%s edited ok'%', '.join(changed)
+                message = _('%(changes)s edited ok')%{'changes':
+                    ', '.join(changed)}
             except:
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
@@ -495,7 +495,8 @@ class Client:
                     summary = note
                 m = ['%s\n'%note]
             else:
-                summary = 'This %s has been edited through the web.\n'%cn
+                summary = _('This %(classname)s has been edited through'
+                    ' the web.\n')%{'classname': cn}
                 m = [summary]
 
             # figure the changes and add them to the message
@@ -569,12 +570,13 @@ class Client:
                 nid = self._createnode()
                 self._post_editnode(nid)
                 # and some nice feedback for the user
-                message = '%s created ok'%cn
+                message = _('%(classname)s created ok')%{'classname': cn}
             except:
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
-        self.pagehead('New %s'%self.classname.capitalize(), message)
+        self.pagehead(_('New %(classname)s')%{'classname':
+             self.classname.capitalize()}, message)
 
         # call the template
         newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
@@ -605,13 +607,14 @@ class Client:
                 self._post_editnode(cl.create(content=file.file.read(),
                     type=mime_type, name=file.filename))
                 # and some nice feedback for the user
-                message = '%s created ok'%cn
+                message = _('%(classname)s created ok')%{'classname': cn}
             except:
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
 
-        self.pagehead('New %s'%self.classname.capitalize(), message)
+        self.pagehead(_('New %(classname)s')%{'classname':
+             self.classname.capitalize()}, message)
         newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
             self.classname)
         newitem.render(self.form)
@@ -640,11 +643,11 @@ class Client:
 
     def login(self, message=None, newuser_form=None, action='index'):
         self.pagehead(_('Login to roundup'), message)
-        self.write('''
+        self.write(_('''
 <table>
 <tr><td colspan=2 class="strong-header">Existing User Login</td></tr>
 <form action="login_action" method=POST>
-<input type="hidden" name="__destination_url" value="%s">
+<input type="hidden" name="__destination_url" value="%(action)s">
 <tr><td align=right>Login name: </td>
     <td><input name="__login_name"></td></tr>
 <tr><td align=right>Password: </td>
@@ -652,7 +655,7 @@ class Client:
 <tr><td></td>
     <td><input type="submit" value="Log In"></td></tr>
 </form>
-'''%action)
+''')%locals())
         if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
             self.write('</table>')
             self.pagefoot()
@@ -662,7 +665,7 @@ class Client:
         if newuser_form is not None:
             for key in newuser_form.keys():
                 values[key] = newuser_form[key].value
-        self.write('''
+        self.write(_('''
 <p>
 <tr><td colspan=2 class="strong-header">New User Registration</td></tr>
 <tr><td colspan=2><em>marked items</em> are optional...</td></tr>
@@ -685,12 +688,12 @@ class Client:
     <td><input type="submit" value="Register"></td></tr>
 </form>
 </table>
-'''%values)
+''')%values)
         self.pagefoot()
 
     def login_action(self, message=None):
         if not self.form.has_key('__login_name'):
-            return self.login(message='Username required')
+            return self.login(message=_('Username required'))
         self.user = self.form['__login_name'].value
         if self.form.has_key('__login_password'):
             password = self.form['__login_password'].value
@@ -923,43 +926,43 @@ class ExtendedClient(Client):
         if port != '80': machine = machine + ':' + port
         base = urlparse.urlunparse(('http', machine, url, None, None, None))
         if message is not None:
-            message = '<div class="system-msg">%s</div>'%message
+            message = _('<div class="system-msg">%(message)s</div>')%locals()
         else:
             message = ''
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
         user_name = self.user or ''
         if self.user == 'admin':
-            admin_links = ' | <a href="list_classes">Class List</a>' \
-                          ' | <a href="user">User List</a>'
+            admin_links = _(' | <a href="list_classes">Class List</a>' \
+                          ' | <a href="user">User List</a>')
         else:
             admin_links = ''
         if self.user not in (None, 'anonymous'):
             userid = self.db.user.lookup(self.user)
-            user_info = '''
-<a href="issue?assignedto=%s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
-<a href="support?assignedto=%s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
-<a href="user%s">My Details</a> | <a href="logout">Logout</a>
-'''%(userid, userid, userid)
+            user_info = _('''
+<a href="issue?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">My Issues</a> |
+<a href="support?assignedto=%(userid)s&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:filter=status,assignedto&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">My Support</a> |
+<a href="user%(userid)s">My Details</a> | <a href="logout">Logout</a>
+''')%locals()
         else:
-            user_info = '<a href="login">Login</a>'
+            user_info = _('<a href="login">Login</a>')
         if self.user is not None:
-            add_links = '''
+            add_links = _('''
 | Add
 <a href="newissue">Issue</a>,
 <a href="newsupport">Support</a>,
 <a href="newuser">User</a>
-'''
+''')
         else:
             add_links = ''
-        self.write('''<html><head>
-<title>%s</title>
-<style type="text/css">%s</style>
+        self.write(_('''<html><head>
+<title>%(title)s</title>
+<style type="text/css">%(style)s</style>
 </head>
 <body bgcolor=#ffffff>
-%s
+%(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%s</strong></big></td>
-<td align=right valign=bottom>%s</td></tr>
+<tr class="location-bar"><td><big><strong>%(title)s</strong></big></td>
+<td align=right valign=bottom>%(user_name)s</td></tr>
 <tr class="location-bar">
 <td align=left>All
 <a href="issue?status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
@@ -967,12 +970,11 @@ class ExtendedClient(Client):
 | Unassigned
 <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>,
 <a href="support?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=customername&show_customization=1">Support</a>
-%s
-%s</td>
-<td align=right>%s</td>
+%(add_links)s
+%(admin_links)s</td>
+<td align=right>%(user_info)s</td>
 </table>
-'''%(title, style, message, title, user_name, add_links, admin_links,
-    user_info))
+''')%locals())
 
 def parsePropsFromForm(db, cl, form, nodeid=0):
     '''Pull properties for the given class out of the form.
@@ -1006,8 +1008,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                     try:
                         value = db.classes[link].lookup(value)
                     except KeyError:
-                        raise ValueError, 'property "%s": %s not a %s'%(
-                            key, value, link)
+                        raise ValueError, _('property "%(propname)s": '
+                            '%(value)s not a %(classname)s')%{'propname':key, 
+                            'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
             if type(value) != type([]):
@@ -1021,9 +1024,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                     try:
                         entry = db.classes[link].lookup(entry)
                     except KeyError:
-                        raise ValueError, \
-                            'property "%s": "%s" not an entry of %s'%(key,
-                            entry, link.capitalize())
+                        raise ValueError, _('property "%(propname)s": '
+                            '"%(value)s" not an entry of %(classname)s')%{
+                            'propname':key, 'value': entry, 'classname': link}
                 l.append(entry)
             l.sort()
             value = l
@@ -1046,6 +1049,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.69  2001/11/29 23:19:51  richard
+# Removed the "This issue has been edited through the web" when a valid
+# change note is supplied.
+#
 # Revision 1.68  2001/11/29 04:57:23  richard
 # a little comment
 #
