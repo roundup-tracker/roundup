@@ -48,12 +48,12 @@ class Unauthorised(Exception):
         return 'You are not allowed to %s items of class %s'%(self.action,
             self.klass)
 
-def find_template(dir, name, extension):
+def find_template(dir, name, view):
     ''' Find a template in the nominated dir
     '''
     # find the source
-    if extension:
-        filename = '%s.%s'%(name, extension)
+    if view:
+        filename = '%s.%s'%(name, view)
     else:
         filename = name
 
@@ -63,17 +63,18 @@ def find_template(dir, name, extension):
         return (src, filename)
 
     # try with a .html extension (new-style)
-    filename = filename + '.html'
-    src = os.path.join(dir, filename)
-    if os.path.exists(src):
-        return (src, filename)
+    for extension in '.html', '.xml':
+        filename = filename + extension
+        src = os.path.join(dir, filename)
+        if os.path.exists(src):
+            return (src, filename)
 
-    # no extension == no generic template is possible
-    if not extension:
+    # no view == no generic template is possible
+    if not view:
         raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
 
     # try for a _generic template
-    generic = '_generic.%s'%extension
+    generic = '_generic.%s'%view
     src = os.path.join(dir, generic)
     if os.path.exists(src):
         return (src, generic)
@@ -85,7 +86,7 @@ def find_template(dir, name, extension):
         return (src, generic)
 
     raise NoTemplate, 'No template file exists for templating "%s" '\
-        'with template "%s" (neither "%s" nor "%s")'%(name, extension,
+        'with template "%s" (neither "%s" nor "%s")'%(name, view,
         filename, generic)
 
 class Templates:
@@ -98,7 +99,18 @@ class Templates:
         ''' Go through a directory and precompile all the templates therein
         '''
         for filename in os.listdir(self.dir):
-            if os.path.isdir(filename): continue
+            # skip subdirs
+            if os.path.isdir(filename):
+                continue
+
+            # skip files without ".html" or ".xml" extension - .css, .js etc.
+            for extension in '.html', '.xml':
+                if filename.endswith(extension):
+                    break
+            else:
+                continue
+
+            # load the template
             if '.' in filename:
                 name, extension = filename.split('.')
                 self.get(name, extension)
