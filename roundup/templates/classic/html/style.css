@@ -66,6 +66,7 @@ table.form {
   font-weight: bold;
   color: #333388;
   text-align: right;
+  vertical-align: top;
 }
 
 .form-header th {
@@ -101,12 +102,14 @@ table.list th {
   color: #404070;
   background-color: #eeeeff;
   border-right: 1px solid #404070;
+  border-top: 1px solid #404070;
   vertical-align: top;
 }
 table.list th a:hover { color: #404070 }
 table.list th a:link { color: #404070 }
 table.list th a { color: #404070 }
 table.list th.group {
+  background-color: #f4f4ff;
   text-align: center;
 }
 
