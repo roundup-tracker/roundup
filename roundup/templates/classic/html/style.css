@@ -58,35 +58,36 @@ p.error-message {
 
 /* style for forms */
 table.form {
+  padding: 2;
   border-spacing: 0px;
   border-collapse: separate;
 }
 
-.form th {
+table.form th {
   font-weight: bold;
   color: #333388;
   text-align: right;
   vertical-align: top;
 }
 
-.form-header th {
+table.form th.header {
   font-weight: bold;
   color: #333388;
   background-color: #eeeeff;
   text-align: left;
 }
 
-.form td.optional {
+table.form td.optional {
   font-weight: bold;
   font-style: italic;
   color: #333333;
 }
 
-.form td {
+table.form td {
   color: #333333;
 }
 
-.form td.html {
+table.form td.html {
   color: #777777;
 }
 
@@ -219,6 +220,7 @@ table.history th {
 
 table.history td {
   font-size: 90%;
+  vertical-align: top;
 }
 
 /* style for "other" displays */

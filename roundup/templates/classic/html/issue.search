@@ -8,9 +8,12 @@
    defgroup python:['priority'];
    defdisp python:'id activity title status assignedto'.split()">
 
-<tr class="form-header">
- <th>&nbsp;</th>
- <th>Filter on</th><th>Display</th><th>Sort on</th><th>Group on</th>
+<tr>
+ <th class="header">&nbsp;</th>
+ <th class="header">Filter on</th>
+ <th class="header">Display</th>
+ <th class="header">Sort on</th>
+ <th class="header">Group on</th>
 </tr>
 
 <tr>

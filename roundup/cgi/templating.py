@@ -414,12 +414,14 @@ class HTMLItem:
 
     # XXX this probably should just return the history items, not the HTML
     def history(self, direction='descending'):
-        l = ['<table width=100% border=0 cellspacing=0 cellpadding=2>',
-            '<tr class="list-header">',
-            _('<th align=left><span class="list-item">Date</span></th>'),
-            _('<th align=left><span class="list-item">User</span></th>'),
-            _('<th align=left><span class="list-item">Action</span></th>'),
-            _('<th align=left><span class="list-item">Args</span></th>'),
+        l = ['<table class="history">'
+             '<tr><th colspan="4" class="header">',
+             _('History'),
+             '</th></tr><tr>',
+             _('<th>Date</th>'),
+             _('<th>User</th>'),
+             _('<th>Action</th>'),
+             _('<th>Args</th>'),
             '</tr>']
         comments = {}
         history = self.klass.history(self.nodeid)
@@ -550,19 +552,14 @@ class HTMLItem:
                     handled by the history display!</em></strong>''')
                 arg_s = '<strong><em>' + str(args) + '</em></strong>'
             date_s = date_s.replace(' ', '&nbsp;')
-            l.append('<tr><td nowrap valign=top>%s</td><td valign=top>%s</td>'
-                '<td valign=top>%s</td><td valign=top>%s</td></tr>'%(date_s,
-                user, action, arg_s))
+            l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
+                date_s, user, action, arg_s))
         if comments:
             l.append(_('<tr><td colspan=4><strong>Note:</strong></td></tr>'))
         for entry in comments.values():
             l.append('<tr><td colspan=4>%s</td></tr>'%entry)
         l.append('</table>')
         return '\n'.join(l)
-
-    def remove(self):
-        # XXX do what?
-        return ''
 
 class HTMLUser(HTMLItem):
     ''' Accesses through the *user* (a special case of item)
@@ -758,10 +755,6 @@ class LinkHTMLProperty(HTMLProperty):
             value = cgi.escape(value)
         return value
 
-    # XXX most of the stuff from here down is of dubious utility - it's easy
-    # enough to do in the template by hand (and in some cases, it's shorter
-    # and clearer...
-
     def field(self):
         linkcl = self.db.getclass(self.prop.classname)
         if linkcl.getprops().has_key('order'):  
@@ -899,10 +892,6 @@ class MultilinkHTMLProperty(HTMLProperty):
         if escape:
             value = cgi.escape(value)
         return value
-
-    # XXX most of the stuff from here down is of dubious utility - it's easy
-    # enough to do in the template by hand (and in some cases, it's shorter
-    # and clearer...
 
     def field(self, size=30, showid=0):
         sortfunc = make_sort_function(self.db, self.prop.classname)

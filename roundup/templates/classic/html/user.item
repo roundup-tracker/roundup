@@ -28,9 +28,9 @@ You are not allowed to view this page.
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th>Roles</th>
-  <td tal:condition="item/created"
+  <td tal:condition="context/id"
       tal:content="structure context/roles/field">roles</td>
-  <td tal:condition="not:item/created">
+  <td tal:condition="not:context/id">
    <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
   </td>
  </tr>
@@ -58,7 +58,7 @@ You are not allowed to view this page.
 </table>
 </form>
 
-<tal:block tal:condition="item/created">
+<tal:block tal:condition="context/id">
  <table class="otherinfo" tal:condition="context/queries">
   <tr><th class="header">Queries</th></tr>
   <tr tal:repeat="query context/queries">
@@ -66,12 +66,8 @@ You are not allowed to view this page.
   </tr>
  </table>
 
- <table class="otherinfo">
-  <tr><th class="header">History</th></tr>
-  <tr>
-   <td tal:content="structure context/history">history</td>
-  </tr>
- </table>
+ <tal:block tal:replace="structure context/history" />
+
 </tal:block>
 
 </tal:block>

@@ -1,42 +1,40 @@
 <!-- dollarId: msg.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
-<table border=0 cellspacing=0 cellpadding=2>
+<table class="form">
 
-<tr bgcolor="ffffea">
- <td width=1% nowrap align=right><span class="form-label">Author</span></td>
- <td class="form-text" tal:content="context/author"></td>
+<tr>
+ <td nowrap>Author</td>
+ <td tal:content="context/author"></td>
 </tr>
 
-<tr bgcolor="ffffea">
- <td width=1% nowrap align=right><span class="form-label">Recipients</span></td>
- <td class="form-text" tal:content="context/recipients"></td>
+<tr>
+ <td nowrap>Recipients</td>
+ <td tal:content="context/recipients"></td>
 </tr>
 
-<tr bgcolor="ffffea">
- <td width=1% nowrap align=right><span class="form-label">Date</span></td>
- <td class="form-text" tal:content="context/date"></td>
+<tr>
+ <td nowrap>Date</td>
+ <td tal:content="context/date"></td>
 </tr>
 
-<tr bgcolor="ffeaff">
- <td colspan=2 class="form-text">
-  <pre tal:content="context/content"></pre>
- </td>
+<tr>
+ <td colspan=2><pre tal:content="context/content"></pre></td>
 </tr>
 
-<property name="files">
-<tr class="strong-header"><td colspan=2><b>Files</b></td></tr>
-<tr tal:repeat="file context/files">
- <td>
-  <a tal:attributes="href string:file${file/id}/${file/name}"
-     tal:content="file/name">dld link</a>
- </td>
- <td>
-  <span tal:content="file/creator">creator's name</span>,
-  <span tal:content="file/creation">creation date</span>
- </td>
-</tr>
-</property>
+ <table class="files" tal:condition="context/files">
+  <tr><th colspan="2" class="header">Files</th></tr>
+  <tr><th>File name</th><th>Uploaded</th></tr>
+  <tr tal:repeat="file context/files">
+   <td>
+    <a tal:attributes="href string:file${file/id}/${file/name}"
+       tal:content="file/name">dld link</a>
+   </td>
+   <td>
+    <span tal:content="file/creator">creator's name</span>,
+    <span tal:content="file/creation">creation date</span>
+   </td>
+  </tr>
+ </table>
 
-<tr class="history-header"><td colspan=2><b>History</b></td><tr>
-<tr><td colspan="2" tal:content="structure context/history">history</td></tr>
+ <tal:block tal:replace="structure context/history" />
 
 </table>
