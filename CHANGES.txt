@@ -10,11 +10,14 @@ Fixed:
  . #576241 ] MultiLink problems in parsePropsFromForm
  . fixed the date module so that Date(". - 2d") works
  . web forms may now unset Link values (like assignedto)
+ . cleanup: moved roundup.templatebuilder to roundup.templates.builder
 
 Feature:
 TODO: roll stuff in from the TODO to here
+ . added is_retired test to hyperdb.Class
  . added capability to save queries:
-   - a query Class with name, klass (to search) and url (query string) properties
+   - a query Class with name, klass (to search) and url (query string)
+     properties
    - a Multilink to query on user called queries
    - html templates for query, and a list of queries in user.item
    - search form has Save button & name input
