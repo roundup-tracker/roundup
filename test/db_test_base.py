@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.11 2003-12-05 09:47:46 richard Exp $ 
+# $Id: db_test_base.py,v 1.12 2003-12-10 01:40:51 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -695,10 +695,10 @@ class DBTest(MyTestCase):
             self.db.user.create(**user)
         iss = self.db.issue
         for issue in (
-                {'title': 'issue one', 'status': '2',
+                {'title': 'issue one', 'status': '2', 'assignedto': '1',
                     'foo': date.Interval('1:10'), 
                     'deadline': date.Date('2003-01-01.00:00')},
-                {'title': 'issue two', 'status': '1',
+                    {'title': 'issue two', 'status': '1', 'assignedto': '2',
                     'foo': date.Interval('1d'), 
                     'deadline': date.Date('2003-02-16.22:50')},
                 {'title': 'issue three', 'status': '1',
@@ -725,6 +725,7 @@ class DBTest(MyTestCase):
     def testFilteringLink(self):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
+        ae(filt(None, {'assignedto': '-1'}, ('+','id'), (None,None)), ['3','4'])
 
     def testFilteringRetired(self):
         ae, filt = self.filteringSetup()

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.133 2003-12-05 09:47:46 richard Exp $
+#$Id: back_anydbm.py,v 1.134 2003-12-10 01:40:51 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1630,21 +1630,12 @@ class Class(hyperdb.Class):
             if isinstance(propclass, Link):
                 if type(v) is not type([]):
                     v = [v]
-                # replace key values with node ids
                 u = []
-                link_class =  self.db.classes[propclass.classname]
                 for entry in v:
                     # the value -1 is a special "not set" sentinel
                     if entry == '-1':
                         entry = None
-                    elif not num_re.match(entry):
-                        try:
-                            entry = link_class.lookup(entry)
-                        except (TypeError,KeyError):
-                            raise ValueError, 'property "%s": %s not a %s'%(
-                                k, entry, self.properties[k].classname)
                     u.append(entry)
-
                 l.append((LINK, k, u))
             elif isinstance(propclass, Multilink):
                 # the value -1 is a special "not set" sentinel
@@ -1652,20 +1643,7 @@ class Class(hyperdb.Class):
                     v = []
                 elif type(v) is not type([]):
                     v = [v]
-
-                # replace key values with node ids
-                u = []
-                link_class =  self.db.classes[propclass.classname]
-                for entry in v:
-                    if not num_re.match(entry):
-                        try:
-                            entry = link_class.lookup(entry)
-                        except (TypeError,KeyError):
-                            raise ValueError, 'new property "%s": %s not a %s'%(
-                                k, entry, self.properties[k].classname)
-                    u.append(entry)
-                u.sort()
-                l.append((MULTILINK, k, u))
+                l.append((MULTILINK, k, v))
             elif isinstance(propclass, String) and k != 'id':
                 if type(v) is not type([]):
                     v = [v]
