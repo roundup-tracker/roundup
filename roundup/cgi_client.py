@@ -1,8 +1,8 @@
-# $Id: cgi_client.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+# $Id: cgi_client.py,v 1.3 2001-07-23 03:56:30 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
-import config, roundupdb, htmltemplate, date
+import roundupdb, htmltemplate, date
 
 class Unauthorised(ValueError):
     pass
@@ -489,6 +489,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/22 12:09:32  richard
+# Final commit of Grande Splite
+#
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
