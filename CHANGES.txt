@@ -28,6 +28,9 @@ Fixed:
  . #503340 ] creating issue with [asignedto=p.ohly]
  . #502949 ] index view for non-issues and redisplay
  . #503793 ] changing assignedto resets nosy list
+ . lots of date/interval related changes:
+   - more relaxed date format for input
+   - handle None for date/interval properties
 
 
 2002-01-08 - 0.4.0b1

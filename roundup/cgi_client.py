@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.99 2002-01-16 03:02:42 richard Exp $
+# $Id: cgi_client.py,v 1.100 2002-01-16 07:02:57 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -309,7 +309,8 @@ class Client:
                         ', '.join(props.keys())}
                 elif self.form.has_key('__note') and self.form['__note'].value:
                     message = _('note added')
-                elif self.form.has_key('__file'):
+                elif (self.form.has_key('__file') and
+                        self.form['__file'].filename):
                     message = _('file added')
                 else:
                     message = _('nothing changed')
@@ -1115,9 +1116,17 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
         elif isinstance(proptype, hyperdb.Password):
             value = password.Password(form[key].value.strip())
         elif isinstance(proptype, hyperdb.Date):
-            value = date.Date(form[key].value.strip())
+            value = form[key].value.strip()
+            if value:
+                value = date.Date(form[key].value.strip())
+            else:
+                value = None
         elif isinstance(proptype, hyperdb.Interval):
-            value = date.Interval(form[key].value.strip())
+            value = form[key].value.strip()
+            if value:
+                value = date.Interval(form[key].value.strip())
+            else:
+                value = None
         elif isinstance(proptype, hyperdb.Link):
             value = form[key].value.strip()
             # see if it's the "no selection" choice
@@ -1173,6 +1182,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.99  2002/01/16 03:02:42  richard
+# #503793 ] changing assignedto resets nosy list
+#
 # Revision 1.98  2002/01/14 02:20:14  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.48 2002-01-14 06:32:34 richard Exp $
+# $Id: hyperdb.py,v 1.49 2002-01-16 07:02:57 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -348,11 +348,11 @@ class Class:
                     raise TypeError, 'new property "%s" not a Password'%key
 
             elif isinstance(prop, Date):
-                if not isinstance(value, date.Date):
+                if value is not None and not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'%key
 
             elif isinstance(prop, Interval):
-                if not isinstance(value, date.Interval):
+                if value is not None and not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'%key
 
         # make sure there's data where there needs to be
@@ -370,9 +370,11 @@ class Class:
         # convert all data to strings
         for key, prop in self.properties.items():
             if isinstance(prop, Date):
-                propvalues[key] = propvalues[key].get_tuple()
+                if propvalues[key] is not None:
+                    propvalues[key] = propvalues[key].get_tuple()
             elif isinstance(prop, Interval):
-                propvalues[key] = propvalues[key].get_tuple()
+                if propvalues[key] is not None:
+                    propvalues[key] = propvalues[key].get_tuple()
             elif isinstance(prop, Password):
                 propvalues[key] = str(propvalues[key])
 
@@ -414,8 +416,12 @@ class Class:
 
         # possibly convert the marshalled data to instances
         if isinstance(prop, Date):
+            if d[propname] is None:
+                return None
             return date.Date(d[propname])
         elif isinstance(prop, Interval):
+            if d[propname] is None:
+                return None
             return date.Interval(d[propname])
         elif isinstance(prop, Password):
             p = password.Password()
@@ -561,12 +567,12 @@ class Class:
                     raise TypeError, 'new property "%s" not a Password'% key
                 propvalues[key] = value = str(value)
 
-            elif isinstance(prop, Date):
+            elif value is not None and isinstance(prop, Date):
                 if not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'% key
                 propvalues[key] = value = value.get_tuple()
 
-            elif isinstance(prop, Interval):
+            elif value is not None and isinstance(prop, Interval):
                 if not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'% key
                 propvalues[key] = value = value.get_tuple()
@@ -1041,6 +1047,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.48  2002/01/14 06:32:34  richard
+#  . #502951 ] adding new properties to old database
+#
 # Revision 1.47  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.16 2002-01-08 11:56:24 richard Exp $
+# $Id: date.py,v 1.17 2002-01-16 07:02:57 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -153,6 +153,8 @@ class Date:
 
     def __cmp__(self, other):
         """Compare this date to another date."""
+        if other is None:
+            return 1
         for attr in ('year', 'month', 'day', 'hour', 'minute', 'second'):
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r: return r
@@ -170,7 +172,7 @@ class Date:
             self.day, self.hour, self.minute, self.second, 0, 0, 0))
 
     def set(self, spec, offset=0, date_re=re.compile(r'''
-              (((?P<y>\d\d\d\d)-)?((?P<m>\d\d)-(?P<d>\d\d))?)? # yyyy-mm-dd
+              (((?P<y>\d\d\d\d)-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
               (?P<n>\.)?                                       # .
               (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?    # hh:mm:ss
               (?P<o>.+)?                                       # offset
@@ -254,6 +256,8 @@ class Interval:
 
     def __cmp__(self, other):
         """Compare this interval to another interval."""
+        if other is None:
+            return 1
         for attr in ('year', 'month', 'day', 'hour', 'minute', 'second'):
             r = cmp(getattr(self, attr), getattr(other, attr))
             if r: return r
@@ -379,6 +383,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/01/08 11:56:24  richard
+# missed an import _
+#
 # Revision 1.15  2002/01/05 02:27:00  richard
 # I18N'ification
 #
