@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.1 $
+:Version: $Revision: 1.2 $
 
 Current situation
 =================
@@ -67,6 +67,9 @@ Cons:
    - harder to determine the relationship between user interaction and hyperdb
      permission.
    - a lot of work to define
+   - must special-case to handle by-node permissions (editing user details,
+     having private messages)
+
 
 User-interface control
 ----------------------
@@ -92,8 +95,16 @@ Logical control
 ---------------
 
 At each point that requires an action to be performed, the security mechanisms
-are asked if the current user has permission. There is no possibility to have
+are asked if the current user has permission. Since code must call the
+check function to raise a denial, there is no possibility to have automatic
 default of deny in this situation.
+
+In practice, this is implemented as:
+
+1. there's a mapping of user -> role          (in hyperdb)
+2. there's a mapping of role -> permission    (in code)
+3. there's a function that's available to all roundup code that can ask
+   whether a particular user has a particular permission.
 
 Pros:
 
@@ -106,7 +117,6 @@ Cons:
      mirroring actual user interface controls.
 
 
-
 Applying controls to users
 ==========================
 
@@ -116,6 +126,82 @@ is quite well developed in many projects. Roundup will take this path, and
 allow the multiple assignment of Roles to Users, and multiple Permissions to
 Roles. These definitions will be stored in the hyperdb.
 
+
+A permission module defines::
+
+    class InMemoryImmutableClass(hyperdb.Class):
+        ''' Don't allow changes to this class's nodes.
+        '''
+        def __init__(self, db, classname, **properties):
+            ''' Set up an in-memory store for the nodes of this class
+            '''
+
+        def create(self, **propvalues):
+            ''' Create a new node in the in-memory store
+            '''
+
+        def get(self, nodeid, propname, default=_marker, cache=1):
+            ''' Get the node from the in-memory store
+            '''
+
+        def set(self, *args):
+            raise ValueError, "%s are immutable"%self.__class__.__name__
+
+    class PermissionClass(InMemoryImmutableClass):
+        ''' Include the default attributes:
+            - name (String, key)
+            - description (String)
+        '''
+
+    class RoleClass(InMemoryImmutableClass):
+        ''' Include the default attributes:
+            - name (String, key)
+            - description (String)
+            - permissions (PermissionClass Multilink)
+        '''
+
+    def hasPermission(db, userid, permission):
+        ''' Look through all the Roles, and hence Permissions, and see if
+            "permission" is there
+        '''
+
+
+The instance dbinit module then has::
+
+  in open():
+
+    perm = permission.PermissionClass(db, "permission")
+    role = permission.RoleClass(db, "role")
+
+    wa = perm.create(name="Web Access",
+                    description="User may log in through the web")
+    wr = perm.create(name="Web Registration",
+                    description="User may register through the web")
+    ma = perm.create(name="Mail Access",
+                    description="User may log in through email")
+    mr = perm.create(name="Mail Registration",
+                    description="User may register through email")
+    aa = perm.create(name="Access Everything",
+                    description="User may access everthing")
+    role.create(name="User", description="A regular user, no privs",
+                permissions=[wa, wr, ma, mr])
+    role.create(name="Admin", description="An admin user, full privs",
+                permissions=[aa])
+    ro = role.create(name="No Rego", description="A user who can't register",
+                     permissions=[wa, ma])
+
+  in init():
+
+    r = db.getclass('role').find('Admin')
+    user.create(username="admin", password=Password(adminpw),
+                address=instance_config.ADMIN_EMAIL, roles=[r])
+
+    # choose your anonymous user access permission here
+    #r = db.getclass('role').find('No Rego')
+    r = db.getclass('role').find('User')
+    user.create(username="anonymous", roles=[r])
+
+    
 
 Use cases
 =========
@@ -132,49 +218,4 @@ system
   automated request handlers running various report/escalation scripts
 privacy
   issues that are only visible to some users
-
-
-Discussion
-==========
-
-Date: Thu, 2 May 2002 11:46:56 -0400
-From: David_Byrne@cisgi.com
-To: roundup-devel@lists.sourceforge.net
-I've really appreciated roundup so far.  It has been very easy to create my own
-template that adds functionality for my specific purpose.  One area, for my
-needs, that does not seem to be currently addressed in roundup is roles of
-users.  I have various roles that the users of my instance of roundup can have.
-I have:
-
-1) end users that can submit bugs, request new features, request support.
-2) developers that can fix bugs, implement new features provide support
-3) approvers/managers that can approve new features and signoff bug fixes
-4) administrators that can add users and set users roles
-5) processors - this is isn't totally thought out yet, but for me it would be an
-   automated request handler that would run various production scripts.
-
-Each of these roles need to have specific functionality within the web client
-(and possibly the email client -- but I haven't looked at that much yet).  An
-example is that I don't want end users to be able to assign a specific developer
-to a problem or support issue.  I think that some of my functionality can be
-implemented via the detectors, but I haven't fully researched it yet.
-
-So far, I have added a new class to the database called role which contains the
-various roles outlined above.  I have added a multilink in the user class to the
-new role class.  I have modified the base code in the cgi client to use the new
-admin role when checking for admin instead of using the user id.  I am working
-on implementing the role for access to the individual forms and even specific
-fields on the forms.  Has anyone else done this or seen a need to do this?
-
-I am planning on implementing this as an optional feature - basically the
-security will be handled in a separate module so that a site could implement the
-role functionality or exclude it by using the module that fits their needs.  My
-current changes to the admin checks would be pulled out into a separate
-replaceable module.  So if an implementation did not want to use roles, the
-check would just check the user id to see if it was equal to "admin".  In my
-case, it would check the role of the user to see if it contained the admin role.
-
-If anyone else is interested in this, I will send the patches in when I am
-completed with this.  If anyone else has worked on this (and hopefully gotten
-farther than I), please let me know.
 
