@@ -1,6 +1,9 @@
 <!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data">
+
+<input type="hidden" name=":required" value="title">
+
 <table border=0 cellspacing=0 cellpadding=2 class="form">
 <tr>
  <th nowrap>Title</th>
