@@ -18,6 +18,8 @@ pending hyperdb   migrate "id" property to be Number type
 pending hyperdb   multilink sorting by length is dumb
 pending hyperdb   lastchangedby auto-property giving last user to change an
                   item
+pending hyperdb   pysqlite and locks
+                  http://www.hwaci.com/sw/sqlite/c_interface.html
 pending tracker   split instance.open() into open() and login()
 pending mailgw    allow commands (feature request #556996)
                   like "help", "dump issue123" (would send all info about
@@ -65,12 +67,8 @@ pending web       search "refinement" - pre-fill the search page with the
 pending web       column-heading sort stuff isn't implemented
 pending web       multilink item removal action with retirement
 pending web       implement a python dict version of the form values
-
-active  web       UNIX init.d script for roundup-server
-bug     web       query editing isn't fully implemented
-bug     web       no testing for parsePropsFromForm
-bug     hyperdb   pysqlite and locks
-                  http://www.hwaci.com/sw/sqlite/c_interface.html
-bug     web       implement the request.url attribute?
+pending web       implement the request.url attribute?
+pending web       query editing isn't fully implemented
+pending web       UNIX init.d script for roundup-server
 ======= ========= =============================================================
 
