@@ -40,7 +40,7 @@ def installHtmlBase(template, installDir):
     except IOError, error:
         if error.errno != errno.EEXIST: raise
 
-    print "installing from", htmlbase.__file__, "into", installDir
+#    print "installing from", htmlbase.__file__, "into", installDir
     modulecontents = dir(htmlbase)
     for mangledfile in modulecontents:
         if mangledfile[0] == "_": 
