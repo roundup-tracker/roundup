@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.86 2002-09-10 12:44:42 richard Exp $
+$Id: mailgw.py,v 1.87 2002-09-11 01:19:16 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -142,6 +142,79 @@ class MailGW:
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)
         self.trapExceptions = 1
+
+    def do_pipe(self):
+        ''' Read a message from standard input and pass it to the mail handler.
+        '''
+        self.main(sys.stdin)
+        return 0
+
+    def do_mailbox(self, filename):
+        ''' Read a series of messages from the specified unix mailbox file and
+            pass each to the mail handler.
+        '''
+        # open the spool file and lock it
+        import fcntl, FCNTL
+        f = open(filename, 'r+')
+        fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
+
+        # handle and clear the mailbox
+        try:
+            from mailbox import UnixMailbox
+            mailbox = UnixMailbox(f, factory=Message)
+            # grab one message
+            message = mailbox.next()
+            while message:
+                # handle this message
+                self.handle_Message(message)
+                message = mailbox.next()
+            # nuke the file contents
+            os.ftruncate(f.fileno(), 0)
+        except:
+            import traceback
+            traceback.print_exc()
+            return 1
+        fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
+        return 0
+
+    def do_pop(self, server, user='', password=''):
+        '''Read a series of messages from the specified POP server.
+        '''
+        import getpass, poplib, socket
+        try:
+            if not user:
+                user = raw_input(_('User: '))
+            if not password:
+                password = getpass.getpass()
+        except (KeyboardInterrupt, EOFError):
+            # Ctrl C or D maybe also Ctrl Z under Windows.
+            print "\nAborted by user."
+            return 1
+
+        # open a connection to the server and retrieve all messages
+        try:
+            server = poplib.POP3(server)
+        except socket.error, message:
+            print "POP server error:", message
+            return 1
+        server.user(user)
+        server.pass_(password)
+        numMessages = len(server.list()[1])
+        for i in range(1, numMessages+1):
+            # retr: returns 
+            # [ pop response e.g. '+OK 459 octets',
+            #   [ array of message lines ],
+            #   number of octets ]
+            lines = server.retr(i)[1]
+            s = cStringIO.StringIO('\n'.join(lines))
+            s.seek(0)
+            self.handle_Message(Message(s))
+            # delete the message
+            server.dele(i)
+
+        # quit the server to commit changes.
+        server.quit()
+        return 0
 
     def main(self, fp):
         ''' fp - the file from which to read the Message.
@@ -795,9 +868,13 @@ def parseContent(content, keep_citations, keep_body,
         signature=re.compile(r'^[>|\s]*[-_]+\s*$'),
         original_message=re.compile(r'^[>|\s]*-----Original Message-----$')):
     ''' The message body is divided into sections by blank lines.
-    Sections where the second and all subsequent lines begin with a ">" or "|"
-    character are considered "quoting sections". The first line of the first
-    non-quoting section becomes the summary of the message. 
+        Sections where the second and all subsequent lines begin with a ">"
+        or "|" character are considered "quoting sections". The first line of
+        the first non-quoting section becomes the summary of the message. 
+
+        If keep_citations is true, then we keep the "quoting sections" in the
+        content.
+        If keep_body is true, we even keep the signature sections.
     '''
     # strip off leading carriage-returns / newlines
     i = 0
@@ -850,10 +927,12 @@ def parseContent(content, keep_citations, keep_body,
 
         # and add the section to the output
         l.append(section)
-    # we only set content for those who want to delete cruft from the
-    # message body, otherwise the body is left untouched.
+
+    # Now reconstitute the message content minus the bits we don't care
+    # about.
     if not keep_body:
         content = '\n\n'.join(l)
+
     return summary, content
 
 # vim: set filetype=python ts=4 sw=4 et si

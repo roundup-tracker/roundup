@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.4 2002-09-10 01:07:06 richard Exp $
+# $Id: roundup_mailgw.py,v 1.5 2002-09-11 01:19:16 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -24,85 +24,13 @@ import sys, os, re, cStringIO
 from roundup.mailgw import Message
 from roundup.i18n import _
 
-def do_pipe(handler):
-    '''Read a message from standard input and pass it to the mail handler.
-    '''
-    handler.main(sys.stdin)
-    return 0
-
-def do_mailbox(handler, filename):
-    '''Read a series of messages from the specified unix mailbox file and
-    pass each to the mail handler.
-    '''
-    # open the spool file and lock it
-    import fcntl, FCNTL
-    f = open(filename, 'r+')
-    fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
-
-    # handle and clear the mailbox
-    try:
-        from mailbox import UnixMailbox
-        mailbox = UnixMailbox(f, factory=Message)
-        # grab one message
-        message = mailbox.next()
-        while message:
-            # call the instance mail handler
-            handler.handle_Message(message)
-            message = mailbox.next()
-        # nuke the file contents
-        os.ftruncate(f.fileno(), 0)
-    except:
-        import traceback
-        traceback.print_exc()
-        return 1
-    fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
-    return 0
-
-def do_pop(handler, server, user='', password=''):
-    '''Read a series of messages from the specified POP server.
-    '''
-    import getpass, poplib, socket
-    try:
-        if not user:
-            user = raw_input(_('User: '))
-        if not password:
-            password = getpass.getpass()
-    except (KeyboardInterrupt, EOFError):
-        # Ctrl C or D maybe also Ctrl Z under Windows.
-        print "\nAborted by user."
-        return 1
-
-    # open a connection to the server and retrieve all messages
-    try:
-        server = poplib.POP3(server)
-    except socket.error, message:
-        print "POP server error:", message
-        return 1
-    server.user(user)
-    server.pass_(password)
-    numMessages = len(server.list()[1])
-    for i in range(1, numMessages+1):
-        # retr: returns 
-        # [ pop response e.g. '+OK 459 octets',
-        #   [ array of message lines ],
-        #   number of octets ]
-        lines = server.retr(i)[1]
-        s = cStringIO.StringIO('\n'.join(lines))
-        s.seek(0)
-        handler.handle_Message(Message(s))
-        # delete the message
-        server.dele(i)
-
-    # quit the server to commit changes.
-    server.quit()
-    return 0
-
 def usage(args, message=None):
     if message is not None:
         print message
-    print _('Usage: %(program)s <instance home> [source spec]')%{'program': args[0]}
+    print _('Usage: %(program)s <instance home> [method]')%{'program': args[0]}
     print _('''
-The roundup mail gateway may be called in one of two ways:
+
+The roundup mail gateway may be called in one of three ways:
  . with an instance home as the only argument,
  . with both an instance home and a mail spool file, or
  . with both an instance home and a pop server account.
@@ -152,19 +80,19 @@ def main(args):
 
     # if there's no more arguments, read a single message from stdin
     if len(args) == 2:
-        return do_pipe(handler)
+        return handler.do_pipe()
 
     # otherwise, figure what sort of mail source to handle
     if len(args) < 4:
         return usage(args, _('Error: not enough source specification information'))
     source, specification = args[2:]
     if source == 'mailbox':
-        return do_mailbox(handler, specification)
+        return handler.do_mailbox(specification)
     elif source == 'pop':
         m = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
             specification)
         if m:
-            return do_pop(handler, m.group('server'), m.group('user'),
+            return handler.do_pop(m.group('server'), m.group('user'),
                 m.group('pass'))
         return usage(args, _('Error: pop specification not valid'))
 
