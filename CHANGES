@@ -1,0 +1,45 @@
+2001-07-11 - 0.1.0
+ . Needed a bug tracking system. Looked around. Tried to install many
+   Perl-based systems, to no avail. Got tired of waiting for Roundup to be
+   released. Had just finished major product project, so needed something
+   different for a while. Roundup here I come...
+
+
+2001-07-18 - 0.1.1
+ . Initial version release with consent of Roundup spec author, Ka-Ping Yee:
+   "Amazing!  Nice work.  I'll watch for the source code on your website."
+
+
+2001-07-18 - 0.1.2
+ . Set default index to ?:group=priority&:columns=activity,status,title so
+   the priority column isn't displayed.
+ . Thanks Anthony:
+   . added notes to the README about Python prerequisites
+   . added check to roundup.py, roundup.cgi, server.py and roundup-mailgw.py
+     for python 2+ - and made the file itself parseable by 1.5.2 ;)
+   . python 2.0 didn't have the default args for the time module functions.
+   . better handling of db directory in initDB
+ . Sorting on the extra properties defined by roundupdb classes was broken
+   due to the caching used. May now sort on activity and creation
+   properties, etc.
+ . Set the default index to sort on activity
+
+2001-07-XX - 0.1.3
+ . Reldate now takes an argument "pretty" - when true, it pretty-prints the
+   interval generated up to 5 days, then pretty-prints the date of last
+   activity. The issue index and item now use the pretty format.
+ . Classes list for admin user in CGI interface.
+ . Made the view configuration more accessible, neater and more realistic.
+ . Fixed list view grouping handling grouping by a Multilink or String or Link
+   value of None or Date, ...  (mind you, sorting by Date???)
+ . Fixed bug in the plain formatter when a Link was None.
+ . Fixed ordering of list view column headings.
+ . Fixed list view column heading sort links - and limited the number of
+   columns to sort by to 2.
+ . Added searching by glob to StringType filtering -
+    ^text  - search for text at start of fields
+    text$  - search for text at end of fields
+    ^text$ - exactly match text in fields
+    te*xt  - search for text matching "te"<any characters>"xt"
+    te?xt  - search for text matching "te"<any one character>"xt"
+ . Added more fields to the issue.filter and issue.index templates

@@ -1,0 +1,85 @@
+<table border=0 cellspacing=0 cellpadding=2>
+
+<tr class="strong-header">
+  <td colspan=4>Item Information</td>
+</td>
+
+<tr  bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Title</span></td>
+    <td colspan=3 class="form-text"><display call="field('title', size=80)"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Product</span></td>
+    <td class="form-text" valign=middle><display call="menu('product')">
+    version:<display call="field('version', 5)"></td>
+    <td width=1% nowrap align=right><span class="form-label">Platform</span></td>
+    <td class="form-text" valign=middle><display call="checklist('platform')"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Created</span></td>
+    <td class="form-text"><display call="reldate('creation', pretty=1)">
+        (<display call="plain('creator')">)</td>
+    <td width=1% nowrap align=right><span class="form-label">Last activity</span></td>
+    <td class="form-text"><display call="reldate('activity', pretty=1)"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Priority</span></td>
+    <td class="form-text"><display call="field('priority')"></td>
+    <td width=1% nowrap align=right><span class="form-label">Source</span></td>
+    <td class="form-text"><display call="field('source')"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Status</span></td>
+    <td class="form-text"><display call="menu('status')"></td>
+    <td width=1% nowrap align=right><span class="form-label">Rate</span></td>
+    <td class="form-text"><display call="field('rate')"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
+    <td class="form-text"><display call="field('assignedto')"></td>
+    <td width=1% nowrap align=right><span class="form-label">Customer Name</span></td>
+    <td class="form-text"><display call="field('customername')"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Superseder</span></td>
+    <td class="form-text"><display call="field('superseder', size=40, showid=1)"></td>
+    <td width=1% nowrap align=right><span class="form-label">Nosy List</span></td>
+    <td class="form-text"><display call="field('nosy')"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right><span class="form-label">Change Note</span></td>
+    <td colspan=3 class="form-text"><display call="note()"></td>
+</tr>
+
+<tr bgcolor="ffffea">
+    <td>&nbsp;</td>
+    <td colspan=3 class="form-text"><display call="submit()"></td>
+</tr>
+
+<property name="messages">
+<tr class="strong-header">
+    <td colspan=4><b>Messages</b></td>
+</tr>
+<tr>            
+    <td colspan=4><display call="list('messages')"></td>
+</tr>
+</property>
+
+<property name="files">
+ <tr class="strong-header">
+     <td colspan=4><b>Files</b></td>
+ </tr>
+ <tr>            
+     <td colspan=4><display call="list('files')"></td>
+ </tr>
+</property>
+
+</table>
+

@@ -1,0 +1,218 @@
+                                    Roundup
+                                    =======
+
+
+1. License
+==========
+This software is released under the GNU GPL. The copyright is held by Bizar
+Software Pty Ltd (http://www.bizarsoftware.com.au).
+
+The stylesheet included with this package has been copied from the Zope
+management interface and presumably belongs to Digital Creations.
+
+
+
+2. Installation
+===============
+These instructions work on redhat 6.2 and mandrake 8.0 - with the caveat
+that these systems don't come with python 2.0 or newer installed, so you'll
+have to upgrade python before this stuff will work.
+
+Note that most of the following is configurable in the config.py, it's just
+not documented. At a minimum, you'll want to change the email addresses and
+mail host specification in the config.
+
+
+2.0 Prerequisites
+-----------------
+Either:
+ . Python 2.0 with pydoc installed. See http://www.lfw.org/ for pydoc.
+or
+ . Python 2.1
+
+Both need the bsddb module.
+
+
+2.1 Initial Setup
+-----------------
+ 1. Make a directory in /home/httpd/html called 'roundup'.
+ 2. Copy the tar file's contents there.
+ 3. "python roundup.py init" to initialise the database (by default, it
+    goes in a directory called 'db' in the current directory). Choose a
+    sensible admin password.
+ 4. "chmod -R a+rw db"
+
+
+2.2 Mail
+--------
+Set up a mail alias called "issue_tracker" as:
+  "|/usr/bin/python /home/httpd/html/roundup/roundup-mailgw.py"
+
+In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
+so sendmail will accept the pipe command. In that case, symlink
+/etc/smrsh/python to /usr/bin/python and change the command to:
+  "|python /home/httpd/html/roundup/roundup-mailgw.py"
+
+
+2.3 Web Interface
+-----------------
+This software will work through apache or stand-alone.
+
+Stand-alone:
+ 1. Edit server.py at the bottom to set your hostname and a port that is free.
+ 2. "python server.py"
+ 3. Load up the page "/" using the port number you set.
+
+Apache:
+ 1. Make sure roundup.cgi is executable
+ 2. Edit your /etc/httpd/conf/httpd.conf and make sure that the
+    /home/httpd/html/roundup/roundup.cgi script will be treated as a CGI
+    script.
+ 3. Add the following to your /etc/httpd/conf/httpd.conf:
+snip >>>
+RewriteEngine on
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=HTTP_CGI_AUTHORIZATION:%1,t=application/x-httpd-cgi,l]
+<<< snip
+   note: the RewriteRule must be on one line - no breaks
+ 4. Re-start your apache to re-load the config
+ 5. Load up the page "/roundup/roundup.cgi/"
+
+
+3. Usage
+========
+The system is designed to accessed through the command-line, e-mail or web
+interface.
+
+3.1 Command-line
+----------------
+The command-line tool is called "roundup.py" and is used for most low-level
+database manipulations such as:
+ . redefining the list of products ("create" and "retire" commands)
+ . adding users manually, or setting their passwords ("create" and "set")
+ . other stuff - run it with no arguments to get a better description of
+   what it does.
+
+
+3.2 E-mail
+----------
+See the docstring at the start of the roundup-mailgw.py source file.
+
+
+3.3 Web
+-------
+Hopefully, this interface is pretty self-explanatory...
+
+Index views may be modified by the following arguments:
+    :sort    - sort by prop name, optionally preceeded with '-'
+	     to give descending or nothing for ascending sorting.
+    :group   - group by prop name, optionally preceeded with '-' or
+	     to sort in descending or nothing for ascending order.
+    :filter  - selects which props should be displayed in the filter
+	     section. Default is all.
+    :columns - selects the columns that should be displayed.
+	     Default is all.
+    propname - selects the values the node properties given by propname
+             must have (very basic search/filter).
+
+
+
+3. Design
+=========
+This software was written according to the specification found at
+ http://software-carpentry.codesourcery.com/entries/second-round/track/Roundup/
+
+... with some modifications. I've marked these in the source with 'XXX'
+comments when I remember to.
+
+In short:
+ Class.find() - may match multiple properties, uses keyword args.
+
+ Class.filter() - isn't in the spec and it's very useful to have at the Class
+    level.
+ 
+ CGI interface index view specifier layout part - lose the '+' from the
+    sorting arguments (it's a reserved URL character ;). Just made no
+    prefix mean ascending and '-' prefix descending.
+
+ ItemClass - renamed to IssueClass to better match it only having one
+    hypderdb class "issue". Allowing > 1 hyperdb class breaks the
+    "superseder" multilink (since it can only link to one thing, and we'd
+    want bugs to link to support and vice-versa).
+
+ templates - the call="link()" is handled by special-case mechanisms in my
+    top-level CGI handler. In a nutshell, the handler looks for a method on
+    itself called 'index%s' or 'item%s' where %s is a class. Most items
+    pass on to the templating mechanism, but the file class _always_ does
+    downloading. It'll probably stay this way too...
+
+ template - call="link(property)" may be used to link "the current node"
+    (from an index) - the link text is the property specified.
+
+ template - added functions that I found very useful: List, History and
+    Submit.
+
+ template - items must specify the message lists, history, etc. Having them
+    by default was sometimes not wanted.
+
+ template - index view determines its default columns from the template's
+    <property> tags.
+
+ template - menu() and field() look awfully similar now .... ;)
+
+ roundup.py - the command-line tool has a lot more commands at its disposal
+
+
+4. TODO
+=======
+Most of the TODO items are captured in comments in the code. In summary:
+
+in general:
+  . better error handling (nicer messages for users)
+  . possibly revert the entire damn thing to 1.5.2 ... :(
+hyperdb:
+  . transaction support
+roundupdb:
+  . split the file storage into multiple files
+roundup-mailgw:
+  . errors as attachments
+  . snip signatures?
+server:
+  . check the source file timestamps before reloading
+date:
+  . blue Date.__sub__ needs food, badly
+config
+  . default to blank config in distribution and warn appropriately
+roundup_cgi
+  . searching
+  . keep form fields in form on bad submission - only clear it if all ok
+
+
+
+5. Known Bugs
+=============
+
+http://dirk.adroit/roundup/roundup.cgi/issue?%3Acolumns%3Dactivity%2Cstatus%2Ctitle&%3Asort%3Dtitle%2C-activity&%3Agroup%3Dpriority
+
+date:
+  . date subtraction doesn't work correctly "if the dates cross leap years,
+    phases of the moon, ..."
+
+The software still probably has bugs. Please let me know when you find 'em.
+Patches are nice, but there'll probably be a good chance I've changed the
+code (there's not much to it ;) so a good description will be appreciated
+as well.
+
+
+
+6. Author
+=========
+richard@bizarsoftware.com.au
+
+
+7. Thanks
+=========
+Well, Ping, of course ;)
+
+Anthony Baxter, for some good first-release feedback.
+

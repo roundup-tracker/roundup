@@ -1,0 +1,17 @@
+<tr>
+    <property name="username">
+        <td><display call="link('username')"></td>
+    </property>
+    <property name="realname">
+        <td><display call="plain('realname')"></td>
+    </property>
+    <property name="organisation">
+        <td><display call="plain('organisation')"></td>
+    </property>
+    <property name="address">
+        <td><display call="plain('address')"></td>
+    </property>
+    <property name="phone">
+        <td><display call="plain('phone')"></td>
+    </property>
+</tr>
