@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - handle capitalisation of class names in text hyperlinking (sf bug
   1101043)
+- quote full-text search text in URL generation
 
 
 2005-01-06 0.7.11
