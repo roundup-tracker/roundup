@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: roundupdb.py,v 1.109 2004-07-02 05:22:08 richard Exp $
+#
+# $Id: roundupdb.py,v 1.110 2004-07-02 08:27:56 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -53,8 +53,8 @@ class Database:
         try:
             timezone = int(self.user.get(userid, 'timezone'))
         except (KeyError, ValueError, TypeError):
-            # If there is no class 'user' or current user doesn't have timezone 
-            # property or that property is not numeric assume he/she lives in 
+            # If there is no class 'user' or current user doesn't have timezone
+            # property or that property is not numeric assume he/she lives in
             # Greenwich :)
             timezone = getattr(self.config, 'DEFAULT_TIMEZONE', 0)
         return timezone
@@ -78,13 +78,13 @@ class Database:
 
         # create the new user
         cl = self.user
-      
+
         props['roles'] = self.config.NEW_WEB_USER_ROLES
         userid = cl.create(**props)
         # clear the props from the otk database
         self.getOTKManager().destroy(otk)
         self.commit()
-        
+
         return userid
 
 
@@ -107,6 +107,18 @@ class IssueClass:
     - superseder = hyperdb.Multilink(classname)
     """
 
+    # The tuple below does not affect the class definition.
+    # It just lists all names of all issue properties
+    # marked for message extraction tool.
+    #
+    # XXX is there better way to get property names into message catalog??
+    #
+    # Note that this list also includes properties
+    # defined in the classic template:
+    # assignedto, topic, priority, status.
+    (''"title", ''"messages", ''"files", ''"nosy", ''"superseder",
+        ''"assignedto", ''"topic", ''"priority", ''"status")
+
     # New methods:
     def addmessage(self, nodeid, summary, text):
         """Add a message to an issue's mail spool.
@@ -127,7 +139,7 @@ class IssueClass:
 
         The message is sent only to users on the nosy list who are not
         already on the "recipients" list for the message.
-        
+
         These users are then added to the message's "recipients" list.
 
         If 'msgid' is None, the message gets sent only to the nosy
@@ -144,7 +156,7 @@ class IssueClass:
         """
         authid = self.db.msg.safeget(msgid, 'author')
         recipients = self.db.msg.safeget(msgid, 'recipients', [])
-        
+
         sendto = []
         bcc_sendto = []
         seen_message = {}
@@ -171,14 +183,14 @@ class IssueClass:
             (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
              (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues))):
             add_recipient(authid, sendto)
-        
+
         if authid:
             seen_message[authid] = 1
-        
+
         # now deal with the nosy and cc people who weren't recipients.
         for userid in cc + self.get(nodeid, whichnosy):
             if good_recipient(userid):
-                add_recipient(userid, sendto)        
+                add_recipient(userid, sendto)
 
         # now deal with bcc people.
         for userid in bcc:
@@ -209,7 +221,7 @@ class IssueClass:
         users = self.db.user
         messages = self.db.msg
         files = self.db.file
-       
+
         inreplyto = messages.safeget(msgid, 'inreplyto')
         messageid = messages.safeget(msgid, 'messageid')
 
@@ -351,7 +363,7 @@ class IssueClass:
         '''
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
-        base = self.db.config.TRACKER_WEB 
+        base = self.db.config.TRACKER_WEB
         if (not isinstance(base , type('')) or
             not (base.startswith('http://') or base.startswith('https://'))):
             web = "Configuration Error: TRACKER_WEB isn't a " \
