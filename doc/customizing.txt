@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.21 $
+:Version: $Revision: 1.22 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -286,75 +286,6 @@ instance is attempted.::
     MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
 
-    # Define what index links are available in the header, and what their
-    # labels are. Each key is used to look up one of the index specifications
-    # below - so 'DEFAULT' will use 'DEFAULT_INDEX'.
-    # Where the FILTERSPEC has 'assignedto' with a value of None, it will be
-    # replaced by the id of the logged-in user.
-    HEADER_INDEX_LINKS = ['DEFAULT', 'UNASSIGNED', 'USER']
-
-    # list the classes that users are able to add nodes to
-    HEADER_ADD_LINKS = ['issue']
-
-    # list the classes that users can search
-    HEADER_SEARCH_LINKS = ['issue']
-
-    # list search filters per class
-    SEARCH_FILTERS = ['ISSUE_FILTER', 'SUPPORT_FILTER']
-
-    # Now the DEFAULT display specification. TODO: describe format
-    DEFAULT_INDEX = {
-      'LABEL': 'All Issues',
-      'CLASS': 'issue',
-      'SORT': ['-activity'],
-      'GROUP': ['priority'],
-      'FILTER': ['status'],
-      'COLUMNS': ['id','activity','title','creator','assignedto'],
-      'FILTERSPEC': {
-        'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-      },
-    }
-
-    # The "unsassigned issues" index
-    UNASSIGNED_INDEX = {
-      'LABEL': 'Unassigned Issues',
-      'CLASS': 'issue',
-      'SORT': ['-activity'],
-      'GROUP': ['priority'],
-      'FILTER': ['status', 'assignedto'],
-      'COLUMNS': ['id','activity','title','creator','status'],
-      'FILTERSPEC': {
-        'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-        'assignedto': ['-1'],
-      },
-    }
-
-    # The "my issues" index -- note that the user's id will replace the
-    # 'CURRENT USER' value of the "assignedto" filterspec
-    USER_INDEX = {
-      'LABEL': 'My Issues',
-      'CLASS': 'issue',
-      'SORT': ['-activity'],
-      'GROUP': ['priority'],
-      'FILTER': ['status', 'assignedto'],
-      'COLUMNS': ['id','activity','title','creator','status'],
-      'FILTERSPEC': {
-        'status': ['-1', '1', '2', '3', '4', '5', '6', '7'],
-        'assignedto': 'CURRENT USER',
-      },
-    }
-
-    ISSUE_FILTER = {
-      'CLASS': 'issue',
-      'FILTER': ['status', 'priority', 'assignedto', 'creator']
-    }
-
-    SUPPORT_FILTER = {
-      'CLASS': 'issue',
-      'FILTER': ['status', 'priority', 'assignedto', 'creator']
-    }
-
-
 Instance Schema
 ---------------
 
@@ -405,6 +336,8 @@ defined using Python code. The "classic" schema looks like this::
         topic=Multilink("keyword"), priority=Link("priority"), status=Link
         ("status"))
     issue.setkey('title')
+
+XXX security definitions
 
 Classes and Properties - creating a new information store
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -592,7 +525,7 @@ the access through its main() method. This means that you can do pretty much
 anything you want as a web interface to your instance.
 
 Figuring out what is displayed
-::::::::::::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most customisation of the web view can be done by modifying the templates in
 the instance **html** directory. There are several types of files in there:
@@ -613,13 +546,15 @@ home.classlist
   displays a search page for *classname* items
 _generic.index
   used to display a list of items where there is no *classname*.index available
+_generic.help
+  used to display a "class help" page where there is no *classname*.help
 user.register
   a special page just for the user class that renders the registration page
 style.css
   a static file that is served up as-is
 
 How requests are processed
-::::::::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The basic processing of a web request proceeds as follows:
 
@@ -643,7 +578,7 @@ In some situations, exceptions occur:
   this exception percolates up to the CGI interface that called the client
 
 Determining web context
-:::::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~~~~
 
 To determine the "context" of a request, we look at the URL and the special
 request variable ``:template``. The URL path after the instance identifier
@@ -690,7 +625,7 @@ which defaults to:
 
 
 Performing actions in web requests
-::::::::::::::::::::::::::::::::::
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When a user requests a web page, they may optionally also request for an
 action to take place. As described in `how requests are processed`_, the
@@ -802,14 +737,11 @@ for example.
 How the templates work
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Roundup's templates consist of two core technologies:
+Roundup's templates consist of special attributes on your template tags. These
+attributes form the Template Attribute Language, or TAL. The commands are:
 
-TAL - Template Attribute Language
-  This is the syntax which is woven into the HTML using the ``tal:`` tag
-  attributes. A TAL parser pulls out the TAL commands from the attributes
-  runs them using some expression engine. TAL gives us the following commands:
 
-  tal:define="variable expression; variable expression; ..."
+tal:define="variable expression; variable expression; ..."
    Define a new variable that is local to this tag and its contents. For
    example::
 
@@ -821,7 +753,7 @@ TAL - Template Attribute Language
    expression "request/description". The tal:content command inside the <html>
    tag may then use the "title" variable.
 
-  tal:condition="expression"
+tal:condition="expression"
    Only keep this tag and its contents if the expression is true. For example::
 
      <p tal:condition="python:request.user.hasPermission('View', 'issue')">
@@ -834,7 +766,7 @@ TAL - Template Attribute Language
    values. Nearly every other value is true, including non-zero numbers, and
    strings with anything in them (even spaces!).
 
-  tal:repeat="variable expression"
+tal:repeat="variable expression"
    Repeat this tag and its contents for each element of the sequence that the
    expression returns, defining a new local variable and a special "repeat"
    variable for each element. For example::
@@ -848,7 +780,7 @@ TAL - Template Attribute Language
    The example would iterate over the sequence of users returned by
    "user/list" and define the local variable "u" for each entry.
 
-  tal:replace="expression"
+tal:replace="expression"
    Replace this tag with the result of the expression. For example::
 
     <span tal:replace="request/user/realname"></span>
@@ -857,7 +789,7 @@ TAL - Template Attribute Language
    realname. If the user's realname was "Bruce" then the resultant output
    would be "Bruce".
 
-  tal:content="expression"
+tal:content="expression"
    Replace the contents of this tag with the result of the expression. For
    example::
 
@@ -867,7 +799,7 @@ TAL - Template Attribute Language
    realname. If the user's realname was "Bruce" then the resultant output
    would be "<span>Bruce</span>".
 
-  tal:attributes="attribute expression; attribute expression; ..."
+tal:attributes="attribute expression; attribute expression; ..."
    Set attributes on this tag to the results of expressions. For example::
 
      <a tal:attributes="href string:user${request/user/id}">My Details</a>
@@ -876,7 +808,7 @@ TAL - Template Attribute Language
    the "string:user${request/user/id}" expression, which will be something
    like "user123".
 
-  tal:omit-tag="expression"
+tal:omit-tag="expression"
    Remove this tag (but not its contents) if the expression is true. For
    example::
 
@@ -886,21 +818,19 @@ TAL - Template Attribute Language
 
       Hello, world!
 
-  Note that the commands on a given tag are evaulated in the order above, so
-  *define* comes before *condition*, and so on.
+Note that the commands on a given tag are evaulated in the order above, so
+*define* comes before *condition*, and so on.
 
-  Additionally, a tag is defined, tal:block, which is removed from output. Its
-  content is not, but the tag itself is (so don't go using any tal:attributes
-  commands on it). This is useful for making arbitrary blocks of HTML
-  conditional or repeatable (very handy for repeating multiple table rows,
-  which would othewise require an illegal tag placement to effect the repeat).
+Additionally, a tag is defined, tal:block, which is removed from output. Its
+content is not, but the tag itself is (so don't go using any tal:attributes
+commands on it). This is useful for making arbitrary blocks of HTML
+conditional or repeatable (very handy for repeating multiple table rows,
+which would othewise require an illegal tag placement to effect the repeat).
 
-TALES - TAL Expression Syntax
-  The expression engine used in this case is TALES, which runs the expressions
-  that form the tag attribute values. TALES expressions come in three
-  flavours:
+The expressions you may use in the attibute values may be one of the following
+three forms:
 
-  Path Expressions - eg. ``item/status/checklist``
+Path Expressions - eg. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the path
    ``item/status/checklist`` is broken into parts ``item``, ``status``
    and ``checklist``. The ``item`` part is the root of the expression.
@@ -912,14 +842,15 @@ TALES - TAL Expression Syntax
    they are the default expression type, so it's not necessary.
 
    XXX | components of expressions
+
    XXX "nothing" and "default"
 
-  String Expressions - eg. ``string:hello ${user/name}``
+String Expressions - eg. ``string:hello ${user/name}``
    These expressions are simple string interpolations (though they can be just
    plain strings with no interpolation if you want. The expression in the
    ``${ ... }`` is just a path expression as above.
 
-  Python Expressions - eg. ``python: 1+1``
+Python Expressions - eg. ``python: 1+1``
    These expressions give the full power of Python. All the "root level"
    variables are available, so ``python:item.status.checklist()`` would be
    equivalent to ``item/status/checklist``, assuming that ``checklist`` is
@@ -950,9 +881,13 @@ The following variables are available to templates.
   The current instance
 *db*
   The current database, through which db.config may be reached.
+*nothing*
+  XXX a special variable
+*default*
+  XXX a special variable
 
 The context variable
-::::::::::::::::::
+::::::::::::::::::::
 
 The *context* variable is one of three things based on the current context
 (see `determining web context`_ for how we figure this out):
@@ -990,7 +925,13 @@ user        a HTMLUser instance for this user
 classname   the current classname (possibly None)
 template    the current template (suffix, also possibly None)
 form        the current CGI form variables in a FieldStorage
-**Index  page specific variables (indexing arguments)**
+=========== ================================================================
+
+**Index page specific variables (indexing arguments)**
+
+=========== ================================================================
+Variable    Holds
+=========== ================================================================
 columns     dictionary of the columns to display in an index page
 show        a convenience access to columns - request/show/colname will
               be true if the columns should be displayed, false otherwise
@@ -999,7 +940,7 @@ group       index grouping property (direction, column name)
 filter      properties to filter the index on
 filterspec  values to filter the index on
 search_text text to perform a full-text search on for an index
------------ ----------------------------------------------------------------
+=========== ================================================================
 
 
 Displaying Properties
