@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98 2004-05-06 01:12:22 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.1 2004-05-10 01:27:59 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -979,20 +979,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     
         # make the journalled data marshallable
         if isinstance(params, type({})):
-            properties = self.getclass(classname).getprops()
-            for param, value in params.items():
-                if not value:
-                    continue
-                property = properties[param]
-                cvt = self.hyperdb_to_sql_value[property.__class__]
-                if isinstance(property, Password):
-                    params[param] = cvt(value)
-                elif isinstance(property, Date):
-                    params[param] = cvt(value)
-                elif isinstance(property, Interval):
-                    params[param] = cvt(value)
-                elif isinstance(property, Boolean):
-                    params[param] = cvt(value)
+            self._journal_marshal(params, classname)
 
         params = repr(params)
 
@@ -1011,12 +998,37 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # create the journal entry
         cols = 'nodeid,date,tag,action,params'
 
+        dc = self.hyperdb_to_sql_value[hyperdb.Date]
         for nodeid, journaldate, journaltag, action, params in journal:
             if __debug__:
                 print >>hyperdb.DEBUG, 'setjournal', (nodeid, journaldate,
                     journaltag, action, params)
-            self.save_journal(classname, cols, nodeid, journaldate,
+        
+            # make the journalled data marshallable
+            if isinstance(params, type({})):
+                self._journal_marshal(params, classname)
+            params = repr(params)
+
+            self.save_journal(classname, cols, nodeid, dc(journaldate),
                 journaltag, action, params)
+
+    def _journal_marshal(self, params, classname):
+        '''Convert the journal params values into safely repr'able and
+        eval'able values.'''
+        properties = self.getclass(classname).getprops()
+        for param, value in params.items():
+            if not value:
+                continue
+            property = properties[param]
+            cvt = self.hyperdb_to_sql_value[property.__class__]
+            if isinstance(property, Password):
+                params[param] = cvt(value)
+            elif isinstance(property, Date):
+                params[param] = cvt(value)
+            elif isinstance(property, Interval):
+                params[param] = cvt(value)
+            elif isinstance(property, Boolean):
+                params[param] = cvt(value)
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
