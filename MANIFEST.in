@@ -4,7 +4,7 @@ recursive-include scripts *.* *-*
 recursive-include tools *.*
 recursive-include cgi-bin *.cgi
 recursive-include test *.py *.txt
-recursive-include doc *.html *.png *.txt *.css
+recursive-include doc *.html *.png *.txt *.css *.1
 recursive-exclude roundup *.pyc *.pyo .cvsignore
 recursive-exclude frontends *.pyc *.pyo .cvsignore
 include run_tests *.txt

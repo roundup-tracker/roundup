@@ -48,6 +48,7 @@ are given with the most recent entry first.
   tracker name
 - fixed error in indexargs_url (thanks Patrick Ohly)
 - fixed getnode (sf bug 684531)
+- included UN*X manual pages from Bastian Kleineidam
 
 
 2003-??-?? 0.5.6

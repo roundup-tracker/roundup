@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.41 2002-12-10 00:11:13 richard Exp $
+# $Id: setup.py,v 1.42 2003-02-12 00:24:39 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -156,6 +156,11 @@ if __name__ == '__main__':
     installdatafiles = [
         ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
     ] 
+
+    # install man pages on POSIX platforms
+    if os.name == 'posix':
+        installdatafiles.append(('man/man1', ['doc/roundup-admin.1',
+            'doc/roundup-mailgw.1', 'doc/roundup-server.1']))
 
     # munge the template HTML into the htmlbase module
     buildTemplates()

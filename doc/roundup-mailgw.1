@@ -1,0 +1,46 @@
+.TH ROUNDUP-MAILGW 1 "24 January 2003"
+.SH NAME
+roundup-mailgw \- mail gateway for roundup
+.SH SYNOPSIS
+\fBroundup-mailgw\fP \fI<instance home>\fP [\fImethod\fP]
+.SH DESCRIPTION
+The roundup mail gateway may be called in one of three ways:
+.IP \(bu
+with an instance home as the only argument,
+.IP \(bu
+with both an instance home and a mail spool file, or
+.IP \(bu
+with both an instance home and a pop server account.
+.PP
+\fBPIPE\fP
+.br
+In the first case, the mail gateway reads a single message from the
+standard input and submits the message to the roundup.mailgw module.
+
+\fBUNIX mailbox\fP
+.br
+In the second case, the gateway reads all messages from the mail spool
+file and submits each in turn to the roundup.mailgw module. The file is
+emptied once all messages have been successfully handled. The file is
+specified as:
+ \fImailbox /path/to/mailbox\fP
+
+\fBPOP\fP
+.br
+In the third case, the gateway reads all messages from the POP server
+specified and submits each in turn to the roundup.mailgw module. The
+server is specified as:
+ \fIpop username:password@server\fP
+.br
+The username and password may be omitted:
+ \fIpop username@server\fP
+ \fIpop server\fP
+.br
+are both valid. The username and/or password will be prompted for if
+not supplied on the command-line.
+.SH AUTHOR
+This manpage was written by Bastian Kleineidam
+<calvin@debian.org> for the Debian distribution of roundup.
+
+The main author of roundup is Richard Jones
+<richard@users.sourceforge.net>.

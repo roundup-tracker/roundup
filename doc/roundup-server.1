@@ -1,0 +1,37 @@
+.TH ROUNDUP-SERVER 1 "24 January 2003"
+.SH NAME
+roundup-server \- start roundup server
+.SH SYNOPSIS
+\fBroundup-server\fP [\fIoptions\fP] [\fBname=\fP\fItracker home\fP]*
+.SH OPTIONS
+.TP
+\fB-n\fP \fIhostname\fP
+sets the host name
+.TP
+\fB-p\fP \fIport\fP
+sets the port to listen on
+.TP
+\fB-l\fP \fIfile\fP
+sets a filename to log to (instead of stdout)
+.TP
+\fB-d\fP \fIfile\fP
+daemonize, and write the server's PID to the nominated file
+.TP
+\fB-h\fP
+print help
+.TP
+\fBname=\fP\fItracker home\fP
+Sets the tracker home(s) to use. The name is how the tracker is
+identified in the URL (it's the first part of the URL path). The
+tracker home is the directory that was identified when you did
+"roundup-admin init". You may specify any number of these name=home
+pairs on the command-line. For convenience, you may edit the
+TRACKER_HOMES variable in the roundup-server file instead.
+Make sure the name part doesn't include any url-unsafe characters like
+spaces, as these confuse the cookie handling in browsers like IE.
+.SH AUTHOR
+This manpage was written by Bastian Kleineidam
+<calvin@debian.org> for the Debian distribution of roundup.
+
+The main author of roundup is Richard Jones
+<richard@users.sourceforge.net>.
