@@ -30,10 +30,8 @@ Class.safeget() was removed from the API. Test your item ids before calling
 Class.get() instead.
 
 
-0.8.0 new tracker layout
+0.8.0 New tracker layout
 ------------------------
-
-XXX describe any mandatory changes to tracker layout
 
 The ``config.py`` file has been replaced by ``config.ini``. You may use the
 roundup-admin command "genconfig" to generate a new config file::
@@ -83,36 +81,78 @@ the `what's new in 0.8`__ documentation for more information.
 
 __ whatsnew-0.8.html
 
-0.8.0 8-bit character set support
----------------------------------
 
-Added support for custom encodings in http data.
+0.8.0 Permissions Changes
+-------------------------
 
-Inside Roundup, all strings are stored and processed in utf-8.
-Unfortunately, some older browsers do not work properly with
-utf8-encoded pages (e.g. Netscape Navigator 4 displays wrong
-characters in form fields).  This version allows to change
-the character set for http transfers.  To do so, you may add
-the following code to your ``page.html`` template::
+The creation of a new item in the user interfaces is now controlled by the
+"Create" Permission. You will need to add an assignment of this Permission
+to your users who are allowed to create items. The most common form of this
+is the following in your ``schema.py`` added just under the current
+assignation of the Edit Permission::
 
- <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
-  <a tal:attributes="href python:request.indexargs_href(uri,
-   {'@charset':'utf-8'})">utf-8</a>
-  <a tal:attributes="href python:request.indexargs_href(uri,
-   {'@charset':'koi8-r'})">koi8-r</a>
- </tal:block>
+    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
+        p = db.security.getPermission('Create', cl)
+        db.security.addPermissionToRole('User', p)
 
-(substitute ``koi8-r`` with appropriate charset for your language).
-Charset preference is kept in the browser cookie ``roundup_charset``.
+You will need to explicitly let anonymous users access the web interface so
+that regular users are able to see the login form. Note that almost all
+trackers will need this Permission. The only situation where it's not
+required is in a tracker that uses an HTTP Basic Authenticated front-end.
+It's enabled by adding to your ``schema.py``::
 
-Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
-should be changed to include actual character set name::
+    p = db.security.getPermission('Web Access')
+    db.security.addPermissionToRole('Anonymous', p)
 
- <meta http-equiv="Content-Type"
-  tal:attributes="content string:text/html;; charset=${request/client/charset}"
- />
+Finally, you will need to enable permission for your users to edit their
+own details by adding the following to ``schema.py``::
 
-Actual charset is also sent in the http header.
+    # Users should be able to edit their own details. Note that this
+    # permission is limited to only the situation where the Viewed or
+    # Edited item is their own.
+    def own_record(db, userid, itemid):
+        '''Determine whether the userid matches the item being accessed.'''
+        return userid == itemid
+    p = db.security.addPermission(name='View', klass='user', check=own_record,
+        description="User is allowed to view their own user details")
+    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+        description="User is allowed to edit their own user details")
+    db.security.addPermissionToRole('User', p)
+
+
+0.8.0 Use of TemplatingUtils
+----------------------------
+
+If you used custom python functions in TemplatingUtils, they need to 
+be moved from interfaces.py to a new file in the ``extensions`` directory. 
+Each Function that should be available through TAL needs to be defined
+as a toplevel function in the newly created file. Furthermore you
+add an inititialization function, that registers the functions with the 
+tracker.
+
+If you find this too tedious, donfu wrote an automatic init function that
+takes an existing TemplatingUtils class, and registers all class methods
+that do not start with an underscore. The following hack should be placed
+in the ``extensions`` directory alongside other extensions::
+
+    class TemplatingUtils:
+         # copy from interfaces.py
+
+    def init(tracker):
+         util = TemplatingUtils()
+
+         def setClient(tu):
+             util.client = tu.client
+             return util
+
+         def execUtil(name):
+             return lambda tu, *args, **kwargs: \
+                     getattr(setClient(tu), name)(*args, **kwargs)
+
+         for name in dir(util):
+             if callable(getattr(util, name)) and not name.startswith('_'):
+                  tracker.registerUtil(name, execUtil(name))
+
 
 0.8.0 Logging Configuration
 ---------------------------
