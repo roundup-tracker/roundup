@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.104 2002-02-20 05:45:17 richard Exp $
+# $Id: cgi_client.py,v 1.105 2002-02-20 05:52:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -314,7 +314,9 @@ function submit_once() {
         w = self.write
         cn = self.classname
         cl = self.db.classes[cn]
-        props = ['id'] + cl.getprops(protected=0).keys()
+        idlessprops = cl.getprops(protected=0).keys()
+        props = ['id'] + idlessprops
+
 
         # get the CSV module
         try:
@@ -328,9 +330,10 @@ function submit_once() {
         if self.form.has_key('rows'):
             rows = self.form['rows'].value.splitlines()
             p = csv.parser()
-            idlessprops = props[1:]
             found = {}
+            line = 0
             for row in rows:
+                line += 1
                 values = p.parse(row)
                 # not a complete row, keep going
                 if not values: continue
@@ -338,6 +341,11 @@ function submit_once() {
                 # extract the nodeid
                 nodeid, values = values[0], values[1:]
                 found[nodeid] = 1
+
+                # confirm correct weight
+                if len(idlessprops) != len(values):
+                    w(_('Not enough values on line %(line)s'%{'line':line}))
+                    return
 
                 # extract the new values
                 d = {}
@@ -358,7 +366,10 @@ function submit_once() {
                     cl.retire(nodeid)
 
         w(_('''<p class="form-help">You may edit the contents of the
-        "%(classname)s" class using this form.</p>
+        "%(classname)s" class using this form. The lines are full-featured
+        Comma-Separated-Value lines, so you may include commas and even
+        newlines by enclosing the values in double-quotes ("). Double
+        quotes themselves must be quoted by doubling ("").</p>
         <p class="form-help">Remove entries by deleting their line. Add
         new entries by appending
         them to the table - put an X in the id column.</p>''')%{'classname':cn})
@@ -1288,6 +1299,10 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.104  2002/02/20 05:45:17  richard
+# Use the csv module for generating the form entry so it's correct.
+# [also noted the sf.net feature request id in the change log]
+#
 # Revision 1.103  2002/02/20 05:05:28  richard
 #  . Added simple editing for classes that don't define a templated interface.
 #    - access using the admin "class list" interface
