@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.105 2004-06-09 05:13:14 richard Exp $
+# $Id: rdbms_common.py,v 1.106 2004-06-09 06:13:52 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1148,8 +1148,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def pack(self, pack_before):
         ''' Delete all journal entries except "create" before 'pack_before'.
         '''
-        # get a 'yyyymmddhhmmss' version of the date
-        date_stamp = pack_before.serialise()
+        date_stamp = self.hyperdb_to_sql_value[Date](pack_before)
 
         # do the delete
         for classname in self.classes.keys():

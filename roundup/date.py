@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: date.py,v 1.72 2004-06-08 05:37:36 richard Exp $
+# $Id: date.py,v 1.73 2004-06-09 06:13:52 richard Exp $
 
 """Date, time and time interval handling.
 """
@@ -662,7 +662,7 @@ class Interval:
             s = self.ngettext("%(number)s year", "%(number)s years",
                 self.year) % {'number': self.year}
         elif self.month or self.day > 28:
-            _months = int(((self.month * 30) + self.day) / 30)
+            _months = max(1, int(((self.month * 30) + self.day) / 30))
             s = self.ngettext("%(number)s month", "%(number)s months",
                 _months) % {'number': _months}
         elif self.day > 7:
@@ -689,7 +689,7 @@ class Interval:
                 s = self._('1 1/2 hours')
             else:
                 s = self.ngettext('1 %(number)s/4 hours',
-                    '1 %(number)s/4 hours', _quarters) % {'number': _quarters}
+                    '1 %(number)s/4 hours', _quarters)%{'number': _quarters}
         elif self.minute < 1:
             if self.sign > 0:
                 return self._('in a moment')
@@ -705,7 +705,7 @@ class Interval:
         elif _quarters == 2:
             s = self._('1/2 an hour')
         else:
-            s = self.ngettext('%(number)s/4 hours', '%(number)s/4 hours',
+            s = self.ngettext('%(number)s/4 hour', '%(number)s/4 hours',
                 _quarters) % {'number': _quarters}
         # XXX this is internationally broken
         if self.sign < 0:
