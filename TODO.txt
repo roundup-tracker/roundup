@@ -9,11 +9,12 @@ Required:
   postgresql.txt)
 - fix documentation referring to customisation using interfaces.py
 - fix admin_guide referring to structure of trackers
-- add config.ini section descriptions
+- add config.ini section descriptions - DONE?
 - review use of hasPermission etc. in classic template
 - how to override Client class methods like determine_user?
 - clean up roundup.cgi
-- include demo.py and the test system in the binary distributions
+- include demo.py in the binary distributions
+- migrate minimal template to new layout
 
 Optionally:
 - have rdbms backends look up the journal for actor if it's not set
@@ -23,3 +24,4 @@ Optionally:
 - refactor backends to have a common Database class that manages them all,
   allowing different Class implementations from differen backends in the
   one tracker
+- include the test system in the binary distributions
