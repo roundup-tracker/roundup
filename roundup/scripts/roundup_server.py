@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.15 2002-11-05 22:59:46 richard Exp $
+$Id: roundup_server.py,v 1.16 2002-11-28 06:55:57 richard Exp $
 """
 
 # python version check
@@ -309,7 +309,10 @@ def run():
 
     httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
     print _('Roundup server started on %(address)s')%locals()
-    httpd.serve_forever()
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print 'Keyboard Interrupt: exiting'
 
 if __name__ == '__main__':
     run()
