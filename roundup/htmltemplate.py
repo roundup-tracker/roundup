@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.97 2002-07-09 05:20:09 richard Exp $
+# $Id: htmltemplate.py,v 1.98 2002-07-10 00:17:46 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -480,9 +480,11 @@ class TemplateFunctions:
         return self.do_link(property, is_download=1)
 
 
-    def do_checklist(self, property, **args):
+    def do_checklist(self, property, sortby=None):
         ''' for a Link or Multilink property, display checkboxes for the
             available choices to permit filtering
+
+            sort the checklist by the argument (+/- property name)
         '''
         propclass = self.properties[property]
         if (not isinstance(propclass, hyperdb.Link) and not
@@ -507,8 +509,32 @@ class TemplateFunctions:
         linkcl = self.db.classes[propclass.classname]
         l = []
         k = linkcl.labelprop(1)
+
+        # build list of options and then sort it, either
+        # by id + label or <sortby>-value + label;
+        # a minus reverses the sort order, while + or no
+        # prefix sort in increasing order
+        reversed = 0
+        if sortby:
+            if sortby[0] == '-':
+                reversed = 1
+                sortby = sortby[1:]
+            elif sortby[0] == '+':
+                sortby = sortby[1:]
+        options = []
         for optionid in linkcl.list():
+            if sortby:
+                sortval = linkcl.get(optionid, sortby)
+            else:
+                sortval = int(optionid)
             option = cgi.escape(str(linkcl.get(optionid, k)))
+            options.append((sortval, option, optionid))
+        options.sort()
+        if reversed:
+            options.reverse()
+
+        # build checkboxes
+        for sortval, option, optionid in options:
             if optionid in value or option in value:
                 checked = 'checked'
             else:
@@ -742,8 +768,6 @@ class TemplateFunctions:
         return '<a href="javascript:help_window(\'classhelp?classname=%s&' \
             'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(classname,
             properties, width, height, label)
-        #return '<a href="classhelp?classname=%s&properties=%s" target="classhelp"><b>(%s)</b></a>'%(classname,
-        #    properties, label)
 
     def do_email(self, property, escape=0):
         '''display the property as one or more "fudged" email addrs
@@ -1266,6 +1290,10 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.97  2002/07/09 05:20:09  richard
+#  . added email display function - mangles email addrs so they're not so easily
+#    scraped from the web
+#
 # Revision 1.96  2002/07/09 04:19:09  richard
 # Added reindex command to roundup-admin.
 # Fixed reindex on first access.
