@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.9 2001-07-29 08:27:40 richard Exp $
+# $Id: htmltemplate.py,v 1.10 2001-07-29 09:28:23 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -394,14 +394,12 @@ def sortby(sort_name, columns, filter, sort, group, filterspec):
     for name in sort:
         dir = name[0]
         if dir == '-':
-            dir = ''
-        else:
             name = name[1:]
         if sort_name == name:
-            if dir == '':
-                s_dir = '-'
-            elif dir == '-':
+            if dir == '-':
                 s_dir = ''
+            else:
+                s_dir = '-'
         else:
             m.append(dir+urllib.quote(name))
     m.insert(0, s_dir+urllib.quote(sort_name))
@@ -709,6 +707,10 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/07/29 08:27:40  richard
+# Fixed handling of passed-in values in form elements (ie. during a
+# drill-down)
+#
 # Revision 1.8  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #
