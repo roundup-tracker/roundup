@@ -73,11 +73,11 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.87 2002-09-11 01:19:16 richard Exp $
+$Id: mailgw.py,v 1.88 2002-09-20 23:20:57 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
-import time, random
+import time, random, sys
 import traceback, MimeWriter
 import hyperdb, date, password
 
