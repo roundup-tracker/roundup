@@ -671,7 +671,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         Also sneak in the lastactivity and action hidden elements.
         """
         return self.input(type="hidden", name="@lastactivity",
-            value=self.activity) + '\n' + \
+            value=self.activity.local(0)) + '\n' + \
             self.input(type="hidden", name="@action", value="edit") + '\n' + \
             self.input(type="submit", name="submit", value=label)
 
@@ -1269,6 +1269,12 @@ class BooleanHTMLProperty(HTMLProperty):
         return s
 
 class DateHTMLProperty(HTMLProperty):
+    def __init__(self, client, classname, nodeid, prop, name, value,
+            anonymous=0, offset=None):
+        HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
+                value, anonymous=anonymous)
+        self._offset = offset
+
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
@@ -1276,7 +1282,11 @@ class DateHTMLProperty(HTMLProperty):
 
         if self._value is None:
             return ''
-        return str(self._value.local(self._db.getUserTimezone()))
+        if self._offset is None:
+            offset = self._db.getUserTimezone()
+        else:
+            offset = self._offset
+        return str(self._value.local(offset))
 
     def now(self):
         ''' Return the current time.
@@ -1346,7 +1356,7 @@ class DateHTMLProperty(HTMLProperty):
         self.view_check()
 
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
-            self._prop, self._formname, self._value.local(offset))
+            self._prop, self._formname, self._value, offset=offset)
 
 class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
