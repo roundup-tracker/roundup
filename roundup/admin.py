@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.31 2002-09-18 05:07:47 richard Exp $
+# $Id: admin.py,v 1.32 2002-09-24 01:36:04 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -931,8 +931,8 @@ Command help:
                 # do the import and figure the current highest nodeid
                 maxid = max(maxid, int(cl.import_list(propnames, l)))
 
-            print 'setting', classname, maxid
-            self.db.setid(classname, str(maxid))
+            print 'setting', classname, maxid+1
+            self.db.setid(classname, str(maxid+1))
         return 0
 
     def do_pack(self, args):
