@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.67 2004-05-16 09:23:18 a1s Exp $
+# $Id: setup.py,v 1.68 2004-05-18 19:46:35 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -131,9 +131,9 @@ def scriptname(path):
 
 ### Build Roundup
 
-def list_po_files():
+def list_message_files(suffix=".mo"):
     """Return list of all found message files and their intallation paths"""
-    _files = glob("locale/*.po")
+    _files = glob("locale/*" + suffix)
     _list = []
     for _file in _files:
         # basename (without extension) is a locale name
@@ -166,41 +166,16 @@ def check_manifest():
 
 class build_roundup(build):
 
-    user_options = build.user_options + [
-        ("python-tools=", "p", "Python tools directory"),
-    ]
-
-    def initialize_options (self):
-        build.initialize_options(self)
-        self.python_tools = None
-
-    def finalize_options (self):
-        build.finalize_options(self)
-        if self.python_tools is None:
-            if sys.platform == "win32":
-                _share = sys.prefix
-            else:
-                _share = os.path.join(sys.prefix, "share",
-                    "python%i.%i" % sys.version_info[:2])
-            self.python_tools = os.path.join(_share, "Tools")
-
-    def compile_po_files(self):
-        """Compile all .po files in locale directory"""
-        # import message formatter
-        sys.path.insert(0, os.path.join(self.python_tools, "i18n"))
-        import msgfmt
-        # compile messages
-        for (_po, _mo) in list_po_files():
-            _mo = os.path.join("build", _mo)
-            _dir = os.path.dirname(_mo)
-            if not os.path.isdir(_dir):
-                os.makedirs(_dir)
-            self.announce("Compiling messages in %r => %r" % (_po, _mo))
-            msgfmt.make(_po, _mo)
+    def build_message_files(self):
+        """Copy all .mo files to their locale directories"""
+        for (_src, _dst) in list_message_files():
+            _build_dst = os.path.join("build", _dst)
+            self.mkpath(os.path.dirname(_build_dst))
+            self.copy_file(_src, _build_dst)
 
     def run(self):
         check_manifest()
-        self.compile_po_files()
+        self.build_message_files()
         build.run(self)
 
 #############################################################################
@@ -249,8 +224,7 @@ def main():
             )
 
     # add message files
-    _po_files = list_po_files()
-    for (_po_file, _mo_file) in list_po_files():
+    for (_dist_file, _mo_file) in list_message_files():
         installdatafiles.append((os.path.dirname(_mo_file),
             [os.path.join("build", _mo_file)]))
 
