@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
-# 
-# $Id: demo.py,v 1.14 2004-07-27 02:34:14 richard Exp $
+#
+# $Id: demo.py,v 1.15 2004-07-27 11:36:01 a1s Exp $
 
 import sys, os, string, re, urlparse, ConfigParser
 import shutil, socket, errno, BaseHTTPServer
@@ -12,7 +12,7 @@ def install_demo(home, backend):
     from roundup import init, instance, password, backends, configuration
 
     # set up the config for this tracker
-    config = configuration.Config()
+    config = configuration.CoreConfig()
     config['TRACKER_HOME'] = home
     config['MAIL_DOMAIN'] = 'localhost'
     config['DATABASE'] = 'db'
@@ -107,4 +107,4 @@ def run_demo():
 if __name__ == '__main__':
     run_demo()
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
