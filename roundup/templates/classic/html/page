@@ -10,7 +10,7 @@
 </head>
 <body class="body" marginwidth="0" marginheight="0">
 
-<table border=0 cellspacing=0 cellpadding=0>
+<table class="body">
 
 <tr>
  <td class="page-header-left">&nbsp;</td>

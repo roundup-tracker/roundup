@@ -51,6 +51,7 @@ pending web: rewritten documentation (can come after the beta though so stuff
              is settled) ... including relevant file names in customisation doc
 pending admin: have roundup-admin "set" command be applicable to all items
                in a class
+pending dist: include the HTML in docs
 
 bug: request.url is incorrect in cgi-bin environments
 bug: query editing not translated to new templating

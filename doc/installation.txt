@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.20 $
+:Version: $Revision: 1.21 $
 
 .. contents::
 
@@ -180,6 +180,10 @@ My group now looks like this::
 
      support:*:1002:jblaine,samh,geezer,mail,apache
 
+The instance "db" directory should be chmod'ed g+sw so that the group can
+write to the database, and any new files created in the database will be owned
+by the group.
+
 An alternative to the above is to create a new user who has the sole
 responsibility of running roundup. This user:
 
@@ -188,7 +192,6 @@ responsibility of running roundup. This user:
 3. runs regular checks (using cron) to ensure the daemon is up
 4. optionally has no login password so that nobody but the "root" user
    may actually login and play with the roundup setup.
-
 
 Internet Setup
 ~~~~~~~~~~~~~~

@@ -1,5 +1,5 @@
 /* main page styles */
-.body {
+body.body {
   font-family: sans-serif, Arial, Helvetica;
   color: #333333;
 }
@@ -7,12 +7,19 @@ a:hover { text-decoration: underline; }
 a:link { text-decoration: none; }
 a { text-decoration: none; }
 
-.page-header-left {
+table.body {
+  border: 0;
+  padding: 0;
+  border-spacing: 0px;
+  border-collapse: separate;
+}
+
+td.page-header-left {
   background-color: #cccc88;
   padding: 5px;
 }
 
-.page-header-top {
+td.page-header-top {
   background-color: #cccc88;
   border-bottom: 1px solid #dddd99;
   padding: 5px;
@@ -81,14 +88,17 @@ table.form td.optional {
   font-weight: bold;
   font-style: italic;
   color: #333333;
+  empty-cells: show;
 }
 
 table.form td {
   color: #333333;
+  empty-cells: show;
 }
 
 table.form td.html {
   color: #777777;
+  empty-cells: show;
 }
 
 /* style for lists */
@@ -124,20 +134,24 @@ table.list td {
 }
 
 table.list td.normal {
+  empty-cells: show;
 }
 
 table.list td.alt {
   background-color: #efefef;
+  empty-cells: show;
 }
 
 table.list td:first-child {
   border-left: 1px solid #404070;
   border-right: 1px solid #404070;
+  empty-cells: show;
 }
 
 table.list th:first-child {
   border-left: 1px solid #404070;
   border-right: 1px solid #404070;
+  empty-cells: show;
 }
 
 
@@ -168,6 +182,7 @@ table.messages td {
   border-top: 1px solid #afafaf;
   border-bottom: 1px solid #afafaf;
   color: black;
+  empty-cells: show;
 }
 
 /* style for file displays */
@@ -193,6 +208,7 @@ table.files th {
 
 table.files td {
   font-family: monospace;
+  empty-cells: show;
 }
 
 /* style for history displays */
@@ -221,6 +237,7 @@ table.history th {
 table.history td {
   font-size: 90%;
   vertical-align: top;
+  empty-cells: show;
 }
 
 /* style for "other" displays */
@@ -264,4 +281,27 @@ table.classlist th {
   font-weight: bold;
   text-align: left;
 }
+
+
+/* style for class help display */
+table.classhelp {
+  border-spacing: 0px;
+  border-collapse: separate;
+  width: 100%;
+}
+
+table.classhelp th {
+  font-weight: bold;
+  text-align: left;
+  color: #707040;
+}
+
+table.classhelp td {
+  padding: 2 2 2 2;
+  border: 1px solid black;
+  text-align: left;
+  vertical-align: top;
+  empty-cells: show;
+}
+
 

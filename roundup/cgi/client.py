@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.22 2002-09-09 03:20:09 richard Exp $
+# $Id: client.py,v 1.23 2002-09-09 04:43:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -13,7 +13,7 @@ from roundup.i18n import _
 from roundup.cgi.templating import getTemplate, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
 
-from PageTemplates import PageTemplate
+from roundup.cgi.PageTemplates import PageTemplate
 
 class Unauthorised(ValueError):
     pass
@@ -284,7 +284,6 @@ class Client:
         # see if we have a template override
         if self.form.has_key(':template'):
             self.template = self.form[':template'].value
-
 
         # see if we were passed in a message
         if self.form.has_key(':ok_message'):

@@ -2,6 +2,7 @@
 <form method="POST" onSubmit="return submit_once()"
       enctype="multipart/form-data">
 
+<input type="hidden" name=":template" value="item">
 <input type="hidden" name=":required" value="title">
 
 <table class="form">
@@ -35,9 +36,7 @@
 
 <tr>
  <th nowrap>Assigned To</th>
- <td tal:content="structure context/assignedto/menu">
-  assignedto menu
- </td>
+ <td tal:content="structure context/assignedto/menu">assignedto menu</td>
  <td>&nbsp;</td>
  <td>&nbsp;</td>
 </tr>
@@ -68,14 +67,16 @@ changed <b>${context/activity}</b>.">activity info</span>
 
 <tal:block tal:condition="context/id">
  <table class="messages" tal:condition="context/messages">
-  <tr><th colspan=2 class="header">Messages</th></tr>
+  <tr><th colspan=3 class="header">Messages</th></tr>
   <tal:block tal:repeat="msg context/messages/reverse">
    <tr>
+    <th><a tal:attributes="href string:msg${msg/id}"
+           tal:content="string:msg${msg/id}"></a></th>
     <th tal:content="string:Author: ${msg/author}">author</th>
     <th tal:content="string:Date: ${msg/date}">date</th>
    </tr>
    <tr>
-    <td colspan="2"><pre tal:content="msg/content">content</pre></td>
+    <td colspan="3"><pre tal:content="msg/content">content</pre></td>
    </tr>
   </tal:block>
  </table>
