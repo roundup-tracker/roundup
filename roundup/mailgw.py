@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.48 2002-01-08 04:12:05 richard Exp $
+$Id: mailgw.py,v 1.49 2002-01-10 06:19:18 richard Exp $
 '''
 
 
@@ -693,21 +693,42 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         if not section:
             continue
         lines = eol.split(section)
-        if lines[0] and lines[0][0] in '>|':
-            continue
-        if len(lines) > 1 and lines[1] and lines[1][0] in '>|':
-            continue
+        if (lines[0] and lines[0][0] in '>|') or (len(lines) > 1 and
+                lines[1] and lines[1][0] in '>|'):
+            # see if there's a response somewhere inside this section (ie.
+            # no blank line between quoted message and response)
+            for line in lines[1:]:
+                if line[0] not in '>|':
+                    break
+            else:
+                # TODO: people who want to keep quoted bits will want the
+                # next line...
+                # l.append(section)
+                continue
+            # keep this section - it has reponse stuff in it
+            if not summary:
+                # and while we're at it, use the first non-quoted bit as
+                # our summary
+                summary = line
+            lines = lines[lines.index(line):]
+            section = '\n'.join(lines)
+
         if not summary:
+            # if we don't have our summary yet use the first line of this
+            # section
             summary = lines[0]
-            l.append(section)
-            continue
-        if signature.match(lines[0]):
+        elif signature.match(lines[0]):
             break
+
+        # and add the section to the output
         l.append(section)
     return summary, '\n\n'.join(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.48  2002/01/08 04:12:05  richard
+# Changed message-id format to "<%s.%s.%s%s@%s>" so it complies with RFC822
+#
 # Revision 1.47  2002/01/02 02:32:38  richard
 # ANONYMOUS_ACCESS -> ANONYMOUS_REGISTER
 #
