@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.18 2001-11-06 22:10:11 jhermann Exp $
+# $Id: roundup.cgi,v 1.19 2001-11-22 00:25:10 richard Exp $
 
 # python version check
 import sys
@@ -154,7 +154,7 @@ def main(out, err):
         request.send_response(200)
         request.send_header('Content-Type', 'text/html')
         request.end_headers()
-        w = request.wfile.write
+        w = request.write
         w('<html><head><title>Roundup instances index</title></head>\n')
         w('<body><h1>Roundup instances index</h1><ol>\n')
         homes = ROUNDUP_INSTANCE_HOMES.keys()
@@ -170,6 +170,11 @@ def main(out, err):
 #
 out, err = sys.stdout, sys.stderr
 try:
+    # force input/output to binary (important for file up/downloads)
+    if sys.platform == "win32":
+        import os, msvcrt
+        msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     checkconfig()
     sys.stdout = sys.stderr = LOG
     main(out, err)
@@ -185,6 +190,9 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/11/06 22:10:11  jhermann
+# Added env config; fixed request wrapper & index list; sort list by key
+#
 # Revision 1.17  2001/11/06 21:51:19  richard
 # Fixed HTTP headers for top-level index in CGI script
 #

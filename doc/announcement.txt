@@ -1,7 +1,7 @@
             Roundup 0.3.0 - an issue tracking system
 
 This release contains several new features which will require migration, so
-we're releasing this preview for the bleeding-edge users.
+please read MIGRATION.txt!
 
 Big stuff in this release:
   - lots of bug fixes, thanks to all users for their great feedback!
