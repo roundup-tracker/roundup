@@ -1,4 +1,4 @@
-# $Id: test_dates.py,v 1.3 2001-07-29 07:01:39 richard Exp $ 
+# $Id: test_dates.py,v 1.4 2001-07-29 23:32:13 richard Exp $ 
 
 import unittest, time
 
@@ -55,7 +55,7 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval('3y')), '+ 3y')
         ae(str(Interval('2 y 1 m')), '+ 2y 1m')
         ae(str(Interval('1m 25d')), '+ 1m 25d')
-        ae(str(Interval('-2w 3 d ')), '- 1 7d')
+        ae(str(Interval('-2w 3 d ')), '- 17d')
         ae(str(Interval(' - 1 d 2:50 ')), '- 1d 2:50')
         ae(str(Interval(' 14:00 ')), '+ 14:00')
         ae(str(Interval(' 0:04:33 ')), '+ 0:04:33')
@@ -66,6 +66,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 # Revision 1.2  2001/07/29 06:42:20  richard
 # Added Interval tests.
 #
