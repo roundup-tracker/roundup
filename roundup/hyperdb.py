@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.79 2002-07-29 23:30:14 richard Exp $
+# $Id: hyperdb.py,v 1.80 2002-08-16 04:28:13 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -416,6 +416,11 @@ class Class:
         """
         raise NotImplementedError
 
+    def is_retired(self, nodeid):
+        '''Return true if the node is rerired
+        '''
+        raise NotImplementedError
+
     def destroy(self, nodeid):
         """Destroy a node.
         
@@ -604,6 +609,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.79  2002/07/29 23:30:14  richard
+# documentation reorg post-new-security
+#
 # Revision 1.78  2002/07/21 03:26:37  richard
 # Gordon, does this help?
 #

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.58 2002-08-01 15:06:24 gmcm Exp $
+#$Id: back_anydbm.py,v 1.59 2002-08-16 04:28:13 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1162,6 +1162,14 @@ class Class(hyperdb.Class):
 
         self.fireReactors('retire', nodeid, None)
 
+    def is_retired(self, nodeid):
+        '''Return true if the node is retired.
+        '''
+        node = self.db.getnode(cn, nodeid, cldb)
+        if node.has_key(self.db.RETIRED_FLAG):
+            return 1
+        return 0
+
     def destroy(self, nodeid):
         """Destroy a node.
         
@@ -1795,6 +1803,12 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.58  2002/08/01 15:06:24  gmcm
+#Use same regex to split search terms as used to index text.
+#Fix to back_metakit for not changing journaltag on reopen.
+#Fix htmltemplate's do_link so [No <whatever>] strings are href'd.
+#Fix bogus "nosy edited ok" msg - the **d syntax does NOT share d between caller and callee.
+#
 #Revision 1.57  2002/07/31 23:57:36  richard
 # . web forms may now unset Link values (like assignedto)
 #
