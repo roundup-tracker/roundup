@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: instance.py,v 1.26 2004-10-29 14:01:24 a1s Exp $
+# $Id: instance.py,v 1.27 2004-11-02 10:00:36 a1s Exp $
 
 '''Tracker handling (open tracker).
 
@@ -26,19 +26,32 @@ __docformat__ = 'restructuredtext'
 import os
 from roundup import configuration, mailgw, rlog
 from roundup import hyperdb, backends
-from roundup.cgi import client
+from roundup.cgi import client, templating
 
 class Vars:
     def __init__(self, vars):
         self.__dict__.update(vars)
 
 class Tracker:
-    def __init__(self, tracker_home):
+    def __init__(self, tracker_home, optimize=0):
+        """New-style tracker instance constructor
+
+        Parameters:
+            tracker_home:
+                tracker home directory
+            optimize:
+                if set, precompile html templates
+
+        """
         self.tracker_home = tracker_home
+        self.optimize = optimize
         self.config = configuration.CoreConfig(tracker_home)
         self.cgi_actions = {}
         self.templating_utils = {}
         self.load_interfaces()
+        self.templates = templating.Templates(self.config["TEMPLATES"])
+        if self.optimize:
+            self.templates.precompileTemplates()
 
     def get_backend_name(self):
         o = __builtins__['open']
@@ -129,11 +142,18 @@ class OldStyleTrackers:
         self.number = 0
         self.trackers = {}
 
-    def open(self, tracker_home):
-        ''' Open the tracker.
+    def open(self, tracker_home, optimize=0):
+        """Open the tracker.
 
-            Raise ValueError if the tracker home doesn't exist.
-        '''
+        Parameters:
+            tracker_home:
+                tracker home directory
+            optimize:
+                if set, precompile html templates
+
+        Raise ValueError if the tracker home doesn't exist.
+
+        """
         import imp
         # sanity check existence of tracker home
         if not os.path.exists(tracker_home):
@@ -167,14 +187,19 @@ class OldStyleTrackers:
         #   What would be the upgrade plan for existing trackers?
         tracker.dbinit.config = tracker.config
 
+        tracker.optimize = optimize
+        tracker.templates = templating.Templates(tracker.config["TEMPLATES"])
+        if optimize:
+            tracker.templates.precompileTemplates()
+
         return tracker
 
 OldStyleTrackers = OldStyleTrackers()
-def open(tracker_home):
+def open(tracker_home, optimize=0):
     if os.path.exists(os.path.join(tracker_home, 'dbinit.py')):
         # user should upgrade...
-        return OldStyleTrackers.open(tracker_home)
+        return OldStyleTrackers.open(tracker_home, optimize=optimize)
 
-    return Tracker(tracker_home)
+    return Tracker(tracker_home, optimize=optimize)
 
 # vim: set filetype=python sts=4 sw=4 et si :
