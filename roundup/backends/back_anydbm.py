@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.20 2004-11-11 06:09:43 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.21 2004-11-23 23:56:08 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2043,6 +2043,11 @@ class Class(hyperdb.Class):
                 date = date.get_tuple()
                 if action == 'set':
                     for propname, value in params.items():
+                        if not properties.has_key(propname):
+                            # property no longer in the schema
+                            del params[propname]
+                            continue
+
                         prop = properties[propname]
                         # make sure the params are eval()'able
                         if value is None:
