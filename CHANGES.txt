@@ -5,6 +5,7 @@ are given with the most recent entry first.
 - highlight rows in groups of three
 - metakit cleanups
 - nicer "navigation" style in index views
+- handle missing Link values in anydbm backend set() operation
 
 
 2002-10-02 0.5.0
