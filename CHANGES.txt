@@ -64,6 +64,7 @@ Fixed:
    wasn't necessary (font specs, styles never used) and added a style for 
    message content
  . build htmlbase if tests are run using CVS checkout
+ . #565979 ] code error in hyperdb.Class.find
 
 2002-03-25 - 0.4.1
 Feature:
