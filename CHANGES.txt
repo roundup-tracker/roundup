@@ -17,6 +17,9 @@ Fixed:
  . Notes entered during a change are saved to the messages list even if
    there's no nosy list. No message is generated if there's no nosy list and
    there's no change note (since it would just duplicates the journal).
+ . Completely removed the bsddb3 module from the tests - will be reinstated
+   when the http://bsddb.sourceforge.net/'s bugs #439959 and #456408 are
+   dealt with. One is fixed in CVS, the other pending.
 
 
 2001-08-08 - 0.2.6

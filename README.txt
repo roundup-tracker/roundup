@@ -97,7 +97,6 @@ roundup-server:
   . check the source file timestamps before reloading
 cgi_client
   . keep form fields in form on bad submission - only clear it if all ok
-  . change notes should be handled using an auditor
 
 
 5. Known Bugs
@@ -107,9 +106,7 @@ date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
 cgi:
-  . setting an issue to resolved, and no other changes, results in a change
-    message with no indication of what changed
-  . enabling a filter disables the current filter hidden fields...
+  . enabling a filter disables the current filter hidden fields.
 
 
 6. Author

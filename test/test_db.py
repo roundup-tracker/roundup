@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.6 2001-08-07 00:24:43 richard Exp $ 
+# $Id: test_db.py,v 1.7 2001-08-29 06:23:59 richard Exp $ 
 
 import unittest, os, shutil
 
@@ -231,17 +231,20 @@ def suite():
     except:
         print 'bsddb module not found, skipping bsddb DBTestCase'
 
-    try:
-        import bsddb3
-        l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
-        l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
-    except:
-        print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
+#    try:
+#        import bsddb3
+#        l.append(unittest.makeSuite(bsddb3DBTestCase, 'test'))
+#        l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
+#    except:
+#        print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
 
     return unittest.TestSuite(l)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/08/07 00:24:43  richard
+# stupid typo
+#
 # Revision 1.5  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
