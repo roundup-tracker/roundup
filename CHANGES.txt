@@ -68,7 +68,8 @@ Cleanup:
 2004-??-?? 0.6.5
 Fixed:
 - mailgw handling of subject-line errors
-- allow serving of non-"file"-Class file content (eg. paper_file)
+- allow serving of FileClass file content when the class isn't called
+  "file" (eg. messages and other FileClasses)
 - allowed negative ids (ie. new item markers) in HTMLClass.getItem,
   allowing "db/file_with_status/-1/status/menu" to generate a useful
   widget

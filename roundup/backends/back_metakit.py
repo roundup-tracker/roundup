@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.54 2003-12-05 04:43:46 richard Exp $
+# $Id: back_metakit.py,v 1.55 2004-01-20 22:45:36 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -84,7 +84,11 @@ class _Database(hyperdb.Database, roundupdb.Database):
         if classname == 'transactions':
             return self.dirty
         # fall back on the classes
-        return self.getclass(classname)
+        try:
+            return self.getclass(classname)
+        except KeyError, msg:
+            # KeyError's not appropriate here
+            raise AttributeError, str(msg)
     def getclass(self, classname):
         try:
             return self.classes[classname]
