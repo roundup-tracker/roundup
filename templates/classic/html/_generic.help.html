@@ -37,18 +37,19 @@
            <th tal:repeat="prop props" tal:content="prop"></th>
        </tr>
        <tr tal:repeat="item batch">
-           <td>
-               <input type="checkbox" name="check" 
-               onclick="updatePreview();"
-               tal:condition="python:start==0"
-               tal:define="attr python:item[props[0]]"
-               tal:attributes="value attr; id attr" />
-           </td>
-           <td tal:repeat="prop props">
-               <label class="classhelp-label"
-                      tal:attributes="for python:item[props[0]]" 
-                      tal:content="structure python:item[prop]"></label>
-           </td>
+           <tal:block tal:define="attr python:item[props[0]]">
+             <td>
+                 <input type="checkbox" name="check" 
+                 onclick="updatePreview();"
+                 tal:condition="python:start==0"
+                 tal:attributes="value attr; id string:id_$attr" />
+             </td>
+             <td tal:repeat="prop props">
+                 <label class="classhelp-label"
+                        tal:attributes="for string:id_$attr"
+                        tal:content="structure python:item[prop]"></label>
+             </td>
+           </tal:block>
        </tr>
        <tr>
            <th>&nbsp;<b>x</b></th>
