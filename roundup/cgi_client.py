@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.53 2001-11-06 23:22:05 jhermann Exp $
+# $Id: cgi_client.py,v 1.54 2001-11-07 01:16:12 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -663,6 +663,11 @@ class Client:
     def set_cookie(self, user, password):
         # construct the cookie
         user = binascii.b2a_base64('%s:%s'%(user, password)).strip()
+        if user[-1] == '=':
+          if user[-2] == '=':
+            user = user[:-2]
+          else:
+            user = user[:-1]
         expire = Cookie._getdate(86400*365)
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['INSTANCE_NAME']))
         self.header({'Set-Cookie': 'roundup_user=%s; expires=%s; Path=%s;' % (
@@ -716,6 +721,8 @@ class Client:
         if (cookie.has_key('roundup_user') and
                 cookie['roundup_user'].value != 'deleted'):
             cookie = cookie['roundup_user'].value
+            if len(cookie)%4:
+              cookie = cookie + '='*(4-len(cookie)%4)
             user, password = binascii.a2b_base64(cookie).split(':')
             # make sure the user exists
             try:
@@ -943,6 +950,11 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.53  2001/11/06 23:22:05  jhermann
+# More IE fixes: it does not like quotes around cookie values; in the
+# hope this does not break anything for other browser; if it does, we
+# need to check HTTP_USER_AGENT
+#
 # Revision 1.52  2001/11/06 23:11:22  jhermann
 # Fixed debug output in page footer; added expiry date to the login cookie
 # (expires 1 year in the future) to prevent probs with certain versions
