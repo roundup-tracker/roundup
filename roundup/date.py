@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.36 2002-10-12 23:10:36 richard Exp $
+# $Id: date.py,v 1.37 2002-12-09 02:43:21 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -273,11 +273,10 @@ class Date:
         return '<Date %s>'%self.__str__()
 
     def local(self, offset):
-        """Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone."""
-        t = (self.year, self.month, self.day, self.hour + offset, self.minute,
-             self.second, 0, 0, 0)
-        self.year, self.month, self.day, self.hour, self.minute, \
-            self.second, x, x, x = time.gmtime(calendar.timegm(t))
+        """ Return this date as yyyy-mm-dd.hh:mm:ss in a local time zone.
+        """
+        return Date((self.year, self.month, self.day, self.hour + offset,
+            self.minute, self.second, 0, 0, 0))
 
     def get_tuple(self):
         return (self.year, self.month, self.day, self.hour, self.minute,

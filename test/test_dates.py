@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.14 2002-10-11 01:25:40 richard Exp $ 
+# $Id: test_dates.py,v 1.15 2002-12-09 02:43:21 richard Exp $ 
 
 import unittest, time
 
@@ -137,6 +137,11 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '2000-02-28.22:58:59')
         date = Date('2001-03-01.00:00:00') - Interval('00:00:3661')
         ae(str(date), '2001-02-28.22:58:59')
+
+        # local()
+        date = Date("02:42:20")
+        date = date.local(10)
+        ae(str(date), '%s-%02d-%02d.12:42:20'%(y, m, d))
 
     def testInterval(self):
         ae = self.assertEqual
