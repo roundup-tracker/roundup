@@ -13,6 +13,7 @@ Fixed:
 - fix setup.py to work with <Python2.3 (sf bug 1082801)
 - fix permissions checks in cgi templating (sf bug 1082755)
 - fix "Users may only edit their issues" example in docs
+- handle ~/.my.cnf files for MySQL defaults (sf bug 1096031)
 
 
 2004-12-08 0.8.0b1
@@ -61,7 +62,13 @@ Fixed:
 - demo tracker is always set up on localhost (sf bug 1049101)
 
 
-2004-10-06 0.7.11
+2004-??-?? 0.7.??
+Fixed:
+- handle capitalisation of class names in text hyperlinking (sf bug
+  1101043)
+
+
+2005-01-06 0.7.11
 Fixed:
 - index args URL generation broken in .10 (sf bug 1096027)
 - handle NotModified for non-static files (sf patch 1095790)
