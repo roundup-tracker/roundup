@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.96.2.2 2003-02-12 00:03:35 richard Exp $
+#$Id: back_anydbm.py,v 1.96.2.3 2003-03-10 00:22:52 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1703,13 +1703,14 @@ class Class(hyperdb.Class):
                     if isinstance(propclass, Multilink): bv = []
                     else: bv = ''
 
-                # String and Date values are sorted in the natural way
                 if isinstance(propclass, String):
+                    # String and Date values are sorted in the natural way
                     # clean up the strings
                     if av and av[0] in string.uppercase:
                         av = av.lower()
                     if bv and bv[0] in string.uppercase:
                         bv = bv.lower()
+
                 if (isinstance(propclass, String) or
                         isinstance(propclass, Date)):
                     # it might be a string that's really an integer
@@ -1725,11 +1726,11 @@ class Class(hyperdb.Class):
                         r = cmp(bv, av)
                         if r != 0: return r
 
-                # Link properties are sorted according to the value of
-                # the "order" property on the linked nodes if it is
-                # present; or otherwise on the key string of the linked
-                # nodes; or finally on  the node ids.
                 elif isinstance(propclass, Link):
+                    # Link properties are sorted according to the value of
+                    # the "order" property on the linked nodes if it is
+                    # present; or otherwise on the key string of the linked
+                    # nodes; or finally on  the node ids.
                     link = db.classes[propclass.classname]
                     if av is None and bv is not None: return -1
                     if av is not None and bv is None: return 1
@@ -1759,21 +1760,22 @@ class Class(hyperdb.Class):
                             r = cmp(bv, av)
                             if r != 0: return r
 
-                # Multilink properties are sorted according to how many
-                # links are present.
                 elif isinstance(propclass, Multilink):
+                    # Multilink properties are sorted according to how many
+                    # links are present.
                     if dir == '+':
                         r = cmp(len(av), len(bv))
-                        if r != 0: return r
-                    elif dir == '-':
+                    else:
                         r = cmp(len(bv), len(av))
-                        if r != 0: return r
-                elif isinstance(propclass, Number) or isinstance(propclass, Boolean):
+                    if r != 0: return r
+                else:
+                    # all other types just compare
                     if dir == '+':
                         r = cmp(av, bv)
-                    elif dir == '-':
+                    else:
                         r = cmp(bv, av)
-                    
+                    if r != 0: return r
+
             # end for dir, prop in sort, group:
             # if all else fails, compare the ids
             return cmp(a[0], b[0])
