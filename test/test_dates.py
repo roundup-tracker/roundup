@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.20 2003-03-10 00:22:21 richard Exp $ 
+# $Id: test_dates.py,v 1.21 2003-03-19 03:25:30 richard Exp $ 
 
 import unittest, time
 
@@ -52,6 +52,9 @@ class DateTestCase(unittest.TestCase):
         ae(str(date), '%s-%02d-%02d.14:25:00'%(y, m, d))
         date = Date("8:47:11")
         ae(str(date), '%s-%02d-%02d.08:47:11'%(y, m, d))
+
+    def testDateError(self):
+        self.assertRaises(ValueError, Date, "12")
 
     def testOffset(self):
         ae = self.assertEqual

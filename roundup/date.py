@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.48 2003-03-10 20:32:53 kedder Exp $
+# $Id: date.py,v 1.49 2003-03-19 03:25:30 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -94,6 +94,63 @@ class Date:
             ts = calendar.timegm((y,m,d,H+offset,M,S,0,0,0))
             self.year, self.month, self.day, self.hour, self.minute, \
                 self.second, x, x, x = time.gmtime(ts)
+
+    def set(self, spec, offset=0, date_re=re.compile(r'''
+            (((?P<y>\d\d\d\d)-)?(?P<m>\d\d?)?-(?P<d>\d\d?))? # [yyyy-]mm-dd
+            (?P<n>\.)?                                     # .
+            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
+            (?P<o>.+)?                                     # offset
+            ''', re.VERBOSE), serialised_re=re.compile(r'''
+            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)
+            ''', re.VERBOSE)):
+        ''' set the date to the value in spec
+        '''
+        m = serialised_re.match(spec)
+        if m is not None:
+            # we're serialised - easy!
+            self.year, self.month, self.day, self.hour, self.minute, \
+                self.second = map(int, m.groups()[:6])
+            return
+
+        # not serialised data, try usual format
+        m = date_re.match(spec)
+        if m is None:
+            raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
+                '[[h]h:mm[:ss]][offset]')
+
+        info = m.groupdict()
+
+        # get the current date as our default
+        y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
+
+        # override year, month, day parts
+        if info['m'] is not None and info['d'] is not None:
+            m = int(info['m'])
+            d = int(info['d'])
+            if info['y'] is not None:
+                y = int(info['y'])
+            # time defaults to 00:00:00 GMT - offset (local midnight)
+            H = -offset
+            M = S = 0
+
+        # override hour, minute, second parts
+        if info['H'] is not None and info['M'] is not None:
+            H = int(info['H']) - offset
+            M = int(info['M'])
+            S = 0
+            if info['S'] is not None: S = int(info['S'])
+
+        # now handle the adjustment of hour
+        ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
+        self.year, self.month, self.day, self.hour, self.minute, \
+            self.second, x, x, x = time.gmtime(ts)
+
+        if info.get('o', None):
+            try:
+                self.applyInterval(Interval(info['o']))
+            except ValueError:
+                raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
+                    '[[h]h:mm[:ss]][offset]')
 
     def addInterval(self, interval):
         ''' Add the interval to this date, returning the date tuple
@@ -219,59 +276,6 @@ class Date:
             return ' ' + str[1:]
         return str
 
-    def set(self, spec, offset=0, date_re=re.compile(r'''
-            (((?P<y>\d\d\d\d)-)?((?P<m>\d\d?)-(?P<d>\d\d?))?)? # yyyy-mm-dd
-            (?P<n>\.)?                                     # .
-            (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d))?)?  # hh:mm:ss
-            (?P<o>.+)?                                     # offset
-            ''', re.VERBOSE), serialised_re=re.compile(r'''
-            (\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)
-            ''', re.VERBOSE)):
-        ''' set the date to the value in spec
-        '''
-        m = serialised_re.match(spec)
-        if m is not None:
-            # we're serialised - easy!
-            self.year, self.month, self.day, self.hour, self.minute, \
-                self.second = map(int, m.groups()[:6])
-            return
-
-        # not serialised data, try usual format
-        m = date_re.match(spec)
-        if m is None:
-            raise ValueError, _('Not a date spec: [[yyyy-]mm-dd].'
-                '[[h]h:mm[:ss]][offset]')
-
-        info = m.groupdict()
-
-        # get the current date as our default
-        y,m,d,H,M,S,x,x,x = time.gmtime(time.time())
-
-        # override year, month, day parts
-        if info['m'] is not None and info['d'] is not None:
-            m = int(info['m'])
-            d = int(info['d'])
-            if info['y'] is not None:
-                y = int(info['y'])
-            # time defaults to 00:00:00 GMT - offset (local midnight)
-            H = -offset
-            M = S = 0
-
-        # override hour, minute, second parts
-        if info['H'] is not None and info['M'] is not None:
-            H = int(info['H']) - offset
-            M = int(info['M'])
-            S = 0
-            if info['S'] is not None: S = int(info['S'])
-
-        # now handle the adjustment of hour
-        ts = calendar.timegm((y,m,d,H,M,S,0,0,0))
-        self.year, self.month, self.day, self.hour, self.minute, \
-            self.second, x, x, x = time.gmtime(ts)
-
-        if info.get('o', None):
-            self.applyInterval(Interval(info['o']))
-
     def __repr__(self):
         return '<Date %s>'%self.__str__()
 
@@ -350,6 +354,46 @@ class Interval:
                 self.sign = sign
                 self.year, self.month, self.day, self.hour, self.minute, \
                     self.second = spec
+
+    def set(self, spec, interval_re=re.compile('''
+            \s*(?P<s>[-+])?         # + or -
+            \s*((?P<y>\d+\s*)y)?    # year
+            \s*((?P<m>\d+\s*)m)?    # month
+            \s*((?P<w>\d+\s*)w)?    # week
+            \s*((?P<d>\d+\s*)d)?    # day
+            \s*(((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
+            \s*''', re.VERBOSE), serialised_re=re.compile('''
+            (?P<s>[+-])?1?(?P<y>([ ]{3}\d|\d{4}))(?P<m>\d{2})(?P<d>\d{2})
+            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE)):
+        ''' set the date to the value in spec
+        '''
+        self.year = self.month = self.week = self.day = self.hour = \
+            self.minute = self.second = 0
+        self.sign = 1
+        m = serialised_re.match(spec)
+        if not m:
+            m = interval_re.match(spec)
+            if not m:
+                raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
+                    '[#d] [[[H]H:MM]:SS]')
+
+        info = m.groupdict()
+        valid = 0
+        for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
+                'H':'hour', 'M':'minute', 'S':'second'}.items():
+            if info.get(group, None) is not None:
+                valid = 1
+                setattr(self, attr, int(info[group]))
+
+        if not valid:
+            raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
+                '[#d] [[[H]H:MM]:SS]')
+
+        if self.week:
+            self.day = self.day + self.week*7
+
+        if info['s'] is not None:
+            self.sign = {'+':1, '-':-1}[info['s']]
 
     def __cmp__(self, other):
         """Compare this interval to another interval."""
@@ -454,40 +498,6 @@ class Interval:
             H = seconds%24
             d = seconds / 24
             return Interval((sign, 0, 0, d, H, M, S))
-
-    def set(self, spec, interval_re=re.compile('''
-            \s*(?P<s>[-+])?         # + or -
-            \s*((?P<y>\d+\s*)y)?    # year
-            \s*((?P<m>\d+\s*)m)?    # month
-            \s*((?P<w>\d+\s*)w)?    # week
-            \s*((?P<d>\d+\s*)d)?    # day
-            \s*(((?P<H>\d+):(?P<M>\d+))?(:(?P<S>\d+))?)?   # time
-            \s*''', re.VERBOSE), serialised_re=re.compile('''
-            (?P<s>[+-])?1?(?P<y>([ ]{3}\d|\d{4}))(?P<m>\d{2})(?P<d>\d{2})
-            (?P<H>\d{2})(?P<M>\d{2})(?P<S>\d{2})''', re.VERBOSE)):
-        ''' set the date to the value in spec
-        '''
-        self.year = self.month = self.week = self.day = self.hour = \
-            self.minute = self.second = 0
-        self.sign = 1
-        m = serialised_re.match(spec)
-        if not m:
-            m = interval_re.match(spec)
-            if not m:
-                raise ValueError, _('Not an interval spec: [+-] [#y] [#m] [#w] '
-                    '[#d] [[[H]H:MM]:SS]')
-
-        info = m.groupdict()
-        for group, attr in {'y':'year', 'm':'month', 'w':'week', 'd':'day',
-                'H':'hour', 'M':'minute', 'S':'second'}.items():
-            if info.get(group, None) is not None:
-                setattr(self, attr, int(info[group]))
-
-        if self.week:
-            self.day = self.day + self.week*7
-
-        if info['s'] is not None:
-            self.sign = {'+':1, '-':-1}[info['s']]
 
     def __repr__(self):
         return '<Interval %s>'%self.__str__()

@@ -77,6 +77,7 @@ Fixed:
 - fixed Interval maths (sf bug 665357)
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
+- fixed detection of bad date specs (sf bug 691439)
 
 
 2003-02-27 0.5.6
