@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.114 2002-03-17 23:06:05 richard Exp $
+# $Id: cgi_client.py,v 1.115 2002-04-02 01:56:10 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -663,7 +663,7 @@ function help_window(helpurl, width, height) {
         # in a nutshell, don't do anything if there's no note or there's no
         # NOSY
         if self.form.has_key('__note'):
-            note = self.form['__note'].value
+            note = self.form['__note'].value.strip()
         if not props.has_key('messages'):
             return None, files
         if not isinstance(props['messages'], hyperdb.Multilink):
@@ -1357,6 +1357,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.114  2002/03/17 23:06:05  richard
+# oops
+#
 # Revision 1.113  2002/03/14 23:59:24  richard
 #  . #517734 ] web header customisation is obscure
 #

@@ -16,6 +16,10 @@ Feature:
     </property>
    </td>
 
+Fixed:
+ . stop sending blank (whitespace-only) notes
+
+
 2002-03-25 - 0.4.1
 Feature:
  . use blobfiles in back_anydbm which is used in back_bsddb.
