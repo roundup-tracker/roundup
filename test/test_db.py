@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.73 2003-03-03 21:05:19 richard Exp $ 
+# $Id: test_db.py,v 1.74 2003-03-06 06:03:51 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -325,6 +325,15 @@ class anydbmDBTestCase(MyTestCase):
         self.db.rollback()
         self.assertNotEqual(num_files, self.db.numfiles())
         self.assertEqual(num_files2, self.db.numfiles())
+
+        # rollback / cache interaction
+        name1 = self.db.user.get('1', 'username')
+        self.db.user.set('1', username = name1+name1)
+        # get the prop so the info's forced into the cache (if there is one)
+        self.db.user.get('1', 'username')
+        self.db.rollback()
+        name2 = self.db.user.get('1', 'username')
+        self.assertEqual(name1, name2)
 
     def testDestroyNoJournalling(self):
         self.innerTestDestroy(klass=self.db.session)
@@ -652,26 +661,6 @@ class anydbmDBTestCase(MyTestCase):
         ae, filt = self.filteringSetup()
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
-
-    def testNode1(self):
-        node1 = self.db.user.getnode('1')
-        name = node1.username
-        self.db.user.set('1', username = name+name)
-        name1 = node1.username
-        self.db.rollback()
-        node2 = self.db.user.getnode('1')
-        self.assertEqual(name, node1.username)
-        self.assertEqual(name, node2.username)
-
-    def testNode2(self):
-        node1 = Node(self.db.user, '1')
-        name = node1.username
-        self.db.user.set('1', username = name+name)
-        name1 = node1.username
-        self.db.rollback()
-        node2 = Node(self.db.user, '1')
-        self.assertEqual(name, node1.username)
-        self.assertEqual(name, node2.username)
 
 
 # TODO test auditors and reactors

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.38 2003-02-28 03:33:46 richard Exp $
+# $Id: rdbms_common.py,v 1.39 2003-03-06 06:03:51 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -836,6 +836,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if method == self.doStoreFile:
                 self.rollbackStoreFile(*args)
         self.transactions = []
+
+        # clear the cache
+        self.clearCache()
 
     def doSaveNode(self, classname, nodeid, node):
         ''' dummy that just generates a reindex event

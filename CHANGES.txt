@@ -59,6 +59,7 @@ Fixed:
 
 2003-??-?? 0.5.7
 - fixed Interval maths (sf bug 665357)
+- fixed sqlite rollback/caching bug (sf bug 689383)
 
 
 2003-02-27 0.5.6
