@@ -14,8 +14,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: test_mysql.py,v 1.10 2004-05-23 09:44:47 richard Exp $ 
+#
+# $Id: test_mysql.py,v 1.11 2004-09-25 15:49:31 a1s Exp $
 
 import unittest, os, shutil, time, imp
 
@@ -24,14 +24,6 @@ from roundup import init, backends
 
 from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 
-
-# Mysql connection data
-config.MYSQL_DBHOST = 'localhost'
-config.MYSQL_DBUSER = 'rounduptest'
-config.MYSQL_DBPASSWORD = 'rounduptest'
-config.MYSQL_DBNAME = 'rounduptest'
-config.MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER,
-    config.MYSQL_DBPASSWORD, config.MYSQL_DBNAME)
 
 class mysqlOpener:
     if hasattr(backends, 'mysql'):
@@ -64,14 +56,6 @@ class mysqlSchemaTest(mysqlOpener, SchemaTest):
 
 class mysqlClassicInitTest(mysqlOpener, ClassicInitTest):
     backend = 'mysql'
-    extra_config = '''
-MYSQL_DBHOST = %r
-MYSQL_DBUSER = %r
-MYSQL_DBPASSWORD = %r
-MYSQL_DBNAME = %r
-MYSQL_DATABASE = %r
-'''%(config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD,
-        config.MYSQL_DBNAME, config.MYSQL_DATABASE)
     def setUp(self):
         mysqlOpener.setUp(self)
         ClassicInitTest.setUp(self)
@@ -115,3 +99,4 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
+# vim: set et sts=4 sw=4 :
