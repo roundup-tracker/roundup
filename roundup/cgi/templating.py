@@ -1434,15 +1434,9 @@ function help_window(helpurl, width, height) {
             matches = None
         l = klass.filter(matches, filterspec, sort, group)
 
-        # map the item ids to instances
-        if self.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-        l = [klass(self.client, self.classname, item) for item in l]
-
-        # return the batch object
-        return Batch(self.client, l, self.pagesize, self.startwith)
+        # return the batch object, using IDs only
+        return Batch(self.client, l, self.pagesize, self.startwith,
+            classname=self.classname)
 
 # extend the standard ZTUtils Batch object to remove dependency on
 # Acquisition and add a couple of useful methods
@@ -1453,7 +1447,8 @@ class Batch(ZTUtils.Batch):
         ========= ========================================================
         Parameter  Usage
         ========= ========================================================
-        sequence  a list of HTMLItems
+        sequence  a list of HTMLItems or item ids
+        classname if sequence is a list of ids, this is the class of item
         size      how big to make the sequence.
         start     where to start (0-indexed) in the sequence.
         end       where to end (0-indexed) in the sequence.
@@ -1470,10 +1465,11 @@ class Batch(ZTUtils.Batch):
         "sequence_length" is the length of the original, unbatched, sequence.
     '''
     def __init__(self, client, sequence, size, start, end=0, orphan=0,
-            overlap=0):
+            overlap=0, classname=None):
         self.client = client
         self.last_index = self.last_item = None
         self.current_item = None
+        self.classname = classname
         self.sequence_length = len(sequence)
         ZTUtils.Batch.__init__(self, sequence, size, start, end, orphan,
             overlap)
@@ -1493,8 +1489,15 @@ class Batch(ZTUtils.Batch):
             self.last_item = self.current_item
             self.last_index = index
 
-        self.current_item = self._sequence[index + self.first]
-        return self.current_item
+        item = self._sequence[index + self.first]
+        if self.classname:
+            # map the item ids to instances
+            if self.classname == 'user':
+                item = HTMLUser(self.client, self.classname, item)
+            else:
+                item = HTMLItem(self.client, self.classname, item)
+        self.current_item = item
+        return item
 
     def propchanged(self, property):
         ''' Detect if the property marked as being the group property
