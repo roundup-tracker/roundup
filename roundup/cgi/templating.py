@@ -766,25 +766,26 @@ class HTMLProperty:
         return cmp(self._value, other)
 
 class StringHTMLProperty(HTMLProperty):
-    url_re = re.compile(r'\w{3,6}://\S+')
-    email_re = re.compile(r'[\w\.]+@[\w\.\-]+')
-    designator_re = re.compile(r'([a-z_]+)(\d+)')
-    def _url_repl(self, match):
-        s = match.group(0)
-        return '<a href="%s">%s</a>'%(s, s)
-    def _email_repl(self, match):
-        s = match.group(0)
-        return '<a href="mailto:%s">%s</a>'%(s, s)
-    def _designator_repl(self, match):
-        s = match.group(0)
-        s1 = match.group(1)
-        s2 = match.group(2)
-        try:
-            # make sure s1 is a valid tracker classname
-            self._db.getclass(s1)
-            return '<a href="%s">%s %s</a>'%(s, s1, s2)
-        except KeyError:
-            return '%s%s'%(s1, s2)
+    hyper_re = re.compile(r'((?P<url>\w{3,6}://\S+)|'
+                          r'(?P<email>[\w\.]+@[\w\.\-]+)|'
+                          r'(?P<item>(?P<class>[a-z_]+)(?P<id>\d+)))')
+    def _hyper_repl(self, match):
+        if match.group('url'):
+            s = match.group('url')
+            return '<a href="%s">%s</a>'%(s, s)
+        elif match.group('email'):
+            s = match.group('email')
+            return '<a href="mailto:%s">%s</a>'%(s, s)
+        else:
+            s = match.group('item')
+            s1 = match.group('class')
+            s2 = match.group('id')
+            try:
+                # make sure s1 is a valid tracker classname
+                self._db.getclass(s1)
+                return '<a href="%s">%s %s</a>'%(s, s1, s2)
+            except KeyError:
+                return '%s%s'%(s1, s2)
 
     def plain(self, escape=0, hyperlink=0):
         ''' Render a "plain" representation of the property
@@ -802,9 +803,7 @@ class StringHTMLProperty(HTMLProperty):
         if hyperlink:
             if not escape:
                 s = cgi.escape(s)
-            s = self.url_re.sub(self._url_repl, s)
-            s = self.email_re.sub(self._email_repl, s)
-            s = self.designator_re.sub(self._designator_repl, s)
+            s = self.hyper_re.sub(self._hyper_repl, s)
         return s
 
     def stext(self, escape=0):
