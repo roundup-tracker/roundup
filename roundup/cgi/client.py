@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.158 2004-02-14 01:17:38 jlgijsbers Exp $
+# $Id: client.py,v 1.159 2004-02-14 11:27:23 jlgijsbers Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -553,7 +553,12 @@ class Client:
             else:
                 raise ValueError, 'No such action "%s"'%action
             # call the mapped action
-            action_klass(self).handle()
+            try:
+                action_klass(self).handle()
+            except TypeError:
+                # Old way of specifying actions.
+                getattr(self, action_klass)()
+                
         except ValueError, err:
             self.error_message.append(str(err))
 
