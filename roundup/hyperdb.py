@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.60 2002-04-03 05:54:31 richard Exp $
+# $Id: hyperdb.py,v 1.61 2002-04-03 06:11:51 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -203,6 +203,9 @@ transaction.
         properties = self.getclass(classname).getprops()
         d = {}
         for k, v in node.items():
+            # avoid properties that don't exist any more
+            if not properties.has_key(k):
+                continue
             prop = properties[k]
             if isinstance(prop, Date) and v is not None:
                 d[k] = date.Date(v)
@@ -1112,6 +1115,14 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2002/04/03 05:54:31  richard
+# Fixed serialisation problem by moving the serialisation step out of the
+# hyperdb.Class (get, set) into the hyperdb.Database.
+#
+# Also fixed htmltemplate after the showid changes I made yesterday.
+#
+# Unit tests for all of the above written.
+#
 # Revision 1.59  2002/03/12 22:52:26  richard
 # more pychecker warnings removed
 #
