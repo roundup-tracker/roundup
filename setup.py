@@ -16,12 +16,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.71 2004-09-25 16:14:32 a1s Exp $
+# $Id: setup.py,v 1.72 2004-10-18 07:51:46 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.command.build_scripts import build_scripts
 from distutils.command.build import build
+from distutils.command.build_py import build_py
 
 import sys, os, string
 from glob import glob
@@ -223,6 +224,22 @@ def check_manifest():
         sys.exit(1)
 
 
+class build_py_roundup(build_py):
+
+    def find_modules(self):
+        # Files listed in py_modules are in the toplevel directory
+        # of the source distribution.
+        modules = []
+        for module in self.py_modules:
+            path = string.split(module, '.')
+            package = string.join(path[0:-1], '.')
+            module_base = path[-1]
+            module_file = module_base + '.py'
+            if self.check_module(module, module_file):
+                modules.append((package, module_base, module_file))
+        return modules
+
+
 class build_roundup(build):
 
     def build_message_files(self):
@@ -253,11 +270,12 @@ def main():
         'roundup.cgi.TAL',
         'roundup.cgi.ZTUtils',
         'roundup.backends',
-        'roundup.scripts'
+        'roundup.scripts',
     ]
     installdatafiles = [
         ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
     ]
+    py_modules = ['roundup.demo',]
 
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -271,6 +289,8 @@ def main():
         # scan for data files
         for idir in '. detectors extensions html'.split():
             idir = os.path.join(tdir, idir)
+            if not os.path.isdir(idir):
+                continue
             tfiles = []
             for f in os.listdir(idir):
                 if f.startswith('.'):
@@ -324,6 +344,7 @@ Some highlights:
         url = 'http://roundup.sourceforge.net/',
         download_url = 'http://sourceforge.net/project/showfiles.php?group_id=31577',
         packages = packagelist,
+        py_modules = py_modules,
         classifiers = [
             'Development Status :: 4 - Beta',
             'Environment :: Console',
@@ -344,6 +365,7 @@ Some highlights:
         # Override certain command classes with our own ones
         cmdclass = {
             'build_scripts': build_scripts_roundup,
+            'build_py': build_py_roundup,
             'build': build_roundup,
         },
         scripts = roundup_scripts,
