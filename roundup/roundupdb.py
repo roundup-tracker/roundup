@@ -15,11 +15,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.92 2003-10-04 11:21:47 jlgijsbers Exp $
+# $Id: roundupdb.py,v 1.93 2003-11-06 19:01:57 jlgijsbers Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
 """
+from __future__ import nested_scopes
 
 import re, os, smtplib, socket, time, random
 import cStringIO, base64, quopri, mimetypes
@@ -129,75 +130,56 @@ class IssueClass:
         
         These users are then added to the message's "recipients" list.
 
+        If 'msgid' is None, the message gets sent only to the nosy
+        list, and it's called a 'System Message'.
         """
-        users = self.db.user
-        messages = self.db.msg
-
-        # figure the recipient ids
+        authid, recipients = None, []
+        if msgid:
+            authid = self.db.msg.get(msgid, 'author')
+            recipients = self.db.msg.get(msgid, 'recipients')
+        
         sendto = []
-        r = {}
-        recipients = messages.get(msgid, 'recipients')
-        for recipid in messages.get(msgid, 'recipients'):
-            r[recipid] = 1
-
-        # figure the author's id, and indicate they've received the message
-        authid = messages.get(msgid, 'author')
-
+        seen_message = dict([(recipient, 1) for recipient in recipients])
+               
+        def add_recipient(userid):
+            # make sure they have an address
+            address = self.db.user.get(userid, 'address')
+            if address:
+                sendto.append(address)
+                recipients.append(userid)
+        
+        def good_recipient(userid):
+            # Make sure we don't send mail to either the anonymous
+            # user or a user who has already seen the message.
+            return (userid and
+                    self.db.user.get(userid, 'username') != 'anonymous' and
+                    not seen_message.has_key(userid))
+        
         # possibly send the message to the author, as long as they aren't
         # anonymous
-        if (users.get(authid, 'username') != 'anonymous' and
-                not r.has_key(authid)):
-            if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
-                (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues)):
-                # make sure they have an address
-                add = users.get(authid, 'address')
-                if add:
-                    # send it to them
-                    sendto.append(add)
-                    recipients.append(authid)
+        if (good_recipient(authid) and
+            (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
+             (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues))):
+            add_recipient(authid)
+        
+        if authid:
+            seen_message[authid] = 1
+        
+        # now deal with the nosy and cc people who weren't recipients.
+        for userid in cc + self.get(nodeid, whichnosy):
+            if good_recipient(userid):
+                add_recipient(userid)        
 
-        r[authid] = 1
-
-        # now deal with cc people.
-        for cc_userid in cc :
-            if r.has_key(cc_userid):
-                continue
-            # make sure they have an address
-            add = users.get(cc_userid, 'address')
-            if add:
-                # send it to them
-                sendto.append(add)
-                recipients.append(cc_userid)
-
-        # now figure the nosy people who weren't recipients
-        nosy = self.get(nodeid, whichnosy)
-        for nosyid in nosy:
-            # Don't send nosy mail to the anonymous user (that user
-            # shouldn't appear in the nosy list, but just in case they
-            # do...)
-            if users.get(nosyid, 'username') == 'anonymous':
-                continue
-            # make sure they haven't seen the message already
-            if not r.has_key(nosyid):
-                # make sure they have an address
-                add = users.get(nosyid, 'address')
-                if add:
-                    # send it to them
-                    sendto.append(add)
-                    recipients.append(nosyid)
-
-        # generate a change note
         if oldvalues:
             note = self.generateChangeNote(nodeid, oldvalues)
         else:
             note = self.generateCreateNote(nodeid)
 
-        # we have new recipients
+        # If we have new recipients, update the message's recipients
+        # and send the mail.
         if sendto:
-            # update the message's recipients list
-            messages.set(msgid, recipients=recipients)
-
-            # send the message
+            if msgid:
+                self.db.msg.set(msgid, recipients=recipients)
             self.send_message(nodeid, msgid, note, sendto, from_address)
 
     # backwards compatibility - don't remove
@@ -211,31 +193,35 @@ class IssueClass:
         messages = self.db.msg
         files = self.db.file
 
-        # determine the messageid and inreplyto of the message
-        inreplyto = messages.get(msgid, 'inreplyto')
-        messageid = messages.get(msgid, 'messageid')
+        inreplyto, messageid = None, None
+        if msgid:
+            inreplyto = messages.get(msgid, 'inreplyto')
+            messageid = messages.get(msgid, 'messageid')
 
-        # make up a messageid if there isn't one (web edit)
-        if not messageid:
-            # this is an old message that didn't get a messageid, so
-            # create one
-            messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                self.classname, nodeid, self.db.config.MAIL_DOMAIN)
-            messages.set(msgid, messageid=messageid)
+            # make up a messageid if there isn't one (web edit)
+            if not messageid:
+                # this is an old message that didn't get a messageid, so
+                # create one
+                messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
+                                               self.classname, nodeid,
+                                               self.db.config.MAIL_DOMAIN)
+                messages.set(msgid, messageid=messageid)
 
         # send an email to the people who missed out
         cn = self.classname
         title = self.get(nodeid, 'title') or '%s message copy'%cn
-        # figure author information
-        authid = messages.get(msgid, 'author')
-        authname = users.get(authid, 'realname')
-        if not authname:
-            authname = users.get(authid, 'username')
-        authaddr = users.get(authid, 'address')
-        if authaddr:
-            authaddr = " <%s>" % straddr( ('',authaddr) )
-        else:
-            authaddr = ''
+
+        authid, authname, authaddr = None, '', ''
+        if msgid:
+            authid = messages.get(msgid, 'author')
+            authname = users.get(authid, 'realname')
+            if not authname:
+                authname = users.get(authid, 'username')
+            authaddr = users.get(authid, 'address')
+            if authaddr:
+                authaddr = " <%s>" % straddr( ('',authaddr) )
+            else:
+                authaddr = ''
 
         # make the message body
         m = ['']
@@ -245,14 +231,18 @@ class IssueClass:
             m.append(self.email_signature(nodeid, msgid))
 
         # add author information
-        if len(self.get(nodeid,'messages')) == 1:
-            m.append("New submission from %s%s:"%(authname, authaddr))
+        if authid:
+            if len(self.get(nodeid,'messages')) == 1:
+                m.append("New submission from %s%s:"%(authname, authaddr))
+            else:
+                m.append("%s%s added the comment:"%(authname, authaddr))
         else:
-            m.append("%s%s added the comment:"%(authname, authaddr))
+            m.append("System message:")
         m.append('')
 
         # add the content
-        m.append(messages.get(msgid, 'content'))
+        if msgid:
+            m.append(messages.get(msgid, 'content'))
 
         # add the change note
         if note:
@@ -269,7 +259,7 @@ class IssueClass:
         content_encoded = content_encoded.getvalue()
 
         # get the files for this message
-        message_files = messages.get(msgid, 'files')
+        message_files = msgid and messages.get(msgid, 'files') or None
 
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()

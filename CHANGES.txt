@@ -8,7 +8,8 @@ Feature:
 - using Zope3's test runner now, allowing GC checks, nicer controls and
   coverage analysis
 - !BETA! added postgresql backend, needs work !BETA!
-- all RDMBS backends now have indexes on several columns
+- all RDBMS backends now have indexes on several columns
+- Change nosymessage and send_message to accept msgid=None (RFE #707235).
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
