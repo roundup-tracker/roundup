@@ -3,3 +3,4 @@ localconfig.py
 build
 dist
 MANIFEST
+_test_*

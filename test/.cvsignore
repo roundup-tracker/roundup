@@ -1,3 +1,4 @@
 *.pyc
 localconfig.py
 db
+*.cover
