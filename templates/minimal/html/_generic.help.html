@@ -1,17 +1,18 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html tal:define="property request/form/property/value">
   <head>
       <link rel="stylesheet" type="text/css" href="@@file/style.css" />
       <meta http-equiv="Content-Type"
        tal:attributes="content string:text/html;; charset=${request/client/charset}" />
       <tal:block tal:condition="python:request.form.has_key('property')">
-      <title tal:content="string:${request/form/property/value} help">Property</title>
-      <script language="Javascript" type="text/javascript" 
+      <title i18n:translate=""><span i18n:name="property"
+       tal:replace="property" /> help</title>
+      <script language="Javascript" type="text/javascript"
           tal:content="structure string:
           // this is the name of the field in the original form that we're working on
-          field = '${request/form/property/value}';" >
+          field = '${property}';" >
       </script>
-      <script src="@@file/help_controls.js" type="text/javascript"><!-- 
+      <script src="@@file/help_controls.js" type="text/javascript"><!--
       //--></script>
       </tal:block>
   </head>
@@ -20,16 +21,16 @@
        tal:define="start python:int(request.form['@startwith'].value);
                    batch python:utils.Batch(context.list(), 500, start);
                    props python:request.form['properties'].value.split(',')">
-     
+
      <div id="classhelp-controls" tal:condition="python:start==0">
-       <!--input type="button" name="btn_clear" 
+       <!--input type="button" name="btn_clear"
               value="Clear" onClick="clearList()"/ -->
        <input type="text" name="text_preview" size="24" class="preview"
               onchange="reviseList(this.value);"/>
-       <input type="button" name="btn_reset" 
+       <input type="button" name="btn_reset"
               value=" Cancel " onclick="resetList(); window.close();"/>
        <input type="button" name="btn_apply" class="apply"
-              value=" Apply " onclick="updateList(); window.close();"/>     
+              value=" Apply " onclick="updateList(); window.close();"/>
      </div>
 
      <table class="classhelp">
@@ -39,7 +40,7 @@
        </tr>
        <tr tal:repeat="item batch">
            <td>
-               <input type="checkbox" name="check" 
+               <input type="checkbox" name="check"
                onclick="updatePreview();"
                tal:condition="python:start==0"
                tal:define="attr python:item[props[0]]"
@@ -47,7 +48,7 @@
            </td>
            <td tal:repeat="prop props">
                <label class="classhelp-label"
-                      tal:attributes="for python:item[props[0]]" 
+                      tal:attributes="for python:item[props[0]]"
                       tal:content="structure python:item[prop]"></label>
            </td>
        </tr>
@@ -60,14 +61,18 @@
       <tr class="navigation">
        <th>
         <a tal:define="prev batch/previous" tal:condition="prev"
-           tal:attributes="href string:${request/classname}?@template=help&@startwith=${prev/first}&properties=${request/form/properties/value}">&lt;&lt; previous</a>
+	   tal:attributes="href string:${request/classname}?@template=help&@startwith=${prev/first}&properties=${request/form/properties/value}"
+	   i18n:translate="">&lt;&lt; previous</a>
         &nbsp;
        </th>
-       <th tal:content="python: '%d...%d out of %d'%(batch.start,
-               batch.start+batch.length-1, batch.sequence_length)">current</th>
+       <th i18n:translate=""><span tal:replace="batch/start" i18n:name="start"
+	 />..<span tal:replace="python: batch.start + batch.length -1" i18n:name="end"
+	 /> out of <span tal:replace="batch/sequence_length" i18n:name="total"
+	 /></th>
        <th>
         <a tal:define="next batch/next" tal:condition="next"
-           tal:attributes="href string:${request/classname}?@template=help&@startwith=${next/first}&properties=${request/form/properties/value}">next &gt;&gt;</a>
+	   tal:attributes="href string:${request/classname}?@template=help&@startwith=${next/first}&properties=${request/form/properties/value}"
+	   i18n:translate="">next &gt;&gt;</a>
         &nbsp;
        </th>
       </tr>
