@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.73 2002-07-10 00:19:48 richard Exp $
+# $Id: hyperdb.py,v 1.74 2002-07-10 00:24:10 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -840,7 +840,7 @@ class Class:
                                 break
                         if hit:
                             break
-        except:
+        finally:
             cldb.close()
         return l
 
@@ -1215,6 +1215,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.73  2002/07/10 00:19:48  richard
+# Added explicit closing of backend database handles.
+#
 # Revision 1.72  2002/07/09 21:53:38  gmcm
 # Optimize Class.find so that the propspec can contain a set of ids to match.
 # This is used by indexer.search so it can do just one find for all the index matches.
