@@ -21,20 +21,20 @@
         <li><a href="#startcmd">Command Line Tool</a>
         <li><a href="#startweb">E-Mail Interface</a>
         <li><a href="#startweb">Web Interface</a>
-        <li><a href="#users">Users</a>
+        <li><a href="#users">Users</a> (Users and permissions, Adding users)
         <li><a href="#issues">Issues</a>
     </ul>
 <li><a href="#guide">User Guide</a>
     <ul>
         <li><a href="#cmd">Command Line Tool</a>
         <li><a href="#web">Web Interface</a>
-        <li><a href="#mail">E-Mail Gateway</a>
+        <li><a href="#mail">E-Mail Gateway</a> (Message content summary, Address handling, Performing Actions)
     </ul>
 <li><a href="#custom">Customising Roundup</a>
     <ul>
         <li><a href="#config">Instance Configuration</a>
-        <li><a href="#custinst">Instance Schema</a>
-        <li><a href="#custweb">Web Interface</a>
+        <li><a href="#custinst">Instance Schema</a> (Creating a new information store)
+        <li><a href="#custweb">Web Interface</a> (Displaying properties, Index views, Item views)
     </ul>
 <li><a href="spec.html">Roundup's Design Document</a> ("Implementation Guide")
 <li><a href="#ack">Acknowledgements</a>
@@ -215,6 +215,39 @@ RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=
 
 
 <h2><a name="users">Users</a></h2>
+
+<h3>Users and permissions</h3>
+By default, roundup automatically creates one user when the instance
+database is initialised (using roundup-admin init). The user is "admin" and
+the password is the one you supply at that time.
+<p>
+If users attempt to use roundup in any manner and are not identified to
+roundup, they will be using the database in a read-only mode. That is, if
+roundup doesn't know who they are, they can't change anything. This has the
+following repurcussions:
+<dl>
+<dt><strong>Command-line interface</strong>
+<dd>The data modification commands (create, init, retire, set) are not
+available without a login, and if one is not supplied on the command line
+(-u user:pass) then it will be prompted for.
+<dt><strong>E-Mail interface</strong>
+<dd>Users are identified by e-mail address - a new user entry will be
+created for any e-mail address that is not recognised, so users are
+<em>always</em> identified by roundup.
+<dt><strong>Web interface</strong>
+<dd>Unidentified users have read-only access. If the users database has an
+entry with the username "anonymous", then unidentified users are
+automatically logged in as that user. This gives them write access.
+</dl>
+<p>
+There has been only a half-hearted attempt to restrict certain activities
+to the "admin" user. For example, the "extended" schema web interface enables
+some fnuctionality for the "admin" user. On the fil-side, it is possible to
+obtain the admin user's password using the read-only access on the command
+line (it would also be possible to access the database files directly to
+obtain this information).
+
+<h3>Adding users</h3>
 To add users, use one of the following interfaces:
 
 <ol>
@@ -415,14 +448,14 @@ Incoming messages are examined for multiple parts:
    subpart and ignore the other parts.
 </ul>
 
-<h3>Summary</h3>
+<h3>Message content summary</h3>
 The "summary" property on message nodes is taken from the first non-quoting
 section in the message body. The message body is divided into sections by
 blank lines. Sections where the second and all subsequent lines begin with
 a "&gt;" or "|" character are considered "quoting sections". The first line of
 the first non-quoting section becomes the summary of the message. 
 
-<h3>Addresses</h3>
+<h3>Address handling</h3>
 All of the addresses in the To: and Cc: headers of the incoming message are
 looked up among the user nodes, and the corresponding users are placed in
 the "recipients" property on the new "msg" node. The address in the From:
@@ -434,7 +467,7 @@ passwords.) If we prefer to reject mail from outside sources, we can simply
 register an auditor on the "user" class that prevents the creation of user
 nodes with no passwords. 
 
-<h3>Actions</h3>
+<h3>Performing Actions</h3>
 The subject line of the incoming message is examined to determine whether
 the message is an attempt to create a new item or to discuss an existing
 item. A designator enclosed in square brackets is sought as the first thing
@@ -640,7 +673,7 @@ the item was last edited (equivalently, these are the dates on the first
 and last records in the item's journal). The "creator" property holds a
 link to the user that created the issue.
 
-<h3>setkey(property)</h3>
+<h4>setkey(property)</h4>
 Select a String property of the class to be the key property. The key
 property muse be unique, and allows references to the items in the class by
 the content of the key property. That is, we can refer to users by their
@@ -657,7 +690,7 @@ or
 <p>
 Note, the same thing can be done in the web and e-mail interfaces.
 
-<h3>create(information)</h3>
+<h4>create(information)</h4>
 Create an item in the database. This is generally used to create items in
 the "definitional" classes like "priority" and "status".
 
@@ -1038,7 +1071,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.7 2001-10-01 06:30:23 richard Exp $
+$Id: index.html,v 1.8 2001-10-05 02:44:06 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
