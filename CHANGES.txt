@@ -45,6 +45,7 @@ Fixed:
 - added script to help migrating queries from pre-0.6 trackers
 - Fixed "documentation" of getnodeids in roundup.hyperdb
 - added flush() to DevNull (sf bug #835365)
+- fixed javascript for help window for only one checkbox case
 
 
 2003-09-29 0.6.2

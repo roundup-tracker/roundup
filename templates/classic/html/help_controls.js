@@ -51,29 +51,34 @@ function trim(value) {
   return temp;
 }
 
+function determineList() {
+  // generate a comma-separated list of the checked items
+  if (document.frm_help.check==undefined) { return; }
+  var list = new Array();
+  if (document.frm_help.check.length==undefined) {
+      if (document.frm_help.check.checked) {
+          list.push(document.frm_help.check.value);
+      }
+  } else {
+      for (box=0; box < document.frm_help.check.length; box++) {
+          if (document.frm_help.check[box].checked) {
+              list.push(document.frm_help.check[box].value);
+          }
+      }
+  }
+  return new String(list.join(','));
+}
+
 function updateList() {
   // write back to opener window
   if (document.frm_help.check==undefined) { return; }
-  var list = new Array();
-  for (box=0; box < document.frm_help.check.length; box++) {
-      if (document.frm_help.check[box].checked) {
-          list.push(document.frm_help.check[box].value);
-      }
-  }
-  window.opener.document.itemSynopsis[field].value = list.join(",");
+  window.opener.document.itemSynopsis[field].value = determineList();
 }
 
 function updatePreview() {
-  // add new checkbox selections to preview
+  // update the preview box
   if (document.frm_help.check==undefined) { return; }
-  var list = new Array();
-  for (box=0; box < document.frm_help.check.length; box++) {
-      if (document.frm_help.check[box].checked) {
-          list.push(document.frm_help.check[box].value);
-      }
-  }
-  listString = new String(list.join(','));
-  writePreview(listString);
+  writePreview(determineList());
 }
 
 function clearList() {
@@ -89,7 +94,18 @@ function reviseList(vals) {
   if (document.frm_help.check==undefined) { return; }
   var to_check;
   var list = vals.split(",");
-   for (box=0; box < document.frm_help.check.length; box++) {
+  if (document.frm_help.check.length==undefined) {
+      check = document.frm_help.check;
+      to_check = false;
+      for (val in list) {
+          if (check.value==trim(list[val])) {
+              to_check = true;
+              break;
+          }
+      }
+      check.checked = to_check;
+  } else {
+    for (box=0; box < document.frm_help.check.length; box++) {
       check = document.frm_help.check[box];
       to_check = false;
       for (val in list) {
@@ -99,26 +115,15 @@ function reviseList(vals) {
           }
       }
       check.checked = to_check;
+    }
   }
 }
 
 function resetList() {
   // reset preview and check boxes to initial values
   if (document.frm_help.check==undefined) { return; }
-  var to_check;
-  var list = original_field.split(',');
-  writePreview(list);
-  for (box=0; box < document.frm_help.check.length; box++) {
-      check = document.frm_help.check[box];
-      to_check = false;
-      for (val in list) {
-          if (check.value==trim(list[val])) {
-              to_check = true;
-              break;
-          }
-      }
-      check.checked = to_check;
-  }
+  writePreview(original_field);
+  reviseList(original_field);
 }
 
 function writePreview(val) {
