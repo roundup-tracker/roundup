@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.17 2004-10-17 17:35:32 a1s Exp $
+# $Id: configuration.py,v 1.18 2004-10-29 20:34:36 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -846,7 +846,7 @@ class Config:
         if defaults:
             config_defaults.update(defaults)
         config = ConfigParser.ConfigParser(config_defaults)
-        config.read([os.path.join(home_dir, self.INI_FILE)])
+        config.read([config_path])
         # .ini file loaded ok.
         self.HOME = home_dir
         self.filepath = config_path
