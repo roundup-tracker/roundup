@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.82 2003-02-13 07:38:34 richard Exp $
+# $Id: client.py,v 1.83 2003-02-13 11:23:46 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1021,6 +1021,7 @@ class Client:
         if newids is None:
             newids = {}
         for (cn, nodeid), props in all_props.items():
+            print ((cn, nodeid), props)
             if int(nodeid) > 0:
                 # make changes to the node
                 props = self._changenode(cn, nodeid, props)
@@ -1273,6 +1274,12 @@ class Client:
                     # nope, pull out the value and strip it
                     value = value.value.strip()
 
+            # now that we have the props field, we need a teensy little
+            # extra bit of help for the old :note field...
+            if key == ':note' and value:
+                props['author'] = self.db.getuid()
+                props['date'] = date.Date()
+
             # handle by type now
             if isinstance(proptype, hyperdb.Password):
                 if not value:
@@ -1378,6 +1385,9 @@ class Client:
                 if isinstance(proptype, hyperdb.String):
                     if (hasattr(value, 'filename') and
                             value.filename is not None):
+                        # skip if the upload is empty
+                        if not value.filename:
+                            continue
                         # this String is actually a _file_
                         # try to determine the file content-type
                         filename = value.filename.split('\\')[-1]
