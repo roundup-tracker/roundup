@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.7 $
+:Version: $Revision: 1.8 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -87,7 +87,7 @@ relaxed sometimes). In short:
 
 - 80 column width code
 - 4-space indentations
-- All modules must have a CVS Id line near the top, and a CVS Log at the end
+- All modules must have a CVS Id line near the top
 
 Other project rules:
 
