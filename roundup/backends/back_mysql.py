@@ -86,22 +86,25 @@ class Database(Database):
     # use BDB to pass all unit tests.
     mysql_backend = 'InnoDB'
     #mysql_backend = 'BDB'
-    
+
     def sql_open_connection(self):
+        db = getattr(self.config, 'MYSQL_DATABASE')
+        try:
+            conn = MySQLdb.connect(*db)
+        except MySQLdb.OperationalError, message:
+            raise DatabaseError, message
+        cursor = conn.cursor()
+        cursor.execute("SET AUTOCOMMIT=0")
+        cursor.execute("BEGIN")
+        return (conn, cursor)
+    
+    def open_connection(self):
         # make sure the database actually exists
         if not db_exists(self.config):
             db_create(self.config)
 
-        db = getattr(self.config, 'MYSQL_DATABASE')
-        try:
-            self.conn = MySQLdb.connect(*db)
-        except MySQLdb.OperationalError, message:
-            raise DatabaseError, message
+        self.conn, self.cursor = self.sql_open_connection()
 
-        self.cursor = self.conn.cursor()
-        # start transaction
-        self.sql("SET AUTOCOMMIT=0")
-        self.sql("BEGIN")
         try:
             self.load_dbschema()
         except MySQLdb.OperationalError, message:
@@ -124,9 +127,10 @@ class Database(Database):
         self.cursor.execute('CREATE TABLE otks (otk_key VARCHAR(255), '
             'otk_value VARCHAR(255), otk_time FLOAT(20))')
         self.cursor.execute('CREATE INDEX otks_key_idx ON otks(otk_key)')
-        self.cursor.execute('CREATE TABLE sessions (s_key VARCHAR(255), '
-            's_last_use FLOAT(20), s_user VARCHAR(255))')
-        self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(s_key)')
+        self.cursor.execute('CREATE TABLE sessions (session_key VARCHAR(255), '
+            'session_time FLOAT(20), session_value VARCHAR(255))')
+        self.cursor.execute('CREATE INDEX sessions_key_idx ON '
+            'sessions(session_key)')
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

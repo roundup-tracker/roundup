@@ -6,12 +6,10 @@ body.body {
   margin: 0;
 }
 a[href]:hover {
-  background-color: white;
   color:blue;
   text-decoration: underline;
 }
 a[href], a[href]:link {
-  background-color: white;
   color:blue;
   text-decoration: none;
 }

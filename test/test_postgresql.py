@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.5 2004-03-12 04:09:00 richard Exp $ 
+# $Id: test_postgresql.py,v 1.6 2004-03-18 01:58:46 richard Exp $ 
 
 import unittest
 
@@ -92,6 +92,15 @@ class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest):
         ClassicInitTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+from session_common import RDBMSTest
+class postgresqlSessionTest(postgresqlOpener, RDBMSTest):
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        RDBMSTest.setUp(self)
+    def tearDown(self):
+        RDBMSTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'postgresql'):
@@ -106,5 +115,6 @@ def test_suite():
     suite.addTest(unittest.makeSuite(postgresqlROTest))
     suite.addTest(unittest.makeSuite(postgresqlSchemaTest))
     suite.addTest(unittest.makeSuite(postgresqlClassicInitTest))
+    suite.addTest(unittest.makeSuite(postgresqlSessionTest))
     return suite
 

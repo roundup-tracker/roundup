@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.61 2004-03-12 05:36:26 richard Exp $
+# $Id: back_metakit.py,v 1.62 2004-03-18 01:58:45 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -43,7 +43,7 @@ BACKWARDS_COMPATIBLE = True
 
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit
-from sessions import Sessions, OneTimeKeys
+from sessions_dbm import Sessions, OneTimeKeys
 import re, marshal, os, sys, time, calendar
 from roundup import indexer
 import locking
@@ -81,8 +81,6 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self.lockfile = None
         self._db = self.__open()
         self.indexer = Indexer(self.config.DATABASE, self._db)
-        self.sessions = Sessions(self.config)
-        self.otks = OneTimeKeys(self.config)
         self.security = security.Security(self)
 
         os.umask(0002)
@@ -100,6 +98,12 @@ class _Database(hyperdb.Database, roundupdb.Database):
             for nodeid in klass.list():
                 klass.index(nodeid)
         self.indexer.save_index()
+
+    def getSessionManager(self):
+        return Sessions(self)
+
+    def getOTKManager(self):
+        return OneTimeKeys(self)
 
     # --- defined in ping's spec
     def __getattr__(self, classname):

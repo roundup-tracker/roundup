@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_sqlite.py,v 1.3 2003-11-14 00:11:19 richard Exp $ 
+# $Id: test_sqlite.py,v 1.4 2004-03-18 01:58:46 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -41,6 +41,10 @@ class sqliteSchemaTest(sqliteOpener, SchemaTest):
 class sqliteClassicInitTest(ClassicInitTest):
     backend = 'sqlite'
 
+from session_common import RDBMSTest
+class sqliteSessionTest(sqliteOpener, RDBMSTest):
+    pass
+
 def test_suite():
     suite = unittest.TestSuite()
     from roundup import backends
@@ -52,6 +56,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(sqliteROTest))
     suite.addTest(unittest.makeSuite(sqliteSchemaTest))
     suite.addTest(unittest.makeSuite(sqliteClassicInitTest))
+    suite.addTest(unittest.makeSuite(sqliteSessionTest))
     return suite
 
 if __name__ == '__main__':

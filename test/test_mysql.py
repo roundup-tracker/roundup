@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.7 2004-03-12 04:09:00 richard Exp $ 
+# $Id: test_mysql.py,v 1.8 2004-03-18 01:58:46 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -78,6 +78,15 @@ MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
         ClassicInitTest.tearDown(self)
         self.nuke_database()
 
+from session_common import RDBMSTest
+class mysqlSessionTest(mysqlOpener, RDBMSTest):
+    def setUp(self):
+        mysqlOpener.setUp(self)
+        RDBMSTest.setUp(self)
+    def tearDown(self):
+        RDBMSTest.tearDown(self)
+        mysqlOpener.tearDown(self)
+
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'mysql'):
@@ -97,6 +106,7 @@ def test_suite():
         suite.addTest(unittest.makeSuite(mysqlROTest))
         suite.addTest(unittest.makeSuite(mysqlSchemaTest))
         suite.addTest(unittest.makeSuite(mysqlClassicInitTest))
+        suite.addTest(unittest.makeSuite(mysqlSessionTest))
     return suite
 
 if __name__ == '__main__':

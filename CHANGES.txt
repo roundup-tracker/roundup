@@ -13,6 +13,7 @@ Feature:
 - added postgresql backend (originally from sf patch 761740, many changes
   since)
 - all RDBMS backends now have indexes on several columns
+- RDBMS backends implement their session and one-time-key stores
 - change nosymessage and send_message to accept msgid=None (RFE #707235).
 - handle Resent-From: headers (sf bug 841151)
 - always sort MultilinkHTMLProperty in the correct order, usually

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.16 2004-03-15 05:50:20 richard Exp $ 
+# $Id: db_test_base.py,v 1.17 2004-03-18 01:58:46 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -55,8 +55,8 @@ class MyTestCase(unittest.TestCase):
     def tearDown(self):
         if hasattr(self, 'db'):
             self.db.close()
-        if os.path.exists('_test_dir'):
-            shutil.rmtree('_test_dir')
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
 
 class config:
     DATABASE='_test_dir'

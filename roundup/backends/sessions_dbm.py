@@ -1,4 +1,4 @@
-#$Id: sessions.py,v 1.10 2004-02-26 04:20:45 drkorg Exp $
+#$Id: sessions_dbm.py,v 1.1 2004-03-18 01:58:45 richard Exp $
 """This module defines a very basic store that's used by the CGI interface
 to store session and one-time-key information.
 
@@ -16,9 +16,9 @@ class BasicDatabase:
     '''
     _db_type = None
 
-    def __init__(self, config):
-        self.config = config
-        self.dir = config.DATABASE
+    def __init__(self, db):
+        self.config = db.config
+        self.dir = db.config.DATABASE
         # ensure files are group readable and writable
         os.umask(0002)
 
@@ -45,13 +45,16 @@ class BasicDatabase:
             db_type = 'dbm'
         self.__class__._db_type = db_type
 
-    def get(self, infoid, value):
+    _marker = []
+    def get(self, infoid, value, default=_marker):
         db = self.opendb('c')
         try:
             if db.has_key(infoid):
                 values = marshal.loads(db[infoid])
             else:
-                return None
+                if default != self._marker:
+                    return default
+                raise KeyError, 'No such %s "%s"'%(self.name, infoid)
             return values.get(value, None)
         finally:
             db.close()
@@ -62,7 +65,7 @@ class BasicDatabase:
             try:
                 return marshal.loads(db[infoid])
             except KeyError:
-                raise KeyError, 'No such One Time Key "%s"'%infoid
+                raise KeyError, 'No such %s "%s"'%(self.name, infoid)
         finally:
             db.close()
 
@@ -72,7 +75,7 @@ class BasicDatabase:
             if db.has_key(infoid):
                 values = marshal.loads(db[infoid])
             else:
-                values = {}
+                values = {'__timestamp': time.time()}
             values.update(newvalues)
             db[infoid] = marshal.dumps(values)
         finally:
@@ -115,23 +118,24 @@ class BasicDatabase:
     def commit(self):
         pass
 
+    def close(self):
+        pass
+
     def updateTimestamp(self, sessid):
-        self.set(sessid, **{self.timestamp: time.time()})
+        self.set(sessid, __timestamp=time.time())
 
     def clean(self, now):
         """Age sessions, remove when they haven't been used for a week.
         """
         week = 60*60*24*7
         for sessid in self.list():
-            interval = now - self.get(sessid, self.timestamp)
+            interval = now - self.get(sessid, '__timestamp')
             if interval > week:
                 self.destroy(sessid)
 
 class Sessions(BasicDatabase):
     name = 'sessions'
-    timestamp = 'last_use'
 
 class OneTimeKeys(BasicDatabase):
     name = 'otks'
-    timestamp = '__time'
 

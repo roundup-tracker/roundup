@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.80 2004-03-17 22:01:37 richard Exp $
+# $Id: rdbms_common.py,v 1.81 2004-03-18 01:58:45 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -40,7 +40,7 @@ from roundup.backends import locking
 # support
 from blobfiles import FileStorage
 from roundup.indexer import Indexer
-from sessions import Sessions, OneTimeKeys
+from sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
 
 # number of rows to keep in memory
@@ -60,8 +60,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.dir = config.DATABASE
         self.classes = {}
         self.indexer = Indexer(self.dir)
-        self.sessions = Sessions(self.config)
-        self.otks = OneTimeKeys(self.config)
         self.security = security.Security(self)
 
         # additional transaction support for external files and the like
@@ -76,13 +74,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.lockfile = None
 
         # open a connection to the database, creating the "conn" attribute
-        self.sql_open_connection()
+        self.open_connection()
 
     def clearCache(self):
         self.cache = {}
         self.cache_lru = []
 
-    def sql_open_connection(self):
+    def getSessionManager(self):
+        return Sessions(self)
+
+    def getOTKManager(self):
+        return OneTimeKeys(self)
+
+    def open_connection(self):
         ''' Open a connection to the database, creating it if necessary.
 
             Must call self.load_dbschema()
@@ -1069,11 +1073,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Close off the connection.
         '''
         self.sql_close()
-        if self.lockfile is not None:
-            locking.release_lock(self.lockfile)
-        if self.lockfile is not None:
-            self.lockfile.close()
-            self.lockfile = None
 
 #
 # The base Class class

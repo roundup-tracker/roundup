@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.165 2004-02-25 23:27:54 richard Exp $
+# $Id: client.py,v 1.166 2004-03-18 01:58:46 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -250,8 +250,8 @@ class Client:
 
         Note: also cleans One Time Keys, and other "session" based stuff.
         """
-        sessions = self.db.sessions
-        last_clean = self.db.sessions.get('last_clean', 'last_use') or 0
+        sessions = self.db.getSessionManager()
+        last_clean = sessions.get('last_clean', 'last_use', 0)
 
         # time to clean?
         week = 60*60*24*7
@@ -260,9 +260,10 @@ class Client:
         if now - last_clean < hour:
             return
 
-        self.db.sessions.clean(now)
-        self.db.otks.clean(now)
-        self.db.sessions.set('last_clean', last_use=time.time())
+        sessions.clean(now)
+        self.db.getOTKManager().clean(now)
+        sessions.set('last_clean', last_use=time.time())
+        self.db.commit()
 
     def determine_user(self):
         ''' Determine who the user is
@@ -272,7 +273,7 @@ class Client:
 
         # make sure we have the session Class
         self.clean_sessions()
-        sessions = self.db.sessions
+        sessions = self.db.getSessionManager()
 
         # first up, try the REMOTE_USER var (from HTTP Basic Auth handled
         # by a front-end HTTP server)
@@ -293,7 +294,6 @@ class Client:
             try:
                 # update the lifetime datestamp
                 sessions.updateTimestamp(self.session)
-                sessions.commit()
                 user = sessions.get(self.session, 'user')
             except KeyError:
                 # not valid, ignore id
@@ -613,10 +613,9 @@ class Client:
                 self.session = self.session[:-1]
 
         # insert the session in the sessiondb
-        self.db.sessions.set(self.session, user=user, last_use=time.time())
-
-        # and commit immediately
-        self.db.sessions.commit()
+        sessions = self.db.getSessionManager()
+        sessions.set(self.session, user=user)
+        self.db.commit()
 
         # expire us in a long, long time
         expire = Cookie._getdate(86400*365)

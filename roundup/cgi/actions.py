@@ -533,7 +533,8 @@ class PassResetAction(Action):
         if self.form.has_key('otk'):
             # pull the rego information out of the otk database
             otk = self.form['otk'].value
-            uid = self.db.otks.get(otk, 'uid')
+            otks = self.db.getOTKManager()
+            uid = otks.get(otk, 'uid')
             if uid is None:
                 self.client.error_message.append("""Invalid One Time Key!
 (a Mozilla bug may cause this message to show up erroneously,
@@ -549,12 +550,12 @@ class PassResetAction(Action):
             newpw = password.generatePassword()
 
             cl = self.db.user
-# XXX we need to make the "default" page be able to display errors!
+            # XXX we need to make the "default" page be able to display errors!
             try:
                 # set the password
                 cl.set(uid, password=password.Password(newpw))
                 # clear the props from the otk database
-                self.db.otks.destroy(otk)
+                otks.destroy(otk)
                 self.db.commit()
             except (ValueError, KeyError), message:
                 self.client.error_message.append(str(message))
@@ -575,8 +576,8 @@ Your password is now: %(password)s
             if not self.client.standard_message([address], subject, body):
                 return
 
-            self.client.ok_message.append('Password reset and email sent to %s' %
-                                          address)
+            self.client.ok_message.append(
+                    'Password reset and email sent to %s'%address)
             return
 
         # no OTK, so now figure the user
@@ -602,8 +603,10 @@ Your password is now: %(password)s
 
         # generate the one-time-key and store the props for later
         otk = ''.join([random.choice(chars) for x in range(32)])
-        d = {'uid': uid, self.db.otks.timestamp: time.time()}
-        self.db.otks.set(otk, **d)
+        while otks.exists(otk):
+            otk = ''.join([random.choice(chars) for x in range(32)])
+        otks.set(otk, uid=uid)
+        self.db.commit()
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
@@ -685,7 +688,6 @@ class RegisterAction(Action):
             pass
 
         # generate the one-time-key and store the props for later
-        otk = ''.join([random.choice(chars) for x in range(32)])
         for propname, proptype in self.db.user.getprops().items():
             value = props.get(propname, None)
             if value is None:
@@ -696,8 +698,10 @@ class RegisterAction(Action):
                 props[propname] = str(value)
             elif isinstance(proptype, hyperdb.Password):
                 props[propname] = str(value)
-        props[self.db.otks.timestamp] = time.time()
-        self.db.otks.set(otk, **props)
+        otks = self.db.getOTKManager()
+        while otks.exists(otk):
+            otk = ''.join([random.choice(chars) for x in range(32)])
+        otks.set(otk, **props)
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME

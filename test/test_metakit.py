@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_metakit.py,v 1.3 2004-01-27 18:16:50 wc2so1 Exp $ 
+# $Id: test_metakit.py,v 1.4 2004-03-18 01:58:46 richard Exp $ 
 import unittest, os, shutil, time, weakref
 
 from db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config, password
@@ -90,6 +90,10 @@ class metakitSchemaTest(metakitOpener, SchemaTest):
 class metakitClassicInitTest(ClassicInitTest):
     backend = 'metakit'
 
+from session_common import DBMTest
+class metakitSessionTest(metakitOpener, DBMTest):
+    pass
+
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'metakit'):
@@ -100,6 +104,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(metakitROTest))
     suite.addTest(unittest.makeSuite(metakitSchemaTest))
     suite.addTest(unittest.makeSuite(metakitClassicInitTest))
+    suite.addTest(unittest.makeSuite(metakitSessionTest))
     return suite
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_bsddb3.py,v 1.2 2003-11-14 00:11:19 richard Exp $ 
+# $Id: test_bsddb3.py,v 1.3 2004-03-18 01:58:46 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -41,6 +41,10 @@ class bsddb3SchemaTest(bsddb3Opener, SchemaTest):
 class bsddb3ClassicInitTest(ClassicInitTest):
     backend = 'bsddb3'
 
+from session_common import DBMTest
+class bsddb3SessionTest(bsddb3Opener, DBMTest):
+    pass
+
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'bsddb3'):
@@ -51,6 +55,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(bsddb3ROTest))
     suite.addTest(unittest.makeSuite(bsddb3SchemaTest))
     suite.addTest(unittest.makeSuite(bsddb3ClassicInitTest))
+    suite.addTest(unittest.makeSuite(bsddb3SessionTest))
     return suite
 
 if __name__ == '__main__':

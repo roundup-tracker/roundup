@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.16 2004-03-15 05:50:20 richard Exp $
+# $Id: back_sqlite.py,v 1.17 2004-03-18 01:58:45 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -17,18 +17,24 @@ class Database(rdbms_common.Database):
     arg = '%s'
 
     def sql_open_connection(self):
+        db = os.path.join(self.config.DATABASE, 'db')
+        conn = sqlite.connect(db=db)
+        cursor = conn.cursor()
+        return (conn, cursor)
+
+    def open_connection(self):
         # ensure files are group readable and writable
         os.umask(0002)
-        db = os.path.join(self.config.DATABASE, 'db')
 
-        # lock it
+        # lock the database
+        db = os.path.join(self.config.DATABASE, 'db')
         lockfilenm = db[:-3] + 'lck'
         self.lockfile = locking.acquire_lock(lockfilenm)
         self.lockfile.write(str(os.getpid()))
         self.lockfile.flush()
 
-        self.conn = sqlite.connect(db=db)
-        self.cursor = self.conn.cursor()
+        (self.conn, self.cursor) = self.sql_open_connection()
+
         try:
             self.load_dbschema()
         except sqlite.DatabaseError, error:
@@ -40,13 +46,24 @@ class Database(rdbms_common.Database):
             self.cursor.execute('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
+    def close(self):
+        ''' Close off the connection.
+        '''
+        self.sql_close()
+        if self.lockfile is not None:
+            locking.release_lock(self.lockfile)
+        if self.lockfile is not None:
+            self.lockfile.close()
+            self.lockfile = None
+
     def create_version_2_tables(self):
         self.cursor.execute('create table otks (otk_key varchar, '
-            'otk_value varchar, otk_time varchar)')
+            'otk_value varchar, otk_time integer)')
         self.cursor.execute('create index otks_key_idx on otks(otk_key)')
-        self.cursor.execute('create table sessions (s_key varchar, '
-            's_last_use varchar, s_user varchar)')
-        self.cursor.execute('create index sessions_key_idx on sessions(s_key)')
+        self.cursor.execute('create table sessions (session_key varchar, '
+            'session_time integer, session_value varchar)')
+        self.cursor.execute('create index sessions_key_idx on '
+                'sessions(session_key)')
 
     def add_actor_column(self):
         # update existing tables to have the new actor column

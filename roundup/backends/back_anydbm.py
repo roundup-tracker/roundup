@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.137 2004-03-15 05:50:20 richard Exp $
+#$Id: back_anydbm.py,v 1.138 2004-03-18 01:58:45 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -36,7 +36,7 @@ except AssertionError:
 import whichdb, os, marshal, re, weakref, string, copy
 from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
-from sessions import Sessions, OneTimeKeys
+from sessions_dbm import Sessions, OneTimeKeys
 from roundup.indexer import Indexer
 from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
@@ -79,8 +79,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.destroyednodes = {}# keep track of the destroyed nodes by class
         self.transactions = []
         self.indexer = Indexer(self.dir)
-        self.sessions = Sessions(self.config)
-        self.otks = OneTimeKeys(self.config)
         self.security = security.Security(self)
         # ensure files are group readable and writable
         os.umask(0002)
@@ -102,6 +100,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Rebuild the database
         """
         self.reindex()
+
+    def getSessionManager(self):
+        return Sessions(self)
+
+    def getOTKManager(self):
+        return OneTimeKeys(self)
 
     def reindex(self):
         for klass in self.classes.values():
