@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.53 2004-07-02 08:52:00 a1s Exp $
+$Id: roundup_server.py,v 1.54 2004-07-04 12:52:06 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -492,7 +492,12 @@ def run(port=PORT, success_message=None):
                 except ImportError:
                     raise ValueError, _("Can't change groups - no grp module")
                 try:
-                    gid = grp.getgrnam(group)[2]
+                    try:
+                        gid = int(group)
+                    except ValueError:
+                        gid = grp.getgrnam(group)[2]
+                    else:
+                        grp.getgrgid(gid)
                 except KeyError:
                     raise ValueError,_("Group %(group)s doesn't exist")%locals()
                 os.setgid(gid)
@@ -507,7 +512,12 @@ def run(port=PORT, success_message=None):
                 except ImportError:
                     raise ValueError, _("Can't change users - no pwd module")
                 try:
-                    uid = pwd.getpwnam(user)[2]
+                    try:
+                        uid = int(user)
+                    except ValueError:
+                        uid = pwd.getpwnam(user)[2]
+                    else:
+                        pwd.getpwuid(uid)
                 except KeyError:
                     raise ValueError, _("User %(user)s doesn't exist")%locals()
                 os.setuid(uid)
@@ -569,4 +579,4 @@ def run(port=PORT, success_message=None):
 if __name__ == '__main__':
     run()
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
