@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.20 2004-10-19 08:04:12 a1s Exp $
+# $Id: demo.py,v 1.21 2004-10-29 15:55:16 a1s Exp $
 
 import errno
 import os
@@ -92,7 +92,6 @@ def install_demo(home, backend, template):
 
 def run_demo(home):
     """Run the demo tracker installed in ``home``"""
-    roundup_server.RoundupRequestHandler.TRACKER_HOMES = {'demo': home}
     cfg = configuration.CoreConfig(home)
     url = cfg["TRACKER_WEB"]
     hostname, port = urlparse.urlparse(url)[1].split(':')
@@ -106,8 +105,8 @@ def run_demo(home):
 ''' % url
 
     # disable command line processing in roundup_server
-    sys.argv = sys.argv[:1]
-    roundup_server.run(port=port, success_message=success_message)
+    sys.argv = sys.argv[:1] + ['-p', str(port), 'demo=' + home]
+    roundup_server.run(success_message=success_message)
 
 def demo_main():
     """Run a demo server for users to play with for instant gratification.
