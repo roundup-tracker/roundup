@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.17 $
+:Version: $Revision: 1.18 $
 
 .. contents::
 
@@ -51,12 +51,12 @@ and::
 
   AddModule mod_proxy.c
 
-Then add
+Then add::
 
   # roundup stuff (added manually)
   <IfModule mod_proxy.c>
   # proxy through one tracker
-  ProxyPass /issue/ http://tracker.example:8080/issues/
+  ProxyPass /issues/ http://tracker.example:8080/issues/
   # proxy through all tracker(*)
   #ProxyPass /roundup/ http://tracker.example:8080/
   </IfModule>
@@ -71,6 +71,25 @@ will change to::
   TRACKER_WEB = 'http://tracker.example/roundup/issues/'
 
 Once you're done, you can firewall off port 8080 from the rest of the world.
+
+Note that in some situations (eg. virtual hosting) you might need to use a
+more complex rewrite rule instead of the simpler ProxyPass above. The
+following should be useful as a starting template::
+
+  # roundup stuff (added manually)
+  <IfModule mod_proxy.c>
+
+  RewriteEngine on
+  
+  # General Roundup
+  RewriteRule ^/roundup$  roundup/    [R]
+  RewriteRule ^/roundup/(.*)$ http://tracker.example:8080/$1   [P,L]
+  
+  # Handle Foo Issues
+  RewriteRule ^/issues$  issues/    [R]
+  RewriteRule ^/issues/(.*)$ http://tracker.example:8080/issues/$1 [P,L]
+  
+  </IfModule>
 
 
 Roundup runs very slowly on my XP machine when accessed from the Internet
