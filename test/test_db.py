@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.78 2003-03-17 22:03:08 kedder Exp $ 
+# $Id: test_db.py,v 1.79 2003-03-18 00:50:24 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -763,41 +763,6 @@ class bsddb3ReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, bsddb3)
 
 
-class gadflyDBTestCase(anydbmDBTestCase):
-    ''' Gadfly doesn't support multiple connections to the one local
-        database
-    '''
-    def setUp(self):
-        from roundup.backends import gadfly
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        config.GADFLY_DATABASE = ('test', config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
-        self.db = gadfly.Database(config, 'admin')
-        setupSchema(self.db, 1, gadfly)
-
-    def testFilteringString(self):
-        ae, filt = self.filteringSetup()
-        ae(filt(None, {'title': 'issue one'}, ('+','id'), (None,None)), ['1'])
-        # XXX gadfly can't do substring LIKE searches
-        #ae(filt(None, {'title': 'issue'}, ('+','id'), (None,None)),
-        #    ['1','2','3'])
-
-class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
-    def setUp(self):
-        from roundup.backends import gadfly
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
-        config.GADFLY_DATABASE = ('test', config.DATABASE)
-        os.makedirs(config.DATABASE + '/files')
-        db = gadfly.Database(config, 'admin')
-        setupSchema(db, 1, gadfly)
-        db.close()
-        self.db = gadfly.Database(config)
-        setupSchema(self.db, 0, gadfly)
-
 class mysqlDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import mysql
@@ -955,11 +920,6 @@ def suite():
             l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
             l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
     #return unittest.TestSuite(l)
-
-    if hasattr(backends, 'gadfly'):
-        p.append('gadfly')
-        l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
-        l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
 
     if hasattr(backends, 'sqlite'):
         p.append('sqlite')

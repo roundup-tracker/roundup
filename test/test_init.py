@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.21 2003-02-28 03:33:25 richard Exp $
+# $Id: test_init.py,v 1.22 2003-03-18 00:50:24 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -78,8 +78,8 @@ class bsddb3ClassicTestCase(ClassicTestCase):
 class metakitClassicTestCase(ClassicTestCase):
     backend = 'metakit'
 
-class gadflyClassicTestCase(ClassicTestCase):
-    backend = 'gadfly'
+class mysqlClassicTestCase(ClassicTestCase):
+    backend = 'mysql'
 
 class sqliteClassicTestCase(ClassicTestCase):
     backend = 'sqlite'
@@ -96,8 +96,8 @@ def suite():
         l.append(unittest.makeSuite(bsddb3ClassicTestCase, 'test'))
     if hasattr(backends, 'metakit'):
         l.append(unittest.makeSuite(metakitClassicTestCase, 'test'))
-    if hasattr(backends, 'gadfly'):
-        l.append(unittest.makeSuite(gadflyClassicTestCase, 'test'))
+    if hasattr(backends, 'mysql'):
+        l.append(unittest.makeSuite(mysqlClassicTestCase, 'test'))
     if hasattr(backends, 'sqlite'):
         l.append(unittest.makeSuite(sqliteClassicTestCase, 'test'))
 

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.39 $
+:Version: $Revision: 1.40 $
 
 .. contents::
 
@@ -222,12 +222,6 @@ There's several to choose from, each with benefits and limitations:
 **metakit**
   This backend is implemented over the metakit_ storage system, using Mk4Py as
   the interface. It scales much better than the dbm backends.
-**gadfly**
-  This is a proof-of-concept relational database backend, not really intended
-  for actual production use, although it can be. It uses the Gadfly RDBMS
-  to store data. It is unable to perform string searches due to gadfly not
-  having a LIKE operation. It should scale well, assuming a client/server
-  setup is used. It's much slower than even the dbm backends.
 
 Note: you may set your tracker up with the anydbm backend (which is guaranteed
 to be available) and switch to one of the other backends at any time using the

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.45 2003-03-17 22:03:08 kedder Exp $
+# $Id: rdbms_common.py,v 1.46 2003-03-18 00:50:24 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -18,7 +18,7 @@ Database-specific changes may generally be pushed out to the overridable
 sql_* methods, since everything else should be fairly generic. There's
 probably a bit of work to be done if a database is used that actually
 honors column typing, since the initial databases don't (sqlite stores
-everything as a string, and gadfly stores anything that's marsallable).
+everything as a string.)
 '''
 
 # standard python modules
@@ -433,13 +433,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
     # Nodes
     #
-
     def addnode(self, classname, nodeid, node):
         ''' Add the specified node to its class's db.
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'addnode', (self, classname, nodeid, node)
-        # gadfly requires values for all non-multilink columns
+
+        # determine the column definitions and multilink tables
         cl = self.classes[classname]
         cols, mls = self.determine_columns(cl.properties.items())
 

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.21 2003-01-12 23:53:19 richard Exp $
+# $Id: __init__.py,v 1.22 2003-03-18 00:50:24 richard Exp $
 
 ''' Container for the hyperdb storage backend implementations.
 
@@ -41,20 +41,6 @@ else:
     import back_anydbm
     anydbm = back_anydbm
     __all__.append('anydbm')
-
-try:
-    import gadfly
-    import gadfly.client
-except ImportError, message:
-    if str(message) == 'No module named client':
-        # don't keep the old gadfly around
-        del gadfly
-    elif str(message) != 'No module named gadfly':
-        raise
-else:
-    import back_gadfly
-    gadfly = back_gadfly
-    __all__.append('gadfly')
 
 try:
     import MySQLdb

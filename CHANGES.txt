@@ -2,6 +2,11 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2003-??-?? 0.6.0
+Removed:
+- having served its purpose as a template for other relational database
+  implementations, the gadfly backend has now been removed from the Roundup
+  distribution.
+
 Feature:
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
