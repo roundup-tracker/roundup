@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.55 2004-11-26 00:01:04 richard Exp $
+# $Id: db_test_base.py,v 1.55.2.1 2005-01-03 03:23:38 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -698,6 +698,7 @@ class DBTest(MyTestCase):
         i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
         i2 = self.db.issue.create(title="flebble the frooz")
         self.db.commit()
+        self.assertEquals(self.db.indexer.search([], self.db.issue), {})
         self.assertEquals(self.db.indexer.search(['hello'], self.db.issue),
             {i1: {'files': [f1]}})
         self.assertEquals(self.db.indexer.search(['world'], self.db.issue), {})
