@@ -25,7 +25,7 @@ Modified for Roundup 0.5 release:
 
 """
 
-__version__='$Revision: 1.4 $'[11:-2]
+__version__='$Revision: 1.5 $'[11:-2]
 
 import re, sys
 from TALES import Engine, CompilerError, _valid_name, NAME_RE, \
@@ -279,9 +279,10 @@ def restrictedTraverse(self, path, securityManager,
     path.reverse()
     object = self
     #print 'TRAVERSE', (object, path)
+    done = []
     while path:
+        __traceback_info__ = 'Traversed %r\n ... looking for %r'%(done, path)
         name = path.pop()
-        __traceback_info__ = 'looking for "%s"'%name
 
         if isinstance(name, TupleType):
             object = apply(object, name)
@@ -319,6 +320,7 @@ def restrictedTraverse(self, path, securityManager,
                 raise
         #print '... object is now', `o`
         object = o
+        done.append(o)
 
     return object
 
