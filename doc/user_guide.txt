@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.28 $
+:Version: $Revision: 1.29 $
 
 .. contents::
 
@@ -117,8 +117,35 @@ not set. For example, the following searches on the issues:
 Date properties
 ~~~~~~~~~~~~~~~
 
-Some fields in the search page (e.g. "Activity" or "Creation date") hold
-dates.  A plain date entered as a search field will match that date
+Date-and-time stamps are specified with the date in
+international standard format (``yyyy-mm-dd``) joined to the time
+(``hh:mm:ss``) by a period ``.``.  Dates in this form can be easily
+compared and are fairly readable when printed.  An example of a valid
+stamp is ``2000-06-24.13:03:59``. We'll call this the "full date
+format".  When Timestamp objects are printed as strings, they appear in
+the full date format.
+
+For user input, some partial forms are also permitted: the whole time or
+just the seconds may be omitted; and the whole date may be omitted or
+just the year may be omitted.  If the time is given, the time is
+interpreted in the user's local time zone. The Date constructor takes
+care of these conversions. In the following examples, suppose that
+``yyyy`` is the current year, ``mm`` is the current month, and ``dd`` is
+the current day of the month.
+
+-   "2000-04-17" means <Date 2000-04-17.00:00:00>
+-   "01-25" means <Date yyyy-01-25.00:00:00>
+-   "2000-04-17.03:45" means <Date 2000-04-17.08:45:00>
+-   "08-13.22:13" means <Date yyyy-08-14.03:13:00>
+-   "11-07.09:32:43" means <Date yyyy-11-07.14:32:43>
+-   "14:25" means
+-   <Date yyyy-mm-dd.19:25:00>
+-   "8:47:11" means
+-   <Date yyyy-mm-dd.13:47:11>
+-   the special date "." means "right now"
+
+
+When searching, a plain date entered as a search field will match that date
 exactly in the database.  We may also accept ranges of dates. You can
 specify range of dates in one of two formats:
 
@@ -138,43 +165,45 @@ Either first or second ``<value>`` can be omitted in both syntaxes.
 For example, if you enter string "from 9:00" to "Creation date" field,
 roundup will find  all issues, that were created today since 9 AM.
 
+The ``<value>`` may also be an interval, as described in the next section.
 Searching of "-2m; -1m" on activity field gives you issues which were
 active between period of time since 2 months up-till month ago.
 
-Other possible examples (consider local time is Sat Mar  8 22:07:48
-2003)::
+Other possible examples (consider local time is 2003-03-08.22:07:48)::
 
-    >>> Range("from 2-12 to 4-2")
-    <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
-    
-    >>> Range("FROM 18:00 TO +2m")
-    <Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
-    
-    >>> Range("12:00;")
-    <Range from 2003-03-08.12:00:00 to None>
-    
-    >>> Range("tO +3d")
-    <Range from None to 2003-03-11.20:07:48>
-    
-    >>> Range("2002-11-10; 2002-12-12")
-    <Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
-
-    >>> Range("; 20:00 +1d")
-    <Range from None to 2003-03-09.20:00:00>
-
-    >>> Range("2003")
-    <Range from 2003-01-01.00:00:00 to 2003-12-31.23:59:59>
-
-    >>> Range("2003-04")
-    <Range from 2003-04-01.00:00:00 to 2003-04-30.23:59:59>
+- "from 2-12 to 4-2" means
+  <Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
+- "FROM 18:00 TO +2m" means
+  <Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
+- "12:00;" means
+  <Range from 2003-03-08.12:00:00 to None>
+- "tO +3d" means
+  <Range from None to 2003-03-11.20:07:48>
+- "2002-11-10; 2002-12-12" means
+  <Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
+- "; 20:00 +1d" means
+  <Range from None to 2003-03-09.20:00:00>
+- "2003" means
+  <Range from 2003-01-01.00:00:00 to 2003-12-31.23:59:59>
+- "2003-04" means
+  <Range from 2003-04-01.00:00:00 to 2003-04-30.23:59:59>
     
 
 Interval properties
 ~~~~~~~~~~~~~~~~~~~
 
-XXX explain...
+Date intervals are specified using the suffixes "y", "m", and "d".  The
+suffix "w" (for "week") means 7 days. Time intervals are specified in
+hh:mm:ss format (the seconds may be omitted, but the hours and minutes
+may not).
 
-When searching on interval properties use the same syntax as for dates.
+-   "3y" means three years
+-   "2y 1m" means two years and one month
+-   "1m 25d" means one month and 25 days
+-   "2w 3d" means two weeks and three days
+-   "1d 2:50" means one day, two hours, and 50 minutes
+-   "14:00" means 14 hours
+-   "0:04:33" means four minutes and 33 seconds
 
 
 Simple support for collision detection
