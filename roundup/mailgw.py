@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.138 2003-11-13 03:41:38 richard Exp $
+$Id: mailgw.py,v 1.139 2003-12-04 23:34:25 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -92,14 +92,22 @@ class MailUsageError(ValueError):
     pass
 
 class MailUsageHelp(Exception):
-    pass
-
-class MailLoop(Exception):
-    """ We've seen this message before... """
+    """ We need to send the help message to the user. """
     pass
 
 class Unauthorized(Exception):
     """ Access denied """
+    pass
+
+class IgnoreMessage(Exception):
+    """ A general class of message that we should ignore. """
+    pass
+class IgnoreBulk(IgnoreMessage):
+        """ This is email from a mailing list or from a vacation program. """
+        pass
+class IgnoreLoop(IgnoreMessage):
+        """ We've seen this message before... """
+        pass
 
 def initialiseSecurity(security):
     ''' Create some Permissions and Roles on the security object
@@ -300,53 +308,7 @@ class MailGW:
         sendto = message.getaddrlist('resent-from')
         if not sendto:
             sendto = message.getaddrlist('from')
-        if sendto:
-            if not self.trapExceptions:
-                return self.handle_message(message)
-            try:
-                return self.handle_message(message)
-            except MailUsageHelp:
-                # bounce the message back to the sender with the usage message
-                fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
-                sendto = [sendto[0][1]]
-                m = ['']
-                m.append('\n\nMail Gateway Help\n=================')
-                m.append(fulldoc)
-                self.mailer.bounce_message(message, sendto, m,
-                    subject="Mail Gateway Help")
-            except MailUsageError, value:
-                # bounce the message back to the sender with the usage message
-                fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
-                sendto = [sendto[0][1]]
-                m = ['']
-                m.append(str(value))
-                m.append('\n\nMail Gateway Help\n=================')
-                m.append(fulldoc)
-                self.mailer.bounce_message(message, sendto, m)
-            except Unauthorized, value:
-                # just inform the user that he is not authorized
-                sendto = [sendto[0][1]]
-                m = ['']
-                m.append(str(value))
-                self.mailer.bounce_message(message, sendto, m)
-            except MailLoop:
-                # XXX we should use a log file here...
-                return
-            except:
-                # bounce the message back to the sender with the error message
-                # XXX we should use a log file here...
-                sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
-                m = ['']
-                m.append('An unexpected error occurred during the processing')
-                m.append('of your message. The tracker administrator is being')
-                m.append('notified.\n')
-                m.append('----  traceback of failure  ----')
-                s = cStringIO.StringIO()
-                import traceback
-                traceback.print_exc(None, s)
-                m.append(s.getvalue())
-                self.mailer.bounce_message(message, sendto, m)
-        else:
+        if not sendto:
             # very bad-looking message - we don't even know who sent it
             # XXX we should use a log file here...
             sendto = [self.instance.config.ADMIN_EMAIL]
@@ -358,6 +320,56 @@ class MailGW:
             m.append('')
             self.mailer.bounce_message(message, sendto, m,
                 subject='Badly formed message from mail gateway')
+            return
+
+        # try normal message-handling
+        if not self.trapExceptions:
+            return self.handle_message(message)
+        try:
+            return self.handle_message(message)
+        except MailUsageHelp:
+            # bounce the message back to the sender with the usage message
+            fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+            sendto = [sendto[0][1]]
+            m = ['']
+            m.append('\n\nMail Gateway Help\n=================')
+            m.append(fulldoc)
+            self.mailer.bounce_message(message, sendto, m,
+                subject="Mail Gateway Help")
+        except MailUsageError, value:
+            # bounce the message back to the sender with the usage message
+            fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
+            sendto = [sendto[0][1]]
+            m = ['']
+            m.append(str(value))
+            m.append('\n\nMail Gateway Help\n=================')
+            m.append(fulldoc)
+            self.mailer.bounce_message(message, sendto, m)
+        except Unauthorized, value:
+            # just inform the user that he is not authorized
+            sendto = [sendto[0][1]]
+            m = ['']
+            m.append(str(value))
+            self.mailer.bounce_message(message, sendto, m)
+        except IgnoreMessage:
+            # XXX we should use a log file here...
+            # do not take any action
+            # this exception is thrown when email should be ignored
+            return
+        except:
+            # bounce the message back to the sender with the error message
+            # XXX we should use a log file here...
+            sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
+            m = ['']
+            m.append('An unexpected error occurred during the processing')
+            m.append('of your message. The tracker administrator is being')
+            m.append('notified.\n')
+            m.append('----  traceback of failure  ----')
+            s = cStringIO.StringIO()
+            import traceback
+            traceback.print_exc(None, s)
+            m.append(s.getvalue())
+            self.mailer.bounce_message(message, sendto, m)
 
     def get_part_data_decoded(self,part):
         encoding = part.getencoding()
@@ -397,7 +409,11 @@ class MailGW:
         '''
         # detect loops
         if message.getheader('x-roundup-loop', ''):
-            raise MailLoop
+            raise IgnoreLoop
+
+        # detect Precedence: Bulk
+        if (message.getheader('precedence', '') == 'bulk'):
+            raise IgnoreBulk
 
         # XXX Don't enable. This doesn't work yet.
 #  "[^A-z.]tracker\+(?P<classname>[^\d\s]+)(?P<nodeid>\d+)\@some.dom.ain[^A-z.]"

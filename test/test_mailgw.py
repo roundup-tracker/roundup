@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.62 2003-11-13 03:41:38 richard Exp $
+# $Id: test_mailgw.py,v 1.63 2003-12-04 23:34:25 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -18,7 +18,8 @@ if not os.environ.has_key('SENDMAILDEBUG'):
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
 SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 
-from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, parseContent
+from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
+    parseContent, IgnoreLoop, IgnoreBulk
 from roundup import init, instance, rfc2822
 
 
@@ -961,7 +962,36 @@ This is a test submission of a new issue.
         l.sort()
         self.assertEqual(l, [self.richard_id, self.mary_id])
         return nodeid
-    
+
+
+    def testDejaVu(self):
+        self.assertRaises(IgnoreLoop, self._send_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+X-Roundup-Loop: hello
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: Re: [issue] Testing...
+
+Hi, I've been mis-configured to loop messages back to myself.
+''')
+
+    def testItsBulkStupid(self):
+        self.assertRaises(IgnoreBulk, self._send_mail,
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+Precedence: bulk
+To: issue_tracker@your.tracker.email.domain.example
+Cc: richard@test
+Message-Id: <dummy_test_message_id>
+Subject: Re: [issue] Testing...
+
+Hi, I'm on holidays, and this is a dumb auto-responder.
+''')
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(MailgwTestCase))

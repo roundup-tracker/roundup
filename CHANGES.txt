@@ -19,6 +19,7 @@ Feature:
   alphabetically (sf feature 790512).
 - added script for copying user(s) from tracker to tracker (sf patch
   828963)
+- ignore incoming email with "Precedence: bulk" (sf patch 843489)
 
 Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
