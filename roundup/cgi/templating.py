@@ -445,7 +445,7 @@ class HTMLClass(HTMLPermissions):
             property = '&property=%s'%property
         return '<a href="javascript:help_window(\'%s?:template=help&' \
             'properties=%s%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(
-            self.classname, property, properties, width, height, label)
+            self.classname, properties, property, width, height, label)
 
     def submit(self, label="Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
