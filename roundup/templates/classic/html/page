@@ -1,4 +1,4 @@
-<html metal:define-macro="page">
+<html metal:define-macro="icing">
 <head>
 <title metal:define-slot="head_title">title goes here</title>
 

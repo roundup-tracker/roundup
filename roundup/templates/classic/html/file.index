@@ -1,5 +1,5 @@
 <!-- dollarId: file.index,v 1.4 2002/01/23 05:10:27 richard Exp dollar-->
-<tal:block metal:use-macro="templates/page/macros/page">
+<tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">List of files</title>
 <td class="page-header-top" metal:fill-slot="body_title">
  <h2>List of files</h2>

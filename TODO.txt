@@ -51,6 +51,8 @@ pending web       UNIX init.d script for roundup-server
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
 pending web       automagically link designators
+pending web       add checkbox-based removal/addition for multilink entries
+                  (eg "add me"/"remove me" for nosy list)
 
 bug     mailgw    some f*ked mailers QUOTE their Re; "Re: "[issue1] bla blah""
 bug     docs      need to mention somewhere how sorting works

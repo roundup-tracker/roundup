@@ -1,5 +1,5 @@
 <!-- dollarId: issue.item,v 1.4 2001/08/03 01:19:43 richard Exp dollar-->
-<tal:block metal:use-macro="templates/page/macros/page">
+<tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">Issue editing</title>
 <td class="page-header-top" metal:fill-slot="body_title"><h2>Issue Editing</h2>
 </td>

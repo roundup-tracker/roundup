@@ -1,4 +1,4 @@
-<tal:block metal:use-macro="templates/page/macros/page">
+<tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">Message listing</title>
 <td class="page-header-top" metal:fill-slot="body_title">
  <h2>Message listing</h2>
