@@ -15,42 +15,50 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.11 2002-02-16 08:39:42 richard Exp $
+# $Id: __init__.py,v 1.12 2002-05-22 00:32:33 richard Exp $
 
 __all__ = []
 
 try:
-    import sys
+    import sys, anydbm
     if not hasattr(sys, 'version_info') or sys.version_info < (2,1,2):
-        import anydbm, dumbdbm
+        import dumbdbm
         # dumbdbm only works in python 2.1.2+
         assert anydbm._defaultmod != dumbdbm
         del anydbm
         del dumbdbm
+except AssertionError:
+    print "WARNING: you should upgrade to python 2.1.3"
+except ImportError, message:
+    if str(message) != 'No module named anydbm': raise
+else:
     import back_anydbm
     anydbm = back_anydbm
     __all__.append('anydbm')
-except AssertionError:
-    pass
-except ImportError:
-    pass
 
 try:
+    import bsddb
+except ImportError, message:
+    if str(message) != 'No module named bsddb': raise
+else:
     import back_bsddb
     bsddb = back_bsddb
     __all__.append('bsddb')
-except ImportError:
-    pass
 
 try:
+    import bsddb3
+except ImportError, message:
+    if str(message) != 'No module named bsddb3': raise
+else:
     import back_bsddb3
     bsddb3 = back_bsddb3
     __all__.append('bsddb3')
-except ImportError:
-    pass
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/02/16 08:39:42  richard
+#  . #516854 ] "My Issues" and redisplay
+#
 # Revision 1.10  2002/01/22 07:08:50  richard
 # I was certain I'd already done this (there's even a change note in
 # CHANGES)...

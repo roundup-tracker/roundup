@@ -28,6 +28,7 @@ Feature:
    behaviour. Setting them to 'yes' will add the author/recipients to the nosy
    on messages that create issues and followup messages.
  . reverting to dates for intervals > 2 months sucks
+ . changed the default message list in issues to display the message body
 
 Fixed:
  . stop sending blank (whitespace-only) notes
@@ -47,7 +48,12 @@ Fixed:
  . #449374 ] re-enable bsddb3 backend
    bsddb3 backend now works, reinstating
  . #551483 ] assignedto in Client.make_index_link
-
+ . made backends.__init__ be more specific about which ImportErrors it really
+   wants to ignore
+ . fixed the example addresses in the templates to use correct example domains
+ . cleaned out the template stylesheets, removing a bunch of junk that really
+   wasn't necessary (font specs, styles never used) and added a style for 
+   message content
 
 2002-03-25 - 0.4.1
 Feature:

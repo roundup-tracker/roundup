@@ -1,21 +1,3 @@
-h1 {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 18pt; 
-  font-weight: bold; 
-}
-
-h2 {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 16pt; 
-  font-weight: bold; 
-}
-
-h3 {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 12pt; 
-  font-weight: bold; 
-}
-
 a:hover {  
   font-family: Verdana, Helvetica, sans-serif; 
   text-decoration: underline;
@@ -36,32 +18,17 @@ a {
 
 p {
   font-family: Verdana, Helvetica, sans-serif;
-  font-size: 10pt;
   color: #333333;
 }
 
 th {
   font-family: Verdana, Helvetica, sans-serif; 
   font-weight: bold;
-  font-size: 10pt; 
   color: #333333;
 }
 
 .form-help {
   font-family: Verdana, Helvetica, sans-serif;
-  font-size: 10pt;
-  color: #333333;
-}
-
-.std-text {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 10pt;
-  color: #333333;
-}
-
-.tab-small {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 8pt; 
   color: #333333;
 }
 
@@ -73,23 +40,13 @@ th {
 
 .strong-header {
   font-family: Verdana, Helvetica, sans-serif;
-  font-size: 12pt;
   font-weight: bold;
   background-color: #000000;
   color: #ffffff;
 }
 
-.msg-header {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 12pt;
-  font-weight: bold;
-  background-color: #EE71AC;
-  color: #ffffff;
-}
-
 .file-header {
   font-family: Verdana, Helvetica, sans-serif;
-  font-size: 12pt;
   font-weight: bold;
   background-color: #41BE62;
   color: #ffffff;
@@ -97,33 +54,14 @@ th {
 
 .history-header {
   font-family: Verdana, Helvetica, sans-serif;
-  font-size: 12pt;
   font-weight: bold;
   background-color: #739DEE;
   color: #ffffff;
 }
 
-.list-header {
-  background-color: #aaccff;
-  color: #000000;
-  border: none;
-}
-
-.list-item {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 10pt; 
-}
-
-.list-nav {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 10pt; 
-  font-weight: bold;
-}
-
 .row-normal {
   background-color: #ffffff;
   border: none;
-
 }
 
 .row-hilite {
@@ -171,15 +109,20 @@ th {
   border: none;
 }
 
-.section-bar {
-  background-color: #707070;
+.msg-header {
+  font-family: Verdana, Helvetica, sans-serif;
+  font-weight: bold;
+  background-color: #EE71AC;
   color: #ffffff;
-  border: 1px solid #404040;
+}
+
+.msg-content {
+  font-family: monospace;
+  background-color: #ffeaff;
+  color: #000000;
 }
 
 .system-msg {
-  font-family: Verdana, Helvetica, sans-serif; 
-  font-size: 10pt; 
   background-color: #ffffff;
   border:  1px solid #000000;
   margin-bottom: 6px;
@@ -190,41 +133,30 @@ th {
 }
 
 .form-title {
-  font-family: Verdana, Helvetica, sans-serif; 
   font-weight: bold;
-  font-size: 12pt; 
   color: #333333;
 }
 
 .form-label {
-  font-family: Verdana, Helvetica, sans-serif; 
   font-weight: bold;
-  font-size: 10pt; 
   color: #333333;
 }
 
 .form-optional {
-  font-family: Verdana, Helvetica, sans-serif; 
   font-weight: bold;
   font-style: italic;
-  font-size: 10pt; 
   color: #333333;
 }
 
 .form-element {
-  font-family: Verdana, Helvetica, aans-serif;
-  font-size: 10pt;
   color: #000000;
 }
 
 .form-text {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 10pt;
   color: #333333;
 }
 
 .form-mono {
   font-family: monospace;
-  font-size: 12px;
-  text-decoration: none;
 }
+

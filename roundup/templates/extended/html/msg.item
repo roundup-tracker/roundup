@@ -1,4 +1,4 @@
-<!-- $Id: msg.item,v 1.1 2001-07-23 04:21:20 richard Exp $-->
+<!-- $Id: msg.item,v 1.2 2002-05-22 00:32:34 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -22,7 +22,7 @@
 
 <tr bgcolor="ffeaff">
  <td colspan=2 class="form-text">
-  <pre><display call="plain('content')"></pre>
+  <pre><display call="plain('content', escape=1)"></pre>
  </td>
 </tr>
 
