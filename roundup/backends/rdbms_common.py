@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.15 2002-09-24 01:59:28 richard Exp $
+# $Id: rdbms_common.py,v 1.16 2002-09-24 07:39:52 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1570,18 +1570,19 @@ class Class(hyperdb.Class):
         if not self.key:
             raise TypeError, 'No key property set for class %s'%self.classname
 
-        sql = 'select id,__retired__ from _%s where _%s=%s'%(self.classname,
-            self.key, self.db.arg)
+        sql = '''select id from _%s where _%s=%s
+            and __retired__ != '1' '''%(self.classname, self.key,
+            self.db.arg)
         self.db.sql(sql, (keyvalue,))
 
         # see if there was a result that's not retired
-        l = self.db.cursor.fetchall()
-        if not l or int(l[0][1]):
+        row = self.db.sql_fetchone()
+        if not row:
             raise KeyError, 'No key (%s) value "%s" for "%s"'%(self.key,
                 keyvalue, self.classname)
 
         # return the id
-        return l[0][0]
+        return row[0]
 
     def find(self, **propspec):
         '''Get the ids of nodes in this class which link to the given nodes.
