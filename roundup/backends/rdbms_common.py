@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.3 2002-09-19 02:37:41 richard Exp $
+# $Id: rdbms_common.py,v 1.4 2002-09-19 03:39:48 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -429,7 +429,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         cursor = self.conn.cursor()
         sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
-        vals = (setid, spec.classname)
+        vals = (setid, classname)
         if __debug__:
             print >>hyperdb.DEBUG, 'setid', (self, sql, vals)
         cursor.execute(sql, vals)
