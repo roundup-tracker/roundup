@@ -158,7 +158,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         }
         # add in the item if there is one
         if client.nodeid:
-            c['item'] = HTMLItem(client.db, classname, client.nodeid)
+            c['item'] = HTMLItem(client, classname, client.nodeid)
             c[classname] = c['item']
         else:
             c[classname] = c['klass']
@@ -219,10 +219,11 @@ class HTMLClass:
         return '<HTMLClass(0x%x) %s>'%(id(self), self.classname)
 
     def __getitem__(self, item):
-        ''' return an HTMLItem instance'''
-        #print 'getitem', (self, attr)
+        ''' return an HTMLProperty instance
+        '''
+        #print 'getitem', (self, item)
         if item == 'creator':
-            return HTMLUser(self.client)
+            return HTMLUser(self.client, 'user', client.userid)
 
         if not self.props.has_key(item):
             raise KeyError, item
@@ -235,7 +236,7 @@ class HTMLClass:
             else:
                 value = None
             if isinstance(prop, klass):
-                return htmlklass(self.db, '', prop, item, value)
+                return htmlklass(self.client, '', prop, item, value)
 
         # no good
         raise KeyError, item
@@ -258,11 +259,15 @@ class HTMLClass:
                 else:
                     value = None
                 if isinstance(prop, klass):
-                    l.append(htmlklass(self.db, '', prop, name, value))
+                    l.append(htmlklass(self.client, '', prop, name, value))
         return l
 
     def list(self):
-        l = [HTMLItem(self.db, self.classname, x) for x in self.klass.list()]
+        if self.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+        l = [klass(self.client, self.classname, x) for x in self.klass.list()]
         return l
 
     def csv(self):
@@ -307,7 +312,11 @@ class HTMLClass:
             filterspec = request.filterspec
             sort = request.sort
             group = request.group
-        l = [HTMLItem(self.db, self.classname, x)
+        if self.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+        l = [klass(self.client, self.classname, x)
              for x in self.klass.filter(None, filterspec, sort, group)]
         return l
 
@@ -357,8 +366,9 @@ class HTMLClass:
 class HTMLItem:
     ''' Accesses through an *item*
     '''
-    def __init__(self, db, classname, nodeid):
-        self.db = db
+    def __init__(self, client, classname, nodeid):
+        self.client = client
+        self.db = client.db
         self.classname = classname
         self.nodeid = nodeid
         self.klass = self.db.getclass(classname)
@@ -368,7 +378,9 @@ class HTMLItem:
         return '<HTMLItem(0x%x) %s %s>'%(id(self), self.classname, self.nodeid)
 
     def __getitem__(self, item):
-        ''' return an HTMLItem instance'''
+        ''' return an HTMLProperty instance
+        '''
+        #print 'getitem', (self, item)
         if item == 'id':
             return self.nodeid
         if not self.props.has_key(item):
@@ -384,7 +396,7 @@ class HTMLItem:
         # look up the correct HTMLProperty class
         for klass, htmlklass in propclasses:
             if isinstance(prop, klass):
-                return htmlklass(self.db, self.nodeid, prop, item, value)
+                return htmlklass(self.client, self.nodeid, prop, item, value)
 
         raise KeyErorr, item
 
@@ -556,10 +568,9 @@ class HTMLItem:
 class HTMLUser(HTMLItem):
     ''' Accesses through the *user* (a special case of item)
     '''
-    def __init__(self, client):
-        HTMLItem.__init__(self, client.db, 'user', client.userid)
+    def __init__(self, client, classname, nodeid):
+        HTMLItem.__init__(self, client, 'user', nodeid)
         self.default_classname = client.classname
-        self.userid = client.userid
 
         # used for security checks
         self.security = client.db.security
@@ -572,15 +583,16 @@ class HTMLUser(HTMLItem):
         '''
         if classname is self._marker:
             classname = self.default_classname
-        return self.security.hasPermission(role, self.userid, classname)
+        return self.security.hasPermission(role, self.nodeid, classname)
 
 class HTMLProperty:
     ''' String, Number, Date, Interval HTMLProperty
 
         A wrapper object which may be stringified for the plain() behaviour.
     '''
-    def __init__(self, db, nodeid, prop, name, value):
-        self.db = db
+    def __init__(self, client, nodeid, prop, name, value):
+        self.client = client
+        self.db = client.db
         self.nodeid = nodeid
         self.prop = prop
         self.name = name
@@ -730,7 +742,11 @@ class LinkHTMLProperty(HTMLProperty):
         #print 'getattr', (self, attr, self.value)
         if not self.value:
             raise AttributeError, "Can't access missing value"
-        i = HTMLItem(self.db, self.prop.classname, self.value)
+        if self.prop.classname == 'user':
+            klass = HTMLItem
+        else:
+            klass = HTMLUser
+        i = klass(self.client, self.prop.classname, self.value)
         return getattr(i, attr)
 
     def plain(self, escape=0):
@@ -853,16 +869,26 @@ class MultilinkHTMLProperty(HTMLProperty):
         raise AttributeError, attr
 
     def __getitem__(self, num):
-        ''' iterate and return a new HTMLItem '''
+        ''' iterate and return a new HTMLItem
+        '''
         #print 'getitem', (self, num)
         value = self.value[num]
-        return HTMLItem(self.db, self.prop.classname, value)
+        if self.prop.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+        return klass(self.client, self.prop.classname, value)
 
     def reverse(self):
-        ''' return the list in reverse order '''
+        ''' return the list in reverse order
+        '''
         l = self.value[:]
         l.reverse()
-        return [HTMLItem(self.db, self.prop.classname, value) for value in l]
+        if self.prop.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+        return [klass(self.client, self.prop.classname, value) for value in l]
 
     def plain(self, escape=0):
         linkcl = self.db.classes[self.prop.classname]
@@ -1003,7 +1029,7 @@ class HTMLRequest:
         self.env = client.env
         self.base = client.base
         self.url = client.url
-        self.user = HTMLUser(client)
+        self.user = HTMLUser(client, 'user', client.userid)
 
         # store the current class name and action
         self.classname = client.classname
@@ -1240,7 +1266,11 @@ class Batch(ZTUtils.Batch):
             self.last_index = index
 
         # wrap the return in an HTMLItem
-        self.current_item = HTMLItem(self.client.db, self.classname,
+        if self.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+        self.current_item = klass(self.client, self.classname,
             self._sequence[index+self.first])
         return self.current_item
 
