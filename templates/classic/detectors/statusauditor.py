@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: statusauditor.py,v 1.4 2003-10-24 15:51:43 jlgijsbers Exp $
+#$Id: statusauditor.py,v 1.5 2004-03-27 00:01:48 richard Exp $
 
 def chatty(db, cl, nodeid, newvalues):
     ''' If the issue is currently 'unread', 'resolved', 'done-cbb' or None,
@@ -66,8 +66,15 @@ def presetunread(db, cl, nodeid, newvalues):
     if newvalues.has_key('status') and newvalues['status']:
         return
 
+    # get the unread state ID
+    try:
+        unread_id = db.status.lookup('unread')
+    except KeyError:
+        # no unread state, ignore all this stuff
+        return
+
     # ok, do it
-    newvalues['status'] = db.status.lookup('unread')
+    newvalues['status'] = unread_id
 
 
 def init(db):

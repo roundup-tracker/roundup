@@ -22,6 +22,7 @@ Fixed:
 - sqlite backend wasn't migrating multilink tables correctly
 - use SimpleCookie instead of Cookie (is an alias for the evil SmartCookie)
 - handle older sessions in session dbm
+- make presetunread more resilient to status Class changes
 
 
 2004-03-24 0.7.0b1
