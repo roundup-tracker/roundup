@@ -13,12 +13,15 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    get you going
  - easy to set up higher-performance storage backends like sqlite_ and
    metakit_
+ - the really impatient can try the instant-gratification Demo Mode (``python
+   demo.py``)
 
 *simple to use*
  - accessible through the web, email, command-line or Python programs
  - may be used to track bugs, features, user feedback, sales opportunities,
    milestones, ...
  - keeps a full history of changes to issues with configurable verbosity
+ - issues have their own mini mailing list (nosy list)
 
 *highly configurable*
  - web interface HTML is fully editable
@@ -30,8 +33,9 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - samples are provided for all types of configuration changes
 
 *fast, scalable*
- - with the sqlite_ and metakit_ backends, roundup is also fast and scalable,
-   easily handling thousands of issues and users with decent response times
+ - with the sqlite_, metakit_ and mysql backends, roundup is also fast and
+   scalable, easily handling thousands of issues and users with decent
+   response times
  - indexed text searching giving fast responses to searches across all
    messages and indexed string properties
 
@@ -45,6 +49,8 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
  - differentiates between anonymous, known and admin users
  - may be set up to require login, and may also only allow admin users
    to register new users
+ - authentication of user registration and user-driven password resetting
+   using email and one time keys
  - may be run through CGI as a normal cgi script, as a stand-alone
    web server, or through Zope
  - searching may be performed using many constraints, including a full-text
@@ -58,7 +64,6 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 *e-mail interface*
  - may be set up using sendmail-like delivery alias, POP polling or mailbox
    polling
- - issues have their own mini mailing list (nosy list)
  - may auto-register users who send in mail and aren't known to roundup
  - nosy list configuration controls how people are added and when messages
    are sent to the list
@@ -71,12 +76,15 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
    threaded
  - users may send in messages from multiple addresses and be associated
    with the same roundup username
+ - built-in security features like TLS and APOP
 
 *command-line*
  - may be used to interactively manage roundup databases
  - may be scripted using standard shell scripting
  - roundup's API may also be used by other Python programs - a sample is
    provided that runs once a day and emails people their assigned issues
+ - a variety of sample shell scripts are provided (weekly reports, issue
+   generation, ...)
 
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _metakit: http://www.equi4.com/metakit/

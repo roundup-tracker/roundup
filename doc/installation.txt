@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.51 $
+:Version: $Revision: 1.52 $
 
 .. contents::
 
@@ -464,8 +464,33 @@ addresses, databases to back up, etc.
 Platform-Specific Notes
 =======================
 
-Windows
--------
+Windows command-line tools
+--------------------------
+
+To make the command-line tools accessible in Windows, you need to update
+the "Path" environment variable in the Registry via a dialog box.
+
+On Windows 2000 and later:
+
+1) Press the "Start" button.
+2) Choose "Settings"
+3) Choose "Control Panel"
+4) Choose "System"
+5) Choose "Advanced"
+6) Choose "Environmental Variables"
+7) Add: "*\Scripts" to the "Path" environmental variable.
+
+Where * in 7) is the root directory (e.g., C:\Python22\Scripts)
+of your Python installation.
+
+I understand that in XP, 2) above is not needed as "Control
+Panel" is directly accessible from "Start".
+
+I do not believe this is possible to do in previous versions of Windows.
+
+
+Windows Server
+--------------
 
 To have the Roundup web server start up when your machine boots up, set the
 following up in Scheduled Tasks (note, the following is for a cygwin setup):
