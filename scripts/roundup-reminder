@@ -1,0 +1,142 @@
+#! /usr/bin/env python
+# Copyright (c) 2002 ekit.com Inc (http://www.ekit-inc.com/)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# $Id: roundup-reminder,v 1.1 2002-04-15 06:37:31 richard Exp $
+
+'''
+Simple script that emails all users of a tracker with the issues that
+are currently assigned to them.
+
+TODO: introduce some structure ;)
+TODO: possibly make this more general and configurable...
+
+Note: The instance that this script was designed for has a modified schema!
+      You will want to modify this script to customise it for your own schema!
+'''
+
+import cStringIO, MimeWriter, smtplib
+from roundup import instance, date
+
+# open the instance
+if len(sys.argv) != 2:
+    print 'You need to specify an instance home dir'
+instance_home = sys.argv[1]
+instance = instance.open(instance_home)
+db = instance.open('admin')
+
+resolved_id = db.status.lookup('resolved')
+
+# loop through all the users
+for user_id in db.user.list():
+    # make sure we care aboue this user
+    name = db.user.get(user_id, 'realname')
+    if name is None:
+        name = db.user.get(user_id, 'username')
+    address = db.user.get(user_id, 'address')
+    if address is None:
+        continue
+
+    # extract this user's issues
+    l = []
+    for issue_id in db.issue.find(assignedto=user_id):
+        if db.issue.get(issue_id, 'status') == resolved_id: continue
+        timeliness_id = db.issue.get(issue_id, 'timeliness')
+        if timeliness_id:
+            timeliness = db.timeliness.get(timeliness_id, 'name')
+        else:
+            timeliness = '~~~'
+        l.append((timeliness, db.issue.get(issue_id, 'creation'), issue_id))
+
+    # sort the issues by timeliness and creation date
+    l.sort()
+    if not l:
+        continue
+
+    # generate the email message
+    message = cStringIO.StringIO()
+    writer = MimeWriter.MimeWriter(message)
+    writer.addheader('Subject', 'Your active %s issues'%db.config.INSTANCE_NAME)
+    writer.addheader('To', address)
+    writer.addheader('From', '%s <%s>'%(db.config.INSTANCE_NAME,
+        db.config.ADMIN_EMAIL))
+    writer.addheader('Reply-To', '%s <%s>'%(db.config.INSTANCE_NAME,
+        db.config.ADMIN_EMAIL))
+    writer.addheader('MIME-Version', '1.0')
+    writer.addheader('X-Roundup-Name', db.config.INSTANCE_NAME)
+
+    # start the multipart
+    part = writer.startmultipartbody('alternative')
+    part = writer.nextpart()
+    body = part.startbody('text/plain')
+    
+    # do the plain text bit
+    print >>body, 'Created     ID   Urgency   Title'
+    print >>body, '='*75
+    #             '2 months    213  immediate cc_daemon barfage
+    for timeliness, creation_date, issue_id in l:
+        # pretty creation
+        creation = (date.Date('.') - creation_date).pretty()
+        if creation is None:
+            creation = creation_date.pretty()
+
+        if not timeliness: timeliness = ''
+        title = db.issue.get(issue_id, 'title')
+        if len(title) > 52: title = title[:48] + ' ...'
+        print >>body, '%-11s %-4s %-9s %-52s'%(creation, issue_id,
+            timeliness, title)
+
+    # now the HTML one
+    part = writer.nextpart()
+    body = part.startbody('text/html')
+    colours = {
+        'immediate': ' bgcolor="#ffcdcd"',
+        'day': ' bgcolor="#ffdecd"',
+        'week': ' bgcolor="#ffeecd"',
+        'month': ' bgcolor="#ffffcd"',
+        'whenever': ' bgcolor="#ffffff"',
+    }
+    print >>body, '''<table border>
+<tr><th>Created</th> <th>ID</th> <th>Urgency</th> <th>Title</th></tr>
+'''
+    for timeliness, creation_date, issue_id in l:
+        creation = (date.Date('.') - creation_date).pretty()
+        if creation is None:
+            creation = creation_date.pretty()
+        if not timeliness_id: timeliness_id = ' '
+        title = db.issue.get(issue_id, 'title')
+        issue_id = '<a href="%sissue%s">%s</a>'%(db.config.ISSUE_TRACKER_WEB,
+            issue_id, issue_id)
+        colour = colours.get(timeliness, '')
+        print >>body, '''<tr%s><td>%s</td><td>%s</td><td>%s</td>
+    <td>%s</td></tr>'''%(colour, creation, issue_id, timeliness, title)
+    print >>body, '</table>'
+
+    # finish of the multipart
+    writer.lastpart()
+
+    # all done, send!
+    smtp = smtplib.SMTP(db.config.MAILHOST)
+    smtp.sendmail(db.config.ADMIN_EMAIL, address, message.getvalue())
+
+#
+# $Log: not supported by cvs2svn $
+#
+#
