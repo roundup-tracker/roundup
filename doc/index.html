@@ -858,11 +858,16 @@ generated using <strong>field</strong>.
 
 <tr><td valign="top"><strong>link</strong></td>
 <td>For a Link or Multilink property, display the names of the linked
-nodes, hyperlinked to the item views on those nodes. For other properties,
-link to this node with the property as the text.
+nodes, hyperlinked to the item views on those nodes.
+<p>
+For other properties, link to this node with the property as the text.
 <p>
 <em>Options:</em><br>
-property (property name) - the property to use in the second case.
+property (property name) - the property to use in the second case.<br>
+is_download (boolean) - to be used for links te <em>file</em> class nodes -
+this indicates that the URL should have the specified property (usually
+<em>name</em>) appended so that the download has the correct name (instead
+of the node designator.)
 </td></tr>
 
 <tr><td valign="top"><strong>count</strong></td>
@@ -1152,7 +1157,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.14 2001-10-10 03:58:40 richard Exp $
+$Id: index.html,v 1.15 2001-10-21 11:39:49 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>
