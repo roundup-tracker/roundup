@@ -60,7 +60,7 @@ function retire(qid) {
  </tal:block>
 </tr>
 
-<tr tal:define="queries python:db.query.filter(filterspec={'private_for':uid})"
+<tr tal:define="queries python:db.query.filter(filterspec={'creator':uid})"
      tal:repeat="query queries">
  <td><a tal:attributes="href string:${query/klass}?${query/url}"
         tal:content="query/name">query</a></td>
@@ -90,7 +90,7 @@ function retire(qid) {
         tal:content="query/name">query</a></td>
 
  <td metal:use-macro="template/macros/include" />
- <td colspan="3">[not yours to edit]</td>
+ <td colspan="3">&nbsp;</td>
 </tr>
 
 <tr><td colspan="5">
