@@ -41,44 +41,13 @@ except ImportError:
 from roundup.cgi.PageTemplates import PageTemplate, GlobalTranslationService
 from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL import TALInterpreter
-from roundup.cgi import ZTUtils
+from roundup.cgi import TranslationService, ZTUtils
 
 ### i18n services
-
-class StaticTranslationService:
-
-    """Translation service for application default language
-
-    This service uses "static" translation, with single domain
-    and target language, initialized from OS environment when
-    roundup.i18n is loaded.
-
-    'domain' and 'target_language' parameters to 'translate()'
-    are ignored.
-
-    Returned strings are always utf8-encoded.
-
-    """
-
-    OUTPUT_ENCODING = "utf-8"
-
-    def translate(self, domain, msgid, mapping=None,
-        context=None, target_language=None, default=None
-    ):
-        _msg = self.gettext(msgid)
-        #print ("TRANSLATE", msgid, _msg, mapping, context)
-        _msg = TALInterpreter.interpolate(_msg, mapping)
-        return _msg
-
-    def gettext(self, msgid):
-        return i18n.ugettext(msgid).encode(self.OUTPUT_ENCODING)
-
-    def ngettext(self, singular, plural, number):
-        return i18n.ungettext(singular, plural, number).encode(
-            self.OUTPUT_ENCODING)
-
-translationService = StaticTranslationService()
-
+# this global translation service is not thread-safe.
+# it is left here for backward compatibility
+# until all Web UI translations are done via client.translator object
+translationService = TranslationService.get_translation()
 GlobalTranslationService.setGlobalTranslationService(translationService)
 
 ### templating
