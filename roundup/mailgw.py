@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.72 2002-05-22 01:24:51 richard Exp $
+$Id: mailgw.py,v 1.73 2002-05-22 04:12:05 richard Exp $
 '''
 
 
@@ -654,7 +654,7 @@ not find a text/plain part to use.
             current = {}
             for nid in cl.get(nodeid, 'nosy'):
                 current[nid] = 1
-            self.updateNosy(props, author, recipients, current)
+            self.updateNosy(cl, props, author, recipients, current)
 
             # create the message
             message_id = self.db.msg.create(author=author,
@@ -711,7 +711,7 @@ There was a problem with the message you sent:
             props['messages'] = [message_id]
 
             # set up (clean) the nosy list
-            self.updateNosy(props, author, recipients)
+            self.updateNosy(cl, props, author, recipients)
 
             # and attempt to create the new node
             try:
@@ -727,7 +727,7 @@ There was a problem with the message you sent:
 
         return nodeid
 
-    def updateNosy(self, props, author, recipients, current=None):
+    def updateNosy(self, cl, props, author, recipients, current=None):
         '''Determine what the nosy list should be given:
 
             props:      properties specified on the subject line of the message
@@ -761,11 +761,16 @@ There was a problem with the message you sent:
                 if not current.has_key(recipient):
                     current[recipient] = 1
 
-        # add assignedto to the nosy list
+        # add assignedto(s) to the nosy list
         if props.has_key('assignedto'):
-            assignedto = props['assignedto']
-            if not current.has_key(assignedto):
-                current[assignedto] = 1
+            propdef = cl.getprops()
+            if isinstance(propdef['assignedto'], hyperdb.Link):
+                assignedto_ids = [props['assignedto']]
+            elif isinstance(propdef['assignedto'], hyperdb.Multilink):
+                assignedto_ids = props['assignedto']
+            for assignedto_id in assignedto_ids:
+                if not current.has_key(assignedto_id):
+                    current[assignedto_id] = 1
 
         props['nosy'] = current.keys()
 
@@ -838,6 +843,10 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.72  2002/05/22 01:24:51  richard
+# Added note to MIGRATION about new config vars. Also made us more resilient
+# for upgraders. Reinstated list header style (oops)
+#
 # Revision 1.71  2002/05/08 02:40:55  richard
 # grr
 #

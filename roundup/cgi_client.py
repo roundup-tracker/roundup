@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.121 2002-05-21 06:08:10 richard Exp $
+# $Id: cgi_client.py,v 1.122 2002-05-22 04:12:05 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -167,8 +167,8 @@ function help_window(helpurl, width, height) {
                 # skip if we need to fill in the logged-in user id there's
                 # no user logged in
                 if (spec['FILTERSPEC'].has_key('assignedto') and
-                        spec['FILTERSPEC']['assignedto'] is None and
-                        userid is None):
+                        spec['FILTERSPEC']['assignedto'] in ('CURRENT USER',
+                        None) and userid is None):
                     continue
                 links.append(self.make_index_link(name))
         else:
@@ -581,21 +581,32 @@ function help_window(helpurl, width, height) {
     def _add_assignedto_to_nosy(self, props):
         ''' add the assignedto value from the props to the nosy list
         '''
-        if not props.has_key('assignedto'):
+        # get the properties definition and make some checks
+        cl = self.db.classes[self.classname]
+        propdef = cl.getprops()
+        if not propdef.has_key('assignedto') or not propdef.has_key('nosy'):
             return
-        assignedto_id = props['assignedto']
+
+        # get the assignedto(s)
+        if isinstance(propdef['assignedto'], hyperdb.Link):
+            assignedto_ids = [props['assignedto']]
+        elif isinstance(propdef['assignedto'], hyperdb.Multilink):
+            assignedto_ids = props['assignedto']
+        else:
+            return
+
+        # ok, now get the nosy list value
         if not props.has_key('nosy'):
             # load current nosy
             if self.nodeid:
-                cl = self.db.classes[self.classname]
-                l = cl.get(self.nodeid, 'nosy')
-                if assignedto_id in l:
-                    return
-                props['nosy'] = l
+                props['nosy'] = cl.get(self.nodeid, 'nosy')
             else:
                 props['nosy'] = []
-        if assignedto_id not in props['nosy']:
-            props['nosy'].append(assignedto_id)
+
+        # and update for assignedto id(s)
+        for assignedto_id in assignedto_ids:
+            if assignedto_id not in props['nosy']:
+                props['nosy'].append(assignedto_id)
 
     def _changenode(self, props):
         ''' change the node based on the contents of the form
@@ -1256,15 +1267,15 @@ function help_window(helpurl, width, height) {
             try:
                 cl = self.db.classes[self.classname]
             except KeyError:
-                raise NotFound
+                raise NotFound, self.classname
             try:
                 cl.get(self.nodeid, 'id')
             except IndexError:
-                raise NotFound
+                raise NotFound, self.nodeid
             try:
                 func = getattr(self, 'show%s'%self.classname)
             except AttributeError:
-                raise NotFound
+                raise NotFound, 'show%s'%self.classname
             func()
             return
 
@@ -1275,7 +1286,7 @@ function help_window(helpurl, width, height) {
             try:
                 func = getattr(self, 'new%s'%self.classname)
             except AttributeError:
-                raise NotFound
+                raise NotFound, 'new%s'%self.classname
             func()
             return
 
@@ -1284,7 +1295,7 @@ function help_window(helpurl, width, height) {
         try:
             self.db.getclass(self.classname)
         except KeyError:
-            raise NotFound
+            raise NotFound, self.classname
         self.list()
 
 
@@ -1384,6 +1395,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.121  2002/05/21 06:08:10  richard
+# Handle migration
+#
 # Revision 1.120  2002/05/21 06:05:53  richard
 #  . #551483 ] assignedto in Client.make_index_link
 #

@@ -29,6 +29,7 @@ Feature:
    on messages that create issues and followup messages.
  . reverting to dates for intervals > 2 months sucks
  . changed the default message list in issues to display the message body
+ . applied patch #558876 ] cgi client customization
 
 Fixed:
  . stop sending blank (whitespace-only) notes
