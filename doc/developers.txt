@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.11 $
+:Version: $Revision: 1.12 $
 
 .. note::
    The intended audience of this document is the developers of the core
@@ -106,6 +106,24 @@ Other project rules:
 The administrators of the project reserve the right to boot developers who
 consistently check in code which is either broken or takes the codebase in
 directions that have not been agreed to.
+
+
+Debugging Aids
+--------------
+
+Try turning on logging of DEBUG level messages. This may be done a number
+of ways, depending on what it is you're testing:
+
+1. If you're testing the database unit tests, then set the environment
+   variable ``LOGGING_LEVEL=DEBUG``. This may be done like so:
+
+    LOGGING_LEVEL=DEBUG python run_tests.py
+
+   This variable replaces the older HYPERDBDEBUG environment var.
+
+2. If you're testing a particular tracker, then set the logging level in
+   your tracker's ``config.py``.
+
 
 Internationalization Notes
 --------------------------

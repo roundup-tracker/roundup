@@ -80,6 +80,7 @@ class BasicLogger:
     def __init__(self, file, level):
         self.file = file
         self.level = level
+        self.format = '%(time)s %(level)s %(message)s'
 
     def setFile(self, file):
         '''Set the file to log to. "file" is either an open file object or
@@ -97,10 +98,17 @@ class BasicLogger:
                 if name == level:
                     level = num
         self.level = level
+    def setFormat(self, format):
+        self.format = format
     def write(self, level, message):
-        message = '%s %s %s\n'%(time.strftime('%Y-%m-%d %H:%M:%D'),
-            BasicLogging.NAMES[level], message)
+        info = {
+            'time': time.strftime('%Y-%m-%d %H:%M:%D'),
+            'level': BasicLogging.NAMES[level],
+            'message': message
+        }
+        message = self.format%info
         self._write(message)
+        self._write('\n')
     def _write(self, text):
         file = self.file or sys.stderr
         file.write(text)

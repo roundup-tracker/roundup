@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.42 2004-07-20 23:24:27 richard Exp $ 
+# $Id: db_test_base.py,v 1.43 2004-07-21 00:50:50 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -79,6 +79,12 @@ class config:
     EMAIL_SIGNATURE_POSITION = 'bottom'
 
     logging = MockNull()
+
+if os.environ.has_key('LOGGING_LEVEL'):
+    from roundup import rlog
+    config.logging = rlog.BasicLogging()
+    config.logging.setLevel(os.environ['LOGGING_LEVEL'])
+    config.logging.getLogger('hyperdb').setFormat('%(message)s')
 
 class DBTest(MyTestCase):
     def setUp(self):
