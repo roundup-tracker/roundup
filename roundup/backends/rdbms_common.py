@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.11 2004-06-24 07:14:48 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.12 2004-06-28 23:15:39 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2421,7 +2421,10 @@ class Class(hyperdb.Class):
         # make the new node's property map
         d = {}
         retire = 0
-        newid = None
+        if not "id" in propnames:
+            newid = self.db.newid(self.classname)
+        else:
+            newid = eval(proplist[propnames.index("id")])
         for i in range(len(propnames)):
             # Use eval to reverse the repr() used to output the CSV
             value = eval(proplist[i])
@@ -2431,7 +2434,6 @@ class Class(hyperdb.Class):
 
             # "unmarshal" where necessary
             if propname == 'id':
-                newid = value
                 continue
             elif propname == 'is retired':
                 # is the item retired?
@@ -2455,6 +2457,11 @@ class Class(hyperdb.Class):
                 pwd.unpack(value)
                 value = pwd
             d[propname] = value
+            if isinstance(prop, String) and prop.indexme:
+                if type(value) != type('') and type(value) != type(u''):
+                    raise TypeError, 'new property "%s" not a string'%key
+                self.db.indexer.add_text((self.classname, newid, propname),
+                    value)
 
         # get a new id if necessary
         if newid is None:
@@ -2595,10 +2602,12 @@ class FileClass(Class, hyperdb.FileClass):
             return Class.get(self, nodeid, propname)
 
     def getprops(self, protected=1):
-        ''' In addition to the actual properties on the node, these methods
-            provide the "content" property. If the "protected" flag is true,
-            we include protected properties - those which may not be
-            modified.
+        '''In addition to the actual properties on the node, these methods
+        provide the "content" property. If the "protected" flag is true,
+        we include protected properties - those which may not be
+        modified.
+
+        Note that the content prop is indexed separately, hence no indexme.
         '''
         d = Class.getprops(self, protected=protected).copy()
         d['content'] = hyperdb.String()
@@ -2632,6 +2641,18 @@ class FileClass(Class, hyperdb.FileClass):
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)
         return propvalues
+
+    def index(self, nodeid):
+        '''Add (or refresh) the node to search indexes.
+
+        Pass on the content-type property for the content property.
+        '''
+        Class.index(nodeid)
+        mime_type = self.get(itemid, 'type')
+        if not mime_type:
+            mime_type = self.default_mime_type
+        self.db.indexer.add_text((self.classname, nodeid, 'content'),
+            str(self.get(nodeid, 'content')), mime_type)
 
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):

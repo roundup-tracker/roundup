@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.11 2004-06-24 07:14:26 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.12 2004-06-28 23:15:39 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -2166,14 +2166,28 @@ class FileClass(Class, hyperdb.FileClass):
         return propvalues
 
     def getprops(self, protected=1):
-        ''' In addition to the actual properties on the node, these methods
-            provide the "content" property. If the "protected" flag is true,
-            we include protected properties - those which may not be
-            modified.
+        '''In addition to the actual properties on the node, these methods
+        provide the "content" property. If the "protected" flag is true,
+        we include protected properties - those which may not be
+        modified.
+
+        Note that the content prop is indexed separately, hence no indexme.
         '''
         d = Class.getprops(self, protected=protected).copy()
         d['content'] = hyperdb.String()
         return d
+
+    def index(self, nodeid):
+        '''Add (or refresh) the node to search indexes.
+
+        Pass on the content-type property for the content property.
+        '''
+        Class.index(self, nodeid)
+        mimetype = self.get(nodeid, 'type')
+        if not mimetype:
+            mimetype = self.default_mime_type
+        self.db.indexer.add_text((self.classname, nodeid, 'content'),
+                    self.get(nodeid, 'content'), mimetype)
 
 # deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
