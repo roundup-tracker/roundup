@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.53 2002-01-14 04:03:32 richard Exp $
+# $Id: htmltemplate.py,v 1.54 2002-01-14 05:16:51 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -468,9 +468,9 @@ class TemplateFunctions:
         ''' add a submit button for the item
         '''
         if self.nodeid:
-            return _('<input type="submit" value="Submit Changes">')
+            return _('<input type="submit" name="submit" value="Submit Changes">')
         elif self.form is not None:
-            return _('<input type="submit" value="Submit New Entry">')
+            return _('<input type="submit" name="submit" value="Submit New Entry">')
         else:
             return _('[Submit: not called from item]')
 
@@ -889,6 +889,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.53  2002/01/14 04:03:32  richard
+# How about that ... date fields have never worked ...
+#
 # Revision 1.52  2002/01/14 02:20:14  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
