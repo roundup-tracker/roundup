@@ -1,7 +1,20 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-10-?? - 0.3.0 
+2001-11-?? - 0.3.1
+Feature:
+ . Added INSTANCE_NAME to configuration - used in web and email to identify
+   the instance.
+ . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+   signature info in e-mails.
+ . Some more flexibility in the mail gateway and more error handling.
+ . Login now takes you to the page you back to the were denied access to.
+
+Fixed:
+ . Lots of bugs, thanks Roché and others on the devel mailing list!
+
+
+2001-11-23 - 0.3.0 
 Feature:
  . #467129 ] Lossage when username=e-mail-address
  . #473123 ] Change message generation for author

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.20 2001-11-25 10:11:14 jhermann Exp $
+# $Id: roundupdb.py,v 1.21 2001-11-26 22:55:56 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -23,7 +23,7 @@ Extending hyperdb with types specific to issue-tracking.
 
 import re, os, smtplib, socket
 import mimetools, MimeWriter, cStringIO
-import binascii, mimetypes
+import base64, mimetypes
 
 import hyperdb, date
 
@@ -231,6 +231,8 @@ class DetectorError(RuntimeError):
 class IssueClass(Class):
     # configuration
     MESSAGES_TO_AUTHOR = 'no'
+    INSTANCE_NAME = 'Roundup issue tracker'
+    EMAIL_SIGNATURE_POSITION = 'bottom'
 
     # Overridden methods:
 
@@ -284,6 +286,9 @@ class IssueClass(Class):
         # figure the author's id, and indicate they've received the message
         authid = self.db.msg.get(msgid, 'author')
 
+        # get the current nosy list, we'll need it
+        nosy = self.get(nodeid, 'nosy')
+
         # ... but duplicate the message to the author as long as it's not
         # the anonymous user
         if (self.MESSAGES_TO_AUTHOR == 'yes' and
@@ -293,7 +298,6 @@ class IssueClass(Class):
         r[authid] = 1
 
         # now figure the nosy people who weren't recipients
-        nosy = self.get(nodeid, 'nosy')
         for nosyid in nosy:
             # Don't send nosy mail to the anonymous user (that user
             # shouldn't appear in the nosy list, but just in case they
@@ -323,14 +327,25 @@ class IssueClass(Class):
         else:
             authaddr = ''
         # make the message body
-        m = []
+        m = ['']
+
+        # put in roundup's signature
+        if self.EMAIL_SIGNATURE_POSITION == 'top':
+            m.append(self.email_signature(nodeid, msgid))
+
         # add author information
-        m.append("%s %sadded the comment:"%(authname, authaddr))
+        if len(self.db.issue.get(nodeid, 'messages')) == 1:
+            m.append("New submission from %s <%s>:"%(authname, authaddr))
+        else:
+            m.append("%s <%s> added the comment:"%(authname, authaddr))
         m.append('')
+
         # add the content
         m.append(self.db.msg.get(msgid, 'content'))
+
         # "list information" footer
-        m.append(self.email_footer(nodeid, msgid))
+        if self.EMAIL_SIGNATURE_POSITION == 'bottom':
+            m.append(self.email_signature(nodeid, msgid))
 
         # get the files for this message
         files = self.db.msg.get(msgid, 'files')
@@ -340,8 +355,13 @@ class IssueClass(Class):
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', self.ISSUE_TRACKER_EMAIL)
-        writer.addheader('Reply-To:', self.ISSUE_TRACKER_EMAIL)
+        writer.addheader('From', '%s <%s>'%(self.INSTANCE_NAME,
+            self.ISSUE_TRACKER_EMAIL))
+        writer.addheader('Reply-To:', '%s <%s>'%(self.INSTANCE_NAME,
+            self.ISSUE_TRACKER_EMAIL))
+        writer.addheader('MIME-Version', '1.0')
+
+        # attach files
         if files:
             part = writer.startmultipartbody('mixed')
             part = writer.nextpart()
@@ -349,22 +369,27 @@ class IssueClass(Class):
             body.write('\n'.join(m))
             for fileid in files:
                 name = self.db.file.get(fileid, 'name')
-                type = self.db.file.get(fileid, 'type')
+                mime_type = self.db.file.get(fileid, 'type')
                 content = self.db.file.get(fileid, 'content')
                 part = writer.nextpart()
-                if type == 'text/plain':
+                if mime_type == 'text/plain':
                     part.addheader('Content-Disposition',
                         'attachment;\n filename="%s"'%name)
                     part.addheader('Content-Transfer-Encoding', '7bit')
                     body = part.startbody('text/plain')
                     body.write(content)
                 else:
-                    type = mimetypes.guess_type(name)[0]
+                    # some other type, so encode it
+                    if not mime_type:
+                        # this should have been done when the file was saved
+                        mime_type = mimetypes.guess_type(name)[0]
+                    if mime_type is None:
+                        mime_type = 'application/octet-stream'
                     part.addheader('Content-Disposition',
                         'attachment;\n filename="%s"'%name)
                     part.addheader('Content-Transfer-Encoding', 'base64')
-                    body = part.startbody(type)
-                body.write(binascii.b2a_base64(content))
+                    body = part.startbody(mime_type)
+                    body.write(base64.encodestring(content))
             writer.lastpart()
         else:
             body = writer.startbody('text/plain')
@@ -381,18 +406,22 @@ class IssueClass(Class):
             raise MessageSendError, \
                 "Couldn't send confirmation email: %s"%value
 
-    def email_footer(self, nodeid, msgid):
-        ''' Add a footer to the e-mail with some useful information
+    def email_signature(self, nodeid, msgid):
+        ''' Add a signature to the e-mail with some useful information
         '''
         web = self.ISSUE_TRACKER_WEB + 'issue'+ nodeid
         return '''%s
-Roundup issue tracker
 %s
 %s
-'''%('_'*len(web), self.ISSUE_TRACKER_EMAIL, web)
+%s
+'''%('_'*len(web), self.INSTANCE_NAME, self.ISSUE_TRACKER_EMAIL, web,
+    '_'*len(web))
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/11/25 10:11:14  jhermann
+# Typo fix
+#
 # Revision 1.19  2001/11/22 15:46:42  jhermann
 # Added module docstrings to all modules.
 #

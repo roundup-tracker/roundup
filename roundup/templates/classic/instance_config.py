@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance_config.py,v 1.9 2001-10-30 00:54:45 richard Exp $
+# $Id: instance_config.py,v 1.10 2001-11-26 22:55:56 richard Exp $
 
 MAIL_DOMAIN=MAILHOST=HTTP_HOST=None
 HTTP_PORT=0
@@ -50,6 +50,9 @@ DATABASE = os.path.join(INSTANCE_HOME, 'db')
 # This is the directory that the HTML templates reside in
 TEMPLATES = os.path.join(INSTANCE_HOME, 'html')
 
+# A descriptive name for your roundup instance
+INSTANCE_NAME = 'Roundup issue tracker'
+
 # The email address that mail to roundup should go to
 ISSUE_TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
@@ -74,8 +77,17 @@ ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
 # Send nosy messages to the author of the message
 MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
 
+# Where to place the email signature
+EMAIL_SIGNATURE_POSITION = 'bottom'
+
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/10/30 00:54:45  richard
+# Features:
+#  . #467129 ] Lossage when username=e-mail-address
+#  . #473123 ] Change message generation for author
+#  . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
+#
 # Revision 1.8  2001/10/23 01:00:18  richard
 # Re-enabled login and registration access after lopping them off via
 # disabling access for anonymous users.

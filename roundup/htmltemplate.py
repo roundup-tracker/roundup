@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.46 2001-11-24 00:53:12 jhermann Exp $
+# $Id: htmltemplate.py,v 1.47 2001-11-26 22:55:56 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -634,6 +634,10 @@ class IndexTemplate(TemplateFunctions):
 
         w = self.client.write
 
+        # wrap the template in a single table to ensure the whole widget
+        # is displayed at once
+        w('<table><tr><td>')
+
         if template and filter:
             # display the filter section
             w('<table width=100% border=0 cellspacing=0 cellpadding=2>')
@@ -733,6 +737,9 @@ class IndexTemplate(TemplateFunctions):
         w('</tr>\n')
         w('</table>\n')
 
+        # and the outer table
+        w('</td></tr></table>')
+
 
     def sortby(self, sort_name, filterspec, columns, filter, group, sort):
         l = []
@@ -824,7 +831,8 @@ class ItemTemplate(TemplateFunctions):
             #  designators...
 
         w = self.client.write
-        w('<form action="%s%s">'%(self.classname, nodeid))
+        w('<form action="%s%s" method="POST" enctype="multipart/form-data">'%(
+            self.classname, nodeid))
         s = open(os.path.join(self.templates, self.classname+'.item')).read()
         replace = ItemTemplateReplace(self.globals, locals(), self.cl, nodeid)
         w(replace.go(s))
@@ -865,6 +873,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.46  2001/11/24 00:53:12  jhermann
+# "except:" is bad, bad , bad!
+#
 # Revision 1.45  2001/11/22 15:46:42  jhermann
 # Added module docstrings to all modules.
 #

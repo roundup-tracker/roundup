@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.19 2001-11-22 00:25:10 richard Exp $
+# $Id: roundup.cgi,v 1.20 2001-11-26 22:55:56 richard Exp $
 
 # python version check
 import sys
@@ -133,22 +133,32 @@ def main(out, err):
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
     request = RequestWrapper(out)
     if ROUNDUP_INSTANCE_HOMES.has_key(instance):
-        instance_home = ROUNDUP_INSTANCE_HOMES[instance]
-        instance = roundup.instance.open(instance_home)
-        from roundup import cgi_client
-        client = instance.Client(instance, request, os.environ)
-        try:
-            client.main()
-        except cgi_client.Unauthorised:
-            request.send_response(403)
-            request.send_header('Content-Type', 'text/html')
+        # redirect if we need a trailing '/'
+        if len(path) == 2:
+            request.send_response(301)
+            absolute_url = 'http://%s%s/'%(os.environ['HTTP_HOST'],
+                os.environ['REQUEST_URI'])
+            request.send_header('Location', absolute_url)
             request.end_headers()
-            out.write('Unauthorised')
-        except cgi_client.NotFound:
-            request.send_response(404)
-            request.send_header('Content-Type', 'text/html')
-            request.end_headers()
-            out.write('Not found: %s'%client.path)
+            out.write('Moved Permanently')
+        else:
+            instance_home = ROUNDUP_INSTANCE_HOMES[instance]
+            instance = roundup.instance.open(instance_home)
+            from roundup import cgi_client
+            client = instance.Client(instance, request, os.environ)
+            try:
+                client.main()
+            except cgi_client.Unauthorised:
+                request.send_response(403)
+                request.send_header('Content-Type', 'text/html')
+                request.end_headers()
+                out.write('Unauthorised')
+            except cgi_client.NotFound:
+                request.send_response(404)
+                request.send_header('Content-Type', 'text/html')
+                request.end_headers()
+                out.write('Not found: %s'%client.path)
+
     else:
         import urllib
         request.send_response(200)
@@ -190,6 +200,9 @@ LOG.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/11/22 00:25:10  richard
+# quick fix for file uploads on windows in roundup.cgi
+#
 # Revision 1.18  2001/11/06 22:10:11  jhermann
 # Added env config; fixed request wrapper & index list; sort list by key
 #

@@ -15,20 +15,17 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.62 2001-11-24 00:45:42 jhermann Exp $
+# $Id: cgi_client.py,v 1.63 2001-11-26 22:55:56 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
-import binascii, Cookie, time, __builtin__
+import binascii, Cookie, time
 
 import roundupdb, htmltemplate, date, hyperdb, password
 from roundup.i18n import _
-
-# avoid clash with database field "type"
-typeof = __builtin__.type
 
 class Unauthorised(ValueError):
     pass
@@ -54,6 +51,9 @@ class Client:
       FILTER_POSITION - one of 'top', 'bottom', 'top and bottom'
       ANONYMOUS_ACCESS - one of 'deny', 'allow'
       ANONYMOUS_REGISTER - one of 'deny', 'allow'
+
+    from the roundup class:
+      INSTANCE_NAME - defaults to 'Roundup issue tracker'
 
     '''
     FILTER_POSITION = 'bottom'       # one of 'top', 'bottom', 'top and bottom'
@@ -155,7 +155,7 @@ class Client:
                 self.write('<dt><b>Form entries</b></dt>')
                 for k in self.form.keys():
                     v = self.form.getvalue(k, "<empty>")
-                    if typeof(v) is typeof([]):
+                    if type(v) is type([]):
                         # Multiple username fields specified
                         v = "|".join(v)
                     self.write('<dd><em>%s</em>=%s</dd>'%(k, cgi.escape(v)))
@@ -186,7 +186,7 @@ class Client:
         '''
         if self.form.has_key(arg):
             arg =  self.form[arg]
-            if typeof(arg) == typeof([]):
+            if type(arg) == type([]):
                 return [arg.value for arg in arg]
             return arg.value.split(',')
         return []
@@ -208,7 +208,7 @@ class Client:
             value = self.form[key]
             if (isinstance(prop, hyperdb.Link) or
                     isinstance(prop, hyperdb.Multilink)):
-                if typeof(value) == typeof([]):
+                if type(value) == type([]):
                     value = [arg.value for arg in value]
                 else:
                     value = value.value.split(',')
@@ -282,7 +282,9 @@ class Client:
 
         '''
         cn = self.classname
-        self.pagehead(_('Index of %(classname)s')%{'classname': cn})
+        cl = self.db.classes[cn]
+        self.pagehead(_('%(instancename)s: Index of %(classname)s')%{
+            'classname': cn, 'instancename': cl.INSTANCE_NAME})
         if sort is None: sort = self.index_arg(':sort')
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
@@ -305,14 +307,38 @@ class Client:
         # possibly perform an edit
         keys = self.form.keys()
         num_re = re.compile('^\d+$')
-        if keys:
+        # don't try to set properties if the user has just logged in
+        if keys and not self.form.has_key('__login_name')::
             try:
                 props, changed = parsePropsFromForm(self.db, cl, self.form,
                     self.nodeid)
-                cl.set(self.nodeid, **props)
-                self._post_editnode(self.nodeid, changed)
-                # and some nice feedback for the user
-                message = '%s edited ok'%', '.join(changed)
+
+                # set status to chatting if 'unread' or 'resolved'
+                if 'status' not in changed:
+                    try:
+                        # determine the id of 'unread','resolved' and 'chatting'
+                        unread_id = self.db.status.lookup('unread')
+                        resolved_id = self.db.status.lookup('resolved')
+                        chatting_id = self.db.status.lookup('chatting')
+                    except KeyError:
+                        pass
+                    else:
+                        if (not props.has_key('status') or
+                                props['status'] == unread_id or
+                                props['status'] == resolved_id):
+                            props['status'] = chatting_id
+                            changed.append('status')
+                note = None
+                if self.form.has_key('__note'):
+                    note = self.form['__note']
+                    note = note.value
+                if changed or note:
+                    cl.set(self.nodeid, **props)
+                    self._post_editnode(self.nodeid, changed)
+                    # and some nice feedback for the user
+                    message = '%s edited ok'%', '.join(changed)
+                else:
+                    message = 'nothing changed'
             except:
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
@@ -358,10 +384,14 @@ class Client:
             try:
                 props, changed = parsePropsFromForm(self.db, user, self.form,
                     self.nodeid)
+                set_cookie = 0
                 if self.nodeid == self.getuid() and 'password' in changed:
-                    set_cookie = self.form['password'].value.strip()
-                else:
-                    set_cookie = 0
+                    password = self.form['password'].value.strip()
+                    if password:
+                        set_cookie = password
+                    else:
+                        del props['password']
+                        del changed[changed.index('password')]
                 user.set(self.nodeid, **props)
                 self._post_editnode(self.nodeid, changed)
                 # and some feedback for the user
@@ -392,10 +422,10 @@ class Client:
         '''
         nodeid = self.nodeid
         cl = self.db.file
-        mimetype = cl.get(nodeid, 'type')
-        if mimetype == 'message/rfc822':
-            mimetype = 'text/plain'
-        self.header(headers={'Content-Type': mimetype})
+        mime_type = cl.get(nodeid, 'type')
+        if mime_type == 'message/rfc822':
+            mime_type = 'text/plain'
+        self.header(headers={'Content-Type': mime_type})
         self.write(cl.get(nodeid, 'content'))
 
     def _createnode(self):
@@ -415,7 +445,7 @@ class Client:
         for key in keys:
             if key == ':multilink':
                 value = self.form[key].value
-                if typeof(value) != typeof([]): value = [value]
+                if type(value) != type([]): value = [value]
                 for value in value:
                     designator, property = value.split(':')
                     link, nodeid = roundupdb.splitDesignator(designator)
@@ -425,7 +455,7 @@ class Client:
                     link.set(nodeid, **{property: value})
             elif key == ':link':
                 value = self.form[key].value
-                if typeof(value) != typeof([]): value = [value]
+                if type(value) != type([]): value = [value]
                 for value in value:
                     designator, property = value.split(':')
                     link, nodeid = roundupdb.splitDesignator(designator)
@@ -437,12 +467,12 @@ class Client:
         if self.form.has_key('__file'):
             file = self.form['__file']
             if file.filename:
-                type = mimetypes.guess_type(file.filename)[0]
-                if not type:
-                    type = "application/octet-stream"
+                mime_type = mimetypes.guess_type(file.filename)[0]
+                if not mime_type:
+                    mime_type = "application/octet-stream"
                 # create the new file entry
-                files.append(self.db.file.create(type=type, name=file.filename,
-                    content=file.file.read()))
+                files.append(self.db.file.create(type=mime_type,
+                    name=file.filename, content=file.file.read()))
 
         # generate an edit message
         # don't bother if there's no messages or nosy list 
@@ -457,15 +487,15 @@ class Client:
                 props['messages'].classname == 'msg'):
 
             # handle the note
+            edit_msg = 'This %s has been edited through the web.\n'%cn
             if note:
                 if '\n' in note:
                     summary = re.split(r'\n\r?', note)[0]
                 else:
                     summary = note
-                m = ['%s\n'%note]
+                m = [edit_msg + '%s\n'%note]
             else:
-                summary = 'This %s has been edited through the web.\n'%cn
-                m = [summary]
+                m = [edit_msg]
 
             first = 1
             for name, prop in props.items():
@@ -498,7 +528,7 @@ class Client:
             content = '\n'.join(m)
             message_id = self.db.msg.create(author=self.getuid(),
                 recipients=[], date=date.Date('.'), summary=summary,
-                content=content)
+                content=content, files=files)
             messages = cl.get(nid, 'messages')
             messages.append(message_id)
             props = {'messages': messages, 'files': files}
@@ -567,11 +597,11 @@ class Client:
         if [i for i in keys if i[0] != ':']:
             try:
                 file = self.form['content']
-                type = mimetypes.guess_type(file.filename)[0]
-                if not type:
-                    type = "application/octet-stream"
+                mime_type = mimetypes.guess_type(file.filename)[0]
+                if not mime_type:
+                    mime_type = "application/octet-stream"
                 self._post_editnode(cl.create(content=file.file.read(),
-                    type=type, name=file.filename))
+                    type=mime_type, name=file.filename))
                 # and some nice feedback for the user
                 message = '%s created ok'%cn
             except:
@@ -606,12 +636,13 @@ class Client:
         else:
             raise Unauthorised
 
-    def login(self, message=None, newuser_form=None):
+    def login(self, message=None, newuser_form=None, action='index'):
         self.pagehead(_('Login to roundup'), message)
         self.write('''
 <table>
 <tr><td colspan=2 class="strong-header">Existing User Login</td></tr>
 <form action="login_action" method=POST>
+<input type="hidden" name="__destination_url" value="%s">
 <tr><td align=right>Login name: </td>
     <td><input name="__login_name"></td></tr>
 <tr><td align=right>Password: </td>
@@ -619,7 +650,7 @@ class Client:
 <tr><td></td>
     <td><input type="submit" value="Log In"></td></tr>
 </form>
-''')
+'''%action)
         if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
             self.write('</table>')
             self.pagefoot()
@@ -678,7 +709,6 @@ class Client:
             return self.login(message=_('Incorrect password'))
 
         self.set_cookie(self.user, password)
-        return self.index()
 
     def set_cookie(self, user, password):
         # construct the cookie
@@ -731,9 +761,7 @@ class Client:
         self.set_cookie(self.user, self.form['password'].value)
         return self.index()
 
-    def main(self, dre=re.compile(r'([^\d]+)(\d+)'),
-            nre=re.compile(r'new(\w+)')):
-
+    def main(self):
         # determine the uid to use
         self.db = self.instance.open('admin')
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
@@ -770,6 +798,8 @@ class Client:
 
         # now figure which function to call
         path = self.split_path
+
+        # default action to index if the path has no information in it
         if not path or path[0] in ('', 'index'):
             action = 'index'
         else:
@@ -782,20 +812,43 @@ class Client:
 
         # everyone is allowed to try to log in
         if action == 'login_action':
-            return self.login_action()
+            # do the login
+            self.login_action()
+            # figure the resulting page
+            action = self.form['__destination_url'].value
+            if not action:
+                action = 'index'
+            return self.do_action(action)
 
         # allow anonymous people to register
         if action == 'newuser_action':
             # if we don't have a login and anonymous people aren't allowed to
             # register, then spit up the login form
             if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
-                return self.login()
-            return self.newuser_action()
+                if action == 'login':
+                    return self.login()         # go to the index after login
+                else:
+                    return self.login(action=action)
+            # add the user
+            self.newuser_action()
+            # figure the resulting page
+            action = self.form['__destination_url'].value
+            if not action:
+                action = 'index'
+            return self.do_action(action)
 
-        # make sure totally anonymous access is OK
+        # no login or registration, make sure totally anonymous access is OK
         if self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
-            return self.login()
+            if action == 'login':
+                return self.login()             # go to the index after login
+            else:
+                return self.login(action=action)
 
+        # just a regular action
+        return self.do_action(action)
+
+    def do_action(self, action, dre=re.compile(r'([^\d]+)(\d+)'),
+            nre=re.compile(r'new(\w+)')):
         # here be the "normal" functionality
         if action == 'index':
             return self.index()
@@ -835,7 +888,7 @@ class Client:
             self.db.getclass(self.classname)
         except KeyError:
             raise NotFound
-        self.list()
+        return self.list()
 
     def __del__(self):
         self.db.close()
@@ -949,7 +1002,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
                             key, value, link)
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if typeof(value) != typeof([]):
+            if type(value) != type([]):
                 value = [i.strip() for i in value.value.split(',')]
             else:
                 value = [i.value.strip() for i in value]
@@ -985,6 +1038,18 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.62  2001/11/24 00:45:42  jhermann
+# typeof() instead of type(): avoid clash with database field(?) "type"
+#
+# Fixes this traceback:
+#
+# Traceback (most recent call last):
+#   File "roundup\cgi_client.py", line 535, in newnode
+#     self._post_editnode(nid)
+#   File "roundup\cgi_client.py", line 415, in _post_editnode
+#     if type(value) != type([]): value = [value]
+# UnboundLocalError: local variable 'type' referenced before assignment
+#
 # Revision 1.61  2001/11/22 15:46:42  jhermann
 # Added module docstrings to all modules.
 #

@@ -73,12 +73,12 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.35 2001-11-22 15:46:42 jhermann Exp $
+$Id: mailgw.py,v 1.36 2001-11-26 22:55:56 richard Exp $
 '''
 
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
-import traceback
+import traceback, MimeWriter
 import hyperdb, date, password
 
 class MailGWError(ValueError):
@@ -111,8 +111,8 @@ class Message(mimetools.Message):
         return Message(s)
 
 subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re)\s*\W?\s*)*'
-    r'\s*(\[(?P<classname>[^\d]+)(?P<nodeid>\d+)?\])'
-    r'\s*(?P<title>[^\[]+)(\[(?P<args>.+?)\])?', re.I)
+    r'\s*(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])'
+    r'\s*(?P<title>[^[]+)?(\[(?P<args>.+?)\])?', re.I)
 
 class MailGW:
     def __init__(self, instance, db):
@@ -133,38 +133,31 @@ class MailGW:
         errors in a sane manner. It should be replaced if you wish to
         handle errors in a different manner.
         '''
-        m = []
         # in some rare cases, a particularly stuffed-up e-mail will make
         # its way into here... try to handle it gracefully
         sendto = message.getaddrlist('from')
         if sendto:
             try:
-                self.handle_message(message)
-                return
+                return self.handle_message(message)
             except MailUsageError, value:
                 # bounce the message back to the sender with the usage message
                 fulldoc = '\n'.join(string.split(__doc__, '\n')[2:])
                 sendto = [sendto[0][1]]
-                m = ['Subject: Failed issue tracker submission', '']
+                m = ['']
                 m.append(str(value))
                 m.append('\n\nMail Gateway Help\n=================')
                 m.append(fulldoc)
+                m = self.bounce_message(message, sendto, m)
             except:
                 # bounce the message back to the sender with the error message
                 sendto = [sendto[0][1]]
-                m = ['Subject: failed issue tracker submission', '']
-                # TODO as attachments?
+                m = ['']
                 m.append('----  traceback of failure  ----')
                 s = cStringIO.StringIO()
                 import traceback
                 traceback.print_exc(None, s)
                 m.append(s.getvalue())
-                m.append('---- failed message follows ----')
-                try:
-                    message.fp.seek(0)
-                except:
-                    pass
-                m.append(message.fp.read())
+                m = self.bounce_message(message, sendto, m)
         else:
             # very bad-looking message - we don't even know who sent it
             sendto = [self.ADMIN_EMAIL]
@@ -172,24 +165,62 @@ class MailGW:
             m.append('')
             m.append('The mail gateway retrieved a message which has no From:')
             m.append('line, indicating that it is corrupt. Please check your')
-            m.append('mail gateway source.')
+            m.append('mail gateway source. Failed message is attached.')
             m.append('')
-            m.append('---- failed message follows ----')
-            try:
-                message.fp.seek(0)
-            except:
-                pass
-            m.append(message.fp.read())
+            m = self.bounce_message(message, sendto, m,
+                subject='Badly formed message from mail gateway')
 
         # now send the message
         try:
             smtp = smtplib.SMTP(self.MAILHOST)
-            smtp.sendmail(self.ADMIN_EMAIL, sendto, '\n'.join(m))
+            smtp.sendmail(self.ADMIN_EMAIL, sendto, m.getvalue())
         except socket.error, value:
             raise MailGWError, "Couldn't send confirmation email: "\
                 "mailhost %s"%value
         except smtplib.SMTPException, value:
             raise MailGWError, "Couldn't send confirmation email: %s"%value
+
+    def bounce_message(self, message, sendto, error,
+            subject='Failed issue tracker submission'):
+        ''' create a message that explains the reason for the failed
+            issue submission to the author and attach the original
+            message.
+        '''
+        msg = cStringIO.StringIO()
+        writer = MimeWriter.MimeWriter(msg)
+        writer.addheader('Subject', subject)
+        writer.addheader('From', '%s <%s>'% (self.instance.INSTANCE_NAME,
+                                            self.ISSUE_TRACKER_EMAIL))
+        writer.addheader('To', ','.join(sendto))
+        writer.addheader('MIME-Version', '1.0')
+        part = writer.startmultipartbody('mixed')
+        part = writer.nextpart()
+        body = part.startbody('text/plain')
+        body.write('\n'.join(error))
+
+        # reconstruct the original message
+        m = cStringIO.StringIO()
+        w = MimeWriter.MimeWriter(m)
+        for header in message.headers:
+            header_name = header.split(':')[0]
+            if message.getheader(header_name):
+                w.addheader(header_name,message.getheader(header_name))
+        body = w.startbody('text/plain')
+        try:
+            message.fp.seek(0)
+        except:
+            pass
+        body.write(message.fp.read())
+
+        # attach the original message to the returned message
+        part = writer.nextpart()
+        part.addheader('Content-Disposition','attachment')
+        part.addheader('Content-Transfer-Encoding', '7bit')
+        body = part.startbody('message/rfc822')
+        body.write(m.getvalue())
+
+        writer.lastpart()
+        return msg
 
     def handle_message(self, message):
         ''' message - a Message instance
@@ -213,10 +244,9 @@ line. The subject must contain a class name or designator to indicate the
 
 Subject was: "%s"
 '''%subject
+
+        # get the classname
         classname = m.group('classname')
-        nodeid = m.group('nodeid')
-        title = m.group('title').strip()
-        subject_args = m.group('args')
         try:
             cl = self.db.getclass(classname)
         except KeyError:
@@ -227,6 +257,29 @@ database.
 Valid class names are: %s
 Subject was: "%s"
 '''%(classname, ', '.join(self.db.getclasses()), subject)
+
+        # get the optional nodeid
+        nodeid = m.group('nodeid')
+
+        # title is optional too
+        title = m.group('title')
+        if title:
+            title = title.strip()
+        else:
+            title = ''
+
+        # but we do need either a title or a nodeid...
+        if not nodeid and not title:
+            raise MailUsageError, '''
+I cannot match your message to a node in the database - you need to either
+supply a full node identifier (with number, eg "[issue123]" or keep the
+previous subject title intact so I can match that.
+
+Subject was: "%s"
+'''%(classname, subject)
+
+        # extract the args
+        subject_args = m.group('args')
 
         # If there's no nodeid, check to see if this is a followup and
         # maybe someone's responded to the initial mail that created an
@@ -255,21 +308,22 @@ Subject argument list not of form [arg=value,value,...;arg=value,value...]
 
 Subject was: "%s"
 '''%(message, subject)
+                key = key.strip()
                 try:
-                    type =  properties[key]
+                    proptype =  properties[key]
                 except KeyError:
                     raise MailUsageError, '''
 Subject argument list refers to an invalid property: "%s"
 
 Subject was: "%s"
 '''%(key, subject)
-                if isinstance(type, hyperdb.String):
-                    props[key] = value 
-                if isinstance(type, hyperdb.Password):
-                    props[key] = password.Password(value)
-                elif isinstance(type, hyperdb.Date):
+                if isinstance(proptype, hyperdb.String):
+                    props[key] = value.strip()
+                if isinstance(proptype, hyperdb.Password):
+                    props[key] = password.Password(value.strip())
+                elif isinstance(proptype, hyperdb.Date):
                     try:
-                        props[key] = date.Date(value)
+                        props[key] = date.Date(value.strip())
                     except ValueError, message:
                         raise UsageError, '''
 Subject argument list contains an invalid date for %s.
@@ -277,9 +331,9 @@ Subject argument list contains an invalid date for %s.
 Error was: %s
 Subject was: "%s"
 '''%(key, message, subject)
-                elif isinstance(type, hyperdb.Interval):
+                elif isinstance(proptype, hyperdb.Interval):
                     try:
-                        props[key] = date.Interval(value)
+                        props[key] = date.Interval(value) # no strip needed
                     except ValueError, message:
                         raise UsageError, '''
 Subject argument list contains an invalid date interval for %s.
@@ -287,10 +341,10 @@ Subject argument list contains an invalid date interval for %s.
 Error was: %s
 Subject was: "%s"
 '''%(key, message, subject)
-                elif isinstance(type, hyperdb.Link):
-                    props[key] = value
-                elif isinstance(type, hyperdb.Multilink):
-                    props[key] = value.split(',')
+                elif isinstance(proptype, hyperdb.Link):
+                    props[key] = value.strip()
+                elif isinstance(proptype, hyperdb.Multilink):
+                    props[key] = [x.strip() for x in value.split(',')]
 
         #
         # handle the users
@@ -392,8 +446,8 @@ not find a text/plain part to use.
 
         # handle the files
         files = []
-        for (name, type, data) in attachments:
-            files.append(self.db.file.create(type=type, name=name,
+        for (name, mime_type, data) in attachments:
+            files.append(self.db.file.create(type=mime_type, name=name,
                 content=data))
 
         # now handle the db stuff
@@ -433,6 +487,24 @@ Subject was: "%s"
                             props['status'] == resolved_id):
                         props['status'] = chatting_id
 
+            # add nosy in arguments to issue's nosy list, don't replace
+            if props.has_key('nosy'):
+                n = {}
+                for nid in cl.get(nodeid, 'nosy'):
+                    n[nid] = 1
+                for value in props['nosy']:
+                    if self.db.hasnode('user', value):
+                        nid = value
+                    else:
+                        try:
+                            nid = self.db.user.lookup(value)
+                        except:
+                            continue
+                    if n.has_key(nid): continue
+                    n[nid] = 1
+                props['nosy'] = n.keys()
+
+            # now apply the changes
             try:
                 cl.set(nodeid, **props)
             except (TypeError, IndexError, ValueError), message:
@@ -448,10 +520,6 @@ There was a problem with the message you sent:
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
                 content=content, files=files)
-            # fill out the properties with defaults where required
-            if properties.has_key('assignedto') and \
-                    not props.has_key('assignedto'):
-                props['assignedto'] = '1'             # "admin"
 
             # pre-set the issue to unread
             if properties.has_key('status') and not props.has_key('status'):
@@ -522,6 +590,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.34  2001/11/15 10:24:27  richard
 # handle the case where there is no file attached
 #

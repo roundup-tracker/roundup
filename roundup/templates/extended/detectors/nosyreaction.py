@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.5 2001-11-12 22:01:07 richard Exp $
+#$Id: nosyreaction.py,v 1.6 2001-11-26 22:55:56 richard Exp $
 
 from roundup import roundupdb
 
@@ -76,7 +76,9 @@ def nosyreaction(db, cl, nodeid, oldvalues):
         if n.has_key(authid): continue
         if db.user.get(authid, 'username') == 'anonymous': continue
         change = 1
-        nosy.append(authid)
+        # append the author only after issue creation
+        if oldvalues is None:
+            nosy.append(authid)
     if change:
         cl.set(nodeid, nosy=nosy)
 
@@ -87,6 +89,9 @@ def init(db):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.5  2001/11/12 22:01:07  richard
+#Fixed issues with nosy reaction and author copies.
+#
 #Revision 1.4  2001/10/30 00:54:45  richard
 #Features:
 # . #467129 ] Lossage when username=e-mail-address

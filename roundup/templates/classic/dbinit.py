@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.9 2001-10-30 00:54:45 richard Exp $
+# $Id: dbinit.py,v 1.10 2001-11-26 22:55:56 richard Exp $
 
 import os
 
@@ -35,11 +35,13 @@ class Database(roundupdb.Database, select_db.Database):
 class IssueClass(roundupdb.IssueClass):
     ''' issues need the email information
     '''
+    INSTANCE_NAME = instance_config.INSTANCE_NAME
     ISSUE_TRACKER_WEB = instance_config.ISSUE_TRACKER_WEB
     ISSUE_TRACKER_EMAIL = instance_config.ISSUE_TRACKER_EMAIL
     ADMIN_EMAIL = instance_config.ADMIN_EMAIL
     MAILHOST = instance_config.MAILHOST
     MESSAGES_TO_AUTHOR = instance_config.MESSAGES_TO_AUTHOR
+    EMAIL_SIGNATURE_POSITION = instance_config.EMAIL_SIGNATURE_POSITION
 
  
 def open(name=None):
@@ -126,6 +128,12 @@ def init(adminpw):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/10/30 00:54:45  richard
+# Features:
+#  . #467129 ] Lossage when username=e-mail-address
+#  . #473123 ] Change message generation for author
+#  . MailGW now moves 'resolved' to 'chatting' on receiving e-mail for an issue.
+#
 # Revision 1.8  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.

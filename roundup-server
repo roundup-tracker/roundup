@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.19 2001-11-12 22:51:04 jhermann Exp $
+$Id: roundup-server,v 1.20 2001-11-26 22:55:56 richard Exp $
 
 """
 import sys
@@ -247,8 +247,8 @@ def main():
     except SystemExit:
         raise
     except:
-        type, value = sys.exc_info()[:2]
-        usage('%s: %s'%(type, value))
+        exc_type, exc_value = sys.exc_info()[:2]
+        usage('%s: %s'%(exc_type, exc_value))
 
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
@@ -262,6 +262,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/11/12 22:51:04  jhermann
+# Fixed option & associated error handling
+#
 # Revision 1.18  2001/11/01 22:04:37  richard
 # Started work on supporting a pop3-fetching server
 # Fixed bugs:
