@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.7 2004-01-21 04:54:27 richard Exp $
+# $Id: client.py,v 1.130.2.8 2004-02-13 01:13:25 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1008,10 +1008,18 @@ You should then receive another email with the new password.
         # commit now that all the tricky stuff is done
         self.db.commit()
 
-        # redirect to the item's edit page
-        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
-            self.classname, self.nodeid, urllib.quote(message),
+        # redirect to finish off
+        url = self.base + self.classname
+        # note that this action might have been called by an index page, so
+        # we will want to include index-page args in this URL too
+        if self.nodeid is not None:
+            url += self.nodeid
+        url += '?@ok_message=%s&@template=%s'%(urllib.quote(message),
             urllib.quote(self.template))
+        if self.nodeid is None:
+            req = HTMLRequest(self)
+            url += '&' + req.indexargs_href('', {})[1:]
+        raise Redirect, url
 
     def editItemPermission(self, props):
         ''' Determine whether the user has permission to edit this item.
@@ -1046,7 +1054,7 @@ You should then receive another email with the new password.
         '''
         # parse the props from the form
         try:
-            props, links = self.parsePropsFromForm()
+            props, links = self.parsePropsFromForm(create=True)
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -1455,7 +1463,7 @@ You should then receive another email with the new password.
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
         raise Redirect, url
 
-    def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
+    def parsePropsFromForm(self, create=False, num_re=re.compile('^\d+$')):
         ''' Item properties and their values are edited with html FORM
             variables and their values. You can:
 
@@ -1672,6 +1680,10 @@ You should then receive another email with the new password.
 
             # the thing this value relates to is...
             this = (cn, nodeid)
+
+            # skip implicit create if this isn't a create action
+            if not create and nodeid is None:
+                continue
 
             # get more info about the class, and the current set of
             # form props for it
