@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.90.2.3 2004-03-12 00:28:31 richard Exp $ 
+# $Id: test_db.py,v 1.90.2.4 2004-03-18 02:40:08 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -829,9 +829,9 @@ class mysqlDBTestCase(anydbmDBTestCase):
 class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
         from roundup.backends import mysql
-        # remove previous test, ignore errors
-        if os.path.exists(config.DATABASE):
-            shutil.rmtree(config.DATABASE)
+        mysql.db_nuke(config)
+
+        # open database for testing
         os.makedirs(config.DATABASE + '/files')
         self.db = mysql.Database(config)
         setupSchema(self.db, 0, mysql)
