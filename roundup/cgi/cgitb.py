@@ -1,7 +1,7 @@
 #
 # This module was written by Ka-Ping Yee, <ping@lfw.org>.
 # 
-# $Id: cgitb.py,v 1.2 2002-09-06 07:21:31 richard Exp $
+# $Id: cgitb.py,v 1.3 2002-09-06 07:23:29 richard Exp $
 
 __doc__ = """
 Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
@@ -47,7 +47,7 @@ def pt_html(context=5):
                 l.append('in template %r'%context.id)
             elif len(ts) == 3:
                 supp, context, info = ts
-                l.append('in expression %r\n%s\n%s\n'%(info,
+                l.append('in expression %r\n current variables:\n%s\n%s\n'%(info,
                     niceDict('    ', context.global_vars),
                     niceDict('    ', context.local_vars)))
                 # context._scope_stack))
@@ -163,6 +163,9 @@ def handler():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/09/06 07:21:31  richard
+# much nicer error messages when there's a templating error
+#
 # Revision 1.1  2002/08/30 08:28:44  richard
 # New CGI interface support
 #
