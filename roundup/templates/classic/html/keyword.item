@@ -4,7 +4,7 @@
  <tr><th colspan="4" class="header">Existing Keywords</th></tr>
  <tr tal:define="keywords db/keyword/list"
      tal:repeat="start python:range(0, len(keywords), 4)">
-  <td tal:define="batch python:utils.Batch('keyword', keywords, 4, start)"
+  <td tal:define="batch python:utils.Batch(keywords, 4, start)"
       tal:repeat="keyword batch" tal:content="keyword/name">keyword here</td>
  </tr>
  <tr><td colspan="4" style="border-top: 1px solid gray">&nbsp;</td></tr>

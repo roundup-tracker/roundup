@@ -39,13 +39,13 @@
     <tr><th style="text-align: left; border: 0">
      <a tal:define="prev batch/previous" tal:condition="prev"
         tal:attributes="href python:request.indexargs_href(request.classname,
-        {':startwith':prev.start, ':pagesize':prev.size})">&lt;&lt; previous</a>
+        {':startwith':prev.first, ':pagesize':prev.size})">&lt;&lt; previous</a>
      &nbsp;
     </th>
     <th style="text-align: right; border: 0">
      <a tal:define="next batch/next" tal:condition="next"
         tal:attributes="href python:request.indexargs_href(request.classname,
-         {':startwith':next.start, ':pagesize':next.size})">next &gt;&gt;</a>
+         {':startwith':next.first, ':pagesize':next.size})">next &gt;&gt;</a>
      &nbsp;
     </th></tr>
    </table>

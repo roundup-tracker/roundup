@@ -1295,20 +1295,48 @@ function help_window(helpurl, width, height) {
             matches = None
         l = klass.filter(matches, filterspec, sort, group)
 
-        # return the batch object
-        return Batch(self.client, self.classname, l, self.pagesize,
-            self.startwith)
+        # map the item ids to instances
+        if self.classname == 'user':
+            klass = HTMLUser
+        else:
+            klass = HTMLItem
+        l = [klass(self.client, self.classname, item) for item in l]
 
+        # return the batch object
+        return Batch(self.client, l, self.pagesize, self.startwith)
 
 # extend the standard ZTUtils Batch object to remove dependency on
 # Acquisition and add a couple of useful methods
 class Batch(ZTUtils.Batch):
-    def __init__(self, client, classname, l, size, start, end=0, orphan=0, overlap=0):
+    ''' Use me to turn a list of items, or item ids of a given class, into a
+        series of batches.
+
+        ========= ========================================================
+        Parameter  Usage
+        ========= ========================================================
+        sequence  a list of HTMLItems
+        size      how big to make the sequence.
+        start     where to start (0-indexed) in the sequence.
+        end       where to end (0-indexed) in the sequence.
+        orphan    if the next batch would contain less items than this
+                  value, then it is combined with this batch
+        overlap   the number of items shared between adjacent batches
+        ========= ========================================================
+
+        Attributes: Note that the "start" attribute, unlike the
+        argument, is a 1-based index (I know, lame).  "first" is the
+        0-based index.  "length" is the actual number of elements in
+        the batch.
+
+        "sequence_length" is the length of the original, unbatched, sequence.
+    '''
+    def __init__(self, client, sequence, size, start, end=0, orphan=0,
+            overlap=0):
         self.client = client
-        self.classname = classname
         self.last_index = self.last_item = None
         self.current_item = None
-        ZTUtils.Batch.__init__(self, l, size, start, end, orphan, overlap)
+        ZTUtils.Batch.__init__(self, sequence, size, start, end, orphan,
+            overlap)
 
     # overwrite so we can late-instantiate the HTMLItem instance
     def __getitem__(self, index):
@@ -1325,16 +1353,7 @@ class Batch(ZTUtils.Batch):
             self.last_item = self.current_item
             self.last_index = index
 
-        item = self._sequence[index + self.first]
-        if not isinstance(item, HTMLItem):
-            # "item" is actually just an id - wrap the return in an HTMLItem
-            if self.classname == 'user':
-                klass = HTMLUser
-            else:
-                klass = HTMLItem
-            item = klass(self.client, self.classname, item)
-
-        self.current_item = item
+        self.current_item = self._sequence[index + self.first]
         return self.current_item
 
     def propchanged(self, property):
@@ -1350,7 +1369,7 @@ class Batch(ZTUtils.Batch):
     def previous(self):
         if self.start == 1:
             return None
-        return Batch(self.client, self.classname, self._sequence, self._size,
+        return Batch(self.client, self._sequence, self._size,
             self.first - self._size + self.overlap, 0, self.orphan,
             self.overlap)
 
@@ -1359,7 +1378,7 @@ class Batch(ZTUtils.Batch):
             self._sequence[self.end]
         except IndexError:
             return None
-        return Batch(self.client, self.classname, self._sequence, self._size,
+        return Batch(self.client, self._sequence, self._size,
             self.end - self.overlap, 0, self.orphan, self.overlap)
 
     def length(self):
@@ -1371,7 +1390,7 @@ class TemplatingUtils:
     '''
     def __init__(self, client):
         self.client = client
-    def Batch(self, classname, l, size, start, end=0, orphan=0, overlap=0):
-        return Batch(self.client, classname, l, size, start, end, orphan,
+    def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
+        return Batch(self.client, sequence, size, start, end, orphan,
             overlap)
 
