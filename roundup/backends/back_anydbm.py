@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.75 2002-09-10 12:44:42 richard Exp $
+#$Id: back_anydbm.py,v 1.76 2002-09-12 05:51:42 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1354,7 +1354,7 @@ class Class(hyperdb.Class):
         otherwise a KeyError is raised.
         '''
         if not self.key:
-            raise TypeError, 'No key property set'
+            raise TypeError, 'No key property set for class %s'%self.classname
         cldb = self.db.getclassdb(self.classname)
         try:
             for nodeid in self.db.getnodeids(self.classname, cldb):

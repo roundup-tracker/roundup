@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.16 2002-09-11 01:20:09 richard Exp $
+# $Id: back_gadfly.py,v 1.17 2002-09-12 05:51:42 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1409,7 +1409,7 @@ class Class(hyperdb.Class):
         otherwise a KeyError is raised.
         '''
         if not self.key:
-            raise TypeError, 'No key property set'
+            raise TypeError, 'No key property set for class %s'%self.classname
 
         cursor = self.db.conn.cursor()
         sql = 'select id from _%s where _%s=?'%(self.classname, self.key)
