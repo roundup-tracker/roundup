@@ -12,6 +12,7 @@ todo = '''
   """Set the request's view arguments to the given values when no
      values are found in the CGI environment.
   """
+- have menu() methods accept filtering arguments
 '''
 
 __docformat__ = 'restructuredtext'
