@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.13 2002-09-05 04:46:36 richard Exp $
+# $Id: client.py,v 1.14 2002-09-05 05:25:23 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -100,7 +100,23 @@ class Client:
             self.debug = 0
 
     def main(self):
-        ''' Wrap the request and handle unauthorised requests
+        ''' Process a request.
+
+            The most common requests are handled like so:
+            1. figure out who we are, defaulting to the "anonymous" user
+               see determine_user
+            2. figure out what the request is for - the context
+               see determine_context
+            3. handle any requested action (item edit, search, ...)
+               see handle_action
+            4. render a template, resulting in HTML output
+
+            In some situations, exceptions occur:
+            - HTTP Redirect  (generally raised by an action)
+            - SendFile       (generally raised by determine_context)
+            - SendStaticFile (generally raised by determine_context)
+            - Unauthorised   (raised pretty much anywhere it needs to be)
+            - NotFound       (see above... percolates up to the CGI interface)
         '''
         self.content_action = None
         self.ok_message = []
@@ -110,8 +126,8 @@ class Client:
             self.determine_user()
             # figure out the context and desired content template
             self.determine_context()
-            # possibly handle a form submit action (may change self.message,
-            # self.classname and self.template)
+            # possibly handle a form submit action (may change self.classname
+            # and self.template, and may also append error/ok_messages)
             self.handle_action()
             # now render the page
             if self.form.has_key(':contentonly'):
