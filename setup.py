@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.23 2001-10-17 06:04:00 richard Exp $
+# $Id: setup.py,v 1.24 2001-11-06 22:32:15 jhermann Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -48,11 +48,17 @@ setup ( name = "roundup",
         author_email = "richard@users.sourceforge.net",
         url = 'http://sourceforge.net/projects/roundup/',
         packages = packagelist,
-        scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server']
+        scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server'],
+        data_files= [
+            ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
+        ]
 )
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/10/17 06:04:00  richard
+# Beginnings of an interactive mode for roundup-admin
+#
 # Revision 1.22  2001/10/11 05:01:28  richard
 # Prep for pre-release #2
 #
