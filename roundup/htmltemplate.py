@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.80 2002-02-21 07:19:08 richard Exp $
+# $Id: htmltemplate.py,v 1.81 2002-02-21 07:21:38 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -655,8 +655,17 @@ class TemplateFunctions:
         else:
             return _('[Submit: not called from item]')
 
-    def do_classhelp(self, classname, properties):
+    def do_classhelp(self, classname, properties, label='?', width='400',
+            height='400'):
         '''pop up a javascript window with class help
+
+           This generates a link to a popup window which displays the 
+           properties indicated by "properties" of the class named by
+           "classname". The "properties" should be a comma-separated list
+           (eg. 'id,name,description').
+
+           You may optionally override the label displayed, the width and
+           height. The popup window will be resizable and scrollable.
         '''
         return '<a href="javascript:help_window(\'classhelp?classname=%s&' \
             'properties=%s\', \'%s\', \'%s\')"><b>(%s)</b></a>'%(classname,
@@ -1082,6 +1091,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.80  2002/02/21 07:19:08  richard
+# ... and label, width and height control for extra flavour!
+#
 # Revision 1.79  2002/02/21 06:57:38  richard
 #  . Added popup help for classes using the classhelp html template function.
 #    - add <display call="classhelp('priority', 'id,name,description')">
