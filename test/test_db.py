@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.41 2002-08-23 04:58:00 richard Exp $ 
+# $Id: test_db.py,v 1.42 2002-08-23 05:33:32 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -100,6 +100,16 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual(self.db.issue.get('1', "status"), '2')
         self.db.issue.set('1', status=None)
         self.assertEqual(self.db.issue.get('1', "status"), None)
+
+    def testMultilinkChange(self):
+        u1 = self.db.user.create(username='foo')
+        u2 = self.db.user.create(username='bar')
+        self.db.issue.create(title="spam", nosy=[u1])
+        self.assertEqual(self.db.issue.get('1', "nosy"), [u1])
+        self.db.issue.set('1', nosy=[])
+        self.assertEqual(self.db.issue.get('1', "nosy"), [])
+        self.db.issue.set('1', nosy=[u1,u2])
+        self.assertEqual(self.db.issue.get('1', "nosy"), [u1,u2])
 
     def testDateChange(self):
         self.db.issue.create(title="spam", status='1')

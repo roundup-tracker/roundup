@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.4 2002-08-23 05:00:38 richard Exp $
+# $Id: back_gadfly.py,v 1.5 2002-08-23 05:33:32 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -453,7 +453,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # make sure we do the commit-time extra stuff for this node
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
-    def setnode(self, classname, nodeid, node):
+    def setnode(self, classname, nodeid, node, multilink_changes):
         ''' Change the specified node.
         '''
         if __debug__:
@@ -485,7 +485,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cursor.execute(sql, vals)
 
         # now the fun bit, updating the multilinks ;)
-        # XXX TODO XXX
+        for col, (add, remove) in multilink_changes.items():
+            tn = '%s_%s'%(classname, col)
+            if add:
+                sql = 'insert into %s (nodeid, linkid) values (?,?)'%tn
+                vals = [(nodeid, addid) for addid in add]
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'setnode (add)', (self, sql, vals)
+                cursor.execute(sql, vals)
+            if remove:
+                sql = 'delete from %s where nodeid=? and linkid=?'%tn
+                vals = [(nodeid, removeid) for removeid in remove]
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'setnode (rem)', (self, sql, vals)
+                cursor.execute(sql, vals)
 
         # make sure we do the commit-time extra stuff for this node
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
@@ -1099,6 +1112,10 @@ class Class(hyperdb.Class):
         # if the journal value is to be different, store it in here
         journalvalues = {}
 
+        # remember the add/remove stuff for multilinks, making it easier
+        # for the Database layer to do its stuff
+        multilink_changes = {}
+
         for propname, value in propvalues.items():
             # check to make sure we're not duplicating an existing key
             if propname == self.key and node[propname] != value:
@@ -1209,6 +1226,7 @@ class Class(hyperdb.Class):
                     l.append(('+', add))
                 if remove:
                     l.append(('-', remove))
+                multilink_changes[propname] = (add, remove)
                 if l:
                     journalvalues[propname] = tuple(l)
 
@@ -1251,7 +1269,7 @@ class Class(hyperdb.Class):
             return propvalues
 
         # do the set, and journal it
-        self.db.setnode(self.classname, nodeid, node)
+        self.db.setnode(self.classname, nodeid, node, multilink_changes)
 
         if self.do_journal:
             propvalues.update(journalvalues)
@@ -1648,6 +1666,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2002/08/23 05:00:38  richard
+# fixed read-only gadfly retire()
+#
 # Revision 1.3  2002/08/23 04:58:00  richard
 # ahhh, I understand now
 #
