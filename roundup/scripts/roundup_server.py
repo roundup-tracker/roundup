@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.50 2004-05-18 19:25:24 a1s Exp $
+$Id: roundup_server.py,v 1.51 2004-06-21 04:33:52 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -478,19 +478,19 @@ def run(port=PORT, success_message=None):
                       _("Unable to bind to port %s, port already in use." % port)
             raise
 
-        if group is not None and hasattr(os, 'getgid'):
+        if group is not None and hasattr(os, 'getuid'):
             # if root, setgid to the running user
-            if not os.getgid() and user is not None:
+            if not os.getuid():
                 try:
-                    import pwd
+                    import grp
                 except ImportError:
-                    raise ValueError, _("Can't change groups - no pwd module")
+                    raise ValueError, _("Can't change groups - no grp module")
                 try:
-                    gid = pwd.getpwnam(user)[3]
+                    gid = grp.getgrnam(group)[2]
                 except KeyError:
                     raise ValueError,_("Group %(group)s doesn't exist")%locals()
                 os.setgid(gid)
-            elif os.getgid() and user is not None:
+            elif os.getuid():
                 print _('WARNING: ignoring "-g" argument, not root')
 
         if hasattr(os, 'getuid'):
