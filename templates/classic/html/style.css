@@ -91,6 +91,18 @@ p.error-message {
 }
 
 
+/* style for search forms */
+ul.search-checkboxes {
+    display: inline;
+    padding: none;
+    list-style: none;
+}
+ul.search-checkboxes > li {
+    display: inline;
+    padding-right: .5em;
+}
+
+
 /* style for forms */
 table.form {
   padding: 2px;
