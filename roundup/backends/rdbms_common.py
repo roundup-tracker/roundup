@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.59 2003-08-26 00:06:56 richard Exp $
+# $Id: rdbms_common.py,v 1.60 2003-09-04 00:47:01 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1183,10 +1183,7 @@ class Class(hyperdb.Class):
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
 
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
+        'cache' exists for backwards compatibility, and is not used.
         '''
         if propname == 'id':
             return nodeid
@@ -1234,12 +1231,9 @@ class Class(hyperdb.Class):
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
 
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
+        'cache' exists for backwards compatibility, and is not used.
         '''
-        return Node(self, nodeid, cache=cache)
+        return Node(self, nodeid)
 
     def set(self, nodeid, **propvalues):
         '''Modify a property on an existing node of this class.
@@ -2094,7 +2088,9 @@ class FileClass(Class, hyperdb.FileClass):
 
     _marker = []
     def get(self, nodeid, propname, default=_marker, cache=1):
-        ''' trap the content propname and get it from the file
+        ''' Trap the content propname and get it from the file
+
+        'cache' exists for backwards compatibility, and is not used.
         '''
         poss_msg = 'Possibly a access right configuration problem.'
         if propname == 'content':
@@ -2105,9 +2101,9 @@ class FileClass(Class, hyperdb.FileClass):
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
         if default is not self._marker:
-            return Class.get(self, nodeid, propname, default, cache=cache)
+            return Class.get(self, nodeid, propname, default)
         else:
-            return Class.get(self, nodeid, propname, cache=cache)
+            return Class.get(self, nodeid, propname)
 
     def getprops(self, protected=1):
         ''' In addition to the actual properties on the node, these methods

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.1 2003-04-17 03:26:38 richard Exp $
+#$Id: nosyreaction.py,v 1.2 2003-09-04 00:47:01 richard Exp $
 
 from roundup import roundupdb, hyperdb
 
@@ -107,8 +107,8 @@ def updatenosy(db, cl, nodeid, newvalues):
         else:
             ok = ('yes',)
             # figure which of the messages now on the issue weren't
-            # there before - make sure we don't get a cached version!
-            oldmessages = cl.get(nodeid, 'messages', cache=0)
+            # there before
+            oldmessages = cl.get(nodeid, 'messages')
             messages = []
             for msgid in newvalues['messages']:
                 if msgid not in oldmessages:

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.90 2003-08-12 02:22:22 richard Exp $ 
+# $Id: test_db.py,v 1.91 2003-09-04 00:47:01 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -296,7 +296,14 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(a, self.db.status.list())
         # try to restore retired node
         self.db.status.restore('1')
-        self.assertEqual(a, self.db.status.list())
+ 
+    def testCacheCreateSet(self):
+        self.db.issue.create(title="spam", status='1')
+        a = self.db.issue.get('1', 'title')
+        self.assertEqual(a, 'spam')
+        self.db.issue.set('1', title='ham')
+        b = self.db.issue.get('1', 'title')
+        self.assertEqual(b, 'ham')
 
     def testSerialisation(self):
         nid = self.db.issue.create(title="spam", status='1',

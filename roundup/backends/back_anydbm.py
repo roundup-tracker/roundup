@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.123 2003-08-26 00:06:55 richard Exp $
+#$Id: back_anydbm.py,v 1.124 2003-09-04 00:47:01 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -283,17 +283,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     def getnode(self, classname, nodeid, db=None, cache=1):
         ''' get a node from the database
+
+            Note the "cache" parameter is not used, and exists purely for
+            backward compatibility!
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'getnode', (self, classname, nodeid, db)
-        if cache:
-            # try the cache
-            cache_dict = self.cache.setdefault(classname, {})
-            if cache_dict.has_key(nodeid):
-                if __debug__:
-                    print >>hyperdb.TRACE, 'get %s %s cached'%(classname,
-                        nodeid)
-                return cache_dict[nodeid]
+
+        # try the cache
+        cache_dict = self.cache.setdefault(classname, {})
+        if cache_dict.has_key(nodeid):
+            if __debug__:
+                print >>hyperdb.TRACE, 'get %s %s cached'%(classname,
+                    nodeid)
+            return cache_dict[nodeid]
 
         if __debug__:
             print >>hyperdb.TRACE, 'get %s %s'%(classname, nodeid)
@@ -1008,10 +1011,7 @@ class Class(hyperdb.Class):
         IndexError is raised.  'propname' must be the name of a property
         of this class or a KeyError is raised.
 
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
+        'cache' exists for backward compatibility, and is not used.
 
         Attempts to get the "creation" or "activity" properties should
         do the right thing.
@@ -1020,7 +1020,7 @@ class Class(hyperdb.Class):
             return nodeid
 
         # get the node's dict
-        d = self.db.getnode(self.classname, nodeid, cache=cache)
+        d = self.db.getnode(self.classname, nodeid)
 
         # check for one of the special props
         if propname == 'creation':
@@ -1091,12 +1091,9 @@ class Class(hyperdb.Class):
         'nodeid' must be the id of an existing node of this class or an
         IndexError is raised.
 
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
+        'cache' exists for backwards compatibility, and is not used.
         '''
-        return Node(self, nodeid, cache=cache)
+        return Node(self, nodeid)
 
     def set(self, nodeid, **propvalues):
         '''Modify a property on an existing node of this class.
@@ -1134,14 +1131,7 @@ class Class(hyperdb.Class):
         self.fireAuditors('set', nodeid, propvalues)
         # Take a copy of the node dict so that the subsequent set
         # operation doesn't modify the oldvalues structure.
-        try:
-            # try not using the cache initially
-            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid,
-                cache=0))
-        except IndexError:
-            # this will be needed if somone does a create() and set()
-            # with no intervening commit()
-            oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
 
         node = self.db.getnode(self.classname, nodeid)
         if node.has_key(self.db.RETIRED_FLAG):
@@ -2040,7 +2030,9 @@ class FileClass(Class, hyperdb.FileClass):
         return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1):
-        ''' trap the content propname and get it from the file
+        ''' Trap the content propname and get it from the file
+
+        'cache' exists for backwards compatibility, and is not used.
         '''
         poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
@@ -2051,9 +2043,9 @@ class FileClass(Class, hyperdb.FileClass):
                 return 'ERROR reading file: %s%s\n%s\n%s'%(
                         self.classname, nodeid, poss_msg, strerror)
         if default is not _marker:
-            return Class.get(self, nodeid, propname, default, cache=cache)
+            return Class.get(self, nodeid, propname, default)
         else:
-            return Class.get(self, nodeid, propname, cache=cache)
+            return Class.get(self, nodeid, propname)
 
     def getprops(self, protected=1):
         ''' In addition to the actual properties on the node, these methods

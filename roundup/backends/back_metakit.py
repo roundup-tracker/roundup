@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.48 2003-08-26 00:06:56 richard Exp $
+# $Id: back_metakit.py,v 1.49 2003-09-04 00:47:01 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -373,8 +373,9 @@ class Class:
         return str(newid)
     
     def get(self, nodeid, propname, default=_marker, cache=1):
-        # default and cache aren't in the spec
-        # cache=0 means "original value"
+        '''
+            'cache' exists for backwards compatibility, and is not used.
+        '''
 
         view = self.getview()        
         id = int(nodeid)
@@ -1407,7 +1408,7 @@ class FileClass(Class, hyperdb.FileClass):
         Class.__init__(self, db, classname, **properties)
 
     def get(self, nodeid, propname, default=_marker, cache=1):
-        x = Class.get(self, nodeid, propname, default, cache)
+        x = Class.get(self, nodeid, propname, default)
         poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
             if x.startswith('file:'):
