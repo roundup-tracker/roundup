@@ -38,6 +38,7 @@ pending admin     the find command in roundup-admin could do more than equality
                   checks != for instance. Also the ability to check =None.
 pending web       I18N
 pending web       Better message summary display (feature request #520244)
+pending web       Allow responding to specific messages (incl. in-reply-to)
 pending web       Navigating around the issues (feature request #559149)
 pending web       Quick help links next to the property labels giving a
                   description of the property. Combine with help for the actual
