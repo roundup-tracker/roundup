@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.68.2.5 2004-10-20 04:50:15 richard Exp $
+# $Id: admin.py,v 1.68.2.6 2004-12-08 03:17:11 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -620,7 +620,10 @@ Command help:
                 values = [value]
             d = props[propname] = {}
             for value in values:
-                d[hyperdb.rawToHyperdb(self.db, cl, None, propname, value)] = 1
+                value = hyperdb.rawToHyperdb(self.db, cl, None, propname, value)
+                if isinstance(value, type([])):
+                    value = value[0]
+                d[value] = 1
 
         # now do the find 
         try:
