@@ -2014,7 +2014,7 @@ class HTMLRequest(HTMLInputMixin):
 
         # pagination - size and start index
         # figure batch args
-        self.pagesize = 5 #50
+        self.pagesize = 50
         for name in ':pagesize @pagesize'.split():
             if self.form.has_key(name):
                 self.special_char = name[0]
