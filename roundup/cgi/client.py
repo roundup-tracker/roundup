@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.34 2002-09-16 05:32:09 richard Exp $
+# $Id: client.py,v 1.35 2002-09-16 05:33:58 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -397,7 +397,7 @@ class Client:
         try:
             # get the action, validate it
             action = self.form[':action'].value
-            for name, method in selc.actions:
+            for name, method in self.actions:
                 if name == action:
                     break
             else:
