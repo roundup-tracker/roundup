@@ -29,6 +29,16 @@ class _Database(hyperdb.Database):
         self._db = self.__open()
         self.indexer = Indexer(self.config.DATABASE)
         os.umask(0002)
+    def post_init(self):
+        if self.indexer.should_reindex():
+            self.reindex()
+
+    def reindex(self):
+        for klass in self.classes.values():
+            for nodeid in klass.list():
+                klass.index(nodeid)
+        self.indexer.save_index()
+        
             
     # --- defined in ping's spec
     def __getattr__(self, classname):
@@ -51,6 +61,7 @@ class _Database(hyperdb.Database):
                 self._db.commit()
                 for cl in self.classes.values():
                     cl._commit()
+                self.indexer.save_index()
             else:
                 raise RuntimeError, "metakit is open RO"
         self.dirty = 0
@@ -68,7 +79,7 @@ class _Database(hyperdb.Database):
     def pack(self, pack_before):
         pass
     def addclass(self, cl):
-        self.classes[cl.name] = cl
+        self.classes[cl.classname] = cl
     def addjournal(self, tablenm, nodeid, action, params):
         tblid = self.tables.find(name=tablenm)
         if tblid == -1:
@@ -136,6 +147,8 @@ class _Database(hyperdb.Database):
                     self.fastopen = 1
         else:
             self.__RW = 1
+        if not self.fastopen:
+            self.__RW = 1
         db = metakit.storage(db, self.__RW)
         hist = db.view('history')
         tables = db.view('tables')
@@ -182,7 +195,7 @@ class Class:    # no, I'm not going to subclass the existing!
     privateprops = None
     def __init__(self, db, classname, **properties):
         self.db = weakref.proxy(db)
-        self.name = classname
+        self.classname = classname
         self.keyname = None
         self.ruprops = properties
         self.privateprops = { 'id' : hyperdb.String(),
@@ -245,7 +258,7 @@ class Class:    # no, I'm not going to subclass the existing!
         if ndx is None:
             ndx = view.find(id=id)
             if ndx < 0:
-                raise IndexError, "%s has no node %s" % (self.name, nodeid)
+                raise IndexError, "%s has no node %s" % (self.classname, nodeid)
             self.idcache[id] = ndx
         raw = getattr(view[ndx], propname)
         rutyp = self.ruprops.get(propname, None)
@@ -273,10 +286,10 @@ class Class:    # no, I'm not going to subclass the existing!
         id = int(nodeid)
         ndx = view.find(id=id)
         if ndx < 0:
-            raise IndexError, "%s has no node %s" % (self.name, nodeid)
+            raise IndexError, "%s has no node %s" % (self.classname, nodeid)
         row = view[ndx]
         if row._isdel:
-            raise IndexError, "%s has no node %s" % (self.name, nodeid)
+            raise IndexError, "%s has no node %s" % (self.classname, nodeid)
         oldnode = self.uncommitted.setdefault(id, {})
         changes = {}
         
@@ -335,11 +348,11 @@ class Class:    # no, I'm not going to subclass the existing!
                 if prop.do_journal:
                     # register the unlink with the old linked node
                     if oldvalue:
-                        self.db.addjournal(link_class, value, _UNLINK, (self.name, str(row.id), key))
+                        self.db.addjournal(link_class, value, _UNLINK, (self.classname, str(row.id), key))
 
                     # register the link with the newly linked node
                     if value:
-                        self.db.addjournal(link_class, value, _LINK, (self.name, str(row.id), key))
+                        self.db.addjournal(link_class, value, _LINK, (self.classname, str(row.id), key))
 
             elif isinstance(prop, hyperdb.Multilink):
                 if type(value) != _LISTTYPE:
@@ -369,7 +382,7 @@ class Class:    # no, I'm not going to subclass the existing!
                         rmvd.append(id)
                         # register the unlink with the old linked node
                         if prop.do_journal:
-                            self.db.addjournal(link_class, id, _UNLINK, (self.name, str(row.id), key))
+                            self.db.addjournal(link_class, id, _UNLINK, (self.classname, str(row.id), key))
 
                 # handle additions
                 adds = []
@@ -381,7 +394,7 @@ class Class:    # no, I'm not going to subclass the existing!
                         adds.append(id)
                         # register the link with the newly linked node
                         if prop.do_journal:
-                            self.db.addjournal(link_class, id, _LINK, (self.name, str(row.id), key))
+                            self.db.addjournal(link_class, id, _LINK, (self.classname, str(row.id), key))
                             
                 sv = getattr(row, key)
                 i = 0
@@ -402,6 +415,8 @@ class Class:    # no, I'm not going to subclass the existing!
                 changes[key] = oldvalue
                 if hasattr(prop, 'isfilename') and prop.isfilename:
                     propvalues[key] = os.path.basename(value)
+                if prop.indexme:
+                    self.db.indexer.add_text((self.classname, nodeid, key), value, 'text/plain')
 
             elif isinstance(prop, hyperdb.Password):
                 if not isinstance(value, password.Password):
@@ -437,11 +452,13 @@ class Class:    # no, I'm not going to subclass the existing!
             if not row.creator:
                 row.creator = self.db.curuserid
             
+        #XXX
+        print "back_metakit.Class.set - dirty"
         self.db.dirty = 1
         if isnew:
-            self.db.addjournal(self.name, nodeid, _CREATE, {})
+            self.db.addjournal(self.classname, nodeid, _CREATE, {})
         else:
-            self.db.addjournal(self.name, nodeid, _SET, changes)
+            self.db.addjournal(self.classname, nodeid, _SET, changes)
 
     def retire(self, nodeid):
         view = self.getview(1)
@@ -452,26 +469,26 @@ class Class:    # no, I'm not going to subclass the existing!
         oldvalues = self.uncommitted.setdefault(row.id, {})
         oldval = oldvalues['_isdel'] = row._isdel
         row._isdel = 1
-        self.db.addjournal(self.name, nodeid, _RETIRE, {})
+        self.db.addjournal(self.classname, nodeid, _RETIRE, {})
         iv = self.getindexview(1)
         ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
         if ndx > -1:
             iv.delete(ndx)
         self.db.dirty = 1
     def history(self, nodeid):
-        return self.db.gethistory(self.name, nodeid)
+        return self.db.gethistory(self.classname, nodeid)
     def setkey(self, propname):
         if self.keyname:
             if propname == self.keyname:
                 return
-            raise ValueError, "%s already indexed on %s" % (self.name, self.keyname)
+            raise ValueError, "%s already indexed on %s" % (self.classname, self.keyname)
         # first setkey for this run
         self.keyname = propname
-        iv = self.db._db.view('_%s' % self.name)
+        iv = self.db._db.view('_%s' % self.classname)
         if self.db.fastopen or iv.structure():
             return
         # very first setkey ever
-        iv = self.db._db.getas('_%s[k:S,i:I]' % self.name)
+        iv = self.db._db.getas('_%s[k:S,i:I]' % self.classname)
         iv = iv.ordered(1)
         #XXX
         print "setkey building index"
@@ -514,6 +531,8 @@ class Class:    # no, I'm not going to subclass the existing!
 
         vws = []
         for propname, ids in propspec:
+            if type(ids) is _STRINGTYPE:
+                ids = {ids:1}
             prop = self.ruprops[propname]
             view = self.getview()
             if isinstance(prop, hyperdb.Multilink):
@@ -551,7 +570,7 @@ class Class:    # no, I'm not going to subclass the existing!
     def addprop(self, **properties):
         for key in properties.keys():
             if self.ruprops.has_key(key):
-                raise ValueError, "%s is already a property of %s" % (key, self.name)
+                raise ValueError, "%s is already a property of %s" % (key, self.classname)
         self.ruprops.update(properties)
         view = self.__getview()
     # ---- end of ping's spec
@@ -731,7 +750,17 @@ class Class:    # no, I'm not going to subclass the existing!
         return l
 
     def addjournal(self, nodeid, action, params):
-        self.db.addjournal(self.name, nodeid, action, params)
+        self.db.addjournal(self.classname, nodeid, action, params)
+
+    def index(self, nodeid):
+        ''' Add (or refresh) the node to search indexes '''
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if isinstance(propclass, hyperdb.String) and propclass.indexme:
+                # index them under (classname, nodeid, property)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                                str(self.get(nodeid, prop)))
+
     # --- used by Database
     def _commit(self):
         """ called post commit of the DB.
@@ -762,24 +791,31 @@ class Class:    # no, I'm not going to subclass the existing!
     # --- internal
     def __getview(self):
         db = self.db._db
-        view = db.view(self.name)
+        view = db.view(self.classname)
         if self.db.fastopen:
             return view.ordered(1)
         # is the definition the same?
+        mkprops = view.structure()
         for nm, rutyp in self.ruprops.items():
-            mkprop = getattr(view, nm, None)
+            for mkprop in mkprops:
+                if mkprop.name == nm:
+                    break
+            else:
+                mkprop = None
             if mkprop is None:
-                #print "%s missing prop %s (%s)" % (self.name, nm, rutyp.__class__.__name__)
+                #print "%s missing prop %s (%s)" % (self.classname, nm, rutyp.__class__.__name__)
                 break
             if _typmap[rutyp.__class__] != mkprop.type:
-                #print "%s - prop %s (%s) has wrong mktyp (%s)" % (self.name, nm, rutyp.__class__.__name__, mkprop.type)
+                #print "%s - prop %s (%s) has wrong mktyp (%s)" % (self.classname, nm, rutyp.__class__.__name__, mkprop.type)
                 break
         else:
             return view.ordered(1)
         # need to create or restructure the mk view
         # id comes first, so MK will order it for us
+        #XXX
+        print "back_metakit.Class.__getview - dirty!"
         self.db.dirty = 1
-        s = ["%s[id:I" % self.name]
+        s = ["%s[id:I" % self.classname]
         for nm, rutyp in self.ruprops.items():
             mktyp = _typmap[rutyp.__class__]
             s.append('%s:%s' % (nm, mktyp))
@@ -791,11 +827,11 @@ class Class:    # no, I'm not going to subclass the existing!
     def getview(self, RW=0):
         if RW and self.db.isReadOnly():
             self.db.getWriteAccess()
-        return self.db._db.view(self.name).ordered(1)
+        return self.db._db.view(self.classname).ordered(1)
     def getindexview(self, RW=0):
         if RW and self.db.isReadOnly():
             self.db.getWriteAccess()
-        return self.db._db.view("_%s" % self.name).ordered(1)
+        return self.db._db.view("_%s" % self.classname).ordered(1)
     
 def _fetchML(sv):
     l = []
@@ -837,8 +873,11 @@ _typmap = {
 }
 class FileClass(Class):
     ' like Class but with a content property '
+    default_mime_type = 'text/plain'
     def __init__(self, db, classname, **properties):
         properties['content'] = FileName()
+        if not properties.has_key('type'):
+            properties['type'] = hyperdb.String()
         Class.__init__(self, db, classname, **properties)
     def get(self, nodeid, propname, default=_marker, cache=1):
         x = Class.get(self, nodeid, propname, default, cache)
@@ -859,22 +898,28 @@ class FileClass(Class):
         if content.startswith('/tracker/download.php?'):
             self.set(newid, content='http://sourceforge.net'+content)
             return newid
-        nm = bnm = '%s%s' % (self.name, newid)
+        nm = bnm = '%s%s' % (self.classname, newid)
         sd = str(int(int(newid) / 1000))
-        d = os.path.join(self.db.config.DATABASE, 'files', self.name, sd)
+        d = os.path.join(self.db.config.DATABASE, 'files', self.classname, sd)
         if not os.path.exists(d):
             os.makedirs(d)
         nm = os.path.join(d, nm)
         open(nm, 'wb').write(content)
         self.set(newid, content = 'file:'+nm)
-        self.db.indexer.add_files(d, bnm)
-        self.db.indexer.save_index()
+        mimetype = propvalues.get('type', self.default_mime_type)
+        self.db.indexer.add_text((self.classname, newid, 'content'), content, mimetype)
         def undo(fnm=nm, action1=os.remove, indexer=self.db.indexer):
             remove(fnm)
-            indexer.purge_entry(fnm, indexer.files, indexer.words)
         self.rollbackaction(undo)
         return newid
-
+    def index(self, nodeid):
+        Class.index(self, nodeid)
+        mimetype = self.get(nodeid, 'type')
+        if not mimetype:
+            mimetype = self.default_mime_type
+        self.db.indexer.add_text((self.classname, nodeid, 'content'),
+                    self.get(nodeid, 'content'), mimetype)
+ 
 # Yuck - c&p to avoid getting hyperdb.Class
 class IssueClass(Class):
 
@@ -886,7 +931,7 @@ class IssueClass(Class):
         dictionary attempts to specify any of these properties or a
         "creation" or "activity" property, a ValueError is raised."""
         if not properties.has_key('title'):
-            properties['title'] = hyperdb.String()
+            properties['title'] = hyperdb.String(indexme='yes')
         if not properties.has_key('messages'):
             properties['messages'] = hyperdb.Multilink("msg")
         if not properties.has_key('files'):
