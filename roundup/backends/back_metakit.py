@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.47.2.1 2003-08-26 00:12:28 richard Exp $
+# $Id: back_metakit.py,v 1.47.2.2 2003-11-14 00:19:02 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -1178,7 +1178,7 @@ class Class:
             l.append(repr(value))
 
         # append retired flag
-        l.append(self.is_retired(nodeid))
+        l.append(repr(self.is_retired(nodeid)))
 
         return l
         
