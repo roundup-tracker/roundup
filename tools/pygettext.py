@@ -231,6 +231,104 @@ def normalize(s):
         s = '""\n"' + lineterm.join(lines) + '"'
     return s
 
+
+
+def containsAny(str, set):
+    """ Check whether 'str' contains ANY of the chars in 'set'
+    """
+    return 1 in [c in str for c in set]
+
+
+def _visit_pyfiles(list, dirname, names):
+    """ Helper for getFilesForName().
+    """
+    # get extension for python source files
+    if not globals().has_key('_py_ext'):
+        import imp
+        global _py_ext
+        _py_ext = [triple[0] for triple in imp.get_suffixes() if triple[2] == imp.PY_SOURCE][0]
+
+    # don't recurse into CVS directories
+    if 'CVS' in names:
+        names.remove('CVS')
+
+    # add all *.py files to list
+    list.extend(
+        [os.path.join(dirname, file)
+            for file in names
+                if os.path.splitext(file)[1] == _py_ext])
+
+
+def _get_modpkg_path(dotted_name, pathlist=None):
+    """ Get the filesystem path for a module or a package.
+
+        Return the file system path to a file for a module,
+        and to a directory for a package. Return None if
+        the name is not found, or is a builtin or extension module.
+    """
+    import imp
+
+    # split off top-most name
+    parts = dotted_name.split('.', 1)
+
+    if len(parts) > 1:
+        # we have a dotted path, import top-level package
+        try:
+            file, pathname, description = imp.find_module(parts[0], pathlist)
+            if file: file.close()
+        except ImportError:
+            return None
+
+        # check if it's indeed a package
+        if description[2] == imp.PKG_DIRECTORY:
+            # recursively handle the remaining name parts
+            pathname = _get_modpkg_path(parts[1], [pathname])
+        else:
+            pathname = None
+    else:
+        # plain name
+        try:
+            file, pathname, description = imp.find_module(dotted_name, pathlist)
+            if file: file.close()
+            if description[2] not in [imp.PY_SOURCE, imp.PKG_DIRECTORY]:
+                pathname = None
+        except ImportError:
+            pathname = None
+
+    return pathname
+
+
+def getFilesForName(name):
+    """ Get a list of module files for a filename, a module or package name,
+        or a directory.
+    """
+    import imp
+
+    if not os.path.exists(name):
+        # check for glob chars
+        if containsAny(name, "*?[]"):
+            import glob
+            files = glob.glob(name)
+            list = []
+            for file in files:
+                list.extend(getFilesForName(file))
+            return list
+
+        # try to find module or package
+        name = _get_modpkg_path(name)
+        if not name:
+            return []
+
+    if os.path.isdir(name):
+        # find all python files in directory
+        list = []
+        os.path.walk(name, _visit_pyfiles, list)
+        return list
+    elif os.path.exists(name):
+        # a single file
+        return [name]
+
+    return []
 
 
 class TokenEater:
@@ -417,13 +515,11 @@ def main():
     else:
         options.toexclude = []
 
-    # on win32, do internal globbing
-    if sys.platform == 'win32':
-        import glob
-        expanded = []
-        for arg in args:
-            expanded.extend(glob.glob(arg))
-        args = expanded
+    # resolve args to module lists
+    expanded = []
+    for arg in args:
+        expanded.extend(getFilesForName(arg))
+    args = expanded
 
     # slurp through all the files
     eater = TokenEater(options)

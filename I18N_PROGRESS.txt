@@ -2,6 +2,18 @@ This list has been generated using the MANIFEST file. We should be able to
 write a simple script to compare the two and make sure that all MANIFEST
 files appear in here.
 
+To generate a messages.pot file, use this command:
+
+    python tools/pygettext.py roundup roundup-* cgi-bin/roundup.cgi
+
+"messages.pot" then contains a positive list of files using _(), which can
+be extracted by;
+
+    grep "#: " messages.pot | tr ":#0123456789 " "\012" | sort | uniq
+
+Of course, this does not check whether a file is fully translated, only
+whether there is at least one use of "_()".
+
 
 THESE FILES DO NOT USE _()
 ==========================
