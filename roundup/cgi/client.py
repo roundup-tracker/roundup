@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.182 2004-07-11 14:23:12 a1s Exp $
+# $Id: client.py,v 1.183 2004-07-13 10:19:13 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -276,7 +276,7 @@ class Client:
             self.write_html(self.renderContext())
         except:
             # everything else
-            self.write_html(cgitb.html())
+            self.write_html(cgitb.html(i18n=self.translator))
 
     def clean_sessions(self):
         """Age sessions, remove when they haven't been used for a week.
@@ -621,7 +621,7 @@ class Client:
             raise Unauthorised, str(message)
         except:
             # everything else
-            return cgitb.pt_html()
+            return cgitb.pt_html(i18n=self.translator)
 
     # these are the actions that are available
     actions = (
