@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-04-?? 0.4.2
+2002-06-19 0.4.2
 Feature:
  . added a "detectors" directory for people to put their useful auditors and
    reactors in. Note - the roundupdb.IssueClass.sendmessage method has been
