@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.92 2002-01-08 04:12:05 richard Exp $
+# $Id: cgi_client.py,v 1.93 2002-01-08 11:57:12 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -471,7 +471,7 @@ class Client:
         # handle the messageid
         # TODO: handle inreplyto
         messageid = "<%s.%s.%s@%s>"%(time.time(), random.random(),
-            self.classname, self.MAIL_DOMAIN)
+            self.classname, self.instance.MAIL_DOMAIN)
 
         # now create the message, attaching the files
         content = '\n'.join(m)
@@ -1180,6 +1180,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.92  2002/01/08 04:12:05  richard
+# Changed message-id format to "<%s.%s.%s%s@%s>" so it complies with RFC822
+#
 # Revision 1.91  2002/01/08 04:03:47  richard
 # I mucked the intent of the code up.
 #
