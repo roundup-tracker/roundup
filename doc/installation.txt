@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.59 $
+:Version: $Revision: 1.60 $
 
 .. contents::
 
@@ -195,7 +195,7 @@ Configuring your first tracker
 
    then direct your web browser at:
 
-     http://locahost:8080/support/
+     http://localhost:8080/support/
 
    and you should see the tracker interface.
 
