@@ -11,22 +11,20 @@ __ spec.html
 Introduction
 ---------------
 
-This document presents a description of the components
-of the Roundup system and specifies their interfaces and
-behaviour in sufficient detail to guide an implementation.
-For the philosophy and rationale behind the Roundup design,
-see the first-round Software Carpentry submission for Roundup.
-This document fleshes out that design as well as specifying
+This document presents a description of the components of the Roundup
+system and specifies their interfaces and behaviour in sufficient detail
+to guide an implementation. For the philosophy and rationale behind the
+Roundup design, see the first-round Software Carpentry submission for
+Roundup. This document fleshes out that design as well as specifying
 interfaces so that the components can be developed separately.
 
 
 The Layer Cake
 -----------------
 
-Lots of software design documents come with a picture of
-a cake.  Everybody seems to like them.  I also like cakes
-(i think they are tasty).  So i, too, shall include
-a picture of a cake here::
+Lots of software design documents come with a picture of a cake.
+Everybody seems to like them.  I also like cakes (i think they are
+tasty).  So I, too, shall include a picture of a cake here::
 
      _________________________________________________________________________
     |  E-mail Client   |   Web Browser   |   Detector Scripts   |    Shell    |
@@ -40,58 +38,51 @@ a picture of a cake here::
     |                             Storage Layer                               |
      -------------------------------------------------------------------------
 
-The colourful parts of the cake are part of our system;
-the faint grey parts of the cake are external components.
+The colourful parts of the cake are part of our system; the faint grey
+parts of the cake are external components.
 
-I will now proceed to forgo all table manners and
-eat from the bottom of the cake to the top.  You may want
-to stand back a bit so you don't get covered in crumbs.
+I will now proceed to forgo all table manners and eat from the bottom of
+the cake to the top.  You may want to stand back a bit so you don't get
+covered in crumbs.
 
 
 Hyperdatabase
 -------------
 
-The lowest-level component to be implemented is the hyperdatabase.
-The hyperdatabase is intended to be
-a flexible data store that can hold configurable data in
-records which we call items.
+The lowest-level component to be implemented is the hyperdatabase. The
+hyperdatabase is intended to be a flexible data store that can hold
+configurable data in records which we call items.
 
-The hyperdatabase is implemented on top of the storage layer,
-an external module for storing its data.  The storage layer could
-be a third-party RDBMS; for a "batteries-included" distribution,
-implementing the hyperdatabase on the standard bsddb
-module is suggested.
+The hyperdatabase is implemented on top of the storage layer, an
+external module for storing its data.  The storage layer could be a
+third-party RDBMS; for a "batteries-included" distribution, implementing
+the hyperdatabase on the standard bsddb module is suggested.
 
 Dates and Date Arithmetic
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before we get into the hyperdatabase itself, we need a
-way of handling dates.  The hyperdatabase module provides
-Timestamp objects for
-representing date-and-time stamps and Interval objects for
-representing date-and-time intervals.
+Before we get into the hyperdatabase itself, we need a way of handling
+dates.  The hyperdatabase module provides Timestamp objects for
+representing date-and-time stamps and Interval objects for representing
+date-and-time intervals.
 
-As strings, date-and-time stamps are specified with
-the date in international standard format
-(``yyyy-mm-dd``)
-joined to the time (``hh:mm:ss``)
-by a period "``.``".  Dates in
-this form can be easily compared and are fairly readable
-when printed.  An example of a valid stamp is
-"``2000-06-24.13:03:59``".
-We'll call this the "full date format".  When Timestamp objects are
-printed as strings, they appear in the full date format with
-the time always given in GMT.  The full date format is always
-exactly 19 characters long.
+As strings, date-and-time stamps are specified with the date in
+international standard format (``yyyy-mm-dd``) joined to the time
+(``hh:mm:ss``) by a period "``.``".  Dates in this form can be easily
+compared and are fairly readable when printed.  An example of a valid
+stamp is "``2000-06-24.13:03:59``". We'll call this the "full date
+format".  When Timestamp objects are printed as strings, they appear in
+the full date format with the time always given in GMT.  The full date
+format is always exactly 19 characters long.
 
-For user input, some partial forms are also permitted:
-the whole time or just the seconds may be omitted; and the whole date
-may be omitted or just the year may be omitted.  If the time is given,
-the time is interpreted in the user's local time zone.
-The Date constructor takes care of these conversions.
-In the following examples, suppose that ``yyyy`` is the current year,
-``mm`` is the current month, and ``dd`` is the current
-day of the month; and suppose that the user is on Eastern Standard Time.
+For user input, some partial forms are also permitted: the whole time or
+just the seconds may be omitted; and the whole date may be omitted or
+just the year may be omitted.  If the time is given, the time is
+interpreted in the user's local time zone. The Date constructor takes
+care of these conversions. In the following examples, suppose that
+``yyyy`` is the current year, ``mm`` is the current month, and ``dd`` is
+the current day of the month; and suppose that the user is on Eastern
+Standard Time.
 
 -   "2000-04-17" means <Date 2000-04-17.00:00:00>
 -   "01-25" means <Date yyyy-01-25.00:00:00>
@@ -105,10 +96,10 @@ day of the month; and suppose that the user is on Eastern Standard Time.
 -   the special date "." means "right now"
 
 
-Date intervals are specified using the suffixes
-"y", "m", and "d".  The suffix "w" (for "week") means 7 days.
-Time intervals are specified in hh:mm:ss format (the seconds
-may be omitted, but the hours and minutes may not).
+Date intervals are specified using the suffixes "y", "m", and "d".  The
+suffix "w" (for "week") means 7 days. Time intervals are specified in
+hh:mm:ss format (the seconds may be omitted, but the hours and minutes
+may not).
 
 -   "3y" means three years
 -   "2y 1m" means two years and one month
@@ -119,14 +110,13 @@ may be omitted, but the hours and minutes may not).
 -   "0:04:33" means four minutes and 33 seconds
 
 
-The Date class should understand simple date expressions of the form 
-*stamp* ``+`` *interval* and *stamp* ``-`` *interval*.
-When adding or subtracting intervals involving months or years, the
-components are handled separately.  For example, when evaluating
-"``2000-06-25 + 1m 10d``", we first add one month to
-get 2000-07-25, then add 10 days to get
-2000-08-04 (rather than trying to decide whether
-1m 10d means 38 or 40 or 41 days).
+The Date class should understand simple date expressions of the form
+*stamp* ``+`` *interval* and *stamp* ``-`` *interval*. When adding or
+subtracting intervals involving months or years, the components are
+handled separately.  For example, when evaluating "``2000-06-25 + 1m
+10d``", we first add one month to get 2000-07-25, then add 10 days to
+get 2000-08-04 (rather than trying to decide whether 1m 10d means 38 or
+40 or 41 days).
 
 Here is an outline of the Date and Interval classes::
 
@@ -167,8 +157,8 @@ Here is an outline of the Date and Interval classes::
 
 
 Here are some examples of how these classes would behave in practice.
-For the following examples, assume that we are on Eastern Standard
-Time and the current local time is 19:34:02 on 25 June 2000::
+For the following examples, assume that we are on Eastern Standard Time
+and the current local time is 19:34:02 on 25 June 2000::
 
     >>> Date(".")
     <Date 2000-06-26.00:34:02>
@@ -192,31 +182,26 @@ Time and the current local time is 19:34:02 on 25 June 2000::
 Items and Classes
 ~~~~~~~~~~~~~~~~~
 
-Items contain data in properties.  To Python, these
-properties are presented as the key-value pairs of a dictionary.
-Each item belongs to a class which defines the names
-and types of its properties.  The database permits the creation
-and modification of classes as well as items.
+Items contain data in properties.  To Python, these properties are
+presented as the key-value pairs of a dictionary. Each item belongs to a
+class which defines the names and types of its properties.  The database
+permits the creation and modification of classes as well as items.
 
 Identifiers and Designators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each item has a numeric identifier which is unique among
-items in its class.  The items are numbered sequentially
-within each class in order of creation, starting from 1.
-The designator
-for an item is a way to identify an item in the database, and
-consists of the name of the item's class concatenated with
-the item's numeric identifier.
+Each item has a numeric identifier which is unique among items in its
+class.  The items are numbered sequentially within each class in order
+of creation, starting from 1. The designator for an item is a way to
+identify an item in the database, and consists of the name of the item's
+class concatenated with the item's numeric identifier.
 
-For example, if "spam" and "eggs" are classes, the first
-item created in class "spam" has id 1 and designator "spam1".
-The first item created in class "eggs" also has id 1 but has
-the distinct designator "eggs1".  Item designators are
-conventionally enclosed in square brackets when mentioned
-in plain text.  This permits a casual mention of, say,
-"[patch37]" in an e-mail message to be turned into an active
-hyperlink.
+For example, if "spam" and "eggs" are classes, the first item created in
+class "spam" has id 1 and designator "spam1". The first item created in
+class "eggs" also has id 1 but has the distinct designator "eggs1".
+Item designators are conventionally enclosed in square brackets when
+mentioned in plain text.  This permits a casual mention of, say,
+"[patch37]" in an e-mail message to be turned into an active hyperlink.
 
 Property Names and Types
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -231,18 +216,18 @@ A property may be one of five basic types:
 
 - Number properties are for storing numeric values.
 
-- Date properties store date-and-time stamps.
-  Their values are Timestamp objects.
+- Date properties store date-and-time stamps. Their values are Timestamp
+  objects.
 
-- A Link property refers to a single other item
-  selected from a specified class.  The class is part of the property;
-  the value is an integer, the id of the chosen item.
+- A Link property refers to a single other item selected from a
+  specified class.  The class is part of the property; the value is an
+  integer, the id of the chosen item.
 
-- A Multilink property refers to possibly many items
-  in a specified class.  The value is a list of integers.
+- A Multilink property refers to possibly many items in a specified
+  class.  The value is a list of integers.
 
-*None* is also a permitted value for any of these property
-types.  An attempt to store None into a Multilink property stores an empty list.
+*None* is also a permitted value for any of these property types.  An
+attempt to store None into a Multilink property stores an empty list.
 
 A property that is not specified will return as None from a *get*
 operation.
@@ -252,9 +237,9 @@ Hyperdb Interface Specification
 
 TODO: replace the Interface Specifications with links to the pydoc
 
-The hyperdb module provides property objects to designate
-the different kinds of properties.  These objects are used when
-specifying what properties belong in classes::
+The hyperdb module provides property objects to designate the different
+kinds of properties.  These objects are used when specifying what
+properties belong in classes::
 
     class String:
         def __init__(self, indexme='no'):
@@ -299,17 +284,17 @@ Here is the interface provided by the hyperdatabase::
         def __init__(self, config, journaltag=None):
             """Open a hyperdatabase given a specifier to some storage.
 
-            The 'storagelocator' is obtained from config.DATABASE.
-            The meaning of 'storagelocator' depends on the particular
-            implementation of the hyperdatabase.  It could be a file name,
-            a directory path, a socket descriptor for a connection to a
-            database over the network, etc.
+            The 'storagelocator' is obtained from config.DATABASE. The
+            meaning of 'storagelocator' depends on the particular
+            implementation of the hyperdatabase.  It could be a file
+            name, a directory path, a socket descriptor for a connection
+            to a database over the network, etc.
 
-            The 'journaltag' is a token that will be attached to the journal
-            entries for any edits done on the database.  If 'journaltag' is
-            None, the database is opened in read-only mode: the Class.create(),
-            Class.set(), Class.retire(), and Class.restore() methods are 
-            disabled.
+            The 'journaltag' is a token that will be attached to the
+            journal entries for any edits done on the database.  If
+            'journaltag' is None, the database is opened in read-only
+            mode: the Class.create(), Class.set(), Class.retire(), and
+            Class.restore() methods are disabled.
             """
 
         def __getattr__(self, classname):
@@ -381,7 +366,7 @@ Here is the interface provided by the hyperdatabase::
             """
 
         def restore(self, nodeid):
-        '''Restpre a retired node.
+        '''Restore a retired node.
 
         Make node available for all operations like it was before retirement.
         '''
@@ -494,19 +479,20 @@ Here is the interface provided by the hyperdatabase::
 Hyperdatabase Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Hyperdatabase implementations exist to create the interface described in the
-`hyperdb interface specification`_
-over an existing storage mechanism. Examples are relational databases,
-\*dbm key-value databases, and so on.
+Hyperdatabase implementations exist to create the interface described in
+the `hyperdb interface specification`_ over an existing storage
+mechanism. Examples are relational databases, \*dbm key-value databases,
+and so on.
 
-Several implementations are provided - they belong in the roundup.backends
-package.
+Several implementations are provided - they belong in the
+roundup.backends package.
 
 
 Application Example
 ~~~~~~~~~~~~~~~~~~~
 
-Here is an example of how the hyperdatabase module would work in practice::
+Here is an example of how the hyperdatabase module would work in
+practice::
 
     >>> import hyperdb
     >>> db = hyperdb.Database("foo.db", "ping")
@@ -569,36 +555,33 @@ Here is an example of how the hyperdatabase module would work in practice::
     [(<Date 2000-06-28.19:11:04>, "ping", "link", ("issue", 5, "status"))]
 
 
-For the purposes of journalling, when a Multilink property is
-set to a new list of items, the hyperdatabase compares the old
-list to the new list.
-The journal records "unlink" events for all the items that appear
-in the old list but not the new list,
-and "link" events for
-all the items that appear in the new list but not in the old list.
+For the purposes of journalling, when a Multilink property is set to a
+new list of items, the hyperdatabase compares the old list to the new
+list. The journal records "unlink" events for all the items that appear
+in the old list but not the new list, and "link" events for all the
+items that appear in the new list but not in the old list.
 
 
 Roundup Database
 ----------------
 
-The Roundup database layer is implemented on top of the
-hyperdatabase and mediates calls to the database.
-Some of the classes in the Roundup database are considered
-issue classes.
-The Roundup database layer adds detectors and user items,
-and on issues it provides mail spools, nosy lists, and superseders.
+The Roundup database layer is implemented on top of the hyperdatabase
+and mediates calls to the database. Some of the classes in the Roundup
+database are considered issue classes. The Roundup database layer adds
+detectors and user items, and on issues it provides mail spools, nosy
+lists, and superseders.
 
 Reserved Classes
 ~~~~~~~~~~~~~~~~
 
-Internal to this layer we reserve three special classes
-of items that are not issues.
+Internal to this layer we reserve three special classes of items that
+are not issues.
 
 Users
 """""
 
-Users are stored in the hyperdatabase as items of
-class "user".  The "user" class has the definition::
+Users are stored in the hyperdatabase as items of class "user".  The
+"user" class has the definition::
 
     hyperdb.Class(db, "user", username=hyperdb.String(),
                               password=hyperdb.String(),
@@ -611,12 +594,12 @@ Messages
 E-mail messages are represented by hyperdatabase items of class "msg".
 The actual text content of the messages is stored in separate files.
 (There's no advantage to be gained by stuffing them into the
-hyperdatabase, and if messages are stored in ordinary text files,
-they can be grepped from the command line.)  The text of a message is
-saved in a file named after the message item designator (e.g. "msg23")
-for the sake of the command interface (see below).  Attachments are
-stored separately and associated with "file" items.
-The "msg" class has the definition::
+hyperdatabase, and if messages are stored in ordinary text files, they
+can be grepped from the command line.)  The text of a message is saved
+in a file named after the message item designator (e.g. "msg23") for the
+sake of the command interface (see below).  Attachments are stored
+separately and associated with "file" items. The "msg" class has the
+definition::
 
     hyperdb.Class(db, "msg", author=hyperdb.Link("user"),
                              recipients=hyperdb.Multilink("user"),
@@ -624,28 +607,26 @@ The "msg" class has the definition::
                              summary=hyperdb.String(),
                              files=hyperdb.Multilink("file"))
 
-The "author" property indicates the author of the message
-(a "user" item must exist in the hyperdatabase for any messages
-that are stored in the system).
-The "summary" property contains a summary of the message for display
-in a message index.
+The "author" property indicates the author of the message (a "user" item
+must exist in the hyperdatabase for any messages that are stored in the
+system). The "summary" property contains a summary of the message for
+display in a message index.
 
 Files
 """""
 
-Submitted files are represented by hyperdatabase
-items of class "file".  Like e-mail messages, the file content
-is stored in files outside the database,
-named after the file item designator (e.g. "file17").
-The "file" class has the definition::
+Submitted files are represented by hyperdatabase items of class "file".
+Like e-mail messages, the file content is stored in files outside the
+database, named after the file item designator (e.g. "file17"). The
+"file" class has the definition::
 
     hyperdb.Class(db, "file", user=hyperdb.Link("user"),
                               name=hyperdb.String(),
                               type=hyperdb.String())
 
-The "user" property indicates the user who submitted the
-file, the "name" property holds the original name of the file,
-and the "type" property holds the MIME type of the file as received.
+The "user" property indicates the user who submitted the file, the
+"name" property holds the original name of the file, and the "type"
+property holds the MIME type of the file as received.
 
 Issue Classes
 ~~~~~~~~~~~~~
@@ -662,22 +643,20 @@ nosy        hyperdb.Multilink("user")
 superseder  hyperdb.Multilink("issue")
 =========== ==========================
 
-Also, two Date properties named "creation" and "activity" are
-fabricated by the Roundup database layer.  By "fabricated" we
-mean that no such properties are actually stored in the
-hyperdatabase, but when properties on issues are requested, the
-"creation" and "activity" properties are made available.
-The value of the "creation" property is the date when an issue was
-created, and the value of the "activity" property is the
-date when any property on the issue was last edited (equivalently,
-these are the dates on the first and last records in the issue's journal).
+Also, two Date properties named "creation" and "activity" are fabricated
+by the Roundup database layer.  By "fabricated" we mean that no such
+properties are actually stored in the hyperdatabase, but when properties
+on issues are requested, the "creation" and "activity" properties are
+made available. The value of the "creation" property is the date when an
+issue was created, and the value of the "activity" property is the date
+when any property on the issue was last edited (equivalently, these are
+the dates on the first and last records in the issue's journal).
 
 Roundupdb Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The interface to a Roundup database delegates most method
-calls to the hyperdatabase, except for the following
-changes and additional methods::
+The interface to a Roundup database delegates most method calls to the
+hyperdatabase, except for the following changes and additional methods::
 
     class Database:
         def getuid(self):
@@ -690,8 +669,9 @@ changes and additional methods::
         def create(self, **propvalues):
         def set(self, **propvalues):
         def retire(self, itemid):
-            """These operations trigger detectors and can be vetoed.  Attempts
-            to modify the "creation" or "activity" properties cause a KeyError.
+            """These operations trigger detectors and can be vetoed.
+            Attempts to modify the "creation" or "activity" properties
+            cause a KeyError.
             """
 
         # New methods:
@@ -704,10 +684,11 @@ changes and additional methods::
         # Overridden methods:
 
         def __init__(self, db, classname, **properties):
-            """The newly-created class automatically includes the "messages",
-            "files", "nosy", and "superseder" properties.  If the 'properties'
-            dictionary attempts to specify any of these properties or a
-            "creation" or "activity" property, a ValueError is raised."""
+            """The newly-created class automatically includes the
+            "messages", "files", "nosy", and "superseder" properties.
+            If the 'properties' dictionary attempts to specify any of
+            these properties or a "creation" or "activity" property, a
+            ValueError is raised."""
 
         def get(self, itemid, propname):
         def getprops(self):
@@ -730,17 +711,17 @@ changes and additional methods::
         def sendmessage(self, itemid, msgid):
             """Send a message to the members of an issue's nosy list.
 
-            The message is sent only to users on the nosy list who are not
-            already on the "recipients" list for the message.  These users
-            are then added to the message's "recipients" list.
+            The message is sent only to users on the nosy list who are
+            not already on the "recipients" list for the message.  These
+            users are then added to the message's "recipients" list.
             """
 
 
 Default Schema
 ~~~~~~~~~~~~~~
 
-The default schema included with Roundup turns it into a
-typical software bug tracker.  The database is set up like this::
+The default schema included with Roundup turns it into a typical
+software bug tracker.  The database is set up like this::
 
     pri = Class(db, "priority", name=hyperdb.String(), order=hyperdb.String())
     pri.setkey("name")
@@ -768,13 +749,13 @@ typical software bug tracker.  The database is set up like this::
                        priority=hyperdb.Link("priority"),
                        status=hyperdb.Link("status"))
 
-(The "order" property hasn't been explained yet.  It
-gets used by the Web user interface for sorting.)
+(The "order" property hasn't been explained yet.  It gets used by the
+Web user interface for sorting.)
 
-The above isn't as pretty-looking as the schema specification
-in the first-stage submission, but it could be made just as easy
-with the addition of a convenience function like Choice
-for setting up the "priority" and "status" classes::
+The above isn't as pretty-looking as the schema specification in the
+first-stage submission, but it could be made just as easy with the
+addition of a convenience function like Choice for setting up the
+"priority" and "status" classes::
 
     def Choice(name, *options):
         cl = Class(db, name, name=hyperdb.String(), order=hyperdb.String())
@@ -786,68 +767,64 @@ for setting up the "priority" and "status" classes::
 Detector Interface
 ------------------
 
-Detectors are Python functions that are triggered on certain
-kinds of events.  The definitions of the
-functions live in Python modules placed in a directory set aside
-for this purpose.  Importing the Roundup database module also
-imports all the modules in this directory, and the ``init()``
-function of each module is called when a database is opened to
-provide it a chance to register its detectors.
+Detectors are Python functions that are triggered on certain kinds of
+events.  The definitions of the functions live in Python modules placed
+in a directory set aside for this purpose.  Importing the Roundup
+database module also imports all the modules in this directory, and the
+``init()`` function of each module is called when a database is opened
+to provide it a chance to register its detectors.
 
 There are two kinds of detectors:
 
 1. an auditor is triggered just before modifying an item
 2. a reactor is triggered just after an item has been modified
 
-When the Roundup database is about to perform a
-``create()``, ``set()``, ``retire()``, or ``restore``
-operation, it first calls any *auditors* that
-have been registered for that operation on that class.
-Any auditor may raise a *Reject* exception
-to abort the operation.
+When the Roundup database is about to perform a ``create()``, ``set()``,
+``retire()``, or ``restore`` operation, it first calls any *auditors*
+that have been registered for that operation on that class. Any auditor
+may raise a *Reject* exception to abort the operation.
 
-If none of the auditors raises an exception, the database
-proceeds to carry out the operation.  After it's done, it
-then calls all of the *reactors* that have been registered
-for the operation.
+If none of the auditors raises an exception, the database proceeds to
+carry out the operation.  After it's done, it then calls all of the
+*reactors* that have been registered for the operation.
 
 Detector Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``audit()`` and ``react()`` methods
-register detectors on a given class of items::
+The ``audit()`` and ``react()`` methods register detectors on a given
+class of items::
 
     class Class:
         def audit(self, event, detector):
             """Register an auditor on this class.
 
-            'event' should be one of "create", "set", "retire", or "restore".
-            'detector' should be a function accepting four arguments.
+            'event' should be one of "create", "set", "retire", or
+            "restore". 'detector' should be a function accepting four
+            arguments.
             """
 
         def react(self, event, detector):
             """Register a reactor on this class.
 
-            'event' should be one of "create", "set", "retire", or "restore".
-            'detector' should be a function accepting four arguments.
+            'event' should be one of "create", "set", "retire", or
+            "restore". 'detector' should be a function accepting four
+            arguments.
             """
 
 Auditors are called with the arguments::
 
     audit(db, cl, itemid, newdata)
 
-where ``db`` is the database, ``cl`` is an
-instance of Class or IssueClass within the database, and ``newdata``
-is a dictionary mapping property names to values.
+where ``db`` is the database, ``cl`` is an instance of Class or
+IssueClass within the database, and ``newdata`` is a dictionary mapping
+property names to values.
 
-For a ``create()``
-operation, the ``itemid`` argument is None and newdata
-contains all of the initial property values with which the item
+For a ``create()`` operation, the ``itemid`` argument is None and
+newdata contains all of the initial property values with which the item
 is about to be created.
 
-For a ``set()`` operation, newdata
-contains only the names and values of properties that are about
-to be changed.
+For a ``set()`` operation, newdata contains only the names and values of
+properties that are about to be changed.
 
 For a ``retire()`` or ``restore()`` operation, newdata is None.
 
@@ -855,16 +832,15 @@ Reactors are called with the arguments::
 
     react(db, cl, itemid, olddata)
 
-where ``db`` is the database, ``cl`` is an
-instance of Class or IssueClass within the database, and ``olddata``
-is a dictionary mapping property names to values.
+where ``db`` is the database, ``cl`` is an instance of Class or
+IssueClass within the database, and ``olddata`` is a dictionary mapping
+property names to values.
 
-For a ``create()``
-operation, the ``itemid`` argument is the id of the
+For a ``create()`` operation, the ``itemid`` argument is the id of the
 newly-created item and ``olddata`` is None.
 
-For a ``set()`` operation, ``olddata``
-contains the names and previous values of properties that were changed.
+For a ``set()`` operation, ``olddata`` contains the names and previous
+values of properties that were changed.
 
 For a ``retire()`` or ``restore()`` operation, ``itemid`` is the id of
 the retired or restored item and ``olddata`` is None.
@@ -873,9 +849,9 @@ Detector Example
 ~~~~~~~~~~~~~~~~
 
 Here is an example of detectors written for a hypothetical
-project-management application, where users can signal approval
-of a project by adding themselves to an "approvals" list, and
-a project proceeds when it has three approvals::
+project-management application, where users can signal approval of a
+project by adding themselves to an "approvals" list, and a project
+proceeds when it has three approvals::
 
     # Permit users only to add themselves to the "approvals" list.
 
@@ -907,12 +883,12 @@ a project proceeds when it has three approvals::
         db.project.audit("set", check_approval)
         db.project.react("set", approve_project)
 
-Here is another example of a detector that can allow or prevent
-the creation of new items.  In this scenario, patches for a software
-project are submitted by sending in e-mail with an attached file,
-and we want to ensure that there are text/plain attachments on
-the message.  The maintainer of the package can then apply the
-patch by setting its status to "applied"::
+Here is another example of a detector that can allow or prevent the
+creation of new items.  In this scenario, patches for a software project
+are submitted by sending in e-mail with an attached file, and we want to
+ensure that there are text/plain attachments on the message.  The
+maintainer of the package can then apply the patch by setting its status
+to "applied"::
 
     # Only accept attempts to create new patches that come with patch files.
 
@@ -939,16 +915,16 @@ patch by setting its status to "applied"::
 Command Interface
 -----------------
 
-The command interface is a very simple and minimal interface,
-intended only for quick searches and checks from the shell prompt.
-(Anything more interesting can simply be written in Python using
-the Roundup database module.)
+The command interface is a very simple and minimal interface, intended
+only for quick searches and checks from the shell prompt. (Anything more
+interesting can simply be written in Python using the Roundup database
+module.)
 
 Command Interface Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A single command, roundup, provides basic access to
-the hyperdatabase from the command line::
+A single command, roundup, provides basic access to the hyperdatabase
+from the command line::
 
     roundup-admin help
     roundup-admin get [-list] designator[, designator,...] propname
@@ -957,8 +933,8 @@ the hyperdatabase from the command line::
 
 See ``roundup-admin help commands`` for a complete list of commands.
 
-Property values are represented as strings in command arguments
-and in the printed results:
+Property values are represented as strings in command arguments and in
+the printed results:
 
 - Strings are, well, strings.
 
@@ -966,34 +942,32 @@ and in the printed results:
 
 - Booleans are displayed as 'Yes' or 'No'.
 
-- Date values are printed in the full date format in the local
-  time zone, and accepted in the full format or any of the partial
-  formats explained above.
+- Date values are printed in the full date format in the local time
+  zone, and accepted in the full format or any of the partial formats
+  explained above.
 
-- Link values are printed as item designators.  When given as
-  an argument, item designators and key strings are both accepted.
+- Link values are printed as item designators.  When given as an
+  argument, item designators and key strings are both accepted.
 
-- Multilink values are printed as lists of item designators
-  joined by commas.  When given as an argument, item designators
-  and key strings are both accepted; an empty string, a single item,
-  or a list of items joined by commas is accepted.
+- Multilink values are printed as lists of item designators joined by
+  commas.  When given as an argument, item designators and key strings
+  are both accepted; an empty string, a single item, or a list of items
+  joined by commas is accepted.
 
-When multiple items are specified to the
-roundup get or roundup set
-commands, the specified properties are retrieved or set
-on all the listed items.
+When multiple items are specified to the roundup get or roundup set
+commands, the specified properties are retrieved or set on all the
+listed items.
 
-When multiple results are returned by the roundup get
-or roundup find commands, they are printed one per
-line (default) or joined by commas (with the -list) option.
+When multiple results are returned by the roundup get or roundup find
+commands, they are printed one per line (default) or joined by commas
+(with the -list) option.
 
 Usage Example
 ~~~~~~~~~~~~~
 
-To find all messages regarding in-progress issues that
-contain the word "spam", for example, you could execute the
-following command from the directory where the database
-dumps its files::
+To find all messages regarding in-progress issues that contain the word
+"spam", for example, you could execute the following command from the
+directory where the database dumps its files::
 
     shell% for issue in `roundup find issue status=in-progress`; do
     > grep -l spam `roundup get $issue messages`
@@ -1018,143 +992,129 @@ Or, using the -list option, this can be written as a single command::
 E-mail User Interface
 ---------------------
 
-The Roundup system must be assigned an e-mail address
-at which to receive mail.  Messages should be piped to
-the Roundup mail-handling script by the mail delivery
-system (e.g. using an alias beginning with "|" for sendmail).
+The Roundup system must be assigned an e-mail address at which to
+receive mail.  Messages should be piped to the Roundup mail-handling
+script by the mail delivery system (e.g. using an alias beginning with
+"|" for sendmail).
 
 Message Processing
 ~~~~~~~~~~~~~~~~~~
 
-Incoming messages are examined for multiple parts.
-In a multipart/mixed message or part, each subpart is
-extracted and examined.  In a multipart/alternative
-message or part, we look for a text/plain subpart and
-ignore the other parts.  The text/plain subparts are
-assembled to form the textual body of the message, to
-be stored in the file associated with a "msg" class item.
-Any parts of other types are each stored in separate
-files and given "file" class items that are linked to
+Incoming messages are examined for multiple parts. In a multipart/mixed
+message or part, each subpart is extracted and examined.  In a
+multipart/alternative message or part, we look for a text/plain subpart
+and ignore the other parts.  The text/plain subparts are assembled to
+form the textual body of the message, to be stored in the file
+associated with a "msg" class item. Any parts of other types are each
+stored in separate files and given "file" class items that are linked to
 the "msg" item.
 
-The "summary" property on message items is taken from
-the first non-quoting section in the message body.
-The message body is divided into sections by blank lines.
-Sections where the second and all subsequent lines begin
-with a ">" or "|" character are considered "quoting
-sections".  The first line of the first non-quoting 
-section becomes the summary of the message.
+The "summary" property on message items is taken from the first
+non-quoting section in the message body. The message body is divided
+into sections by blank lines. Sections where the second and all
+subsequent lines begin with a ">" or "|" character are considered
+"quoting sections".  The first line of the first non-quoting section
+becomes the summary of the message.
 
-All of the addresses in the To: and Cc: headers of the
-incoming message are looked up among the user items, and
-the corresponding users are placed in the "recipients"
-property on the new "msg" item.  The address in the From:
-header similarly determines the "author" property of the
-new "msg" item.
-The default handling for
-addresses that don't have corresponding users is to create
-new users with no passwords and a username equal to the
-address.  (The web interface does not permit logins for
-users with no passwords.)  If we prefer to reject mail from
-outside sources, we can simply register an auditor on the
-"user" class that prevents the creation of user items with
-no passwords.
+All of the addresses in the To: and Cc: headers of the incoming message
+are looked up among the user items, and the corresponding users are
+placed in the "recipients" property on the new "msg" item.  The address
+in the From: header similarly determines the "author" property of the
+new "msg" item. The default handling for addresses that don't have
+corresponding users is to create new users with no passwords and a
+username equal to the address.  (The web interface does not permit
+logins for users with no passwords.)  If we prefer to reject mail from
+outside sources, we can simply register an auditor on the "user" class
+that prevents the creation of user items with no passwords.
 
-The subject line of the incoming message is examined to
-determine whether the message is an attempt to create a new
-issue or to discuss an existing issue.  A designator enclosed
-in square brackets is sought as the first thing on the
-subject line (after skipping any "Fwd:" or "Re:" prefixes).
+The subject line of the incoming message is examined to determine
+whether the message is an attempt to create a new issue or to discuss an
+existing issue.  A designator enclosed in square brackets is sought as
+the first thing on the subject line (after skipping any "Fwd:" or "Re:"
+prefixes).
 
-If an issue designator (class name and id number) is found
-there, the newly created "msg" item is added to the "messages"
-property for that issue, and any new "file" items are added to
-the "files" property for the issue.
+If an issue designator (class name and id number) is found there, the
+newly created "msg" item is added to the "messages" property for that
+issue, and any new "file" items are added to the "files" property for
+the issue.
 
-If just an issue class name is found there, we attempt to
-create a new issue of that class with its "messages" property
-initialized to contain the new "msg" item and its "files"
-property initialized to contain any new "file" items.
+If just an issue class name is found there, we attempt to create a new
+issue of that class with its "messages" property initialized to contain
+the new "msg" item and its "files" property initialized to contain any
+new "file" items.
 
-Both cases may trigger detectors (in the first case we
-are calling the set() method to add the message to the
-issue's spool; in the second case we are calling the
-create() method to create a new item).  If an auditor
-raises an exception, the original message is bounced back to
-the sender with the explanatory message given in the exception.
+Both cases may trigger detectors (in the first case we are calling the
+set() method to add the message to the issue's spool; in the second case
+we are calling the create() method to create a new item).  If an auditor
+raises an exception, the original message is bounced back to the sender
+with the explanatory message given in the exception.
 
 Nosy Lists
 ~~~~~~~~~~
 
-A standard detector is provided that watches for additions
-to the "messages" property.  When a new message is added, the
-detector sends it to all the users on the "nosy" list for the
-issue that are not already on the "recipients" list of the
-message.  Those users are then appended to the "recipients"
-property on the message, so multiple copies of a message
-are never sent to the same user.  The journal recorded by
-the hyperdatabase on the "recipients" property then provides
-a log of when the message was sent to whom.
+A standard detector is provided that watches for additions to the
+"messages" property.  When a new message is added, the detector sends it
+to all the users on the "nosy" list for the issue that are not already
+on the "recipients" list of the message.  Those users are then appended
+to the "recipients" property on the message, so multiple copies of a
+message are never sent to the same user.  The journal recorded by the
+hyperdatabase on the "recipients" property then provides a log of when
+the message was sent to whom.
 
 Setting Properties
 ~~~~~~~~~~~~~~~~~~
 
-The e-mail interface also provides a simple way to set
-properties on issues.  At the end of the subject line,
-``propname=value`` pairs can be
-specified in square brackets, using the same conventions
-as for the roundup ``set`` shell command.
+The e-mail interface also provides a simple way to set properties on
+issues.  At the end of the subject line, ``propname=value`` pairs can be
+specified in square brackets, using the same conventions as for the
+roundup ``set`` shell command.
 
 
 Web User Interface
 ------------------
 
-The web interface is provided by a CGI script that can be
-run under any web server.  A simple web server can easily be
-built on the standard CGIHTTPServer module, and
-should also be included in the distribution for quick
-out-of-the-box deployment.
+The web interface is provided by a CGI script that can be run under any
+web server.  A simple web server can easily be built on the standard
+CGIHTTPServer module, and should also be included in the distribution
+for quick out-of-the-box deployment.
 
-The user interface is constructed from a number of template
-files containing mostly HTML.  Among the HTML tags in templates
-are interspersed some nonstandard tags, which we use as
-placeholders to be replaced by properties and their values.
+The user interface is constructed from a number of template files
+containing mostly HTML.  Among the HTML tags in templates are
+interspersed some nonstandard tags, which we use as placeholders to be
+replaced by properties and their values.
 
 Views and View Specifiers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are two main kinds of views: *index* views and *issue* views.
-An index view displays a list of issues of a particular class,
-optionally sorted and filtered as requested.  An issue view
-presents the properties of a particular issue for editing
-and displays the message spool for the issue.
+There are two main kinds of views: *index* views and *issue* views. An
+index view displays a list of issues of a particular class, optionally
+sorted and filtered as requested.  An issue view presents the properties
+of a particular issue for editing and displays the message spool for the
+issue.
 
-A view specifier is a string that specifies
-all the options needed to construct a particular view.
-It goes after the URL to the Roundup CGI script or the
-web server to form the complete URL to a view.  When the
-result of selecting a link or submitting a form takes
-the user to a new view, the Web browser should be redirected
-to a canonical location containing a complete view specifier
-so that the view can be bookmarked.
+A view specifier is a string that specifies all the options needed to
+construct a particular view. It goes after the URL to the Roundup CGI
+script or the web server to form the complete URL to a view.  When the
+result of selecting a link or submitting a form takes the user to a new
+view, the Web browser should be redirected to a canonical location
+containing a complete view specifier so that the view can be bookmarked.
 
 Displaying Properties
 ~~~~~~~~~~~~~~~~~~~~~
 
-Properties appear in the user interface in three contexts:
-in indices, in editors, and as search filters.  For each type of
-property, there are several display possibilities.  For example,
-in an index view, a string property may just be printed as
-a plain string, but in an editor view, that property should
-be displayed in an editable field.
+Properties appear in the user interface in three contexts: in indices,
+in editors, and as search filters.  For each type of property, there are
+several display possibilities.  For example, in an index view, a string
+property may just be printed as a plain string, but in an editor view,
+that property should be displayed in an editable field.
 
-The display of a property is handled by functions in
-the ``cgi.templating`` module.
+The display of a property is handled by functions in the
+``cgi.templating`` module.
 
 Displayer functions are triggered by ``tal:content`` or ``tal:replace``
-tag attributes in templates.  The value of the attribute
-provides an expression for calling the displayer function.
-For example, the occurrence of::
+tag attributes in templates.  The value of the attribute provides an
+expression for calling the displayer function. For example, the
+occurrence of::
 
     tal:content="context/status/plain"
 
@@ -1163,23 +1123,23 @@ in a template triggers a call to::
     context['status'].plain()
 
 where the context would be an item of the "issue" class.  The displayer
-functions can accept extra arguments to further specify
-details about the widgets that should be generated.
+functions can accept extra arguments to further specify details about
+the widgets that should be generated.
 
 Some of the standard displayer functions include:
 
-========= ====================================================================
+========= ==============================================================
 Function  Description
-========= ====================================================================
+========= ==============================================================
 plain     display a String property directly;
-          display a Date property in a specified time zone with an option
-          to omit the time from the date stamp; for a Link or Multilink
-          property, display the key strings of the linked items (or the
-          ids if the linked class has no key property)
-field     display a property like the plain displayer above, but in a text
-          field to be edited
+          display a Date property in a specified time zone with an
+          option to omit the time from the date stamp; for a Link or
+          Multilink property, display the key strings of the linked
+          items (or the ids if the linked class has no key property)
+field     display a property like the plain displayer above, but in a
+          text field to be edited
 menu      for a Link property, display a menu of the available choices
-========= ====================================================================
+========= ==============================================================
 
 See the `customisation`_ documentation for the complete list.
 
@@ -1187,17 +1147,15 @@ See the `customisation`_ documentation for the complete list.
 Index Views
 ~~~~~~~~~~~
 
-An index view contains two sections: a filter section
-and an index section.
-The filter section provides some widgets for selecting
-which issues appear in the index.  The index section is
-a table of issues.
+An index view contains two sections: a filter section and an index
+section. The filter section provides some widgets for selecting which
+issues appear in the index.  The index section is a table of issues.
 
 Index View Specifiers
 """""""""""""""""""""
 
-An index view specifier looks like this (whitespace
-has been added for clarity)::
+An index view specifier looks like this (whitespace has been added for
+clarity)::
 
     /issue?status=unread,in-progress,resolved&
         topic=security,ui&
@@ -1207,79 +1165,71 @@ has been added for clarity)::
         :columns=title,status,fixer
 
 
-The index view is determined by two parts of the
-specifier: the layout part and the filter part.
-The layout part consists of the query parameters that
-begin with colons, and it determines the way that the
-properties of selected items are displayed.
-The filter part consists of all the other query parameters,
-and it determines the criteria by which items 
-are selected for display.
+The index view is determined by two parts of the specifier: the layout
+part and the filter part. The layout part consists of the query
+parameters that begin with colons, and it determines the way that the
+properties of selected items are displayed. The filter part consists of
+all the other query parameters, and it determines the criteria by which
+items are selected for display.
 
-The filter part is interactively manipulated with
-the form widgets displayed in the filter section.  The
-layout part is interactively manipulated by clicking
-on the column headings in the table.
+The filter part is interactively manipulated with the form widgets
+displayed in the filter section.  The layout part is interactively
+manipulated by clicking on the column headings in the table.
 
-The filter part selects the union of the
-sets of issues with values matching any specified Link
-properties and the intersection of the sets
-of issues with values matching any specified Multilink
-properties.
+The filter part selects the union of the sets of issues with values
+matching any specified Link properties and the intersection of the sets
+of issues with values matching any specified Multilink properties.
 
-The example specifies an index of "issue" items.
-Only issues with a "status" of either
-"unread" or "in-progres" or "resolved" are displayed,
-and only issues with "topic" values including both
-"security" and "ui" are displayed.  The issues
-are grouped by priority, arranged in ascending order;
-and within groups, sorted by activity, arranged in
-descending order.  The filter section shows filters
-for the "status" and "topic" properties, and the
-table includes columns for the "title", "status", and
-"fixer" properties.
+The example specifies an index of "issue" items. Only issues with a
+"status" of either "unread" or "in-progres" or "resolved" are displayed,
+and only issues with "topic" values including both "security" and "ui"
+are displayed.  The issues are grouped by priority, arranged in
+ascending order; and within groups, sorted by activity, arranged in
+descending order.  The filter section shows filters for the "status" and
+"topic" properties, and the table includes columns for the "title",
+"status", and "fixer" properties.
 
-Associated with each issue class is a default
-layout specifier.  The layout specifier in the above
-example is the default layout to be provided with
-the default bug-tracker schema described above in
-section 4.4.
+Associated with each issue class is a default layout specifier.  The
+layout specifier in the above example is the default layout to be
+provided with the default bug-tracker schema described above in section
+4.4.
 
 Index Section
 """""""""""""
 
-The template for an index section describes one row of
-the index table.
-Fragments enclosed in ``<property>...</property>``
-tags are included or omitted depending on whether the
-view specifier requests a column for a particular property.
-The table cells should contain <display> tags
-to display the values of the issue's properties.
+The template for an index section describes one row of the index table.
+Fragments protected by a ``tal:condition="request/show/<property>"`` are
+included or omitted depending on whether the view specifier requests a
+column for a particular property. The table cells are filled by the
+``tal:content="context/<property>"`` directive, which displays the value
+of the property.
 
 Here's a simple example of an index template::
 
     <tr>
-      <td tal:condition="request/show/title" tal:content="contex/title"></td>
-      <td tal:condition="request/show/status" tal:content="contex/status"></td>
-      <td tal:condition="request/show/fixer" tal:content="contex/fixer"></td>
+      <td tal:condition="request/show/title"
+          tal:content="contex/title"></td>
+      <td tal:condition="request/show/status"
+          tal:content="contex/status"></td>
+      <td tal:condition="request/show/fixer"
+          tal:content="contex/fixer"></td>
     </tr>
 
 Sorting
 """""""
 
-String and Date values are sorted in the natural way.
-Link properties are sorted according to the value of the
-"order" property on the linked items if it is present; or
-otherwise on the key string of the linked items; or
-finally on the item ids.  Multilink properties are
-sorted according to how many links are present.
+String and Date values are sorted in the natural way. Link properties
+are sorted according to the value of the "order" property on the linked
+items if it is present; or otherwise on the key string of the linked
+items; or finally on the item ids.  Multilink properties are sorted
+according to how many links are present.
 
 Issue Views
 ~~~~~~~~~~~
 
-An issue view contains an editor section and a spool section.
-At the top of an issue view, links to superseding and superseded
-issues are always displayed.
+An issue view contains an editor section and a spool section. At the top
+of an issue view, links to superseding and superseded issues are always
+displayed.
 
 Issue View Specifiers
 """""""""""""""""""""
@@ -1292,9 +1242,9 @@ An issue view specifier is simply the issue's designator::
 Editor Section
 """"""""""""""
 
-The editor section is generated from a template
-containing <display> tags to insert
-the appropriate widgets for editing properties.
+The editor section is generated from a template containing
+``tal:content="context/<property>/<widget>"`` directives to insert the
+appropriate widgets for editing properties.
 
 Here's an example of a basic editor template::
 
@@ -1317,14 +1267,14 @@ Here's an example of a basic editor template::
     </tr>
     </table>
 
-As shown in the example, the editor template can also include a ":note" field,
-which is a text area for entering a note to go along with a change.
+As shown in the example, the editor template can also include a ":note"
+field, which is a text area for entering a note to go along with a
+change.
 
-When a change is submitted, the system automatically
-generates a message describing the changed properties.
-The message displays all of the property values on the
-issue and indicates which ones have changed.
-An example of such a message might be this::
+When a change is submitted, the system automatically generates a message
+describing the changed properties. The message displays all of the
+property values on the issue and indicates which ones have changed. An
+example of such a message might be this::
 
     title: Polly Parrot is dead
     priority: critical
@@ -1332,37 +1282,38 @@ An example of such a message might be this::
     fixer: (none)
     keywords: parrot,plumage,perch,nailed,dead
 
-If a note is given in the ":note" field, the note is
-appended to the description.  The message is then added
-to the issue's message spool (thus triggering the standard
-detector to react by sending out this message to the nosy list).
+If a note is given in the ":note" field, the note is appended to the
+description.  The message is then added to the issue's message spool
+(thus triggering the standard detector to react by sending out this
+message to the nosy list).
 
 Spool Section
 """""""""""""
 
-The spool section lists messages in the issue's "messages"
-property.  The index of messages displays the "date", "author",
-and "summary" properties on the message items, and selecting a
-message takes you to its content.
+The spool section lists messages in the issue's "messages" property.
+The index of messages displays the "date", "author", and "summary"
+properties on the message items, and selecting a message takes you to
+its content.
 
 Access Control
 --------------
 
-At each point that requires an action to be performed, the security mechanisms
-are asked if the current user has permission. This permission is defined as a
-Permission.
+At each point that requires an action to be performed, the security
+mechanisms are asked if the current user has permission. This permission
+is defined as a Permission.
 
-Individual assignment of Permission to user is unwieldy. The concept of a
-Role, which encompasses several Permissions and may be assigned to many Users,
-is quite well developed in many projects. Roundup will take this path, and
-allow the multiple assignment of Roles to Users, and multiple Permissions to
-Roles. These definitions are not persistent - they're defined when the
-application initialises.
+Individual assignment of Permission to user is unwieldy. The concept of
+a Role, which encompasses several Permissions and may be assigned to
+many Users, is quite well developed in many projects. Roundup will take
+this path, and allow the multiple assignment of Roles to Users, and
+multiple Permissions to Roles. These definitions are not persistent -
+they're defined when the application initialises.
 
-There will be two levels of Permission. The Class level permissions define
-logical permissions associated with all items of a particular class (or all
-classes). The Item level permissions define logical permissions associated
-with specific items by way of their user-linked properties.
+There will be two levels of Permission. The Class level permissions
+define logical permissions associated with all items of a particular
+class (or all classes). The Item level permissions define logical
+permissions associated with specific items by way of their user-linked
+properties.
 
 
 Access Control Interface Specification
@@ -1376,9 +1327,10 @@ The security module defines::
             - description
             - klass (optional)
 
-            The klass may be unset, indicating that this permission is not
-            locked to a particular hyperdb class. There may be multiple
-            Permissions for the same name for different classes.
+            The klass may be unset, indicating that this permission is
+            not locked to a particular hyperdb class. There may be
+            multiple Permissions for the same name for different
+            classes.
         '''
 
     class Role:
@@ -1390,33 +1342,35 @@ The security module defines::
 
     class Security:
         def __init__(self, db):
-            ''' Initialise the permission and role stores, and add in the
-                base roles (for admin user).
+            ''' Initialise the permission and role stores, and add in
+                the base roles (for admin user).
             '''
 
         def getPermission(self, permission, classname=None):
-            ''' Find the Permission matching the name and for the class, if the
-                classname is specified.
+            ''' Find the Permission matching the name and for the class,
+                if the classname is specified.
 
                 Raise ValueError if there is no exact match.
             '''
 
         def hasPermission(self, permission, userid, classname=None):
-            ''' Look through all the Roles, and hence Permissions, and see if
-                "permission" is there for the specified classname.
+            ''' Look through all the Roles, and hence Permissions, and
+                see if "permission" is there for the specified
+                classname.
             '''
 
         def hasItemPermission(self, classname, itemid, **propspec):
-            ''' Check the named properties of the given item to see if the
-                userid appears in them. If it does, then the user is granted
-                this permission check.
+            ''' Check the named properties of the given item to see if
+                the userid appears in them. If it does, then the user is
+                granted this permission check.
 
-                'propspec' consists of a set of properties and values that
-                must be present on the given item for access to be granted.
+                'propspec' consists of a set of properties and values
+                that must be present on the given item for access to be
+                granted.
 
-                If a property is a Link, the value must match the property
-                value. If a property is a Multilink, the value must appear
-                in the Multilink list.
+                If a property is a Link, the value must match the
+                property value. If a property is a Multilink, the value
+                must appear in the Multilink list.
             '''
 
         def addPermission(self, **propspec):
@@ -1425,7 +1379,8 @@ The security module defines::
             '''
 
         def addRole(self, **propspec):
-            ''' Create a new Role with the properties defined in 'propspec'
+            ''' Create a new Role with the properties defined in
+                'propspec'
             '''
 
         def addPermissionToRole(self, rolename, permission):
@@ -1440,8 +1395,9 @@ permissions like so (this example is ``cgi/client.py``)::
     def initialiseSecurity(security):
         ''' Create some Permissions and Roles on the security object
 
-            This function is directly invoked by security.Security.__init__()
-            as a part of the Security object instantiation.
+            This function is directly invoked by
+            security.Security.__init__() as a part of the Security
+            object instantiation.
         '''
         p = security.addPermission(name="Web Registration",
             description="Anonymous users may register through the web")
@@ -1450,8 +1406,9 @@ permissions like so (this example is ``cgi/client.py``)::
 Detectors may also define roles in their init() function::
 
     def init(db):
-        # register an auditor that checks that a user has the "May Resolve"
-        # Permission before allowing them to set an issue status to "resolved"
+        # register an auditor that checks that a user has the "May
+        # Resolve" Permission before allowing them to set an issue
+        # status to "resolved"
         db.issue.audit('set', checkresolvedok)
         p = db.security.addPermission(name="May Resolve", klass="issue")
         security.addToRole('Manager', p)
@@ -1487,10 +1444,10 @@ to perform some action::
     if db.security.hasItemPermission('issue', itemid, assignedto=userid):
         # all ok
 
-Code in the core will make use of these methods, as should code in auditors in
-custom templates. The HTML templating may access the access controls through
-the *user* attribute of the *request* variable. It exposes a ``hasPermission()``
-method::
+Code in the core will make use of these methods, as should code in
+auditors in custom templates. The HTML templating may access the access
+controls through the *user* attribute of the *request* variable. It
+exposes a ``hasPermission()`` method::
 
   tal:condition="python:request.user.hasPermission('Edit', 'issue')"
 
@@ -1502,14 +1459,15 @@ or, if the *context* is *issue*, then the following is the same::
 Authentication of Users
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Users must be authenticated correctly for the above controls to work. This is
-not done in the current mail gateway at all. Use of digital signing of
-messages could alleviate this problem.
+Users must be authenticated correctly for the above controls to work.
+This is not done in the current mail gateway at all. Use of digital
+signing of messages could alleviate this problem.
 
-The exact mechanism of registering the digital signature should be flexible,
-with perhaps a level of trust. Users who supply their signature through their
-first message into the tracker should be at a lower level of trust to those
-who supply their signature to an admin for submission to their user details.
+The exact mechanism of registering the digital signature should be
+flexible, with perhaps a level of trust. Users who supply their
+signature through their first message into the tracker should be at a
+lower level of trust to those who supply their signature to an admin for
+submission to their user details.
 
 
 Anonymous Users
@@ -1523,60 +1481,62 @@ interfaces will be logged in as the "anonymous" user.
 Use Cases
 ~~~~~~~~~
 
-public - end users can submit bugs, request new features, request support
-    The Users would be given the default "User" Role which gives "View" and
-    "Edit" Permission to the "issue" class.
-developer - developers can fix bugs, implement new features, provide support
-    A new Role "Developer" is created with the Permission "Fixer" which is
-    checked for in custom auditors that see whether the issue is being
-    resolved with a particular resolution ("fixed", "implemented",
+public - end users can submit bugs, request new features, request
+    support
+    The Users would be given the default "User" Role which gives "View"
+    and "Edit" Permission to the "issue" class.
+developer - developers can fix bugs, implement new features, provide
+    support
+    A new Role "Developer" is created with the Permission "Fixer" which
+    is checked for in custom auditors that see whether the issue is
+    being resolved with a particular resolution ("fixed", "implemented",
     "supported") and allows that resolution only if the permission is
     available.
-manager - approvers/managers can approve new features and signoff bug fixes
-    A new Role "Manager" is created with the Permission "Signoff" which is
-    checked for in custom auditors that see whether the issue status is being
-    changed similar to the developer example.
-admin - administrators can add users and set user's roles
-    The existing Role "Admin" has the Permissions "Edit" for all classes
-    (including "user") and "Web Roles" which allow the desired actions.
-system - automated request handlers running various report/escalation scripts
-    A combination of existing and new Roles, Permissions and auditors could
-    be used here.
+manager - approvers/managers can approve new features and signoff bug
+    fixes
+    A new Role "Manager" is created with the Permission "Signoff" which
+    is checked for in custom auditors that see whether the issue status
+    is being changed similar to the developer example. admin -
+    administrators can add users and set user's roles The existing Role
+    "Admin" has the Permissions "Edit" for all classes (including
+    "user") and "Web Roles" which allow the desired actions.
+system - automated request handlers running various report/escalation
+    scripts
+    A combination of existing and new Roles, Permissions and auditors
+    could be used here.
 privacy - issues that are only visible to some users
-    A new property is added to the issue which marks the user or group of
-    users who are allowed to view and edit the issue. An auditor will check
-    for edit access, and the template user object can check for view access.
+    A new property is added to the issue which marks the user or group
+    of users who are allowed to view and edit the issue. An auditor will
+    check for edit access, and the template user object can check for
+    view access.
 
 
 Deployment Scenarios
 --------------------
 
-The design described above should be general enough
-to permit the use of Roundup for bug tracking, managing
-projects, managing patches, or holding discussions.  By
-using items of multiple types, one could deploy a system
-that maintains requirement specifications, catalogs bugs,
-and manages submitted patches, where patches could be
-linked to the bugs and requirements they address.
+The design described above should be general enough to permit the use of
+Roundup for bug tracking, managing projects, managing patches, or
+holding discussions.  By using items of multiple types, one could deploy
+a system that maintains requirement specifications, catalogs bugs, and
+manages submitted patches, where patches could be linked to the bugs and
+requirements they address.
 
 
 Acknowledgements
 ----------------
 
-My thanks are due to Christy Heyl for 
-reviewing and contributing suggestions to this paper
-and motivating me to get it done, and to
-Jesse Vincent, Mark Miller, Christopher Simons,
-Jeff Dunmall, Wayne Gramlich, and Dean Tribble for
-their assistance with the first-round submission.
+My thanks are due to Christy Heyl for reviewing and contributing
+suggestions to this paper and motivating me to get it done, and to Jesse
+Vincent, Mark Miller, Christopher Simons, Jeff Dunmall, Wayne Gramlich,
+and Dean Tribble for their assistance with the first-round submission.
 
 Changes to this document
 ------------------------
 
 - Added Boolean and Number types
 - Added section Hyperdatabase Implementations
-- "Item" has been renamed to "Issue" to account for the more specific nature
-  of the Class.
+- "Item" has been renamed to "Issue" to account for the more specific
+  nature of the Class.
 - New Templating
 - Access Controls
 
