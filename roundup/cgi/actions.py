@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.30 2004-05-28 00:56:50 richard Exp $
+#$Id: actions.py,v 1.31 2004-06-06 12:40:30 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -27,6 +27,7 @@ class Action:
         self.userid = client.userid
         self.base = client.base
         self.user = client.user
+        self.context = templating.context(client)
 
     def execute(self):
         """Execute the action specified by this object."""
@@ -49,13 +50,20 @@ class Action:
         if (self.permissionType and
                 not self.hasPermission(self.permissionType)):
             info = {'action': self.name, 'classname': self.classname}
-            raise Unauthorised, _('You do not have permission to '
+            raise Unauthorised, self._('You do not have permission to '
                 '%(action)s the %(classname)s class.')%info
 
     def hasPermission(self, permission):
         """Check whether the user has 'permission' on the current class."""
         return self.db.security.hasPermission(permission, self.client.userid,
             self.client.classname)
+
+    def gettext(self, msgid):
+        """Return the localized translation of msgid"""
+        return templating.translationService.translate(domain="roundup",
+            msgid=msgid, context=self.context)
+
+    _ = gettext
 
 class ShowAction(Action):
     def handle(self, typere=re.compile('[@:]type'),
@@ -68,14 +76,14 @@ class ShowAction(Action):
             elif numre.match(key):
                 n = self.form[key].value.strip()
         if not t:
-            raise ValueError, 'No type specified'
+            raise ValueError, self._('No type specified')
         if not n:
-            raise SeriousError, _('No ID entered')
+            raise SeriousError, self._('No ID entered')
         try:
             int(n)
         except ValueError:
             d = {'input': n, 'classname': t}
-            raise SeriousError, _(
+            raise SeriousError, self._(
                 '"%(input)s" is not an ID (%(classname)s ID required)')%d
         url = '%s%s%s'%(self.base, t, n)
         raise Redirect, url
@@ -95,14 +103,15 @@ class RetireAction(Action):
         # make sure we don't try to retire admin or anonymous
         if self.classname == 'user' and \
                 self.db.user.get(nodeid, 'username') in ('admin', 'anonymous'):
-            raise ValueError, _('You may not retire the admin or anonymous user')
+            raise ValueError, self._(
+                'You may not retire the admin or anonymous user')
 
         # do the retire
         self.db.getclass(self.classname).retire(nodeid)
         self.db.commit()
 
         self.client.ok_message.append(
-            _('%(classname)s %(itemid)s has been retired')%{
+            self._('%(classname)s %(itemid)s has been retired')%{
                 'classname': self.classname.capitalize(), 'itemid': nodeid})
 
 class SearchAction(Action):
@@ -224,7 +233,7 @@ class EditCSVAction(Action):
         """
         # get the CSV module
         if rcsv.error:
-            self.client.error_message.append(_(rcsv.error))
+            self.client.error_message.append(self._(rcsv.error))
             return
 
         cl = self.db.classes[self.classname]
@@ -257,7 +266,7 @@ class EditCSVAction(Action):
             # confirm correct weight
             if len(idlessprops) != len(values):
                 self.client.error_message.append(
-                    _('Not enough values on line %(line)s')%{'line':line})
+                    self._('Not enough values on line %(line)s')%{'line':line})
                 return
 
             # extract the new values
@@ -304,7 +313,7 @@ class EditCSVAction(Action):
         # all OK
         self.db.commit()
 
-        self.client.ok_message.append(_('Items edited OK'))
+        self.client.ok_message.append(self._('Items edited OK'))
 
 class _EditAction(Action):
     def isEditingSelf(self):
@@ -322,7 +331,8 @@ class _EditAction(Action):
         """
         if self.classname == 'user':
             if props.has_key('roles') and not self.hasPermission('Web Roles'):
-                raise Unauthorised, _("You do not have permission to edit user roles")
+                raise Unauthorised, self._(
+                    "You do not have permission to edit user roles")
             if self.isEditingSelf():
                 return 1
         if self.hasPermission('Edit'):
@@ -501,7 +511,8 @@ class EditItemAction(_EditAction):
             message = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError, exceptions.Reject), message:
             import traceback;traceback.print_exc()
-            self.client.error_message.append(_('Edit Error: ') + str(message))
+            self.client.error_message.append(
+                self._('Edit Error: %s') % str(message))
             return
 
         # commit now that all the tricky stuff is done
@@ -532,7 +543,8 @@ class NewItemAction(_EditAction):
         try:
             props, links = self.client.parsePropsFromForm(create=1)
         except (ValueError, KeyError), message:
-            self.client.error_message.append(_('Error: ') + str(message))
+            self.client.error_message.append(self._('Error: %s')
+                % str(message))
             return
 
         # handle the props - edit or create
@@ -541,7 +553,7 @@ class NewItemAction(_EditAction):
             messages = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError, exceptions.Reject), message:
             # these errors might just be indicative of user dumbness
-            self.client.error_message.append(_('Error: ') + str(message))
+            self.client.error_message.append(_('Error: %s') % str(message))
             return
 
         # commit now that all the tricky stuff is done
@@ -680,7 +692,7 @@ class ConfRegoAction(Action):
             self.client.set_cookie(self.user)
 
         # nice message
-        message = _('You are now registered, welcome!')
+        message = self._('You are now registered, welcome!')
         url = '%suser%s?@ok_message=%s'%(self.base, self.userid,
             urllib.quote(message))
 
@@ -706,13 +718,13 @@ class RegisterAction(Action):
 
         # registration isn't allowed to supply roles
         if props.has_key('roles'):
-            raise Unauthorised, _("It is not permitted to supply roles "
-                "at registration.")
+            raise Unauthorised, self._(
+                "It is not permitted to supply roles at registration.")
 
         username = props['username']
         try:
             self.db.user.lookup(username)
-            self.client.error_message.append(_('Error: A user with the '
+            self.client.error_message.append(self._('Error: A user with the '
                 'username "%(username)s" already exists')%props)
             return
         except KeyError:
@@ -775,7 +787,7 @@ class LogoutAction(Action):
             now, self.client.cookie_path)
 
         # Let the user know what's going on
-        self.client.ok_message.append(_('You are logged out'))
+        self.client.ok_message.append(self._('You are logged out'))
 
 class LoginAction(Action):
     def handle(self):
@@ -786,7 +798,7 @@ class LoginAction(Action):
         """
         # we need the username at a minimum
         if not self.form.has_key('__login_name'):
-            self.client.error_message.append(_('Username required'))
+            self.client.error_message.append(self._('Username required'))
             return
 
         # get the login info
@@ -801,21 +813,23 @@ class LoginAction(Action):
             self.client.userid = self.db.user.lookup(self.client.user)
         except KeyError:
             name = self.client.user
-            self.client.error_message.append(_('No such user "%(name)s"')%locals())
+            self.client.error_message.append(self._('No such user "%(name)s"')
+                %locals())
             self.client.make_user_anonymous()
             return
 
         # verify the password
         if not self.verifyPassword(self.client.userid, password):
             self.client.make_user_anonymous()
-            self.client.error_message.append(_('Incorrect password'))
+            self.client.error_message.append(self._('Incorrect password'))
             return
 
         # Determine whether the user has permission to log in.
         # Base behaviour is to check the user has "Web Access".
         if not self.hasPermission("Web Access"):
             self.client.make_user_anonymous()
-            self.client.error_message.append(_("You do not have permission to login"))
+            self.client.error_message.append(
+                self._("You do not have permission to login"))
             return
 
         # now we're OK, re-open the database for real, using the user
