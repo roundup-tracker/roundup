@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.50 2002-01-19 13:16:04 rochecompaan Exp $
+# $Id: hyperdb.py,v 1.51 2002-01-21 03:01:29 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -63,6 +63,11 @@ class Link:
 class Multilink:
     """An object designating a Multilink property that links
        to nodes in a specified class.
+
+       "classname" indicates the class to link to
+
+       "do_journal" indicates whether the linked-to nodes should have
+                    'link' and 'unlink' events placed in their journal
     """
     def __init__(self, classname, do_journal='no'):
         self.classname = classname
@@ -1055,6 +1060,10 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.50  2002/01/19 13:16:04  rochecompaan
+# Journal entries for link and multilink properties can now be switched on
+# or off.
+#
 # Revision 1.49  2002/01/16 07:02:57  richard
 #  . lots of date/interval related changes:
 #    - more relaxed date format for input
