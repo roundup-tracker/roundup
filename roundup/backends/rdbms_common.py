@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.122 2004-07-19 00:36:31 richard Exp $
+# $Id: rdbms_common.py,v 1.123 2004-07-19 01:49:51 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1996,7 +1996,7 @@ class Class(hyperdb.Class):
         timezone = self.db.getUserTimezone()
 
         # vars to hold the components of the SQL statement
-        frum = [] # FROM clauses
+        frum = []       # FROM clauses
         loj = []        # LEFT OUTER JOIN clauses
         where = []      # WHERE clauses
         args = []       # *any* positional arguments
