@@ -16,14 +16,14 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.31 2003-10-25 11:41:06 jlgijsbers Exp $
+$Id: roundup_server.py,v 1.32 2003-10-25 12:26:42 jlgijsbers Exp $
 """
 
 # python version check
 from roundup import version_check
 
 import sys, os, urllib, StringIO, traceback, cgi, binascii, getopt, imp
-import BaseHTTPServer, socket
+import BaseHTTPServer, socket, errno
 
 # Roundup modules of use here
 from roundup.cgi import cgitb, client
@@ -198,10 +198,14 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             host, port = self.client_address
             return socket.getfqdn(host)
 
+def error():
+    exc_type, exc_value = sys.exc_info()[:2]
+    return _('Error: %s: %s' % (exc_type, exc_value))
+
 def usage(message=''):
-    if message:
-        message = _('Error: %(error)s\n\n')%{'error': message}
-    print _('''%(message)sUsage:
+    print _('''%(message)s
+
+Usage:
 roundup-server [options] [name=tracker home]*
 
 options:
@@ -299,7 +303,13 @@ def run(port=8080, success_message=None):
         # obtain server before changing user id - allows to use port <
         # 1024 if started as root
         address = (hostname, port)
-        httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
+        try:
+            httpd = BaseHTTPServer.HTTPServer(address, RoundupRequestHandler)
+        except socket.error, e:
+            if e[0] == errno.EADDRINUSE:
+                raise socket.error, \
+                      _("Unable to bind to port %s, port already in use." % port)
+            raise
 
         if group is not None and hasattr(os, 'getgid'):
             # if root, setgid to the running user
@@ -347,9 +357,11 @@ def run(port=8080, success_message=None):
             RoundupRequestHandler.TRACKER_HOMES = d
     except SystemExit:
         raise
+    except ValueError:
+        usage(error())
     except:
-        exc_type, exc_value = sys.exc_info()[:2]
-        usage('%s: %s'%(exc_type, exc_value))
+        print error()
+        sys.exit(1)
 
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
