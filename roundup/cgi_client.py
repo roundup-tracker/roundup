@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.8 2001-07-29 08:27:40 richard Exp $
+# $Id: cgi_client.py,v 1.9 2001-07-30 01:25:07 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -41,10 +41,6 @@ class Client:
             message = ''
         style = open(os.path.join(self.TEMPLATES, 'style.css')).read()
         userid = self.db.user.lookup(self.user)
-        if self.user == 'admin':
-            extras = ' | <a href="list_classes">Class List</a>'
-        else:
-            extras = ''
         self.write('''<html><head>
 <title>%s</title>
 <style type="text/css">%s</style>
@@ -52,18 +48,10 @@ class Client:
 <body bgcolor=#ffffff>
 %s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%s</strong></big></td>
-<td align=right valign=bottom>%s</td></tr>
-<tr class="location-bar">
-<td align=left><a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=activity,status,title&:group=priority">All issues</a> | 
-<a href="issue?priority=fatal-bug,bug">Bugs</a> | 
-<a href="issue?priority=usability">Support</a> | 
-<a href="issue?priority=feature">Wishlist</a> | 
-<a href="newissue">New Issue</a>
-%s</td>
-<td align=right><a href="user%s">Your Details</a></td>
+<tr class="location-bar"><td><big><strong>%s</strong></big>
+(login: <a href="user%s">%s</a>)</td></tr>
 </table>
-'''%(title, style, message, title, self.user, extras, userid))
+'''%(title, style, message, title, userid, self.user))
 
     def pagefoot(self):
         if self.debug:
@@ -131,7 +119,7 @@ class Client:
     default_index_sort = ['-activity']
     default_index_group = ['priority']
     default_index_filter = []
-    default_index_columns = ['activity','status','title']
+    default_index_columns = ['id','activity','title','status','assignedto']
     default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
     def index(self):
         ''' put up an index
@@ -402,7 +390,9 @@ class Client:
                         m.append('%s: %s'%(name, value))
 
                     # handle the note
-                    note = self.form.get('__note', None)
+                    note = None
+                    if self.form.has_key('__note'):
+                        note = self.form['__note']
                     if note and note.value:
                         note = note.value
                         if '\n' in note:
@@ -433,6 +423,7 @@ class Client:
         htmltemplate.newitem(self, self.TEMPLATES, self.db, self.classname,
             self.form)
         self.pagefoot()
+    newuser = newissue
 
     def showuser(self, message=None):
         ''' display an item
@@ -503,6 +494,10 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/07/29 08:27:40  richard
+# Fixed handling of passed-in values in form elements (ie. during a
+# drill-down)
+#
 # Revision 1.7  2001/07/29 07:01:39  richard
 # Added vim command to all source so that we don't get no steenkin' tabs :)
 #
