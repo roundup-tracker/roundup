@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: roundup.cgi,v 1.2 2001-07-23 04:31:40 richard Exp $
+# $Id: roundup.cgi,v 1.3 2001-07-23 04:33:30 richard Exp $
 
 # python version check
 import sys
@@ -14,7 +14,7 @@ if int(sys.version[0]) < 2:
 
 # This indicates where the Roundup instance lives
 ROUNDUPS = {
-    'roundup_test': '/tmp/',
+    'test': '/tmp/roundup_test',
 }
 
 # Where to log debugging information to. Use an instance of DevNull if you
@@ -92,7 +92,8 @@ try:
     os.environ['PATH_INFO'] = string.join(path[2:], '/')
     if ROUNDUPS.has_key(instance):
         instance_home = ROUNDUPS[instance]
-        sys.path.insert(0, instance_home)
+        module_path, instance = os.path.split(instance_home)
+        sys.path.insert(0, module_path)
         try:
             instance = __import__(instance)
         finally:
@@ -109,6 +110,9 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/23 04:31:40  richard
+# Fixed the roundup CGI script for updates to cgi_client.py
+#
 # Revision 1.1  2001/07/22 11:47:07  richard
 # More Grande Splite
 #
