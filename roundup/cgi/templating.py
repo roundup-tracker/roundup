@@ -247,7 +247,7 @@ class HTMLDatabase:
         l.sort()
         return [HTMLClass(self._client, cn) for cn in l]
 
-def lookupIds(db, prop, ids, fail_ok=False, num_re=re.compile('-?\d+')):
+def lookupIds(db, prop, ids, fail_ok=0, num_re=re.compile('-?\d+')):
     ''' "fail_ok" should be specified if we wish to pass through bad values
         (most likely form values that we wish to represent back to the user)
     '''
@@ -323,12 +323,11 @@ class HTMLClass(HTMLPermissions):
             if form.has_key(item):
                 if isinstance(prop, hyperdb.Multilink):
                     value = lookupIds(self._db, prop,
-                        handleListCGIValue(form[item]), fail_ok=True)
+                        handleListCGIValue(form[item]), fail_ok=1)
                 elif isinstance(prop, hyperdb.Link):
                     value = form[item].value.strip()
                     if value:
-                        value = lookupIds(self._db, prop, [value],
-                            fail_ok=True)[0]
+                        value = lookupIds(self._db, prop, [value], fail_ok=1)[0]
                     else:
                         value = None
                 else:

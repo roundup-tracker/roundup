@@ -1,14 +1,15 @@
-I'm pleased to announce Roundup 0.6.6, a maintenance release which fixes
-some bugs (notably registration was broken in 0.6.5, and is fixed now):
+I'm pleased to announce Roundup 0.6.7, a maintenance release which fixes
+some bugs (most notably making the EMAIL_CHARSET config variable backwards-
+compatible):
 
-- fixed registration (sf bug 903283)
-- don't insert spaces into designators, it just confuses users (sf bug
-  898087)
-- Eudora can't handle utf-8 headers. We love Eudora. (sf bug 900046)
-- fixed bug in args to new DateHTMLProperty in the local() method (sf bug
-  901444)
-- also changed rego to not use a 302 during confirmation, as this seems to
-  confuse some email clients or browsers
+- be more backward-compatible when asking for EMAIL_CHARSET
+- made error on create consistent with edit when user enters invalid data
+  for Multilink and Link form fields (sf bug 904072)
+- made errors from bad input in the quick "Show issue:" form more
+  user-friendly (sf bug 904064)
+- don't add a query to a user's list if it's already there
+- nicer invalid property error in HTML templating
+- use EMAIL_CHARSET for message body too (still sf bug 900046)
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

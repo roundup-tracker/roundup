@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.55.2.7 2004-02-24 23:41:30 richard Exp $
+# $Id: setup.py,v 1.55.2.8 2004-03-01 00:07:27 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -188,15 +188,15 @@ def main():
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-The 0.6.6 release fixes some bugs:
-- fixed registration (sf bug 903283)
-- don't insert spaces into designators, it just confuses users (sf bug
-  898087)
-- Eudora can't handle utf-8 headers. We love Eudora. (sf bug 900046)
-- fixed bug in args to new DateHTMLProperty in the local() method (sf bug
-  901444)
-- also changed rego to not use a 302 during confirmation, as this seems to
-  confuse some email clients or browsers
+The 0.6.7 release fixes some bugs:
+- be more backward-compatible when asking for EMAIL_CHARSET
+- made error on create consistent with edit when user enters invalid data
+  for Multilink and Link form fields (sf bug 904072)
+- made errors from bad input in the quick "Show issue:" form more
+  user-friendly (sf bug 904064)
+- don't add a query to a user's list if it's already there
+- nicer invalid property error in HTML templating
+- use EMAIL_CHARSET for message body too (still sf bug 900046)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
