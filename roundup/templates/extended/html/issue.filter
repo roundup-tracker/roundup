@@ -1,4 +1,4 @@
-<!-- $Id: issue.filter,v 1.1 2001-07-23 03:50:46 anthonybaxter Exp $-->
+<!-- $Id: issue.filter,v 1.1 2001-07-23 04:21:20 richard Exp $-->
 <property name="title">
  <tr><th width="1%" align="right" class="location-bar">Title</th>
  <td><display call="field('title')"></td></tr>
