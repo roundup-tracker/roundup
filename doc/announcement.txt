@@ -1,34 +1,43 @@
-=================================================
-SC-Track Roundup 0.5.4 - an issue tracking system
-=================================================
+===================================================
+SC-Track Roundup 0.6.0b1 - an issue tracking system
+===================================================
 
-This is a bugfix release for version 0.5.x - if you're upgrading from before
-0.5, you *must* read doc/upgrading.txt!
+This is the first release of the new version of Roundup which contains a
+lot of new features. This release may contain bugs, so please run this using
+a backup of your production tracker. Always follow the "Software Upgrade"
+guidelines given in the maintenance documentation. If you're upgrading from
+an older version of Roundup you *must* read doc/upgrading.txt!
 
 Unfortunately, the Zope frontend for Roundup is currently broken, with no
 fix in the forseeable future.
 
-Roundup requires python 2.1.3 or later for correct operation. Users of the
-sqlite backend are encouraged to upgrade sqlite to version 2.7.3.
+Roundup requires python 2.1.3 or later for correct operation.
 
-We've had a good crack at bugs (thanks to all who contributed!):
+This release has all the bugfixes from the latest 0.5 maintnenance release
+plus lots of new goodies including:
 
-- key the templates cache off full path, not filename
-- implemented whole-database locking
-- hyperlinking of special text (url, email, item designator) in messages
-- fixed time default in date.py
-- fixed error in cgi/templates.py (sf bug 652089)
-- fixed handling of missing password (sf bug 655632)
-- applied patches for handling Outlook quirks (thanks Andrey Lebedev)
-  (multipart/alternative, "fw" and content-type "name")
-- fire auditors and reactors in rdbms retire (thanks Sheila King)
-- better match for mailgw help "command" text
-- handle :add: better in cgi form parsing (sf bug 663235)
-- handle all-whitespace multilink values in forms (sf bug 663855)
-- fixed searching on date / interval fields (sf bug 658157)
-- fixed form elements names in search form to allow grouping and sorting 
-  on "creation" field
-- display of saved queries is now performed correctly
+- new instant-gratification Demo Mode ("python demo.py" :)
+- added mysql backend (see doc/mysql.txt for details)
+- web interface cleanups including nicer history display, nicer index
+  navigation and nicer popup list windows
+- searching of date ranges
+- better international support, including utf-8 email handling and ability
+  to display localized dates in web interface.
+- more documentation including revamped design document, unix manual pages
+  and some FAQ entries
+- significantly more powerful form handling allowing editing of multiple items
+  and creation of multiple items
+- tracker templates can contain subdirectories and static files (e.g. images)
+  and we may now distribute templates separately from Roundup. Template
+  HTML files now have a .html extension too.
+- user registration is now a two-step process, with confirmation from the email
+  address supplied in the registration form, and we also have a password reset
+  feature for forgotten password / login
+- Windows Service mode for roundup-server when daemonification is attempted
+  on Windows.
+- fixed issues with dumb email or web clients
+- lots more little tweaks and back-end work...
+- email system handles more SMTP and POP features (TLS, APOP, ...)
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/

@@ -12,8 +12,11 @@ INSTANT GRATIFICATION
 
 The impatient may try Roundup immediately by typing at the console::
 
-   python setup.py demo
+   python demo.py
 
+To start anew (a fresh demo instance)::
+
+   python demo.py nuke
 
 Installation
 ============

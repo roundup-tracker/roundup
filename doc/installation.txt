@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.49 $
+:Version: $Revision: 1.50 $
 
 .. contents::
 
@@ -67,7 +67,7 @@ For The Really Impatient
 ========================
 
 If you just want to give Roundup a whirl Right Now, then simply run
-``python setup.py demo``. This will set up a simple demo tracker on your
+``python demo.py``. This will set up a simple demo tracker on your
 machine. When it's done, it'll print out a URL to point your web browser
 at so you may start playing. Three users will be set up:
 
