@@ -16,6 +16,7 @@ Fixed:
 - updated searching / indexing docs
 - fix "(list)" popup when list is one item long (sf bug 1064716)
 - have RDBMS full-text indexer do AND searching (sf bug 1055435)
+- handle spaces in String index params in batching (sf bug 1054224)
 
 
 2004-10-26 0.7.9
