@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.92.2.1 2002-07-10 07:21:18 richard Exp $
+# $Id: htmltemplate.py,v 1.92.2.2 2002-07-10 07:23:00 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -146,7 +146,6 @@ class TemplateFunctions:
                 return []
             return value
         elif self.filterspec is not None:
-            print self.filterspec
             if isinstance(propclass, hyperdb.Multilink):
                 return self.filterspec.get(property, [])
             else:
@@ -1199,6 +1198,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.92.2.1  2002/07/10 07:21:18  richard
+#  . #516854 ] "My Issues" and redisplay (no, really, this time for sure)
+#
 # Revision 1.92  2002/06/11 04:57:04  richard
 # Added optional additional property to display in a Multilink form menu.
 #
