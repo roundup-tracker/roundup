@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.146 2003-11-13 05:56:48 richard Exp $
+# $Id: client.py,v 1.147 2003-11-21 21:59:05 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1125,7 +1125,8 @@ You should then receive another email with the new password.
         # this is per-class only
         if not self.editCSVPermission():
             self.error_message.append(
-                _('You do not have permission to edit %s' %self.classname))
+                 _('You do not have permission to edit %s' %self.classname))
+            return
 
         # get the CSV module
         if rcsv.error:
@@ -1237,6 +1238,7 @@ You should then receive another email with the new password.
         if not self.searchPermission():
             self.error_message.append(
                 _('You do not have permission to search %s' %self.classname))
+            return
 
         # add a faked :filter form variable for each filtering prop
         props = self.db.classes[self.classname].getprops()
