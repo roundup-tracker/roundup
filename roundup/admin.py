@@ -15,8 +15,8 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-# $Id: admin.py,v 1.68 2004-04-17 01:47:37 richard Exp $
+#
+# $Id: admin.py,v 1.69 2004-05-14 20:01:16 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -131,16 +131,17 @@ Help:
         self.help_commands()
 
     def help_commands(self):
-        ''' List the commands available with their precis help.
+        ''' List the commands available with their precise help.
         '''
         print _('Commands:'),
         commands = ['']
         for command in self.commands.values():
-            h = command.__doc__.split('\n')[0]
+            h = _(command.__doc__).split('\n')[0]
             commands.append(' '+h[7:])
         commands.sort()
-        commands.append(_('Commands may be abbreviated as long as the abbreviation matches only one'))
-        commands.append(_('command, e.g. l == li == lis == list.'))
+        commands.append(_(
+"""Commands may be abbreviated as long as the abbreviation
+matches only one command, e.g. l == li == lis == list."""))
         print '\n'.join(commands)
         print
 
@@ -152,7 +153,7 @@ Help:
             return cmp(a.__name__, b.__name__)
         commands.sort(sortfun)
         for command in commands:
-            h = command.__doc__.split('\n')
+            h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
             usage = h[0]
             print _('''
@@ -171,7 +172,7 @@ Help:
     def help_all(self):
         print _('''
 All commands (except help) require a tracker specifier. This is just the path
-to the roundup tracker you're working with. A roundup tracker is where 
+to the roundup tracker you're working with. A roundup tracker is where
 roundup keeps the database and configuration file that defines an issue
 tracker. It may be thought of as the issue tracker's "home directory". It may
 be specified in the environment variable TRACKER_HOME or on the command
@@ -205,18 +206,18 @@ quotes. Examples:
 
 When multiple nodes are specified to the roundup get or roundup set
 commands, the specified properties are retrieved or set on all the listed
-nodes. 
+nodes.
 
 When multiple results are returned by the roundup get or roundup find
 commands, they are printed one per line (default) or joined by commas (with
-the -c) option. 
+the -c) option.
 
 Where the command changes data, a login name/password is required. The
 login may be specified as either "name" or "name:password".
  . ROUNDUP_LOGIN environment variable
  . the -u command-line option
 If either the name or password is not supplied, they are obtained from the
-command-line. 
+command-line.
 
 Date format examples:
   "2000-04-17.03:45" means <Date 2000-04-17.08:45:00>
@@ -232,11 +233,11 @@ Command help:
 ''')
         for name, command in self.commands.items():
             print _('%s:')%name
-            print _('   '), command.__doc__
+            print _('   '), _(command.__doc__)
 
     def do_help(self, args, nl_re=re.compile('[\r\n]'),
             indent_re=re.compile(r'^(\s+)\S+')):
-        '''Usage: help topic
+        ""'''Usage: help topic
         Give help about topic.
 
         commands  -- list commands
@@ -248,7 +249,7 @@ Command help:
             topic = args[0]
         else:
             topic = 'help'
- 
+
 
         # try help_ methods
         if self.help.has_key(topic):
@@ -264,7 +265,7 @@ Command help:
 
         # display the help for each match, removing the docsring indent
         for name, help in l:
-            lines = nl_re.split(help.__doc__)
+            lines = nl_re.split(_(help.__doc__))
             print lines[0]
             indent = indent_re.match(lines[1])
             if indent: indent = len(indent.group(1))
@@ -337,7 +338,7 @@ Command help:
         print _('Back ends:'), ', '.join(backends)
 
     def do_install(self, tracker_home, args):
-        '''Usage: install [template [backend [admin password]]]
+        ""'''Usage: install [template [backend [admin password]]]
         Install a new Roundup tracker.
 
         The command will prompt for the tracker home directory (if not supplied
@@ -363,10 +364,10 @@ Command help:
                 ' does not exist')%locals()
 
         if os.path.exists(os.path.join(tracker_home, 'config.py')):
-            print _('WARNING: There appears to be a tracker in '
-                '"%(tracker_home)s"!')%locals()
-            print _('If you re-install it, you will lose all the data!')
-            ok = raw_input(_('Erase it? Y/N: ')).strip()
+            ok = raw_input(_(
+"""WARNING: There appears to be a tracker in "%(tracker_home)s"!
+If you re-install it, you will lose all the data!
+Erase it? Y/N: """) % locals())
             if ok.strip().lower() != 'y':
                 return 0
 
@@ -417,7 +418,7 @@ Command help:
 
 
     def do_initialise(self, tracker_home, args):
-        '''Usage: initialise [adminpw]
+        ""'''Usage: initialise [adminpw]
         Initialise a new Roundup tracker.
 
         The administrator details will be set at this step.
@@ -449,9 +450,10 @@ Command help:
             # TODO: move this code to exists() static method in every backend
             db_exists = os.path.exists(os.path.join(tracker_home, 'db'))
         if db_exists:
-            print _('WARNING: The database is already initialised!')
-            print _('If you re-initialise it, you will lose all the data!')
-            ok = raw_input(_('Erase it? Y/N: ')).strip()
+            ok = raw_input(_(
+"""WARNING: The database is already initialised!
+If you re-initialise it, you will lose all the data!
+Erase it? Y/N: """))
             if ok.strip().lower() != 'y':
                 return 0
 
@@ -470,7 +472,7 @@ Command help:
 
 
     def do_get(self, args):
-        '''Usage: get property designator[,designator]*
+        ""'''Usage: get property designator[,designator]*
         Get the given property of one or more designator(s).
 
         Retrieves the property value of the nodes specified by the designators.
@@ -543,7 +545,7 @@ Command help:
 
 
     def do_set(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
-        '''Usage: set items property=value property=value ...
+        ""'''Usage: set items property=value property=value ...
         Set the given properties of one or more items(s).
 
         The items are specified as a class or as a comma-separated
@@ -597,7 +599,7 @@ Command help:
         return 0
 
     def do_find(self, args):
-        '''Usage: find classname propname=value ...
+        ""'''Usage: find classname propname=value ...
         Find the nodes of the given class with a given link property value.
 
         Find the nodes of the given class with a given link property value. The
@@ -636,10 +638,10 @@ Command help:
                 try:
                     props[propname] = link_class.lookup(value)
                 except TypeError:
-                    raise UsageError, _('%(classname)s has no key property"')%{
+                    raise UsageError, _('%(classname)s has no key property')%{
                         'classname': link_class.classname}
 
-        # now do the find 
+        # now do the find
         try:
             id = []
             designator = []
@@ -668,7 +670,7 @@ Command help:
         return 0
 
     def do_specification(self, args):
-        '''Usage: specification classname
+        ""'''Usage: specification classname
         Show the properties for a classname.
 
         This lists the properties for a given class.
@@ -688,7 +690,7 @@ Command help:
                 print _('%(key)s: %(value)s')%locals()
 
     def do_display(self, args):
-        '''Usage: display designator[,designator]*
+        ""'''Usage: display designator[,designator]*
         Show the property values for the given node(s).
 
         This lists the properties and their associated values for the given
@@ -715,7 +717,7 @@ Command help:
                 print _('%(key)s: %(value)s')%locals()
 
     def do_create(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
-        '''Usage: create classname property=value ...
+        ""'''Usage: create classname property=value ...
         Create a new entry of a given class.
 
         This creates a new entry of the given class using the property
@@ -779,7 +781,7 @@ Command help:
         return 0
 
     def do_list(self, args):
-        '''Usage: list classname [property]
+        ""'''Usage: list classname [property]
         List the instances of a class.
 
         Lists all instances of the given class. If the property is not
@@ -832,7 +834,7 @@ Command help:
         return 0
 
     def do_table(self, args):
-        '''Usage: table classname [property[,property]*]
+        ""'''Usage: table classname [property[,property]*]
         List the instances of a class in tabular form.
 
         Lists all instances of the given class. If the properties are not
@@ -842,10 +844,10 @@ Command help:
 
           roundup> table priority id,name:10
           Id Name
-          1  fatal-bug 
-          2  bug       
-          3  usability 
-          4  feature   
+          1  fatal-bug
+          2  bug
+          3  usability
+          4  feature
 
         Also to make the width of the column the width of the label,
         leave a trailing : without a width on the property. For example::
@@ -853,7 +855,7 @@ Command help:
           roundup> table priority id,name:
           Id Name
           1  fata
-          2  bug       
+          2  bug
           3  usab
           4  feat
 
@@ -901,7 +903,7 @@ Command help:
                    if curlen > maxlen:
                        maxlen = curlen
                props.append((spec, maxlen))
-               
+
         # now display the heading
         print ' '.join([name.capitalize().ljust(width) for name,width in props])
 
@@ -925,7 +927,7 @@ Command help:
         return 0
 
     def do_history(self, args):
-        '''Usage: history designator
+        ""'''Usage: history designator
         Show the history entries of a designator.
 
         Lists the journal entries for the node identified by the designator.
@@ -946,7 +948,7 @@ Command help:
         return 0
 
     def do_commit(self, args):
-        '''Usage: commit
+        ""'''Usage: commit
         Commit changes made to the database during an interactive session.
 
         The changes made during an interactive session are not
@@ -960,7 +962,7 @@ Command help:
         return 0
 
     def do_rollback(self, args):
-        '''Usage: rollback
+        ""'''Usage: rollback
         Undo all changes that are pending commit to the database.
 
         The changes made during an interactive session are not
@@ -972,7 +974,7 @@ Command help:
         return 0
 
     def do_retire(self, args):
-        '''Usage: retire designator[,designator]*
+        ""'''Usage: retire designator[,designator]*
         Retire the node specified by designator.
 
         This action indicates that a particular node is not to be retrieved by
@@ -995,7 +997,7 @@ Command help:
         return 0
 
     def do_restore(self, args):
-        '''Usage: restore designator[,designator]*
+        ""'''Usage: restore designator[,designator]*
         Restore the retired node specified by designator.
 
         The given nodes will become available for users again.
@@ -1017,7 +1019,7 @@ Command help:
         return 0
 
     def do_export(self, args):
-        '''Usage: export [class[,class]] export_dir
+        ""'''Usage: export [class[,class]] export_dir
         Export the database to colon-separated-value files.
 
         Optionally limit the export to just the names classes.
@@ -1069,7 +1071,7 @@ Command help:
         return 0
 
     def do_import(self, args):
-        '''Usage: import import_dir
+        ""'''Usage: import import_dir
         Import a database from the directory containing CSV files, two per
         class to import.
 
@@ -1129,26 +1131,26 @@ Command help:
         return 0
 
     def do_pack(self, args):
-        '''Usage: pack period | date
+        ""'''Usage: pack period | date
 
-Remove journal entries older than a period of time specified or
-before a certain date.
+        Remove journal entries older than a period of time specified or
+        before a certain date.
 
-A period is specified using the suffixes "y", "m", and "d". The
-suffix "w" (for "week") means 7 days.
+        A period is specified using the suffixes "y", "m", and "d". The
+        suffix "w" (for "week") means 7 days.
 
-      "3y" means three years
-      "2y 1m" means two years and one month
-      "1m 25d" means one month and 25 days
-      "2w 3d" means two weeks and three days
+              "3y" means three years
+              "2y 1m" means two years and one month
+              "1m 25d" means one month and 25 days
+              "2w 3d" means two weeks and three days
 
-Date format is "YYYY-MM-DD" eg:
-    2001-01-01
-    
+        Date format is "YYYY-MM-DD" eg:
+            2001-01-01
+
         '''
         if len(args) <> 1:
             raise UsageError, _('Not enough arguments supplied')
-        
+
         # are we dealing with a period or a date
         value = args[0]
         date_re = re.compile(r'''
@@ -1167,7 +1169,7 @@ Date format is "YYYY-MM-DD" eg:
         return 0
 
     def do_reindex(self, args):
-        '''Usage: reindex
+        ""'''Usage: reindex
         Re-generate a tracker's search indexes.
 
         This will re-generate the search indexes for a tracker. This will
@@ -1178,7 +1180,7 @@ Date format is "YYYY-MM-DD" eg:
         return 0
 
     def do_security(self, args):
-        '''Usage: security [Role name]
+        ""'''Usage: security [Role name]
         Display the Permissions available to one or all Roles.
         '''
         if len(args) == 1:
@@ -1293,8 +1295,8 @@ Date format is "YYYY-MM-DD" eg:
     def interactive(self):
         '''Run in an interactive mode
         '''
-        print _('Roundup %s ready for input.'%roundup_version)
-        print _('Type "help" for help.')
+        print _('Roundup %s ready for input.\nType "help" for help.'
+            % roundup_version)
         try:
             import readline
         except ImportError:
