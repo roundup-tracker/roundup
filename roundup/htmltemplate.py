@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.69 2002-01-23 05:10:27 richard Exp $
+# $Id: htmltemplate.py,v 1.70 2002-01-23 05:47:57 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -420,7 +420,7 @@ class TemplateFunctions:
         l = []
         k = linkcl.labelprop()
         for optionid in linkcl.list():
-            option = linkcl.get(optionid, k)
+            option = cgi.escape(linkcl.get(optionid, k))
             if optionid in value or option in value:
                 checked = 'checked'
             else:
@@ -454,7 +454,11 @@ class TemplateFunctions:
         propcl = self.properties[property]
         if not isinstance(propcl, hyperdb.Multilink):
             return _('[List: not a Multilink]')
-        value = self.cl.get(self.nodeid, property)
+
+        value = self.determine_value(property)
+	if not value:
+	    return ''
+
         value.sort()
         if reverse:
             value.reverse()
@@ -1036,6 +1040,11 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.69  2002/01/23 05:10:27  richard
+# More HTML template cleanup and unit tests.
+#  - download() now implemented correctly, replacing link(is_download=1) [fixed in the
+#    templates, but link(is_download=1) will still work for existing templates]
+#
 # Revision 1.68  2002/01/22 22:55:28  richard
 #  . htmltemplate list() wasn't sorting...
 #

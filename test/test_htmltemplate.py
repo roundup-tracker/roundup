@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_htmltemplate.py,v 1.5 2002-01-23 05:10:28 richard Exp $ 
+# $Id: test_htmltemplate.py,v 1.6 2002-01-23 05:47:57 richard Exp $ 
 
 import unittest, cgi
 
@@ -34,7 +34,7 @@ class Class:
         elif attribute == 'password':
             return password.Password('sekrit')
         elif attribute == 'key':
-            return 'the key'
+            return 'the key'+nodeid
         elif attribute == 'html':
             return '<html>hello, I am HTML</html>'
     def list(self):
@@ -53,6 +53,9 @@ class Database:
         return Class()
     def __getattr(self, name):
         return Class()
+
+class Client:
+    write = None
 
 class NodeCase(unittest.TestCase):
     def setUp(self):
@@ -86,7 +89,7 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_plain('interval'), '- 3d')
 
     def testPlain_link(self):
-        self.assertEqual(self.tf.do_plain('link'), 'the key')
+        self.assertEqual(self.tf.do_plain('link'), 'the key1')
 
     def testPlain_multilink(self):
         self.assertEqual(self.tf.do_plain('multilink'), '1, 2')
@@ -127,15 +130,15 @@ class NodeCase(unittest.TestCase):
     def testField_link(self):
         self.assertEqual(self.tf.do_field('link'), '''<select name="link">
 <option value="-1">- no selection -</option>
-<option selected value="1">the key</option>
-<option value="2">the key</option>
+<option selected value="1">the key1</option>
+<option value="2">the key2</option>
 </select>''')
 
     def testField_multilink(self):
         self.assertEqual(self.tf.do_field('multilink'),
-            '<input name="multilink" size="30" value="the key,the key">')
+            '<input name="multilink" size="30" value="the key1,the key2">')
         self.assertEqual(self.tf.do_field('multilink', size=10),
-            '<input name="multilink" size="10" value="the key,the key">')
+            '<input name="multilink" size="10" value="the key1,the key2">')
 
 #    def do_menu(self, property, size=None, height=None, showid=0):
     def testMenu_nonlinks(self):
@@ -148,8 +151,8 @@ class NodeCase(unittest.TestCase):
     def testMenu_link(self):
         self.assertEqual(self.tf.do_menu('link'), '''<select name="link">
 <option value="-1">- no selection -</option>
-<option selected value="1">the key</option>
-<option value="2">the key</option>
+<option selected value="1">the key1</option>
+<option value="2">the key2</option>
 </select>''')
         self.assertEqual(self.tf.do_menu('link', size=6),
             '''<select name="link">
@@ -160,15 +163,15 @@ class NodeCase(unittest.TestCase):
         self.assertEqual(self.tf.do_menu('link', showid=1),
             '''<select name="link">
 <option value="-1">- no selection -</option>
-<option selected value="1">other1: the key</option>
-<option value="2">other2: the key</option>
+<option selected value="1">other1: the key1</option>
+<option value="2">other2: the key2</option>
 </select>''')
 
     def testMenu_multilink(self):
         self.assertEqual(self.tf.do_menu('multilink', height=10),
             '''<select multiple name="multilink" size="10">
-<option selected value="1">the key</option>
-<option selected value="2">the key</option>
+<option selected value="1">the key1</option>
+<option selected value="2">the key2</option>
 </select>''')
         self.assertEqual(self.tf.do_menu('multilink', size=6, height=10),
             '''<select multiple name="multilink" size="10">
@@ -177,8 +180,8 @@ class NodeCase(unittest.TestCase):
 </select>''')
         self.assertEqual(self.tf.do_menu('multilink', showid=1),
             '''<select multiple name="multilink" size="2">
-<option selected value="1">other1: the key</option>
-<option selected value="2">other2: the key</option>
+<option selected value="1">other1: the key1</option>
+<option selected value="2">other2: the key2</option>
 </select>''')
 
 #    def do_link(self, property=None, is_download=0):
@@ -204,11 +207,11 @@ class NodeCase(unittest.TestCase):
 
     def testLink_link(self):
         self.assertEqual(self.tf.do_link('link'),
-            '<a href="other1">the key</a>')
+            '<a href="other1">the key1</a>')
 
     def testLink_multilink(self):
         self.assertEqual(self.tf.do_link('multilink'),
-            '<a href="other1">the key</a>, <a href="other2">the key</a>')
+            '<a href="other1">the key1</a>, <a href="other2">the key2</a>')
 
 #    def do_count(self, property, **args):
     def testCount_nonlinks(self):
@@ -260,12 +263,50 @@ class NodeCase(unittest.TestCase):
 
     def testDownload_link(self):
         self.assertEqual(self.tf.do_download('link'),
-            '<a href="other1/the key">the key</a>')
+            '<a href="other1/the key1">the key1</a>')
 
     def testDownload_multilink(self):
         self.assertEqual(self.tf.do_download('multilink'),
-            '<a href="other1/the key">the key</a>, '
-	    '<a href="other2/the key">the key</a>')
+            '<a href="other1/the key1">the key1</a>, '
+	    '<a href="other2/the key2">the key2</a>')
+
+#    def do_checklist(self, property, reverse=0):
+    def testChecklink_nonlinks(self):
+        s = _('[Checklist: not a link]')
+        self.assertEqual(self.tf.do_checklist('string'), s)
+        self.assertEqual(self.tf.do_checklist('date'), s)
+        self.assertEqual(self.tf.do_checklist('interval'), s)
+        self.assertEqual(self.tf.do_checklist('password'), s)
+
+    def testChecklink_link(self):
+        self.assertEqual(self.tf.do_checklist('link'),
+            '''the key1:<input type="checkbox" checked name="link" value="the key1">
+the key2:<input type="checkbox"  name="link" value="the key2">
+[unselected]:<input type="checkbox"  name="link" value="-1">''')
+
+    def testChecklink_multilink(self):
+        self.assertEqual(self.tf.do_checklist('multilink'),
+            '''the key1:<input type="checkbox" checked name="multilink" value="the key1">
+the key2:<input type="checkbox" checked name="multilink" value="the key2">''')
+
+#    def do_note(self, rows=5, cols=80):
+    def testNote(self):
+        self.assertEqual(self.tf.do_note(), '<textarea name="__note" '
+            'wrap="hard" rows=5 cols=80></textarea>')
+
+#    def do_list(self, property, reverse=0):
+    def testList_nonlinks(self):
+        s = _('[List: not a Multilink]')
+        self.assertEqual(self.tf.do_list('string'), s)
+        self.assertEqual(self.tf.do_list('date'), s)
+        self.assertEqual(self.tf.do_list('interval'), s)
+        self.assertEqual(self.tf.do_list('password'), s)
+        self.assertEqual(self.tf.do_list('link'), s)
+
+    def testList_multilink(self):
+        # TODO: test this (needs to have lots and lots of support!
+        #self.assertEqual(self.tf.do_list('multilink'),'')
+        pass
 
 def suite():
    return unittest.makeSuite(NodeCase, 'test')
@@ -273,6 +314,11 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/01/23 05:10:28  richard
+# More HTML template cleanup and unit tests.
+#  - download() now implemented correctly, replacing link(is_download=1) [fixed in the
+#    templates, but link(is_download=1) will still work for existing templates]
+#
 # Revision 1.4  2002/01/22 22:46:22  richard
 # more htmltemplate cleanups and unit tests
 #
