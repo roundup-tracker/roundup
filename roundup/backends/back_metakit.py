@@ -2,15 +2,26 @@ from roundup import hyperdb, date, password, roundupdb, security
 import metakit
 from sessions import Sessions
 import re, marshal, os, sys, weakref, time, calendar
-from roundup import indexer 
+from roundup import indexer
+import locking
 
-class Database(hyperdb.Database):
+_dbs = {}
+
+def Database(config, journaltag=None):
+    db = _dbs.get(config.DATABASE, None)
+    if db is None or db._db is None:
+        db = _Database(config, journaltag)
+        _dbs[config.DATABASE] = db
+    return db
+
+class _Database(hyperdb.Database):
     def __init__(self, config, journaltag=None):
         self.config = config
         self.journaltag = journaltag
         self.classes = {}
         self._classes = []
         self.dirty = 0
+        self.lockfile = None
         self._db = self.__open()
         self.indexer = Indexer(self.config.DATABASE, self._db)
         self.sessions = Sessions(self.config)
@@ -60,13 +71,13 @@ class Database(hyperdb.Database):
         for cl in self.classes.values():
             cl._clear()
     def hasnode(self, classname, nodeid):
-        return self.getclass(clasname).hasnode(nodeid)
+        return self.getclass(classname).hasnode(nodeid)
     def pack(self, pack_before):
         pass
     def addclass(self, cl):
         self.classes[cl.classname] = cl
-	if self.tables.find(name=cl.classname) < 0:
-	    self.tables.append(name=cl.classname)
+        if self.tables.find(name=cl.classname) < 0:
+            self.tables.append(name=cl.classname)
     def addjournal(self, tablenm, nodeid, action, params):
         tblid = self.tables.find(name=tablenm)
         if tblid == -1:
@@ -102,12 +113,19 @@ class Database(hyperdb.Database):
         for cl in self.classes.values():
             cl.db = None
         self._db = None
+        locking.release_lock(self.lockfile)
+        del _dbs[self.config.DATABASE]
+        self.lockfile.close()
         self.classes = {}
         self.indexer = None
 
     # --- internal
     def __open(self):
         self.dbnm = db = os.path.join(self.config.DATABASE, 'tracker.mk4')
+        lockfilenm = db[:-3]+'lck'
+        self.lockfile = locking.acquire_lock(lockfilenm)
+        self.lockfile.write(str(os.getpid()))
+        self.lockfile.flush()
         self.fastopen = 0
         if os.path.exists(db):
             dbtm = os.path.getmtime(db)
@@ -153,7 +171,8 @@ _ALLOWSETTINGPRIVATEPROPS = 0
 class Class:    
     privateprops = None
     def __init__(self, db, classname, **properties):
-        self.db = weakref.proxy(db)
+        #self.db = weakref.proxy(db)
+        self.db = db
         self.classname = classname
         self.keyname = None
         self.ruprops = properties
@@ -831,10 +850,8 @@ class Class:
             else:
                 mkprop = None
             if mkprop is None:
-                print "%s missing prop %s (%s)" % (self.classname, nm, rutyp.__class__.__name__)
                 break
             if _typmap[rutyp.__class__] != mkprop.type:
-                print "%s - prop %s (%s) has wrong mktyp (%s)" % (self.classname, nm, rutyp.__class__.__name__, mkprop.type)
                 break
         else:
             return view.ordered(1)
@@ -922,9 +939,6 @@ class FileClass(Class):
         del propvalues['content']
         newid = Class.create(self, **propvalues)
         if not content:
-            return newid
-        if content.startswith('/tracker/download.php?'):
-            self.set(newid, content='http://sourceforge.net'+content)
             return newid
         nm = bnm = '%s%s' % (self.classname, newid)
         sd = str(int(int(newid) / 1000))
@@ -1071,7 +1085,3 @@ class Indexer(indexer.Indexer):
         if self.changed:
             self.db.commit()
         self.changed = 0
-            
-            
-                
-            
