@@ -1,7 +1,13 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-10-07 - 0.3.0
+2001-10-11 - 0.3.0 pre 2
+Fixed:
+ . Hyperdatabase was inserting empty strings instead of None for missing
+   property values. This broke a lot of things.
+
+
+2001-10-10 - 0.3.0 pre 1
 Feature:
  . roundup-admin create now prompts for property info if none is supplied
    on the command-line.
@@ -39,6 +45,9 @@ Fixed:
  . The plain() template function now html-escapes the content.
  . Change message was stuffing up for multilinks with no key property.
 
+
+
+--------------
 
 2001-08-30 - 0.2.8
 Fixed:
