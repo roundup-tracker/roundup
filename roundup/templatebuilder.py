@@ -1,4 +1,4 @@
-# $Id: templatebuilder.py,v 1.6 2001-07-29 07:01:39 richard Exp $
+# $Id: templatebuilder.py,v 1.7 2001-07-30 00:06:52 richard Exp $
 import errno
 
 preamble = """ 
@@ -38,7 +38,7 @@ def installHtmlBase(template, installDir):
     installDir = os.path.join(installDir, 'html')
     try:
         os.makedirs(installDir)
-    except IOError, error:
+    except OSError, error:
         if error.errno != errno.EEXIST: raise
 
 #    print "installing from", htmlbase.__file__, "into", installDir
@@ -65,6 +65,9 @@ if __name__ == "__main__":
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/07/29 07:01:39  richard
+# Added vim command to all source so that we don't get no steenkin' tabs :)
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
