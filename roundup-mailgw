@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-mailgw,v 1.8 2001-11-01 22:04:37 richard Exp $
+# $Id: roundup-mailgw,v 1.9 2001-11-07 05:29:26 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -40,10 +40,45 @@ instance = roundup.instance.open(instance_home)
 # invoke the mail handler
 db = instance.open('admin')
 handler = instance.MailGW(db)
-handler.main(sys.stdin)
+
+# if there's no more arguments, read a single message from stdin
+if len(sys.argv) < 2:
+    handler.main(sys.stdin)
+
+# otherwise, there's a spool file to read from
+import fcntl, FCNTL
+spool_file = sys.argv[2]
+
+# open the spool file and lock it
+f = open(spool_file, 'r+')
+fcntl.flock(f.fileno(), FCNTL.LOCK_EX)
+
+# handle and clear the mailbox
+try:
+    from mailbox import UnixMailbox
+    import mimetools
+    mailbox = UnixMailbox(f, factory=mimetools.Message)
+    # grab one message
+    message = mailbox.next()
+    while message:
+        # call the instance mail handler
+        handler.handle_Message(message)
+        message = mailbox.next()
+    # nuke the file contents
+    os.ftruncate(f.fileno(), 0)
+except:
+    import traceback
+    traceback.print_exc()
+fcntl.flock(f.fileno(), FCNTL.LOCK_UN)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/11/01 22:04:37  richard
+# Started work on supporting a pop3-fetching server
+# Fixed bugs:
+#  . bug #477104 ] HTML tag error in roundup-server
+#  . bug #477107 ] HTTP header problem
+#
 # Revision 1.7  2001/08/07 00:24:42  richard
 # stupid typo
 #
