@@ -1,4 +1,4 @@
-# $Id: htmltemplate.py,v 1.11 2001-07-29 09:31:35 richard Exp $
+# $Id: htmltemplate.py,v 1.12 2001-07-30 01:24:33 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -321,6 +321,9 @@ class History(Base):
     ''' list the history of the item
     '''
     def __call__(self, **args):
+        if self.nodeid is None:
+            return "[History: node doesn't exist]"
+
         l = ['<table width=100% border=0 cellspacing=0 cellpadding=2>',
             '<tr class="list-header">',
             '<td><span class="list-item"><strong>Date</strong></span></td>',
@@ -709,6 +712,9 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/07/29 09:31:35  richard
+# oops
+#
 # Revision 1.10  2001/07/29 09:28:23  richard
 # Fixed sorting by clicking on column headings.
 #
