@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.69 2004-05-26 10:00:53 a1s Exp $
+# $Id: setup.py,v 1.70 2004-06-13 00:27:05 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -76,9 +76,9 @@ class build_scripts_create(build_scripts):
         if self.target_platform:
             # TODO? allow explicit setting from command line
             target = self.target_platform
-        if "bdist_wininst" in cmdopt:
+        if cmdopt.has_key("bdist_wininst"):
             target = "win32"
-        elif "formats" in cmdopt.get("bdist", {}):
+        elif cmdopt.get("bdist", {}).has_key("formats"):
             formats = cmdopt["bdist"]["formats"][1].split(",")
             if formats[0] == "wininst":
                 target = "win32"
@@ -112,7 +112,7 @@ class build_scripts_create(build_scripts):
             self.scripts = [script + ".bat" for script in self.scripts]
 
         # tweak python path for installations outside main python library
-        if "prefix" in cmdopt.get("install", {}):
+        if cmdopt.get("install", {}).has_key("prefix"):
             prefix = cmdopt['install']['prefix'][1]
             version = '%d.%d'%sys.version_info[:2]
             self.script_preamble = '''
