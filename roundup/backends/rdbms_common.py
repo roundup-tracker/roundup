@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.138 2004-10-25 10:20:58 a1s Exp $
+# $Id: rdbms_common.py,v 1.139 2004-11-09 04:07:54 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -935,7 +935,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.cursor.execute(sql, (nodeid,))
             # extract the first column from the result
             # XXX numeric ids
-            node[col] = [str(x[0]) for x in self.cursor.fetchall()]
+            items = [int(x[0]) for x in self.cursor.fetchall()]
+            items.sort ()
+            node[col] = [str(x) for x in items]
 
         # save off in the cache
         key = (classname, nodeid)
