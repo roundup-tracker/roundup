@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.23 2002-09-19 02:37:41 richard Exp $
+# $Id: back_gadfly.py,v 1.24 2002-09-20 01:20:31 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -154,7 +154,7 @@ class GadflyClass:
                 tn = '%s_%s'%(cn, k)
                 frum.append(tn)
                 if isinstance(v, type([])):
-                    s = ','.join([self.arg for x in v])
+                    s = ','.join([a for x in v])
                     where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
                     args = args + v
                 else:
@@ -176,66 +176,50 @@ class GadflyClass:
             where.append('id in (%s)'%s)
             args = args + v
 
-        # figure the order by clause
+        # "grouping" is just the first-order sorting in the SQL fetch
+        # can modify it...)
         orderby = []
         ordercols = []
+        if group[0] is not None and group[1] is not None:
+            if group[0] != '-':
+                orderby.append('_'+group[1])
+                ordercols.append('_'+group[1])
+            else:
+                orderby.append('_'+group[1]+' desc')
+                ordercols.append('_'+group[1])
+
+        # now add in the sorting
+        group = ''
         if sort[0] is not None and sort[1] is not None:
             direction, colname = sort
             if direction != '-':
-                if colname == 'activity':
-                    orderby.append('activity')
-                    ordercols.append('max(%s__journal.date) as activity'%cn)
-                    frum.append('%s__journal'%cn)
-                    where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
-                elif colname == 'id':
+                if colname == 'id':
                     orderby.append(colname)
-                    ordercols.append(colname)
                 else:
                     orderby.append('_'+colname)
                     ordercols.append('_'+colname)
             else:
-                if colname == 'activity':
-                    orderby.append('activity desc')
-                    ordercols.append('max(%s__journal.date) as activity'%cn)
-                    frum.append('%s__journal'%cn)
-                    where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
-                elif colname == 'id':
+                if colname == 'id':
                     orderby.append(colname+' desc')
                     ordercols.append(colname)
                 else:
                     orderby.append('_'+colname+' desc')
                     ordercols.append('_'+colname)
 
-        # figure the group by clause
-        groupby = []
-        groupcols = []
-        if group[0] is not None and group[1] is not None:
-            if group[0] != '-':
-                groupby.append('_'+group[1])
-                groupcols.append('_'+group[1])
-            else:
-                groupby.append('_'+group[1]+' desc')
-                groupcols.append('_'+group[1])
-
         # construct the SQL
         frum = ','.join(frum)
-        where = ' and '.join(where)
-        cols = []
+        if where:
+            where = ' where ' + (' and '.join(where))
+        else:
+            where = ''
+        cols = ['id']
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))
         else:
             order = ''
-        if 0: #groupby:
-            cols = cols + groupcols
-            group = ' group by %s'%(','.join(groupby))
-        else:
-            group = ''
-        if 'id' not in cols:
-            cols.append('id')
         cols = ','.join(cols)
-        sql = 'select %s from %s where %s%s%s'%(cols, frum, where, order,
-            group)
+        sql = 'select %s from %s %s%s%s'%(cols, frum, where, group, order)
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)

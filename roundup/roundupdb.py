@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.68 2002-09-11 02:20:35 richard Exp $
+# $Id: roundupdb.py,v 1.69 2002-09-20 01:20:31 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -358,7 +358,10 @@ class IssueClass:
 
         # determine what changed
         for key in oldvalues.keys():
-            if key in ['files','messages']: continue
+            if key in ['files','messages']:
+                continue
+            if key in ('activity', 'creator', 'creation'):
+                continue
             new_value = cl.get(nodeid, key)
             # the old value might be non existent
             try:

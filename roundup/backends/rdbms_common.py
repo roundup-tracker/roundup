@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.6 2002-09-19 05:30:25 richard Exp $
+# $Id: rdbms_common.py,v 1.7 2002-09-20 01:20:32 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -23,9 +23,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
           the sql_* methods that are NotImplemented
         - we keep a cache of the latest ROW_CACHE_SIZE row fetches.
     '''
-    # flag to set on retired entries
-    RETIRED_FLAG = '__hyperdb_retired'
-
     def __init__(self, config, journaltag=None):
         ''' Open the database and load the schema from it.
         '''
@@ -130,7 +127,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             "properties" is a list of (name, prop) where prop may be an
             instance of a hyperdb "type" _or_ a string repr of that type.
         '''
-        cols = []
+        cols = ['_activity', '_creator', '_creation']
         mls = []
         # add the multilinks separately
         for col, prop in properties:
@@ -461,6 +458,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cl = self.classes[classname]
         cols, mls = self.determine_columns(cl.properties.items())
 
+        # add the special props
+        node = node.copy()
+        node['creation'] = node['activity'] = date.Date()
+        node['creator'] = self.journaltag
+
         # default the non-multilink columns
         for col, prop in cl.properties.items():
             if not isinstance(col, Multilink):
@@ -499,11 +501,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # make sure we do the commit-time extra stuff for this node
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
-    def setnode(self, classname, nodeid, node, multilink_changes):
+    def setnode(self, classname, nodeid, values, multilink_changes):
         ''' Change the specified node.
         '''
         if __debug__:
-            print >>hyperdb.DEBUG, 'setnode', (self, classname, nodeid, node)
+            print >>hyperdb.DEBUG, 'setnode', (self, classname, nodeid, values)
 
         # clear this node out of the cache if it's in there
         key = (classname, nodeid)
@@ -511,31 +513,40 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             del self.cache[key]
             self.cache_lru.remove(key)
 
-        node = self.serialise(classname, node)
+        # add the special props
+        values = values.copy()
+        values['activity'] = date.Date()
+
+        # make db-friendly
+        values = self.serialise(classname, values)
 
         cl = self.classes[classname]
         cols = []
         mls = []
         # add the multilinks separately
-        for col in node.keys():
-            prop = cl.properties[col]
+        props = cl.getprops()
+        for col in values.keys():
+            prop = props[col]
             if isinstance(prop, Multilink):
                 mls.append(col)
             else:
                 cols.append('_'+col)
         cols.sort()
 
-        # make sure the ordering is correct for column name -> column value
-        vals = tuple([node[col[1:]] for col in cols])
-        s = ','.join(['%s=%s'%(x, self.arg) for x in cols])
-        cols = ','.join(cols)
-
-        # perform the update
         cursor = self.conn.cursor()
-        sql = 'update _%s set %s'%(classname, s)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'setnode', (self, sql, vals)
-        cursor.execute(sql, vals)
+
+        # if there's any updates to regular columns, do them
+        if cols:
+            # make sure the ordering is correct for column name -> column value
+            sqlvals = tuple([values[col[1:]] for col in cols]) + (nodeid,)
+            s = ','.join(['%s=%s'%(x, self.arg) for x in cols])
+            cols = ','.join(cols)
+
+            # perform the update
+            sql = 'update _%s set %s where id=%s'%(classname, s, self.arg)
+            if __debug__:
+                print >>hyperdb.DEBUG, 'setnode', (self, sql, sqlvals)
+            cursor.execute(sql, sqlvals)
 
         # now the fun bit, updating the multilinks ;)
         for col, (add, remove) in multilink_changes.items():
@@ -552,7 +563,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     self.sql(cursor, sql, (nodeid, removeid))
 
         # make sure we do the commit-time extra stuff for this node
-        self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
+        self.transactions.append((self.doSaveNode, (classname, nodeid, values)))
 
     def getnode(self, classname, nodeid):
         ''' Get a node from the database.
@@ -603,9 +614,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # save off in the cache
         key = (classname, nodeid)
         self.cache[key] = node
-	# update the LRU
-	self.cache_lru.insert(0, key)
-	del self.cache[self.cache_lru.pop()]
+        # update the LRU
+        self.cache_lru.insert(0, key)
+        del self.cache[self.cache_lru.pop()]
 
         return node
 
@@ -1171,43 +1182,27 @@ class Class(hyperdb.Class):
         if propname == 'id':
             return nodeid
 
+        # get the node's dict
+        d = self.db.getnode(self.classname, nodeid)
+
         if propname == 'creation':
-            if not self.do_journal:
-                raise ValueError, 'Journalling is disabled for this class'
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                return self.db.getjournal(self.classname, nodeid)[0][1]
+            if d.has_key('creation'):
+                return d['creation']
             else:
-                # on the strange chance that there's no journal
                 return date.Date()
         if propname == 'activity':
-            if not self.do_journal:
-                raise ValueError, 'Journalling is disabled for this class'
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                return self.db.getjournal(self.classname, nodeid)[-1][1]
+            if d.has_key('activity'):
+                return d['activity']
             else:
-                # on the strange chance that there's no journal
                 return date.Date()
         if propname == 'creator':
-            if not self.do_journal:
-                raise ValueError, 'Journalling is disabled for this class'
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                name = self.db.getjournal(self.classname, nodeid)[0][2]
+            if d.has_key('creator'):
+                return d['creator']
             else:
-                return None
-            try:
-                return self.db.user.lookup(name)
-            except KeyError:
-                # the journaltag user doesn't exist any more
-                return None
+                return self.db.journaltag
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
-
-        # get the node's dict
-        d = self.db.getnode(self.classname, nodeid) #, cache=cache)
 
         if not d.has_key(propname):
             if default is self._marker:
@@ -1298,7 +1293,11 @@ class Class(hyperdb.Class):
             # this will raise the KeyError if the property isn't valid
             # ... we don't use getprops() here because we only care about
             # the writeable properties.
-            prop = self.properties[propname]
+            try:
+                prop = self.properties[propname]
+            except KeyError:
+                raise KeyError, '"%s" has no property named "%s"'%(
+                    self.classname, propname)
 
             # if the value's the same as the existing value, no sense in
             # doing anything
@@ -1431,14 +1430,12 @@ class Class(hyperdb.Class):
                 except ValueError:
                     raise TypeError, 'new property "%s" not boolean'%propname
 
-            node[propname] = value
-
         # nothing to do?
         if not propvalues:
             return propvalues
 
         # do the set, and journal it
-        self.db.setnode(self.classname, nodeid, node, multilink_changes)
+        self.db.setnode(self.classname, nodeid, propvalues, multilink_changes)
 
         if self.do_journal:
             propvalues.update(journalvalues)
@@ -1575,16 +1572,15 @@ class Class(hyperdb.Class):
             raise TypeError, 'No key property set for class %s'%self.classname
 
         cursor = self.db.conn.cursor()
-        sql = 'select id from _%s where _%s=%s'%(self.classname, self.key,
-            self.db.arg)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'lookup', (self, sql, keyvalue)
-        cursor.execute(sql, (keyvalue,))
+        sql = 'select id,__retired__ from _%s where _%s=%s'%(self.classname,
+            self.key, self.db.arg)
+        self.db.sql(cursor, sql, (keyvalue,))
 
-        # see if there was a result
+        # see if there was a result that's not retired
         l = cursor.fetchall()
-        if not l:
-            raise KeyError, keyvalue
+        if not l or int(l[0][1]):
+            raise KeyError, 'No key (%s) value "%s" for "%s"'%(self.key,
+                keyvalue, self.classname)
 
         # return the id
         return l[0][0]
@@ -1665,7 +1661,7 @@ class Class(hyperdb.Class):
                 tn = '%s_%s'%(cn, k)
                 frum.append(tn)
                 if isinstance(v, type([])):
-                    s = ','.join([self.arg for x in v])
+                    s = ','.join([a for x in v])
                     where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
                     args = args + v
                 else:
@@ -1733,27 +1729,13 @@ class Class(hyperdb.Class):
         if sort[0] is not None and sort[1] is not None:
             direction, colname = sort
             if direction != '-':
-                if colname == 'activity':
-                    orderby.append('activity')
-                    ordercols.append('max(%s__journal.date) as activity'%cn)
-                    frum.append('%s__journal'%cn)
-                    where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
-                    # we need to group by id
-                    group = ' group by id'
-                elif colname == 'id':
+                if colname == 'id':
                     orderby.append(colname)
                 else:
                     orderby.append('_'+colname)
                     ordercols.append('_'+colname)
             else:
-                if colname == 'activity':
-                    orderby.append('activity desc')
-                    ordercols.append('max(%s__journal.date) as activity'%cn)
-                    frum.append('%s__journal'%cn)
-                    where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
-                    # we need to group by id
-                    group = ' group by id'
-                elif colname == 'id':
+                if colname == 'id':
                     orderby.append(colname+' desc')
                     ordercols.append(colname)
                 else:

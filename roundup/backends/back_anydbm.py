@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.81 2002-09-19 02:37:41 richard Exp $
+#$Id: back_anydbm.py,v 1.82 2002-09-20 01:20:31 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -236,6 +236,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''
         if __debug__:
             print >>hyperdb.DEBUG, 'addnode', (self, classname, nodeid, node)
+
+        # add in the "calculated" properties (dupe so we don't affect
+        # calling code's node assumptions)
+        node = node.copy()
+        node['creator'] = self.journaltag
+        node['creation'] = node['activity'] = date.Date()
+
         self.newnodes.setdefault(classname, {})[nodeid] = 1
         self.cache.setdefault(classname, {})[nodeid] = node
         self.savenode(classname, nodeid, node)
@@ -246,6 +253,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'setnode', (self, classname, nodeid, node)
         self.dirtynodes.setdefault(classname, {})[nodeid] = 1
+
+        # update the activity time (dupe so we don't affect
+        # calling code's node assumptions)
+        node = node.copy()
+        node['activity'] = date.Date()
 
         # can't set without having already loaded the node
         self.cache[classname][nodeid] = node
@@ -975,7 +987,13 @@ class Class(hyperdb.Class):
         if propname == 'id':
             return nodeid
 
+        # get the node's dict
+        d = self.db.getnode(self.classname, nodeid, cache=cache)
+
+        # check for one of the special props
         if propname == 'creation':
+            if d.has_key('creation'):
+                return d['creation']
             if not self.do_journal:
                 raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
@@ -985,6 +1003,8 @@ class Class(hyperdb.Class):
                 # on the strange chance that there's no journal
                 return date.Date()
         if propname == 'activity':
+            if d.has_key('activity'):
+                return d['activity']
             if not self.do_journal:
                 raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
@@ -994,6 +1014,8 @@ class Class(hyperdb.Class):
                 # on the strange chance that there's no journal
                 return date.Date()
         if propname == 'creator':
+            if d.has_key('creator'):
+                return d['creator']
             if not self.do_journal:
                 raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
@@ -1004,9 +1026,6 @@ class Class(hyperdb.Class):
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
-
-        # get the node's dict
-        d = self.db.getnode(self.classname, nodeid, cache=cache)
 
         if not d.has_key(propname):
             if default is _marker:
@@ -1103,7 +1122,11 @@ class Class(hyperdb.Class):
             # this will raise the KeyError if the property isn't valid
             # ... we don't use getprops() here because we only care about
             # the writeable properties.
-            prop = self.properties[propname]
+            try:
+                prop = self.properties[propname]
+            except KeyError:
+                raise KeyError, '"%s" has no property named "%s"'%(
+                    self.classname, propname)
 
             # if the value's the same as the existing value, no sense in
             # doing anything
@@ -1388,7 +1411,8 @@ class Class(hyperdb.Class):
                     return nodeid
         finally:
             cldb.close()
-        raise KeyError, keyvalue
+        raise KeyError, 'No key (%s) value "%s" for "%s"'%(self.key,
+            keyvalue, self.classname)
 
     # change from spec - allows multiple props to match
     def find(self, **propspec):

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.50 2002-09-19 02:37:41 richard Exp $ 
+# $Id: test_db.py,v 1.51 2002-09-20 01:20:32 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -157,6 +157,14 @@ class anydbmDBTestCase(MyTestCase):
         self.db.user.set('1', age=1.0)
         self.db.user.set('1', age=None)
         self.assertEqual(self.db.user.get('1', "age"), None)
+
+    def testKeyValue(self):
+        newid = self.db.user.create(username="spam")
+        self.assertEqual(self.db.user.lookup('spam'), newid)
+        self.db.commit()
+        self.assertEqual(self.db.user.lookup('spam'), newid)
+        self.db.user.retire(newid)
+        self.assertRaises(KeyError, self.db.user.lookup, 'spam')
 
     def testNewProperty(self):
         self.db.issue.create(title="spam", status='1')
@@ -712,7 +720,7 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-    #return unittest.TestSuite(l)
+#    return unittest.TestSuite(l)
 
     try:
         import sqlite
@@ -720,6 +728,7 @@ def suite():
         l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
     except:
         print 'sqlite module not found, skipping gadfly DBTestCase'
+#    return unittest.TestSuite(l)
 
     try:
         import gadfly

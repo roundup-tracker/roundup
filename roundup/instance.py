@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: instance.py,v 1.8 2002-09-18 00:02:13 richard Exp $
+# $Id: instance.py,v 1.9 2002-09-20 01:20:31 richard Exp $
 
 __doc__ = '''
 Tracker handling (open tracker).
@@ -39,8 +39,16 @@ class Opener:
 
             Raise ValueError if the tracker home doesn't exist.
         '''
+        # sanity check existence of tracker home
         if not os.path.exists(tracker_home):
             raise ValueError, 'no such directory: "%s"'%tracker_home
+
+        # sanity check tracker home contents
+        for reqd in 'config dbinit select_db interfaces'.split():
+            if not os.path.exists(os.path.join(tracker_home, '%s.py'%reqd)):
+                raise TrackerError, 'File "%s.py" missing from tracker '\
+                    'home "%s"'%(reqd, tracker_home)
+
         if self.trackers.has_key(tracker_home):
             return imp.load_package(self.trackers[tracker_home],
                 tracker_home)
@@ -54,8 +62,8 @@ class Opener:
         # ensure the tracker has all the required bits
         for required in 'config open init Client MailGW'.split():
             if not hasattr(tracker, required):
-                raise TrackerError, 'Required tracker attribute "%s" '\
-                    'missing'%required
+                raise TrackerError, \
+                    'Required tracker attribute "%s" missing'%required
 
         return tracker
 
