@@ -4,8 +4,8 @@
 
 1. License
 ==========
-This software is released under the GNU GPL. The copyright is held by Bizar
-Software Pty Ltd (http://www.bizarsoftware.com.au).
+This software is released under the same terms as the Python License.
+Copyright 2001, Bizar Software Pty Ltd (http://www.bizarsoftware.com.au).
 
 The stylesheet included with this package has been copied from the Zope
 management interface and presumably belongs to Digital Creations.
