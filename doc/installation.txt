@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.44 $
+:Version: $Revision: 1.45 $
 
 .. contents::
 
@@ -63,6 +63,20 @@ If the above fails, you may be using the wrong version of python. Try
 Roundup -- from installation and scripts.
 
 
+For The Really Impatient
+========================
+
+If you just want to give Roundup a whirl Right Now, then simply run
+``python setup.py demo``. This will set up a simple demo tracker on your
+machine. When it's done, it'll print out a URL to point your web browser
+at so you may start playing. Three users will be set up:
+
+1. anonymous - the "default" user with permission to do very little
+2. demo (password "demo") - a normal user who may create issues
+3. admin (password "admin") - an administrative user who has complete
+   access to the tracker
+
+
 Installation
 ============
 
@@ -103,7 +117,8 @@ Basic Installation Steps
    and modify the python path accordingly.
 
 2. To create a Roundup tracker (necessary to do before you can
-   use the software in any real fashion):
+   use the software in any real fashion), you need to set up a "tracker
+   home":
 
    a. (Optional) If you intend to keep your roundup trackers
       under one top level directory which does not exist yet,
@@ -243,7 +258,8 @@ There are three web interfaces to choose from:
 3. `Zope product - ZRoundup`_
 
 You may need to give the web server user permission to access the tracker home
-- see the `shared environment steps`_ for information.
+- see the `shared environment steps`_ for information. You may also need to
+configure your system in some way - see `platform-specific notes`_.
 
 
 Web Server cgi-bin
@@ -313,6 +329,8 @@ Configure an Email Interface
 
 If you don't want to use the email component of Roundup, then remove the
 "``nosyreaction.py``" module from your tracker "``detectors``" directory.
+
+See `platform-specific notes`_ for steps that may be needed on your system.
 
 There are three supported ways to get emailed issues into the
 Roundup tracker.  You should pick ONE of the following, all
@@ -419,8 +437,47 @@ templates, if you would like to hack on Roundup, or if you would
 like implementation details, you should read `Customising Roundup`_.
 
 
+Running Multiple Trackers
+=========================
+
+Things to think about before you jump off the deep end and install
+multiple trackers, which involve additional URLs, user databases, email
+addresses, databases to back up, etc.
+
+1. Do you want a tracker per product you sell/support? You can just add
+   a new property to your issues called Product, and filter by that.
+2. Do you want to track internal software development issues and customer
+   support issues separately? You can just set up an additiona "issue"
+   class called "cust_issues" in the same tracker, mimicing the normal
+   "issue" class, but with different properties.
+
+
 Platform-Specific Notes
 =======================
+
+Windows
+-------
+
+To have the Roundup web server start up when your machine boots up, set the
+following up in Scheduled Tasks (note, the following is for a cygwin setup):
+
+Run
+ ``c:\cygwin\bin\bash.exe -c "roundup-server TheProject=/opt/roundup/trackers/support"``
+Start In
+ ``C:\cygwin\opt\roundup\bin``
+Schedule
+ At System Startup
+
+To have the Roundup mail gateway run periodically to poll a POP email address,
+set the following up in Scheduled Tasks:
+Run
+ ``c:\cygwin\bin\bash.exe -c "roundup-mailgw /opt/roundup/trackers/support pop roundup:roundup@mail-server"``
+Start In
+ ``C:\cygwin\opt\roundup\bin``
+Schedule
+ Every 10 minutes from 5:00AM for 24 hours every day
+ Stop the task if it runs for 8 minutes
+
 
 Sendmail smrsh
 --------------

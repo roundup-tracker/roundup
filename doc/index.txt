@@ -6,9 +6,9 @@ Contents
 ========
 
 - Overview_ and Features_ (pdf__)
-- Installation_ (pdf__) and Upgrading_ (pdf__)
+- Installation_ (pdf__) and Upgrading_ existing installs (pdf__)
 - `User Guide`_ (pdf__)
-- `Customising Roundup`_ (pdf__)
+- Configuring and `Customising Roundup`_ (pdf__)
 - `Maintaining Roundup Trackers`_ (pdf__)
 - `Roundup's Design`_ (pdf__) (original_)
 - `Developing Roundup`_ (pdf__)

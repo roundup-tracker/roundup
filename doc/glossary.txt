@@ -2,7 +2,7 @@
 Roundup Glossary
 ================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 .. contents::
 
@@ -18,11 +18,15 @@ itemid
 item
    a collection of data that forms one entry in the hyperdb.
 property
-   one element of data that makes up an item
+   one element of data that makes up an item. In Roundup, item
+   properties may be changed as needed - even after the tracker
+   has been initialised and used in production.
 schema
    the definition of all the classes that make up an tracker
 tracker
    the schema and hyperdb that forms one issue tracker
+tracker home
+   the physical location on disk of a tracker
 
 
 -----------------

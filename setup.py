@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.44 2003-02-20 22:58:50 richard Exp $
+# $Id: setup.py,v 1.45 2003-04-07 03:47:44 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -137,7 +137,7 @@ def buildTemplates():
         tdir = os.path.join('roundup', 'templates', template)
         makeHtmlBase(tdir)
 
-if __name__ == '__main__':
+def main():
     # build list of scripts from their implementation modules
     roundup_scripts = map(scriptname, glob('roundup/scripts/[!_]*.py'))
 
@@ -217,5 +217,81 @@ if __name__ == '__main__':
 
         data_files =  installdatafiles
     )
+
+def install_demo():
+    ''' Install a demo server for users to play with for instant gratification.
+
+        Sets up the web service on localhost port 8080. Disables nosy lists.
+    '''
+    import shutil, socket, errno, BaseHTTPServer
+
+    # create the instance
+    home = os.path.abspath('demo')
+    try:
+        shutil.rmtree(home)
+    except os.error, error:
+        if error.errno != errno.ENOENT:
+            raise
+    from roundup import init, instance, password
+    init.install(home, 'classic')
+    # don't have email flying around
+    os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
+    init.write_select_db(home, 'anydbm')
+
+    # figure basic params for server
+    hostname = socket.gethostname()
+    port = 8080
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    while 1:
+        print 'Trying to set up web server on port %d ...'%port,
+        try:
+            s.bind((hostname, port))
+        except socket.error, error:
+            if error.errno != errno.EADDRINUSE:
+                raise
+            print 'already in use.'
+            port += 100
+        else:
+            print 'should be ok.'
+            break
+    url = 'http://%s:%s/demo/'%(hostname, port)
+
+    # write the config
+    f = open(os.path.join(home, 'config.py'), 'r')
+    s = f.read().replace('http://tracker.example/cgi-bin/roundup.cgi/bugs/',
+        url)
+    f.close()
+    f = open(os.path.join(home, 'config.py'), 'w')
+    f.write(s)
+    f.close()
+
+    # initialise the database
+    init.initialise(home, 'admin')
+
+    # add the "demo" user
+    tracker = instance.open(home)
+    db = tracker.open('admin')
+    db.user.create(username='demo', password=password.Password('demo'),
+        realname='Demo User', roles='User')
+    db.commit()
+    db.close()
+
+    # ok, so start up the server
+    from roundup.scripts.roundup_server import RoundupRequestHandler
+    RoundupRequestHandler.TRACKER_HOMES = {'demo': home}
+    httpd = BaseHTTPServer.HTTPServer((hostname, port), RoundupRequestHandler)
+    print 'Server running - connect to:\n  %s'%url
+    print 'You may log in as "demo"/"demo" or "admin"/"admin".'
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print 'Keyboard Interrupt: exiting'
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'demo':
+        install_demo()
+    else:
+        main()
 
 # vim: set filetype=python ts=4 sw=4 et si

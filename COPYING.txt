@@ -1,7 +1,9 @@
 Roundup Licensing
 -----------------
 
+Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 Copyright (c) 2002 eKit.com Inc (http://www.ekit.com/)
+Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
-
-This module is free software, and you may redistribute it and/or modify
-under the same terms as Python 2.1 (the PSF LICENSE AGREEMENT), so long
-as this copyright message and disclaimer are retained in their original form.
-
-IN NO EVENT SHALL BIZAR SOFTWARE PTY LTD BE LIABLE TO ANY PARTY FOR
-DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
-OUT OF THE USE OF THIS CODE, EVEN IF BIZAR SOFTWARE PTY LTD HAS BEEN
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-BIZAR SOFTWARE PTY LTD SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
-BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
-BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
-SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-
-
 PageTemplates Licensing
 -----------------------
 
@@ -56,5 +40,67 @@ the following manner:
   HISTORY.txt.
 - editing to remove dependencies on Zope modules (see files for change notes)
 
-The license for this code is in doc/ZPL.txt.
+The license for this code is the `Zope Public License (ZPL) Version 2.0`_,
+included below.
+
+
+Zope Public License (ZPL) Version 2.0
+-------------------------------------
+
+This software is Copyright (c) Zope Corporation (tm) and
+Contributors. All rights reserved.
+
+This license has been certified as open source. It has also
+been designated as GPL compatible by the Free Software
+Foundation (FSF).
+
+Redistribution and use in source and binary forms, with or
+without modification, are permitted provided that the
+following conditions are met:
+
+1. Redistributions in source code must retain the above
+   copyright notice, this list of conditions, and the following
+   disclaimer.
+
+2. Redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions, and the following
+   disclaimer in the documentation and/or other materials
+   provided with the distribution.
+
+3. The name Zope Corporation (tm) must not be used to
+   endorse or promote products derived from this software
+   without prior written permission from Zope Corporation.
+
+4. The right to distribute this software or to use it for
+   any purpose does not give you the right to use Servicemarks
+   (sm) or Trademarks (tm) of Zope Corporation. Use of them is
+   covered in a separate agreement (see
+   http://www.zope.com/Marks).
+
+5. If any files are modified, you must cause the modified
+   files to carry prominent notices stating that you changed
+   the files and the date of any change.
+
+Disclaimer
+
+  THIS SOFTWARE IS PROVIDED BY ZOPE CORPORATION ``AS IS''
+  AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT
+  NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+  NO EVENT SHALL ZOPE CORPORATION OR ITS CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+  DAMAGE.
+
+
+This software consists of contributions made by Zope
+Corporation and many individuals on behalf of Zope
+Corporation.  Specific attributions are listed in the
+accompanying credits file.
 
