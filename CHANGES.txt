@@ -15,6 +15,7 @@ Feature:
   from Vickenty Fesunov)
 - hide "(list)" popup links when issue is only viewable
 - roundup-server options -g and -u accept both ids and names (sf bug 983769)
+- added mod_python interface (see installation.txt)
 
 
 2004-??-?? 0.7.6
@@ -26,6 +27,7 @@ Fixed:
 - fix dates-from-Dates (sf bug 984604)
 - fix messageid generated when msgid is None for send_message (sf bug 987933)
 - make user permissions check more sane (fix search page for anonymous)
+- fixed RDBMS filter() for no matches from full-text search (sf bug 990778)
 
 
 2004-06-24 0.7.5
