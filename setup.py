@@ -16,8 +16,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.65 2004-05-13 20:12:32 a1s Exp $
+# $Id: setup.py,v 1.66 2004-05-14 18:32:58 a1s Exp $
 
+from distutils import log
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.command.build_scripts import build_scripts
@@ -132,8 +133,15 @@ def scriptname(path):
 ### Build Roundup
 
 def list_po_files():
-    """Return list of all found message files"""
-    return glob("locale/*/LC_MESSAGES/*.po")
+    """Return list of all found message files and their intallation paths"""
+    _files = glob("locale/*.po")
+    _list = []
+    for _file in _files:
+        # basename (without extension) is a locale name
+        _locale = os.path.splitext(os.path.basename(_file))[0]
+        _list.append((_file, os.path.join(
+            "share", "locale", _locale, "LC_MESSAGES", "roundup.mo")))
+    return _list
 
 def compile_po_files():
     """Compile all .po files in locale directory"""
@@ -147,8 +155,13 @@ def compile_po_files():
     sys.path.insert(0, os.path.join(_share, "Tools", "i18n"))
     import msgfmt
     # compile messages
-    for _file in list_po_files():
-        msgfmt.make(_file, None)
+    for (_po, _mo) in list_po_files():
+        _mo = os.path.join("build", _mo)
+        _dir = os.path.dirname(_mo)
+        if not os.path.isdir(_dir):
+            os.makedirs(_dir)
+        log.info("Compiling messages in %r => %r", _po, _mo)
+        msgfmt.make(_po, _mo)
 
 def check_manifest():
     """Check that the files listed in the MANIFEST are present when the
@@ -225,11 +238,9 @@ def main():
 
     # add message files
     _po_files = list_po_files()
-    for _file in _po_files:
-        # change .po to .mo - will be compiled by build
-        _file = os.path.splitext(_file)[0] + ".mo"
-        installdatafiles.append((os.path.join("share", os.path.dirname(_file)),
-            [_file]))
+    for (_po_file, _mo_file) in list_po_files():
+        installdatafiles.append((os.path.dirname(_mo_file),
+            [os.path.join("build", _mo_file)]))
 
     # perform the setup action
     from roundup import __version__
