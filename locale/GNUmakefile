@@ -1,7 +1,7 @@
 # Extract translatable strings from Roundup sources,
 # update and compile all existing translations
 #
-# $Id: GNUmakefile,v 1.7 2004-06-13 13:06:54 a1s Exp $
+# $Id: GNUmakefile,v 1.8 2004-06-15 05:29:36 a1s Exp $
 
 # tool locations
 XPOT ?= xpot
@@ -37,13 +37,13 @@ dist:
 	done
 
 template:
-	${XPOT} -n -o $@ $(SOURCES)
-	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $@ \
+	${XPOT} -n -o $(TEMPLATE) $(SOURCES)
+	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
 	  ../templates/classic/html/*.html ../templates/minimal/html/*.html
 	${XGETTEXT} -j -w 80 -F \
 	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \
 	  --copyright-holder="See Roundup README.txt" \
-	  -o $@ $(SOURCES)
+	  -o $(TEMPLATE) $(SOURCES)
 
 %.po: $(TEMPLATE)
 	${MSGMERGE} -U --suffix=.bak $@ $<
