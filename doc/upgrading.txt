@@ -41,8 +41,10 @@ users mailing list:
 
   http://lists.sourceforge.net/lists/listinfo/roundup-users
 
-See the customisation doc section on "Form Values" for documentation of the
+See the customisation doc section on `Form Values`__ for documentation of the
 new form variables possible.
+
+__ customizing.html#form-values
 
 
 0.6.0 Multilingual character set support
@@ -102,6 +104,16 @@ local time, convert and store it in GMT.
 
 However you are not forced to make these modifications. By default roundup
 will assume timezone=0 and will work as previous versions did.
+
+0.6.0 Search page structure
+---------------------------
+
+In order to accomodate query editing the search page has been restructured. If
+you want to provide your users with query editing, you should update your
+search page using the macros detailed in the customisation doc section
+`Searching on categories`__.
+
+__ customizing.html#searching-on-categories
 
 
 0.6.0 Notes for metakit backend users
