@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.43 2003-02-20 07:14:26 richard Exp $
+# $Id: setup.py,v 1.44 2003-02-20 22:58:50 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -29,6 +29,7 @@ from glob import glob
 if sys.version < '2.2.3':
     from distutils.dist import DistributionMetadata
     DistributionMetadata.classifiers = None
+    DistributionMetadata.download_url = None
 
 from roundup.templates.builder import makeHtmlBase
 
