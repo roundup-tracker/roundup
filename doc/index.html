@@ -158,6 +158,8 @@ The email addresses used by the system by default are:
 </ol>
 
 <h2><a name="startweb">E-Mail Interface</a></h2>
+
+<h3>Setup 1: As a mail alias pipe process</h3>
 Set up a mail alias called "issue_tracker" as:
 <blockquote>
     <tt>|/usr/bin/python /usr/local/bin/roundup-mailgw
@@ -178,6 +180,17 @@ To test the mail gateway on unix systems, try:
     <tt>echo test |mail -s '[issue] test' issue_tracker@your.domain</tt>
 </blockquote>
 
+
+<h3>Setup 2: As a regular cron job</h3>
+
+Set the roundup-mailgw up to run every 10 minutes or so. For example:
+<blockquote>
+ <tt>10 * * * * /usr/local/bin/roundup-mailgw &lt;instance_home&gt; &lt;mail_spool_file&gt;</tt>
+</blockquote>
+
+Where the mail_spool_file argument is the location of the roundup
+submission user's mail spool. On most systems, the spool for a user
+"issue_tracker" will be "/var/mail/issue_tracker".
 
 
 <h2><a name="startweb">Web Interface</a></h2>
@@ -1170,7 +1183,7 @@ system on their time.
 
 <p>&nbsp;</p>
 <hr>
-$Id: index.html,v 1.17 2001-10-30 00:58:12 richard Exp $
+$Id: index.html,v 1.18 2001-11-07 05:38:57 richard Exp $
 <p>&nbsp;</p>
 
 </body></html>

@@ -80,6 +80,9 @@ any admin people.
 
 Mail
 ----
+
+Setup 1: As a mail alias pipe process
+- - - - - - - - - - - - - - - - - - -
 Set up a mail alias called "issue_tracker" as:
   "|/usr/bin/python /usr/local/bin/roundup-mailgw <instance_home>"
 
@@ -92,6 +95,16 @@ command to:
 To test the mail gateway on unix systems, try:
 
   echo test |mail -s '[issue] test' issue_tracker@your.domain
+
+
+Setup 2: As a regular cron job
+- - - - - - - - - - - - - - - 
+Set the roundup-mailgw up to run every 10 minutes or so. For example:
+10 * * * * /usr/local/bin/roundup-mailgw <instance_home> <mail_spool_file>
+
+Where the mail_spool_file argument is the location of the roundup
+submission user's mail spool. On most systems, the spool for a user
+"issue_tracker" will be "/var/mail/issue_tracker".
 
 
 
