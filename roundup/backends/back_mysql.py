@@ -1,4 +1,4 @@
-#$Id: back_mysql.py,v 1.55 2005-02-13 22:37:00 richard Exp $
+#$Id: back_mysql.py,v 1.56 2005-02-14 02:48:11 richard Exp $
 #
 # Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
@@ -39,6 +39,7 @@ from roundup.backends import rdbms_common
 import MySQLdb
 import os, shutil
 from MySQLdb.constants import ER
+import logging
 
 def connection_dict(config, dbnamestr=None):
     d = rdbms_common.connection_dict(config, dbnamestr)
@@ -67,10 +68,10 @@ def db_nuke(config):
             for table in tables:
                 command = 'DROP TABLE %s'%table[0]
                 if __debug__:
-                    config.logging.getLogger('hyperdb').debug(command)
+                    logging.getLogger('hyperdb').debug(command)
                 cursor.execute(command)
             command = "DROP DATABASE %s"%config.RDBMS_NAME
-            config.logging.getLogger('hyperdb').info(command)
+            logging.getLogger('hyperdb').info(command)
             cursor.execute(command)
             conn.commit()
         conn.close()
@@ -84,7 +85,7 @@ def db_create(config):
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
     command = "CREATE DATABASE %s"%config.RDBMS_NAME
-    config.logging.getLogger('hyperdb').info(command)
+    logging.getLogger('hyperdb').info(command)
     cursor.execute(command)
     conn.commit()
     conn.close()
@@ -139,8 +140,7 @@ class Database(Database):
 
     def sql_open_connection(self):
         kwargs = connection_dict(self.config, 'db')
-        self.config.logging.getLogger('hyperdb').info('open database %r'%(
-            kwargs['db'],))
+        logging.getLogger('hyperdb').info('open database %r'%(kwargs['db'],))
         try:
             conn = MySQLdb.connect(**kwargs)
         except MySQLdb.OperationalError, message:
@@ -475,7 +475,7 @@ class Database(Database):
     def sql_commit(self):
         ''' Actually commit to the database.
         '''
-        self.config.logging.getLogger('hyperdb').info('commit')
+        logging.getLogger('hyperdb').info('commit')
         self.conn.commit()
 
         # open a new cursor for subsequent work

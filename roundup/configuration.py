@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.24 2005-01-13 05:02:18 richard Exp $
+# $Id: configuration.py,v 1.25 2005-02-14 02:48:10 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -9,8 +9,9 @@ import imp
 import os
 import time
 import ConfigParser
+import logging, logging.config
+import sys
 
-from roundup import rlog
 # XXX i don't think this module needs string translation, does it?
 
 ### Exceptions
@@ -1028,15 +1029,12 @@ class CoreConfig(Config):
 
     # module name for old style configuration
     PYCONFIG = "config"
-    # placeholder so we can assign later
-    logging = None
     # user configs
     ext = None
     detectors = None
 
     def __init__(self, home_dir=None):
         Config.__init__(self, home_dir, SETTINGS)
-        self.logging = rlog.BasicLogging()
         # load the config if home_dir given
         if home_dir is None:
             self.init_logging()
@@ -1066,21 +1064,22 @@ class CoreConfig(Config):
     def init_logging(self):
         _file = self["LOGGING_CONFIG"]
         if _file and os.path.isfile(_file):
-            try:
-                import logging
-                _logging = logging
-            except ImportError, _err:
-                _option = self._get_option("LOGGING_CONFIG")
-                raise OptionValueError(_option, _file,
-                    "Python logging module is not available: %s" % _err)
-            _logging.fileConfig(_file)
+            logging.config.fileConfig(_file)
+            return
+
+        _file = self["LOGGING_FILENAME"]
+        # set file & level on the root logger
+        logger = logging.getLogger()
+        if _file:
+            hdlr = logging.FileHandler(_file)
         else:
-            _logging = rlog.BasicLogging()
-            _file = self["LOGGING_FILENAME"]
-            if _file:
-                _logging.setFile(_file)
-            _logging.setLevel(self["LOGGING_LEVEL"] or "ERROR")
-        self.logging = _logging
+            hdlr = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)s %(message)s')
+        hdlr.setFormatter(formatter)
+        # no logging API to remove all existing handlers!?!
+        logger.handlers = [hdlr]
+        logger.setLevel(logging._levelNames[self["LOGGING_LEVEL"] or "ERROR"])
 
     def load(self, home_dir):
         """Load configuration from path designated by home_dir argument"""

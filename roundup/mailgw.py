@@ -72,12 +72,12 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.160 2005-01-03 02:52:00 richard Exp $
+$Id: mailgw.py,v 1.161 2005-02-14 02:48:10 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
-import time, random, sys
+import time, random, sys, logging
 import traceback, MimeWriter, rfc822
 
 from roundup import hyperdb, date, password, rfc2822, exceptions
@@ -319,7 +319,7 @@ class MailGW:
                 self.default_class = value.strip()
 
         self.mailer = Mailer(instance.config)
-        self.logger = instance.config.logging.getLogger('mailgw')
+        self.logger = getLogger('mailgw')
 
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-#$Id: back_anydbm.py,v 1.183 2005-02-13 22:36:59 richard Exp $
+#$Id: back_anydbm.py,v 1.184 2005-02-14 02:48:11 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -33,7 +33,7 @@ try:
 except AssertionError:
     print "WARNING: you should upgrade to python 2.1.3"
 
-import whichdb, os, marshal, re, weakref, string, copy, time, shutil
+import whichdb, os, marshal, re, weakref, string, copy, time, shutil, logging
 
 from roundup import hyperdb, date, password, roundupdb, security
 from roundup.backends import locking
@@ -177,7 +177,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def clear(self):
         '''Delete all database contents
         '''
-        self.config.logging.getLogger('hyperdb').info('clear')
+        logging.getLogger('hyperdb').info('clear')
         for cn in self.classes.keys():
             for dummy in 'nodes', 'journals':
                 path = os.path.join(self.dir, 'journals.%s'%cn)
@@ -223,7 +223,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # new database? let anydbm pick the best dbm
         if not db_type:
             if __debug__:
-                self.config.logging.getLogger('hyperdb').debug("opendb anydbm.open(%r, 'c')"%path)
+                logging.getLogger('hyperdb').debug("opendb anydbm.open(%r, 'c')"%path)
             return anydbm.open(path, 'c')
 
         # open the database with the correct module
@@ -234,7 +234,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 "Couldn't open database - the required module '%s'"\
                 " is not available"%db_type
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug("opendb %r.open(%r, %r)"%(db_type, path,
+            logging.getLogger('hyperdb').debug("opendb %r.open(%r, %r)"%(db_type, path,
                 mode))
         return dbm.open(path, mode)
 
@@ -295,7 +295,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' perform the saving of data specified by the set/addnode
         '''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('save %s%s %r'%(classname, nodeid, node))
+            logging.getLogger('hyperdb').debug('save %s%s %r'%(classname, nodeid, node))
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1):
@@ -308,14 +308,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cache_dict = self.cache.setdefault(classname, {})
         if cache_dict.has_key(nodeid):
             if __debug__:
-                self.config.logging.getLogger('hyperdb').debug('get %s%s cached'%(classname, nodeid))
+                logging.getLogger('hyperdb').debug('get %s%s cached'%(classname, nodeid))
                 self.stats['cache_hits'] += 1
             return cache_dict[nodeid]
 
         if __debug__:
             self.stats['cache_misses'] += 1
             start_t = time.time()
-            self.config.logging.getLogger('hyperdb').debug('get %s%s'%(classname, nodeid))
+            logging.getLogger('hyperdb').debug('get %s%s'%(classname, nodeid))
 
         # get from the database and save in the cache
         if db is None:
@@ -347,7 +347,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         '''Remove a node from the database. Called exclusively by the
            destroy() method on Class.
         '''
-        self.config.logging.getLogger('hyperdb').info('destroy %s%s'%(classname, nodeid))
+        logging.getLogger('hyperdb').info('destroy %s%s'%(classname, nodeid))
 
         # remove from cache and newnodes if it's there
         if (self.cache.has_key(classname) and
@@ -473,7 +473,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             the current user.
         '''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('addjournal %s%s %s %r %s %r'%(classname,
+            logging.getLogger('hyperdb').debug('addjournal %s%s %s %r %s %r'%(classname,
                 nodeid, action, params, creator, creation))
         if creator is None:
             creator = self.getuid()
@@ -483,7 +483,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def setjournal(self, classname, nodeid, journal):
         '''Set the journal to the "journal" list.'''
         if __debug__:
-            self.config.logging.getLogger('hyperdb').debug('setjournal %s%s %r'%(classname,
+            logging.getLogger('hyperdb').debug('setjournal %s%s %r'%(classname,
                 nodeid, journal))
         self.transactions.append((self.doSetJournal, (classname, nodeid,
             journal)))
@@ -570,7 +570,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                         packed += 1
                 db[key] = marshal.dumps(l)
 
-                self.config.logging.getLogger('hyperdb').info('packed %d %s items'%(packed,
+                logging.getLogger('hyperdb').info('packed %d %s items'%(packed,
                     classname))
 
             if db_type == 'gdbm':
@@ -584,7 +584,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def commit(self):
         ''' Commit the current transactions.
         '''
-        self.config.logging.getLogger('hyperdb').info('commit %s transactions'%(
+        logging.getLogger('hyperdb').info('commit %s transactions'%(
             len(self.transactions)))
 
         # keep a handle to all the database files opened
@@ -705,7 +705,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
-        self.config.logging.getLogger('hyperdb').info('rollback %s transactions'%(
+        logging.getLogger('hyperdb').info('rollback %s transactions'%(
             len(self.transactions)))
 
         for method, args in self.transactions:
