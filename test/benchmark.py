@@ -1,9 +1,10 @@
-import sys, os, time, shutil
+import sys, os, time
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number
 from roundup import date, password
-from roundup.indexer import Indexer
+
+from db_test_base import config
 
 def setupSchema(db, module):
     status = module.Class(db, "status", name=String())
@@ -20,21 +21,6 @@ def setupSchema(db, module):
     session.disableJournalling()
     db.post_init()
     db.commit()
-
-class config:
-    DATABASE='_benchmark'
-    GADFLY_DATABASE = ('test', DATABASE)
-    MAILHOST = 'localhost'
-    MAIL_DOMAIN = 'fill.me.in.'
-    TRACKER_NAME = 'Roundup issue tracker'
-    TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
-    TRACKER_WEB = 'http://some.useful.url/'
-    ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
-    FILTER_POSITION = 'bottom'      # one of 'top', 'bottom', 'top and bottom'
-    ANONYMOUS_ACCESS = 'deny'       # either 'deny' or 'allow'
-    ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
-    MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
-    EMAIL_SIGNATURE_POSITION = 'bottom'
 
 def main(backendname, time=time.time, numissues=10):
     try:
