@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.111 2002-08-15 00:40:10 richard Exp $
+# $Id: htmltemplate.py,v 1.112 2002-08-19 00:21:37 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -46,7 +46,11 @@ Templating is tested by the test_htmltemplate unit test suite. If you add
 a template function, add a test for all data types or the angry pink bunny
 will hunt you down.
 """
-import weakref, os, types, cgi, sys, urllib, re
+import weakref, os, types, cgi, sys, urllib, re, traceback
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 try:
     import cPickle as pickle
 except ImportError:
@@ -751,12 +755,11 @@ class ItemTemplate(Template):
             try:
                 self._render()
             except:
-                etype = sys.exc_type
-                if type(etype) is types.ClassType:
-                    etype = etype.__name__
-                w('<p class="system-msg">%s: %s</p>'%(etype, sys.exc_value))
                 # make sure we don't commit any changes
                 self.client.db.rollback()
+                s = StringIO.StringIO()
+                traceback.print_exc(None, s)
+                w('<pre class="system-msg">%s</pre>'%cgi.escape(s.getvalue()))
             w('</form>')
         finally:
             self.cl = self.properties = self.client = None
@@ -797,6 +800,9 @@ for nm in template_funcs.__dict__.keys():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.111  2002/08/15 00:40:10  richard
+# cleanup
+#
 # Revision 1.110  2002/08/13 20:16:09  gmcm
 # Use a real parser for templates.
 # Rewrite htmltemplate to use the parser (hack, hack).
