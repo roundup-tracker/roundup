@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.26.2.1 2003-09-04 23:30:28 richard Exp $
+$Id: roundup_server.py,v 1.26.2.2 2003-11-11 22:25:00 richard Exp $
 """
 
 # python version check
@@ -78,6 +78,10 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(404, self.path)
         except client.Unauthorised:
             self.send_error(403, self.path)
+        except socket.timeout:
+            s = StringIO.StringIO()
+            traceback.print_exc(None, s)
+            self.log_message(str(s.getvalue()))
         except:
             # it'd be nice to be able to detect if these are going to have
             # any effect...

@@ -3,15 +3,14 @@ are given with the most recent entry first.
 
 2003-10-?? 0.6.3
 Fixed:
-- Fixed detectors fix incorrectly fixed in bugfix release 0.6.2
-- Added note to upgrading doc for detectors fix in 0.6.2
+- fixed detectors fix incorrectly fixed in bugfix release 0.6.2
+- added note to upgrading doc for detectors fix in 0.6.2
 - added script to help migrating queries from pre-0.6 trackers
-- Fixed "documentation" of getnodeids in roundup.hyperdb
+- fixed "documentation" of getnodeids in roundup.hyperdb
 - added flush() to DevNull (sf bug #835365)
 - fixed javascript for help window for only one checkbox case
-- Date arithmetic was utterly broken, and has been for a long time.
-  Date +/- Interval now works, and Date - Date also works (produces
-  an Interval.
+- Date +/- Interval now works, and Date - Date also works
+- handle socket timeout exception (thanks Marcus Priesch)
 
 
 2003-09-29 0.6.2
