@@ -2,27 +2,9 @@ Roundup is a simple-to-use and -install issue-tracking system with
 command-line, web and e-mail interfaces. It is based on the winning design
 from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 
-0.7.7 is a bug fix release, including:
+0.7.8 is a bug fix release, patching a problem in the 0.7.7 release:
 
-- ZRoundup's search interface works now (sf bug 994957)
-- fixed history display when "ascending"
-- removed references to py2.3+ boolean values (sf bug 995682)
-- fix static file path normalisation in security check (thanks David Linke)
-- less specific messages for login failures (thanks Chris Withers)
-- Reject raised against email messages should result in email rejection, not
-  discarding of the message
-- mailgw can override the MAIL_DEFAULT_CLASS
-- handle Py2.3+ datetime objects as Date specs (sf bug 971300)
-- use row locking in MySQL newid() (sf bug 1034211)
-- add sanity check for sort and group on same property (sf bug 1033477)
-- extend OTK and session table value cols to TEXT (sf bug 1031271)
-- fix lookup of REMOTE_USER (sf bug 1002923)
-- new Interval props weren't created properly in rdbms
-- date.Interval() now accepts an Interval as a spec (sf bug 1041266)
-- handle deleted properties in RDBMS history
-- apply timezone in correct direction in user input (sf bug 1013097)
-- more efficient find() in RDBMS (sf bug 1012781)
-- pydotorg-specific change to mailgw to handle bizzaro permissions ;)
+- Clean out sessions / otks tables when migrating
 
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.

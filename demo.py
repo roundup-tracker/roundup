@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.10 2004-03-31 23:07:51 richard Exp $
+# $Id: demo.py,v 1.10.2.1 2004-10-14 22:28:02 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -28,7 +28,8 @@ def install_demo(home, backend):
         class config:
             POSTGRESQL_DATABASE = {'database': 'rounduptest'}
             DATABASE = 'home'
-        module.db_nuke(config, 1)
+        if module.db_exists(config):
+            module.db_nuke(config)
 
     init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around
