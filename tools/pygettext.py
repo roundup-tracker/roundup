@@ -3,6 +3,13 @@
 #
 # minimally patched to make it even more xgettext compatible 
 # by Peter Funk <pf@artcom-gmbh.de>
+#
+# 2001-11-21 Jürgen Hermann <jh@web.de>
+# Checks that _() only contains string literals added, and
+# command line args are resolved to module lists, i.e. you
+# can now pass a filename, a module or package name, or a
+# directory (including globbing chars, important for Win32).
+#
 
 # for selftesting
 try:
