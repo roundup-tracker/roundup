@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.104.2.2 2003-04-23 12:10:51 richard Exp $
+$Id: mailgw.py,v 1.104.2.3 2003-04-24 07:49:31 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -839,12 +839,12 @@ not find a text/plain part to use.
         # attach the files to the issue
         if nodeid:
             # extend the existing files list
-            fileprop = cl.get(nodeid, 'file')
+            fileprop = cl.get(nodeid, 'files')
             fileprop.extend(files)
             props['files'] = fileprop
         else:
             # pre-load the files list
-            props['files'] = fileprop
+            props['files'] = files
 
 
         # 
@@ -931,7 +931,8 @@ def uidFromAddress(db, address, create=1):
     # couldn't match address or username, so create a new user
     if create:
         return db.user.create(username=address, address=address,
-            realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES)
+            realname=realname, roles=db.config.NEW_EMAIL_USER_ROLES,
+            password=password.Password(password.generatePassword()))
     else:
         return 0
 
