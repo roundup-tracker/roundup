@@ -1,4 +1,4 @@
-# $Id: init.py,v 1.12 2001-08-05 07:43:52 richard Exp $
+# $Id: init.py,v 1.13 2001-08-06 01:20:00 richard Exp $
 
 import os, shutil, sys, errno
 
@@ -34,7 +34,36 @@ def copytree(src, dst, symlinks=0):
             shutil.copy2(srcname, dstname)
 
 def init(instance_home, template, backend, adminpw):
-    ''' initialise an instance using the named template
+    '''Initialise an instance using the named template and backend.
+
+    instance_home - the directory to place the instance data in
+    template - the template to use in creating the instance data
+    backend - the database to use to store the instance data
+    adminpw - the password for the "admin" user
+
+    The instance_home directory will be created using the files found in
+    the named template (roundup.templates.<name>). A standard instance_home
+    contains:
+        . instance_config.py
+          - simple configuration of things like the email address for the
+            mail gateway, the mail domain, the mail host, ...
+        . dbinit.py and select_db.py
+          - defines the schema for the hyperdatabase and indicates which
+            backend to use.
+        . interfaces.py
+          - defines the CGI Client and mail gateway MailGW classes that are
+            used by roundup.cgi, roundup-server and roundup-mailgw.
+        . __init__.py
+          - ties together all the instance information into one interface
+        . db/
+          - the actual database that stores the instance's data
+        . html/
+          - the html templates that are used by the CGI Client
+        . detectors/
+          - the auditor and reactor modules for this instance
+
+    The html directory is typically extracted from the htmlbase module in
+    the template.
     '''
     # first, copy the template dir over
     import roundup.templatebuilder
@@ -57,6 +86,10 @@ from roundup.backends.back_%s import Database'''%backend
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/08/05 07:43:52  richard
+# Instances are now opened by a special function that generates a unique
+# module name for the instances on import time.
+#
 # Revision 1.11  2001/08/04 22:42:43  richard
 # Fixed sf.net bug #447671 - typo
 #
