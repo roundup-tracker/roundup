@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.75 $
+:Version: $Revision: 1.76 $
 
 .. contents::
 
@@ -267,6 +267,7 @@ Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
 bsddb      Slow        Few   Usually available
+bsddb3     Slow        Few   Needs install (pybsddb_)
 sqlite     Fastest(*)  Few   Needs install (PySQLite_)
 metakit    Fastest(*)  Few   Needs install (metakit_)
 postgresql Fast        Many  Needs install/admin (psycopg_)
@@ -631,6 +632,7 @@ Next: `User Guide`_
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`administration guide`: admin_guide.html
+.. _pybsddb: http://pybsddb.sourceforge.net/
 .. _pysqlite: http://pysqlite.sourceforge.net/
 .. _metakit: http://www.equi4.com/metakit/
 .. _Psycopg: http://initd.org/software/initd/psycopg
