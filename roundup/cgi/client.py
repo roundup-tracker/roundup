@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.101 2003-02-27 05:43:01 richard Exp $
+# $Id: client.py,v 1.102 2003-03-07 21:51:31 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -443,9 +443,10 @@ class Client:
 
     def serve_static_file(self, file):
         # see if there's an if-modified-since...
-        ims = self.request.headers.getheader('if-modified-since')
-        # cgi will put the header in the env var
-        if not ims and self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
+        if hasattr(self.request, 'headers'):
+            ims = self.request.headers.getheader('if-modified-since')
+        elif self.env.has_key('HTTP_IF_MODIFIED_SINCE'):
+            # cgi will put the header in the env var
             ims = self.env['HTTP_IF_MODIFIED_SINCE']
         filename = os.path.join(self.instance.config.TEMPLATES, file)
         lmt = os.stat(filename)[stat.ST_MTIME]
