@@ -599,8 +599,7 @@ class HTMLItem(HTMLPermissions):
                                 os.path.join(self._db.config.TEMPLATES,
                                 classname+'.item'))
 
-                        if isinstance(prop, hyperdb.Multilink) and \
-                                len(args[k]) > 0:
+                        if isinstance(prop, hyperdb.Multilink) and args[k]:
                             ml = []
                             for linkid in args[k]:
                                 if isinstance(linkid, type(())):
