@@ -10,6 +10,7 @@ Fixed:
 - fix search_checkboxes macro (sf patch 1113828)
 - fix bug in date editing in Metakit
 - allow suppression of search_text in indexargs_form (sf bug 1101548)
+- hack to fix some anydbm export problems (sf bug 1081454)
 
 
 2005-01-06 0.7.11
