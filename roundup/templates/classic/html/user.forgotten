@@ -1,0 +1,33 @@
+<!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title">Password reset request</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>Password reset request</h2>
+</td>
+<td class="content" metal:fill-slot="content">
+
+<p>You have two options if you have forgotten your password. If you 
+know the email address you registered with, enter it below.</p>
+
+<form method="POST" onSubmit="return submit_once()">
+<input type="hidden" name="@action" value="passrst">
+<input type="hidden" name="@template" value="forgotten">
+<table class="form">
+ <tr><th>Email Address:</th> <td><input name="address"></td> </tr>
+ <tr><td></td><td><input type="submit" value="Request password reset"></td></tr>
+</table>
+
+<p>Or, if you know your username, then enter it below.</p>
+
+<table class="form">
+ <tr><th>Username:</th> <td><input name="username"></td> </tr>
+ <tr><td></td><td><input type="submit" value="Request password reset"></td></tr>
+</table>
+</form>
+
+<p>A confirmation email will be sent to you - please follow the
+instructions
+within it to complete the reset process.</p>
+</td>
+
+</tal:block>

@@ -71,7 +71,8 @@
     <input size="10" type="password" name="__login_password"><br>
     <input type="submit" name=":action" value="login">
     <span tal:replace="structure request/indexargs_form" />
-    <a href="user?:template=register">Register</a>
+    <a href="user?:template=register">Register</a><br>
+    <a href="user?:template=forgotten">Forgotten your password?</a><br>
    </p>
   </form>
    

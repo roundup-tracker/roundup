@@ -1,0 +1,16 @@
+<!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title">List of issues</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h1>Registration in progress...</h1>
+</td>
+<td class="content" metal:fill-slot="content">
+
+<p>You will shortly receive an email to confirm your registration. To
+complete the registration process, visit the link indicated in the
+email.
+</p>
+
+</td>
+</tal:block>
+

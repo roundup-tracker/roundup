@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.100 2003-02-26 04:57:49 richard Exp $
+# $Id: client.py,v 1.101 2003-02-27 05:43:01 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -6,7 +6,7 @@ WWW request handler (also used in the stand-alone server).
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, MimeWriter, smtplib, socket, quopri
-import stat, rfc822
+import stat, rfc822, string
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
@@ -14,6 +14,7 @@ from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
 from roundup.cgi.PageTemplates import PageTemplate
 from roundup.rfc2822 import encode_header
+from roundup.mailgw import uidFromAddress
 
 class HTTPException(Exception):
       pass
@@ -257,8 +258,13 @@ class Client:
             self.write(cgitb.html())
 
     def clean_sessions(self):
-        '''age sessions, remove when they haven't been used for a week.
-        Do it only once an hour'''
+        ''' Age sessions, remove when they haven't been used for a week.
+        
+            Do it only once an hour.
+
+            Note: also cleans One Time Keys, and other "session" based
+            stuff.
+        '''
         sessions = self.db.sessions
         last_clean = sessions.get('last_clean', 'last_use') or 0
 
@@ -266,11 +272,17 @@ class Client:
         hour = 60*60
         now = time.time()
         if now - last_clean > hour:
-            # remove age sessions
+            # remove aged sessions
             for sessid in sessions.list():
                 interval = now - sessions.get(sessid, 'last_use')
                 if interval > week:
                     sessions.destroy(sessid)
+            # remove aged otks
+            otks = self.db.otks
+            for sessid in otks.list():
+                interval = now - okts.get(sessid, '__time')
+                if interval > week:
+                    otk.destroy(sessid)
             sessions.set('last_clean', last_use=time.time())
 
     def determine_user(self):
@@ -479,6 +491,7 @@ class Client:
         ('new',      'newItemAction'),
         ('register', 'registerAction'),
         ('confrego', 'confRegoAction'),
+        ('passrst',  'passResetAction'),
         ('login',    'loginAction'),
         ('logout',   'logout_action'),
         ('search',   'searchAction'),
@@ -489,17 +502,8 @@ class Client:
         ''' Determine whether there should be an Action called.
 
             The action is defined by the form variable :action which
-            identifies the method on this object to call. The four basic
-            actions are defined in the "actions" sequence on this class:
-             "edit"      -> self.editItemAction
-             "editcsv"   -> self.editCSVAction
-             "new"       -> self.newItemAction
-             "register"  -> self.registerAction
-             "confrego"  -> self.confRegoAction
-             "login"     -> self.loginAction
-             "logout"    -> self.logout_action
-             "search"    -> self.searchAction
-             "retire"    -> self.retireAction
+            identifies the method on this object to call. The actions
+            are defined in the "actions" sequence on this class.
         '''
         if self.form.has_key(':action'):
             action = self.form[':action'].value.lower()
@@ -675,7 +679,7 @@ class Client:
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
 
-    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    chars = string.letters+string.digits
     def registerAction(self):
         '''Attempt to create a new user based on the contents of the form
         and then set the cookie.
@@ -713,15 +717,35 @@ class Client:
                 props[propname] = str(value)
             elif isinstance(proptype, hyperdb.Password):
                 props[propname] = str(value)
+        props['__time'] = time.time()
         self.db.otks.set(otk, **props)
 
+        # send the email
+        tracker_name = self.db.config.TRACKER_NAME
+        subject = 'Complete your registration to %s'%tracker_name
+        body = '''
+To complete your registration of the user "%(name)s" with %(tracker)s,
+please visit the following URL:
+
+   %(url)s?@action=confrego&otk=%(otk)s
+'''%{'name': props['username'], 'tracker': tracker_name, 'url': self.base,
+                'otk': otk}
+        if not self.sendEmail(props['address'], subject, body):
+            return
+
+        # commit changes to the database
+        self.db.commit()
+
+        # redirect to the "you're almost there" page
+        raise Redirect, '%suser?@template=rego_progress'%self.base
+
+    def sendEmail(self, to, subject, content):
         # send email to the user's email address
         message = StringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
         tracker_name = self.db.config.TRACKER_NAME
-        s = 'Complete your registration to %s'%tracker_name
-        writer.addheader('Subject', encode_header(s))
-        writer.addheader('To', props['address'])
+        writer.addheader('Subject', encode_header(subject))
+        writer.addheader('To', to)
         writer.addheader('From', roundupdb.straddr((tracker_name,
             self.db.config.ADMIN_EMAIL)))
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
@@ -734,13 +758,7 @@ class Client:
         body = writer.startbody('text/plain; charset=utf-8')
 
         # message body, encoded quoted-printable
-        content = StringIO.StringIO('''
-To complete your registration of the user "%(name)s" with %(tracker)s,
-please visit the following URL:
-
-   http://localhost:8001/test/?@action=confrego&otk=%(otk)s
-'''%{'name': props['username'], 'tracker': tracker_name, 'url': self.base,
-        'otk': otk})
+        content = StringIO.StringIO(content)
         quopri.encode(content, body, 0)
 
         # now try to send the message
@@ -748,22 +766,15 @@ please visit the following URL:
             # send the message as admin so bounces are sent there
             # instead of to roundup
             smtp = smtplib.SMTP(self.db.config.MAILHOST)
-            smtp.sendmail(self.db.config.ADMIN_EMAIL, [props['address']],
-                message.getvalue())
+            smtp.sendmail(self.db.config.ADMIN_EMAIL, [to], message.getvalue())
         except socket.error, value:
-            self.error_message.append("Error: couldn't send "
-                "confirmation email: mailhost %s"%value)
-            return
+            self.error_message.append("Error: couldn't send email: "
+                "mailhost %s"%value)
+            return 0
         except smtplib.SMTPException, value:
-            self.error_message.append("Error: couldn't send "
-                "confirmation email: %s"%value)
-            return
-
-        # commit changes to the database
-        self.db.commit()
-
-        # redirect to the "you're almost there" page
-        raise Redirect, '%s?:template=rego_step1_done'%self.base
+            self.error_message.append("Error: couldn't send email: %s"%value)
+            return 0
+        return 1
 
     def registerPermission(self, props):
         ''' Determine whether the user has permission to register
@@ -805,6 +816,7 @@ please visit the following URL:
 #        try:
         if 1:
             props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
+            del props['__time']
             self.userid = cl.create(**props)
             # clear the props from the otk database
             self.db.otks.destroy(otk)
@@ -832,6 +844,97 @@ please visit the following URL:
         # redirect to the item's edit page
         raise Redirect, '%suser%s?@ok_message=%s'%(
             self.base, self.userid,  urllib.quote(message))
+
+    def passResetAction(self):
+        ''' Handle password reset requests.
+
+            Presence of either "name" or "address" generate email.
+            Presense of "otk" performs the reset.
+        '''
+        if self.form.has_key('otk'):
+            # pull the rego information out of the otk database
+            otk = self.form['otk'].value
+            uid = self.db.otks.get(otk, 'uid')
+
+            # re-open the database as "admin"
+            if self.user != 'admin':
+                self.opendb('admin')
+
+            # change the password
+            newpw = ''.join([random.choice(self.chars) for x in range(8)])
+
+            cl = self.db.user
+    # XXX we need to make the "default" page be able to display errors!
+    #        try:
+            if 1:
+                # set the password
+                cl.set(uid, password=password.Password(newpw))
+                # clear the props from the otk database
+                self.db.otks.destroy(otk)
+                self.db.commit()
+    #        except (ValueError, KeyError), message:
+    #            self.error_message.append(str(message))
+    #            return
+
+            # user info
+            address = self.db.user.get(uid, 'address')
+            name = self.db.user.get(uid, 'username')
+
+            # send the email
+            tracker_name = self.db.config.TRACKER_NAME
+            subject = 'Password reset for %s'%tracker_name
+            body = '''
+The password has been reset for username "%(name)s".
+
+Your password is now: %(password)s
+'''%{'name': name, 'password': newpw}
+            if not self.sendEmail(address, subject, body):
+                return
+
+            self.ok_message.append('Password reset and email sent to %s'%address)
+            return
+
+        # no OTK, so now figure the user
+        if self.form.has_key('username'):
+            name = self.form['username'].value
+            try:
+                uid = self.db.user.lookup(name)
+            except KeyError:
+                self.error_message.append('Unknown username')
+                return
+            address = self.db.user.get(uid, 'address')
+        elif self.form.has_key('address'):
+            address = self.form['address'].value
+            uid = uidFromAddress(self.db, ('', address), create=0)
+            if not uid:
+                self.error_message.append('Unknown email address')
+                return
+            name = self.db.user.get(uid, 'username')
+        else:
+            self.error_message.append('You need to specify a username '
+                'or address')
+            return
+
+        # generate the one-time-key and store the props for later
+        otk = ''.join([random.choice(self.chars) for x in range(32)])
+        self.db.otks.set(otk, uid=uid, __time=time.time())
+
+        # send the email
+        tracker_name = self.db.config.TRACKER_NAME
+        subject = 'Confirm reset of password for %s'%tracker_name
+        body = '''
+Someone, perhaps you, has requested that the password be changed for your
+username, "%(name)s". If you wish to proceed with the change, please follow
+the link below:
+
+  %(url)suser?@template=forgotten&@action=passrst&otk=%(otk)s
+
+You should then receive another email with the new password.
+'''%{'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
+        if not self.sendEmail(address, subject, body):
+            return
+
+        self.ok_message.append('Email sent to %s'%address)
 
     def editItemAction(self):
         ''' Perform an edit of an item in the database.
