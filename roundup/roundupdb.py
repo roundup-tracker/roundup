@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.115 2004-10-08 05:51:00 richard Exp $
+# $Id: roundupdb.py,v 1.116 2004-10-16 13:31:29 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -245,8 +245,8 @@ class IssueClass:
             inreplyto = None
             messageid = None
         else:
-            authid = messages.get(msgid, 'inreplyto')
-            recipients = messages.get(msgid, 'messageid')
+            inreplyto = messages.get(msgid, 'inreplyto')
+            messageid = messages.get(msgid, 'messageid')
 
         # make up a messageid if there isn't one (web edit)
         if not messageid:
