@@ -45,7 +45,7 @@
  <th i18n:translate="">Superseder</th>
  <td>
   <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
-  <span tal:replace="structure python:db.issue.classhelp('id,title', property='superseder')" />
+  <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.issue.classhelp('id,title', property='superseder')" />
   <span tal:condition="context/superseder" tal:repeat="sup context/superseder">
    <br><span i18n:translate="">View: <a i18n:name="link" tal:content="sup/id"
      tal:attributes="href string:issue${sup/id}"></a></span>
@@ -54,7 +54,7 @@
  <th i18n:translate="">Nosy List</th>
  <td>
   <span tal:replace="structure context/nosy/field" />
-  <span tal:replace="structure
+  <span tal:condition="context/is_edit_ok" tal:replace="structure
 python:db.user.classhelp('username,realname,address', property='nosy', width='600')" /><br>
  </td>
 </tr>
@@ -65,7 +65,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
  <th i18n:translate="">Topics</th>
  <td>
   <span tal:replace="structure context/topic/field" />
-  <span tal:replace="structure python:db.keyword.classhelp(property='topic')" />
+  <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.keyword.classhelp(property='topic')" />
  </td>
 </tr>
 

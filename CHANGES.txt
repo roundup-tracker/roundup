@@ -12,6 +12,7 @@ Feature:
 - add a default argument to the DateHTMLProperty.field method, and an
   optional Interval (string or object) to the DateHTMLProperty.now (patch
   from Vickenty Fesunov)
+- hide "(list)" popup links when issue is only viewable
 
 
 2004-??-?? 0.7.5
