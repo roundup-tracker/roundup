@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.65 $
+:Version: $Revision: 1.66 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1493,7 +1493,7 @@ Searching Views
 ---------------
 
 Note: if you add a new column to the ``:columns`` form variable potentials
-      then you will need to add the column to the `index view`_
+      then you will need to add the column to the appropriate `index views`_
       template so it is actually displayed.
 
 This is one of the class context views. The template used is typically

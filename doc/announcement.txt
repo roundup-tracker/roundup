@@ -1,9 +1,9 @@
 =================================================
-SC-Track Roundup 0.5.2 - an issue tracking system
+SC-Track Roundup 0.5.3 - an issue tracking system
 =================================================
 
 This is a bugfix release for version 0.5.x - if you're upgrading from before
-that, you *must* read doc/upgrading.txt!
+0.5, you *must* read doc/upgrading.txt!
 
 Unfortunately, the Zope frontend for Roundup is currently broken, with no
 fix in the forseeable future.
@@ -13,32 +13,27 @@ sqlite backend are encouraged to upgrade sqlite to version 2.7.3.
 
 We've had a good crack at bugs (thanks to all who contributed!):
 
-- added quotes around python interpreter in windows bat (sf bug 623963)
-- fixed link at end of installation doc (sf bug 623957)
-- handle "classname" URL path errors cleaner (generate a 404)
-- added CGI :remove:<propname> and :add:<propname> which specify item
-  ids to remove / add in <propname> multilink.
-- bugfix in boolean templating
-- remember the change note on bad submissions (sf bug 625989)
-- highlight required form fields (sf bug 625989)
-- force non-word boundary to match re: in subject (sf bug 626303)
-- handle sqlite bug (<2.7.2) (sf bug 630828)
-- handle missing props in anydbm stringFind
-- updated email package address formatting (deprecation)
-- copied email address quoting from email v2.4.3 so we're consistent
-  with 2.2
-- email summary extraction now takes the first whole sentence or line -
-  whichever is longer
-- documented dependency on Active State (sf bug 623959)
-- ensured there's no zero-length files in source (sf bug 633622)
-- added ID to the search page (sf bug 631601)
-- fixed filtering by id in anydbm
-- show issue ID in the headings (sf bug 631598)
-- show entire messages by default in issues (sf bug 625995)
-- fixed journalling to save old values instead of new (sorry I took so
-  long, GM)
-- handle missing REQUEST_URI for cgi-bin users (sf bug 620163)
-
+- added mention of how to give users multiple Roles
+- mention needed trailing "/" in TRACKER_WEB
+- fixed upgrading doc to have CGI changes in the correct order
+- fixed double-close of anydbm backend (sf bug 639030)
+- removed use of string/strop from TAL/TALInterpreter
+- handle KeyboardInterrupt nicely
+- fixed Date and Interval form value handling
+- fixed Date.local()
+- email quoted text stripping is controllable again (sf bug 650742)
+- extract attachment name from content-disposition if name is missing (sf
+  bug 637278)
+- removed FILTER_POSITION from bundled configs
+- reverse message listing in issue display (reversion of recent change)
+- bad entries for multilink editing in cgi don't traceback now (sf bug 640310)
+- detect and break email loops (sf bug 640854)
+- finished of handling of retired flag in filter() (sf bug 635260)
+- allow StringHTMLProperty in MultilinkHTMLProperty test to work
+- don't set explicit None Link properties in web create
+- fixed nasty sorting bug that was lowercasing properties
+- allow multiple :remove and :add elements per property being edited
+- added date header to emails (sf bug 651358)
 
 Source and documentation is available at the website:
      http://roundup.sourceforge.net/
