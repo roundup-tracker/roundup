@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.129 2004-09-26 14:03:49 a1s Exp $
+# $Id: rdbms_common.py,v 1.130 2004-09-26 14:16:06 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2400,7 +2400,9 @@ class Class(hyperdb.Class):
             d[propname] = value
             if isinstance(prop, String) and prop.indexme:
                 if type(value) != type('') and type(value) != type(u''):
-                    raise TypeError, 'new property "%s" not a string'%key
+                    raise TypeError, \
+                        'new property "%(propname)s" not a string: %(value)r' \
+                        % locals()
                 self.db.indexer.add_text((self.classname, newid, propname),
                     value)
 
