@@ -1,13 +1,14 @@
 <!-- dollarId: issue.index,v 1.2 2001/07/29 04:07:37 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">Registration in progress</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">
-  Registration in progress...</span>
+<title metal:fill-slot="head_title"
+ i18n:translate="">Registration in progress</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Registration in progress...</span>
 <td class="content" metal:fill-slot="content">
 
-<p>You will shortly receive an email to confirm your registration. To
-complete the registration process, visit the link indicated in the
-email.
+<p i18n:translate="">You will shortly receive an email
+to confirm your registration. To complete the registration process,
+visit the link indicated in the email.
 </p>
 
 </td>

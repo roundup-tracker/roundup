@@ -1,43 +1,58 @@
 <!-- dollarId: msg.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title"> 
-<span tal:condition="context/id" tal:replace="string:Message ${context/id}" />
-<tal:x tal:condition="not:context/id">New Message</tal:x> 
-- <span tal:replace="config/TRACKER_NAME" />
-</title> 
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">
-  Message<span tal:replace="context/id" />
-   <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
- </span>
+<title metal:fill-slot="head_title">
+<tal:block condition="context/id" i18n:translate=""
+ >Message <span tal:replace="context/id" i18n:name="id"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+<tal:block condition="not:context/id" i18n:translate=""
+ >New Message - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+</title>
+<tal:block metal:fill-slot="body_title">
+ <span tal:condition="python: not (context.id or context.is_edit_ok())"
+  tal:omit-tag="python:1" i18n:translate="">New Message</span>
+ <span tal:condition="python: not context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">New Message Editing</span>
+ <span tal:condition="python: context.id and not context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">Message<tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">Message<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
 <td class="content" metal:fill-slot="content">
 <table class="form">
 
 <tr>
- <th>Author</th>
+ <th i18n:translate="">Author</th>
  <td tal:content="context/author"></td>
 </tr>
 
 <tr>
- <th>Recipients</th>
+ <th i18n:translate="">Recipients</th>
  <td tal:content="context/recipients"></td>
 </tr>
 
 <tr>
- <th>Date</th>
+ <th i18n:translate="">Date</th>
  <td tal:content="context/date"></td>
 </tr>
 </table>
 
 <table class="messages">
- <tr><th colspan=2 class="header">Content</th></tr>
+ <tr><th colspan=2 class="header" i18n:translate="">Content</th></tr>
  <tr>
   <td class="content" colspan=2><pre tal:content="structure context/content/hyperlinked"></pre></td>
  </tr>
 </table>
 
 <table class="files" tal:condition="context/files">
- <tr><th colspan="2" class="header">Files</th></tr>
- <tr><th>File name</th><th>Uploaded</th></tr>
+ <tr><th colspan="2" class="header" i18n:translate="">Files</th></tr>
+ <tr>
+  <th i18n:translate="">File name</th>
+  <th i18n:translate="">Uploaded</th>
+ </tr>
  <tr tal:repeat="file context/files">
   <td>
    <a tal:attributes="href string:file${file/id}/${file/name}"

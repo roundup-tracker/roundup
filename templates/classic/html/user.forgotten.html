@@ -1,17 +1,18 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">Password reset request</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">Password reset request</span>
+<title metal:fill-slot="head_title" i18n:translate="">Password reset request</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Password reset request</span>
 <td class="content" metal:fill-slot="content">
 
-<p>You have two options if you have forgotten your password. If you 
-know the email address you registered with, enter it below.</p>
+<p i18n:translate="">You have two options if you have forgotten your password.
+If you know the email address you registered with, enter it below.</p>
 
 <form method="POST" onSubmit="return submit_once()"
       tal:attributes="action context/designator">
     <table class="form">
       <tr>
-        <th>Email Address:</th>
+        <th i18n:translate="">Email Address:</th>
         <td><input name="address"></td>
       </tr>
       <tr>
@@ -19,22 +20,23 @@ know the email address you registered with, enter it below.</p>
         <td>
           <input type="hidden" name="@action" value="passrst">
           <input type="hidden" name="@template" value="forgotten">
-          <input type="submit" value="Request password reset">
+          <input type="submit" value="Request password reset"
+           i18n:attributes="value">
         </td>
       </tr>
 </table>
 
-<p>Or, if you know your username, then enter it below.</p>
+<p i18n:translate="">Or, if you know your username, then enter it below.</p>
 
 <table class="form">
- <tr><th>Username:</th> <td><input name="username"></td> </tr>
- <tr><td></td><td><input type="submit" value="Request password reset"></td></tr>
+ <tr><th i18n:translate="">Username:</th> <td><input name="username"></td> </tr>
+ <tr><td></td><td><input type="submit" value="Request password reset"
+   i18n:attributes="value"></td></tr>
 </table>
 </form>
 
-<p>A confirmation email will be sent to you - please follow the
-instructions
-within it to complete the reset process.</p>
+<p i18n:translate="">A confirmation email will be sent to you -
+please follow the instructions within it to complete the reset process.</p>
 </td>
 
 </tal:block>

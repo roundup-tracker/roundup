@@ -1,12 +1,12 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title"> 
- List of messages - 
- <span tal:replace="config/TRACKER_NAME" />
-</title> 
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">Message listing</span>
+<title metal:fill-slot="head_title" i18n:translate=""
+ >List of messages - <span tal:replace="config/TRACKER_NAME"
+ i18n:name="tracker"/></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Message listing</span>
 <td class="content" metal:fill-slot="content">
 <table class="messages" tal:condition="request/filter">
- <tr><th colspan=2 class="header">Messages</th></tr>
+ <tr><th colspan=2 class="header" i18n:translate="">Messages</th></tr>
  <tal:block tal:repeat="msg context/list">
   <tr>
    <th tal:content="string:Author: ${msg/author}">author</th>

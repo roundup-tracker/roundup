@@ -1,21 +1,21 @@
 <!-- dollarId: user.index,v 1.3 2002/07/09 05:29:51 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title">User listing</title>
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">User listing</span>
+<title metal:fill-slot="head_title" i18n:translate="">User listing</title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">User listing</span>
 <td class="content" metal:fill-slot="content">
 
-<span tal:condition="not:context/is_view_ok">
-You are not allowed to view this page.
-</span>
+<span tal:condition="not:context/is_view_ok"
+ i18n:translate="">You are not allowed to view this page.</span>
 
 <table width="100%" tal:condition="context/is_view_ok" class="list">
 <tr>
- <th>Username</th>
- <th>Real name</th>
- <th>Organisation</th>
- <th>Email address</th>
- <th>Phone number</th>
- <th tal:condition="context/is_edit_ok">Retire</th>
+ <th i18n:translate="">Username</th>
+ <th i18n:translate="">Real name</th>
+ <th i18n:translate="">Organisation</th>
+ <th i18n:translate="">Email address</th>
+ <th i18n:translate="">Phone number</th>
+ <th tal:condition="context/is_edit_ok" i18n:translate="">Retire</th>
 </tr>
 <tr tal:repeat="user context/list"
     tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
@@ -28,8 +28,8 @@ You are not allowed to view this page.
  <td tal:content="python:user.address.email() or default">&nbsp;</td>
  <td tal:content="python:user.phone.plain() or default">&nbsp;</td>
  <td tal:condition="context/is_edit_ok">
-  <a tal:attributes="href string:user${user/id}?@action=retire&@template=index">
-   retire</a>
+  <a tal:attributes="href string:user${user/id}?@action=retire&@template=index"
+   i18n:translate="">retire</a>
  </td>
 </tr>
 </table>

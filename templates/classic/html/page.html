@@ -25,7 +25,8 @@
 <tr>
  <td rowspan="2" valign="top" class="sidebar">
   <p class="classblock">
-   <b>Your Queries</b> (<a href="query?@template=edit">edit</a>)<br>
+   <span i18n:translate=""
+    ><b>Your Queries</b> (<a href="query?@template=edit">edit</a>)</span><br>
    <tal:block tal:repeat="qs request/user/queries">
     <a tal:attributes="href string:${qs/klass}?${qs/url}"
        tal:content="qs/name">link</a><br>
@@ -35,13 +36,16 @@
   <form method="POST" tal:attributes="action request/base">
    <p class="classblock"
        tal:condition="python:request.user.hasPermission('View', 'issue')">
-    <b>Issues</b><br>
+    <b i18n:translate="">Issues</b><br>
     <a tal:condition="python:request.user.hasPermission('Edit', 'issue')"
-      href="issue?@template=item">Create New<br></a>
-    <a href="issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1">Show Unassigned</a><br>
-    <a href="issue?@sort=-activity&@group=priority&@filter=status&@columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
-    <a href="issue?@template=search">Search</a><br>
-    <input type="submit" style="padding: 0" value="Show issue:"><input size="4" type="text" name="@number">
+      href="issue?@template=item" i18n:translate="">Create New</a><br>
+    <a href="issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1"
+     i18n:translate="">Show Unassigned</a><br>
+    <a href="issue?@sort=-activity&@group=priority&@filter=status&@columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7"
+     i18n:translate="">Show All</a><br>
+    <a href="issue?@template=search" i18n:translate="">Search</a><br>
+    <input type="submit" style="padding: 0" value="Show issue:"
+     i18n:attributes="value"><input size="4" type="text" name="@number">
     <input type="hidden" name="@type" value="issue">
     <input type="hidden" name="@action" value="show">
    </p>
@@ -49,49 +53,53 @@
 
   <p class="classblock"
      tal:condition="python:request.user.hasPermission('Edit', 'keyword')">
-   <b>Keywords</b><br>
-   <a href="keyword?@template=item">Create New<br></a>
+   <b i18n:translate="">Keywords</b><br>
+   <a href="keyword?@template=item" i18n:translate="">Create New</a><br>
    <a tal:condition="db/keyword/list"
-      href="keyword?@template=item">Edit Existing<br></a>
+      href="keyword?@template=item" i18n:translate="">Edit Existing</a><br>
   </p>
 
   <p class="classblock"
        tal:condition="python:request.user.hasPermission('View', 'user')">
-   <b>Administration</b><br>
+   <b i18n:translate="">Administration</b><br>
    <tal:block tal:condition="python:request.user.hasPermission('Edit', None)">
-    <a href="home?@template=classlist">Class List</a><br>
+    <a href="home?@template=classlist" i18n:translate="">Class List</a><br>
    </tal:block>
    <a tal:condition="python:request.user.hasPermission('View', 'user')
                             or request.user.hasPermission('Edit', 'user')"
-      href="user" >User List</a><br>
+      href="user"  i18n:translate="">User List</a><br>
    <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
-      href="user?@template=item">Add User</a>
+      href="user?@template=item" i18n:translate="">Add User</a>
   </p>
 
   <form method="POST" tal:condition="python:request.user.username=='anonymous'"
         tal:attributes="action request/base">
    <p class="userblock">
-    <b>Login</b><br>
+    <b i18n:translate="">Login</b><br>
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
     <input type="submit" name="@action" value="Login"><br>
     <span tal:replace="structure request/indexargs_form" />
     <a href="user?@template=register"
-       tal:condition="python:request.user.hasPermission('Web Registration')">Register<br></a>
-    <a href="user?@template=forgotten">Lost&nbsp;your&nbsp;login?</a><br>
+       tal:condition="python:request.user.hasPermission('Web Registration')"
+     i18n:translate="">Register</a><br>
+    <a href="user?@template=forgotten" i18n:translate="">Lost&nbsp;your&nbsp;login?</a><br>
    </p>
   </form>
-   
+
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
-   <b>Hello,</b> <b tal:content="request/user/username">username</b><br>
-   <a tal:attributes="href string:issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
-   <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
+   <b i18n:translate="">Hello, <span i18n:name="user"
+    tal:replace="request/user/username">username</span></b><br>
+   <a tal:attributes="href string:issue?@sort=-activity&@group=priority&@filter=status,assignedto&@columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}" i18n:translate="">My Issues</a><br>
+   <a tal:attributes="href string:user${request/user/id}"
+    i18n:translate="">My Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',
-       {'@action':'logout'})">Logout</a>
+       {'@action':'logout'})" i18n:translate="">Logout</a>
   </p>
   <p class="userblock">
-   <b>Help</b><br>
-   <a href="http://roundup.sourceforge.net/doc-0.7/">Roundup docs</a>
+   <b i18n:translate="">Help</b><br>
+   <a href="http://roundup.sourceforge.net/doc-0.7/"
+    i18n:translate="">Roundup docs</a>
   </p>
  </td>
  <td>
@@ -128,7 +136,7 @@ See issue.search.html in the classic template for examples.
 </td>
 
 <td metal:define-macro="search_popup">
-  <!-- 
+  <!--
     context needs to specify the popup "columns" as a comma-separated
     string (eg. "id,title" or "id,name,description") as well as name
   -->
@@ -141,9 +149,9 @@ See issue.search.html in the classic template for examples.
 <td metal:define-macro="search_select">
   <select tal:attributes="name name"
           tal:define="value python:request.form.getvalue(name)">
-    <option value="">don't care</option>
+    <option value="" i18n:translate="">don't care</option>
     <tal:block metal:define-slot="extra_options"></tal:block>
-    <option value="">------------</option>      
+    <option value="" i18n:translate="">------------</option>
     <option tal:repeat="s python:db[db_klass].list()"
             tal:attributes="value s/id; selected python:value == s.id"
             tal:content="python:s[db_content]"></option>
@@ -161,7 +169,7 @@ See issue.search.html in the classic template for examples.
  <li metal:define-slot="no_value_item">
   <input type="checkbox" value="-1" tal:attributes="name name;
      id string:$name--1; checked python:value == '-1'" />
-  <label tal:attributes="for string:$name--1">no value</label>
+  <label tal:attributes="for string:$name--1" i18n:translate="">no value</label>
  </li>
  </ul>
 </td>

@@ -1,15 +1,27 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block metal:use-macro="templates/page/macros/icing">
-<title metal:fill-slot="head_title"> 
-<span tal:condition="context/id"
-      tal:replace="string:User ${context/id}: ${context/username}" />
-<tal:x tal:condition="not:context/id">New User</tal:x> 
-- <span tal:replace="config/TRACKER_NAME" />
-</title> 
-<span metal:fill-slot="body_title" tal:omit-tag="python:1">
-  User<span tal:replace="context/id" />
-   <tal:x tal:condition="context/is_edit_ok">Editing</tal:x>
- </span>
+<title metal:fill-slot="head_title">
+<tal:block condition="context/id" i18n:translate=""
+ >User <span tal:replace="context/id" i18n:name="id"
+ />: <span tal:replace="context/username" i18n:name="title"
+ /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+<tal:block condition="not:context/id" i18n:translate=""
+ >New User - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+/></tal:block>
+</title>
+<tal:block metal:fill-slot="body_title">
+ <span tal:condition="python: not (context.id or context.is_edit_ok())"
+  tal:omit-tag="python:1" i18n:translate="">New User</span>
+ <span tal:condition="python: not context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">New User Editing</span>
+ <span tal:condition="python: context.id and not context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">User<tal:x
+  replace="context/id" i18n:name="id" /></span>
+ <span tal:condition="python: context.id and context.is_edit_ok()"
+  tal:omit-tag="python:1" i18n:translate="">User<tal:x
+  replace="context/id" i18n:name="id" /> Editing</span>
+</tal:block>
 
 <td class="content" metal:fill-slot="content">
 
@@ -19,53 +31,55 @@
 
 <table class="form">
  <tr>
-  <th>Name</th>
+  <th i18n:translate="">Name</th>
   <td tal:content="structure context/realname/field">realname</td>
  </tr>
  <tr>
-  <th>Login Name</th>
+  <th i18n:translate="">Login Name</th>
   <td tal:content="structure context/username/field">username</td>
  </tr>
  <tr>
-  <th>Login Password</th>
+  <th i18n:translate="">Login Password</th>
   <td tal:content="structure context/password/field">password</td>
  </tr>
  <tr>
-  <th>Confirm Password</th>
+  <th i18n:translate="">Confirm Password</th>
   <td tal:content="structure context/password/confirm">password</td>
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
-  <th>Roles</th>
+  <th i18n:translate="">Roles</th>
   <td>
    <input tal:condition="context/id"
           tal:replace="structure context/roles/field">
    <input name="roles" tal:condition="not:context/id"
           tal:attributes="value db/config/NEW_WEB_USER_ROLES">
-   (to give the user more than one role, enter a comma,separated,list)
+   <tal:block i18n:translate="">(to give the user more than one role,
+    enter a comma,separated,list)</tal:block>
   </td>
  </tr>
  <tr>
-  <th>Phone</th>
+  <th i18n:translate="">Phone</th>
   <td tal:content="structure context/phone/field">phone</td>
  </tr>
  <tr>
-  <th>Organisation</th>
+  <th i18n:translate="">Organisation</th>
   <td tal:content="structure context/organisation/field">organisation</td>
  </tr>
  <tr>
-  <th>Timezone</th>
+  <th i18n:translate="">Timezone</th>
   <td>
    <input tal:replace="structure context/timezone/field">
-   (this is a numeric hour offset, the default is
-   <span tal:replace="db/config/DEFAULT_TIMEZONE" />)
+   <tal:block i18n:translate="">(this is a numeric hour offset, the default is
+    <span tal:replace="db/config/DEFAULT_TIMEZONE" i18n:name="zone"
+    />)</tal:block>
   </td>
  </tr>
  <tr>
-  <th>E-mail address</th>
+  <th i18n:translate="">E-mail address</th>
   <td tal:content="structure context/address/field">address</td>
  </tr>
  <tr>
-  <th>Alternate E-mail addresses<br>One address per line</th>
+  <th i18n:translate="">Alternate E-mail addresses<br>One address per line</th>
   <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
  </tr>
 
