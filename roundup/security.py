@@ -1,59 +1,53 @@
 import weakref
 
-from roundup import hyperdb, volatiledb
+from roundup import hyperdb
 
-class PermissionClass(volatiledb.VolatileClass):
-    ''' Include the default attributes:
-        - name (String)
-        - classname (String)
-        - description (String)
+class Permission:
+    ''' Defines a Permission with the attributes
+        - name
+        - description
+        - klass (optional)
 
-        The classname may be unset, indicating that this permission is not
+        The klass may be unset, indicating that this permission is not
         locked to a particular class. That means there may be multiple
         Permissions for the same name for different classes.
     '''
-    def __init__(self, db, classname, **properties):
-        """ set up the default properties
-        """
-        if not properties.has_key('name'):
-            properties['name'] = hyperdb.String()
-        if not properties.has_key('klass'):
-            properties['klass'] = hyperdb.String()
-        if not properties.has_key('description'):
-            properties['description'] = hyperdb.String()
-        volatiledb.VolatileClass.__init__(self, db, classname, **properties)
+    def __init__(self, name='', description='', klass=None):
+        self.name = name
+        self.description = description
+        self.klass = klass
 
-class RoleClass(volatiledb.VolatileClass):
-    ''' Include the default attributes:
-        - name (String, key)
-        - description (String)
-        - permissions (PermissionClass Multilink)
+    def __repr__(self):
+        return '<Permission 0x%x %r,%r>'%(id(self), self.name, self.klass)
+
+class Role:
+    ''' Defines a Role with the attributes
+        - name
+        - description
+        - permissions
     '''
-    def __init__(self, db, classname, **properties):
-        """ set up the default properties
-        """
-        if not properties.has_key('name'):
-            properties['name'] = hyperdb.String()
-        if not properties.has_key('description'):
-            properties['description'] = hyperdb.String()
-        if not properties.has_key('permissions'):
-            properties['permissions'] = hyperdb.Multilink('permission')
-        volatiledb.VolatileClass.__init__(self, db, classname, **properties)
-        self.setkey('name')
+    def __init__(self, name='', description='', permissions=None):
+        self.name = name
+        self.description = description
+        if permissions is None:
+            permissions = []
+        self.permissions = permissions
+
+    def __repr__(self):
+        return '<Role 0x%x %r,%r>'%(id(self), self.name, self.permissions)
 
 class Security:
     def __init__(self, db):
         ''' Initialise the permission and role classes, and add in the
             base roles (for admin user).
         '''
-        # use a weak ref to avoid circularity
-        self.db = weakref.proxy(db)
+        self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
 
-        # create the permission class instance (we only need one))
-        self.permission = PermissionClass(db, "permission")
+        # permssions are mapped by name to a list of Permissions by class
+        self.permission = {}
 
-        # create the role class instance (we only need one)
-        self.role = RoleClass(db, "role")
+        # roles are mapped by name to the Role
+        self.role = {}
 
         # the default Roles
         self.addRole(name="User", description="A regular user, no privs")
@@ -82,22 +76,19 @@ class Security:
 
             Raise ValueError if there is no exact match.
         '''
-        perm = self.db.permission
-        for permissionid in perm.stringFind(name=permission):
-            klass = perm.get(permissionid, 'klass')
-            if classname is not None and classname == klass:
-                return permissionid
-            elif not classname and not klass:
-                return permissionid
-        if not classname:
+        if not self.permission.has_key(permission):
             raise ValueError, 'No permission "%s" defined'%permission
+        for perm in self.permission[permission]:
+            if perm.klass is not None and perm.klass == classname:
+                return perm
+            elif not perm.klass and not classname:
+                return perm
         raise ValueError, 'No permission "%s" defined for "%s"'%(permission,
             classname)
 
     def hasPermission(self, permission, userid, classname=None):
         ''' Look through all the Roles, and hence Permissions, and see if
             "permission" is there for the specified classname.
-
         '''
         roles = self.db.user.get(userid, 'roles')
         if roles is None:
@@ -105,12 +96,8 @@ class Security:
         for rolename in roles.split(','):
             if not rolename:
                 continue
-            roleid = self.db.role.lookup(rolename)
-            for permissionid in self.db.role.get(roleid, 'permissions'):
-                if self.db.permission.get(permissionid, 'name') != permission:
-                    continue
-                klass = self.db.permission.get(permissionid, 'klass')
-                if klass is None or klass == classname:
+            for perm in self.role[rolename].permissions:
+                if perm.klass is None or perm.klass == classname:
                     return 1
         return 0
 
@@ -142,20 +129,22 @@ class Security:
         ''' Create a new Permission with the properties defined in
             'propspec'
         '''
-        return self.db.permission.create(**propspec)
+        perm = Permission(**propspec)
+        self.permission.setdefault(perm.name, []).append(perm)
+        return perm
 
     def addRole(self, **propspec):
         ''' Create a new Role with the properties defined in 'propspec'
         '''
-        return self.db.role.create(**propspec)
+        role = Role(**propspec)
+        self.role[role.name] = role
+        return role
 
-    def addPermissionToRole(self, rolename, permissionid):
+    def addPermissionToRole(self, rolename, permission):
         ''' Add the permission to the role's permission list.
 
-            'rolename' is the name of the role to add 'permissionid'.
+            'rolename' is the name of the role to add the permission to.
         '''
-        roleid = self.db.role.lookup(rolename)
-        permissions = self.db.role.get(roleid, 'permissions')
-        permissions.append(permissionid)
-        self.db.role.set(roleid, permissions=permissions)
+        role = self.role[rolename]
+        role.permissions.append(permission)
 

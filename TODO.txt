@@ -12,6 +12,7 @@ pending  hyperdb: range searching of values (dates in particular)
            [value, value, ...] implies "in"
 pending  hyperdb: make creator, creation and activity available pre-commit
 pending  hyperdb: migrate "id" property to be Number type
+active   hyperdb: modify design document to include all the changes made
 pending  instance: including much simpler upgrade path and the use of
                    non-Python configuration files (ConfigParser)
 pending  instance: cleanup to support config (feature request #498658)
@@ -29,8 +30,7 @@ pending  mailgw: Allow multiple email addresses at one gw with different default
                    roundup: "|roundup-mailgw /instances/dev"
                    vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
 pending  project: switch to a Roundup instance for Roundup bug/feature tracking
-active   security: finish doc/security.txt
-active   security: implement and use the new logical control mechanisms
+active   security: add info from doc/security.txt to design doc
 pending  security: at least an LDAP user database implementation
 pending  security: authenticate over a secure connection
 pending  security: use digital signatures in mailgw
@@ -54,5 +54,6 @@ done hyperdb: fix the journal bloat (RJ)
 done hyperdb: add Boolean and Number types (GM)
 done mailgw: better help message (feature request #558562) (RJ)
 done security: switch to sessions for web authentication (RJ)
+done security: implement and use the new logical control mechanisms
 done web: saving of named queries (GM)
 

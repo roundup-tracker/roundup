@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.24 2002-07-26 08:27:00 richard Exp $
+# $Id: test_mailgw.py,v 1.25 2002-07-29 00:56:06 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -633,8 +633,8 @@ Subject: [issue1] Testing... [nosy=-richard]
 
     def testNewUserAuthor(self):
         # first without the permission
-        Anonid = self.db.role.lookup('Anonymous')
-        self.db.role.set(Anonid, permissions=[])
+        # heh... just ignore the API for a second ;)
+        self.db.security.role['Anonymous'].permissions=[]
         anonid = self.db.user.lookup('anonymous')
         self.db.user.set(anonid, roles='Anonymous')
 
@@ -660,7 +660,7 @@ This is a test submission of a new issue.
 
         # now with the permission
         p = self.db.security.getPermission('Email Registration')
-        self.db.role.set(Anonid, permissions=[p])
+        self.db.security.role['Anonymous'].permissions=[p]
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         message = cStringIO.StringIO(s)
@@ -781,6 +781,11 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/07/26 08:27:00  richard
+# Very close now. The cgi and mailgw now use the new security API. The two
+# templates have been migrated to that setup. Lots of unit tests. Still some
+# issue in the web form for editing Roles assigned to users.
+#
 # Revision 1.23  2002/07/14 02:02:43  richard
 # Fixed the unit tests for the new multilist controls in the mailgw
 #
