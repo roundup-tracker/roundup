@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.8 2002-02-27 03:28:21 richard Exp $
+# $Id: admin.py,v 1.9 2002-03-12 22:51:47 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -262,6 +262,13 @@ Command help:
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
+
+        # make sure the instance home can be created
+        parent = os.path.split(instance_home)[0]
+        if not os.path.exists(parent):
+            raise UsageError, _('Instance home parent directory "%(parent)s"'
+                'does not exist')%locals()
+
         # select template
         import roundup.templates
         templates = roundup.templates.listTemplates()
@@ -273,6 +280,7 @@ Command help:
             if not template:
                 template = 'classic'
 
+        # select hyperdb backend
         import roundup.backends
         backends = roundup.backends.__all__
         backend = len(args) > 2 and args[2] or ''
@@ -282,6 +290,8 @@ Command help:
             backend = raw_input(_('Select backend [anydbm]: ')).strip()
             if not backend:
                 backend = 'anydbm'
+
+        # admin password
         if len(args) > 3:
             adminpw = confirm = args[3]
         else:
@@ -290,7 +300,10 @@ Command help:
         while adminpw != confirm:
             adminpw = getpass.getpass(_('Admin Password: '))
             confirm = getpass.getpass(_('       Confirm: '))
+
+        # create!
         init.init(instance_home, template, backend, adminpw)
+
         return 0
 
 
@@ -529,7 +542,7 @@ Command help:
             props = self.props_from_args(args[1:])
 
         # convert types
-        for propname in props.keys():
+        for propname, value in props.items():
             # get the property
             try:
                 proptype = properties[propname]
@@ -944,14 +957,18 @@ Date format is "YYYY-MM-DD" eg:
 
         # before we open the db, we may be doing an init
         if command == 'initialise':
-            return self.do_initialise(self.instance_home, args)
+            try:
+                return self.do_initialise(self.instance_home, args)
+            except UsageError, message:
+                print _('Error: %(message)s')%locals()
+                return 1
 
         # get the instance
         try:
             instance = roundup.instance.open(self.instance_home)
         except ValueError, message:
             self.instance_home = ''
-            print _("Couldn't open instance: %(message)s")%locals()
+            print _("Error: Couldn't open instance: %(message)s")%locals()
             return 1
 
         # only open the database once!
@@ -964,6 +981,7 @@ Date format is "YYYY-MM-DD" eg:
             ret = function(args[1:])
         except UsageError, message:
             print _('Error: %(message)s')%locals()
+            print
             print function.__doc__
             ret = 1
         except:
@@ -1043,6 +1061,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/02/27 03:28:21  richard
+# Ran it through pychecker, made fixes
+#
 # Revision 1.7  2002/02/20 05:04:32  richard
 # Wasn't handling the cvs parser feeding properly.
 #

@@ -45,6 +45,9 @@ Fixed:
  . fixed some problems in date calculations (calendar.py doesn't handle over-
    and under-flow). Also, hour/minute/second intervals may now be more than
    99 each.
+ . #527416 ] roundup-admin uses undefined value
+ . #527503 ] unfriendly init blowup when parent dir
+   (also handles UsageError correctly now in init)
 
 
 2002-01-24 - 0.4.0
