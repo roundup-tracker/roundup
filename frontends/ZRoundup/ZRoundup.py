@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.14 2002-10-10 03:47:27 richard Exp $
+# $Id: ZRoundup.py,v 1.15 2002-10-16 06:48:50 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -153,7 +153,6 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
 
         return instance.Client(instance, request, env, form)
 
-
     security.declareProtected('View', 'index_html')
     def index_html(self):
         '''Alias index_html to roundup's index
@@ -182,7 +181,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         try:
             client = self._opendb()
             # fake the path that roundup should use
-            client.split_path = [item]
+            client.path = item
             # and call roundup to do something 
             client.main()
             return ''
