@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.99 2003-02-26 04:51:41 richard Exp $
+# $Id: client.py,v 1.100 2003-02-26 04:57:49 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -449,7 +449,7 @@ class Client:
             mt = 'text/plain'
         self.additional_headers['Content-Type'] = mt
         self.additional_headers['Last-Modifed'] = rfc822.formatdate(lmt)
-        self.write(open(filename).read())
+        self.write(open(filename, 'rb').read())
 
     def renderContext(self):
         ''' Return a PageTemplate for the named page

@@ -64,6 +64,7 @@ are given with the most recent entry first.
 - added support for last-modified and if-modified-since headers for static
   file serving
 - added Node.get() method
+- open static files using binary mode (sf bug 693208)
 
 
 2003-??-?? 0.5.6
