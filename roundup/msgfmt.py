@@ -49,7 +49,7 @@ def usage(code, msg=''):
 def add(id, str, fuzzy):
     "Add a non-fuzzy translation to the dictionary."
     global MESSAGES
-    if not fuzzy and str:
+    if not fuzzy and str and not str.startswith('\0'):
         MESSAGES[id] = str
 
 
@@ -150,11 +150,11 @@ def make(filename, outfile):
             l = l[6:]
             # Check for plural forms
             if l.startswith('['):
+                # Separate plural forms with \0
+                if not l.startswith('[0]'):
+                    msgstr += '\0'
                 # Ignore the index - must come in sequence
                 l = l[l.index(']') + 1:]
-                # Separate plural forms with \0
-                if len(msgstr) > 0:
-                    msgstr += '\0'
         # Skip empty lines
         l = l.strip()
         if not l:
