@@ -51,6 +51,12 @@ INSTANCE_NAME and EMAIL_SIGNATURE_POSITION have been added to the
 instance_config.py. Simplest solution is to copy the default values from
 template in the core source.
 
+INSTANCE_NAME needs to be added to the Client class in your interfaces.py
+file. INSTANCE_NAME and ANONYMOUS_REGISTER need to be added to the MailGW
+class in your interfaces.py file. In both cases if might be easier to just
+copy the file from the core source (roundup/templates/[schema]/interfaces.py)
+where schema is "classic" or "extended".
+
 
 CGI script roundup.cgi
 ----------------------
