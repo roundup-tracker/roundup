@@ -1,4 +1,4 @@
-# $Id: roundupdb.py,v 1.2 2001-07-22 12:09:32 richard Exp $
+# $Id: roundupdb.py,v 1.3 2001-07-23 07:14:41 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -27,6 +27,7 @@ class Database:
         return self.user.create(username=address, address=address,
             realname=realname)
 
+# XXX: added the 'creator' faked attribute
 class Class(hyperdb.Class):
     # Overridden methods:
     def __init__(self, db, classname, **properties):
@@ -69,6 +70,42 @@ class Class(hyperdb.Class):
         hyperdb.Class.retire(self, nodeid)
         for react in self.reactors['retire']:
             react(self.db, self, nodeid, None)
+
+    def get(self, nodeid, propname):
+        """Attempts to get the "creation" or "activity" properties should
+        do the right thing
+        """
+        if propname == 'creation':
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                return self.db.getjournal(self.classname, nodeid)[0][1]
+            else:
+                # on the strange chance that there's no journal
+                return date.Date()
+        if propname == 'activity':
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                return self.db.getjournal(self.classname, nodeid)[-1][1]
+            else:
+                # on the strange chance that there's no journal
+                return date.Date()
+        if propname == 'creator':
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                name = self.db.getjournal(self.classname, nodeid)[0][2]
+            else:
+                return None
+            return self.db.user.lookup(name)
+        return hyperdb.Class.get(self, nodeid, propname)
+
+    def getprops(self):
+        """In addition to the actual properties on the node, these
+        methods provide the "creation" and "activity" properties."""
+        d = hyperdb.Class.getprops(self).copy()
+        d['creation'] = hyperdb.Date()
+        d['activity'] = hyperdb.Date()
+        d['creator'] = hyperdb.Link("user")
+        return d
 
     # New methods:
 
@@ -145,25 +182,6 @@ class IssueClass(Class):
             raise ValueError, '"creation", "activity" and "creator" are reserved'
         Class.__init__(self, db, classname, **properties)
 
-    def get(self, nodeid, propname):
-        if propname == 'creation':
-            return self.db.getjournal(self.classname, nodeid)[0][1]
-        if propname == 'activity':
-            return self.db.getjournal(self.classname, nodeid)[-1][1]
-        if propname == 'creator':
-            name = self.db.getjournal(self.classname, nodeid)[0][2]
-            return self.db.user.lookup(name)
-        return Class.get(self, nodeid, propname)
-
-    def getprops(self):
-        """In addition to the actual properties on the node, these
-        methods provide the "creation" and "activity" properties."""
-        d = Class.getprops(self).copy()
-        d['creation'] = hyperdb.Date()
-        d['activity'] = hyperdb.Date()
-        d['creator'] = hyperdb.Link("user")
-        return d
-
     # New methods:
 
     def addmessage(self, nodeid, summary, text):
@@ -227,6 +245,9 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/07/22 12:09:32  richard
+# Final commit of Grande Splite
+#
 # Revision 1.1  2001/07/22 11:58:35  richard
 # More Grande Splite
 #
