@@ -1,7 +1,7 @@
 """Sending Roundup-specific mail over SMTP.
 """
 __docformat__ = 'restructuredtext'
-# $Id: mailer.py,v 1.6 2004-02-23 05:29:05 richard Exp $
+# $Id: mailer.py,v 1.7 2004-02-29 00:35:55 richard Exp $
 
 import time, quopri, os, socket, smtplib, re
 
@@ -24,20 +24,41 @@ class Mailer:
         self.debug = os.environ.get('SENDMAILDEBUG', '')
 
     def get_standard_message(self, to, subject, author=None):
+        '''Form a standard email message from Roundup.
+
+        "to"      - recipients list
+        "subject" - Subject
+        "author"  - (name, address) tuple or None for admin email
+
+        Subject and author are encoded using the EMAIL_CHARSET from the
+        config (default UTF-8).
+
+        Returns a Message object and body part writer.
+        '''
+        # encode header values if they need to be
+        charset = getattr(self.config, 'EMAIL_CHARSET', 'utf-8')
+        tracker_name = self.config.TRACKER_NAME
+        if charset != 'utf-8':
+            tracker = unicode(tracker_name, 'utf-8').encode(charset)
         if not author:
-            author = straddr((self.config.TRACKER_NAME,
-                              self.config.ADMIN_EMAIL))
+            author = straddr((tracker_name, self.config.ADMIN_EMAIL))
+        else:
+            name = author[0]
+            if charset != 'utf-8':
+                name = unicode(name, 'utf-8').encode(charset)
+            author = straddr((encode_header(name, charset), author[1]))
+
         message = StringIO()
         writer = MimeWriter(message)
-        writer.addheader('Subject', encode_header(subject,
-            self.config.EMAIL_CHARSET))
+        writer.addheader('Subject', encode_header(subject, charset))
         writer.addheader('To', ', '.join(to))
         writer.addheader('From', author)
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
                                                time.gmtime()))
 
         # Add a unique Roundup header to help filtering
-        writer.addheader('X-Roundup-Name', self.config.TRACKER_NAME)
+        writer.addheader('X-Roundup-Name', encode_header(tracker_name,
+            charset))
         # and another one to avoid loops
         writer.addheader('X-Roundup-Loop', 'hello')
         # finally, an aid to debugging problems
@@ -54,7 +75,7 @@ class Mailer:
         - to: a list of addresses usable by rfc822.parseaddr().
         - subject: the subject as a string.
         - content: the body of the message as a string.
-        - author: the sender as a string, suitable for a 'From:' header.
+        - author: the sender as a (name, address) tuple
         """
         message, writer = self.get_standard_message(to, subject, author)
 

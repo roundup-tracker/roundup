@@ -31,6 +31,14 @@ Removed Database.curuserid attribute. Any code referencing this attribute
 should be replaced with a call to Database.getuid().
 
 
+0.7.0 Email character set
+-------------------------
+
+The default character set for sending email is UTF-8 (ie. Unicode). If you
+have users whose email clients can't handle UTF-8 (eg. Eudora) then you
+will need to edit the new config.py variable ``EMAIL_CHARSET``.
+
+
 0.7.0 ZRoundup changes
 ----------------------
 
