@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.3 2004-07-25 13:12:59 a1s Exp $
+# $Id: configuration.py,v 1.4 2004-07-25 13:21:38 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -511,10 +511,10 @@ class Config:
                 _option = _class(self, _section, *_args)
                 self.add_option(_option)
         # load the config if tracker_home given
-        if tracker_home is not None:
-            self.load(tracker_home)
-        else:
+        if tracker_home is None:
             self.init_logging()
+        else:
+            self.load(tracker_home)
 
     def add_option(self, option):
         """Adopt a new Option object"""
