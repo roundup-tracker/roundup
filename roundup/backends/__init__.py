@@ -15,12 +15,18 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.29 2004-11-03 01:34:21 richard Exp $
+# $Id: __init__.py,v 1.30 2004-11-18 15:50:37 a1s Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
 __docformat__ = 'restructuredtext'
 
+import sys
+
+# These names are used to suppress import errors.
+# If get_backend raises an ImportError with appropriate
+# module name, have_backend quietly returns False.
+# Otherwise the error is reraised.
 _modules = {
     'mysql': 'MySQLdb',
     'postgresql': 'psycopg',
@@ -28,25 +34,47 @@ _modules = {
 
 def get_backend(name):
     '''Get a specific backend by name.'''
-    return __import__('back_%s'%name, globals())
+    vars = globals()
+    # if requested backend has been imported yet, return current instance
+    if vars.has_key(name):
+        return vars[name]
+    # import the backend module
+    module_name = 'back_%s' % name
+    try:
+        module = __import__(module_name, vars)
+    except:
+        # import failed, but the (empty) module is already
+        # placed in sys.modules and package globals;
+        # next import would success although the module is unusable
+        del sys.modules['.'.join((__name__, module_name))]
+        del vars[module_name]
+        raise
+    else:
+        vars[name] = module
+        return module
 
 def have_backend(name):
     '''Is backend "name" available?'''
-    module = _modules.get(name, name)
     try:
         get_backend(name)
         return 1
     except ImportError, e:
-        if not str(e).startswith('No module named %s'%module):
+        global _modules
+        if not str(e).startswith('No module named %s' % _modules[name]):
             raise
     return 0
 
 def list_backends():
-    '''List all available backend names.'''
+    '''List all available backend names.
+
+    This function has side-effect of registering backward-compatible
+    globals for all available backends.
+
+    '''
     l = []
     for name in 'anydbm', 'mysql', 'sqlite', 'metakit', 'postgresql':
         if have_backend(name):
             l.append(name)
     return l
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
