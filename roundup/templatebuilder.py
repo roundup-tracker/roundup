@@ -34,6 +34,7 @@ def installHtmlBase(template, installDir):
 		"couldn't find roundup.template.%s.htmlbase"%template
     htmlbase = tmod.htmlbase
     installDir = os.path.join(installDir, 'html')
+    os.makedirs(installDir)
 
     print "installing from", htmlbase.__file__, "into", installDir
     modulecontents = dir(htmlbase)

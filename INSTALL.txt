@@ -21,7 +21,7 @@ You will need either the anydbm or bsddb module.
 Testing the Software
 --------------------
 
-Run "python -c 'import tests;tests.go()'" and make sure there's no errors.
+Run "python -c 'import test;test.go()'" and make sure there's no errors.
 If there are errors, please let us know!
 
 
@@ -32,20 +32,30 @@ Installing the Software
 
       python setup.py install
 
-2. If you want the scripts installed, also run the following command. If
-   you would prefer the scripts installed in somewhere other than
-   /usr/local/bin, add "--install-dir=<dir>" to the command.
+   If you would prefer the scripts installed in somewhere other than
+   /usr/local/bin, add "--install-scripts=<dir>" to the command:
 
-      python setup.py install_scripts
+      python setup.py install --install-scripts=<dir>
+
+   The command:
+
+      python setup.py install --help
+
+   gives all the options available for installation.
 
 
 
 Initial Setup
 =============
 
+The following instructions assume that you have installed roundup. If you
+haven't, you may still proceed - just preface all commands with "./"
+ie. "./roundup-admin init".
+
+
 Instance
 --------
-Run "./roundup-admin init". This initialises a roundup instance.
+Run "roundup-admin init". This initialises a roundup instance.
 
 Roundup is configurable using a localconfig.py file in the instance home.
 It may have the following variable declarations:
@@ -80,7 +90,7 @@ This software will work through apache or stand-alone.
 Stand-alone:
  1. Edit roundup-server at the top - ROUNDUP_INSTANCE_HOMES needs to know
     about your instance.
- 2. "./roundup-server [hostname port]"   (hostname may be "")
+ 2. "roundup-server [hostname port]"   (hostname may be "")
  3. Load up the page "/" using the port number you set.
 
 Apache:
