@@ -1,4 +1,4 @@
-<!-- $Id: support.item,v 1.1 2001-07-30 01:27:28 richard Exp $-->
+<!-- $Id: support.item,v 1.2 2001-07-30 08:03:56 richard Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -64,19 +64,38 @@
     <td colspan=3 class="form-text"><display call="submit()"></td>
 </tr>
 
-<property name="messages">
 <tr class="strong-header">
     <td colspan=4><b>Messages</b></td>
 </tr>
+<property name="messages">
 <tr>            
     <td colspan=4><display call="list('messages')"></td>
 </tr>
 </property>
 
-<property name="files">
- <tr class="strong-header">
-     <td colspan=4><b>Files</b></td>
+<tr class="strong-header">
+  <td colspan=4><b>Timelog</b></td>
+</tr>
+<tr class="form-help">
+ <td colspan=4>
+  <a href="newtimelog?:multilink=support<display call="plain('id')">:timelog">Log time against this support call</a>
+ </td>
+</tr>
+<property name="timelog">
+ <tr>            
+   <td colspan=4><display call="list('timelog')"></td>
  </tr>
+</property>
+
+<tr class="strong-header">
+  <td colspan=4><b>Files</b></td>
+</tr>
+<tr class="form-help">
+ <td colspan=4>
+   <a href="newfile?:multilink=support<display call="plain('id')">:files">Attach a file to support call</a>
+ </td>
+</tr>
+<property name="files">
  <tr>            
      <td colspan=4><display call="list('files')"></td>
  </tr>
