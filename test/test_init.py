@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.17 2002-09-10 01:27:13 richard Exp $
+# $Id: test_init.py,v 1.18 2002-09-11 01:21:01 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -77,6 +77,9 @@ class bsddb3ClassicTestCase(ClassicTestCase):
 class metakitClassicTestCase(ClassicTestCase):
     backend = 'metakit'
 
+class gadflyClassicTestCase(ClassicTestCase):
+    backend = 'gadfly'
+
 def suite():
     l = [
         unittest.makeSuite(ClassicTestCase, 'test'),
@@ -99,6 +102,12 @@ def suite():
         l.append(unittest.makeSuite(metakitClassicTestCase, 'test'))
     except:
         print 'metakit module not found, skipping metakit DBTestCase'
+
+    try:
+        import gadfly
+        l.append(unittest.makeSuite(gadflyClassicTestCase, 'test'))
+    except:
+        print 'gadfly module not found, skipping gadfly DBTestCase'
 
     return unittest.TestSuite(l)
 
