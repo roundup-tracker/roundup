@@ -1,6 +1,6 @@
-========================================
-Roundup 0.4.0 - an issue tracking system
-========================================
+=================================================
+SC-Track Roundup 0.4.1 - an issue tracking system
+=================================================
 
 If you are upgrading please read MIGRATION.txt.
 
@@ -9,10 +9,12 @@ requires python 2.1.2 or 2.2.
 
 Big stuff in this release:
 
-- Use of transactions to prevent partial data commits
-- Zope Product front-end
-- Nicer, more consistent change message generation
-- Several bug fixes and more unit tests
+- Users may register alternate addresses they might send e-mail from
+- Splitting of file storage in the backend into multiple directories
+- Better handling of 8-bit e-mail messages
+- Nicer configuration of web headers
+- Popup help for multilink classes
+- Cleanups in the date classes
 - Much, much more: see the CHANGES file for details.
 
 Source and documentation is available at the website:
