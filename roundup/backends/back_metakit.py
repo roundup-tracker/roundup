@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.87 2004-09-30 10:12:24 a1s Exp $
+# $Id: back_metakit.py,v 1.88 2004-10-24 10:44:49 a1s Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -259,7 +259,8 @@ class _Database(hyperdb.Database, roundupdb.Database):
             try:
                 params = marshal.loads(row.params)
             except ValueError:
-                print "history couldn't unmarshal %r" % row.params
+                self.config.logging.getLogger("hyperdb").error(
+                    "history couldn't unmarshal %r" % row.params)
                 params = {}
             #usernm = userclass.get(str(row.user), 'username')
             dt = date.Date(time.gmtime(row.date))
@@ -1372,13 +1373,15 @@ class Class(hyperdb.Class):
                 try:
                     prop = getattr(v, propname)
                 except AttributeError:
-                    print "MK has no property %s" % propname
+                    self.config.logging.getLogger("hyperdb").error(
+                        "MK has no property %s" % propname)
                     continue
                 propclass = self.ruprops.get(propname, None)
                 if propclass is None:
                     propclass = self.privateprops.get(propname, None)
                     if propclass is None:
-                        print "Schema has no property %s" % propname
+                        self.config.logging.getLogger("hyperdb").error(
+                            "Schema has no property %s" % propname)
                         continue
                 if isinstance(propclass, hyperdb.Link):
                     linkclass = self.db.getclass(propclass.classname)
