@@ -480,7 +480,7 @@ class HTMLItem(HTMLPermissions):
             if isinstance(prop, klass):
                 return htmlklass(self._client, self._nodeid, prop, item, value)
 
-        raise KeyErorr, item
+        raise KeyError, item
 
     def __getattr__(self, attr):
         ''' convenience access to properties '''
@@ -511,11 +511,23 @@ class HTMLItem(HTMLPermissions):
              _('<th>Action</th>'),
              _('<th>Args</th>'),
             '</tr>']
+        current = {}
         comments = {}
         history = self._klass.history(self._nodeid)
         history.sort()
         if direction == 'descending':
             history.reverse()
+            for prop_n in self._props:
+                prop = self[prop_n]
+                if isinstance(prop, HTMLProperty):
+                    current[prop_n] = prop.plain()
+                    # make link if hrefable
+                    if prop_n in self._props and isinstance(self._props[prop_n], hyperdb.Link):
+                        classname = self._props[prop_n].classname
+                        if os.path.exists(os.path.join(self._db.config.TEMPLATES, classname + '.item')):
+                            current[prop_n] = '<a href="%s%s">%s</a>'%(classname,
+                                self._klass.get(self._nodeid, prop_n, None), current[prop_n])
+ 
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date).replace("."," ")
             arg_s = ''
@@ -610,27 +622,46 @@ class HTMLItem(HTMLPermissions):
                                     label = None
                             if label is not None:
                                 if hrefable:
-                                    cell.append('%s: <a href="%s%s">%s</a>\n'%(k,
-                                        classname, args[k], label))
+                                    old = '<a href="%s%s">%s</a>'%(classname, args[k], label)
                                 else:
-                                    cell.append('%s: %s' % (k,label))
+                                    old = label;
+                                cell.append('%s: %s' % (k,old))
+                                if k in current:
+                                    cell[-1] += ' -> %s'%current[k]
+                                    current[k] = old
 
                         elif isinstance(prop, hyperdb.Date) and args[k]:
                             d = date.Date(args[k])
                             cell.append('%s: %s'%(k, str(d)))
+                            if k in current:
+                                cell[-1] += ' -> %s'%current[k]
+                                current[k] = str(d)
 
                         elif isinstance(prop, hyperdb.Interval) and args[k]:
                             d = date.Interval(args[k])
                             cell.append('%s: %s'%(k, str(d)))
+                            if k in current:
+                                cell[-1] += ' -> %s'%current[k]
+                                current[k] = str(d)
 
                         elif isinstance(prop, hyperdb.String) and args[k]:
                             cell.append('%s: %s'%(k, cgi.escape(args[k])))
+                            if k in current:
+                                cell[-1] += ' -> %s'%current[k]
+                                current[k] = cgi.escape(args[k])
 
                         elif not args[k]:
-                            cell.append('%s: (no value)\n'%k)
+                            if k not in current:
+                                cell.append('%s: (no value)'%k)
+                            else:
+                                cell.append('%s: %s'%(k, current[k]))
+                                current[k] = '(no value)'
 
                         else:
-                            cell.append('%s: %s\n'%(k, str(args[k])))
+                            cell.append('%s: %s'%(k, str(args[k])))
+                            if k in current:
+                                cell[-1] += ' -> %s'%current[k]
+                                current[k] = str(args[k])
                     else:
                         # property no longer exists
                         comments['no_exist'] = _('''<em>The indicated property
