@@ -9,7 +9,9 @@ Required:
 - fix documentation referring to customisation using interfaces.py
 - fix admin_guide referring to structure of trackers
 - add config.ini section descriptions - DONE?
-- review use of hasPermission etc. in classic template
+- review use of hasPermission etc. in classic template (check all uses,
+  make sure they're appropriate, make sure anonymous has a reasonable view
+  of things by default)
 
 Optionally:
 - clean up roundup.cgi (switch to config file, use proper logging, remove
