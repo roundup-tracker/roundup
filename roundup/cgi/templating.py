@@ -641,7 +641,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
              for x in self._klass.filter(None, filterspec, sort, group)]
         return l
 
-    def classhelp(self, properties=None, label='(list)', width='500',
+    def classhelp(self, properties=None, label=''"(list)", width='500',
             height='400', property=''):
         ''' Pop up a javascript window with class help
 
@@ -667,15 +667,16 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         return '<a class="classhelp" href="javascript:help_window(\'%s?'\
             '@startwith=0&amp;@template=help&amp;properties=%s%s\', \'%s\', \
             \'%s\')">%s</a>'%(self.classname, properties, property, width,
-            height, label)
+            height, self._(label))
 
-    def submit(self, label="Submit New Entry"):
+    def submit(self, label=''"Submit New Entry"):
         ''' Generate a submit button (and action hidden element)
         '''
         self.view_check()
         if self.is_edit_ok():
-            return self.input(type="hidden",name="@action",value="new") + \
-                   '\n' + self.input(type="submit",name="submit",value=label)
+            return self.input(type="hidden", name="@action", value="new") + \
+                '\n' + \
+                self.input(type="submit", name="submit", value=self._(label))
         return ''
 
     def history(self):
@@ -761,7 +762,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         """Is this item retired?"""
         return self._klass.is_retired(self._nodeid)
 
-    def submit(self, label="Submit Changes"):
+    def submit(self, label=''"Submit Changes"):
         """Generate a submit button.
 
         Also sneak in the lastactivity and action hidden elements.
@@ -769,7 +770,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         return self.input(type="hidden", name="@lastactivity",
             value=self.activity.local(0)) + '\n' + \
             self.input(type="hidden", name="@action", value="edit") + '\n' + \
-            self.input(type="submit", name="submit", value=label)
+            self.input(type="submit", name="submit", value=self._(label))
 
     def journal(self, direction='descending'):
         ''' Return a list of HTMLJournalEntry instances.
