@@ -1,4 +1,5 @@
 *.pyc
 localconfig.py
 build
+dist
 MANIFEST
