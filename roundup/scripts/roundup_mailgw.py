@@ -14,12 +14,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.6 2002-09-13 00:08:44 richard Exp $
+# $Id: roundup_mailgw.py,v 1.7 2003-01-12 00:03:11 richard Exp $
 
 # python version check
 from roundup import version_check
 
-import sys, os, re, cStringIO
+import sys, os, re, cStringIO, getopt
 
 from roundup.mailgw import Message
 from roundup.i18n import _
@@ -27,13 +27,24 @@ from roundup.i18n import _
 def usage(args, message=None):
     if message is not None:
         print message
-    print _('Usage: %(program)s <instance home> [method]')%{'program': args[0]}
+    print _('Usage: %(program)s [[-C class] -S field=value]* <instance '
+        'home> [method]')%{'program': args[0]}
     print _('''
 
 The roundup mail gateway may be called in one of three ways:
  . with an instance home as the only argument,
  . with both an instance home and a mail spool file, or
  . with both an instance home and a pop server account.
+ 
+It also supports optional -C and -S arguments that allows you to set a
+fields for a class created by the roundup-mailgw. The default class if
+not specified is msg, but the other classes: issue, file, user can
+also be used. The -S or --set options uses the same
+property=value[;property=value] notation accepted by the command line
+roundup command or the commands that can be given on the Subject line
+of an email message.
+
+It can let you set the type of the message on a per email address basis.
 
 PIPE:
  In the first case, the mail gateway reads a single message from the
@@ -59,16 +70,25 @@ POP:
 ''')
     return 1
 
-def main(args):
+def main(argv):
     '''Handle the arguments to the program and initialise environment.
     '''
+    # take the argv array and parse it leaving the non-option
+    # arguments in the args array.
+    try:
+        optionsList, args = getopt.getopt(argv[1:], 'C:S:', ['set=', 'class='])
+    except getopt.GetoptError:
+        # print help information and exit:
+        usage(argv)
+        sys.exit(2)
+
     # figure the instance home
-    if len(args) > 1:
-        instance_home = args[1]
+    if len(args) > 0:
+        instance_home = args[0]
     else:
         instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
     if not instance_home:
-        return usage(args)
+        return usage(argv)
 
     # get the instance
     import roundup.instance
@@ -79,16 +99,16 @@ def main(args):
 
     # now wrap in try/finally so we always close the database
     try:
-        handler = instance.MailGW(instance, db)
+        handler = instance.MailGW(instance, db, optionsList)
 
         # if there's no more arguments, read a single message from stdin
-        if len(args) == 2:
+        if len(args) == 1:
             return handler.do_pipe()
 
         # otherwise, figure what sort of mail source to handle
-        if len(args) < 4:
-            return usage(args, _('Error: not enough source specification information'))
-        source, specification = args[2:]
+        if len(args) < 3:
+            return usage(argv, _('Error: not enough source specification information'))
+        source, specification = args[1:]
         if source == 'mailbox':
             return handler.do_mailbox(specification)
         elif source == 'pop':
@@ -97,9 +117,9 @@ def main(args):
             if m:
                 return handler.do_pop(m.group('server'), m.group('user'),
                     m.group('pass'))
-            return usage(args, _('Error: pop specification not valid'))
+            return usage(argv, _('Error: pop specification not valid'))
 
-        return usage(args, _('Error: The source must be either "mailbox" or "pop"'))
+        return usage(argv, _('Error: The source must be either "mailbox" or "pop"'))
     finally:
         db.close()
 

@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.12 $
+:Version: $Revision: 1.13 $
 
 .. contents::
 
@@ -300,6 +300,51 @@ provides a log of when the message was sent to whom.
 If the author of the message is also in the nosy list for the item that the
 message is attached to, then the config var ``MESSAGES_TO_AUTHOR`` is queried
 to determine if they get a nosy list copy of the message too.
+
+
+Mail gateway script command line
+--------------------------------
+
+The roundup mail gateway may be called in one of three ways:
+
+ . with an instance home as the only argument,
+ . with both an instance home and a mail spool file, or
+ . with both an instance home and a pop server account.
+ 
+It also supports optional -C and -S arguments that allows you to set a
+fields for a class created by the roundup-mailgw. The default class if
+not specified is msg, but the other classes: issue, file, user can
+also be used. The -S or --set options uses the same
+property=value[;property=value] notation accepted by the command line
+roundup command or the commands that can be given on the Subject line
+of an email message.
+
+It can let you set the type of the message on a per email address basis.
+
+PIPE:
+ In the first case, the mail gateway reads a single message from the
+ standard input and submits the message to the roundup.mailgw module.
+
+UNIX mailbox:
+ In the second case, the gateway reads all messages from the mail spool
+ file and submits each in turn to the roundup.mailgw module. The file is
+ emptied once all messages have been successfully handled. The file is
+ specified as::
+
+   mailbox /path/to/mailbox
+
+POP:
+ In the third case, the gateway reads all messages from the POP server
+ specified and submits each in turn to the roundup.mailgw module. The
+ server is specified as::
+    pop username:password@server
+
+ The username and password may be omitted::
+    pop username@server
+    pop server
+
+ are both valid. The username and/or password will be prompted for if
+ not supplied on the command-line.
 
 
 Command Line Tool

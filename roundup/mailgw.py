@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.105 2003-01-11 23:52:27 richard Exp $
+$Id: mailgw.py,v 1.106 2003-01-12 00:03:10 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -139,9 +139,10 @@ subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*'
     r'\s*(?P<title>[^[]+)?"?(\[(?P<args>.+?)\])?', re.I)
 
 class MailGW:
-    def __init__(self, instance, db):
+    def __init__(self, instance, db, arguments={}):
         self.instance = instance
         self.db = db
+        self.arguments = {}
 
         # should we trap exceptions (normal usage) or pass them through
         # (for testing)
@@ -496,21 +497,18 @@ does not exist.
 Subject was: "%s"
 '''%(nodeid, subject)
 
-        #
-        # Handle the options specified by the email gateway
-        # command line. I do this by looping over the list of
-        # self.options looking for a -C to tell me what class
-        # I add the -S setting string to.
-        #
+
+        # Handle the arguments specified by the email gateway command line.
+        # We do this by looping over the list of self.arguments looking for
+        # a -C to tell us what class then the -S setting string.
         msg_props = {}
         user_props = {}
         file_props = {}
         issue_props = {}
-        # this should be true if options are set on command
-        # line
-        if hasattr(self, 'options'):
+        # so, if we have any arguments, use them
+        if self.arguments:
             current_class = 'msg'
-            for option, propstring in self.options:
+            for option, propstring in self.arguments:
                 if option in ( '-C', '--class'):
                     current_class = propstring.strip()
                     if current_class not in ('msg', 'file', 'user', 'issue'):
