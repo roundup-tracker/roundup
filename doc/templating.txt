@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 Current Situation and Issues
 ============================
@@ -114,14 +114,22 @@ variables defined:
 *util*
   utility methods
 
-Then accesses through an *item*::
+Accesses through a class (either through *class* or *db.<classname>*):
 
-  class HTMLItem:
-    def __getattr__(self, attr):
-        ''' return an HTMLItem instance '''
-    def history(self, ...)
-    def classhelp(self, ...)
-    def remove(self, ...)
+    class HTMLItem:
+        def __getattr__(self, attr):
+            ''' return an HTMLItem instance '''
+        def classhelp(self, ...)
+        def list(self, ...)
+
+Accesses through an *item*::
+
+    class HTMLItem:
+        def __getattr__(self, attr):
+            ''' return an HTMLItem instance '''
+        def history(self, ...)
+        def classhelp(self, ...)
+        def remove(self, ...)
 
 String, Number, Date, Interval HTMLProperty
  a wrapper object which may be stringified for the current plain() behaviour
@@ -129,34 +137,34 @@ String, Number, Date, Interval HTMLProperty
  ``item/name/plain`` would emulate the current ``call="plain()``". Also, 
  ``python:item.name.plain(name=value)`` would work just fine::
 
-   class HTMLProperty:
-     def __init__(self, instance, db, ...)
-     def __str__(self):
-        return self.plain()
+    class HTMLProperty:
+        def __init__(self, instance, db, ...)
+        def __str__(self):
+            return self.plain()
 
-   class StringHTMLProperty(HTLProperty):
-     def plain(self, ...)
-     def field(self, ...)
-     def stext(self, ...)
-     def multiline(self, ...)
-     def email(self, ...)
+    class StringHTMLProperty(HTLProperty):
+        def plain(self, ...)
+        def field(self, ...)
+        def stext(self, ...)
+        def multiline(self, ...)
+        def email(self, ...)
 
-   class NumberHTMLProperty(HTMLProperty):
-     def plain(self, ...)
-     def field(self, ...)
+    class NumberHTMLProperty(HTMLProperty):
+        def plain(self, ...)
+        def field(self, ...)
 
-   class BooleanHTMLProperty(HTMLProperty):
-     def plain(self, ...)
-     def field(self, ...)
+    class BooleanHTMLProperty(HTMLProperty):
+        def plain(self, ...)
+        def field(self, ...)
 
-   class DateHTMLProperty(HTMLProperty):
-     def plain(self, ...)
-     def field(self, ...)
-     def reldate(self, ...)
+    class DateHTMLProperty(HTMLProperty):
+        def plain(self, ...)
+        def field(self, ...)
+        def reldate(self, ...)
 
-   class IntervalHTMLProperty(HTMLProperty):
-     def plain(self, ...)
-     def field(self, ...)
+    class IntervalHTMLProperty(HTMLProperty):
+        def plain(self, ...)
+        def field(self, ...)
 
 Link HTMLProperty
  the wrapper object would include the above as well as being able to access
@@ -167,33 +175,33 @@ Link HTMLProperty
  identified by the assignedto property on item, and then the name property of
  that user)::
     
-   class LinkHTMLProperty(HTMLProperty):
-     ''' Be a HTMLItem too '''
-     def __getattr__(self, attr):
-        ''' return a new HTMLProperty '''
-     def download(self, ...)
-     def checklist(self, ...)
+    class LinkHTMLProperty(HTMLProperty):
+        ''' Be a HTMLItem too '''
+        def __getattr__(self, attr):
+            ''' return a new HTMLProperty '''
+        def download(self, ...)
+        def checklist(self, ...)
 
 Multilink HTMLProperty
  the wrapper would also be iterable, returning a wrapper object like the Link
  case for each entry in the multilink::
 
-   class MultilinkHTMLProperty(HTMLProperty):
-     def __len__(self):
-        ''' length of the multilink '''
-     def __getitem(self, num):
-        ''' return a new HTMLItem '''
-     def checklist(self, ...)
-     def list(self, ...)
+    class MultilinkHTMLProperty(HTMLProperty):
+        def __len__(self):
+            ''' length of the multilink '''
+        def __getitem(self, num):
+            ''' return a new HTMLItem '''
+        def checklist(self, ...)
+        def list(self, ...)
  
 *util*
  the util object will handle::
 
-   class Util:
-     def __init__(self, ...)
-     def filterspec(self, ...)
-     def note(self, ...)
-     def submit(self, ...)
+    class Util:
+        def __init__(self, ...)
+        def filterspec(self, ...)
+        def note(self, ...)
+        def submit(self, ...)
 
 Action
 ======
@@ -208,7 +216,11 @@ Action
      we'd be installing a version in site-packages, which would be bad.
 
    The latter may allow nicer integration with Zope itself, giving Zope
-   Roundup users access to acquired information in their templates.
+   Roundup users access to acquired information in their templates. We could
+   get around that by modifying the ZRoundup interface to use the "real Zope"
+   ZPT. Maybe.
 
-2. Implement the Roundup infrastructure detailed in the `implementation`_ above.
+2. Implement the Roundup infrastructure described in the `implementation`_
+   above.
+
 
