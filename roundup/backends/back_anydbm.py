@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.25 2002-01-22 05:06:08 rochecompaan Exp $
+#$Id: back_anydbm.py,v 1.26 2002-01-22 05:18:38 rochecompaan Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -347,6 +347,7 @@ class Database(hyperdb.Database):
             for key in db.keys():
                 journal = marshal.loads(db[key])
                 l = []
+                last_set_entry = None
                 for entry in journal:
                     (nodeid, date_stamp, self.journaltag, action, 
                         params) = entry
@@ -356,11 +357,12 @@ class Database(hyperdb.Database):
                         # grab the last set entry to keep information on
                         # activity
                         last_set_entry = entry
-                date_stamp = last_set_entry[1]
-                # if the last set entry was made after the pack date
-                # then it is already in the list
-                if date_stamp < pack_before:
-                    l.append(last_set_entry)
+                if last_set_entry:
+                    date_stamp = last_set_entry[1]
+                    # if the last set entry was made after the pack date
+                    # then it is already in the list
+                    if date_stamp < pack_before:
+                        l.append(last_set_entry)
                 db[key] = marshal.dumps(l)
             if db_type == 'gdbm':
                 db.reorganize()
@@ -453,6 +455,10 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.25  2002/01/22 05:06:08  rochecompaan
+#We need to keep the last 'set' entry in the journal to preserve
+#information on 'activity' for nodes.
+#
 #Revision 1.24  2002/01/21 16:33:20  rochecompaan
 #You can now use the roundup-admin tool to pack the database
 #
