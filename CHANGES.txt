@@ -5,6 +5,8 @@ are given with the most recent entry first.
 Fixed:
 - Add note about installing cgi-bin with a different interpreter
 - Importing wasn't setting None values explicitly when it should have been
+- Fixed import warning regarding 0xffff0000 literal, finally, really this
+  time. Checked on win2k. (sf bug 786711)
 
 
 2003-08-08 0.6.0

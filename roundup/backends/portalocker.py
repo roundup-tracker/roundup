@@ -2,7 +2,7 @@
 #                  Requires python 1.5.2 or better.
 
 # ID line added by richard for Roundup file tracking
-# $Id: portalocker.py,v 1.6 2003-07-03 23:43:46 richard Exp $
+# $Id: portalocker.py,v 1.7 2003-08-26 00:29:20 richard Exp $
 
 """ Cross-platform (posix/nt) API for flock-style file locking.
 
@@ -60,8 +60,8 @@ else:
     raise RuntimeError("PortaLocker only defined for nt and posix platforms")
 
 if os.name == 'nt':
-    # eugh, but trying to suppress the warning doesn't work :(
-    FFFF0000 = 0xffff000 << 4
+    # eugh, we want 0xffff0000 here, but python 2.3 won't let us :(
+    FFFF0000 = -65536
     def lock(file, flags):
         hfile = win32file._get_osfhandle(file.fileno())
         # LockFileEx is not supported on all Win32 platforms (Win95, Win98, WinME).
