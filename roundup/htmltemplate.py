@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.34 2001-10-23 22:56:36 richard Exp $
+# $Id: htmltemplate.py,v 1.35 2001-10-24 00:04:41 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -507,7 +507,7 @@ class IndexTemplate(TemplateFunctions):
         # display the filter section
         if (hasattr(self.client, 'FILTER_POSITION') and
                 self.client.FILTER_POSITION in ('top and bottom', 'top')):
-            w('<form>\n')
+            w('<form action="index">\n')
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_display_form, show_customization)
             w('</form>\n')
@@ -587,7 +587,7 @@ class IndexTemplate(TemplateFunctions):
         # display the filter section
         if (hasattr(self.client, 'FILTER_POSITION') and
                 self.client.FILTER_POSITION in ('top and bottom', 'bottom')):
-            w('<form>\n')
+            w('<form action="index">\n')
             self.filter_section(filter_template, filter, columns, group,
                 all_filters, all_columns, show_display_form, show_customization)
             w('</form>\n')
@@ -827,6 +827,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2001/10/23 22:56:36  richard
+# Bugfix in filter "widget" placement, thanks Roch'e
+#
 # Revision 1.33  2001/10/23 01:00:18  richard
 # Re-enabled login and registration access after lopping them off via
 # disabling access for anonymous users.
