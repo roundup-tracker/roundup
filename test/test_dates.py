@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.27 2003-11-03 10:23:06 anthonybaxter Exp $ 
+# $Id: test_dates.py,v 1.28 2003-11-03 10:33:23 anthonybaxter Exp $ 
 
 import unittest, time
 
@@ -238,9 +238,22 @@ class DateTestCase(unittest.TestCase):
         self.assertEqual(str(then), '2004-02-02.00:00:00')
 
     def testDateSubtract(self):
+        # These are thoroughly broken right now.
+        i = Date('2003-03-15.00:00:00') - Date('2003-03-10.00:00:00')
+        self.assertEqual(i, Interval('5d'))
+        i = Date('2003-02-01.00:00:00') - Date('2003-03-01.00:00:00')
+        self.assertEqual(i, Interval('-28d'))
+        i = Date('2003-03-01.00:00:00') - Date('2003-02-01.00:00:00')
+        self.assertEqual(i, Interval('28d'))
+        i = Date('2003-03-03.00:00:00') - Date('2002-02-01.00:00:00')
+        self.assertEqual(i, Interval('30d'))
+        i = Date('2003-03-03.00:00:00') - Date('2002-04-01.00:00:00')
+        self.assertEqual(i, Interval('-29d'))
+        i = Date('2003-03-01.00:00:00') - Date('2002-02-01.00:00:00')
+        self.assertEqual(i, Interval('1m'))
         # force the transition over a year boundary
         i = Date('2003-01-01.00:00:00') - Date('2002-01-01.00:00:00')
-        self.assertEqual(str(i).strip(), '1y')
+        self.assertEqual(i, Interval('365d'))
 
     def testIntervalAdd(self):
         ae = self.assertEqual
