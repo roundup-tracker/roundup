@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.68 $
+:Version: $Revision: 1.69 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -107,14 +107,24 @@ The configuration variables available are:
  The email address that e-mail sent to roundup should go to. Think of it as the
  tracker's personal e-mail address.
 
-**TRACKER_WEB** - ``'http://your.tracker.url.example/'``
+**TRACKER_WEB** - ``'http://tracker.example/cgi-bin/roundup.cgi/bugs/'``
  The web address that the tracker is viewable at. This will be included in
- information sent to users of the tracker. The URL must include the cgi-bin
- part or anything else that is required to get to the home page of the
- tracker. You must include a trailing '/' in the URL.
+ information sent to users of the tracker. The URL **must** include the
+ cgi-bin part or anything else that is required to get to the home page of
+ the tracker. You **must** include a trailing '/' in the URL.
 
 **ADMIN_EMAIL** - ``'roundup-admin@%s'%MAIL_DOMAIN``
  The email address that roundup will complain to if it runs into trouble.
+
+**EMAIL_FROM_TAG** - ``''``
+ Additional text to include in the "name" part of the ``From:`` address used
+ in nosy messages. If the sending user is "Foo Bar", the ``From:`` line is
+ usually::
+     "Foo Bar" <issue_tracker@tracker.example>
+
+ the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
+
+    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
 
 **MESSAGES_TO_AUTHOR** - ``'yes'`` or``'no'``
  Send nosy messages to the author of the message.
@@ -172,11 +182,21 @@ tracker is attempted.::
     # The email address that mail to roundup should go to
     TRACKER_EMAIL = 'issue_tracker@%s'%MAIL_DOMAIN
 
-    # The web address that the tracker is viewable at
-    TRACKER_WEB = 'http://your.tracker.url.example/'
+    # The web address that the tracker is viewable at. This will be included in
+    # information sent to users of the tracker. The URL MUST include the cgi-bin
+    # part or anything else that is required to get to the home page of the
+    # tracker. You MUST include a trailing '/' in the URL.
+    TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 
     # The email address that roundup will complain to if it runs into trouble
     ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
+
+    # Additional text to include in the "name" part of the From: address used
+    # in nosy messages. If the sending user is "Foo Bar", the From: line is
+    # usually: "Foo Bar" <issue_tracker@tracker.example>
+    # the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
+    #    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
+    EMAIL_FROM_TAG = ""
 
     # Send nosy messages to the author of the message
     MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
@@ -207,6 +227,14 @@ tracker is attempted.::
     # Examples:
     MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
     #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
+    # 
+    # SECURITY DEFINITIONS
+    #
+    # define the Roles that a user gets when they register with the tracker
+    # these are a comma-separated string of role names (e.g. 'Admin,User')
+    NEW_WEB_USER_ROLES = 'User'
+    NEW_EMAIL_USER_ROLES = 'User'
 
 Tracker Schema
 ==============

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.75 2002-12-11 01:52:20 richard Exp $
+# $Id: roundupdb.py,v 1.76 2003-01-12 00:41:26 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -87,7 +87,8 @@ class IssueClass:
         appended to the "messages" field of the specified issue.
         """
 
-    def nosymessage(self, nodeid, msgid, oldvalues):
+    def nosymessage(self, nodeid, msgid, oldvalues, whichnosy='nosy',
+            from_address=[], cc=[], bcc=[]):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -115,8 +116,16 @@ class IssueClass:
             sendto.append(authid)
         r[authid] = 1
 
+        # now deal with cc people.
+        for cc_userid in cc :
+            if r.has_key(cc_userid):
+                continue
+            # send it to them
+            sendto.append(cc_userid)
+            recipients.append(cc_userid)
+
         # now figure the nosy people who weren't recipients
-        nosy = self.get(nodeid, 'nosy')
+        nosy = self.get(nodeid, whichnosy)
         for nosyid in nosy:
             # Don't send nosy mail to the anonymous user (that user
             # shouldn't appear in the nosy list, but just in case they
@@ -144,12 +153,12 @@ class IssueClass:
             messages.set(msgid, recipients=recipients)
 
             # send the message
-            self.send_message(nodeid, msgid, note, sendto)
+            self.send_message(nodeid, msgid, note, sendto, from_address)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
 
-    def send_message(self, nodeid, msgid, note, sendto):
+    def send_message(self, nodeid, msgid, note, sendto, from_address=None):
         '''Actually send the nominated message from this node to the sendto
            recipients, with the note appended.
         '''
@@ -220,16 +229,23 @@ class IssueClass:
         # make sure the To line is always the same (for testing mostly)
         sendto.sort()
 
+        # make sure we have a from address
+        if from_address is None:
+            from_address = self.db.config.TRACKER_EMAIL
+
+        # additional bit for after the From: "name"
+        from_tag = getattr(self.db.config, 'EMAIL_FROM_TAG', '')
+        if from_tag:
+            from_tag = ' ' + from_tag
+
         # create the message
         message = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', straddr(
-                              (authname, self.db.config.TRACKER_EMAIL) ) )
-        writer.addheader('Reply-To', straddr( 
-                                        (self.db.config.TRACKER_NAME,
-                                         self.db.config.TRACKER_EMAIL) ) )
+        writer.addheader('From', straddr((authname + from_tag, from_address)))
+        writer.addheader('Reply-To', straddr((self.db.config.TRACKER_NAME,
+            from_address)))
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
             time.gmtime()))
         writer.addheader('MIME-Version', '1.0')
@@ -282,7 +298,7 @@ class IssueClass:
 
         # now try to send the message
         if SENDMAILDEBUG:
-            open(SENDMAILDEBUG, 'w').write('FROM: %s\nTO: %s\n%s\n'%(
+            open(SENDMAILDEBUG, 'a').write('FROM: %s\nTO: %s\n%s\n'%(
                 self.db.config.ADMIN_EMAIL,
                 ', '.join(sendto),message.getvalue()))
         else:

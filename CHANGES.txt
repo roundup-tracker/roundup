@@ -5,6 +5,9 @@ are given with the most recent entry first.
 - better hyperlinking in web message texts
 - support setting of properties on message and file through web and
   email interface (thanks John Rouillard)
+- allow additional control over the roundupdb email sending (explicit
+  cc addresses, different from address and different nosy list property)
+  (thanks John Rouillard)
 
 
 2003-01-10 0.5.4

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: config.py,v 1.6 2002-12-13 22:20:10 richard Exp $
+# $Id: config.py,v 1.7 2003-01-12 00:41:27 richard Exp $
 
 import os
 
@@ -49,13 +49,13 @@ TRACKER_WEB = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/'
 # The email address that roundup will complain to if it runs into trouble
 ADMIN_EMAIL = 'roundup-admin@%s'%MAIL_DOMAIN
 
-# 
-# SECURITY DEFINITIONS
-#
-# define the Roles that a user gets when they register with the tracker
-# these are a comma-separated string of role names (e.g. 'Admin,User')
-NEW_WEB_USER_ROLES = 'User'
-NEW_EMAIL_USER_ROLES = 'User'
+# Additional text to include in the "name" part of the From: address used
+# in nosy messages. If the sending user is "Foo Bar", the From: line is
+# usually:
+#    "Foo Bar" <issue_tracker@tracker.example>
+# the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
+#    "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
+EMAIL_FROM_TAG = ""
 
 # Send nosy messages to the author of the message
 MESSAGES_TO_AUTHOR = 'no'           # either 'yes' or 'no'
@@ -88,5 +88,13 @@ EMAIL_LEAVE_BODY_UNCHANGED = 'no'   # either 'yes' or 'no'
 # Examples:
 MAIL_DEFAULT_CLASS = 'issue'   # use "issue" class by default
 #MAIL_DEFAULT_CLASS = ''        # disable (or just comment the var out)
+
+# 
+# SECURITY DEFINITIONS
+#
+# define the Roles that a user gets when they register with the tracker
+# these are a comma-separated string of role names (e.g. 'Admin,User')
+NEW_WEB_USER_ROLES = 'User'
+NEW_EMAIL_USER_ROLES = 'User'
 
 # vim: set filetype=python ts=4 sw=4 et si
