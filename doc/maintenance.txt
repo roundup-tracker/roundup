@@ -2,7 +2,7 @@
 Maintaining Roundup Trackers
 ============================
 
-:Version: $Revision: 1.1 $
+:Version: $Revision: 1.2 $
 
 .. contents::
    :depth: 1
@@ -57,6 +57,30 @@ Migrating Backends
 8. move the old tracker home out of the way (rename to "tracker.old") and 
    move the new tracker home into its place
 9. restart web and email frontends
+
+
+Moving a Tracker
+================
+
+If you're moving the tracker to a similar machine, you should:
+
+1. install Roundup on the new machine and test that it works there,
+2. stop the existing tracker web and email frontends (preventing changes),
+3. copy the tracker home directory over to the new machine, and
+4. start the tracker web and email frontends on the new machine.
+
+Most of the backends are actually portable across platforms (ie. from Unix to
+Windows to Mac). If this isn't the case (ie. the tracker doesn't work when
+moved using the above steps) then you'll need to:
+
+1. install Roundup on the new machine and test that it works there,
+2. stop the existing tracker web and email frontends (preventing changes),
+3. use the roundup-admin tool "export" command to export the contents of
+   the existing tracker,
+4. copy the export to the new machine,
+5. use the roundup-admin "import" command to import the tracker on the new
+   machine, and
+6. start the tracker web and email frontends on the new machine.
 
 
 -------------------
