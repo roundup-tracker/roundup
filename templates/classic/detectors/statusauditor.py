@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: statusauditor.py,v 1.1 2003-04-17 03:26:38 richard Exp $
+#$Id: statusauditor.py,v 1.2 2003-06-25 09:49:34 neaj Exp $
 
 def chatty(db, cl, nodeid, newvalues):
     ''' If the issue is currently 'unread', 'resolved' or 'done-cbb', then set
@@ -41,7 +41,7 @@ def chatty(db, cl, nodeid, newvalues):
     current_status = cl.get(nodeid, 'status')
 
     # see if there's an explicit change in this transaction
-    if newvalues.has_key('status') and newvalues['status'] != current_status:
+    if newvalues.has_key('status'):
         # yep, skip
         return
 
