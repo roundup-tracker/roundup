@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.17 $
+:Version: $Revision: 1.18 $
 
 .. contents::
 
@@ -93,9 +93,9 @@ Python -- see `testing your python`_.
        python setup.py install
 
    If you would like to place the Roundup scripts in a directory other
-   than ``/usr/local/bin``, use the ``--install-scripts`` option as follows,
-   replacing ``/opt/roundup/bin`` with the location where you would like
-   the scripts to reside::
+   than ``/usr/local/bin``, Then specify the preferred location with
+   ``--install-script``. For example, to install them in
+   ``/opt/roundup/bin``::
 
        python setup.py install --install-scripts=/opt/roundup/bin
 
@@ -181,6 +181,9 @@ Python -- see `testing your python`_.
 
        10 * * * * /opt/roundup/bin/roundup-mailgw
                 /opt/roundup/instances/support /var/mail/support
+
+   If you don't want to use the email component of Roundup, then remove the
+   "``nosyreator.py``" module from your instance "``detectors``" directory.
 
 6. Test the email gateway.  Under most flavors of UNIX, this
    can be done by::
