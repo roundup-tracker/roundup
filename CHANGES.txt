@@ -72,6 +72,11 @@ Fixes:
 
 
 2001-07-28 - 0.2.1
+Features:
+ . Added docstring to roundup package so pydoc reports useful information.
+ . Added the roundup 1 software carpentry submission HTML to the doc
+   directory as "overview.html".
+
 Fixes:
  . Fixed bug in init command - templatebuilder was assuming existence of
    "html" directory in instance home.
