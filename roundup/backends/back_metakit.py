@@ -194,7 +194,7 @@ class Class:
         self.privateprops = { 'id' : hyperdb.String(),
                               'activity' : hyperdb.Date(),
                               'creation' : hyperdb.Date(),
-                              'creator'  : hyperdb.Link('user') }
+                              'creator'  : hyperdb.String() }
         self.auditors = {'create': [], 'set': [], 'retire': []} # event -> list of callables
         self.reactors = {'create': [], 'set': [], 'retire': []} # ditto
         view = self.__getview()

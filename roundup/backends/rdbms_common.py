@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.7 2002-09-20 01:20:32 richard Exp $
+# $Id: rdbms_common.py,v 1.8 2002-09-20 01:48:34 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -1788,7 +1788,7 @@ class Class(hyperdb.Class):
             d['id'] = String()
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
-            d['creator'] = hyperdb.Link("user")
+            d['creator'] = hyperdb.String()
         return d
 
     def addprop(self, **properties):
