@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.59 2004-07-27 01:59:28 richard Exp $
+$Id: roundup_server.py,v 1.60 2004-09-21 08:01:15 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -232,8 +232,7 @@ else:
     # allow the win32
     import win32service
     import win32event
-    from win32event import *
-    from win32file import *
+    import win32file
 
     SvcShutdown = "ServiceShutdown"
 
@@ -279,25 +278,27 @@ else:
 
         def get_request(self):
             # Call WSAEventSelect to enable self.socket to be waited on.
-            WSAEventSelect(self.socket, self.hevConn, FD_ACCEPT)
+            win32file.WSAEventSelect(self.socket, self.hevConn,
+                win32file.FD_ACCEPT)
             while 1:
                 try:
                     rv = self.socket.accept()
                 except socket.error, why:
-                    if why[0] != WSAEWOULDBLOCK:
+                    if why[0] != win32file.WSAEWOULDBLOCK:
                         raise
                     # Use WaitForMultipleObjects instead of select() because
                     # on NT select() is only good for sockets, and not general
                     # NT synchronization objects.
-                    rc = WaitForMultipleObjects((self.hevSvcStop, self.hevConn),
-                        0, INFINITE)
-                    if rc == WAIT_OBJECT_0:
+                    rc = win32event.WaitForMultipleObjects(
+                        (self.hevSvcStop, self.hevConn),
+                        0, win32event.INFINITE)
+                    if rc == win32event.WAIT_OBJECT_0:
                         # self.hevSvcStop was signaled, this means:
                         # Stop the service!
                         # So we throw the shutdown exception, which gets
                         # caught by self.SvcDoRun
                         raise SvcShutdown
-                    # Otherwise, rc == WAIT_OBJECT_0 + 1 which means
+                    # Otherwise, rc == win32event.WAIT_OBJECT_0 + 1 which means
                     # self.hevConn was signaled, which means when we call
                     # self.socket.accept(), we'll have our incoming connection
                     # socket!
@@ -313,7 +314,7 @@ else:
                     # So if you yank the following line, the setblocking() call
                     # will be useless. The socket will still be in non-blocking
                     # mode.
-                    WSAEventSelect(rv[0], self.hevConn, 0)
+                    win32file.WSAEventSelect(rv[0], self.hevConn, 0)
                     rv[0].setblocking(1)
                     break
             return rv
