@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.103 2003-02-14 00:31:44 richard Exp $
+#$Id: back_anydbm.py,v 1.104 2003-02-18 01:57:38 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1879,7 +1879,7 @@ class Class(hyperdb.Class):
         for react in self.reactors[action]:
             react(self.db, self, nodeid, oldvalues)
 
-class FileClass(Class):
+class FileClass(Class, hyperdb.FileClass):
     '''This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off
        externally to the hyperdb.

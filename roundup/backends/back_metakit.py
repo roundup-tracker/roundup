@@ -1199,7 +1199,7 @@ _typmap = {
     hyperdb.Boolean   : 'I',
     hyperdb.Number    : 'I',
 }
-class FileClass(Class):
+class FileClass(Class, hyperdb.FileClass):
     ''' like Class but with a content property
     '''
     default_mime_type = 'text/plain'

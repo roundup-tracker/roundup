@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.84 2002-10-07 00:52:51 richard Exp $
+# $Id: hyperdb.py,v 1.85 2003-02-18 01:57:38 richard Exp $
 
 """
 Hyperdatabase implementation, especially field types.
@@ -560,6 +560,12 @@ class Class:
         '''Add (or refresh) the node to search indexes
         '''
         raise NotImplementedError
+
+class FileClass:
+    ''' A class that requires the "content" property and stores it on
+        disk.
+    '''
+    pass
 
 class Node:
     ''' A convenience wrapper for the given node

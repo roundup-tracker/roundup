@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.33 2003-02-14 00:31:45 richard Exp $
+# $Id: rdbms_common.py,v 1.34 2003-02-18 01:57:39 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1977,7 +1977,7 @@ class Class(hyperdb.Class):
         for react in self.reactors[action]:
             react(self.db, self, nodeid, oldvalues)
 
-class FileClass(Class):
+class FileClass(Class, hyperdb.FileClass):
     '''This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off
        externally to the hyperdb.

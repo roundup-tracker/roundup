@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.89 2003-02-17 06:44:00 richard Exp $
+# $Id: client.py,v 1.90 2003-02-18 01:57:39 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1169,6 +1169,10 @@ class Client:
              :file - create a file, attach to the current item and any
                      message created by :note. This is ALWAYS designated
                      "file-1".
+
+            We also check that FileClass items have a "content" property with
+            actual content, otherwise we remove them from all_props before
+            returning.
         '''
         # some very useful variables
         db = self.db
@@ -1511,6 +1515,15 @@ class Client:
                 ', '.join(required)))
         if s:
             raise ValueError, '\n'.join(s)
+
+        # check that FileClass entries have a "content" property with
+        # content, otherwise remove them
+        for (cn, id), props in all_props.items():
+            cl = self.db.classes[cn]
+            if not isinstance(cl, hyperdb.FileClass):
+                continue
+            if not props.get('content', ''):
+                del all_props((cn, id))
 
         return all_props, all_links
 
