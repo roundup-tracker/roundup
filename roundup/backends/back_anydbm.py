@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.28 2002-02-16 09:14:17 richard Exp $
+#$Id: back_anydbm.py,v 1.29 2002-02-25 14:34:31 grubert Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -25,11 +25,12 @@ serious bugs, and is not available)
 
 import whichdb, anydbm, os, marshal
 from roundup import hyperdb, date, password
+from blobfiles import FileStorage
 
 #
 # Now the database
 #
-class Database(hyperdb.Database):
+class Database(FileStorage, hyperdb.Database):
     """A database for storing records containing flexible data types.
 
     Transaction stuff TODO:
@@ -250,36 +251,7 @@ class Database(hyperdb.Database):
 
     #
     # Files - special node properties
-    #
-    def filename(self, classname, nodeid, property=None):
-        '''Determine what the filename for the given node and optionally property is.
-        '''
-        # TODO: split into multiple files directories
-        if property:
-            return os.path.join(self.dir, 'files', '%s%s.%s'%(classname,
-                nodeid, property))
-        else:
-            # roundupdb.FileClass never specified the property name, so don't include it
-            return os.path.join(self.dir, 'files', '%s%s'%(classname,
-                nodeid))
-
-    def storefile(self, classname, nodeid, property, content):
-        '''Store the content of the file in the database. The property may be None, in
-           which case the filename does not indicate which property is being saved.
-        '''
-        name = self.filename(classname, nodeid, property)
-        open(name + '.tmp', 'wb').write(content)
-        self.transactions.append((self._doStoreFile, (name, )))
-
-    def getfile(self, classname, nodeid, property):
-        '''Store the content of the file in the database.
-        '''
-        filename = self.filename(classname, nodeid, property)
-        try:
-            return open(filename, 'rb').read()
-        except:
-            return open(filename+'.tmp', 'rb').read()
-
+    # inherited from FileStorage
 
     #
     # Journal
@@ -453,6 +425,9 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.28  2002/02/16 09:14:17  richard
+# . #514854 ] History: "User" is always ticket creator
+#
 #Revision 1.27  2002/01/22 07:21:13  richard
 #. fixed back_bsddb so it passed the journal tests
 #

@@ -9,6 +9,16 @@ This file contains information for users upgrading from:
   0.3.x -> 0.4.x
   0.2.x -> 0.3.x
 
+From CVS
+========
+
+Files storage
+-------------
+
+Messages and files from newly created issues will be put into subdierectories
+in thousands e.g. msg123 will be put into files/msg/0/msg123, file2003
+will go into files/file/2/file2003. Previous messages are still found, but
+could be put into this structure.
 
 Migrating from 0.4.0 to 0.4.1
 =============================

@@ -51,8 +51,6 @@ in general:
   . more back-ends
 hyperdb:
   . more efficient reverse lookups
-roundupdb:
-  . split the file storage into multiple dirs?
 roundup-server:
   . check the source file timestamps before reloading
 cgi_client

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.18 2002-01-22 07:21:13 richard Exp $ 
+# $Id: test_db.py,v 1.19 2002-02-25 14:34:31 grubert Exp $ 
 
 import unittest, os, shutil
 
@@ -99,12 +99,9 @@ class anydbmDBTestCase(MyTestCase):
         self.db.status.history('2')
 
     def testTransactions(self):
+        # remember the number of items we started
         num_issues = len(self.db.issue.list())
-        files_dir = os.path.join('_test_dir', 'files')
-        if os.path.exists(files_dir):
-            num_files = len(os.listdir(files_dir))
-        else:
-            num_files = 0
+        num_files = self.db.numfiles()
         self.db.issue.create(title="don't commit me!", status='1')
         self.assertNotEqual(num_issues, len(self.db.issue.list()))
         self.db.rollback()
@@ -117,15 +114,18 @@ class anydbmDBTestCase(MyTestCase):
         self.assertNotEqual(num_issues, len(self.db.issue.list()))
         self.db.file.create(name="test", type="text/plain", content="hi")
         self.db.rollback()
-        self.assertEqual(num_files, len(os.listdir(files_dir)))
-        self.db.file.create(name="test", type="text/plain", content="hi")
-        self.db.commit()
-        self.assertNotEqual(num_files, len(os.listdir(files_dir)))
-        num_files2 = len(os.listdir(files_dir))
+        self.assertEqual(num_files, self.db.numfiles())
+        for i in range(10):
+            self.db.file.create(name="test", type="text/plain", 
+                    content="hi %d"%(i))
+            self.db.commit()
+        num_files2 = self.db.numfiles()
+        self.assertNotEqual(num_files, num_files2)
         self.db.file.create(name="test", type="text/plain", content="hi")
         self.db.rollback()
-        self.assertNotEqual(num_files, len(os.listdir(files_dir)))
-        self.assertEqual(num_files2, len(os.listdir(files_dir)))
+        self.assertNotEqual(num_files, self.db.numfiles())
+        self.assertEqual(num_files2, self.db.numfiles())
+            
 
 
     def testExceptions(self):
@@ -346,6 +346,14 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/01/22 07:21:13  richard
+# . fixed back_bsddb so it passed the journal tests
+#
+# ... it didn't seem happy using the back_anydbm _open method, which is odd.
+# Yet another occurrance of whichdb not being able to recognise older bsddb
+# databases. Yadda yadda. Made the HYPERDBDEBUG stuff more sane in the
+# process.
+#
 # Revision 1.17  2002/01/22 05:06:09  rochecompaan
 # We need to keep the last 'set' entry in the journal to preserve
 # information on 'activity' for nodes.
