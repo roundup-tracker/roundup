@@ -20,7 +20,8 @@ Migrating from 0.7.1 to 0.8.0
 ---------------------
 
 Backends 'bsddb' and 'bsddb3' are removed.  If you are using one of these,
-please migrate to another backend before upgrade.
+you *must* migrate to another backend before upgrading.
+
 
 0.8.0 API changes
 -----------------
@@ -34,6 +35,53 @@ Class.get() instead.
 
 XXX describe any mandatory changes to tracker layout
 
+The ``config.py`` file has been replaced by ``config.ini``. You may copy
+the example config.ini from the classic tracker template::
+
+  templates/classic/config.ini
+
+and modify the values therein based on the contents of your old config.py.
+In most cases, the names of the config variables are the same.
+
+The ``select_db.py`` file has been replaced by a file in the ``db``
+directory called ``backend_name``. As you might guess, this file contains
+just the name of the backend. To figure what the contents of yours should
+be, use the following table:
+
+  ================================ =========================
+  ``select_db.py`` contents        ``backend_name`` contents
+  ================================ =========================
+  from back_anydbm import ...      anydbm
+  from back_metakit import ...     metakit
+  from back_sqlite import ...      sqlite
+  from back_mysql import ...       mysql
+  from back_postgresql import ...  postgresql
+  ================================ =========================
+
+The ``dbinit.py`` file has been split into two new files,
+``initial_data.py`` and ``schema.py``. The contents of this file are:
+
+``initial_data.py``
+  You don't need on of these as your tracker is already initialised.
+
+``schema.py``
+  The contents of the ``def open(name=None):`` function go in this file.
+
+  Copy the lines of that function (down to the next ``def`` statement) from
+  the ``dbinit.py`` file and *remove* the leading four spaces on each line
+  (if there's 8 leading spaces, only remove 4).
+
+  Remove the first few lines - those starting with ``from roundup.hyperdb
+  import ...`` and the ``db = Database(config, name)`` line.
+
+  Remove the last few lines starting with ``import detectors`` down to
+  ``return db`` inclusive.
+
+Note that there's a new way to write extension code for Roundup - the old
+``interfaces.py`` file will be ignored in future versions of Roundup. See
+the `what's new in 0.8`__ documentation for more information.
+
+__ whatsnew-0.8.html
 
 0.8.0 8-bit character set support
 ---------------------------------
@@ -47,20 +95,18 @@ characters in form fields).  This version allows to change
 the character set for http transfers.  To do so, you may add
 the following code to your ``page.html`` template::
 
- <div tal:define="uri string:${request/base}${request/env/PATH_INFO}"
-  tal:omit-tag="python:1"
- >
+ <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
   <a tal:attributes="href python:request.indexargs_href(uri,
    {'@charset':'utf-8'})">utf-8</a>
   <a tal:attributes="href python:request.indexargs_href(uri,
    {'@charset':'koi8-r'})">koi8-r</a>
- </div>
+ </tal:block>
 
 (substitute ``koi8-r`` with appropriate charset for your language).
 Charset preference is kept in the browser cookie ``roundup_charset``.
 
 Lines ``meta http-equiv`` added to the tracker templates in version 0.6.0
-are misleading and should be changed to include actual character set name::
+should be changed to include actual character set name::
 
  <meta http-equiv="Content-Type"
   tal:attributes="content string:text/html;; charset=${request/client/charset}"

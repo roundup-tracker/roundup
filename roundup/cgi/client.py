@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.196 2004-11-05 04:55:52 richard Exp $
+# $Id: client.py,v 1.197 2004-11-08 23:29:45 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -314,6 +314,7 @@ class Client:
         """
         # default to storage charset
         self.charset = self.STORAGE_CHARSET
+
         # look for client charset
         if self.form.has_key('@charset'):
             charset = self.form['@charset'].value

@@ -12,7 +12,39 @@ __ features.html
 Logging of internal messages
 ============================
 
-TODO
+
+Security Changes
+================
+
+Added MD5 scheme for password hiding. This extends the existing SHA and
+crypt methods and is useful if you have an existing MD5 password database.
+
+
+Extending Roundup
+=================
+
+To write extension code for Roundup you place a file in the tracker home
+``extensions`` directory. See the `customisation documentation`_ for more
+information about how this is done.
+
+
+Added support for HTTP charset selection
+========================================
+
+XXX This doesn't appear in the main documentation
+
+This is used to override the UTF-8 default. It may be overridden in both
+forms and a browser cookie.
+
+- In forms, use the ``@charset`` variable.
+- To use the cookie override, have the ``roundup_charset`` cookie set.
+
+In both cases, the value is a valid charset name (eg. ``utf-8`` or
+``kio8-r``).
+
+
+Web Interface Miscellanea
+=========================
 
 
 .. _`customisation documentation`: customizing.html

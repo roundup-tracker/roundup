@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.150 $
+:Version: $Revision: 1.151 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -2039,10 +2039,8 @@ html_quote      quote some text as safe in HTML (ie. <, >, ...)
 =============== ========================================================
 
 You may add additional utility methods by writing them in your tracker
-``interfaces.py`` module's ``TemplatingUtils`` class. See `adding a time
-log to your issues`_ for an example. The TemplatingUtils class itself
-will have a single attribute, ``client``, which may be used to access
-the ``client.db`` when you need to perform arbitrary database queries.
+``extensions`` directory and registering them with the templating system.
+
 
 Batching
 ::::::::
@@ -2417,6 +2415,9 @@ It may then:
 
 Register the action class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+XXX update for new extensions setup (then search for interfaces.py and make
+sure there's no examples that use the old style)
 
 The class is now written, but isn't available to the user until you add it to
 the ``instance.Client`` class ``actions`` variable, like so::
@@ -2941,6 +2942,8 @@ be able to give a summary of the total time spent on a particular issue.
    some Python code, since it's beyond the scope of PageTemplates to
    perform such calculations. We do this by adding a method to the
    TemplatingUtils class in our tracker ``interfaces.py`` module::
+
+   XXX update this example for TemplatingUtils -> extensions
 
     class TemplatingUtils:
         ''' Methods implemented on this class will be available to HTML
