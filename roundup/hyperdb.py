@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.69 2002-06-17 23:15:29 richard Exp $
+# $Id: hyperdb.py,v 1.70 2002-06-27 12:06:20 gmcm Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -428,7 +428,7 @@ class Class:
                 l = []
                 for entry in value:
                     if type(entry) != type(''):
-                        raise ValueError, 'link value must be String'
+                        raise ValueError, '"%s" link value (%s) must be String' % (key, value)
                     # if it isn't a number, it's a key
                     if not num_re.match(entry):
                         try:
@@ -1169,6 +1169,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.69  2002/06/17 23:15:29  richard
+# Can debug to stdout now
+#
 # Revision 1.68  2002/06/11 06:52:03  richard
 #  . #564271 ] find() and new properties
 #
