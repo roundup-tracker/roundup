@@ -15,7 +15,8 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.29 2003-11-04 12:35:47 anthonybaxter Exp $ 
+# $Id: test_dates.py,v 1.30 2003-11-19 22:53:14 jlgijsbers Exp $
+from __future__ import nested_scopes
 
 import unittest, time
 
@@ -335,6 +336,39 @@ class DateTestCase(unittest.TestCase):
         ae(str(Date('2003-5', add_granularity=1)), '2003-05-31.23:59:59')
         ae(str(Interval('+1w', add_granularity=1)), '+ 14d')
         ae(str(Interval('-2m 3w', add_granularity=1)), '- 2m 14d')
+        
+    def testIntervalPretty(self):
+        def ae(spec, pretty):
+            self.assertEqual(Interval(spec).pretty(), pretty)
+        ae('2y', 'in 2 years')
+        ae('1y', 'in 1 year')
+        ae('2m', 'in 2 months')
+        ae('1m 30d', 'in 2 months')
+        ae('60d', 'in 2 months')
+        ae('59d', 'in 1 month')
+        ae('1m', 'in 1 month')
+        ae('29d', 'in 1 month')
+        ae('28d', 'in 4 weeks')
+        ae('8d', 'in 1 week')
+        ae('7d', 'in 7 days')
+        ae('1w', 'in 7 days')
+        ae('2d', 'in 2 days')
+        ae('1d', 'tomorrow')
+        ae('02:00:00', 'in 2 hours')
+        ae('01:59:00', 'in 1 3/4 hours')
+        ae('01:45:00', 'in 1 3/4 hours')
+        ae('01:30:00', 'in 1 1/2 hours')
+        ae('01:29:00', 'in 1 1/4 hours')
+        ae('01:00:00', 'in an hour')        
+        ae('00:30:00', 'in 1/2 an hour')
+        ae('00:15:00', 'in 1/4 hour')
+        ae('00:02:00', 'in 2 minutes')
+        ae('00:01:00', 'in 1 minute')
+        ae('00:00:30', 'in a moment')
+        ae('-00:00:30', 'just now')
+        ae('-1d', 'yesterday')
+        ae('-1y', '1 year ago')
+        ae('-2y', '2 years ago')
 
 def test_suite():
     suite = unittest.TestSuite()

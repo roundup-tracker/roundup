@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.56 2003-11-04 12:35:47 anthonybaxter Exp $
+# $Id: date.py,v 1.57 2003-11-19 22:53:15 jlgijsbers Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -514,11 +514,11 @@ class Interval:
         raise TypeError, "Can't add %r"%other
 
     def __div__(self, other):
-        ''' Divide this interval by an int value.
+        """ Divide this interval by an int value.
 
             Can't divide years and months sensibly in the _same_
             calculation as days/time, so raise an error in that situation.
-        '''
+        """
         try:
             other = float(other)
         except TypeError:
@@ -564,9 +564,9 @@ class Interval:
         '''
         if self.year:
             if self.year == 1:
-                return _('1 year')
+                s = _('1 year')
             else:
-                return _('%(number)s years')%{'number': self.year}
+                s = _('%(number)s years')%{'number': self.year}
         elif self.month or self.day > 13:
             days = (self.month * 30) + self.day
             if days > 28:
@@ -623,13 +623,13 @@ class Interval:
             self.day, self.hour, self.minute, self.second)
 
 def fixTimeOverflow(time):
-    ''' Handle the overflow in the time portion (H, M, S) of "time":
+    """ Handle the overflow in the time portion (H, M, S) of "time":
             (sign, y,m,d,H,M,S)
 
         Overflow and underflow will at most affect the _days_ portion of
         the date. We do not overflow days to months as we don't know _how_
         to, generally.
-    '''
+    """
     # XXX we could conceivably use this function for handling regular dates
     # XXX too - we just need to interrogate the month/year for the day
     # XXX overflow...
