@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.75 2003-03-10 00:22:21 richard Exp $ 
+# $Id: test_db.py,v 1.76 2003-03-10 18:16:42 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -633,11 +633,13 @@ class anydbmDBTestCase(MyTestCase):
         iss = self.db.issue
         for issue in (
                 {'title': 'issue one', 'status': '2',
-                    'foo': date.Interval('1:10')},
+                    'foo': date.Interval('1:10'), 
+                    'deadline': date.Date('2003-01-01.00:00')},
                 {'title': 'issue two', 'status': '1',
-                    'foo': date.Interval('1d')},
+                    'foo': date.Interval('1d'), 
+                    'deadline': date.Date('2003-02-16.22:50')},
                 {'title': 'issue three', 'status': '1',
-                    'nosy': ['1','2']}):
+                    'nosy': ['1','2'], 'deadline': date.Date('2003-03-08')}):
             self.db.issue.create(**issue)
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
@@ -665,13 +667,22 @@ class anydbmDBTestCase(MyTestCase):
         ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
             ['3'])
 
+    def testFilteringRange(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['2'])
+        ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['2'])
+        ae(filt(None, {'deadline': '; 2003-02-16'}), ['1'])
+        # Lets assume people won't invent a time machine, otherwise this test
+        # may fail :)
+        ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3'])
+        ae(filt(None, {'deadline': '2003-02-16'}), ['2', '3'])
+
     def testFilteringIntervalSort(self):
         ae, filt = self.filteringSetup()
         # ascending should sort None, 1:10, 1d
         ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '1', '2'])
         # descending should sort 1d, 1:10, None
         ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '3'])
-
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
@@ -916,28 +927,28 @@ def suite():
 
     from roundup import backends
     p = []
-#    if hasattr(backends, 'mysql'):
-#        from roundup.backends import mysql
-#        try:
-#            # Check if we can run mysql tests
-#            import MySQLdb
-#            db = mysql.Database(nodbconfig, 'admin')
-#            db.conn.select_db(config.MYSQL_DBNAME)
-#            db.sql("SHOW TABLES");
-#            tables = db.sql_fetchall()
-#            if tables:
-#                # Database should be empty. We don't dare to delete any data
-#                raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
-#            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
-#            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
-#            db.close()
-#        except (MySQLdb.ProgrammingError, DatabaseError), msg:
-#            print "Warning! Mysql tests will not be performed", msg
-#            print "See doc/mysql.txt for more details."
-#        else:
-#            p.append('mysql')
-#            l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
-#            l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+    if hasattr(backends, 'mysql'):
+        from roundup.backends import mysql
+        try:
+            # Check if we can run mysql tests
+            import MySQLdb
+            db = mysql.Database(nodbconfig, 'admin')
+            db.conn.select_db(config.MYSQL_DBNAME)
+            db.sql("SHOW TABLES");
+            tables = db.sql_fetchall()
+            if tables:
+                # Database should be empty. We don't dare to delete any data
+                raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
+            db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
+            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
+            db.close()
+        except (MySQLdb.ProgrammingError, DatabaseError), msg:
+            print "Warning! Mysql tests will not be performed", msg
+            print "See doc/mysql.txt for more details."
+        else:
+            p.append('mysql')
+            l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+            l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
     #return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):
