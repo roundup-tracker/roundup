@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.73 2004-11-02 10:02:05 a1s Exp $
+$Id: roundup_server.py,v 1.74 2004-11-22 07:11:30 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -213,6 +213,8 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
         env['HTTP_HOST'] = self.headers['host']
+        if os.environ.has_key('CGI_SHOW_TIMING'):
+            env['CGI_SHOW_TIMING'] = os.environ['CGI_SHOW_TIMING']
 
         # do the roundup thing
         tracker = self.get_tracker(tracker_name)
