@@ -11,78 +11,9 @@ The stylesheet included with this package has been copied from the Zope
 management interface and presumably belongs to Digital Creations.
 
 
-TODO: Instructions need re-writing!!
-
-
 2. Installation
 ===============
-These instructions work on redhat 6.2 and mandrake 8.0 - with the caveat
-that these systems don't come with python 2.0 or newer installed, so you'll
-have to upgrade python before this stuff will work.
-
-Roundup is configurable using a localconfig.py file. It may have the
-following variable declarations:
-  
-  ROUNDUP_HOME - This is the root directory for roundup
-  MAILHOST - The SMTP mail host that roundup will use to send mail
-  MAIL_DOMAIN - The domain name used for email addresses
-
-Any further configuration should be possible by editing config.py directly.
-The email addresses used by the system by default are:
-
-  issue_tracker@MAIL_DOMAIN  - submissions of issues
-  roundup-admin@MAIL_DOMAIN  - roundup's internal use (problems, etc)
-
-
-2.0 Prerequisites
------------------
-Either:
- . Python 2.0 with pydoc installed. See http://www.lfw.org/ for pydoc.
-or
- . Python 2.1
-
-Both need the bsddb module.
-
-
-2.1 Initial Setup
------------------
-
-
-2.2 Mail
---------
-Set up a mail alias called "issue_tracker" as:
-  "|/usr/bin/python /home/httpd/html/roundup/roundup-mailgw <instance_home>"
-
-In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
-so sendmail will accept the pipe command. In that case, symlink
-/etc/smrsh/python to /usr/bin/python and change the command to:
-  "|python /home/httpd/html/roundup/roundup-mailgw <instance_home>"
-
-
-2.3 Web Interface
------------------
-This software will work through apache or stand-alone.
-
-Stand-alone:
- 1. Edit server.py at the bottom to set your hostname and a port that is free.
- 2. "python server.py"
- 3. Load up the page "/" using the port number you set.
-
-Apache:
- 1. Make sure roundup.cgi is executable
- 2. Edit your /etc/httpd/conf/httpd.conf and make sure that the
-    /home/httpd/html/roundup/roundup.cgi script will be treated as a CGI
-    script.
- 3. Add the following to your /etc/httpd/conf/httpd.conf:
-------8<------- snip here ------8<-------
-RewriteEngine on
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=HTTP_CGI_AUTHORIZATION:%1,t=application/x-httpd-cgi,l]
-------8<------- snip here ------8<-------
-   note: the RewriteRule must be on one line - no breaks
- 4. Re-start your apache to re-load the config
- 5. Load up the page "/roundup/roundup.cgi/"
-
+For installation notes, please see the file INSTALL.TXT
 
 
 3. Usage
@@ -92,8 +23,9 @@ interface.
 
 3.1 Command-line
 ----------------
-The command-line tool is called "roundup.py" and is used for most low-level
+The command-line tool is called "roundup-admin" and is used for most low-level
 database manipulations such as:
+ . creating a database instance
  . redefining the list of products ("create" and "retire" commands)
  . adding users manually, or setting their passwords ("create" and "set")
  . other stuff - run it with no arguments to get a better description of
@@ -102,7 +34,7 @@ database manipulations such as:
 
 3.2 E-mail
 ----------
-See the docstring at the start of the roundup-mailgw.py source file.
+See the docstring at the start of the roundup/mailgw.py source file.
 
 
 3.3 Web
@@ -220,5 +152,6 @@ richard@bizarsoftware.com.au
 =========
 Well, Ping, of course ;)
 
-Anthony Baxter, for some good first-release feedback.
+Anthony Baxter, for some good first-release feedback. And then continuing
+support through development on sourceforge.
 
