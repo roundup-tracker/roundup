@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.7 2002-09-04 07:32:55 richard Exp $
+$Id: roundup_server.py,v 1.8 2002-09-07 22:46:19 richard Exp $
 """
 
 # python version check
@@ -185,6 +185,41 @@ roundup-server [-n hostname] [-p port] [-l file] [-d file] [name=instance home]*
 ''')%locals()
     sys.exit(0)
 
+def daemonize(pidfile):
+    ''' Turn this process into a daemon.
+        - make sure the sys.std(in|out|err) are completely cut off
+        - make our parent PID 1
+
+        Write our new PID to the pidfile.
+
+        From A.M. Kuuchling (possibly originally Greg Ward) with
+        modification from Oren Tirosh, and finally a small mod from me.
+    '''
+    # Fork once
+    if os.fork() != 0:
+        os._exit(0)
+
+    # Create new session
+    os.setsid()
+
+    # Second fork to force PPID=1
+    pid = os.fork()
+    if pid:
+        pidfile = open(pidfile, 'w')
+        pidfile.write(str(pid))
+        pidfile.close()
+        os._exit(0)         
+
+    os.chdir("/")         
+    os.umask(0)
+
+    # close off sys.std(in|out|err), redirect to devnull so the file
+    # descriptors can't be used again
+    devnull = os.open('/dev/null', 0)
+    os.dup2(devnull, 0)
+    os.dup2(devnull, 1)
+    os.dup2(devnull, 2)
+
 def run():
     hostname = ''
     port = 8080
@@ -247,13 +282,9 @@ def run():
 
     # fork?
     if pidfile:
-        pid = os.fork()
-        if pid:
-            print 'forking', pid
-            open(pidfile, 'w').write(str(pid))
-            return
+        daemonize(pidfile)
 
-    # redirect stdout/stderr
+    # redirect stdout/stderr to our logfile
     if logfile:
         sys.stdout = sys.stderr = open(logfile, 'a')
 
@@ -266,6 +297,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2002/09/04 07:32:55  richard
+# add daemonification
+#
 # Revision 1.6  2002/08/30 08:33:28  richard
 # new CGI frontend support
 #
