@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-10-22 - 0.3.0 pre 3
+2001-10-23 - 0.3.0 pre 3
 Feature:
  . MailGW now moves 'unread' to 'chatting' on receiving e-mail for an issue.
  . feature #473127: Filenames. I modified the file.index and htmltemplate
@@ -11,6 +11,10 @@ Feature:
   . Interactive mode for running multiple (independant at present) commands.
   . Tabular display of nodes.
   . Import and export via colon-separated files.
+
+Changed:
+ . re-organised the html templating code. Fixed some bugs, probably
+   introduced some more.  Hopefully not too many.
 
 Fixed:
  . Stand-alone server now has a configurable setuid user.
