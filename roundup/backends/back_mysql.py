@@ -651,6 +651,10 @@ class MysqlClass:
             where.append('_%s.id in (%s)'%(cn, s))
             args = args + v
 
+        # sanity check: sorting *and* grouping on the same property?
+        if group[1] == sort[1]:
+            sort = (None, None)
+
         # "grouping" is just the first-order sorting in the SQL fetch
         orderby = []
         ordercols = []

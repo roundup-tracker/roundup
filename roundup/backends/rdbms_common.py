@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.131 2004-09-26 14:38:54 a1s Exp $
+# $Id: rdbms_common.py,v 1.132 2004-10-07 06:08:42 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2153,6 +2153,10 @@ class Class(hyperdb.Class):
             s = ','.join([a for x in v])
             where.append('_%s.id in (%s)'%(cn, s))
             args = args + v
+
+        # sanity check: sorting *and* grouping on the same property?
+        if group[1] == sort[1]:
+            sort = (None, None)
 
         # "grouping" is just the first-order sorting in the SQL fetch
         orderby = []
