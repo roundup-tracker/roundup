@@ -1,8 +1,36 @@
-- configuration: including much simpler upgrade path and the use of
-  non-Python configuration files (ConfigParser)
-- instance dir: cleanup to support config
-- rename to "tracker"
-- journalling: fix the journal bloat
-- alternative user auth: at least an LDAP implementation
-- security overhaul: see doc/security.txt
-- fix double-submit
+Implementation plan for 0.5 release:
+
+State    Description
+------------------------------------------------------------------------------
+pending  configuration: including much simpler upgrade path and the use of
+         non-Python configuration files (ConfigParser)
+         instance dir: cleanup to support config
+         feature request #498658
+pending  meta/parent bug support/implementation
+         feature request #506815
+pending  user preferences
+         feature request #507842
+pending  rename to "instance" to "tracker"
+pending  journalling: fix the journal bloat
+         related: Re-enable link backrefs from messages
+                  feature request #568714
+pending  alternative user auth: at least an LDAP implementation
+pending  security overhaul: see doc/security.txt
+pending  fix double-submit by having new-item-submit redirect at end
+pending  investigate splitting instance.open() into open() and login()
+pending  range searching of values (dates in particular)
+         - filter specifies {property: (comparison function, value)}
+           comparison functions: lt, le, eq, ge, gt
+         - eq and [value, value, ...] implies "in"
+pending  switch to a Roundup instance for Roundup bug/feature tracking
+pending  I18N of web interface
+pending  Better web message summary display
+         feature request #520244
+pending  Allow commands through mail gateway
+         feature request #556996
+pending  better help message for mailgw
+         feature request #558562
+pending  Navigating around the issues
+         feature request #559149
+ongoing  any bugs
+
