@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundupdb.py,v 1.110 2004-07-02 08:27:56 a1s Exp $
+# $Id: roundupdb.py,v 1.111 2004-07-05 11:28:25 a1s Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -116,8 +116,13 @@ class IssueClass:
     # Note that this list also includes properties
     # defined in the classic template:
     # assignedto, topic, priority, status.
-    (''"title", ''"messages", ''"files", ''"nosy", ''"superseder",
-        ''"assignedto", ''"topic", ''"priority", ''"status")
+    (
+        ''"title", ''"messages", ''"files", ''"nosy", ''"superseder",
+        ''"assignedto", ''"topic", ''"priority", ''"status",
+        # following properties are common for all hyperdb classes
+        # they are listed here to keep things in one place
+        ''"actor", ''"activity", ''"creator", ''"creation",
+    )
 
     # New methods:
     def addmessage(self, nodeid, summary, text):
