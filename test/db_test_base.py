@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.25 2004-04-18 05:31:02 richard Exp $ 
+# $Id: db_test_base.py,v 1.26 2004-05-04 00:16:07 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -813,15 +813,15 @@ class DBTest(MyTestCase):
         iss = self.db.issue
         for issue in (
                 {'title': 'issue one', 'status': '2', 'assignedto': '1',
-                    'foo': date.Interval('1:10'), 
+                    'foo': date.Interval('1:10'),
                     'deadline': date.Date('2003-01-01.00:00')},
                     {'title': 'issue two', 'status': '1', 'assignedto': '2',
-                    'foo': date.Interval('1d'), 
+                    'foo': date.Interval('1d'),
                     'deadline': date.Date('2003-02-16.22:50')},
                 {'title': 'issue three', 'status': '1',
                     'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
                 {'title': 'non four', 'status': '3',
-                    'foo': date.Interval('0:10'), 
+                    'foo': date.Interval('0:10'),
                     'nosy': ['1'], 'deadline': date.Date('2004-03-08')}):
             self.db.issue.create(**issue)
         self.db.commit()

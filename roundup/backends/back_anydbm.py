@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.143 2004-04-26 00:46:34 richard Exp $
+#$Id: back_anydbm.py,v 1.144 2004-05-04 00:16:06 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1776,11 +1776,12 @@ class Class(hyperdb.Class):
             def sortfun(a, b, directions=directions, n=range(len(directions))):
                 for i in n:
                     if a[i] == b[i]: continue
-                    if directions[i] == '-':
+                    if directions[i] == '+':
                         return cmp(a[i],b[i])
                     else:
                         return cmp(b[i],a[i])
-                return 0
+                # for consistency, sort by the id if the items are equal
+                return cmp(a[-2], b[-2])
             matches.sort(sortfun)
 
         # pull the id out of the individual entries
