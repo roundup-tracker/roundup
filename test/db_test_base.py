@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.23 2004-04-08 00:42:13 richard Exp $ 
+# $Id: db_test_base.py,v 1.24 2004-04-08 00:43:23 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1174,7 +1174,7 @@ class SchemaTest(MyTestCase):
         # confirm journal's ok
         self.db.getjournal('a', aid)
 
-    def init_ml(self):
+    def init_amodml(self):
         self.db = self.module.Database(config, 'admin')
         a = self.module.Class(self.db, "a", name=String(),
             fooz=Multilink('a'))
@@ -1188,14 +1188,14 @@ class SchemaTest(MyTestCase):
         self.db.commit(); self.db.close()
 
         # add a multilink prop
-        self.init_ml()
+        self.init_amodml()
         bid = self.db.a.create(name='bear', fooz=[aid])
         self.assertEqual(self.db.a.find(fooz=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.db.commit(); self.db.close()
 
         # check
-        self.init_ml()
+        self.init_amodml()
         self.assertEqual(self.db.a.find(fooz=aid), [bid])
         self.assertEqual(self.db.a.lookup('apple'), aid)
         self.assertEqual(self.db.a.lookup('bear'), bid)
@@ -1206,7 +1206,7 @@ class SchemaTest(MyTestCase):
 
     def test_removeMultilink(self):
         # add a multilink prop
-        self.init_ml()
+        self.init_amodml()
         aid = self.db.a.create(name='apple')
         bid = self.db.a.create(name='bear', fooz=[aid])
         self.assertEqual(self.db.a.find(fooz=aid), [bid])
@@ -1224,9 +1224,9 @@ class SchemaTest(MyTestCase):
         self.db.getjournal('a', bid)
 
     def test_removeClass(self):
-        self.init_ml()
+        self.init_ab()
         aid = self.db.a.create(name='apple')
-        bid = self.db.b.create(name='bear', fooz=[aid])
+        bid = self.db.b.create(name='bear')
         self.db.commit(); self.db.close()
 
         # drop the b class
