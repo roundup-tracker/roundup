@@ -8,18 +8,27 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.7 2003-02-12 06:41:58 richard Exp $
+# $Id: test_cgi.py,v 1.8 2003-02-13 07:38:34 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi
 
 from roundup.cgi import client
 from roundup import init, instance, password, hyperdb, date
 
+class FileUpload:
+    def __init__(self, content, filename):
+        self.content = content
+        self.filename = filename
+
 def makeForm(args):
     form = cgi.FieldStorage()
     for k,v in args.items():
         if type(v) is type([]):
             [form.list.append(cgi.MiniFieldStorage(k, x)) for x in v]
+        elif isinstance(v, FileUpload):
+            x = cgi.MiniFieldStorage(k, v.content)
+            x.filename = v.filename
+            form.list.append(x)
         else:
             form.list.append(cgi.MiniFieldStorage(k, v))
     return form
@@ -72,7 +81,7 @@ class FormTestCase(unittest.TestCase):
     # Empty form
     #
     def testNothing(self):
-        self.assertEqual(self.parseForm({}), {'test': {}})
+        self.assertEqual(self.parseForm({}), ({('test', None): {}}, []))
 
     def testNothingWithRequired(self):
         self.assertRaises(ValueError, self.parseForm, {':required': 'string'})
@@ -96,86 +105,99 @@ class FormTestCase(unittest.TestCase):
     # String
     #
     def testEmptyString(self):
-        self.assertEqual(self.parseForm({'string': ''}), {'test': {}})
-        self.assertEqual(self.parseForm({'string': ' '}), {'test': {}})
+        self.assertEqual(self.parseForm({'string': ''}),
+            ({('test', None): {}}, []))
+        self.assertEqual(self.parseForm({'string': ' '}),
+            ({('test', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'string': ['', '']})
 
     def testSetString(self):
         self.assertEqual(self.parseForm({'string': 'foo'}),
-            {'test': {'string': 'foo'}})
+            ({('test', None): {'string': 'foo'}}, []))
         self.assertEqual(self.parseForm({'string': 'a\r\nb\r\n'}),
-            {'test': {'string': 'a\nb'}})
+            ({('test', None): {'string': 'a\nb'}}, []))
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(self.parseForm({'title': 'foo'}, 'issue', nodeid),
-            {'issue'+nodeid: {}})
+            ({('issue', nodeid): {}}, []))
 
     def testEmptyStringSet(self):
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(self.parseForm({'title': ''}, 'issue', nodeid),
-            {'issue'+nodeid: {'title': None}})
+            ({('issue', nodeid): {'title': None}}, []))
         nodeid = self.db.issue.create(title='foo')
         self.assertEqual(self.parseForm({'title': ' '}, 'issue', nodeid),
-            {'issue'+nodeid: {'title': None}})
+            ({('issue', nodeid): {'title': None}}, []))
+
+    def testFileUpload(self):
+        file = FileUpload('foo', 'foo.txt')
+        self.assertEqual(self.parseForm({'content': file}, 'file'),
+            ({('file', None): {'content': 'foo', 'name': 'foo.txt',
+            'type': 'text/plain'}}, []))
 
     #
     # Link
     #
     def testEmptyLink(self):
-        self.assertEqual(self.parseForm({'link': ''}), {'test': {}})
-        self.assertEqual(self.parseForm({'link': ' '}), {'test': {}})
+        self.assertEqual(self.parseForm({'link': ''}),
+            ({('test', None): {}}, []))
+        self.assertEqual(self.parseForm({'link': ' '}),
+            ({('test', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'link': ['', '']})
-        self.assertEqual(self.parseForm({'link': '-1'}), {'test': {}})
+        self.assertEqual(self.parseForm({'link': '-1'}),
+            ({('test', None): {}}, []))
 
     def testSetLink(self):
         self.assertEqual(self.parseForm({'status': 'unread'}, 'issue'),
-            {'issue': {'status': '1'}})
+            ({('issue', None): {'status': '1'}}, []))
         self.assertEqual(self.parseForm({'status': '1'}, 'issue'),
-            {'issue': {'status': '1'}})
+            ({('issue', None): {'status': '1'}}, []))
         nodeid = self.db.issue.create(status='unread')
         self.assertEqual(self.parseForm({'status': 'unread'}, 'issue', nodeid),
-            {'issue'+nodeid: {}})
+            ({('issue', nodeid): {}}, []))
 
     def testUnsetLink(self):
         nodeid = self.db.issue.create(status='unread')
         self.assertEqual(self.parseForm({'status': '-1'}, 'issue', nodeid),
-            {'issue'+nodeid: {'status': None}})
+            ({('issue', nodeid): {'status': None}}, []))
 
     def testInvalidLinkValue(self):
 # XXX This is not the current behaviour - should we enforce this?
 #        self.assertRaises(IndexError, self.parseForm,
 #            {'status': '4'}))
         self.assertRaises(ValueError, self.parseForm, {'link': 'frozzle'})
-
-        self.assertRaises(ValueError, self.parseForm, {'link': 'frozzle'})
+        self.assertRaises(ValueError, self.parseForm, {'status': 'frozzle'},
+            'issue')
 
     #
     # Multilink
     #
     def testEmptyMultilink(self):
-        self.assertEqual(self.parseForm({'nosy': ''}), {'test': {}})
-        self.assertEqual(self.parseForm({'nosy': ' '}), {'test': {}})
+        self.assertEqual(self.parseForm({'nosy': ''}),
+            ({('test', None): {}}, []))
+        self.assertEqual(self.parseForm({'nosy': ' '}),
+            ({('test', None): {}}, []))
 
     def testSetMultilink(self):
         self.assertEqual(self.parseForm({'nosy': '1'}, 'issue'),
-            {'issue': {'nosy': ['1']}})
+            ({('issue', None): {'nosy': ['1']}}, []))
         self.assertEqual(self.parseForm({'nosy': 'admin'}, 'issue'),
-            {'issue': {'nosy': ['1']}})
+            ({('issue', None): {'nosy': ['1']}}, []))
         self.assertEqual(self.parseForm({'nosy': ['1','2']}, 'issue'),
-            {'issue': {'nosy': ['1','2']}})
+            ({('issue', None): {'nosy': ['1','2']}}, []))
         self.assertEqual(self.parseForm({'nosy': '1,2'}, 'issue'),
-            {'issue': {'nosy': ['1','2']}})
+            ({('issue', None): {'nosy': ['1','2']}}, []))
         self.assertEqual(self.parseForm({'nosy': 'admin,2'}, 'issue'),
-            {'issue': {'nosy': ['1','2']}})
+            ({('issue', None): {'nosy': ['1','2']}}, []))
 
     def testEmptyMultilinkSet(self):
         nodeid = self.db.issue.create(nosy=['1','2'])
         self.assertEqual(self.parseForm({'nosy': ''}, 'issue', nodeid), 
-            {'issue'+nodeid: {'nosy': []}})
+            ({('issue', nodeid): {'nosy': []}}, []))
         nodeid = self.db.issue.create(nosy=['1','2'])
         self.assertEqual(self.parseForm({'nosy': ' '}, 'issue', nodeid), 
-            {'issue'+nodeid: {'nosy': []}})
+            ({('issue', nodeid): {'nosy': []}}, []))
         self.assertEqual(self.parseForm({'nosy': '1,2'}, 'issue', nodeid),
-            {'issue'+nodeid: {}})
+            ({('issue', nodeid): {}}, []))
 
     def testInvalidMultilinkValue(self):
 # XXX This is not the current behaviour - should we enforce this?
@@ -191,33 +213,38 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.issue.create(nosy=['1'])
         # do nothing
         self.assertEqual(self.parseForm({':add:nosy': ''}, 'issue', nodeid),
-            {'issue'+nodeid: {}})
+            ({('issue', nodeid): {}}, []))
 
         # do something ;)
         self.assertEqual(self.parseForm({':add:nosy': '2'}, 'issue', nodeid),
-            {'issue'+nodeid: {'nosy': ['1','2']}})
+            ({('issue', nodeid): {'nosy': ['1','2']}}, []))
         self.assertEqual(self.parseForm({':add:nosy': '2,mary'}, 'issue',
-            nodeid), {'issue'+nodeid: {'nosy': ['1','2','4']}})
+            nodeid), ({('issue', nodeid): {'nosy': ['1','2','4']}}, []))
         self.assertEqual(self.parseForm({':add:nosy': ['2','3']}, 'issue',
-            nodeid), {'issue'+nodeid: {'nosy': ['1','2','3']}})
+            nodeid), ({('issue', nodeid): {'nosy': ['1','2','3']}}, []))
 
     def testMultilinkAddNew(self):
         self.assertEqual(self.parseForm({':add:nosy': ['2','3']}, 'issue'),
-            {'issue': {'nosy': ['2','3']}})
+            ({('issue', None): {'nosy': ['2','3']}}, []))
 
     def testMultilinkRemove(self):
         nodeid = self.db.issue.create(nosy=['1','2'])
         # do nothing
         self.assertEqual(self.parseForm({':remove:nosy': ''}, 'issue', nodeid),
-            {'issue'+nodeid: {}})
+            ({('issue', nodeid): {}}, []))
 
         # do something ;)
         self.assertEqual(self.parseForm({':remove:nosy': '1'}, 'issue',
-            nodeid), {'issue'+nodeid: {'nosy': ['2']}})
+            nodeid), ({('issue', nodeid): {'nosy': ['2']}}, []))
         self.assertEqual(self.parseForm({':remove:nosy': 'admin,2'},
-            'issue', nodeid), {'issue'+nodeid: {'nosy': []}})
+            'issue', nodeid), ({('issue', nodeid): {'nosy': []}}, []))
         self.assertEqual(self.parseForm({':remove:nosy': ['1','2']},
-            'issue', nodeid), {'issue'+nodeid: {'nosy': []}})
+            'issue', nodeid), ({('issue', nodeid): {'nosy': []}}, []))
+
+        # add and remove
+        self.assertEqual(self.parseForm({':add:nosy': ['3'],
+            ':remove:nosy': ['1','2']},
+            'issue', nodeid), ({('issue', nodeid): {'nosy': ['3']}}, []))
 
         # remove one that doesn't exist?
         self.assertRaises(ValueError, self.parseForm, {':remove:nosy': '4'},
@@ -226,12 +253,12 @@ class FormTestCase(unittest.TestCase):
     def testMultilinkRetired(self):
         self.db.user.retire('2')
         self.assertEqual(self.parseForm({'nosy': ['2','3']}, 'issue'),
-            {'issue': {'nosy': ['2','3']}})
+            ({('issue', None): {'nosy': ['2','3']}}, []))
         nodeid = self.db.issue.create(nosy=['1','2'])
         self.assertEqual(self.parseForm({':remove:nosy': '2'}, 'issue',
-            nodeid), {'issue'+nodeid: {'nosy': ['1']}})
+            nodeid), ({('issue', nodeid): {'nosy': ['1']}}, []))
         self.assertEqual(self.parseForm({':add:nosy': '3'}, 'issue', nodeid),
-            {'issue'+nodeid: {'nosy': ['1','2','3']}})
+            ({('issue', nodeid): {'nosy': ['1','2','3']}}, []))
 
     def testAddRemoveNonexistant(self):
         self.assertRaises(ValueError, self.parseForm, {':remove:foo': '2'},
@@ -244,9 +271,9 @@ class FormTestCase(unittest.TestCase):
     #
     def testEmptyPassword(self):
         self.assertEqual(self.parseForm({'password': ''}, 'user'),
-            {'user': {}})
+            ({('user', None): {}}, []))
         self.assertEqual(self.parseForm({'password': ''}, 'user'),
-            {'user': {}})
+            ({('user', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'password': ['', '']},
             'user')
         self.assertRaises(ValueError, self.parseForm, {'password': 'foo',
@@ -254,7 +281,8 @@ class FormTestCase(unittest.TestCase):
 
     def testSetPassword(self):
         self.assertEqual(self.parseForm({'password': 'foo',
-            'password:confirm': 'foo'}, 'user'), {'user': {'password': 'foo'}})
+            'password:confirm': 'foo'}, 'user'),
+            ({('user', None): {'password': 'foo'}}, []))
 
     def testSetPasswordConfirmBad(self):
         self.assertRaises(ValueError, self.parseForm, {'password': 'foo'},
@@ -266,79 +294,119 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.user.create(username='1',
             password=password.Password('foo'))
         self.assertEqual(self.parseForm({'password': ''}, 'user', nodeid),
-            {'user'+nodeid: {}})
+            ({('user', nodeid): {}}, []))
         nodeid = self.db.user.create(username='2',
             password=password.Password('foo'))
         self.assertEqual(self.parseForm({'password': '',
             'password:confirm': ''}, 'user', nodeid),
-            {'user'+nodeid: {}})
+            ({('user', nodeid): {}}, []))
 
     #
     # Boolean
     #
     def testEmptyBoolean(self):
-        self.assertEqual(self.parseForm({'boolean': ''}), {'test': {}})
-        self.assertEqual(self.parseForm({'boolean': ' '}), {'test': {}})
+        self.assertEqual(self.parseForm({'boolean': ''}),
+            ({('test', None): {}}, []))
+        self.assertEqual(self.parseForm({'boolean': ' '}),
+            ({('test', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'boolean': ['', '']})
 
     def testSetBoolean(self):
         self.assertEqual(self.parseForm({'boolean': 'yes'}),
-            {'test': {'boolean': 1}})
+            ({('test', None): {'boolean': 1}}, []))
         self.assertEqual(self.parseForm({'boolean': 'a\r\nb\r\n'}),
-            {'test': {'boolean': 0}})
+            ({('test', None): {'boolean': 0}}, []))
         nodeid = self.db.test.create(boolean=1)
         self.assertEqual(self.parseForm({'boolean': 'yes'}, 'test', nodeid),
-            {'test'+nodeid: {}})
+            ({('test', nodeid): {}}, []))
         nodeid = self.db.test.create(boolean=0)
         self.assertEqual(self.parseForm({'boolean': 'no'}, 'test', nodeid),
-            {'test'+nodeid: {}})
+            ({('test', nodeid): {}}, []))
 
     def testEmptyBooleanSet(self):
         nodeid = self.db.test.create(boolean=0)
         self.assertEqual(self.parseForm({'boolean': ''}, 'test', nodeid),
-            {'test'+nodeid: {'boolean': None}})
+            ({('test', nodeid): {'boolean': None}}, []))
         nodeid = self.db.test.create(boolean=1)
         self.assertEqual(self.parseForm({'boolean': ' '}, 'test', nodeid),
-            {'test'+nodeid: {'boolean': None}})
+            ({('test', nodeid): {'boolean': None}}, []))
 
     #
     # Date
     #
     def testEmptyDate(self):
-        self.assertEqual(self.parseForm({'date': ''}), {'test': {}})
-        self.assertEqual(self.parseForm({'date': ' '}), {'test': {}})
+        self.assertEqual(self.parseForm({'date': ''}),
+            ({('test', None): {}}, []))
+        self.assertEqual(self.parseForm({'date': ' '}),
+            ({('test', None): {}}, []))
         self.assertRaises(ValueError, self.parseForm, {'date': ['', '']})
 
     def testSetDate(self):
         self.assertEqual(self.parseForm({'date': '2003-01-01'}),
-            {'test': {'date': date.Date('2003-01-01')}})
+            ({('test', None): {'date': date.Date('2003-01-01')}}, []))
         nodeid = self.db.test.create(date=date.Date('2003-01-01'))
         self.assertEqual(self.parseForm({'date': '2003-01-01'}, 'test', 
-            nodeid), {'test'+nodeid: {}})
+            nodeid), ({('test', nodeid): {}}, []))
 
     def testEmptyDateSet(self):
         nodeid = self.db.test.create(date=date.Date('.'))
         self.assertEqual(self.parseForm({'date': ''}, 'test', nodeid), 
-            {'test'+nodeid: {'date': None}})
+            ({('test', nodeid): {'date': None}}, []))
         nodeid = self.db.test.create(date=date.Date('1970-01-01.00:00:00'))
         self.assertEqual(self.parseForm({'date': ' '}, 'test', nodeid), 
-            {'test'+nodeid: {'date': None}})
+            ({('test', nodeid): {'date': None}}, []))
 
     #
     # Test multiple items in form
     #
     def testMultiple(self):
-        self.assertEqual(self.parseForm({'string': 'a', 'issue@title': 'b'}),
-            {'test': {'string': 'a'}, 'issue': {'title': 'b'}})
+        self.assertEqual(self.parseForm({'string': 'a', 'issue-1@title': 'b'}),
+            ({('test', None): {'string': 'a'}, ('issue', '-1'):
+            {'title': 'b'}}, []))
         nodeid = self.db.test.create()
-        self.assertEqual(self.parseForm({'string': 'a', 'issue@title': 'b'},
-            'test', nodeid),
-            {'test1': {'string': 'a'}, 'issue': {'title': 'b'}})
+        self.assertEqual(self.parseForm({'string': 'a', 'issue-1@title': 'b'},
+            'test', nodeid), ({('test', nodeid): {'string': 'a'},
+            ('issue', '-1'): {'title': 'b'}}, []))
+        self.assertEqual(self.parseForm({
+            'string': 'a',
+            'issue-1@:add:nosy': '1',
+            'issue-2@:link:superseder': 'issue-1',
+            }),
+            ({('test', None): {'string': 'a'},
+              ('issue', '-1'): {'nosy': ['1']},
+              ('issue', '-2'): {}},
+              [('issue', '-2', 'superseder',
+                [(('issue', '-1'), ('issue', '-1'))])
+              ]
+            )
+        )
+
+    def testLinkBadDesignator(self):
+        self.assertRaises(ValueError, self.parseForm,
+            {'test-1@:link:link': 'blah'})
+        self.assertRaises(ValueError, self.parseForm,
+            {'test-1@:link:link': 'issue'})
+
+    def testBackwardsCompat(self):
+        self.assertEqual(self.parseForm({':note': 'spam'}, 'issue'),
+            ({('issue', None): {}, ('msg', '-1'): {'content': 'spam'}},
+            [('issue', None, 'messages', [('msg', '-1')])]))
+        file = FileUpload('foo', 'foo.txt')
+        self.assertEqual(self.parseForm({':file': file}, 'issue'),
+            ({('issue', None): {}, ('file', '-1'): {'content': 'foo',
+            'name': 'foo.txt', 'type': 'text/plain'}},
+            [('issue', None, 'files', [('file', '-1')])]))
 
 def suite():
     l = [unittest.makeSuite(FormTestCase),
     ]
     return unittest.TestSuite(l)
 
+def run():
+    runner = unittest.TextTestRunner()
+    unittest.main(testRunner=runner)
+
+if __name__ == '__main__':
+    run()
 
 # vim: set filetype=python ts=4 sw=4 et si

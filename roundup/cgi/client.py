@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.81 2003-02-12 07:14:29 richard Exp $
+# $Id: client.py,v 1.82 2003-02-13 07:38:34 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -101,10 +101,7 @@ class Client:
     FV_ADD = re.compile(r'([@+:])add\1')
     FV_REMOVE = re.compile(r'([@+:])remove\1')
     FV_CONFIRM = re.compile(r'.+[@+:]confirm')
-
-    # post-edi
-    FV_LINK = re.compile(r'[@+:]link')
-    FV_MULTILINK = re.compile(r'[@+:]multilink')
+    FV_LINK = re.compile(r'([@+:])link\1(.+)')
 
     # deprecated
     FV_NOTE = re.compile(r'[@+:]note')
@@ -243,7 +240,6 @@ class Client:
         if now - last_clean > hour:
             # remove age sessions
             for sessid in sessions.list():
-                print sessid
                 interval = now - sessions.get(sessid, 'last_use')
                 if interval > week:
                     sessions.destroy(sessid)
@@ -705,58 +701,24 @@ class Client:
     def editItemAction(self):
         ''' Perform an edit of an item in the database.
 
-            Some special form elements:
-
-            :link=designator:property
-            :multilink=designator:property
-             The value specifies a node designator and the property on that
-             node to add _this_ node to as a link or multilink.
-            :note
-             Create a message and attach it to the current node's
-             "messages" property.
-            :file
-             Create a file and attach it to the current node's
-             "files" property. Attach the file to the message created from
-             the :note if it's supplied.
-
-           See parsePropsFromForm for more special variables
+           See parsePropsFromForm and _editnodes for special variables
         '''
         # parse the props from the form
         try:
-            props = self.parsePropsFromForm()
+            props, links = self.parsePropsFromForm()
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
 
-        # check permission
-        if not self.editItemPermission(props):
-            self.error_message.append(
-                _('You do not have permission to edit %(classname)s'%
-                self.__dict__))
-            return
-
-        # identify the entry in the props parsed from the form
-        this = self.classname + self.nodeid
-
-        # perform the edit
+        # handle the props
         try:
-            # make changes to the node
-            props = self._changenode(props[this])
-            # handle linked nodes 
-            self._post_editnode(self.nodeid)
+            message = self._editnodes(props, links)
         except (ValueError, KeyError, IndexError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
 
         # commit now that all the tricky stuff is done
         self.db.commit()
-
-        # and some nice feedback for the user
-        if props:
-            message = _('%(changes)s edited ok')%{'changes':
-                ', '.join(props.keys())}
-        else:
-            message = _('nothing changed')
 
         # redirect to the item's edit page
         raise Redirect, '%s%s%s?+ok_message=%s'%(self.base, self.classname,
@@ -793,66 +755,38 @@ class Client:
             special form values.
         '''
         # parse the props from the form
-        try:
-            props = self.parsePropsFromForm()
-        except (ValueError, KeyError), message:
-            self.error_message.append(_('Error: ') + str(message))
-            return
+#        try:
+        if 1:
+            props, links = self.parsePropsFromForm()
+#        except (ValueError, KeyError), message:
+#            self.error_message.append(_('Error: ') + str(message))
+#            return
 
-        if not self.newItemPermission(props):
-            self.error_message.append(
-                _('You do not have permission to create %s' %self.classname))
+        # handle the props - edit or create
+#        try:
+        if 1:
+            # create the context here
+            cn = self.classname
+            nid = self._createnode(cn, props[(cn, None)])
+            del props[(cn, None)]
 
-        # create a little extra message for anticipated :link / :multilink
-        if self.form.has_key(':multilink'):
-            link = self.form[':multilink'].value
-        elif self.form.has_key(':link'):
-            link = self.form[':multilink'].value
-        else:
-            link = None
-            xtra = ''
-        if link:
-            designator, linkprop = link.split(':')
-            xtra = ' for <a href="%s">%s</a>'%(designator, designator)
+            extra = self._editnodes(props, links, {(cn, None): nid})
+            if extra:
+                extra = '<br>' + extra
 
-        try:
-            # do the create
-            nid = self._createnode(props[self.classname])
-        except (ValueError, KeyError, IndexError), message:
-            # these errors might just be indicative of user dumbness
-            self.error_message.append(_('Error: ') + str(message))
-            return
-        except:
-            # oops
-            self.db.rollback()
-            s = StringIO.StringIO()
-            traceback.print_exc(None, s)
-            self.error_message.append('<pre>%s</pre>'%cgi.escape(s.getvalue()))
-            return
+            # now do the rest
+            messages = '%s %s created'%(cn, nid) + extra
+#        except (ValueError, KeyError, IndexError), message:
+#            # these errors might just be indicative of user dumbness
+#            self.error_message.append(_('Error: ') + str(message))
+#            return
 
-        try:
-            # handle linked nodes 
-            self._post_editnode(nid)
-
-            # commit now that all the tricky stuff is done
-            self.db.commit()
-
-            # render the newly created item
-            self.nodeid = nid
-
-            # and some nice feedback for the user
-            message = _('%(classname)s created ok')%self.__dict__ + xtra
-        except:
-            # oops
-            self.db.rollback()
-            s = StringIO.StringIO()
-            traceback.print_exc(None, s)
-            self.error_message.append('<pre>%s</pre>'%cgi.escape(s.getvalue()))
-            return
+        # commit now that all the tricky stuff is done
+        self.db.commit()
 
         # redirect to the new item's page
         raise Redirect, '%s%s%s?:ok_message=%s'%(self.base, self.classname,
-            nid, urllib.quote(message))
+            nid, urllib.quote(messages))
 
     def newItemPermission(self, props):
         ''' Determine whether the user has permission to create (edit) this
@@ -1025,6 +959,7 @@ class Client:
             return 0
         return 1
 
+
     def retireAction(self):
         ''' Retire the context item.
         '''
@@ -1078,163 +1013,118 @@ class Client:
     #
     #  Utility methods for editing
     #
-    def _changenode(self, props):
+    def _editnodes(self, all_props, all_links, newids=None):
+        ''' Use the props in all_props to perform edit and creation, then
+            use the link specs in all_links to do linking.
+        '''
+        m = []
+        if newids is None:
+            newids = {}
+        for (cn, nodeid), props in all_props.items():
+            if int(nodeid) > 0:
+                # make changes to the node
+                props = self._changenode(cn, nodeid, props)
+
+                # and some nice feedback for the user
+                if props:
+                    info = ', '.join(props.keys())
+                    m.append('%s %s %s edited ok'%(cn, nodeid, info))
+                else:
+                    m.append('%s %s - nothing changed'%(cn, nodeid))
+            elif props:
+                # make a new node
+                newid = self._createnode(cn, props)
+                newids[(cn, nodeid)] = newid
+                nodeid = newid
+
+                # and some nice feedback for the user
+                m.append('%s %s created'%(cn, newid))
+
+        # handle linked nodes
+        keys = self.form.keys()
+        for cn, nodeid, propname, value in all_links:
+            cl = self.db.classes[cn]
+            property = cl.getprops()[propname]
+            if nodeid is None or nodeid.startswith('-'):
+                if not newids.has_key((cn, nodeid)):
+                    continue
+                nodeid = newids[(cn, nodeid)]
+
+            # map the desired classnames to their actual created ids
+            for link in value:
+                if not newids.has_key(link):
+                    continue
+                linkid = newids[link]
+                if isinstance(property, hyperdb.Multilink):
+                    # take a dupe of the list so we're not changing the cache
+                    existing = cl.get(nodeid, propname)[:]
+                    existing.append(linkid)
+                    cl.set(nodeid, **{propname: existing})
+                elif isinstance(property, hyperdb.Link):
+                    # make the Link set
+                    cl.set(nodeid, **{propname: linkid})
+                else:
+                    raise ValueError, '%s %s is not a link or multilink '\
+                        'property'%(cn, propname)
+                m.append('%s %s linked to <a href="%s%s">%s %s</a>'%(
+                    link[0], linkid, cn, nodeid, cn, nodeid))
+
+        return '<br>'.join(m)
+
+    def _changenode(self, cn, nodeid, props):
         ''' change the node based on the contents of the form
         '''
-        cl = self.db.classes[self.classname]
-
-        # create the message
-        message, files = self._handle_message()
-        if message:
-            props['messages'] = cl.get(self.nodeid, 'messages') + [message]
-        if files:
-            props['files'] = cl.get(self.nodeid, 'files') + files
+        # check for permission
+        if not self.editItemPermission(props):
+            raise PermissionError, 'You do not have permission to edit %s'%cn
 
         # make the changes
-        return cl.set(self.nodeid, **props)
+        cl = self.db.classes[cn]
+        return cl.set(nodeid, **props)
 
-    def _createnode(self, props):
+    def _createnode(self, cn, props):
         ''' create a node based on the contents of the form
         '''
-        cl = self.db.classes[self.classname]
+        # check for permission
+        if not self.newItemPermission(props):
+            raise PermissionError, 'You do not have permission to create %s'%cn
 
-        # check for messages and files
-        message, files = self._handle_message()
-        if message:
-            props['messages'] = [message]
-        if files:
-            props['files'] = files
-        # create the node and return it's id
-        return cl.create(**props)
-
-    def _handle_message(self):
-        ''' generate an edit message
-        '''
-        # handle file attachments 
-        files = []
-        if self.form.has_key(':file'):
-            file = self.form[':file']
-
-            # if there's a filename, then we create a file
-            if file.filename:
-                # see if there are any file properties we should set
-                file_props={};
-                if self.form.has_key(':file_fields'):
-                    for field in self.form[':file_fields'].value.split(','):
-                        if self.form.has_key(field):
-                            if field.startswith("file_"):
-                                file_props[field[5:]] = self.form[field].value
-                            else :
-                                file_props[field] = self.form[field].value
-
-                # try to determine the file content-type
-                filename = file.filename.split('\\')[-1]
-                mime_type = mimetypes.guess_type(filename)[0]
-                if not mime_type:
-                    mime_type = "application/octet-stream"
-
-                # create the new file entry
-                files.append(self.db.file.create(type=mime_type,
-                    name=filename, content=file.file.read(), **file_props))
-
-        # we don't want to do a message if none of the following is true...
-        cn = self.classname
-        cl = self.db.classes[self.classname]
-        props = cl.getprops()
-        note = None
-        # in a nutshell, don't do anything if there's no note or there's no
-        # NOSY
-        if self.form.has_key(':note'):
-            # fix the CRLF/CR -> LF stuff
-            note = fixNewlines(self.form[':note'].value.strip())
-        if not note:
-            return None, files
-        if not props.has_key('messages'):
-            return None, files
-        if not isinstance(props['messages'], hyperdb.Multilink):
-            return None, files
-        if not props['messages'].classname == 'msg':
-            return None, files
-        if not (self.form.has_key('nosy') or note):
-            return None, files
-
-        # handle the note
-        if '\n' in note:
-            summary = re.split(r'\n\r?', note)[0]
-        else:
-            summary = note
-        m = ['%s\n'%note]
-
-        # handle the messageid
-        # TODO: handle inreplyto
-        messageid = "<%s.%s.%s@%s>"%(time.time(), random.random(),
-            self.classname, self.instance.config.MAIL_DOMAIN)
-
-        # see if there are any message properties we should set
-        msg_props={};
-        if self.form.has_key(':msg_fields'):
-            for field in self.form[':msg_fields'].value.split(','):
-                if self.form.has_key(field):
-                    if field.startswith("msg_"):
-                        msg_props[field[4:]] = self.form[field].value
-                    else :
-                        msg_props[field] = self.form[field].value
-
-        # now create the message, attaching the files
-        content = '\n'.join(m)
-        message_id = self.db.msg.create(author=self.userid,
-            recipients=[], date=date.Date('.'), summary=summary,
-            content=content, files=files, messageid=messageid, **msg_props)
-
-        # update the messages property
-        return message_id, files
-
-    def _post_editnode(self, nid):
-        '''Do the linking part of the node creation.
-
-           If a form element has :link or :multilink appended to it, its
-           value specifies a node designator and the property on that node
-           to add _this_ node to as a link or multilink.
-
-           This is typically used on, eg. the file upload page to indicated
-           which issue to link the file to.
-        '''
-        cn = self.classname
+        # create the node and return its id
         cl = self.db.classes[cn]
-        # link if necessary
-        keys = self.form.keys()
-        for key in keys:
-            if key == ':multilink':
-                value = self.form[key].value
-                if type(value) != type([]): value = [value]
-                for value in value:
-                    designator, property = value.split(':')
-                    link, nodeid = hyperdb.splitDesignator(designator)
-                    link = self.db.classes[link]
-                    # take a dupe of the list so we're not changing the cache
-                    value = link.get(nodeid, property)[:]
-                    value.append(nid)
-                    link.set(nodeid, **{property: value})
-            elif key == ':link':
-                value = self.form[key].value
-                if type(value) != type([]): value = [value]
-                for value in value:
-                    designator, property = value.split(':')
-                    link, nodeid = hyperdb.splitDesignator(designator)
-                    link = self.db.classes[link]
-                    link.set(nodeid, **{property: nid})
+        return cl.create(**props)
 
     def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
         ''' Pull properties for the given class out of the form.
 
-            If a ":required" parameter is supplied, then the names
-            property values must be supplied or a ValueError will be raised.
+            In the following, <bracketed> values are variable, ":" may be
+            any of : @ + and other text "required" is fixed.
+
+            Properties are specified as form variables
+             <designator>:<propname>
+
+            where the propery belongs to the context class or item if the
+            designator is not specified. The designator may specify a
+            negative item id value (ie. "issue-1") and a new item of the
+            specified class will be created for each negative id found.
+
+            If a "<designator>:required" parameter is supplied,
+            then the named property values must be supplied or a
+            ValueError will be raised.
 
             Other special form values:
-             :remove:<propname>=id(s)
+             [classname|designator]:remove:<propname>=id(s)
               The ids will be removed from the multilink property.
-             :add:<propname>=id(s)
+             [classname|designator]:add:<propname>=id(s)
               The ids will be added to the multilink property.
+
+             [classname|designator]:link:<propname>=<classname>
+              Used to add a link to new items created during edit.
+              These are collected up and returned in all_links. This will
+              result in an additional linking operation (either Link set or
+              Multilink append) after the edit/create is done using
+              all_props in _editnodes. The <propname> on
+              [classname|designator] will be set/appended the id of the
+              newly created item of class <classname>.
 
             Note: the colon may be one of:  : @ +
 
@@ -1242,64 +1132,92 @@ class Client:
             designator.
 
             The return from this method is a dict of 
-                classname|designator: properties
+                (classname, id): properties
             ... this dict _always_ has an entry for the current context,
             even if it's empty (ie. a submission for an existing issue that
-            doesn't result in any changes would return {'issue123': {}})
+            doesn't result in any changes would return {('issue','123'): {}})
+            The id may be None, which indicates that an item should be
+            created.
+
+            If a String property's form value is a file upload, then we
+            try to set additional properties "filename" and "type" (if
+            they are valid for the class).
         '''
         # some very useful variables
         db = self.db
         form = self.form
 
-        if not hasattr(self, 'FV_CLASSSPEC'):
+        if not hasattr(self, 'FV_ITEMSPEC'):
             # generate the regexp for detecting
             # <classname|designator>[@:+]property
             classes = '|'.join(db.classes.keys())
-            self.FV_CLASSSPEC = re.compile(r'(%s)[@+:](.+)$'%classes)
-            self.FV_ITEMSPEC = re.compile(r'(%s)(\d+)[@+:](.+)$'%classes)
+            self.FV_ITEMSPEC = re.compile(r'(%s)([-\d]+)[@+:](.+)$'%classes)
+            self.FV_DESIGNATOR = re.compile(r'(%s)([-\d]+)'%classes)
 
         # these indicate the default class / item
         default_cn = self.classname
         default_cl = self.db.classes[default_cn]
-        default_nodeid = str(self.nodeid or '')
+        default_nodeid = self.nodeid
 
         # we'll store info about the individual class/item edit in these
         all_required = {}       # one entry per class/item
         all_props = {}          # one entry per class/item
         all_propdef = {}        # note - only one entry per class
+        all_links = []          # as many as are required
 
         # we should always return something, even empty, for the context
-        all_props[default_cn+default_nodeid] = {}
+        all_props[(default_cn, default_nodeid)] = {}
 
         keys = form.keys()
         timezone = db.getUserTimezone()
 
         for key in keys:
-            # see if this value modifies a different class/item to the default
-            m = self.FV_CLASSSPEC.match(key)
+            # see if this value modifies a different item to the default
+            m = self.FV_ITEMSPEC.match(key)
             if m:
-                # we got a classname
+                # we got a designator
                 cn = m.group(1)
                 cl = self.db.classes[cn]
-                nodeid = ''
-                propname = m.group(2)
+                nodeid = m.group(2)
+                propname = m.group(3)
+            elif key == ':note':
+                # backwards compatibility: the special note field
+                cn = 'msg'
+                cl = self.db.classes[cn]
+                nodeid = '-1'
+                propname = 'content'
+                all_links.append((default_cn, default_nodeid, 'messages',
+                    [('msg', '-1')]))
+            elif key == ':file':
+                # backwards compatibility: the special file field
+                cn = 'file'
+                cl = self.db.classes[cn]
+                nodeid = '-1'
+                propname = 'content'
+                all_links.append((default_cn, default_nodeid, 'files',
+                    [('file', '-1')]))
+                if self.form.has_key(':note'):
+                    all_links.append(('msg', '-1', 'files', [('file', '-1')]))
             else:
-                m = self.FV_ITEMSPEC.match(key)
-                if m:
-                    # we got a designator
-                    cn = m.group(1)
-                    cl = self.db.classes[cn]
-                    nodeid = m.group(2)
-                    propname = m.group(3)
-                else:
-                    # default
-                    cn = default_cn
-                    cl = default_cl
-                    nodeid = default_nodeid
-                    propname = key
+                # default
+                cn = default_cn
+                cl = default_cl
+                nodeid = default_nodeid
+                propname = key
 
             # the thing this value relates to is...
-            this = cn+nodeid
+            this = (cn, nodeid)
+
+            # is this a link command?
+            if self.FV_LINK.match(propname):
+                value = []
+                for entry in extractFormList(form[key]):
+                    m = self.FV_DESIGNATOR.match(entry)
+                    if not m:
+                        raise ValueError, \
+                            'link "%s" value "%s" not a designator'%(key, entry)
+                    value.append((m.groups(1), m.groups(2)))
+                all_links.append((cn, nodeid, propname[6:], value))
 
             # get more info about the class, and the current set of
             # form props for it
@@ -1312,12 +1230,7 @@ class Client:
 
             # detect the special ":required" variable
             if self.FV_REQUIRED.match(key):
-                value = form[key]
-                if isinstance(value, type([])):
-                    required = [i.value.strip() for i in value]
-                else:
-                    required = [i.strip() for i in value.value.split(',')]
-                all_required[this] = required
+                all_required[this] = extractFormList(form[key])
                 continue
 
             # get the required values list
@@ -1349,25 +1262,16 @@ class Client:
 
             # handle unpacking of the MiniFieldStorage / list form value
             if isinstance(proptype, hyperdb.Multilink):
-                # multiple values are OK
-                if isinstance(value, type([])):
-                    # it's a list of MiniFieldStorages
-                    value = [i.value.strip() for i in value]
-                else:
-                    # it's a MiniFieldStorage, but may be a comma-separated list
-                    # of values
-                    value = [i.strip() for i in value.value.split(',')]
-
-                # filter out the empty bits
-                value = filter(None, value)
+                value = extractFormList(value)
             else:
                 # multiple values are not OK
                 if isinstance(value, type([])):
                     raise ValueError, 'You have submitted more than one value'\
                         ' for the %s property'%propname
-                # we've got a MiniFieldStorage, so pull out the value and strip
-                # surrounding whitespace
-                value = value.value.strip()
+                # value might be a file upload...
+                if not hasattr(value, 'filename') or value.filename is None:
+                    # nope, pull out the value and strip it
+                    value = value.value.strip()
 
             # handle by type now
             if isinstance(proptype, hyperdb.Password):
@@ -1393,7 +1297,7 @@ class Client:
                 # see if it's the "no selection" choice
                 if value == '-1' or not value:
                     # if we're creating, just don't include this property
-                    if not nodeid:
+                    if not nodeid or nodeid.startswith('-'):
                         continue
                     value = None
                 else:
@@ -1440,7 +1344,7 @@ class Client:
                     # we're modifying the list - get the current list of ids
                     if props.has_key(propname):
                         existing = props[propname]
-                    elif nodeid:
+                    elif nodeid and not nodeid.startswith('-'):
                         existing = cl.get(nodeid, propname, [])
                     else:
                         existing = []
@@ -1464,11 +1368,32 @@ class Client:
                     value = existing
                     value.sort()
 
-            # other types should be None'd if there's no value
-            elif value:
+            elif value == '':
+                # if we're creating, just don't include this property
+                if not nodeid or nodeid.startswith('-'):
+                    continue
+                # other types should be None'd if there's no value
+                value = None
+            else:
                 if isinstance(proptype, hyperdb.String):
-                    # fix the CRLF/CR -> LF stuff
-                    value = fixNewlines(value)
+                    if (hasattr(value, 'filename') and
+                            value.filename is not None):
+                        # this String is actually a _file_
+                        # try to determine the file content-type
+                        filename = value.filename.split('\\')[-1]
+                        if propdef.has_key('name'):
+                            props['name'] = filename
+                        # use this info as the type/filename properties
+                        if propdef.has_key('type'):
+                            props['type'] = mimetypes.guess_type(filename)[0]
+                            if not props['type']:
+                                props['type'] = "application/octet-stream"
+                        # finally, read the content
+                        value = value.value
+                    else:
+                        # normal String fix the CRLF/CR -> LF stuff
+                        value = fixNewlines(value)
+
                 elif isinstance(proptype, hyperdb.Date):
                     value = date.Date(value, offset=timezone)
                 elif isinstance(proptype, hyperdb.Interval):
@@ -1477,14 +1402,9 @@ class Client:
                     value = value.lower() in ('yes', 'true', 'on', '1')
                 elif isinstance(proptype, hyperdb.Number):
                     value = float(value)
-            else:
-                # if we're creating, just don't include this property
-                if not nodeid:
-                    continue
-                value = None
 
             # get the old value
-            if nodeid:
+            if nodeid and not nodeid.startswith('-'):
                 try:
                     existing = cl.get(nodeid, propname)
                 except KeyError:
@@ -1536,12 +1456,12 @@ class Client:
                 p = 'properties'
             else:
                 p = 'property'
-            s.append('Required %s %s %s not supplied'%(thing, p,
+            s.append('Required %s %s %s not supplied'%(thing[0], p,
                 ', '.join(required)))
         if s:
             raise ValueError, '\n'.join(s)
 
-        return all_props
+        return all_props, all_links
 
 def fixNewlines(text):
     ''' Homogenise line endings.
@@ -1552,3 +1472,24 @@ def fixNewlines(text):
     '''
     text = text.replace('\r\n', '\n')
     return text.replace('\r', '\n')
+
+def extractFormList(value):
+    ''' Extract a list of values from the form value.
+
+        It may be one of:
+         [MiniFieldStorage, MiniFieldStorage, ...]
+         MiniFieldStorage('value,value,...')
+         MiniFieldStorage('value')
+    '''
+    # multiple values are OK
+    if isinstance(value, type([])):
+        # it's a list of MiniFieldStorages
+        value = [i.value.strip() for i in value]
+    else:
+        # it's a MiniFieldStorage, but may be a comma-separated list
+        # of values
+        value = [i.strip() for i in value.value.split(',')]
+
+    # filter out the empty bits
+    return filter(None, value)
+
