@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.69 2002-06-17 23:15:29 richard Exp $
+# $Id: hyperdb.py,v 1.69.2.1 2002-07-10 06:30:47 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -769,12 +769,15 @@ class Class:
         otherwise a KeyError is raised.
         """
         cldb = self.db.getclassdb(self.classname)
-        for nodeid in self.db.getnodeids(self.classname, cldb):
-            node = self.db.getnode(self.classname, nodeid, cldb)
-            if node.has_key(self.db.RETIRED_FLAG):
-                continue
-            if node[self.key] == keyvalue:
-                return nodeid
+        try:
+            for nodeid in self.db.getnodeids(self.classname, cldb):
+                node = self.db.getnode(self.classname, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                if node[self.key] == keyvalue:
+                    return nodeid
+        finally:
+            cldb.close()
         raise KeyError, keyvalue
 
     # XXX: change from spec - allows multiple props to match
@@ -801,20 +804,23 @@ class Class:
         # ok, now do the find
         cldb = self.db.getclassdb(self.classname)
         l = []
-        for id in self.db.getnodeids(self.classname, db=cldb):
-            node = self.db.getnode(self.classname, id, db=cldb)
-            if node.has_key(self.db.RETIRED_FLAG):
-                continue
-            for propname, nodeid in propspec:
-                # can't test if the node doesn't have this property
-                if not node.has_key(propname):
+        try:
+            for id in self.db.getnodeids(self.classname, db=cldb):
+                node = self.db.getnode(self.classname, id, db=cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
                     continue
-                prop = self.properties[propname]
-                property = node[propname]
-                if isinstance(prop, Link) and nodeid == property:
-                    l.append(id)
-                elif isinstance(prop, Multilink) and nodeid in property:
-                    l.append(id)
+                for propname, nodeid in propspec:
+                    # can't test if the node doesn't have this property
+                    if not node.has_key(propname):
+                        continue
+                    prop = self.properties[propname]
+                    property = node[propname]
+                    if isinstance(prop, Link) and nodeid == property:
+                        l.append(id)
+                    elif isinstance(prop, Multilink) and nodeid in property:
+                        l.append(id)
+        finally:
+            cldb.close()
         return l
 
     def stringFind(self, **requirements):
@@ -832,15 +838,18 @@ class Class:
             requirements[propname] = requirements[propname].lower()
         l = []
         cldb = self.db.getclassdb(self.classname)
-        for nodeid in self.db.getnodeids(self.classname, cldb):
-            node = self.db.getnode(self.classname, nodeid, cldb)
-            if node.has_key(self.db.RETIRED_FLAG):
-                continue
-            for key, value in requirements.items():
-                if node[key] and node[key].lower() != value:
-                    break
-            else:
-                l.append(nodeid)
+        try:
+            for nodeid in self.db.getnodeids(self.classname, cldb):
+                node = self.db.getnode(self.classname, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                for key, value in requirements.items():
+                    if node[key] and node[key].lower() != value:
+                        break
+                else:
+                    l.append(nodeid)
+        finally:
+            cldb.close()
         return l
 
     def list(self):
@@ -848,11 +857,14 @@ class Class:
         l = []
         cn = self.classname
         cldb = self.db.getclassdb(cn)
-        for nodeid in self.db.getnodeids(cn, cldb):
-            node = self.db.getnode(cn, nodeid, cldb)
-            if node.has_key(self.db.RETIRED_FLAG):
-                continue
-            l.append(nodeid)
+        try:
+            for nodeid in self.db.getnodeids(cn, cldb):
+                node = self.db.getnode(cn, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                l.append(nodeid)
+        finally:
+            cldb.close()
         l.sort()
         return l
 
@@ -915,37 +927,40 @@ class Class:
         # now, find all the nodes that are active and pass filtering
         l = []
         cldb = self.db.getclassdb(cn)
-        for nodeid in self.db.getnodeids(cn, cldb):
-            node = self.db.getnode(cn, nodeid, cldb)
-            if node.has_key(self.db.RETIRED_FLAG):
-                continue
-            # apply filter
-            for t, k, v in filterspec:
-                # this node doesn't have this property, so reject it
-                if not node.has_key(k): break
+        try:
+            for nodeid in self.db.getnodeids(cn, cldb):
+                node = self.db.getnode(cn, nodeid, cldb)
+                if node.has_key(self.db.RETIRED_FLAG):
+                    continue
+                # apply filter
+                for t, k, v in filterspec:
+                    # this node doesn't have this property, so reject it
+                    if not node.has_key(k): break
 
-                if t == 0 and node[k] not in v:
-                    # link - if this node'd property doesn't appear in the
-                    # filterspec's nodeid list, skip it
-                    break
-                elif t == 1:
-                    # multilink - if any of the nodeids required by the
-                    # filterspec aren't in this node's property, then skip
-                    # it
-                    for value in v:
-                        if value not in node[k]:
-                            break
-                    else:
-                        continue
-                    break
-                elif t == 2 and (node[k] is None or not v.search(node[k])):
-                    # RE search
-                    break
-                elif t == 6 and node[k] != v:
-                    # straight value comparison for the other types
-                    break
-            else:
-                l.append((nodeid, node))
+                    if t == 0 and node[k] not in v:
+                        # link - if this node'd property doesn't appear in the
+                        # filterspec's nodeid list, skip it
+                        break
+                    elif t == 1:
+                        # multilink - if any of the nodeids required by the
+                        # filterspec aren't in this node's property, then skip
+                        # it
+                        for value in v:
+                            if value not in node[k]:
+                                break
+                        else:
+                            continue
+                        break
+                    elif t == 2 and (node[k] is None or not v.search(node[k])):
+                        # RE search
+                        break
+                    elif t == 6 and node[k] != v:
+                        # straight value comparison for the other types
+                        break
+                else:
+                    l.append((nodeid, node))
+        finally:
+            cldb.close()
         l.sort()
 
         # filter based on full text search
@@ -1169,6 +1184,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.69  2002/06/17 23:15:29  richard
+# Can debug to stdout now
+#
 # Revision 1.68  2002/06/11 06:52:03  richard
 #  . #564271 ] find() and new properties
 #

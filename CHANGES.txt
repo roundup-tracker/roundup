@@ -6,6 +6,7 @@ Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
  . bsddb3 backend should use 'c' for create, not 'n' for nuke
+ . #571170 ] gdbm deadlock
 
 
 2002-06-24 0.4.2
