@@ -6,6 +6,7 @@ are given with the most recent entry first.
 - implemented whole-database locking
 - hyperlinking of special text (url, email, item designator) in messages
 - fixed time default in date.py
+- fixed error in cgi/templates.py (sf bug 652089)
 
 
 2002-12-11 0.5.3

@@ -1187,9 +1187,9 @@ class MultilinkHTMLProperty(HTMLProperty):
         k = linkcl.labelprop(1)
 
         # make sure we list the current values if they're retired
-        for value in self._value:
-            if value not in options:
-                options.insert(0, value)
+        for val in value:
+            if val not in options:
+                options.insert(0, val)
 
         for optionid in options:
             # get the option value, and if it's None use an empty string
