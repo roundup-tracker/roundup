@@ -407,7 +407,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         ''' Get an item of this class by its item id.
         '''
         # make sure we're looking at an itemid
-        if not num_re.match(itemid):
+        if not isinstance(itemid, type(1)) and not num_re.match(itemid):
             itemid = self._klass.lookup(itemid)
 
         if self.classname == 'user':

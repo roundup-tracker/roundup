@@ -295,10 +295,18 @@ class EditItemAction(Action):
         self.db.commit()
 
         # redirect to the item's edit page
-        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
-                                                              self.classname, self.client.nodeid,
-                                                              urllib.quote(message),
-                                                              urllib.quote(self.template))
+        # redirect to finish off
+        url = self.base + self.classname
+        # note that this action might have been called by an index page, so
+        # we will want to include index-page args in this URL too
+        if self.nodeid is not None:
+            url += self.nodeid
+        url += '?@ok_message=%s&@template=%s'%(urllib.quote(message),
+            urllib.quote(self.template))
+        if self.nodeid is None:
+            req = templating.HTMLRequest(self)
+            url += '&' + req.indexargs_href('', {})[1:]
+        raise Redirect, url
     
     def editItemPermission(self, props):
         """Determine whether the user has permission to edit this item.
@@ -324,6 +332,37 @@ class EditItemAction(Action):
         if self.db.security.hasPermission('Edit', self.userid, self.classname):
             return 1
         return 0
+
+    def newItemAction(self):
+        ''' Add a new item to the database.
+
+            This follows the same form as the editItemAction, with the same
+            special form values.
+        '''
+        # parse the props from the form
+        try:
+            props, links = self.parsePropsFromForm(create=True)
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
+        # handle the props - edit or create
+        try:
+            # when it hits the None element, it'll set self.nodeid
+            messages = self._editnodes(props, links)
+
+        except (ValueError, KeyError, IndexError), message:
+            # these errors might just be indicative of user dumbness
+            self.error_message.append(_('Error: ') + str(message))
+            return
+
+        # commit now that all the tricky stuff is done
+        self.db.commit()
+
+        # redirect to the new item's page
+        raise Redirect, '%s%s%s?@ok_message=%s&@template=%s'%(self.base,
+            self.classname, self.nodeid, urllib.quote(messages),
+            urllib.quote(self.template))
 
     def newItemPermission(self, props):
         """Determine whether the user has permission to create (edit) this item.

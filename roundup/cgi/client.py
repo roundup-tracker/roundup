@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.156 2004-02-11 23:55:09 richard Exp $
+# $Id: client.py,v 1.157 2004-02-13 01:32:37 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -637,5 +637,6 @@ class Client:
         except MessageSendError, e:
             self.error_message.append(str(e))
 
-    def parsePropsFromForm(self):
-        return FormParser(self).parse()
+    def parsePropsFromForm(self, create=False):
+        return FormParser(self).parse(create=create)
+

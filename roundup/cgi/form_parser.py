@@ -34,7 +34,7 @@ class FormParser:
         self.classname = client.classname
         self.nodeid = client.nodeid
       
-    def parse(self, num_re=re.compile('^\d+$')):
+    def parse(self, create=False, num_re=re.compile('^\d+$')):
         """ Item properties and their values are edited with html FORM
             variables and their values. You can:
 
@@ -251,6 +251,10 @@ class FormParser:
 
             # the thing this value relates to is...
             this = (cn, nodeid)
+
+            # skip implicit create if this isn't a create action
+            if not create and nodeid is None:
+                continue
 
             # get more info about the class, and the current set of
             # form props for it
