@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.29 2004-05-23 23:24:47 richard Exp $
+#$Id: actions.py,v 1.30 2004-05-28 00:56:50 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -575,6 +575,7 @@ class PassResetAction(Action):
             if self.user != 'admin':
                 self.client.opendb('admin')
                 self.db = self.client.db
+                otks = self.db.getOTKManager()
 
             # change the password
             newpw = password.generatePassword()

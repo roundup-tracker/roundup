@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: roundup_mailgw.py,v 1.17 2004-05-18 19:26:32 a1s Exp $
+# $Id: roundup_mailgw.py,v 1.18 2004-05-28 00:56:50 richard Exp $
 
 """Command-line script stub that calls the roundup.mailgw.
 """
@@ -174,7 +174,8 @@ def main(argv):
         return usage(argv, _('Error: The source must be either "mailbox",'
             ' "pop", "apop", "imap" or "imaps"'))
     finally:
-        db.close()
+        # handler might have closed the initial db and opened a new one
+        handler.db.close()
 
 def run():
     # time out after a minute if we can
