@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.11 2002-01-14 02:20:15 richard Exp $
+# $Id: __init__.py,v 1.12 2002-01-14 06:53:28 richard Exp $
 
 import unittest
 import os, tempfile
@@ -26,14 +26,14 @@ import test_init, test_token, test_mailgw
 
 def go():
     suite = unittest.TestSuite((
-#        test_dates.suite(),
-#        test_schema.suite(),
+        test_dates.suite(),
+        test_schema.suite(),
         test_db.suite(),
-#        test_init.suite(),
-#        test_multipart.suite(),
-#        test_mailsplit.suite(),
+        test_init.suite(),
+        test_multipart.suite(),
+        test_mailsplit.suite(),
         test_mailgw.suite(),
-#        test_token.suite(),
+        test_token.suite(),
     ))
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
@@ -41,6 +41,15 @@ def go():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/01/14 02:20:15  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.10  2002/01/05 02:09:46  richard
 # make setup abort if tests fail
 #
