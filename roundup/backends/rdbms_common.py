@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.26 2003-01-05 10:55:16 richard Exp $
+# $Id: rdbms_common.py,v 1.27 2003-01-08 05:39:40 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1794,6 +1794,22 @@ class Class(hyperdb.Class):
                     else:
                         where.append('_%s=%s'%(k, a))
                         args.append(v)
+            elif isinstance(propclass, Date):
+                if isinstance(v, type([])):
+                    s = ','.join([a for x in v])
+                    where.append('_%s in (%s)'%(k, s))
+                    args = args + [date.Date(x).serialise() for x in v]
+                else:
+                    where.append('_%s=%s'%(k, a))
+                    args.append(date.Date(v).serialise())
+            elif isinstance(propclass, Interval):
+                if isinstance(v, type([])):
+                    s = ','.join([a for x in v])
+                    where.append('_%s in (%s)'%(k, s))
+                    args = args + [date.Interval(x).serialise() for x in v]
+                else:
+                    where.append('_%s=%s'%(k, a))
+                    args.append(date.Interval(v).serialise())
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])

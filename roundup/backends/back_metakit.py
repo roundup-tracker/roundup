@@ -813,6 +813,11 @@ class Class:
                 else:
                     bv = value
                 where[propname] = bv
+            elif isinstance(prop, hyperdb.Date):
+                t = date.Date(value).get_tuple()
+                where[propname] = int(calendar.timegm(t))
+            elif isinstance(prop, hyperdb.Interval):
+                where[propname] = str(date.Interval(value))
             elif isinstance(prop, hyperdb.Number):
                 where[propname] = int(value)
             else:

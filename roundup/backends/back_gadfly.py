@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.30 2002-12-12 09:31:04 richard Exp $
+# $Id: back_gadfly.py,v 1.31 2003-01-08 05:39:40 richard Exp $
 ''' Gadlfy relational database hypderb backend.
 
 About Gadfly
@@ -169,6 +169,22 @@ class GadflyClass:
                 else:
                     where.append('id=%s.nodeid and %s.linkid = %s'%(tn, tn, a))
                     args.append(v)
+            elif isinstance(propclass, Date):
+                if isinstance(v, type([])):
+                    s = ','.join([a for x in v])
+                    where.append('_%s in (%s)'%(k, s))
+                    args = args + [date.Date(x).serialise() for x in v]
+                else:
+                    where.append('_%s=%s'%(k, a))
+                    args.append(date.Date(v).serialise())
+            elif isinstance(propclass, Interval):
+                if isinstance(v, type([])):
+                    s = ','.join([a for x in v])
+                    where.append('_%s in (%s)'%(k, s))
+                    args = args + [date.Interval(x).serialise() for x in v]
+                else:
+                    where.append('_%s=%s'%(k, a))
+                    args.append(date.Interval(v).serialise())
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
