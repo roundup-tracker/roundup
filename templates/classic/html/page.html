@@ -37,7 +37,7 @@
     <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1">Show Unassigned</a><br>
     <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
     <a href="issue?:template=search">Search</a><br>
-    <input type="submit" value="Show issue no."><input size="4" type="text" name=":number">
+    <input type="submit" style="padding: 0" value="Show issue:"><input size="4" type="text" name=":number">
     <input type="hidden" name=":type" value="issue">
     <input type="hidden" name=":action" value="show">
    </p>
@@ -71,10 +71,10 @@
     <b>Login</b><br>
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
-    <input type="submit" name=":action" value="Login">
+    <input type="submit" name=":action" value="Login"><br>
     <span tal:replace="structure request/indexargs_form" />
     <a href="user?:template=register">Register</a><br>
-    <a href="user?:template=forgotten">Lost your password?</a><br>
+    <a href="user?:template=forgotten">Lost&nbsp;your&nbsp;login?</a><br>
    </p>
   </form>
    

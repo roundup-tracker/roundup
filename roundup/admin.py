@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.55.2.1 2003-08-28 04:53:04 richard Exp $
+# $Id: admin.py,v 1.55.2.2 2003-08-29 12:45:54 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -719,7 +719,9 @@ Command help:
             cl = self.get_class(classname)
 
             # display the values
-            for key in cl.properties.keys():
+            keys = cl.properties.keys()
+            keys.sort()
+            for key in keys:
                 value = cl.get(nodeid, key)
                 print _('%(key)s: %(value)s')%locals()
 

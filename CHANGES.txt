@@ -15,6 +15,7 @@ Fixed:
 - fixed upgrading docs for timezones (sf bug 790498)
 - set the content type on page templates (can have XML templates now)
 - various cosmetic fixes (thanks James Kew for being persistent :)
+- applied patch 739314 (sorry John!)
 
 
 2003-08-08 0.6.0
