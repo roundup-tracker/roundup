@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.54 2002-01-16 09:14:45 grubert Exp $
+$Id: mailgw.py,v 1.55 2002-01-21 10:05:47 rochecompaan Exp $
 '''
 
 
@@ -387,15 +387,32 @@ Error was: %s
 Subject was: "%s"
 '''%(key, message, subject)
                 elif isinstance(proptype, hyperdb.Link):
-                    link = self.db.classes[proptype.classname]
-                    propkey = link.labelprop(default_to_id=1)
-                    props[key] = value
+                    linkcl = self.db.classes[proptype.classname]
+                    propkey = linkcl.labelprop(default_to_id=1)
+                    try:
+                        props[key] = linkcl.lookup(value)
+                    except KeyError, message:
+                        raise MailUsageError, '''
+Subject argument list contains an invalid value for %s.
+
+Error was: %s
+Subject was: "%s"
+'''%(key, message, subject)
                 elif isinstance(proptype, hyperdb.Multilink):
                     # get the linked class
                     linkcl = self.db.classes[proptype.classname]
                     propkey = linkcl.labelprop(default_to_id=1)
                     for item in value.split(','):
-                        item = item.split()
+                        item = item.strip()
+                        try:
+                            item = linkcl.lookup(item)
+                        except KeyError, message:
+                            raise MailUsageError, '''
+Subject argument list contains an invalid value for %s.
+
+Error was: %s
+Subject was: "%s"
+'''%(key, message, subject)
                         if props.has_key(key):
                             props[key].append(item)
                         else:
@@ -582,12 +599,10 @@ not find a text/plain part to use.
                 n[nid] = 1
             props['nosy'] = n.keys()
             # add assignedto to the nosy list
-            try:
-                assignedto = self.db.user.lookup(props['assignedto'])
+            if props.has_key('assignedto'):
+                assignedto = props['assignedto']
                 if assignedto not in props['nosy']:
                     props['nosy'].append(assignedto)
-            except:
-                pass
 
             message_id = self.db.msg.create(author=author,
                 recipients=recipients, date=date.Date('.'), summary=summary,
@@ -646,10 +661,7 @@ There was a problem with the message you sent:
             nosy = props.get('nosy', [])
             n = {}
             for value in nosy:
-                if self.db.hasnode('user', value):
-                    nid = value
-                else:
-                    continue
+                nid = value
                 if n.has_key(nid): continue
                 n[nid] = 1
             props['nosy'] = n.keys()
@@ -667,14 +679,6 @@ There was a problem with the message you sent:
             # add assignedto to the nosy list
             if properties.has_key('assignedto') and props.has_key('assignedto'):
                 assignedto = props['assignedto']
-                if not re.match('^\d+$', assignedto):
-                    try:
-                        assignedto = self.db.user.lookup(assignedto)
-                    except KeyError:
-                        raise MailUsageError, '''
-There was a problem with the message you sent:
-   Assignedto user '%s' doesn't exist
-'''%props['assignedto']
                 if not n.has_key(assignedto):
                     props['nosy'].append(assignedto)
                     n[assignedto] = 1
@@ -749,6 +753,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.54  2002/01/16 09:14:45  grubert
+#  . if the attachment has no name, name it unnamed, happens with tnefs.
+#
 # Revision 1.53  2002/01/16 07:20:54  richard
 # simple help command for mailgw
 #

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.5 2002-01-15 00:12:40 richard Exp $
+# $Id: test_mailgw.py,v 1.6 2002-01-21 10:05:48 rochecompaan Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -67,7 +67,7 @@ This is a test submission of a new issue.
 From: Chef <chef@bork.bork.bork
 To: issue_tracker@fill.me.in.
 Message-Id: <dummy_test_message_id>
-Subject: [issue] Testing... [assignedto=richard]
+Subject: [issue] Testing... [nosy=mary; assignedto=richard]
 
 This is a test submission of a new issue.
 ''')
@@ -78,10 +78,10 @@ This is a test submission of a new issue.
 
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
-TO: chef@bork.bork.bork, richard@test
+TO: chef@bork.bork.bork, mary@test, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
-To: chef@bork.bork.bork, richard@test
+To: chef@bork.bork.bork, mary@test, richard@test
 From: Chef <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
@@ -96,7 +96,7 @@ This is a test submission of a new issue.
 ----------
 assignedto: richard
 messages: 1
-nosy: Chef, richard
+nosy: mary, Chef, richard
 status: unread
 title: Testing...
 ___________________________________________________
@@ -113,7 +113,7 @@ From: richard <richard@test>
 To: issue_tracker@fill.me.in.
 Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
-Subject: [issue1] Testing...
+Subject: [issue1] Testing... [assignedto=mary; nosy=john]
 
 This is a followup
 ''')
@@ -122,10 +122,10 @@ This is a followup
 
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
-TO: chef@bork.bork.bork
+TO: chef@bork.bork.bork, mary@test, john@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
-To: chef@bork.bork.bork
+To: chef@bork.bork.bork, mary@test, john@test
 From: richard <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
@@ -137,6 +137,10 @@ richard <richard@test> added the comment:
 
 This is a followup
 
+
+----------
+assignedto:  -> mary
+nosy: +mary, john
 ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
@@ -192,6 +196,9 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/01/15 00:12:40  richard
+# #503340 ] creating issue with [asignedto=p.ohly]
+#
 # Revision 1.4  2002/01/14 07:12:15  richard
 # removed file writing from tests...
 #
