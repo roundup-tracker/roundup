@@ -120,13 +120,13 @@ Apache:
  6. To use the CGI script unchanged, which allows much easier updates,
     add these directives to your "httpd.conf":
         SetEnv ROUNDUP_LOG "/var/log/roundup.log"
-        SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup"
+        SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/instances/Default"
         SetEnv ROUNDUP_DEBUG "0"
  7. On Windows, write a batch file "roundup.bat" similar to the one below
     and place it into your cgi-bin directory:
         @echo off
-        set ROUNDUP_LOG=c:\data\roundup\cgi.log
-        set ROUNDUP_INSTANCE_HOMES=Default=c:\data\roundup;
+        set ROUNDUP_LOG=c:\Python21\share\roundup\cgi.log
+        set ROUNDUP_INSTANCE_HOMES=Default=c:\Python21\share\roundup\instances\Default;
         set ROUNDUP_DEBUG=0
-        c:\Python21\python.exe c:\roundup\cgi-bin\roundup.cgi
+        c:\Python21\python.exe c:\Python21\share\roundup\cgi-bin\roundup.cgi
 
