@@ -7,6 +7,7 @@ Fixed:
 - fix API for templating utils extensions - remove "utils" arg (sf bug 1081981)
 - back_sqlite.py is missing "import time" (sf bug 1081959)
 - fix (list) popup (sf bug 1083570)
+- fix some security assertions (sf bug 1085481)
 
 
 2004-12-08 0.8.0b1
