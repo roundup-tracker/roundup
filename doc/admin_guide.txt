@@ -2,7 +2,7 @@
 Administration Guide
 ====================
 
-:Version: $Revision: 1.5.2.4 $
+:Version: $Revision: 1.5.2.5 $
 
 .. contents::
 
@@ -117,8 +117,13 @@ take:
     PYTHONPATH=. python roundup/scripts/roundup_admin.py <normal arguments>
     PYTHONPATH=. python roundup/scripts/roundup_mailgw.py <normal arguments>
 
+   Note that on Windows, this would read::
+
+    C:\sources\roundup-0.7.4> SET PYTHONPATH=.
+    C:\sources\roundup-0.7.4> python roundup/scripts/roundup_server.py <normal arguments>
+
 7. Once you're comfortable that the upgrade will work using that copy, you
-   should the installed software::
+   should instal the new version of the software::
 
     python setup.py install
 
