@@ -48,7 +48,7 @@ class Permission:
             return 0
 
         # check code
-        if self.check is not None:
+        if itemid is not None and self.check is not None:
             if not self.check(db, userid, itemid):
                 return 0
 
@@ -58,6 +58,17 @@ class Permission:
     def __repr__(self):
         return '<Permission 0x%x %r,%r,%r,%r>'%(id(self), self.name,
             self.klass, self.properties, self.check)
+
+    def __cmp__(self, other):
+        if self.name != other.name:
+            return cmp(self.name, other.name)
+
+        if self.klass != other.klass: return 1
+        if self.properties != other.properties: return 1
+        if self.check != other.check: return 1
+
+        # match
+        return 0
 
 class Role:
     ''' Defines a Role with the attributes
@@ -109,7 +120,8 @@ class Security:
         from roundup import mailgw
         mailgw.initialiseSecurity(self)
 
-    def getPermission(self, permission, classname=None):
+    def getPermission(self, permission, classname=None, properties=None,
+            check=None):
         ''' Find the Permission matching the name and for the class, if the
             classname is specified.
 
@@ -125,20 +137,35 @@ class Security:
                 raise ValueError, 'No class "%s" defined'%classname
 
         # look through all the permissions of the given name
+        tester = Permission(permission, klass=classname, properties=properties,
+            check=check)
         for perm in self.permission[permission]:
-            # if we're passed a classname, the permission must match
-            if perm.klass is not None and perm.klass == classname:
-                return perm
-            # otherwise the permission klass must be unset
-            elif not perm.klass and not classname:
+            if perm == tester:
                 return perm
         raise ValueError, 'No permission "%s" defined for "%s"'%(permission,
             classname)
 
     def hasPermission(self, permission, userid, classname=None,
             property=None, itemid=None):
-        ''' Look through all the Roles, and hence Permissions, and see if
-            "permission" is there for the specified classname.
+        '''Look through all the Roles, and hence Permissions, and
+           see if "permission" exists given the constraints of
+           classname, property and itemid.
+
+           If classname is specified (and only classname) then the
+           search will match if there is *any* Permission for that
+           classname, even if the Permission has additional
+           constraints.
+
+           If property is specified, the Permission matched must have
+           either no properties listed or the property must appear in
+           the list.
+
+           If itemid is specified, the Permission matched must have
+           either no check function defined or the check function,
+           when invoked, must return a True value.
+
+           Note that this functionality is actually implemented by the
+           Permission.test() method.
         '''
         roles = self.db.user.get(userid, 'roles')
         if roles is None:
@@ -150,39 +177,16 @@ class Security:
                 continue
             # for each of the user's Roles, check the permissions
             for perm in self.role[rolename].permissions:
-                # permission name match?
+                # permission match?
                 if perm.test(self.db, permission, classname, property,
                         userid, itemid):
                     return 1
         return 0
 
-    def hasNodePermission(self, classname, nodeid, **propspec):
-        ''' Check the named properties of the given node to see if the
-            userid appears in them. If it does, then the user is granted
-            this permission check.
-
-            'propspec' consists of a set of properties and values that
-            must be present on the given node for access to be granted.
-
-            If a property is a Link, the value must match the property
-            value. If a property is a Multilink, the value must appear
-            in the Multilink list.
-        '''
-        klass = self.db.getclass(classname)
-        properties = klass.getprops()
-        for k,v in propspec.items():
-            value = klass.get(nodeid, k)
-            if isinstance(properties[k], hyperdb.Multilink):
-                if v not in value:
-                    return 0
-            else:
-                if v != value:
-                    return 0
-        return 1
-
     def addPermission(self, **propspec):
         ''' Create a new Permission with the properties defined in
-            'propspec'
+            'propspec'. See the Permission class for the possible
+            keyword args.
         '''
         perm = Permission(**propspec)
         self.permission.setdefault(perm.name, []).append(perm)
@@ -195,7 +199,8 @@ class Security:
         self.role[role.name] = role
         return role
 
-    def addPermissionToRole(self, rolename, permission, classname=None):
+    def addPermissionToRole(self, rolename, permission, classname=None,
+            properties=None, check=None):
         ''' Add the permission to the role's permission list.
 
             'rolename' is the name of the role to add the permission to.
@@ -206,7 +211,8 @@ class Security:
             self.getPermission)
         '''
         if not isinstance(permission, Permission):
-            permission = self.getPermission(permission, classname)
+            permission = self.getPermission(permission, classname,
+                properties, check)
         role = self.role[rolename.lower()]
         role.permissions.append(permission)
 

@@ -49,13 +49,14 @@
  <tr>
   <th tal:repeat="property context/propnames" tal:content="property">&nbsp;</th>
  </tr>
- <tr tal:repeat="item context/list"
-  tal:attributes="class python:['normal', 'alt'][repeat['item'].index%6/3]"
- >
+ <tal:block repeat="item context/list">
+ <tr tal:condition="item/is_view_ok"
+     tal:attributes="class python:['normal', 'alt'][repeat['item'].index%6/3]">
   <td tal:repeat="property context/propnames"
    tal:content="python: item[property] or default"
   >&nbsp;</td>
- </tr>
+  </tr>
+ </tal:block>
 </table>
 
 </td>

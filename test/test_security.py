@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: test_security.py,v 1.7 2004-11-18 15:54:09 a1s Exp $
+# $Id: test_security.py,v 1.8 2005-01-28 03:51:19 richard Exp $
 
 import os, unittest, shutil
 
@@ -59,46 +59,107 @@ class PermissionTest(MyTestCase):
         self.assertRaises(ValueError, self.db.security.getPermission, 'x')
         self.assertRaises(ValueError, self.db.security.getPermission, 'Edit',
             'fubar')
-        ei = self.db.security.addPermission(name="Edit", klass="issue",
-                        description="User is allowed to edit issues")
-        self.db.security.getPermission('Edit', 'issue')
-        ai = self.db.security.addPermission(name="View", klass="issue",
-                        description="User is allowed to access issues")
-        self.db.security.getPermission('View', 'issue')
+
+        add = self.db.security.addPermission
+        get = self.db.security.getPermission
+
+        # class
+        ei = add(name="Edit", klass="issue")
+        self.assertEquals(get('Edit', 'issue'), ei)
+        ai = add(name="View", klass="issue")
+        self.assertEquals(get('View', 'issue'), ai)
+
+        # property
+        epi = add(name="Edit", klass="issue", properties=['title'])
+        self.assertEquals(get('Edit', 'issue', properties=['title']), epi)
+        api = add(name="View", klass="issue", properties=['title'])
+        self.assertEquals(get('View', 'issue', properties=['title']), api)
+        
+        # check function
+        dummy = lambda: 0
+        eci = add(name="Edit", klass="issue", check=dummy)
+        self.assertEquals(get('Edit', 'issue', check=dummy), eci)
+        aci = add(name="View", klass="issue", check=dummy)
+        self.assertEquals(get('View', 'issue', check=dummy), aci)
+
+        # all
+        epci = add(name="Edit", klass="issue", properties=['title'],
+            check=dummy)
+        self.assertEquals(get('Edit', 'issue', properties=['title'],
+            check=dummy), epci)
+        apci = add(name="View", klass="issue", properties=['title'],
+            check=dummy)
+        self.assertEquals(get('View', 'issue', properties=['title'],
+            check=dummy), apci)
 
     def testDBinit(self):
-        self.db.user.create(username="anonymous", roles='User')
+        self.db.user.create(username="demo", roles='User')
+        self.db.user.create(username="anonymous", roles='Anonymous')
 
     def testAccessControls(self):
-        self.testDBinit()
-        ei = self.db.security.addPermission(name="Edit", klass="issue",
-                        description="User is allowed to edit issues")
-        self.db.security.addPermissionToRole('User', ei)
+        add = self.db.security.addPermission
+        has = self.db.security.hasPermission
+        addRole = self.db.security.addRole
+        addToRole = self.db.security.addPermissionToRole
+
+        none = self.db.user.create(username='none', roles='None')
+
+        # test admin access
+        addRole(name='Super')
+        addToRole('Super', add(name="Test"))
+        super = self.db.user.create(username='super', roles='Super')
 
         # test class-level access
-        userid = self.db.user.lookup('admin')
-        self.assertEquals(self.db.security.hasPermission('Edit', userid,
-            'issue'), 1)
-        self.assertEquals(self.db.security.hasPermission('Edit', userid,
-            'user'), 1)
-        userid = self.db.user.lookup('anonymous')
-        self.assertEquals(self.db.security.hasPermission('Edit', userid,
-            'issue'), 1)
-        self.assertEquals(self.db.security.hasPermission('Edit', userid,
-            'user'), 0)
-        self.assertEquals(self.db.security.hasPermission('View', userid,
-            'issue'), 0)
+        addRole(name='Role1')
+        addToRole('Role1', add(name="Test", klass="test"))
+        user1 = self.db.user.create(username='user1', roles='Role1')
+        self.assertEquals(has('Test', user1, 'test'), 1)
+        self.assertEquals(has('Test', super, 'test'), 1)
+        self.assertEquals(has('Test', none, 'test'), 0)
 
-        # test node-level access
-        issueid = self.db.issue.create(title='foo', assignedto='admin')
-        userid = self.db.user.lookup('admin')
-        self.assertEquals(self.db.security.hasNodePermission('issue',
-            issueid, assignedto=userid), 1)
-        self.assertEquals(self.db.security.hasNodePermission('issue',
-            issueid, nosy=userid), 0)
-        self.db.issue.set(issueid, nosy=[userid])
-        self.assertEquals(self.db.security.hasNodePermission('issue',
-            issueid, nosy=userid), 1)
+        # property
+        addRole(name='Role2')
+        addToRole('Role2', add(name="Test", klass="test", properties=['a','b']))
+        user2 = self.db.user.create(username='user2', roles='Role2')
+        # *any* access to class
+        self.assertEquals(has('Test', user1, 'test'), 1)
+        self.assertEquals(has('Test', user2, 'test'), 1)
+        # now property test
+        self.assertEquals(has('Test', user2, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user2, 'test', property='b'), 1)
+        self.assertEquals(has('Test', user2, 'test', property='c'), 0)
+        self.assertEquals(has('Test', user1, 'test', property='a'), 1)
+        self.assertEquals(has('Test', user1, 'test', property='b'), 1)
+        self.assertEquals(has('Test', user1, 'test', property='c'), 1)
+        self.assertEquals(has('Test', super, 'test', property='a'), 1)
+        self.assertEquals(has('Test', super, 'test', property='b'), 1)
+        self.assertEquals(has('Test', super, 'test', property='c'), 1)
+        self.assertEquals(has('Test', none, 'test', property='a'), 0)
+        self.assertEquals(has('Test', none, 'test', property='b'), 0)
+        self.assertEquals(has('Test', none, 'test', property='c'), 0)
+        self.assertEquals(has('Test', none, 'test'), 0)
+
+        # check function
+        check = lambda db, userid, itemid: itemid == '1'
+        addRole(name='Role3')
+        addToRole('Role3', add(name="Test", klass="test", check=check))
+        user3 = self.db.user.create(username='user3', roles='Role3')
+        # *any* access to class
+        self.assertEquals(has('Test', user1, 'test'), 1)
+        self.assertEquals(has('Test', user2, 'test'), 1)
+        self.assertEquals(has('Test', user3, 'test'), 1)
+        self.assertEquals(has('Test', none, 'test'), 0)
+        # now check function
+        self.assertEquals(has('Test', user3, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user3, 'test', itemid='2'), 0)
+        self.assertEquals(has('Test', user2, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', user2, 'test', itemid='2'), 1)
+        self.assertEquals(has('Test', user1, 'test', itemid='2'), 1)
+        self.assertEquals(has('Test', user1, 'test', itemid='2'), 1)
+        self.assertEquals(has('Test', super, 'test', itemid='1'), 1)
+        self.assertEquals(has('Test', super, 'test', itemid='2'), 1)
+        self.assertEquals(has('Test', none, 'test', itemid='1'), 0)
+        self.assertEquals(has('Test', none, 'test', itemid='2'), 0)
 
 def test_suite():
     suite = unittest.TestSuite()

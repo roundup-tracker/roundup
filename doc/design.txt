@@ -1384,11 +1384,12 @@ this path, and allow the multiple assignment of Roles to Users, and
 multiple Permissions to Roles. These definitions are not persistent -
 they're defined when the application initialises.
 
-There will be two levels of Permission. The Class level permissions
+There will be three levels of Permission. The Class level permissions
 define logical permissions associated with all items of a particular
 class (or all classes). The Item level permissions define logical
 permissions associated with specific items by way of their user-linked
-properties.
+properties. The Property level permissions define logical permissions
+associated with a specific property of an item.
 
 
 Access Control Interface Specification
@@ -1430,36 +1431,41 @@ The security module defines::
                 the base roles (for admin user).
             '''
 
-        def getPermission(self, permission, classname=None):
-            ''' Find the Permission matching the name and for the class,
-                if the classname is specified.
+        def getPermission(self, permission, classname=None, properties=None,
+                check=None):
+            ''' Find the Permission exactly matching the name, class,
+                properties list and check function.
 
                 Raise ValueError if there is no exact match.
             '''
 
-        def hasPermission(self, permission, userid, classname=None):
+        def hasPermission(self, permission, userid, classname=None,
+                property=None, itemid=None):
             ''' Look through all the Roles, and hence Permissions, and
-                see if "permission" is there for the specified
-                classname.
-            '''
+                see if "permission" exists given the constraints of
+                classname, property and itemid.
 
-        def hasItemPermission(self, classname, itemid, **propspec):
-            ''' Check the named properties of the given item to see if
-                the userid appears in them. If it does, then the user is
-                granted this permission check.
+                If classname is specified (and only classname) then the
+                search will match if there is *any* Permission for that
+                classname, even if the Permission has additional
+                constraints.
 
-                'propspec' consists of a set of properties and values
-                that must be present on the given item for access to be
-                granted.
+                If property is specified, the Permission matched must have
+                either no properties listed or the property must appear in
+                the list.
 
-                If a property is a Link, the value must match the
-                property value. If a property is a Multilink, the value
-                must appear in the Multilink list.
+                If itemid is specified, the Permission matched must have
+                either no check function defined or the check function,
+                when invoked, must return a True value.
+
+                Note that this functionality is actually implemented by the
+                Permission.test() method.
             '''
 
         def addPermission(self, **propspec):
             ''' Create a new Permission with the properties defined in
-                'propspec'
+                'propspec'. See the Permission class for the possible
+                keyword args.
             '''
 
         def addRole(self, **propspec):

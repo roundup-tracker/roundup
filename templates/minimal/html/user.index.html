@@ -14,14 +14,16 @@
  <th i18n:translate="">Username</th>
  <th i18n:translate="">Email address</th>
 </tr>
-<tr tal:repeat="user context/list"
+<tal:block repeat="user context/list">
+ <tr tal:condition="user/is_view_ok"
     tal:attributes="class python:['normal', 'alt'][repeat['user'].index%6/3]">
  <td>
   <a tal:attributes="href string:user${user/id}"
      tal:content="user/username">username</a>
  </td>
  <td tal:content="python:user.address.email()">address</td>
-</tr>
+ </tr>
+</tal:block>
 </table>
 </td>
 

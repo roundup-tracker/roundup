@@ -656,7 +656,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             self.input(type="submit", name="submit", value=self._(label))
 
     def history(self):
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
         return self._('New node - no history')
 
     def renderWith(self, name, **kwargs):
@@ -774,7 +775,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return []
 
     def history(self, direction='descending', dre=re.compile('^\d+$')):
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         # pre-load the history with the current state
         current = {}
@@ -1143,7 +1145,8 @@ class StringHTMLProperty(HTMLProperty):
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1163,7 +1166,8 @@ class StringHTMLProperty(HTMLProperty):
 
             This requires the StructureText module to be installed separately.
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         s = self.plain(escape=escape)
         if not StructuredText:
@@ -1206,7 +1210,8 @@ class StringHTMLProperty(HTMLProperty):
     def email(self, escape=1):
         ''' Render the value of the property as an obscured email address
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             value = ''
@@ -1227,7 +1232,8 @@ class PasswordHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1260,7 +1266,8 @@ class NumberHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1298,7 +1305,8 @@ class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1342,7 +1350,8 @@ class DateHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1358,7 +1367,8 @@ class DateHTMLProperty(HTMLProperty):
             This is useful for defaulting a new value. Returns a
             DateHTMLProperty.
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         ret = date.Date('.', translator=self._client)
 
@@ -1427,7 +1437,8 @@ class DateHTMLProperty(HTMLProperty):
 
             If the "pretty" flag is true, then make the display pretty.
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if not self._value:
             return ''
@@ -1446,7 +1457,8 @@ class DateHTMLProperty(HTMLProperty):
             string, then it'll be stripped from the output. This is handy
             for the situatin when a date only specifies a month and a year.
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if not self._value:
             return ''
@@ -1458,7 +1470,8 @@ class DateHTMLProperty(HTMLProperty):
     def local(self, offset):
         ''' Return the date/time as a local (timezone offset) date/time.
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, self._value, offset=offset)
@@ -1474,7 +1487,8 @@ class IntervalHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1483,7 +1497,8 @@ class IntervalHTMLProperty(HTMLProperty):
     def pretty(self):
         ''' Render the interval in a pretty format (eg. "yesterday")
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         return self._value.pretty()
 
@@ -1531,7 +1546,8 @@ class LinkHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         if self._value is None:
             return ''
@@ -1683,7 +1699,8 @@ class MultilinkHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         ''' Render a "plain" representation of the property
         '''
-        self.view_check()
+        if not self.is_view_ok():
+            return _('[hidden]')
 
         linkcl = self._db.classes[self._prop.classname]
         k = linkcl.labelprop(1)
