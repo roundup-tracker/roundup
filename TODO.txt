@@ -1,7 +1,6 @@
 This file has been re-purposed to contain specifically the items that need
 doing before the next release:
 
-- finish mysql version 1 -> version 2 migration code
 - ensure index creation is triggered by the version 1->2 update
   (and other upgrade tests)
 
