@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.67 2002-09-03 02:53:53 richard Exp $
+#$Id: back_anydbm.py,v 1.68 2002-09-03 05:46:20 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -979,7 +979,11 @@ class Class(hyperdb.Class):
                 name = self.db.getjournal(self.classname, nodeid)[0][2]
             else:
                 return None
-            return self.db.user.lookup(name)
+            try:
+                return self.db.user.lookup(name)
+            except KeyError:
+                # the journaltag user doesn't exist any more
+                return None
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
@@ -1905,6 +1909,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.67  2002/09/03 02:53:53  richard
+#Fixed nasty bug that was preventing changes to multilinks going through.
+#
 #Revision 1.66  2002/09/01 04:32:30  richard
 #. Lots of cleanup in the classic html (stylesheet, search page, index page, ...)
 #. Reinstated searching, but not query saving yet

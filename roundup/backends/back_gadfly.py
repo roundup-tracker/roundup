@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.8 2002-09-03 02:53:53 richard Exp $
+# $Id: back_gadfly.py,v 1.9 2002-09-03 05:46:21 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -1036,7 +1036,10 @@ class Class(hyperdb.Class):
                 name = self.db.getjournal(self.classname, nodeid)[0][2]
             else:
                 return None
-            return self.db.user.lookup(name)
+            try:
+                return self.db.user.lookup(name)
+            except KeyError:
+                # the journaltag user doesn't exist any more
 
         # get the property (raises KeyErorr if invalid)
         prop = self.properties[propname]
@@ -1754,6 +1757,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/09/03 02:53:53  richard
+# Fixed nasty bug that was preventing changes to multilinks going through.
+#
 # Revision 1.7  2002/09/01 04:32:30  richard
 # . Lots of cleanup in the classic html (stylesheet, search page, index page, ...)
 # . Reinstated searching, but not query saving yet
