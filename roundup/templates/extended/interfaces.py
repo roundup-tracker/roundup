@@ -1,4 +1,4 @@
-# $Id: interfaces.py,v 1.6 2001-08-02 00:36:42 richard Exp $
+# $Id: interfaces.py,v 1.7 2001-08-02 00:43:06 richard Exp $
 
 import instance_config, urlparse, os
 from roundup import cgi_client, mailgw 
@@ -45,13 +45,16 @@ class Client(cgi_client.Client):
 <tr class="location-bar"><td><big><strong>%s</strong></big></td>
 <td align=right valign=bottom>%s</td></tr>
 <tr class="location-bar">
-<td align=left><a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">All issues</a> | 
-<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&priority=fatal-bug,bug">Bugs</a> | 
-<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&priority=usability,feature">Wishlist</a> | 
-<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a> | 
-<a href="newissue">New Issue</a> |
-<a href="newsupport">New Support</a> |
-<a href="newuser">New User</a>
+<td align=left>All
+<a href="issue?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
+<a href="support?status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
+| Unassigned
+<a href="issue?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">Issues</a>,
+<a href="support?assignedto=admin&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=customername">Support</a>
+| Add
+<a href="newissue">Issue</a>,
+<a href="newsupport">Support</a>,
+<a href="newuser">User</a>
 %s</td>
 <td align=right>
 <a href="issue?assignedto=%s&status=unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=activity&:columns=id,activity,status,title,assignedto&:group=priority">My Issues</a> |
@@ -70,6 +73,9 @@ class MailGW(mailgw.MailGW):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/08/02 00:36:42  richard
+# Made all the user-specific link names the same (My Foo)
+#
 # Revision 1.5  2001/08/01 05:15:09  richard
 # Added "My Issues" and "My Support" to extended template.
 #
