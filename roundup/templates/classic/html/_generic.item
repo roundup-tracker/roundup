@@ -7,7 +7,8 @@
 <table class="form">
 
 <tr tal:repeat="prop python:db[context._classname].properties()">
- <tal:block tal:condition="python:prop._name not in ('id', 'creator', 'created', 'activity')">
+ <tal:block tal:condition="python:prop._name not in ('id', 'creator',
+                                  'creation', 'activity')">
   <th tal:content="prop/_name"></th>
   <td tal:content="structure python:context[prop._name].field()"></td>
  </tal:block>
