@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.40.2.1 2003-03-06 04:37:51 richard Exp $
+# $Id: date.py,v 1.40.2.2 2003-04-23 11:48:51 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -543,7 +543,7 @@ class Interval:
         if self.sign < 0: 
             s = s + _(' ago')
         else:
-            s = _('in') + s
+            s = _('in ') + s
         return s
 
     def get_tuple(self):
