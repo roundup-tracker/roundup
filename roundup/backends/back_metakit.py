@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.70.2.1 2004-05-18 22:06:08 richard Exp $
+# $Id: back_metakit.py,v 1.70.2.2 2004-05-23 23:26:29 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -1174,7 +1174,7 @@ class Class(hyperdb.Class):
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
 
-        "search_matches" is {nodeid: marker}
+        "search_matches" is {nodeid: marker} or None
 
         The filter must match all properties specificed - but if the
         property value to match is a list, any one of the values in the

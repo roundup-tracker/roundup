@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.98.2.3 2004-05-16 22:00:08 richard Exp $
+# $Id: rdbms_common.py,v 1.98.2.4 2004-05-23 23:26:29 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1991,7 +1991,7 @@ class Class(hyperdb.Class):
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
 
-        "search_matches" is {nodeid: marker}
+        "search_matches" is {nodeid: marker} or None
 
         The filter must match all properties specificed - but if the
         property value to match is a list, any one of the values in the

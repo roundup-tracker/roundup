@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.27.2.1 2004-05-13 00:21:32 richard Exp $
+#$Id: actions.py,v 1.27.2.2 2004-05-23 23:26:30 richard Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -148,18 +148,20 @@ class SearchAction(Action):
                 # edit the new way, query name not a key any more
                 # see if we match an existing private query
                 uid = self.db.getuid()
-                qids = self.db.query.filter({}, {'name': queryname,
+                qids = self.db.query.filter(None, {'name': queryname,
                         'private_for': uid})
                 if not qids:
                     # ok, so there's not a private query for the current user
                     # - see if there's a public one created by them
-                    qids = self.db.query.filter({}, {'name': queryname,
+                    qids = self.db.query.filter(None, {'name': queryname,
                         'private_for': -1, 'creator': uid})
 
                 if qids:
-                    # edit query
-                    qid = qids[0]
-                    self.db.query.set(qid, klass=self.classname, url=url)
+                    # edit query - make sure we get an exact match on the name
+                    for qid in qids:
+                        if queryname != self.db.query.get(qid, 'name'):
+                            continue
+                        self.db.query.set(qid, klass=self.classname, url=url)
                 else:
                     # create a query
                     qid = self.db.query.create(name=queryname,

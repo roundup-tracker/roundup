@@ -499,7 +499,7 @@ class MysqlClass:
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
 
-        "search_matches" is {nodeid: marker}
+        "search_matches" is {nodeid: marker} or None
 
         The filter must match all properties specificed - but if the
         property value to match is a list, any one of the values in the

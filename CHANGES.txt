@@ -5,6 +5,7 @@ are given with the most recent entry first.
 Fixed:
 - add "checked" to truth values for Boolean input
 - fixed import in metakit backend
+- fix SearchAction use of Class.filter(), and clarify API docs for same
 
 
 2004-05-17 0.7.2
