@@ -47,6 +47,9 @@ true http header.
 0.8.0 Logging Configuration
 ---------------------------
 
+See the `administration guide`_ for information about configuring the new
+logging implemented in 0.8.0.
+
 
 Migrating from 0.7.2 to 0.7.3
 =============================
