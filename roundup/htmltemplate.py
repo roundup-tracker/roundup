@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.25 2001-10-09 07:25:59 richard Exp $
+# $Id: htmltemplate.py,v 1.26 2001-10-14 10:55:00 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -213,11 +213,11 @@ class Link(Base):
             value = self.cl.get(self.nodeid, property)
         else:
             if isinstance(propclass, hyperdb.Multilink): value = []
+            elif isinstance(propclass, hyperdb.Link): value = None
             else: value = ''
         if isinstance(propclass, hyperdb.Link):
             linkname = propclass.classname
-            if value is None:
-                return '[not assigned]'
+            if value is None: return '[no %s]'%property.capitalize()
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
             linkvalue = linkcl.get(value, k)
@@ -226,11 +226,14 @@ class Link(Base):
             linkname = propclass.classname
             linkcl = self.db.classes[linkname]
             k = linkcl.labelprop()
+            if not value : return '[no %s]'%property.capitalize()
             l = []
             for value in value:
                 linkvalue = linkcl.get(value, k)
                 l.append('<a href="%s%s">%s</a>'%(linkname, value, linkvalue))
             return ', '.join(l)
+        if isinstance(propclass, hyperdb.String):
+            if value == '': value = '[no %s]'%property.capitalize()
         return '<a href="%s%s">%s</a>'%(self.classname, self.nodeid, value)
 
 class Count(Base):
@@ -753,6 +756,10 @@ def newitem(client, templates, db, classname, form, replace=re.compile(
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.24  2001/09/27 06:45:58  richard
 # *gak* ... xmp is Old Skool apparently. Am using pre again by have the option
 # on the plain() template function to escape the text for HTML.

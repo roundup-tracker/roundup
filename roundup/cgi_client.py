@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.30 2001-10-09 07:38:58 richard Exp $
+# $Id: cgi_client.py,v 1.31 2001-10-14 10:55:00 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import base64, Cookie, time
@@ -623,17 +623,19 @@ class Client:
                 except IndexError:
                     raise NotFound
                 try:
-                    getattr(self, 'show%s'%self.classname)()
+                    func = getattr(self, 'show%s'%self.classname)
                 except AttributeError:
                     raise NotFound
+                func()
                 return
             m = nre.match(path[0])
             if m:
                 self.classname = m.group(1)
                 try:
-                    getattr(self, 'new%s'%self.classname)()
+                    func = getattr(self, 'new%s'%self.classname)
                 except AttributeError:
                     raise NotFound
+                func()
                 return
             self.classname = path[0]
             try:
@@ -777,6 +779,11 @@ def parsePropsFromForm(cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2001/10/09 07:38:58  richard
+# Pushed the base code for the extended schema CGI interface back into the
+# code cgi_client module so that future updates will be less painful.
+# Also removed a debugging print statement from cgi_client.
+#
 # Revision 1.29  2001/10/09 07:25:59  richard
 # Added the Password property type. See "pydoc roundup.password" for
 # implementation details. Have updated some of the documentation too.
