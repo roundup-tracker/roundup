@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.86.2.2 2004-02-23 05:37:11 richard Exp $
+# $Id: roundupdb.py,v 1.86.2.3 2004-02-28 22:53:16 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -209,9 +209,15 @@ class IssueClass:
                 self.classname, nodeid, self.db.config.MAIL_DOMAIN)
             messages.set(msgid, messageid=messageid)
 
-        # send an email to the people who missed out
+        # character set to encode the email with
+        charset = getattr(self.db.config, 'EMAIL_CHARSET', 'utf-8')
+
+        # title for the message
         cn = self.classname
         title = self.get(nodeid, 'title') or '%s message copy'%cn
+        if charset != 'utf-8':
+            title = unicode(title, 'utf-8').encode(charset)
+
         # figure author information
         authid = messages.get(msgid, 'author')
         authname = users.get(authid, 'realname')
@@ -249,7 +255,10 @@ class IssueClass:
             m.append(self.email_signature(nodeid, msgid))
 
         # encode the content as quoted-printable
-        content = cStringIO.StringIO('\n'.join(m))
+        m = '\n'.join(m)
+        if charset != 'utf-8':
+            m = unicode(m, 'utf-8').encode(charset)
+        content = cStringIO.StringIO(m)
         content_encoded = cStringIO.StringIO()
         quopri.encode(content, content_encoded, 0)
         content_encoded = content_encoded.getvalue()
@@ -273,12 +282,11 @@ class IssueClass:
         message = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid,
-            encode_header(title, self.db.config.EMAIL_CHARSET)))
+            encode_header(title, charset)))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', straddr((encode_header(authname,
-            self.db.config.EMAIL_CHARSET) + from_tag, from_address)))
-        tracker_name = encode_header(self.db.config.TRACKER_NAME,
-            self.db.config.EMAIL_CHARSET)
+        writer.addheader('From', straddr((encode_header(authname, charset)
+            + from_tag, from_address)))
+        tracker_name = encode_header(self.db.config.TRACKER_NAME, charset)
         writer.addheader('Reply-To', straddr((tracker_name, from_address)))
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
             time.gmtime()))
@@ -299,7 +307,7 @@ class IssueClass:
             part = writer.startmultipartbody('mixed')
             part = writer.nextpart()
             part.addheader('Content-Transfer-Encoding', 'quoted-printable')
-            body = part.startbody('text/plain; charset=utf-8')
+            body = part.startbody('text/plain; charset=%s'%charset)
             body.write(content_encoded)
             for fileid in message_files:
                 name = files.get(fileid, 'name')
@@ -327,7 +335,7 @@ class IssueClass:
             writer.lastpart()
         else:
             writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
-            body = writer.startbody('text/plain; charset=utf-8')
+            body = writer.startbody('text/plain; charset=%s'%charset)
             body.write(content_encoded)
 
         # now try to send the message
