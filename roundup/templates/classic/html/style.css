@@ -66,7 +66,8 @@ th {
 }
 
 .location-bar {
-  background-color: #efefef;
+  background-color: #44bb66;
+  color: #ffffff;
   border: none;
 }
 
@@ -79,7 +80,8 @@ th {
 }
 
 .list-header {
-  background-color: #c0c0c0;
+  background-color: #aaccff;
+  color: #000000;
   border: none;
 }
 
@@ -105,9 +107,50 @@ th {
   border: none;
 }
 
-.section-bar {
-  background-color: #c0c0c0;
+.row-unread {
+  background-color: #ffddd9;
   border: none;
+}
+
+.row-in-progress {
+  background-color: #3ccc50;
+  border: none;
+}
+
+.row-resolved {
+  background-color: #aaccff;
+  border: none;
+}
+
+.row-done-cbb {
+  background-color: #aaccff;
+  border: none;
+}
+
+.row-testing {
+  background-color: #c6ddff;
+  border: none;
+}
+
+.row-need-eg {
+  background-color: #ffc7c0;
+  border: none;
+}
+
+.row-chatting {
+  background-color: #ffe3c0;
+  border: none;
+}
+
+.row-deferred {
+  background-color: #cccccc;
+  border: none;
+}
+
+.section-bar {
+  background-color: #707070;
+  color: #ffffff;
+  border: 1px solid #404040;
 }
 
 .system-msg {

@@ -1,4 +1,4 @@
-<!-- $Id: user.index,v 1.1 2001-07-23 23:29:10 richard Exp $-->
+<!-- $Id: user.index,v 1.2 2001-07-29 04:07:37 richard Exp $-->
 <tr>
     <property name="username">
         <td><display call="link('username')"></td>
