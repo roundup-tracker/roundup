@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.65.2.8 2003-06-19 13:45:00 neaj Exp $
+# $Id: client.py,v 1.65.2.9 2003-06-19 23:02:32 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
