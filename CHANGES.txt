@@ -4,6 +4,8 @@ are given with the most recent entry first.
 2004-??-?? 0.7.0
 Fixed:
 - CSV export was busted
+- MultiMapping deviated from the Zope C implementation in a number of
+  places (thanks Toby Sargeant)
 
 
 2004-03-27 0.7.0b2
