@@ -13,6 +13,7 @@ are given with the most recent entry first.
 - another attempt to fix cookie misbehaviour - customise cookie name using
   tracker name
 - fixed error in indexargs_url (thanks Patrick Ohly)
+- fixed getnode (sf bug 684531)
 
 
 2003-01-24 0.5.5

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.96.2.1 2003-02-06 05:44:49 richard Exp $
+#$Id: back_anydbm.py,v 1.96.2.2 2003-02-12 00:03:35 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -30,7 +30,7 @@ from sessions import Sessions
 from roundup.indexer import Indexer
 from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError, Boolean, Number
+    Multilink, DatabaseError, Boolean, Number, Node
 
 #
 # Now the database
