@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.19 2003-02-26 04:51:41 richard Exp $
+$Id: roundup_server.py,v 1.20 2003-02-26 05:05:56 richard Exp $
 """
 
 # python version check
@@ -123,11 +123,25 @@ class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             query = ''
 
-        # figure the tracker
+        # no tracker - spit out the index
         if rest == '/':
             return self.index()
+
+        # figure the tracker
         l_path = rest.split('/')
         tracker_name = urllib.unquote(l_path[1])
+
+        # handle missing trailing '/'
+        if len(l_path) == 2:
+            self.send_response(301)
+            # redirect - XXX https??
+            protocol = 'http'
+            url = '%s://%s%s/'%(protocol, self.headers['host'], self.path)
+            self.send_header('Location', url)
+            self.end_headers()
+            self.wfile.write('Moved Permanently')
+            return
+
         if self.TRACKER_HOMES.has_key(tracker_name):
             tracker_home = self.TRACKER_HOMES[tracker_name]
             tracker = roundup.instance.open(tracker_home)

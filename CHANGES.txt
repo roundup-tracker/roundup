@@ -65,6 +65,7 @@ are given with the most recent entry first.
   file serving
 - added Node.get() method
 - open static files using binary mode (sf bug 693208)
+- fixed deja-vu bug 692910
 
 
 2003-??-?? 0.5.6
