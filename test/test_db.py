@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.86 2003-04-21 14:29:40 kedder Exp $ 
+# $Id: test_db.py,v 1.87 2003-04-21 22:38:48 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -660,7 +660,10 @@ class anydbmDBTestCase(MyTestCase):
                     'foo': date.Interval('1d'), 
                     'deadline': date.Date('2003-02-16.22:50')},
                 {'title': 'issue three', 'status': '1',
-                    'nosy': ['1','2'], 'deadline': date.Date('2003-03-08')}):
+                    'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
+                {'title': 'non four', 'status': '3',
+                    'foo': date.Interval('0:10'), 
+                    'nosy': ['1'], 'deadline': date.Date('2004-03-08')}):
             self.db.issue.create(**issue)
         self.db.commit()
         return self.assertEqual, self.db.issue.filter
@@ -692,13 +695,20 @@ class anydbmDBTestCase(MyTestCase):
     def testFilteringRange(self):
         ae, filt = self.filteringSetup()
         # Date ranges
-        ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['2'])
-        ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['2'])
+        ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['2','3'])
+        ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['2','3'])
         ae(filt(None, {'deadline': '; 2003-02-16'}), ['1'])
         # Lets assume people won't invent a time machine, otherwise this test
         # may fail :)
-        ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3'])
-        ae(filt(None, {'deadline': '2003-02-16;'}), ['2', '3'])
+        ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3', '4'])
+        ae(filt(None, {'deadline': '2003-02-16;'}), ['2', '3', '4'])
+        # year and month granularity
+        ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
+        ae(filt(None, {'deadline': '2004'}), ['4'])
+        ae(filt(None, {'deadline': '2003-02'}), ['2', '3'])
+        ae(filt(None, {'deadline': '2003-03'}), [])
+        ae(filt(None, {'deadline': '2003-02-16'}), ['2'])
+        ae(filt(None, {'deadline': '2003-02-17'}), [])
         # Interval ranges
         ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
         ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
@@ -708,9 +718,9 @@ class anydbmDBTestCase(MyTestCase):
     def testFilteringIntervalSort(self):
         ae, filt = self.filteringSetup()
         # ascending should sort None, 1:10, 1d
-        ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '1', '2'])
+        ae(filt(None, {}, ('+','foo'), (None,None)), ['3', '4', '1', '2'])
         # descending should sort 1d, 1:10, None
-        ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '3'])
+        ae(filt(None, {}, ('-','foo'), (None,None)), ['2', '1', '4', '3'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
