@@ -2,10 +2,13 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-# $Id: demo.py,v 1.19 2004-10-18 07:46:59 a1s Exp $
+# $Id: demo.py,v 1.20 2004-10-19 08:04:12 a1s Exp $
 
-import sys, os, string, re, urlparse, ConfigParser
-import shutil, socket, errno, BaseHTTPServer
+import errno
+import os
+import socket
+import sys
+import urlparse
 from glob import glob
 
 from roundup import configuration
@@ -91,17 +94,20 @@ def run_demo(home):
     """Run the demo tracker installed in ``home``"""
     roundup_server.RoundupRequestHandler.TRACKER_HOMES = {'demo': home}
     cfg = configuration.CoreConfig(home)
+    url = cfg["TRACKER_WEB"]
+    hostname, port = urlparse.urlparse(url)[1].split(':')
+    port = int(port)
     success_message = '''Server running - connect to:
     %s
 1. Log in as "demo"/"demo" or "admin"/"admin".
 2. Hit Control-C to stop the server.
 3. Re-start the server by running "python demo.py" again.
 4. Re-initialise the server by running "python demo.py nuke".
-''' % cfg["TRACKER_WEB"]
+''' % url
 
     # disable command line processing in roundup_server
     sys.argv = sys.argv[:1]
-    roundup_server.run(success_message=success_message)
+    roundup_server.run(port=port, success_message=success_message)
 
 def demo_main():
     """Run a demo server for users to play with for instant gratification.
