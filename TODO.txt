@@ -16,7 +16,7 @@ pending hyperdb   range searching of values (dates in particular).
                   [value, value, ...] implies "in"
 pending hyperdb   make creator, creation and activity available pre-commit
 pending hyperdb   migrate "id" property to be Number type
-pending instance  split instance.open() into open() and login()
+pending tracker   split instance.open() into open() and login()
 pending mailgw    allow commands (feature request #556996)
                   like "help", "dump issue123" (would send all info about
                   issue123, including a digest of all messages, but probably
@@ -34,6 +34,7 @@ pending security  an LDAP user database implementation
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
 pending security  use digital signatures in mailgw
+pending admin     "roundup-admin list" should list all the classnames
 pending web       I18N
 pending web       Better message summary display (feature request #520244)
 pending web       Navigating around the issues (feature request #559149)
@@ -49,8 +50,8 @@ pending web       UNIX init.d script for roundup-server
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
 
-bug     web       do something about file.newitem
 bug     mailgw    some f*ked mailers QUOTE their Re; "Re: "[issue1] bla blah""
 bug     docs      need to mention somewhere how sorting works
+bug     web       :multilink isn't working
 ======= ========= =============================================================
 

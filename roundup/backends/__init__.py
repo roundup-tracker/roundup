@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.16 2002-09-10 00:11:49 richard Exp $
+# $Id: __init__.py,v 1.17 2002-09-18 05:07:47 richard Exp $
 
 __all__ = []
 
@@ -44,6 +44,15 @@ else:
     import back_gadfly
     gadfly = back_gadfly
     __all__.append('gadfly')
+
+try:
+    import sqlite
+except ImportError, message:
+    if str(message) != 'No module named sqlite': raise
+else:
+    import back_sqlite
+    sqlite = back_sqlite
+    __all__.append('sqlite')
 
 try:
     import bsddb

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_init.py,v 1.18 2002-09-11 01:21:01 richard Exp $
+# $Id: test_init.py,v 1.19 2002-09-18 05:07:49 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys
 
@@ -80,6 +80,9 @@ class metakitClassicTestCase(ClassicTestCase):
 class gadflyClassicTestCase(ClassicTestCase):
     backend = 'gadfly'
 
+class sqliteClassicTestCase(ClassicTestCase):
+    backend = 'sqlite'
+
 def suite():
     l = [
         unittest.makeSuite(ClassicTestCase, 'test'),
@@ -89,25 +92,31 @@ def suite():
         import bsddb
         l.append(unittest.makeSuite(bsddbClassicTestCase, 'test'))
     except:
-        print 'bsddb module not found, skipping bsddb DBTestCase'
+        print 'bsddb module not found, skipping bsddb init test'
 
     try:
         import bsddb3
         l.append(unittest.makeSuite(bsddb3ClassicTestCase, 'test'))
     except:
-        print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
+        print 'bsddb3 module not found, skipping bsddb3 init test'
 
     try:
         import metakit
         l.append(unittest.makeSuite(metakitClassicTestCase, 'test'))
     except:
-        print 'metakit module not found, skipping metakit DBTestCase'
+        print 'metakit module not found, skipping metakit init test'
 
     try:
         import gadfly
         l.append(unittest.makeSuite(gadflyClassicTestCase, 'test'))
     except:
-        print 'gadfly module not found, skipping gadfly DBTestCase'
+        print 'gadfly module not found, skipping gadfly init test'
+
+    try:
+        import sqlite
+        l.append(unittest.makeSuite(sqliteClassicTestCase, 'test'))
+    except:
+        print 'sqlite module not found, skipping sqlite init test'
 
     return unittest.TestSuite(l)
 

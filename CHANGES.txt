@@ -2,16 +2,20 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2002-09-?? 0.5.0 ????
- . handling of None for Date/Interval/Password values in export/import
- . handling of journal values in export/import
- . password edit now has a confirmation field
- . registration error punts back to register page
- . gadfly backend now handles changes to the schema - but only one property
-   at a time
- . cgi.client base URL is now obtained from the config TRACKER_WEB
- . request.url has gone away - there's too much magic in trying to figure
-   what it should be
- . cgi-bin script redirects to https now if the request was https
+- handling of None for Date/Interval/Password values in export/import
+- handling of journal values in export/import
+- password edit now has a confirmation field
+- registration error punts back to register page
+- gadfly backend now handles changes to the schema - but only one property
+  at a time
+- cgi.client base URL is now obtained from the config TRACKER_WEB
+- request.url has gone away - there's too much magic in trying to figure
+  what it should be
+- cgi-bin script redirects to https now if the request was https
+- FileClass "content" property wasn't being returned by getprops() in most
+  backends
+- we now verify instance attributes on instance open and throw a useful error
+  if they're not all there
 
 
 2002-09-13 0.5.0 beta2

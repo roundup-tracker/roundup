@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.30 2002-09-13 00:08:43 richard Exp $
+# $Id: admin.py,v 1.31 2002-09-18 05:07:47 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -300,6 +300,7 @@ Command help:
             backend = raw_input(_('Select backend [anydbm]: ')).strip()
             if not backend:
                 backend = 'anydbm'
+        # XXX perform a unit test based on the user's selections
 
         # install!
         init.install(tracker_home, template, backend)

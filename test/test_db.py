@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.47 2002-09-16 08:04:46 richard Exp $ 
+# $Id: test_db.py,v 1.48 2002-09-18 05:07:48 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -590,6 +590,32 @@ class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         setupSchema(self.db, 0, gadfly)
 
 
+class sqliteDBTestCase(anydbmDBTestCase):
+    def setUp(self):
+        from roundup.backends import sqlite
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        self.db = sqlite.Database(config, 'test')
+        setupSchema(self.db, 1, sqlite)
+
+    def testIDGeneration(self):
+        pass
+
+class sqliteReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
+    def setUp(self):
+        from roundup.backends import sqlite
+        # remove previous test, ignore errors
+        if os.path.exists(config.DATABASE):
+            shutil.rmtree(config.DATABASE)
+        os.makedirs(config.DATABASE + '/files')
+        db = sqlite.Database(config, 'test')
+        setupSchema(db, 1, sqlite)
+        self.db = sqlite.Database(config)
+        setupSchema(self.db, 0, sqlite)
+
+
 class metakitDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import metakit
@@ -677,6 +703,13 @@ def suite():
         l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
     except:
         print 'gadfly module not found, skipping gadfly DBTestCase'
+
+    try:
+        import sqlite
+        l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
+        l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
+    except:
+        print 'sqlite module not found, skipping gadfly DBTestCase'
 
     try:
         import metakit
