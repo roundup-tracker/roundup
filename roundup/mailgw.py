@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.56 2002-01-22 11:54:45 rochecompaan Exp $
+$Id: mailgw.py,v 1.57 2002-01-22 22:27:43 richard Exp $
 '''
 
 
@@ -119,7 +119,7 @@ class Message(mimetools.Message):
         s.seek(0)
         return Message(s)
 
-subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re)\s*\W?\s*)*'
+subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re|aw)\s*\W?\s*)*'
     r'\s*(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])'
     r'\s*(?P<title>[^[]+)?(\[(?P<args>.+?)\])?', re.I)
 
@@ -754,6 +754,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.56  2002/01/22 11:54:45  rochecompaan
+# Fixed status change in mail gateway.
+#
 # Revision 1.55  2002/01/21 10:05:47  rochecompaan
 # Feature:
 #  . the mail gateway now responds with an error message when invalid
