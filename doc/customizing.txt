@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.166 $
+:Version: $Revision: 1.167 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -3943,6 +3943,7 @@ tracker "detectors" directory)::
 So now, if an edit action attempts to set "assignedto" to a user that
 doesn't have the "Fixer" Permission, the error will be raised.
 
+
 Users may only edit their issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3950,13 +3951,14 @@ Users registering themselves are granted Provisional access - meaning they
 have access to edit the issues they submit, but not others. We create a new
 Role called "Provisional User" which is granted to newly-registered users,
 and has limited access. One of the Permissions they have is the new "Edit
-Own" on issues (regular users have "Edit".) We back up the permissions with
-an auditor.
+Own" on issues (regular users have "Edit".)
 
 First up, we create the new Role and Permission structure in
 ``schema.py``::
 
+    #
     # New users not approved by the admin
+    #
     db.security.addRole(name='Provisional User',
         description='New user registered via web or email')
 
@@ -3975,11 +3977,11 @@ First up, we create the new Role and Permission structure in
 
     # Assign the Permissions for issue-related classes
     for cl in 'file', 'msg', 'query', 'keyword':
-        db.security.addPermissionToRole('User', 'View', cl)
-        db.security.addPermissionToRole('User', 'Edit', cl)
-        db.security.addPermissionToRole('User', 'Create', cl)
+        db.security.addPermissionToRole('Provisional User', 'View', cl)
+        db.security.addPermissionToRole('Provisional User', 'Edit', cl)
+        db.security.addPermissionToRole('Provisional User', 'Create', cl)
     for cl in 'priority', 'status':
-        db.security.addPermissionToRole('User', 'View', cl)
+        db.security.addPermissionToRole('Provisional User', 'View', cl)
 
     # and give the new users access to the web and email interface
     db.security.addPermissionToRole('Provisional User', 'Web Access')
@@ -3993,19 +3995,6 @@ users, replacing the existing ``'User'`` values::
     ...
     new_web_user_roles = 'Provisional User'
     new_email_user_roles = 'Provisional User'
-
-Note that some older trackers might also want to change the ``page.html``
-template as follows::
-
- <p class="classblock"
- -       tal:condition="python:request.user.username != 'anonymous'">
- +       tal:condition="python:request.user.hasPermission('View', 'user')">
-     <b>Administration</b><br>
-     <tal:block tal:condition="python:request.user.hasPermission('Edit', None)">
-      <a href="home?:template=classlist">Class List</a><br>
-
-(note that the "-" indicates a removed line, and the "+" indicates an added
-line).
 
 
 Changes to the Web User Interface
@@ -4166,6 +4155,7 @@ that shows either one or the other. We'll use a new form variable,
    </tal:block>
   </tal:block>
  </table>
+
 
 Setting up a "wizard" (or "druid") for controlled adding of issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
