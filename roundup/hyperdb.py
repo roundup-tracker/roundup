@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.51 2002-01-21 03:01:29 richard Exp $
+# $Id: hyperdb.py,v 1.52 2002-01-21 16:33:19 rochecompaan Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -208,6 +208,11 @@ transaction.
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
+        '''
+        raise NotImplementedError
+
+    def pack(self, pack_before):
+        ''' pack the database
         '''
         raise NotImplementedError
 
@@ -1060,6 +1065,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.51  2002/01/21 03:01:29  richard
+# brief docco on the do_journal argument
+#
 # Revision 1.50  2002/01/19 13:16:04  rochecompaan
 # Journal entries for link and multilink properties can now be switched on
 # or off.

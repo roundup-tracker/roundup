@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.4 2002-01-14 06:51:09 richard Exp $
+# $Id: admin.py,v 1.5 2002-01-21 16:33:19 rochecompaan Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex
 try:
@@ -857,6 +857,46 @@ Command help:
             apply(cl.create, (), d)
         return 0
 
+    def do_pack(self, args):
+        '''Usage: pack period | date
+
+Remove journal entries older than a period of time specified or
+before a certain date.
+
+A period is specified using the suffixes "y", "m", and "d". The
+suffix "w" (for "week") means 7 days.
+
+      "3y" means three years
+      "2y 1m" means two years and one month
+      "1m 25d" means one month and 25 days
+      "2w 3d" means two weeks and three days
+
+Date format is "YYYY-MM-DD" eg:
+    2001-01-01
+    
+        '''
+        if len(args) <> 1:
+            raise UsageError, _('Not enough arguments supplied')
+        
+        # are we dealing with a period or a date
+        value = args[0]
+        date_re = re.compile(r'''
+              (?P<date>\d\d\d\d-\d\d?-\d\d?)? # yyyy-mm-dd
+              (?P<period>(\d+y\s*)?(\d+m\s*)?(\d+d\s*)?)?
+              ''', re.VERBOSE)
+        m = date_re.match(value)
+        if not m:
+            raise ValueError, _('Invalid format')
+        m = m.groupdict()
+        if m['period']:
+            # TODO: need to fix date module.  one should be able to say
+            # pack_before = date.Date(". - %s"%value)
+            pack_before = date.Date(".") + date.Interval("- %s"%value)
+        elif m['date']:
+            pack_before = date.Date(value)
+        self.db.pack(pack_before)
+        return 0
+
     def run_command(self, args):
         '''Run a single command
         '''
@@ -995,6 +1035,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2002/01/14 06:51:09  richard
+#  . #503164 ] create and passwords
+#
 # Revision 1.3  2002/01/08 05:26:32  rochecompaan
 # Missing "self" in props_from_args
 #

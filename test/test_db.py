@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.15 2002-01-19 13:16:04 rochecompaan Exp $ 
+# $Id: test_db.py,v 1.16 2002-01-21 16:33:20 rochecompaan Exp $ 
 
 import unittest, os, shutil
 
@@ -239,6 +239,16 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual('unlink', action)
         self.assertEqual(('issue', '1', 'fixer'), params)
 
+    def testPack(self):
+        self.db.issue.create(title="spam", status='1')
+        self.db.issue.set('1', status='2')
+        self.db.commit()
+
+        pack_before = date.Date(". + 1d")
+        self.db.pack(pack_before)
+        journal = self.db.getjournal('issue', '1')
+        self.assertEqual(1, len(journal))
+
     def testRetire(self):
         pass
 
@@ -334,6 +344,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/01/19 13:16:04  rochecompaan
+# Journal entries for link and multilink properties can now be switched on
+# or off.
+#
 # Revision 1.14  2002/01/16 07:02:57  richard
 #  . lots of date/interval related changes:
 #    - more relaxed date format for input

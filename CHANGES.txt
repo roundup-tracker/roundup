@@ -11,6 +11,7 @@ Feature:
    for arguments are specified for link or mutlilink properties. 
  . modified unit test to check nosy and assignedto when specified as 
    arguments
+ . you can now use the roundup-admin tool pack the database
 
 Fixed:
  . handle attachments with no name (eg tnef)
