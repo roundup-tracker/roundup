@@ -33,6 +33,10 @@ Fixed:
  . bug #479511 ] mailgw to pop
  . bug #479508 ] roundup-admin crash on wrong class
  . bad error report in hyperdb
+ . fixed nosy reaction and author copy handling
+ . errors in nosy reaction will be propogated now (were effectively being
+   squashed)
+
 
 2001-10-23 - 0.3.0 pre 3
 Feature:
