@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.146.2.6 2004-06-09 06:54:24 richard Exp $
+#$Id: back_anydbm.py,v 1.146.2.7 2004-06-10 06:58:03 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -1741,6 +1741,7 @@ class Class(hyperdb.Class):
 
             # add sorting information to the match entries
             directions = []
+            JPROPS = {'actor':1, 'activity':1, 'creator':1, 'creation':1}
             for dir, prop in sort, group:
                 if dir is None or prop is None:
                     continue
@@ -1760,11 +1761,16 @@ class Class(hyperdb.Class):
                         try:
                             v = item[prop]
                         except KeyError:
-                            # the node doesn't have a value for this property
-                            if isinstance(propclass, Multilink): v = []
-                            else: v = None
-                            entry.insert(0, v)
-                            continue
+                            if JPROPS.has_key(prop):
+                                # force lookup of the special journal prop
+                                v = self.get(itemid, prop)
+                            else:
+                                # the node doesn't have a value for this
+                                # property
+                                if isinstance(propclass, Multilink): v = []
+                                else: v = None
+                                entry.insert(0, v)
+                                continue
 
                         # missing (None) values are always sorted first
                         if v is None:
