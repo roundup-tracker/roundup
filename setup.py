@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.74 2004-11-10 22:27:39 richard Exp $
+# $Id: setup.py,v 1.75 2004-11-11 06:13:52 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -164,11 +164,11 @@ sys.path.insert(1, "%s/lib/python%s/site-packages")
                 # may be useful for cygwin.
                 if os.path.splitext(outfile)[1] == ".bat":
                     file.write('@echo off\n'
-                        'if NOT "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
-                        'if     "%%_4ver%%" == "" "%(python)s" -O -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
+                        'if NOT "%%_4ver%%" == "" "%(python)s" -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
+                        'if     "%%_4ver%%" == "" "%(python)s" -c "from %(package)s.scripts.%(module)s import run; run()" %%*\n'
                         % script_vars)
                 else:
-                    file.write('#! %(python)s -O\n%(prefix)s'
+                    file.write('#! %(python)s\n%(prefix)s'
                         'from %(package)s.scripts.%(module)s import run\n'
                         'run()\n'
                         % script_vars)
