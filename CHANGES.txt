@@ -6,6 +6,7 @@ Fixed:
  . #576086 ] dumb copying mistake (frontends/ZRoundup.py)
  . installation instructions now mention "python2" in "testing your python".
  . made the unit tests run again - they were quite b0rken
+ . #571170 ] gdbm deadlock
 
 Feature:
  . cleaned up the indexer code:
