@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.205 2004-11-21 21:55:03 richard Exp $
+# $Id: client.py,v 1.206 2004-11-22 07:10:24 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -658,14 +658,21 @@ class Client:
             # let the template render figure stuff out
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type
-            if os.environ.get('CGI_SHOW_TIMING', ''):
-                s = '<p>Time elapsed: %fs</p>'%(time.time()-self.start)
+            if self.env.get('CGI_SHOW_TIMING', ''):
+                if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
+                    timings = {'starttag': '<!-- ', 'endtag': ' -->'}
+                else:
+                    timings = {'starttag': '<p>', 'endtag': '</p>'}
+                timings['seconds'] = time.time()-self.start
+                s = self._('%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n'
+                    ) % timings
                 if hasattr(self.db, 'stats'):
-                    s += '''<p>Cache hits: %(cache_hits)d,
-                        misses %(cache_misses)d.
-                        Loading items: %(get_items)f secs.
-                        Filtering: %(filtering)f secs.
-                        </p>'''%self.db.stats
+                    timings.update(self.db.stats)
+                    s += self._("%(starttag)sCache hits: %(cache_hits)d,"
+                        " misses %(cache_misses)d."
+                        " Loading items: %(get_items)f secs."
+                        " Filtering: %(filtering)f secs."
+                        "%(endtag)s\n") % timings
                 s += '</body>'
                 result = result.replace('</body>', s)
             return result
