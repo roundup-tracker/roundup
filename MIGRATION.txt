@@ -45,6 +45,12 @@ If you have modified your dbinit.py file, you may use encoded passwords:
                     files=Multilink("file"),
                     messageid=String(),  inreplyto=String())
 
+Configuration
+-------------
+INSTANCE_NAME and EMAIL_SIGNATURE_POSITION have been added to the
+instance_config.py. Simplest solution is to copy the default values from
+template in the core source.
+
 
 Migrating from 0.2.x to 0.3.x
 =============================
