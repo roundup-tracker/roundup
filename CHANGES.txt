@@ -1,13 +1,14 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2004-??-?? 0.6.6
+2004-02-25 0.6.6
 Fixed:
 - don't insert spaces into designators, it just confuses users (sf bug
   898087)
 - Eudora can't handle utf-8 headers. We love Eudora. (sf bug 900046)
 - fixed bug in args to new DateHTMLProperty in the local() method (sf bug
   901444)
+- fixed registration (sf bug 903283)
 
 
 2004-02-16 0.6.5

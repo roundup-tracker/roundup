@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.9 2004-02-13 01:35:02 richard Exp $
+# $Id: client.py,v 1.130.2.10 2004-02-24 21:13:26 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -730,7 +730,7 @@ class Client:
         '''
         # parse the props from the form
         try:
-            props = self.parsePropsFromForm()[0][('user', None)]
+            props = self.parsePropsFromForm(create=True)[0][('user', None)]
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
