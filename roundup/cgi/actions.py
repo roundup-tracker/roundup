@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.31 2004-06-06 12:40:30 a1s Exp $
+#$Id: actions.py,v 1.32 2004-07-03 17:17:47 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -409,9 +409,12 @@ class _EditAction(Action):
                 # and some nice feedback for the user
                 if props:
                     info = ', '.join(props.keys())
-                    m.append('%s %s %s edited ok'%(cn, nodeid, info))
+                    m.append(
+                        self._('%(class)s %(id)s %(properties)s edited ok')
+                        % {'class':cn, 'id':nodeid, 'properties':info})
                 else:
-                    m.append('%s %s - nothing changed'%(cn, nodeid))
+                    m.append(self._('%(class)s %(id)s - nothing changed')
+                        % {'class':cn, 'id':nodeid})
             else:
                 assert props
 
@@ -422,7 +425,8 @@ class _EditAction(Action):
                 nodeid = newid
 
                 # and some nice feedback for the user
-                m.append('%s %s created'%(cn, newid))
+                m.append(self._('%(class)s %(id)s created')
+                    % {'class':cn, 'id':newid})
 
             # fill in new ids in links
             if links.has_key(needed):
@@ -452,7 +456,9 @@ class _EditAction(Action):
         """Change the node based on the contents of the form."""
         # check for permission
         if not self.editItemPermission(props):
-            raise Unauthorised, 'You do not have permission to edit %s'%cn
+            raise Unauthorised, self._(
+                'You do not have permission to edit %(class)s'
+            ) % {'class': cn}
 
         # make the changes
         cl = self.db.classes[cn]
@@ -462,7 +468,9 @@ class _EditAction(Action):
         """Create a node based on the contents of the form."""
         # check for permission
         if not self.newItemPermission(props):
-            raise Unauthorised, 'You do not have permission to create %s'%cn
+            raise Unauthorised, self._(
+                'You do not have permission to create %(class)s'
+            ) % {'class': cn}
 
         # create the node and return its id
         cl = self.db.classes[cn]
@@ -578,9 +586,10 @@ class PassResetAction(Action):
             otk = self.form['otk'].value
             uid = otks.get(otk, 'uid')
             if uid is None:
-                self.client.error_message.append("""Invalid One Time Key!
-(a Mozilla bug may cause this message to show up erroneously,
- please check your email)""")
+                self.client.error_message.append(
+                    self._("Invalid One Time Key!\n"
+                        "(a Mozilla bug may cause this message "
+                        "to show up erroneously, please check your email)"))
                 return
 
             # re-open the database as "admin"
@@ -620,7 +629,7 @@ Your password is now: %(password)s
                 return
 
             self.client.ok_message.append(
-                    'Password reset and email sent to %s'%address)
+                self._('Password reset and email sent to %s') % address)
             return
 
         # no OTK, so now figure the user
@@ -629,19 +638,20 @@ Your password is now: %(password)s
             try:
                 uid = self.db.user.lookup(name)
             except KeyError:
-                self.client.error_message.append('Unknown username')
+                self.client.error_message.append(self._('Unknown username'))
                 return
             address = self.db.user.get(uid, 'address')
         elif self.form.has_key('address'):
             address = self.form['address'].value
             uid = uidFromAddress(self.db, ('', address), create=0)
             if not uid:
-                self.client.error_message.append('Unknown email address')
+                self.client.error_message.append(
+                    self._('Unknown email address'))
                 return
             name = self.db.user.get(uid, 'username')
         else:
-            self.client.error_message.append('You need to specify a username '
-                'or address')
+            self.client.error_message.append(
+                self._('You need to specify a username or address'))
             return
 
         # generate the one-time-key and store the props for later
@@ -666,7 +676,7 @@ You should then receive another email with the new password.
         if not self.client.standard_message([address], subject, body):
             return
 
-        self.client.ok_message.append('Email sent to %s'%address)
+        self.client.ok_message.append(self._('Email sent to %s') % address)
 
 class ConfRegoAction(Action):
     def handle(self):
