@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.71 2002-07-09 03:02:52 richard Exp $
+# $Id: hyperdb.py,v 1.72 2002-07-09 21:53:38 gmcm Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -785,24 +785,28 @@ class Class:
 
     # XXX: change from spec - allows multiple props to match
     def find(self, **propspec):
-        """Get the ids of nodes in this class which link to a given node.
+        """Get the ids of nodes in this class which link to the given nodes.
 
-        'propspec' consists of keyword args propname=nodeid   
+        'propspec' consists of keyword args propname={nodeid:1,}   
           'propname' must be the name of a property in this class, or a
             KeyError is raised.  That property must be a Link or Multilink
             property, or a TypeError is raised.
 
-          'nodeid' must be the id of an existing node in the class linked
-            to by the given property, or an IndexError is raised.
+        Any node in this class whose 'propname' property links to any of the
+        nodeids will be returned. Used by the full text indexing, which knows
+        that "foo" occurs in msg1, msg3 and file7, so we have hits on these issues:
+            db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         """
         propspec = propspec.items()
-        for propname, nodeid in propspec:
+        for propname, nodeids in propspec:
             # check the prop is OK
             prop = self.properties[propname]
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
-            if not self.db.hasnode(prop.classname, nodeid):
-                raise ValueError, '%s has no node %s'%(prop.classname, nodeid)
+            #XXX edit is expensive and of questionable use
+            #for nodeid in nodeids:
+            #    if not self.db.hasnode(prop.classname, nodeid):
+            #        raise ValueError, '%s has no node %s'%(prop.classname, nodeid)
 
         # ok, now do the find
         cldb = self.db.getclassdb(self.classname)
@@ -811,16 +815,26 @@ class Class:
             node = self.db.getnode(self.classname, id, db=cldb)
             if node.has_key(self.db.RETIRED_FLAG):
                 continue
-            for propname, nodeid in propspec:
+            for propname, nodeids in propspec:
                 # can't test if the node doesn't have this property
                 if not node.has_key(propname):
                     continue
+                if type(nodeids) is type(''):
+                    nodeids = {nodeids:1}
                 prop = self.properties[propname]
-                property = node[propname]
-                if isinstance(prop, Link) and nodeid == property:
+                value = node[propname]
+                if isinstance(prop, Link) and nodeids.has_key(value):
                     l.append(id)
-                elif isinstance(prop, Multilink) and nodeid in property:
-                    l.append(id)
+                    break
+                elif isinstance(prop, Multilink):
+                    hit = 0
+                    for v in value:
+                        if nodeids.has_key(v):
+                            l.append(id)
+                            hit = 1
+                            break
+                    if hit:
+                        break
         return l
 
     def stringFind(self, **requirements):
@@ -1185,6 +1199,22 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.71  2002/07/09 03:02:52  richard
+# More indexer work:
+# - all String properties may now be indexed too. Currently there's a bit of
+#   "issue" specific code in the actual searching which needs to be
+#   addressed. In a nutshell:
+#   + pass 'indexme="yes"' as a String() property initialisation arg, eg:
+#         file = FileClass(db, "file", name=String(), type=String(),
+#             comment=String(indexme="yes"))
+#   + the comment will then be indexed and be searchable, with the results
+#     related back to the issue that the file is linked to
+# - as a result of this work, the FileClass has a default MIME type that may
+#   be overridden in a subclass, or by the use of a "type" property as is
+#   done in the default templates.
+# - the regeneration of the indexes (if necessary) is done once the schema is
+#   set up in the dbinit.
+#
 # Revision 1.70  2002/06/27 12:06:20  gmcm
 # Improve an error message.
 #

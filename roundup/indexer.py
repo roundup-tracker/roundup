@@ -14,13 +14,14 @@
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
 # 
-#$Id: indexer.py,v 1.7 2002-07-09 21:38:43 richard Exp $
+#$Id: indexer.py,v 1.8 2002-07-09 21:53:38 gmcm Exp $
 '''
 This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
-messages and text files possible.
+messages, string properties and text files possible.
 '''
 import os, shutil, re, mimetypes, marshal, zlib, errno
+from hyperdb import Link, Multilink
 
 class Indexer:
     ''' Indexes information from roundup's hyperdb to allow efficient
@@ -30,6 +31,7 @@ class Indexer:
           files   {identifier: (fileid, wordcount)}
           words   {word: {fileid: count}}
           fileids {fileid: identifier}
+        where identifier is (classname, nodeid, propertyname)
     '''
     def __init__(self, db_path):
         self.indexdb_path = os.path.join(db_path, 'indexes')
@@ -139,12 +141,18 @@ class Indexer:
         if not hits:
             return {}
 
-        # this is specific to "issue" klass ... eugh
-        designator_propname = {'msg': 'messages', 'file': 'files'}
+        #designator_propname = {'msg': 'messages', 'file': 'files'}
+        designator_propname = {}
+        for nm, propclass in klass.getprops().items():
+            if isinstance(propclass, Link) or isinstance(propclass, Multilink):
+                designator_propname[propclass.classname] = nm
 
         # build a dictionary of nodes and their associated messages
         # and files
-        nodeids = {}
+        nodeids = {}    # this is the answer
+        propspec = {}     # used to do the klass.find
+        for propname in designator_propname.values():
+            propspec[propname] = {}   # used as a set (value doesn't matter)
         for classname, nodeid, property in hits.values():
             # skip this result if we don't care about this class/property
             if ignore.has_key((classname, property)):
@@ -156,20 +164,30 @@ class Indexer:
                     nodeids[nodeid] = {}
                 continue
 
-            # it's a linked class - find the klass entries that are
-            # linked to it
-            linkprop = designator_propname[classname]
-            for resid in klass.find(**{linkprop: nodeid}):
-                resid = str(resid)
-                if not nodeids.has_key(id):
-                    nodeids[resid] = {}
+            # it's a linked class - set up to do the klass.find
+            linkprop = designator_propname[classname]   # eg, msg -> messages
+            propspec[linkprop][nodeid] = 1
 
-                # update the links for this klass nodeid
-                node_dict = nodeids[resid]
-                if not node_dict.has_key(linkprop):
-                    node_dict[linkprop] = [nodeid]
-                elif node_dict.has_key(linkprop):
-                    node_dict[linkprop].append(nodeid)
+        # retain only the meaningful entries
+        for propname, idset in propspec.items():
+            if not idset:
+                del propspec[propname]
+        
+        # klass.find tells me the klass nodeids the linked nodes relate to
+        for resid in klass.find(**propspec):
+            resid = str(resid)
+            if not nodeids.has_key(id):
+                nodeids[resid] = {}
+            node_dict = nodeids[resid]
+            # now figure out where it came from
+            for linkprop in propspec.keys():
+                for nodeid in klass.get(resid, linkprop):
+                    if propspec[linkprop].has_key(nodeid):
+                        # OK, this node[propname] has a winner
+                        if not node_dict.has_key(linkprop):
+                            node_dict[linkprop] = [nodeid]
+                        else:
+                            node_dict[linkprop].append(nodeid)
         return nodeids
 
     # we override this to ignore not 2 < word < 25 and also to fix a bug -
@@ -311,6 +329,10 @@ class Indexer:
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.7  2002/07/09 21:38:43  richard
+#Only save the index if the thing is loaded and changed. Also, don't load
+#the index just for a save.
+#
 #Revision 1.6  2002/07/09 04:26:44  richard
 #We're indexing numbers now, and _underscore words
 #
