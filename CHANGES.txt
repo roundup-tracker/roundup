@@ -82,6 +82,7 @@ Fixed:
 - handle capitalisation of class names in text hyperlinking (sf bug
   1101043)
 - quote full-text search text in URL generation
+- fixed problem migrating mysql databases
 - fix search_checkboxes macro (sf patch 1113828)
 
 
