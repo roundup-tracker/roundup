@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.11 2001-08-07 00:24:42 richard Exp $
+$Id: roundup-server,v 1.12 2001-09-29 13:27:00 richard Exp $
 
 """
 import sys
@@ -94,6 +94,18 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.wfile.write("</pre>\n")
         sys.stdin = save_stdin
 
+    def index(self):
+        ''' Print up an index of the available instances
+        '''
+        w = self.wfile.write
+        w("Content-Type: text/html\n\n")
+        w('<html><head><title>Roundup instances index</title><head>\n')
+        w('<body><h1>Roundup instances index</h1><ol>\n')
+        for instance in self.ROUNDUP_INSTANCE_HOMES.keys():
+            w('<li><a href="%s/index">%s</a>\n'%(urllib.quote(instance),
+                instance))
+        w('</ol></body></html>')
+
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
         '''
@@ -107,14 +119,14 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         # figure the instance
         if rest == '/':
-            raise ValueError, 'No instance specified'
+            return self.index()
         l_path = string.split(rest, '/')
         instance = urllib.unquote(l_path[1])
         if self.ROUNDUP_INSTANCE_HOMES.has_key(instance):
             instance_home = self.ROUNDUP_INSTANCE_HOMES[instance]
             instance = roundup.instance.open(instance_home)
         else:
-            raise ValueError, 'No such instance "%s"'%instance
+            return self.index()
 
         # figure out what the rest of the path is
         if len(l_path) > 2:
@@ -270,6 +282,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/08/07 00:24:42  richard
+# stupid typo
+#
 # Revision 1.10  2001/08/07 00:15:51  richard
 # Added the copyright/license notice to (nearly) all files at request of
 # Bizar Software.
