@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.8 2004-07-26 00:23:16 richard Exp $
+# $Id: configuration.py,v 1.9 2004-07-26 05:59:45 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -637,7 +637,7 @@ class Config:
     def load_ini(self, tracker_home):
         """Set options from config.ini file in given tracker_home directory"""
         # parse the file
-        _config = ConfigParser.ConfigParser()
+        _config = ConfigParser.ConfigParser({"TRACKER_HOME": tracker_home})
         _config.read([os.path.join(tracker_home, self.INI_FILE)])
         # .ini file loaded ok.  set the options, starting from TRACKER_HOME
         self.reset()
