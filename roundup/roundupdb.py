@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.19 2001-11-22 15:46:42 jhermann Exp $
+# $Id: roundupdb.py,v 1.20 2001-11-25 10:11:14 jhermann Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -340,7 +340,7 @@ class IssueClass(Class):
         writer = MimeWriter.MimeWriter(message)
         writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('Form', self.ISSUE_TRACKER_EMAIL)
+        writer.addheader('From', self.ISSUE_TRACKER_EMAIL)
         writer.addheader('Reply-To:', self.ISSUE_TRACKER_EMAIL)
         if files:
             part = writer.startmultipartbody('mixed')
@@ -393,6 +393,9 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/11/22 15:46:42  jhermann
+# Added module docstrings to all modules.
+#
 # Revision 1.18  2001/11/15 10:36:17  richard
 #  . incorporated patch from Roch'e Compaan implementing attachments in nosy
 #     e-mail
