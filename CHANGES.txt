@@ -2,12 +2,31 @@ This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
 2001-08-?? - 0.2.3
+Big change:
+ . I've split off the support class from the issue class in "extended".
+   Anyone who has any support entries, sorry. It should be possible to
+   write a scipt that moves the entries over pretty easily. If this causes
+   you pain, I'll do so. You'll want to update your instance with the new
+   code in "extended" either way.
+
 Features:
  . Added the unit tests to the start of setup.py so they're run whenever
    we do anything distutils'y.
+ . Added nicer prompting to the roundup-admin "init" command.
+ . Actually, the roundup-admin code is totally revamped, and has command
+   help and better command-line arg handling.
+ . The cgi_client.Client base class now reflects the structure of "classic"
+   rather than "extended" since "classic" is more of a "base" template.
 
 Fixed:
  . One of the tests in test_date had the wrong expected result.
+ . Fixed IssueClass so that superseders links to its classname rather than
+   hard-coded to "issue".
+ . templatebuilder was catching IOError instead of OSError.
+ . The cgi_client newblah method wasn't detecting the __note form field
+   properly.
+ . The History command in htmltemplate didn't handle a new node (None
+   nodeid) properly.
 
 
 2001-07-29 - 0.2.2

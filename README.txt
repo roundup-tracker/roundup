@@ -70,8 +70,6 @@ in general:
   . more back-ends
   . better error handling (nicer messages for users)
   . possibly revert the entire damn thing to 1.5.2 ... :(
-roundup.py:
-  . getopt() for command line
 hyperdb:
   . transaction support
   . more efficient reverse lookups
@@ -83,7 +81,6 @@ roundup-mailgw:
 roundup-server:
   . check the source file timestamps before reloading
 cgi_client
-  . searching
   . keep form fields in form on bad submission - only clear it if all ok
   . e-mail messages should have the roundup CGI URL in them
 
@@ -94,6 +91,9 @@ cgi_client
 date:
   . date subtraction doesn't work correctly "if the dates cross leap years,
     phases of the moon, ..."
+
+cgi_client
+  . user creation result form has a lot of [field with no item] entries..
 
 
 6. Author
