@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.158 $
+:Version: $Revision: 1.159 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1764,15 +1764,26 @@ plain       render a "plain" representation of the property. This method
   
               "structure python:msg.content.plain(hyperlink=1)"
 
-             Note also that the text is automatically HTML-escaped before
-             the hyperlinking transformation.
+             The text is automatically HTML-escaped before the hyperlinking
+             transformation done in the plain() method.
+
 hyperlinked The same as msg.content.plain(hyperlink=1), but nicer::
 
               "structure msg/content/hyperlinked"
 
 field       render an appropriate form edit field for the property - for
             most types this is a text entry box, but for Booleans it's a
-            tri-state yes/no/neither selection.
+            tri-state yes/no/neither selection. This method may take some
+            arguments:
+
+            size
+              Sets the width in characters of the edit field
+
+            format (Date properties only)
+              Sets the format of the date in the field - uses the same
+              format string argument as supplied to the ``pretty`` method
+              below.
+
 stext       only on String properties - render the value of the property
             as StructuredText (requires the StructureText module to be
             installed separately)
@@ -1802,7 +1813,9 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
             Will format as "2004-03-19" instead.
 
             Interval properties - render the interval in a pretty
-            format (eg. "yesterday")
+            format (eg. "yesterday"). The format arguments are those used
+            in the standard ``strftime`` call (see the `Python Library
+            Reference: time module`__)
 menu        only on Link and Multilink properties - render a form select
             list for this property
 sorted      only on Multilink properties - produce a list of the linked
@@ -1815,6 +1828,8 @@ reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
 isset       returns True if the property has been set to a value
 =========== ================================================================
+
+__ http://docs.python.org/lib/module-time.html
 
 All of the above functions perform checks for permissions required to
 display or edit the data they are manipulating. The simplest case is
