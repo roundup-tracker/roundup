@@ -46,6 +46,7 @@ pending web: search "refinement"
              - pre-fill the search page with the current search parameters)
              - add a drop-down with all queries which fills form with selected
                query values
+pending web: have roundup.cgi pick up instance config from the environment 
 
 New templating TODO:
 . generic class editing
