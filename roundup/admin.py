@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.88 2005-02-16 14:22:16 a1s Exp $
+# $Id: admin.py,v 1.89 2005-02-28 03:14:49 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1123,7 +1123,7 @@ Erase it? Y/N: """))
 
             # ensure that the properties and the CSV file headings match
             f = open(os.path.join(dir, file), 'rU')
-            reader = csv.reader(f, csv.colon_separated)
+            reader = csv.reader(f, colon_separated)
             file_props = None
             maxid = 1
             # loop through the file and create a node for each entry
@@ -1141,7 +1141,7 @@ Erase it? Y/N: """))
 
             # import the journals
             f = open(os.path.join(args[0], classname + '-journals.csv'), 'rU')
-            reader = csv.reader(f, csv.colon_separated)
+            reader = csv.reader(f, colon_separated)
             cl.import_journals(reader)
             f.close()
 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.79 2005-02-15 23:10:52 richard Exp $
+# $Id: setup.py,v 1.80 2005-02-28 03:14:48 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -326,7 +326,7 @@ the "Software Upgrade" guidelines given in the maintenance documentation.
 This release introduces far too many features to list here so I've put
 together a What's New page:
 
-  http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
+  http://roundup.sourceforge.net/doc-0.8/whatsnew-0.8.html
 
 Some highlights:
 

@@ -13,6 +13,8 @@ Feature:
 
 Fixed:
 - added content to ZRoundup refresh.txt file (sf bug 1147622)
+- fix invalid reference to csv.colon_separated
+- correct URL to What's New in setup.py meta-data
 
 
 2005-02-17 0.8.1
