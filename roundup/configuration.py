@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.4 2004-07-25 13:21:38 a1s Exp $
+# $Id: configuration.py,v 1.5 2004-07-25 14:36:50 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -136,8 +136,34 @@ class Option:
         else:
             self.aliases = []
         self.aliases.insert(0, self.name)
+        # convert default to internal representation
+        if default is NODEFAULT:
+            _value = default
+        else:
+            _value = self.str2value(default)
         # value is private.  use get() and set() to access
-        self._value = default
+        self._value = self._default_value = _value
+
+    def str2value(self, value):
+        """Return 'value' argument converted to internal representation"""
+        return value
+
+    def _value2str(self, value):
+        """Return 'value' argument converted to external representation
+
+        This is actual conversion method called only when value
+        is not NODEFAULT.  Heirs with different conversion rules
+        override this method, not the public .value2str().
+
+        """
+        return str(value)
+
+    def value2str(self, value):
+        """Return 'value' argument converted to external representation"""
+        if value is NODEFAULT:
+            return str(value)
+        else:
+            return self._value2str(value)
 
     def get(self):
         """Return current option value"""
@@ -147,34 +173,22 @@ class Option:
 
     def set(self, value):
         """Update the value"""
-        self._value = value
+        self._value = self.str2value(value)
 
     def reset(self):
         """Reset the value to default"""
-        self._value = self.default
+        self._value = self._default_value
 
     def isdefault(self):
         """Return True if current value is the default one"""
-        return self._value == self.default
+        return self._value == self._default_value
 
     def isset(self):
         """Return True if the value is avaliable (either set or default)"""
         return self._value != NODEFAULT
 
-    def str(self, default=0):
-        """Return string representation of the value
-
-        If 'default' argument is set, format the default value.
-        Otherwise format current value.
-
-        """
-        if default:
-            return str(self.default)
-        else:
-            return str(self._value)
-
     def __str__(self):
-        return self.str()
+        return self.value2str(self._value)
 
     def __repr__(self):
         if self.isdefault():
@@ -184,8 +198,8 @@ class Option:
         return _format % {
             "class": self.__class__.__name__,
             "name": self.name,
-            "default": self.str(default=1),
-            "value": str(self),
+            "default": self.value2str(self._default_value),
+            "value": self.value2str(self._value),
         }
 
     def format(self):
@@ -202,9 +216,9 @@ class Option:
         _rv = "# %(description)s\n# Default: %(default)s\n" \
             "%(is_set)s%(name)s = %(value)s\n" % {
                 "description": "\n# ".join(_desc_lines),
-                "default": self.str(default=1),
+                "default": self.value2str(self._default_value),
                 "name": self.setting,
-                "value": str(self),
+                "value": self.value2str(self._value),
                 "is_set": _is_set
             }
         return _rv
@@ -227,17 +241,13 @@ class BooleanOption(Option):
 
     class_description = "Allowed values: yes, no"
 
-    def str(self, default=0):
-        if default:
-            _val = self.default
-        else:
-            _val = self._value
-        if _val:
+    def _value2str(self, value):
+        if value:
             return "yes"
         else:
             return "no"
 
-    def set(self, value):
+    def str2value(self, value):
         if type(value) == type(""):
             _val = value.lower()
             if _val in ("yes", "true", "on", "1"):
@@ -248,7 +258,7 @@ class BooleanOption(Option):
                 raise OptionValueError(self, value, self.class_description)
         else:
             _val = value and 1 or 0
-        Option.set(self, _val)
+        return _val
 
 class RunDetectorOption(Option):
 
@@ -256,10 +266,10 @@ class RunDetectorOption(Option):
 
     class_description = "Allowed values: yes, no, new"
 
-    def set(self, value):
+    def str2value(self, value):
         _val = value.lower()
         if _val in ("yes", "no", "new"):
-            Option.set(self, _val)
+            return _val
         else:
             raise OptionValueError(self, value, self.class_description)
 
@@ -296,26 +306,29 @@ class FloatNumberOption(Option):
 
     """Floating point numbers"""
 
-    def set(self, value):
+    def str2value(self, value):
         try:
-            _val = float(value)
+            return float(value)
         except ValueError:
             raise OptionValueError(self, value,
                 "Floating point number required")
-        else:
-            Option.set(self, _val)
+
+    def _value2str(self, value):
+        _val = str(value)
+        # strip fraction part from integer numbers
+        if _val.endswith(".0"):
+            _val = _val[:-2]
+        return _val
 
 class IntegerNumberOption(Option):
 
     """Integer numbers"""
 
-    def set(self, value):
+    def str2value(self, value):
         try:
-            _val = int(value)
+            return int(value)
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
-        else:
-            Option.set(self, _val)
 
 ### Main configuration layout.
 # Config is described as a sequence of sections,
@@ -407,20 +420,21 @@ SETTINGS = (
     #   In addition, 'charset' option is used in nosy messages only,
     #   so this option actually belongs to the 'nosy' section.
     ("mail", (
-        (Option, "domain", NODEFAULT, "Domain name used for email addresses"),
+        (Option, "domain", NODEFAULT, "Domain name used for email addresses."),
         (Option, "host", NODEFAULT,
             "SMTP mail host that roundup will use to send mail"),
-        (Option, "username", NODEFAULT, "SMTP login name\n"
-            "Set this if your mail host requires authenticated access"),
+        (Option, "username", "", "SMTP login name\n"
+            "Set this if your mail host requires authenticated access.\n"
+            "If username is not empty, password (below) MUST be set!"),
         (Option, "password", NODEFAULT, "SMTP login password\n"
-            "Set this if your mail host requires authenticated access"),
+            "Set this if your mail host requires authenticated access."),
         (BooleanOption, "tls", "no",
             "If your SMTP mail host provides or requires TLS\n"
             "(Transport Layer Security) then set this option to 'yes'"),
-        (FilePathOption, "tls_keyfile", NODEFAULT,
+        (FilePathOption, "tls_keyfile", "",
             "If TLS is used, you may set this option to the name\n"
             "of a PEM formatted file that contains your private key"),
-        (FilePathOption, "tls_certfile", NODEFAULT,
+        (FilePathOption, "tls_certfile", "",
             "If TLS is used, you may set this option to the name\n"
             "of a PEM formatted certificate chain file"),
         (BooleanOption, "keep_quoted_text", "yes",
