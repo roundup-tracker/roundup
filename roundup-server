@@ -20,7 +20,7 @@
 
 Based on CGIHTTPServer in the Python library.
 
-$Id: roundup-server,v 1.13 2001-10-05 02:23:24 richard Exp $
+$Id: roundup-server,v 1.14 2001-10-12 02:20:32 richard Exp $
 
 """
 import sys
@@ -46,6 +46,9 @@ ROUNDUP_INSTANCE_HOMES = {
     'bar': '/tmp/bar',
 }
 
+ROUNDUP_USER = None
+
+
 # Where to log debugging information to. Use an instance of DevNull if you
 # don't want to log anywhere.
 # TODO: actually use this stuff
@@ -62,6 +65,7 @@ ROUNDUP_INSTANCE_HOMES = {
 
 class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     ROUNDUP_INSTANCE_HOMES = ROUNDUP_INSTANCE_HOMES
+    ROUNDUP_USER = ROUNDUP_USER
     def send_head(self):
         """Version of send_head that support CGI scripts"""
         # TODO: actually do the HEAD ...
@@ -160,12 +164,6 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         decoded_query = query.replace('+', ' ')
 
-        # if root, setuid to nobody
-        # TODO why isn't this done much earlier? - say, in main()?
-        if not os.getuid():
-            nobody = nobody_uid()
-            os.setuid(nobody)
-
         # reload all modules
         # TODO check for file timestamp changes and dependencies
         #reload(date)
@@ -187,22 +185,13 @@ class RoundupRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     do_POST = run_cgi
 
-nobody = None
+user = None
 
 def nobody_uid():
     """Internal routine to get nobody's uid"""
-    global nobody
-    if nobody:
-        return nobody
-    try:
-        import pwd
-    except ImportError:
-        return -1
-    try:
-        nobody = pwd.getpwnam('nobody')[2]
-    except KeyError:
-        nobody = 1 + max(map(lambda x: x[2], pwd.getpwall()))
-    return nobody
+    global user
+    if user:
+        return user
 
 def usage(message=''):
     if message: message = 'Error: %s\n'%message
@@ -227,17 +216,40 @@ def main():
     port = 8080
     try:
         # handle the command-line args
-        optlist, args = getopt.getopt(sys.argv[1:], 'n:p:')
+        optlist, args = getopt.getopt(sys.argv[1:], 'n:p:u:')
+        user = ROUNDUP_USER
         for (opt, arg) in optlist:
             if opt == '-n': hostname = arg
             elif opt == '-p': port = int(arg)
+            elif opt == '-u': user = arg
             elif opt == '-h': usage()
+
+        # if root, setuid to the running user
+        if not os.getuid() and user is not None:
+            try:
+                import pwd
+            except ImportError:
+                raise ValueError, "Can't change users - no pwd module"
+            try:
+                uid = pwd.getpwnam(user)[2]
+            except KeyError:
+                raise ValueError, "User %s doesn't exist"%user
+            os.setuid(uid)
+        elif os.getuid() and user is not None:
+            print 'WARNING: ignoring "-u" argument, not root'
+
+        # People can remove this check if they're really determined
+        if not os.getuid() and user is None:
+            raise ValueError, "Can't run as root!"
 
         # handle instance specs
         if args:
             d = {}
             for arg in args:
-                name, home = string.split(arg, '=')
+		try:
+                    name, home = string.split(arg, '=')
+                except ValueError:
+                    raise ValueError, "Instances must be name=home"
                 d[name] = home
             RoundupRequestHandler.ROUNDUP_INSTANCE_HOMES = d
     except:
@@ -256,6 +268,26 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/10/05 02:23:24  richard
+#  . roundup-admin create now prompts for property info if none is supplied
+#    on the command-line.
+#  . hyperdb Class getprops() method may now return only the mutable
+#    properties.
+#  . Login now uses cookies, which makes it a whole lot more flexible. We can
+#    now support anonymous user access (read-only, unless there's an
+#    "anonymous" user, in which case write access is permitted). Login
+#    handling has been moved into cgi_client.Client.main()
+#  . The "extended" schema is now the default in roundup init.
+#  . The schemas have had their page headings modified to cope with the new
+#    login handling. Existing installations should copy the interfaces.py
+#    file from the roundup lib directory to their instance home.
+#  . Incorrectly had a Bizar Software copyright on the cgitb.py module from
+#    Ping - has been removed.
+#  . Fixed a whole bunch of places in the CGI interface where we should have
+#    been returning Not Found instead of throwing an exception.
+#  . Fixed a deviation from the spec: trying to modify the 'id' property of
+#    an item now throws an exception.
+#
 # Revision 1.12  2001/09/29 13:27:00  richard
 # CGI interfaces now spit up a top-level index of all the instances they can
 # serve.
