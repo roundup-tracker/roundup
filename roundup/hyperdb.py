@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.33 2001-11-21 03:40:54 richard Exp $
+# $Id: hyperdb.py,v 1.34 2001-11-21 04:04:43 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -680,16 +680,27 @@ class Class:
             # sort by group and then sort
             for list in group, sort:
                 for dir, prop in list:
-                    # handle the properties that might be "faked"
-                    if not an.has_key(prop):
-                        an[prop] = cl.get(a_id, prop)
-                    av = an[prop]
-                    if not bn.has_key(prop):
-                        bn[prop] = cl.get(b_id, prop)
-                    bv = bn[prop]
-
                     # sorting is class-specific
                     propclass = properties[prop]
+
+                    # handle the properties that might be "faked"
+                    # also, handle possible missing properties
+                    try:
+                        if not an.has_key(prop):
+                            an[prop] = cl.get(a_id, prop)
+                        av = an[prop]
+                    except KeyError:
+                        # the node doesn't have a value for this property
+                        if isinstance(propclass, Multilink): av = []
+                        else: av = ''
+                    try:
+                        if not bn.has_key(prop):
+                            bn[prop] = cl.get(b_id, prop)
+                        bv = bn[prop]
+                    except KeyError:
+                        # the node doesn't have a value for this property
+                        if isinstance(propclass, Multilink): bv = []
+                        else: bv = ''
 
                     # String and Date values are sorted in the natural way
                     if isinstance(propclass, String):
@@ -849,6 +860,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2001/11/21 03:40:54  richard
+# more new property handling
+#
 # Revision 1.32  2001/11/21 03:11:28  richard
 # Better handling of new properties.
 #

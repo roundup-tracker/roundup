@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.42 2001-11-21 03:40:54 richard Exp $
+# $Id: htmltemplate.py,v 1.43 2001-11-21 04:04:43 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -573,7 +573,7 @@ class IndexTemplate(TemplateFunctions):
         for nodeid in nodeids:
             # check for a group heading
             if group_names:
-                this_group = [self.cl.get(nodeid, name) for name in group_names]
+                this_group = [self.cl.get(nodeid, name, '[no value]') for name in group_names]
                 if this_group != old_group:
                     l = []
                     for name in group_names:
@@ -593,7 +593,7 @@ class IndexTemplate(TemplateFunctions):
                             for value in self.cl.get(nodeid, name):
                                 l.append(group_cl.get(value, key))
                         else:
-                            value = self.cl.get(nodeid, name)
+                            value = self.cl.get(nodeid, name, '[no value]')
                             if value is None:
                                 value = '[empty %s]'%name
                             else:
@@ -861,6 +861,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.42  2001/11/21 03:40:54  richard
+# more new property handling
+#
 # Revision 1.41  2001/11/15 10:26:01  richard
 #  . missing "return" in filter_section (thanks Roch'e Compaan)
 #
