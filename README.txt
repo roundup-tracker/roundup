@@ -7,6 +7,14 @@ Copyright (c) 2002 eKit.com Inc (http://www.ekit.com/)
 Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 
 
+INSTANT GRATIFICATION
+=====================
+
+The impatient may try Roundup immediately by typing at the console::
+
+   python setup.py demo
+
+
 Installation
 ============
 For installation instructions, please see installation.txt in the "doc"
