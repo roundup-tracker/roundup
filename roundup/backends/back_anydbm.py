@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.19 2001-12-17 03:52:48 richard Exp $
+#$Id: back_anydbm.py,v 1.20 2001-12-18 15:30:34 rochecompaan Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -272,7 +272,11 @@ class Database(hyperdb.Database):
     def getfile(self, classname, nodeid, property):
         '''Store the content of the file in the database.
         '''
-        return open(self.filename(classname, nodeid, property), 'rb').read()
+        filename = self.filename(classname, nodeid, property)
+        try:
+            return open(filename, 'rb').read()
+        except:
+            return open(filename+'.tmp', 'rb').read()
 
 
     #
@@ -398,6 +402,13 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.19  2001/12/17 03:52:48  richard
+#Implemented file store rollback. As a bonus, the hyperdb is now capable of
+#storing more than one file per node - if a property name is supplied,
+#the file is called designator.property.
+#I decided not to migrate the existing files stored over to the new naming
+#scheme - the FileClass just doesn't specify the property name.
+#
 #Revision 1.18  2001/12/16 10:53:38  richard
 #take a copy of the node dict so that the subsequent set
 #operation doesn't modify the oldvalues structure

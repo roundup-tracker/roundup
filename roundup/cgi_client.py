@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.83 2001-12-15 23:51:01 richard Exp $
+# $Id: cgi_client.py,v 1.84 2001-12-18 15:30:30 rochecompaan Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -360,10 +360,11 @@ class Client:
             unread_id = self.db.status.lookup('unread')
             resolved_id = self.db.status.lookup('resolved')
             chatting_id = self.db.status.lookup('chatting')
+            current_status = cl.get(self.nodeid, 'status')
         except KeyError:
             pass
         else:
-            if (props['status'] == unread_id or props['status'] == resolved_id):
+            if (props['status'] == unread_id or props['status'] == resolved_id and current_status == resolved_id):
                 props['status'] = chatting_id
         # add assignedto to the nosy list
         if props.has_key('assignedto'):
@@ -536,20 +537,31 @@ class Client:
                 self._post_editnode(nid)
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
+
+                self.db.commit()
+                # render the newly created issue
+                self.nodeid = nid
+                self.pagehead('%s: %s'%(self.classname.capitalize(), nid),
+                    message)
+                item = htmltemplate.ItemTemplate(self, self.TEMPLATES, 
+                    self.classname)
+                item.render(nid)
+                self.pagefoot()
             except:
                 self.db.rollback()
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
-        self.pagehead(_('New %(classname)s')%{'classname':
-             self.classname.capitalize()}, message)
+        else:
+            self.pagehead(_('New %(classname)s')%{'classname':
+                self.classname.capitalize()}, message)
 
-        # call the template
-        newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
-            self.classname)
-        newitem.render(self.form)
+            # call the template
+            newitem = htmltemplate.NewItemTemplate(self, self.TEMPLATES,
+                self.classname)
+            newitem.render(self.form)
 
-        self.pagefoot()
+            self.pagefoot()
     newissue = newnode
 
     def newuser(self, message=None):
@@ -1150,6 +1162,15 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.83  2001/12/15 23:51:01  richard
+# Tested the changes and fixed a few problems:
+#  . files are now attached to the issue as well as the message
+#  . newuser is a real method now since we don't want to do the message/file
+#    stuff for it
+#  . added some documentation
+# The really big changes in the diff are a result of me moving some code
+# around to keep like methods together a bit better.
+#
 # Revision 1.82  2001/12/15 19:24:39  rochecompaan
 #  . Modified cgi interface to change properties only once all changes are
 #    collected, files created and messages generated.
