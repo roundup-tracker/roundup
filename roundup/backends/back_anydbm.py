@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.132 2003-11-16 18:41:40 jlgijsbers Exp $
+#$Id: back_anydbm.py,v 1.133 2003-12-05 09:47:46 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -310,13 +310,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if db is None:
             db = self.getclassdb(classname)
         if not db.has_key(nodeid):
-            # try the cache - might be a brand-new node
-            cache_dict = self.cache.setdefault(classname, {})
-            if cache_dict.has_key(nodeid):
-                if __debug__:
-                    print >>hyperdb.TRACE, 'get %s %s cached'%(classname,
-                        nodeid)
-                return cache_dict[nodeid]
             raise IndexError, "no such %s %s"%(classname, nodeid)
 
         # check the uncommitted, destroyed nodes
@@ -1540,7 +1533,7 @@ class Class(hyperdb.Class):
         '''
         for propname in requirements.keys():
             prop = self.properties[propname]
-            if isinstance(not prop, String):
+            if not isinstance(prop, String):
                 raise TypeError, "'%s' not a String property"%propname
             requirements[propname] = requirements[propname].lower()
         l = []

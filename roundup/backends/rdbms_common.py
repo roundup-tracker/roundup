@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.71 2003-11-16 18:41:40 jlgijsbers Exp $
+# $Id: rdbms_common.py,v 1.72 2003-12-05 09:47:46 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -155,19 +155,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.conn.commit()
 
     def refresh_database(self):
-        # now detect changes in the schema
-        for classname, spec in self.classes.items():
-            dbspec = self.database_schema[classname]
-            self.update_class(spec, dbspec, force=1)
-            self.database_schema[classname] = spec.schema()
-        # update the database version of the schema
-        self.sql('delete from schema')
-        self.save_dbschema(self.database_schema)
-        # reindex the db 
-        self.reindex()
-        # commit
-        self.conn.commit()
-
+        self.post_init()
 
     def reindex(self):
         for klass in self.classes.values():
@@ -1800,8 +1788,8 @@ class Class(hyperdb.Class):
                 raise TypeError, "'%s' not a Link/Multilink property"%propname
 
         # first, links
-        where = []
-        allvalues = ()
+        where = ['__retired__ = %s']
+        allvalues = (0,)
         a = self.db.arg
         for prop, values in propspec:
             if not isinstance(props[prop], hyperdb.Link):
@@ -1852,14 +1840,16 @@ class Class(hyperdb.Class):
         args = []
         for propname in requirements.keys():
             prop = self.properties[propname]
-            if isinstance(not prop, String):
+            if not isinstance(prop, String):
                 raise TypeError, "'%s' not a String property"%propname
             where.append(propname)
             args.append(requirements[propname].lower())
 
         # generate the where clause
         s = ' and '.join(['lower(_%s)=%s'%(col, self.db.arg) for col in where])
-        sql = 'select id from _%s where %s'%(self.classname, s)
+        sql = 'select id from _%s where %s and __retired__=%s'%(self.classname,
+            s, self.db.arg)
+        args.append(0)
         self.db.sql(sql, tuple(args))
         l = [x[0] for x in self.db.sql_fetchall()]
         if __debug__:
