@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.4 $
 
 Current situation
 =================
@@ -203,13 +203,13 @@ The instance dbinit module then has::
 
   in init():
 
-    r = db.getclass('role').find('Admin')
+    r = db.getclass('role').lookup('Admin')
     user.create(username="admin", password=Password(adminpw),
                 address=instance_config.ADMIN_EMAIL, roles=[r])
 
     # choose your anonymous user access permission here
-    #r = db.getclass('role').find('No Rego')
-    r = db.getclass('role').find('User')
+    #r = db.getclass('role').lookup('No Rego')
+    r = db.getclass('role').lookup('User')
     user.create(username="anonymous", roles=[r])
 
 
