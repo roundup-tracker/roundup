@@ -1,6 +1,11 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2005-??-?? 0.8.3
+Fixed:
+- fix reference to The Zope Book in Roundup FAQ
+
+
 2005-03-03 0.8.2
 Feature:
 - roundup-server automatically redirects from trackers list
