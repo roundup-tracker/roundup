@@ -14,7 +14,26 @@ Fixed:
 - mysql documentation fixed to note requirement of 4.0+ and InnoDB
 - added testing of schema mutation, fixed rdbms backends handling of a
   couple of cases
+- HTML 4.01 validation on the 'classic' backend
+- Messages to the mailgw can be about classes other than issues now.
+- Signature matching is more precise (bug #827775).
+- Anonymous user can no longer edit or view itself (bug #828901).
+- Corrected typo in installation.html (bug #822967).
+- Clarified listTemplates docstring.
+- Print a nicer error message when the address is already in use 
+  (bug #798659).
+- Remove empty lines before sending strings off to the csv parser 
+  (bug #821364).
 
+Cleanup:
+- Replace curuserid attribute on Database with the extended getuid() method.
+- Extract a new 'mailer' module for sending mail.
+- Extract a '_send_mail' method for testing mail sending.
+- Simplify backend importing.
+- Use roundup_server in demo.py.
+- Implement newItemAction using editItemAction.
+- Use FormError in client.py, moving the handling up to inner_main().
+- Implemented semantic comparison of Message objects in test_mailgw. 
 
 2003-10-?? 0.6.3
 Fixed:
