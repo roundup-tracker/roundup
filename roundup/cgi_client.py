@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.126 2002-05-29 01:16:17 richard Exp $
+# $Id: cgi_client.py,v 1.127 2002-06-11 06:38:24 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -717,7 +717,8 @@ function help_window(helpurl, width, height) {
                     designator, property = value.split(':')
                     link, nodeid = roundupdb.splitDesignator(designator)
                     link = self.db.classes[link]
-                    value = link.get(nodeid, property)
+                    # take a dupe of the list so we're not changing the cache
+                    value = link.get(nodeid, property)[:]
                     value.append(nid)
                     link.set(nodeid, **{property: value})
             elif key == ':link':
@@ -1362,6 +1363,18 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.126  2002/05/29 01:16:17  richard
+# Sorry about this huge checkin! It's fixing a lot of related stuff in one go
+# though.
+#
+# . #541941 ] changing multilink properties by mail
+# . #526730 ] search for messages capability
+# . #505180 ] split MailGW.handle_Message
+#   - also changed cgi client since it was duplicating the functionality
+# . build htmlbase if tests are run using CVS checkout (removed note from
+#   installation.txt)
+# . don't create an empty message on email issue creation if the email is empty
+#
 # Revision 1.125  2002/05/25 07:16:24  rochecompaan
 # Merged search_indexing-branch with HEAD
 #
