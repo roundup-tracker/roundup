@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.95 2002-10-07 00:52:51 richard Exp $
+$Id: mailgw.py,v 1.96 2002-10-15 06:51:32 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -145,8 +145,15 @@ class MailGW:
 
     def do_pipe(self):
         ''' Read a message from standard input and pass it to the mail handler.
+
+            Read into an internal structure that we can seek on (in case
+            there's an error).
+
+            XXX: we may want to read this into a temporary file instead...
         '''
-        self.main(sys.stdin)
+        s = cStringIO.StringIO()
+        s.write(sys.stdin.read())
+        self.main(s)
         return 0
 
     def do_mailbox(self, filename):
@@ -337,8 +344,8 @@ class MailGW:
         body = w.startbody(content_type)
         try:
             message.rewindbody()
-        except IOError:
-            body.write("*** couldn't include message body: read from pipe ***")
+        except IOError, message:
+            body.write("*** couldn't include message body: %s ***"%message)
         else:
             body.write(message.fp.read())
 
