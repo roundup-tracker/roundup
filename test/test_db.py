@@ -15,9 +15,9 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.28 2002-07-14 02:16:29 richard Exp $ 
+# $Id: test_db.py,v 1.29 2002-07-14 04:03:15 richard Exp $ 
 
-import unittest, os, shutil
+import unittest, os, shutil, time
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError
@@ -284,6 +284,26 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEqual('unlink', action)
         self.assertEqual(('issue', '1', 'fixer'), params)
 
+        # test disabling journalling
+        # ... get the last entry
+        time.sleep(1)
+        entry = self.db.getjournal('issue', '1')[-1]
+        (x, date_stamp, x, x, x) = entry
+        self.db.issue.disableJournalling()
+        self.db.issue.set('1', title='hello world')
+        self.db.commit()
+        entry = self.db.getjournal('issue', '1')[-1]
+        (x, date_stamp2, x, x, x) = entry
+        # see if the change was journalled when it shouldn't have been
+        self.assertEqual(date_stamp, date_stamp2)
+        self.db.issue.enableJournalling()
+        self.db.issue.set('1', title='hello world 2')
+        self.db.commit()
+        entry = self.db.getjournal('issue', '1')[-1]
+        (x, date_stamp2, x, x, x) = entry
+        # see if the change was journalled
+        self.assertNotEqual(date_stamp, date_stamp2)
+
     def testPack(self):
         self.db.issue.create(title="spam", status='1')
         self.db.commit()
@@ -504,6 +524,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2002/07/14 02:16:29  richard
+# Fixes for the metakit backend (removed the cut-n-paste IssueClass, removed
+# a special case for it in testing)
+#
 # Revision 1.27  2002/07/14 02:05:54  richard
 # . all storage-specific code (ie. backend) is now implemented by the backends
 #

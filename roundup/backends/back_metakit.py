@@ -216,6 +216,19 @@ class Class:    # no, I'm not going to subclass the existing!
         self.properties = self.ruprops
         self.db.addclass(self)
         self.idcache = {}
+
+        # default is to journal changes
+        self.do_journal = 1
+
+    def enableJournalling(self):
+        '''Turn journalling on for this class
+        '''
+        self.do_journal = 1
+
+    def disableJournalling(self):
+        '''Turn journalling off for this class
+        '''
+        self.do_journal = 0
         
     # --- the roundup.Class methods
     def audit(self, event, detector):
@@ -349,7 +362,7 @@ class Class:    # no, I'm not going to subclass the existing!
                 setattr(row, key, int(value))
                 changes[key] = oldvalue
                 
-                if prop.do_journal:
+                if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if oldvalue:
                         self.db.addjournal(link_class, value, _UNLINK, (self.classname, str(row.id), key))
@@ -385,7 +398,7 @@ class Class:    # no, I'm not going to subclass the existing!
                     if id not in value:
                         rmvd.append(id)
                         # register the unlink with the old linked node
-                        if prop.do_journal:
+                        if self.do_journal and prop.do_journal:
                             self.db.addjournal(link_class, id, _UNLINK, (self.classname, str(row.id), key))
 
                 # handle additions
@@ -397,7 +410,7 @@ class Class:    # no, I'm not going to subclass the existing!
                                 link_class, id)
                         adds.append(id)
                         # register the link with the newly linked node
-                        if prop.do_journal:
+                        if self.do_journal and prop.do_journal:
                             self.db.addjournal(link_class, id, _LINK, (self.classname, str(row.id), key))
                             
                 sv = getattr(row, key)
@@ -457,10 +470,11 @@ class Class:    # no, I'm not going to subclass the existing!
                 row.creator = self.db.curuserid
             
         self.db.dirty = 1
-        if isnew:
-            self.db.addjournal(self.classname, nodeid, _CREATE, {})
-        else:
-            self.db.addjournal(self.classname, nodeid, _SET, changes)
+        if self.do_journal:
+            if isnew:
+                self.db.addjournal(self.classname, nodeid, _CREATE, {})
+            else:
+                self.db.addjournal(self.classname, nodeid, _SET, changes)
 
     def retire(self, nodeid):
         view = self.getview(1)
@@ -471,13 +485,16 @@ class Class:    # no, I'm not going to subclass the existing!
         oldvalues = self.uncommitted.setdefault(row.id, {})
         oldval = oldvalues['_isdel'] = row._isdel
         row._isdel = 1
-        self.db.addjournal(self.classname, nodeid, _RETIRE, {})
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, _RETIRE, {})
         iv = self.getindexview(1)
         ndx = iv.find(k=getattr(row, self.keyname),i=row.id)
         if ndx > -1:
             iv.delete(ndx)
         self.db.dirty = 1
     def history(self, nodeid):
+        if not self.do_journal:
+            raise ValueError, 'Journalling is disabled for this class'
         return self.db.gethistory(self.classname, nodeid)
     def setkey(self, propname):
         if self.keyname:
@@ -930,11 +947,8 @@ class FileClass(Class):
         self.db.indexer.add_text((self.classname, nodeid, 'content'),
                     self.get(nodeid, 'content'), mimetype)
  
-# Yuck - c&p to avoid getting hyperdb.Class
 class IssueClass(Class, roundupdb.IssueClass):
-
     # Overridden methods:
-
     def __init__(self, db, classname, **properties):
         """The newly-created class automatically includes the "messages",
         "files", "nosy", and "superseder" properties.  If the 'properties'

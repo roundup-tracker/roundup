@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.137 2002-07-10 07:00:30 richard Exp $
+# $Id: cgi_client.py,v 1.138 2002-07-14 04:03:13 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1214,11 +1214,14 @@ function help_window(helpurl, width, height) {
         try:
             sessions = self.db.getclass('__sessions')
         except:
-            # add the sessions Class
-            sessions = hyperdb.Class(self.db, '__sessions',
+            # add the sessions Class - use a non-journalling Class
+            # TODO: not happy with how we're getting the Class here :(
+            sessions = self.instance.dbinit.Class(self.db, '__sessions',
                 sessid=hyperdb.String(), user=hyperdb.String(),
                 last_use=hyperdb.Date())
             sessions.setkey('sessid')
+            # make sure session db isn't journalled
+            sessions.disableJournalling()
 
     def main(self):
         '''Wrap the database accesses so we can close the database cleanly
@@ -1253,6 +1256,7 @@ function help_window(helpurl, width, height) {
             except KeyError:
                 user = 'anonymous'
             else:
+                # update the lifetime datestamp
                 sessions.set(self.session, last_use=date.Date())
                 self.db.commit()
                 user = sessions.get(sessid, 'user')
@@ -1460,7 +1464,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                 # Quite likely to be a FormItem instance
                 value = value.value
             if not isinstance(value, type([])):
-                value = [i.strip() for i in value.value.split(',')]
+                value = [i.strip() for i in value.split(',')]
             else:
                 value = [i.strip() for i in value]
             link = cl.properties[key].classname
@@ -1496,6 +1500,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.137  2002/07/10 07:00:30  richard
+# removed debugging
+#
 # Revision 1.136  2002/07/10 06:51:08  richard
 # . #576241 ] MultiLink problems in parsePropsFromForm
 #

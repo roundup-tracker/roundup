@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.44 2002-07-14 02:05:53 richard Exp $
+#$Id: back_anydbm.py,v 1.45 2002-07-14 04:03:14 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -589,16 +589,24 @@ class Class(hyperdb.Class):
         self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
         self.key = ''
 
+        # should we journal changes (default yes)
+        self.do_journal = 1
+
         # do the db-related init stuff
         db.addclass(self)
 
         self.auditors = {'create': [], 'set': [], 'retire': []}
         self.reactors = {'create': [], 'set': [], 'retire': []}
 
-    def __repr__(self):
-        '''Slightly more useful representation
+    def enableJournalling(self):
+        '''Turn journalling on for this class
         '''
-        return '<hypderdb.Class "%s">'%self.classname
+        self.do_journal = 1
+
+    def disableJournalling(self):
+        '''Turn journalling off for this class
+        '''
+        self.do_journal = 0
 
     # Editing nodes:
 
@@ -672,7 +680,7 @@ class Class(hyperdb.Class):
                 propvalues[key] = value
 
                 # register the link with the newly linked node
-                if self.properties[key].do_journal:
+                if self.do_journal and self.properties[key].do_journal:
                     self.db.addjournal(link_class, value, 'link',
                         (self.classname, newid, key))
 
@@ -703,7 +711,7 @@ class Class(hyperdb.Class):
                     if not self.db.hasnode(link_class, id):
                         raise IndexError, '%s has no node %s'%(link_class, id)
                     # register the link with the newly linked node
-                    if self.properties[key].do_journal:
+                    if self.do_journal and self.properties[key].do_journal:
                         self.db.addjournal(link_class, id, 'link',
                             (self.classname, newid, key))
 
@@ -737,7 +745,8 @@ class Class(hyperdb.Class):
 
         # done
         self.db.addnode(self.classname, newid, propvalues)
-        self.db.addjournal(self.classname, newid, 'create', propvalues)
+        if self.do_journal:
+            self.db.addjournal(self.classname, newid, 'create', propvalues)
 
         self.fireReactors('create', newid, None)
 
@@ -762,6 +771,8 @@ class Class(hyperdb.Class):
             return nodeid
 
         if propname == 'creation':
+            if not self.do_journal:
+                raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
                 return self.db.getjournal(self.classname, nodeid)[0][1]
@@ -769,6 +780,8 @@ class Class(hyperdb.Class):
                 # on the strange chance that there's no journal
                 return date.Date()
         if propname == 'activity':
+            if not self.do_journal:
+                raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
                 return self.db.getjournal(self.classname, nodeid)[-1][1]
@@ -776,6 +789,8 @@ class Class(hyperdb.Class):
                 # on the strange chance that there's no journal
                 return date.Date()
         if propname == 'creator':
+            if not self.do_journal:
+                raise ValueError, 'Journalling is disabled for this class'
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
                 name = self.db.getjournal(self.classname, nodeid)[0][2]
@@ -901,7 +916,7 @@ class Class(hyperdb.Class):
                 if not self.db.hasnode(link_class, value):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
-                if self.properties[key].do_journal:
+                if self.do_journal and self.properties[key].do_journal:
                     # register the unlink with the old linked node
                     if node[key] is not None:
                         self.db.addjournal(link_class, node[key], 'unlink',
@@ -941,7 +956,7 @@ class Class(hyperdb.Class):
                     if id in value:
                         continue
                     # register the unlink with the old linked node
-                    if self.properties[key].do_journal:
+                    if self.do_journal and self.properties[key].do_journal:
                         self.db.addjournal(link_class, id, 'unlink',
                             (self.classname, nodeid, key))
                     l.remove(id)
@@ -954,7 +969,7 @@ class Class(hyperdb.Class):
                     if id in l:
                         continue
                     # register the link with the newly linked node
-                    if self.properties[key].do_journal:
+                    if self.do_journal and self.properties[key].do_journal:
                         self.db.addjournal(link_class, id, 'link',
                             (self.classname, nodeid, key))
                     l.append(id)
@@ -986,7 +1001,8 @@ class Class(hyperdb.Class):
 
         # do the set, and journal it
         self.db.setnode(self.classname, nodeid, node)
-        self.db.addjournal(self.classname, nodeid, 'set', propvalues)
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, 'set', propvalues)
 
         self.fireReactors('set', nodeid, oldvalues)
 
@@ -1010,7 +1026,8 @@ class Class(hyperdb.Class):
         node = self.db.getnode(self.classname, nodeid)
         node[self.db.RETIRED_FLAG] = 1
         self.db.setnode(self.classname, nodeid, node)
-        self.db.addjournal(self.classname, nodeid, 'retired', None)
+        if self.do_journal:
+            self.db.addjournal(self.classname, nodeid, 'retired', None)
 
         self.fireReactors('retire', nodeid, None)
 
@@ -1027,6 +1044,8 @@ class Class(hyperdb.Class):
         'date' is a Timestamp object specifying the time of the change and
         'tag' is the journaltag specified when the database was opened.
         """
+        if not self.do_journal:
+            raise ValueError, 'Journalling is disabled for this class'
         return self.db.getjournal(self.classname, nodeid)
 
     # Locating nodes:
@@ -1596,6 +1615,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.44  2002/07/14 02:05:53  richard
+#. all storage-specific code (ie. backend) is now implemented by the backends
+#
 #Revision 1.43  2002/07/10 06:30:30  richard
 #...except of course it's nice to use valid Python syntax
 #
