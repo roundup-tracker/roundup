@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.15 2002-09-05 23:39:12 richard Exp $
+# $Id: client.py,v 1.16 2002-09-05 23:48:55 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1052,6 +1052,7 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
     required = []
     if form.has_key(':required'):
         value = form[':required']
+        print 'required', value
         if isinstance(value, type([])):
             required = [i.value.strip() for i in value]
         else:
@@ -1078,8 +1079,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             value = value.value.strip()
 
         if isinstance(proptype, hyperdb.String):
-            pass
-            value = form[key].value.strip()
+            if not value:
+                continue
         elif isinstance(proptype, hyperdb.Password):
             if not value:
                 # ignore empty password values
