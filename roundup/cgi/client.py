@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.181 2004-07-02 05:22:09 richard Exp $
+# $Id: client.py,v 1.182 2004-07-11 14:23:12 a1s Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -10,7 +10,7 @@ import codecs
 
 
 from roundup import roundupdb, date, hyperdb, password
-from roundup.cgi import templating, cgitb
+from roundup.cgi import templating, cgitb, TranslationService
 from roundup.cgi.actions import *
 from roundup.cgi.exceptions import *
 from roundup.cgi.form_parser import FormParser
@@ -60,6 +60,7 @@ class Client:
     - "additional_headers" is a dictionary of additional HTTP headers that
       should be sent to the client
     - "response_code" is the HTTP response code to send to the client
+    - "translator" is TranslationService instance
 
     During the processing of a request, the following attributes are used:
 
@@ -156,14 +157,14 @@ class Client:
         """Replace the translation engine
 
         'translator'
-           is i18n module or one of gettext translation classes.
-           It must have attributes 'gettext' and 'ngettext',
-           serving as translation functions.
+           is TranslationService instance.
+           It must define methods 'translate' (TAL-compatible i18n),
+           'gettext' and 'ngettext' (gettext-compatible i18n).
 
-           If omitted, use templating.translationService.
+           If omitted, create default TranslationService.
         """
         if translator is None:
-            translator = templating.translationService
+            translator = TranslationService.get_translation()
         self.translator = translator
         self._ = self.gettext = translator.gettext
         self.ngettext = translator.ngettext
