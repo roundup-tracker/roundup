@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.62 2002-12-11 01:46:46 richard Exp $
+# $Id: client.py,v 1.63 2002-12-15 23:55:33 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1185,7 +1185,6 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
             mlaction = 'add'
         else:
             propname = key
-
 
         # does the property exist?
         if not properties.has_key(propname):

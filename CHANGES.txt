@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2003-01-?? 0.5.4
 - key the templates cache off full path, not filename
 - implemented whole-database locking
+- hyperlinking of special text (url, email, item designator) in messages
 
 
 2002-12-11 0.5.3

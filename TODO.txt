@@ -59,7 +59,6 @@ pending web       clicking on a group header should filter for that type of
 pending web       re-enable auth basic http auth
 pending web       allow multilink selections to select a "none" element to allow
                   people with broken browsers to select nothing?
-pending web       automagically link designators
 pending web       add checkbox-based removal/addition for multilink entries
                   (eg "add me"/"remove me" for nosy list)
 pending web       search "refinement" - pre-fill the search page with the
