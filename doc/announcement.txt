@@ -1,0 +1,31 @@
+            Roundup 0.2.7 - an issue tracking system
+
+This is a bugfix release.
+
+[CHANGES.txt entries for this version go here]
+
+Roundup is a simple-to-use and -install issue-tracking system with 
+command-line, web and e-mail interfaces. It is based on the winning design 
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
+Note: Ping is not responsible for this project. The contact for this project 
+is richard@users.sourceforge.net.
+
+Roundup manages a number of issues (with flexible properties such as 
+"description", "priority", and so on) and provides the ability to
+ (a) submit new issues,
+ (b) find and edit existing issues, and
+ (c) discuss issues with other participants.
+The system will facilitate communication among the participants by managing
+discussions and notifying interested parties when issues are edited. One of
+the major design goals for Roundup that it be simple to get going. Roundup
+is therefore usable "out of the box" with any python 2.0+ installation. It
+doesn't even need to be "installed" to be operational, though a
+disutils-based install script is provided.
+
+It comes with two issue tracker templates and three database back-ends. 
+Back-ends for relational databases are being developed.
+
+Source is available at the website:
+      http://sourceforge.net/projects/roundup/
+
