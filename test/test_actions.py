@@ -168,10 +168,14 @@ class CollisionDetectionTestCase(ActionTestCase):
         self.assertEqual(self.action.lastNodeActivity(), self.now)
 
     def testCollision(self):
-        self.failUnless(self.action.detectCollision(
-            self.now, self.now + Interval("1d")))
-        self.failIf(self.action.detectCollision(
-            self.now, self.now - Interval("1d")))
+        # fake up an actual change
+        self.action.classname = 'test'
+        self.action.nodeid = '1'
+        self.client.parsePropsFromForm = lambda: ({('test','1'):{1:1}}, [])
+        self.failUnless(self.action.detectCollision(self.now,
+            self.now + Interval("1d")))
+        self.failIf(self.action.detectCollision(self.now,
+            self.now - Interval("1d")))
         self.failIf(self.action.detectCollision(None, self.now))
 
 class LoginTestCase(ActionTestCase):

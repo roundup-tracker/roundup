@@ -19,9 +19,9 @@ __docformat__ = 'restructuredtext'
 
 from __future__ import nested_scopes
 
-import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
+import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes, csv
 
-from roundup import hyperdb, date, csv, support
+from roundup import hyperdb, date, support
 from roundup import i18n
 from roundup.i18n import _
 
