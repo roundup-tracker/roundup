@@ -2,32 +2,41 @@
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Author</span></td>
-    <td class="form-text"><display call="plain('author')"></td>
+ <td width=1% nowrap align=right><span class="form-label">Author</span></td>
+ <td class="form-text" tal:content="msg/author"></td>
 </tr>
 
 <tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Recipients</span></td>
-    <td class="form-text"><display call="plain('recipients')"></td>
+ <td width=1% nowrap align=right><span class="form-label">Recipients</span></td>
+ <td class="form-text" tal:content="msg/recipients"></td>
 </tr>
 
 <tr bgcolor="ffffea">
-    <td width=1% nowrap align=right><span class="form-label">Date</span></td>
-    <td class="form-text"><display call="plain('date')"></td>
+ <td width=1% nowrap align=right><span class="form-label">Date</span></td>
+ <td class="form-text" tal:content="msg/date"></td>
 </tr>
 
 <tr bgcolor="ffeaff">
  <td colspan=2 class="form-text">
-  <pre><display call="plain('content', escape=1)"></pre>
+  <pre tal:content="msg/content"></pre>
  </td>
 </tr>
 
 <property name="files">
 <tr class="strong-header"><td colspan=2><b>Files</b></td></tr>
-<tr><td colspan=2><display call="list('files')"></td></tr>
+<tr tal:repeat="file msg/files">
+ <td>
+  <a tal:attributes="href string:file${file/id}/${file/name}"
+     tal:content="file/name">dld link</a>
+ </td>
+ <td>
+  <span tal:content="file/creator">creator's name</span>,
+  <span tal:content="file/creation">creation date</span>
+ </td>
+</tr>
 </property>
 
 <tr class="history-header"><td colspan=2><b>History</b></td><tr>
-<tr><td colspan=2><display call="history()"></td></tr>
+<tr><td colspan="2" tal:content="structure msg/history">history</td></tr>
 
 </table>

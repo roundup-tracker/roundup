@@ -41,10 +41,57 @@
   <tr class="list-header" tal:condition="batch">
    <td colspan="2">
     <form method="GET" tal:attributes="action request/classname">
-    <span tal:replace="structure request/indexargs_form" />
-    Pagesize: <input type="text" name=":pagesize" size="3" value="50">
-    Starting at: <input type="text" name=":startwith" size="3" value="0">
-    <input type="submit" value="Redisplay">
+     Pagesize: <input type="text" name=":pagesize" size="3" value="50">
+     Starting at: <input type="text" name=":startwith" size="3" value="0">
+     <br>
+     <xml:block tal:condition="python:'status' in request.filter">
+      Status:
+      <input type="hidden" name=":filter" value="status">
+      <select name="status">
+       <option value="-1,1,2,3,4,5,6,7"
+         tal:attributes="selected python:'-1,1,2,3,4,5,6,7'.split(',')==request.filterspec['status']">not resolved</option>
+       <option value="-1"
+         tal:attributes="selected python:['-1']==request.filterspec['status']">not selected</option>
+       <option tal:repeat="s db/status/list"
+         tal:attributes="value s/id;
+                         selected python:[s]==request.filterspec['status']"
+         tal:content="s/name">status to filter on</option>
+      </select>
+     </xml:block>
+
+     <xml:block tal:condition="python:'assignedto' in request.filter">
+      Assigned To:
+      <input type="hidden" name=":filter" value="assignedto">
+      <select name="assignedto">
+       <option value="-1"
+         tal:attributes="selected python:['-1']==request.filterspec['assignedto']">not selected</option>
+       <option tal:repeat="s db/user/list"
+         tal:attributes="value s/id;
+                         selected python:[s]==request.filterspec['assignedto']"
+         tal:content="s/username">person to filter on</option>
+      </select>
+     </xml:block>
+
+     <br>
+     Show:
+     <tal:block tal:repeat="col python:'id activity priority title status assignedto'.split()">
+      <span tal:replace="col" /><input type="checkbox" name=":columns" tal:attributes="value col;
+        checked python:request.columns.has_key(col)">
+     </tal:block>
+     <br>
+     Sort on:
+     <select name=":sort">
+      <option tal:repeat="col python:request.columns.keys()"
+             tal:attributes="value col; selected python:col in request.sort"
+             tal:content="col">column</option>
+     </select>
+     Group on:
+     <select name=":group">
+      <option tal:repeat="col python:request.columns.keys()"
+             tal:attributes="value col; selected python:col in request.group"
+             tal:content="col">column</option>
+     </select>
+     <input type="submit" value="Redisplay">
     </form>
    </td>
   </tr>

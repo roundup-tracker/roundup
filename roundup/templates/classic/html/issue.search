@@ -1,5 +1,6 @@
 
 <form method="GET" tal:attributes="action request/classname">
+<input type="hidden" name=":action" value="search">
 
 Columns you may display:
 <tal:block
@@ -18,9 +19,32 @@ Group on:
 <input type="radio" name=":group" tal:repeat="n request/group"
        tal:attributes="value n;
                        checked python:n in request.group">
+
 <br>
-<input type="hidden" name=":action" value="searchform">
+Priority:
+<span tal:replace="structure issue/priority/menu" />
+
 <br>
+Status:
+<select name="status">
+ <option value="dontcare">don't care</option>
+ <option value="-1,1,2,3,4,5,6,7">not resolved</option>
+ <option value="-1">not selected</option>
+ <option value="dontcare">------------</option>
+ <option tal:repeat="s db/status/list" tal:attributes="value s/id"
+   tal:content="s/name">status to filter on</option>
+</select>
+
+<br>
+Assigned To:
+<select name="assignedto">
+ <option value="dontcare">don't care</option>
+ <option tal:attributes="value request/user/id">assigned to me</option>
+ <option value="-1">unassigned</option>
+ <option value="-1">------------</option>
+ <option tal:repeat="s db/user/list" tal:attributes="value s/id"
+   tal:content="s/username">user to filter on</option>
+</select>
 
 <tal:block tal:repeat="n python:request.filterspec.keys()">
  Filter: <input tal:repeat="v python:request.filterspec[n]"

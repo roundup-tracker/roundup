@@ -51,13 +51,8 @@ You are not allowed to view this page.
 
  <tr class="form">
   <td>&nbsp;</td>
-  <td colspan=3 class="form-text" tal:condition="exists:item">
-   <input type="hidden" name=":action" value="edit">
-   <input type="submit" name="submit" value="Submit Changes">
-  </td>
-  <td colspan=3 class="form-text" tal:condition="not:exists:item">
-   <input type="hidden" name=":action" value="new">
-   <input type="submit" name="submit" value="Submit New Entry">
+  <td colspan=3 class="form-text" tal:content="structure user/submit">
+   submit button will go here
   </td>
  </tr>
 

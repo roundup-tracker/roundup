@@ -39,31 +39,38 @@
 </tr>
 
 <tr class="form">
- <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
- <td class="form-text" tal:content="structure issue/assignedto/menu">assignedto</td>
- <td>&nbsp;</td>
- <td>&nbsp;</td>
-</tr>
-
-<tr class="form">
- <td width=1% nowrap align=right><span class="form-label">Change Note</span></td>
- <td colspan=3 class="form-text"><textarea name="__note" wrap="hard" rows="5" cols="60"></textarea></td>
-</tr>
-
-<tr class="form">
- <td width=1% nowrap align=right><span class="form-label">File</span></td>
- <td colspan=3 class="form-text"><input type="file" name="__file" size="60"></td>
-</tr>
-
-<tr class="form">
- <td>&nbsp;</td>
- <td colspan=3 class="form-text" tal:condition="exists:item">
-  <input type="hidden" name=":action" value="edit">
-  <input type="submit" name="submit" value="Submit Changes">
+ <td width=1% nowrap align=right>
+  <span class="form-label">Assigned To</span>
  </td>
- <td colspan=3 class="form-text" tal:condition="not:exists:item">
-  <input type="hidden" name=":action" value="new">
-  <input type="submit" name="submit" value="Submit New Entry">
+ <td class="form-text" tal:content="structure issue/assignedto/menu">
+  assignedto menu
+ </td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</tr>
+
+<tr class="form">
+ <td width=1% nowrap align=right> 
+  <span class="form-label">Change Note</span>
+ </td>
+ <td colspan=3 class="form-text">
+  <textarea name="__note" wrap="hard" rows="5" cols="60"></textarea>
+ </td>
+</tr>
+
+<tr class="form">
+ <td width=1% nowrap align=right>
+  <span class="form-label">File</span>
+ </td>
+ <td colspan=3 class="form-text">
+  <input type="file" name="__file" size="60">
+ </td>
+</tr>
+
+<tr class="form">
+ <td>&nbsp;</td>
+ <td colspan=3 class="form-text" tal:content="structure issue/submit">
+  submit button will go here
  </td>
 </tr>
 
@@ -93,11 +100,11 @@
   </tr>
   <tr tal:repeat="file issue/files">
    <td>
-    <a href="" tal:attributes="href string:file${file/id}/${file/name}"
+    <a tal:attributes="href string:file${file/id}/${file/name}"
        tal:content="file/name">dld link</a>
    </td>
    <td>
-    <span tal:content="file/creator/username">creator's name</span>,
+    <span tal:content="file/creator">creator's name</span>,
     <span tal:content="file/creation">creation date</span>
    </td>
   </tr>
