@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.28 2001-10-21 04:44:50 richard Exp $
+# $Id: hyperdb.py,v 1.29 2001-10-27 00:17:41 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -526,7 +526,8 @@ class Class:
         return l
 
     def stringFind(self, **requirements):
-        """Locate a particular node by matching a set of its String properties.
+        """Locate a particular node by matching a set of its String
+        properties in a caseless search.
 
         If the property is not a String property, a TypeError is raised.
         
@@ -536,6 +537,7 @@ class Class:
             prop = self.properties[propname]
             if isinstance(not prop, String):
                 raise TypeError, "'%s' not a String property"%propname
+            requirements[propname] = requirements[propname].lower()
         l = []
         cldb = self.db.getclassdb(self.classname)
         for nodeid in self.db.getnodeids(self.classname, cldb):
@@ -543,7 +545,7 @@ class Class:
             if node.has_key(self.db.RETIRED_FLAG):
                 continue
             for key, value in requirements.items():
-                if node[key] != value:
+                if node[key].lower() != value:
                     break
             else:
                 l.append(nodeid)
@@ -847,6 +849,11 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2001/10/21 04:44:50  richard
+# bug #473124: UI inconsistency with Link fields.
+#    This also prompted me to fix a fairly long-standing usability issue -
+#    that of being able to turn off certain filters.
+#
 # Revision 1.27  2001/10/20 23:44:27  richard
 # Hyperdatabase sorts strings-that-look-like-numbers as numbers now.
 #
