@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_cgi.py,v 1.12 2003-02-28 03:33:25 richard Exp $
+# $Id: test_cgi.py,v 1.13 2003-03-18 00:37:25 richard Exp $
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
@@ -58,7 +58,7 @@ class FormTestCase(unittest.TestCase):
             roles='User', realname='Contrary, Mary')
 
         test = self.instance.dbinit.Class(self.db, "test",
-            string=hyperdb.String(),
+            string=hyperdb.String(), number=hyperdb.Number(),
             boolean=hyperdb.Boolean(), link=hyperdb.Link('test'),
             multilink=hyperdb.Multilink('test'), date=hyperdb.Date(),
             interval=hyperdb.Interval())
@@ -374,6 +374,36 @@ class FormTestCase(unittest.TestCase):
         nodeid = self.db.test.create(boolean=1)
         self.assertEqual(self.parseForm({'boolean': ' '}, 'test', nodeid),
             ({('test', nodeid): {'boolean': None}}, []))
+
+    #
+    # Number
+    #
+    def testEmptyNumber(self):
+        self.assertEqual(self.parseForm({'number': ''}),
+            ({('test', None): {}}, []))
+        self.assertEqual(self.parseForm({'number': ' '}),
+            ({('test', None): {}}, []))
+        self.assertRaises(ValueError, self.parseForm, {'number': ['', '']})
+
+    def testSetNumber(self):
+        self.assertEqual(self.parseForm({'number': '1'}),
+            ({('test', None): {'number': 1}}, []))
+        self.assertEqual(self.parseForm({'number': '\n0\n'}),
+            ({('test', None): {'number': 0}}, []))
+        nodeid = self.db.test.create(number=1)
+        self.assertEqual(self.parseForm({'number': '1'}, 'test', nodeid),
+            ({('test', nodeid): {}}, []))
+        nodeid = self.db.test.create(number=0)
+        self.assertEqual(self.parseForm({'number': '0'}, 'test', nodeid),
+            ({('test', nodeid): {}}, []))
+
+    def testEmptyNumberSet(self):
+        nodeid = self.db.test.create(number=0)
+        self.assertEqual(self.parseForm({'number': ''}, 'test', nodeid),
+            ({('test', nodeid): {'number': None}}, []))
+        nodeid = self.db.test.create(number=1)
+        self.assertEqual(self.parseForm({'number': ' '}, 'test', nodeid),
+            ({('test', nodeid): {'number': None}}, []))
 
     #
     # Date
