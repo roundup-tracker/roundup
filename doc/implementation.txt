@@ -1,0 +1,45 @@
+Implementation notes
+====================
+
+[see also the roundup package docstring]
+
+There have been some modifications to the spec. I've marked these in the
+source with 'XXX' comments when I remember to.
+
+In short:
+ Class.find() - may match multiple properties, uses keyword args.
+
+ Class.filter() - isn't in the spec and it's very useful to have at the Class
+    level.
+ 
+ CGI interface index view specifier layout part - lose the '+' from the
+    sorting arguments (it's a reserved URL character ;). Just made no
+    prefix mean ascending and '-' prefix descending.
+
+ ItemClass - renamed to IssueClass to better match it only having one
+    hypderdb class "issue". Allowing > 1 hyperdb class breaks the
+    "superseder" multilink (since it can only link to one thing, and we'd
+    want bugs to link to support and vice-versa).
+
+ templates - the call="link()" is handled by special-case mechanisms in my
+    top-level CGI handler. In a nutshell, the handler looks for a method on
+    itself called 'index%s' or 'item%s' where %s is a class. Most items
+    pass on to the templating mechanism, but the file class _always_ does
+    downloading. It'll probably stay this way too...
+
+ template - call="link(property)" may be used to link "the current node"
+    (from an index) - the link text is the property specified.
+
+ template - added functions that I found very useful: List, History and
+    Submit.
+
+ template - items must specify the message lists, history, etc. Having them
+    by default was sometimes not wanted.
+
+ template - index view determines its default columns from the template's
+    <property> tags.
+
+ template - menu() and field() look awfully similar now .... ;)
+
+ roundup.py - the command-line tool has a lot more commands at its disposal
+

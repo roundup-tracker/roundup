@@ -86,3 +86,11 @@ Fixes:
  . Fixed some non-string node ids in cgi_client now that the hyperdb is
    strict about such things.
 
+
+2001-07-?? - 0.2.2
+Features:
+ . Added implementation.txt to the doc directory. Contains implementation
+   notes specific to this implementations of Roundup.
+ . Cleaned up mailgw some (subclass Message for getPart) and added some
+   tests for multipart splitting.
+
