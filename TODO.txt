@@ -1,0 +1,8 @@
+- configuration: including much simpler upgrade path and the use of
+  non-Python configuration files (ConfigParser)
+- instance dir: cleanup to support config
+- rename to "tracker"
+- journalling: fix the journal bloat
+- alternative user auth: at least an LDAP implementation
+- security overhaul: see doc/security.txt
+- fix double-submit
