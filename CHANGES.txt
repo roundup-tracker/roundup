@@ -3,9 +3,6 @@ are given with the most recent entry first.
 
 2001-10-?? - 0.3.0
 Feature:
- . Hyperdatabase sorts strings-that-look-like-numbers as numbers now.
- . CGI interface view customisation section may now be hidden (patch from
-   Roch'e Compaan.)
  Admin Tool (roundup-admin):
   . Interactive mode for running multiple (independant at present) commands.
   . Tabular display of nodes.
@@ -19,6 +16,12 @@ Fixed:
  . Catch errors in login - no username or password supplied.
  . Fixed editing of password (Password property type) thanks Roch'e Compaan.
  . Fixed grouping of non-str properties thanks Roch'e Compaan.
+ . bug #473121: The customisation view and filters (CGI interface view
+   customisation section may now be hidden (patch from Roch'e Compaan.)
+ . bug #473122: Issue id sorting (hyperdb sorts strings-that-look-like-numbers
+   as numbers now.
+ . bug #473126: Sender unknown
+ . bug #473130: Nosy list not set correctly
 
 2001-10-11 - 0.3.0 pre 2
 Fixed:
