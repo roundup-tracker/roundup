@@ -17,6 +17,10 @@ Features:
    rebuild.
  . Web edit messages aren't sent to the person who did the edit any more. No
    message is generated if they are the only person on the nosy list.
+ . Roundupdb now appends "mailing list" information to its messages which
+   include the e-mail address and web interface address. Templates may
+   override this in their db classes to include specific information (support
+   instructions, etc).
 
 Fixed:
  . Argument handling for the roundup-admin find command.
@@ -27,6 +31,9 @@ Fixed:
  . mailgw was making naughty assumptions about the schema of the classes it
    was creating nodes for.
  . remove the $Foo$ from the HTML files stored in the htmlbase modules.
+ . Instance import now imports the instance using imp.load_module so that
+   we can have instance homes of "roundup" or other existing python package
+   names.
 
 
 2001-07-30 - 0.2.3
