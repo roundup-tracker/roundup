@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.96 2003-01-08 05:39:40 richard Exp $
+#$Id: back_anydbm.py,v 1.97 2003-01-15 22:17:19 kedder Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -847,7 +847,7 @@ class Class(hyperdb.Class):
                             (self.classname, newid, key))
 
             elif isinstance(prop, String):
-                if type(value) != type(''):
+                if type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%key
 
             elif isinstance(prop, Password):
@@ -1244,7 +1244,7 @@ class Class(hyperdb.Class):
                     journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, String):
-                if value is not None and type(value) != type(''):
+                if value is not None and type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%propname
 
             elif isinstance(prop, Password):

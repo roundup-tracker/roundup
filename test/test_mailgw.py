@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.37 2002-12-18 00:42:03 richard Exp $
+# $Id: test_mailgw.py,v 1.38 2003-01-15 22:17:20 kedder Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -197,7 +197,7 @@ This is a test submission of a new issue.
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, mary@test, richard@test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
@@ -253,7 +253,7 @@ This is a second followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
@@ -302,7 +302,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -349,7 +349,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, mary@test
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -397,7 +397,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
@@ -446,7 +446,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -495,7 +495,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, john@test, richard@test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
@@ -543,7 +543,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
 From: John Doe <issue_tracker@your.tracker.email.domain.example>
@@ -591,7 +591,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>
@@ -700,7 +700,7 @@ A message with encoding (encoded oe =F6)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
@@ -715,7 +715,7 @@ Content-Transfer-Encoding: quoted-printable
 
 Contrary, Mary <mary@test> added the comment:
 
-A message with encoding (encoded oe =F6)
+A message with encoding (encoded oe =C3=B6)
 
 ----------
 status: unread -> chatting
@@ -755,7 +755,7 @@ A message with first part encoded (encoded oe =F6)
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork, richard@test
 From: "Contrary, Mary" <issue_tracker@your.tracker.email.domain.example>
@@ -770,7 +770,7 @@ Content-Transfer-Encoding: quoted-printable
 
 Contrary, Mary <mary@test> added the comment:
 
-A message with first part encoded (encoded oe =F6)
+A message with first part encoded (encoded oe =C3=B6)
 
 ----------
 status: unread -> chatting
@@ -800,7 +800,7 @@ This is a followup
         self.compareStrings(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Subject: [issue1] Testing...
 To: chef@bork.bork.bork
 From: richard <issue_tracker@your.tracker.email.domain.example>

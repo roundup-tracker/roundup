@@ -73,13 +73,15 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.106 2003-01-12 00:03:10 richard Exp $
+$Id: mailgw.py,v 1.107 2003-01-15 22:17:19 kedder Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random, sys
 import traceback, MimeWriter
 import hyperdb, date, password
+
+import rfc2822
 
 SENDMAILDEBUG = os.environ.get('SENDMAILDEBUG', '')
 
@@ -134,6 +136,10 @@ class Message(mimetools.Message):
         s.seek(0)
         return Message(s)
 
+    def getheader(self, name, default=None):
+        hdr = mimetools.Message.getheader(self, name, default)
+        return rfc2822.decode_header(hdr)
+ 
 subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*'
     r'\s*(?P<quote>")?(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
     r'\s*(?P<title>[^[]+)?"?(\[(?P<args>.+?)\])?', re.I)
@@ -339,7 +345,7 @@ class MailGW:
         writer.addheader('MIME-Version', '1.0')
         part = writer.startmultipartbody('mixed')
         part = writer.nextpart()
-        body = part.startbody('text/plain')
+        body = part.startbody('text/plain; charset=utf-8')
         body.write('\n'.join(error))
 
         # attach the original message to the returned message
@@ -377,7 +383,19 @@ class MailGW:
         else:
             # take it as text
             data = part.fp.read()
-        return data
+        
+        # Encode message to unicode
+        charset = rfc2822.unaliasCharset(part.getparam("charset"))
+        if charset:
+            # Do conversion only if charset specified
+            edata = unicode(data, charset).encode('utf-8')
+            # Convert from dos eol to unix
+            edata = edata.replace('\r\n', '\n')
+        else:
+            # Leave message content as is
+            edata = data
+                
+        return edata
 
     def handle_message(self, message):
         ''' message - a Message instance

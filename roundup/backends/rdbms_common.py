@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.28 2003-01-12 23:53:20 richard Exp $
+# $Id: rdbms_common.py,v 1.29 2003-01-15 22:17:19 kedder Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1070,7 +1070,7 @@ class Class(hyperdb.Class):
                             (self.classname, newid, key))
 
             elif isinstance(prop, String):
-                if type(value) != type(''):
+                if type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%key
 
             elif isinstance(prop, Password):
@@ -1432,7 +1432,7 @@ class Class(hyperdb.Class):
                     journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, String):
-                if value is not None and type(value) != type(''):
+                if value is not None and type(value) != type('') and type(value) != type(u''):
                     raise TypeError, 'new property "%s" not a string'%propname
 
             elif isinstance(prop, Password):

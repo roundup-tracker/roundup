@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.77 2003-01-14 22:19:27 richard Exp $
+# $Id: roundupdb.py,v 1.78 2003-01-15 22:17:19 kedder Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -24,6 +24,9 @@ Extending hyperdb with types specific to issue-tracking.
 import re, os, smtplib, socket, time, random
 import MimeWriter, cStringIO
 import base64, quopri, mimetypes
+
+from rfc2822 import encode_header
+
 # if available, use the 'email' module, otherwise fallback to 'rfc822'
 try :
     from email.Utils import formataddr as straddr
@@ -243,9 +246,10 @@ class IssueClass:
         # create the message
         message = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(message)
-        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, title))
+        writer.addheader('Subject', '[%s%s] %s'%(cn, nodeid, encode_header(title)))
         writer.addheader('To', ', '.join(sendto))
-        writer.addheader('From', straddr((authname + from_tag, from_address)))
+        writer.addheader('From', straddr((encode_header(authname) + 
+            from_tag, from_address)))
         writer.addheader('Reply-To', straddr((self.db.config.TRACKER_NAME,
             from_address)))
         writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
@@ -267,7 +271,7 @@ class IssueClass:
             part = writer.startmultipartbody('mixed')
             part = writer.nextpart()
             part.addheader('Content-Transfer-Encoding', 'quoted-printable')
-            body = part.startbody('text/plain')
+            body = part.startbody('text/plain; charset=utf-8')
             body.write(content_encoded)
             for fileid in message_files:
                 name = files.get(fileid, 'name')
@@ -295,7 +299,7 @@ class IssueClass:
             writer.lastpart()
         else:
             writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
-            body = writer.startbody('text/plain')
+            body = writer.startbody('text/plain; charset=utf-8')
             body.write(content_encoded)
 
         # now try to send the message
