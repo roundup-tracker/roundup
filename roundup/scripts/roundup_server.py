@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.58 2004-07-27 00:57:18 richard Exp $
+$Id: roundup_server.py,v 1.59 2004-07-27 01:59:28 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -53,6 +53,8 @@ NY3Y6exofVdsV3+2wnPFDdPjB83n7xuVpcFvygPbGwxF31LZIKrQDfR2Xvh7lmrX654L/7bvlnng
 bn3Zuj8M9Hepux6VfZtW1yA6K7cfGqVu8TL325u+fHTb71QKbk+7TZQ+lTc6RcnpqW8qmVQBoj/g
 23eo0sr/NIGvB37K+lOWXMvJ+uWFeKGU/03Cb7n3D4M3wxI=
 '''.strip()))
+
+DEFAULT_PORT = 8080
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     TRACKER_HOMES = {}
@@ -241,7 +243,6 @@ else:
         '''
         _svc_name_ = "Roundup Bug Tracker"
         _svc_display_name_ = "Roundup Bug Tracker"
-        address = (HOSTNAME, PORT)
         def __init__(self, args):
             # redirect stdout/stderr to our logfile
             if LOGFILE:
@@ -334,7 +335,7 @@ def usage(message=''):
  -d <PIDfile>  run the server in the background and write the server's PID
                to the file indicated by PIDfile. The -l option *must* be
                specified if -d is used.'''
-    port=PORT
+    port=DEFAULT_PORT
     if message:
         message += '\n'
     print _('''%(message)sUsage: roundup-server [options] [name=tracker home]*
@@ -437,6 +438,8 @@ def setuid(user):
 
     # People can remove this check if they're really determined
     if user is None:
+        if os.getuid():
+            return
         raise ValueError, _("Can't run as root!")
 
     if os.getuid():
@@ -457,7 +460,8 @@ def setuid(user):
         raise ValueError, _("User %(user)s doesn't exist")%locals()
     os.setuid(uid)
 
-def run(port=PORT, success_message=None):
+undefined = []
+def run(port=undefined, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
     # time out after a minute if we can
@@ -465,7 +469,6 @@ def run(port=PORT, success_message=None):
     if hasattr(socket, 'setdefaulttimeout'):
         socket.setdefaulttimeout(60)
 
-    undefined = []
     hostname = pidfile = logfile = user = group = svc_args = log_ip = undefined
     config = None
 
@@ -506,7 +509,7 @@ def run(port=PORT, success_message=None):
             cfg = ConfigParser.ConfigParser()
             cfg.read(filename)
             if port is undefined:
-                port = cfg.get('server', 'port', 8080)
+                port = cfg.get('server', 'port', DEFAULT_PORT)
             if user is undefined and cfg.has_option('server', 'user'):
                 user = cfg.get('server', 'user')
             if group is undefined and cfg.has_option('server', 'group'):
@@ -523,6 +526,16 @@ def run(port=PORT, success_message=None):
                 if section == 'server':
                     continue
                 homes[section] = cfg.get(section, 'home')
+
+        # defaults
+        if hostname is undefined:
+            hostname = ''
+        if group is undefined:
+            group = None
+        if user is undefined:
+            user = None
+        if svc_args is undefined:
+            svc_args = None
 
         # obtain server before changing user id - allows to use port <
         # 1024 if started as root
@@ -552,9 +565,9 @@ def run(port=PORT, success_message=None):
         raise
     except ValueError:
         usage(error())
-    except:
-        print error()
-        sys.exit(1)
+#    except:
+#        print error()
+#        sys.exit(1)
 
     # we don't want the cgi module interpreting the command-line args ;)
     sys.argv = sys.argv[:1]
@@ -570,6 +583,7 @@ def run(port=PORT, success_message=None):
 
     if svc_args is not None:
         # don't do any other stuff
+        RoundupService.address = address
         return win32serviceutil.HandleCommandLine(RoundupService, argv=svc_args)
 
     # redirect stdout/stderr to our logfile

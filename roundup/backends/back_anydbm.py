@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.167 2004-07-27 00:57:18 richard Exp $
+#$Id: back_anydbm.py,v 1.168 2004-07-27 01:59:28 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -33,7 +33,7 @@ try:
 except AssertionError:
     print "WARNING: you should upgrade to python 2.1.3"
 
-import whichdb, os, marshal, re, weakref, string, copy, time
+import whichdb, os, marshal, re, weakref, string, copy, time, shutil
 from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
 from sessions_dbm import Sessions, OneTimeKeys
@@ -45,7 +45,7 @@ from roundup.date import Range
 
 def db_exists(config):
     # check for the user db
-    for db in 'user user.db'.split():
+    for db in 'nodes.user nodes.user.db'.split():
         if os.path.exists(os.path.join(config.TRACKER_HOME, 'db', db)):
             return 1
     return 0

@@ -2,35 +2,30 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.12 2004-07-27 00:57:17 richard Exp $
+# $Id: demo.py,v 1.13 2004-07-27 01:59:27 richard Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
 from glob import glob
 
 def install_demo(home, backend):
-    # create the instance
-    if os.path.exists(home):
-        shutil.rmtree(home)
-    from roundup import init, instance, password, backends
+    from roundup import init, instance, password, backends, configuration
+
+    # set up the config for this tracker
+    config = configuration.Config()
+    config['TRACKER_HOME'] = home
+    config['MAIL_DOMAIN'] = 'localhost'
+    config['DATABASE'] = 'db'
+    if backend in ('mysql', 'postgresql'):
+        config['RDBMS_HOST'] = 'localhost'
+        config['RDBMS_USER'] = 'rounduptest'
+        config['RDBMS_PASSWORD'] = 'rounduptest'
+        config['RDBMS_NAME'] = 'rounduptest'
 
     # see if we have further db nuking to perform
     module = getattr(backends, backend)
-    if backend == 'mysql':
-        class config:
-            MYSQL_DBHOST = 'localhost'
-            MYSQL_DBUSER = 'rounduptest'
-            MYSQL_DBPASSWORD = 'rounduptest'
-            MYSQL_DBNAME = 'rounduptest'
-            DATABASE = 'home'
-        if module.db_exists(config):
-            module.db_nuke(config)
-    elif backend == 'postgresql':
-        class config:
-            POSTGRESQL_DATABASE = 'rounduptest'
-            DATABASE = 'home'
-        if module.db_exists(config):
-            module.db_nuke(config)
+    if module.db_exists(config):
+        module.db_nuke(config)
 
     init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around
@@ -61,31 +56,16 @@ def install_demo(home, backend):
             s.close()
             print 'already in use.'
             port += 100
-    url = 'http://%s:%s/demo/'%(hostname, port)
+    config['TRACKER_WEB'] = 'http://%s:%s/demo/'%(hostname, port)
 
     # write the config
-    f = open(os.path.join(home, 'config.py'), 'r')
-    s = f.read().replace('http://tracker.example/cgi-bin/roundup.cgi/bugs/',
-        url)
-    f.close()
-    # DB connection stuff for mysql and postgresql
-    s = s + """
-MYSQL_DBHOST = 'localhost'
-MYSQL_DBUSER = 'rounduptest'
-MYSQL_DBPASSWORD = 'rounduptest'
-MYSQL_DBNAME = 'rounduptest'
-MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
-POSTGRESQL_DATABASE = {'database': 'rounduptest'}
-"""
-    f = open(os.path.join(home, 'config.py'), 'w')
-    f.write(s)
-    f.close()
+    config.save()
 
-    # initialise the database
-    init.initialise(home, 'admin')
+    # open the tracker and initialise
+    tracker = instance.open(home)
+    tracker.init(password.Password('admin'))
 
     # add the "demo" user
-    tracker = instance.open(home)
     db = tracker.open('admin')
     db.user.create(username='demo', password=password.Password('demo'),
         realname='Demo User', roles='User')
@@ -104,8 +84,8 @@ def run_demo():
             backend = sys.argv[1]
         install_demo(home, backend)
 
-    f = open(os.path.join(home, 'config.py'), 'r')
-    url = re.search(r'^TRACKER_WEB\s*=\s*[\'"](http.+/)[\'"]$', f.read(),
+    f = open(os.path.join(home, 'config.ini'), 'r')
+    url = re.search(r'^web\s*=\s*(http.+/)$', f.read(),
         re.M|re.I).group(1)
     f.close()
     hostname, port = urlparse.urlparse(url)[1].split(':')

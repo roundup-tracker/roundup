@@ -231,7 +231,8 @@ def context(client, template=None, classname=None, request=None):
     """
     # construct the TemplatingUtils class
     utils = TemplatingUtils
-    if hasattr(client.instance.interfaces, 'TemplatingUtils'):
+    if (hasattr(client.instance, 'interfaces') and
+            hasattr(client.instance.interfaces, 'TemplatingUtils')):
         class utils(client.instance.interfaces.TemplatingUtils, utils):
             pass
 

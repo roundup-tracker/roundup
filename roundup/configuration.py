@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.12 2004-07-27 01:23:50 richard Exp $
+# $Id: configuration.py,v 1.13 2004-07-27 01:59:28 richard Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -448,12 +448,12 @@ SETTINGS = (
         (Option, 'name', 'roundup',
             "Name of the Postgresql or MySQL database to use.",
             ['MYSQL_DBNAME']),
-        (NullableOption, 'host', 'localhost'
+        (NullableOption, 'host', 'localhost',
             "Hostname that the Postgresql or MySQL database resides on.",
             ['MYSQL_DBHOST']),
-        (NullableOption, 'port', '5432'
+        (NullableOption, 'port', '5432',
             "Port number that the Postgresql or MySQL database resides on."),
-        (NullableOption, 'user', 'roundup'
+        (NullableOption, 'user', 'roundup',
             "Postgresql or MySQL database user that Roundup should use.",
             ['MYSQL_DBUSER']),
         (NullableOption, 'password', 'roundup',
