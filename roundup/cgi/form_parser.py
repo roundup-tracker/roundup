@@ -509,7 +509,10 @@ class FormParser:
                 'Required %(class)s property %(property)s not supplied',
                 'Required %(class)s properties %(property)s not supplied',
                 len(required)
-            ) % {'class': thing[0], 'property': ', '.join(required)})
+            ) % {
+                'class': thing[0],
+                'property': ', '.join(map(self.gettext, required))
+            })
         if s:
             raise FormError, '\n'.join(s)
 
