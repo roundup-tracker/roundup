@@ -18,9 +18,18 @@ These instructions work on redhat 6.2 and mandrake 8.0 - with the caveat
 that these systems don't come with python 2.0 or newer installed, so you'll
 have to upgrade python before this stuff will work.
 
-Note that most of the following is configurable in the config.py, it's just
-not documented. At a minimum, you'll want to change the email addresses and
-mail host specification in the config.
+Roundup is configurable using a localconfig.py file. It may have the
+following variable declarations:
+  
+  ROUNDUP_HOME - This is the root directory for roundup
+  MAILHOST - The SMTP mail host that roundup will use to send mail
+  MAIL_DOMAIN - The domain name used for email addresses
+
+Any further configuration should be possible by editing config.py directly.
+The email addresses used by the system by default are:
+
+  issue_tracker@MAIL_DOMAIN  - submissions of issues
+  roundup-admin@MAIL_DOMAIN  - roundup's internal use (problems, etc)
 
 
 2.0 Prerequisites

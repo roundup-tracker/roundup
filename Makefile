@@ -10,7 +10,6 @@ release:
 	rm -rf /tmp/${PACKAGE}
 	mkdir /tmp/${PACKAGE}
 	cp -r ${FILES} /tmp/${PACKAGE}
-	cp dummy_config.py /tmp/${PACKAGE}
 	(cd /tmp; tar zcf ${PACKAGE}.tar.gz ${PACKAGE})
 	mv /tmp/${PACKAGE}.tar.gz .
 
