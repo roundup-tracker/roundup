@@ -5,6 +5,7 @@ Installing Roundup
 :Version: 1.76
 
 .. contents::
+   :depth: 2
 
 
 Overview
@@ -88,6 +89,10 @@ folder names" check box is checked before you extract the files.
 
 Testing your Python
 -------------------
+
+.. note::
+   The Windows installer doesn't include the ``run_tests.py`` or ``demo.py``
+   scripts - you will need to download the source to use them.
 
 Once you've unpacked roundup's source, run ``python run_tests.py`` in the
 source directory and make sure there are no errors. If there are errors,
