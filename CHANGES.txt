@@ -8,6 +8,10 @@ are given with the most recent entry first.
  . registration error punts back to register page
  . gadfly backend now handles changes to the schema - but only one property
    at a time
+ . cgi.client base URL is now obtained from the config TRACKER_WEB
+ . request.url has gone away - there's too much magic in trying to figure
+   what it should be
+ . cgi-bin script redirects to https now if the request was https
 
 
 2002-09-13 0.5.0 beta2

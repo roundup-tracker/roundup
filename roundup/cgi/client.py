@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.36 2002-09-16 06:39:12 richard Exp $
+# $Id: client.py,v 1.37 2002-09-16 22:37:26 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -63,8 +63,7 @@ class Client:
     keeps the nodeid of the session as the "session" attribute.
 
     Client attributes:
-        "url" is the current url path
-        "path" is the PATH_INFO inside the instance
+        "path" is the PATH_INFO inside the instance (with no leading '/')
         "base" is the base URL for the instance
     '''
 
@@ -74,30 +73,27 @@ class Client:
         self.request = request
         self.env = env
 
+        # save off the path
         self.path = env['PATH_INFO']
-        self.split_path = self.path.split('/')
-        self.instance_path_name = env['TRACKER_NAME']
 
         # this is the base URL for this instance
-        url = self.env['SCRIPT_NAME'] + '/' + self.instance_path_name
-        self.base = urlparse.urlunparse(('http', env['HTTP_HOST'], url,
-            None, None, None))
+        self.base = self.instance.config.TRACKER_WEB
 
-        # request.path is the full request path
-        x, x, path, x, x, x = urlparse.urlparse(request.path)
-        self.url = urlparse.urlunparse(('http', env['HTTP_HOST'], path,
-            None, None, None))
-
+        # see if we need to re-parse the environment for the form (eg Zope)
         if form is None:
             self.form = cgi.FieldStorage(environ=env)
         else:
             self.form = form
-        self.headers_done = 0
+
+        # turn debugging on/off
         try:
             self.debug = int(env.get("ROUNDUP_DEBUG", 0))
         except ValueError:
             # someone gave us a non-int debug level, turn it off
             self.debug = 0
+
+        # flag to indicate that the HTTP headers have been sent
+        self.headers_done = 0
 
         # additional headers to send with the request - must be registered
         # before the first write
@@ -277,7 +273,7 @@ class Client:
         self.nodeid = None
 
         # determine the classname and possibly nodeid
-        path = self.split_path
+        path = self.path.split('/')
         if not path or path[0] in ('', 'home', 'index'):
             if self.form.has_key(':template'):
                 self.template = self.form[':template'].value

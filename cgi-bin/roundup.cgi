@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.31 2002-09-10 03:01:17 richard Exp $
+# $Id: roundup.cgi,v 1.32 2002-09-16 22:37:26 richard Exp $
 
 # python version check
 from roundup import version_check
@@ -140,7 +140,12 @@ def main(out, err):
         # redirect if we need a trailing '/'
         if len(path) == 2:
             request.send_response(301)
-            absolute_url = 'http://%s%s/'%(os.environ['HTTP_HOST'],
+            # redirect
+            if os.environ.get('HTTPS', '') == 'on':
+                protocol = 'https'
+            else:
+                protocol = 'http'
+            absolute_url = '%s://%s%s/'%(protocol, os.environ['HTTP_HOST'],
                 os.environ['REQUEST_URI'])
             request.send_header('Location', absolute_url)
             request.end_headers()

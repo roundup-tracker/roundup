@@ -1153,7 +1153,6 @@ class HTMLRequest:
 
         "form" the CGI form as a cgi.FieldStorage
         "env" the CGI environment variables
-        "url" the current URL path for this request
         "base" the base URL for this instance
         "user" a HTMLUser instance for this user
         "classname" the current classname (possibly None)
@@ -1177,7 +1176,6 @@ class HTMLRequest:
         self.form = client.form
         self.env = client.env
         self.base = client.base
-        self.url = client.url
         self.user = HTMLUser(client, 'user', client.userid)
 
         # store the current class name and action
