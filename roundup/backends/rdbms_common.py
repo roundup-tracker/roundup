@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.137 2004-10-14 22:27:59 richard Exp $
+# $Id: rdbms_common.py,v 1.138 2004-10-25 10:20:58 a1s Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -548,7 +548,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             given by the spec
         '''
         # create the table
-        sql = 'create table %s_%s (linkid varchar(255), nodeid varchar(255))'%(
+        sql = 'create table %s_%s (linkid INTEGER, nodeid INTEGER)'%(
             spec.classname, ml)
         self.sql(sql)
         self.create_multilink_table_indexes(spec, ml)
