@@ -131,7 +131,7 @@ db.security.addPermissionToRole('Anonymous', p)
 
 # Let anonymous users access the email interface (note that this implies
 # that they will be registered automatically, hence they will need the
-# "Create" user Prmission below)
+# "Create" user Permission below)
 p = db.security.getPermission('Email Access')
 db.security.addPermissionToRole('Anonymous', p)
 
@@ -157,4 +157,4 @@ for cl in 'issue', 'file', 'msg', 'keyword', 'priority', 'status':
 #   db.security.addPermissionToRole('Anonymous', p)
 
 
-# vim: set filetype=python sts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
