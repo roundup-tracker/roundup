@@ -89,6 +89,9 @@ class _Database(hyperdb.Database):
             self.tables = self._db.view('tables')
             self.indexer.datadb = self._db
         self.dirty = 0
+    def clearCache(self):
+        for cl in self.classes.values():
+            cl._commit()
     def clear(self):
         for cl in self.classes.values():
             cl._clear()
@@ -181,6 +184,8 @@ class _Database(hyperdb.Database):
 
     # --- internal
     def __open(self):
+        if not os.path.exists(self.config.DATABASE):
+            os.makedirs(self.config.DATABASE)
         self.dbnm = db = os.path.join(self.config.DATABASE, 'tracker.mk4')
         lockfilenm = db[:-3]+'lck'
         self.lockfile = locking.acquire_lock(lockfilenm)
