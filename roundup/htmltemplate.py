@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.67 2002-01-22 22:46:22 richard Exp $
+# $Id: htmltemplate.py,v 1.68 2002-01-22 22:55:28 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -468,6 +468,7 @@ class TemplateFunctions:
         if not isinstance(propcl, hyperdb.Multilink):
             return _('[List: not a Multilink]')
         value = self.cl.get(self.nodeid, property)
+	value.sort()
         if reverse:
             value.reverse()
 
@@ -1047,6 +1048,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.67  2002/01/22 22:46:22  richard
+# more htmltemplate cleanups and unit tests
+#
 # Revision 1.66  2002/01/22 06:35:40  richard
 # more htmltemplate tests and cleanup
 #
