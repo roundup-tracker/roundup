@@ -18,10 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#$Id: statusauditor.py,v 1.2 2002-09-10 01:07:06 richard Exp $
+#$Id: statusauditor.py,v 1.3 2002-10-11 01:26:05 richard Exp $
 
 def chatty(db, cl, nodeid, newvalues):
-    ''' If the issue is currently 'unread' or 'resolved', then set
+    ''' If the issue is currently 'unread', 'resolved' or 'done-cbb', then set
         it to 'chatting'
     '''
     # don't fire if there's no new message (ie. chat)
@@ -30,10 +30,12 @@ def chatty(db, cl, nodeid, newvalues):
     if newvalues['messages'] == cl.get(nodeid, 'messages', cache=0):
         return
 
-    # determine the id of 'unread', 'resolved' and 'chatting'
-    unread_id = db.status.lookup('unread')
-    resolved_id = db.status.lookup('resolved')
-    chatting_id = db.status.lookup('chatting')
+    # get the chatting state ID
+    try:
+        chatting_id = db.status.lookup('chatting')
+    except KeyError:
+        # no chatting state, ignore all this stuff
+        return
 
     # get the current value
     current_status = cl.get(nodeid, 'status')
@@ -43,15 +45,25 @@ def chatty(db, cl, nodeid, newvalues):
         # yep, skip
         return
 
-    # ok, there's no explicit change, so do it manually
-    if current_status in (unread_id, resolved_id):
+    # determine the id of 'unread', 'resolved' and 'chatting'
+    fromstates = []
+    for state in 'unread resolved done-cbb'.split():
+        try:
+            fromstates.append(db.status.lookup(state))
+        except KeyError:
+            pass
+
+    # ok, there's no explicit change, so check if we are in a state that
+    # should be changed
+    if current_status in fromstates:
+        # yep, we're now chatting
         newvalues['status'] = chatting_id
 
 
 def presetunread(db, cl, nodeid, newvalues):
     ''' Make sure the status is set on new issues
     '''
-    if newvalues.has_key('status'):
+    if newvalues.has_key('status') and newvalues['status']:
         return
 
     # ok, do it
