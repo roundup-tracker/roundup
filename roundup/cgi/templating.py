@@ -1378,7 +1378,7 @@ class DateHTMLProperty(HTMLProperty):
             offset = self._offset
         return str(self._value.local(offset))
 
-    def now(self, str_interval = None):
+    def now(self, str_interval=None):
         ''' Return the current time.
 
             This is useful for defaulting a new value. Returns a
@@ -1402,7 +1402,7 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
             self._prop, self._formname, ret)
 
-    def field(self, size = 30, default = None):
+    def field(self, size=30, default=None):
         ''' Render a form edit field for the property
 
             If not editable, just display the value via plain().
@@ -1422,12 +1422,14 @@ class DateHTMLProperty(HTMLProperty):
                 else:
                     raise ValueError, _('default value for '
                         'DateHTMLProperty must be either DateHTMLProperty '
-			'or string date representation.')
+                        'or string date representation.')
         else:
             raw_value = self._value
 
         if raw_value is None:
             value = ''
+        elif type(raw_value) is type(''):
+            value = raw_value
         else:
             tz = self._db.getUserTimezone()
             value = cgi.escape(str(raw_value.local(tz)))
