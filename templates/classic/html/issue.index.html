@@ -17,10 +17,11 @@ You are not allowed to view this page.
    <th tal:condition="request/show/id">ID</th>
    <th tal:condition="request/show/creation">Creation</th>
    <th tal:condition="request/show/activity">Activity</th>
+   <th tal:condition="request/show/actor">Actor</th>
    <th tal:condition="request/show/topic">Topic</th>
    <th tal:condition="request/show/title">Title</th>
    <th tal:condition="request/show/status">Status</th>
-   <th tal:condition="request/show/creator">Created&nbsp;By</th>
+   <th tal:condition="request/show/creator">Creator</th>
    <th tal:condition="request/show/assignedto">Assigned&nbsp;To</th>
   </tr>
  <tal:block tal:repeat="i batch">
@@ -39,6 +40,8 @@ You are not allowed to view this page.
        tal:content="i/creation/reldate">&nbsp;</td>
    <td class="date" tal:condition="request/show/activity"
        tal:content="i/activity/reldate">&nbsp;</td>
+   <td class="date" tal:condition="request/show/actor"
+       tal:content="python:i.actor.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/topic"
        tal:content="python:i.topic.plain() or default">&nbsp;</td>
    <td tal:condition="request/show/title">

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.4 2004-03-12 05:36:26 richard Exp $
+# $Id: dbinit.py,v 1.5 2004-03-15 05:50:20 richard Exp $
 
 import os
 
@@ -107,6 +107,7 @@ def open(name=None):
         db.security.addPermissionToRole('User', p)
     for cl in 'priority', 'status':
         p = db.security.getPermission('View', cl)
+        db.security.addPermissionToRole('User', p)
 
     # and give the regular users access to the web and email interface
     p = db.security.getPermission('Web Access')

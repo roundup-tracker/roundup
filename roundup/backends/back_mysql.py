@@ -128,6 +128,13 @@ class Database(Database):
             's_last_use FLOAT(20), s_user VARCHAR(255))')
         self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(s_key)')
 
+    def add_actor_column(self):
+        # update existing tables to have the new actor column
+        tables = self.database_schema['tables']
+        for name in tables.keys():
+            self.cursor.execute('ALTER TABLE _%s add __actor '
+                'VARCHAR(255)'%name)
+
     def __repr__(self):
         return '<myroundsql 0x%x>'%id(self)
 
@@ -240,6 +247,16 @@ class Database(Database):
             if __debug__:
                 print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
             self.cursor.execute(index_sql)
+
+    def drop_class_table_key_index(self, cn, key):
+        table_name = '_%s'%cn
+        index_name = '_%s_%s_idx'%(cn, key)
+        if not self.sql_index_exists(table_name, index_name):
+            return
+        sql = 'drop index %s on %s'%(index_name, table_name)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'drop_index', (self, sql)
+        self.cursor.execute(sql)
 
 class MysqlClass:
     # we're overriding this method for ONE missing bit of functionality.

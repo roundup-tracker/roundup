@@ -95,7 +95,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
 
 <p tal:condition="context/id" tal:content="structure string:Created on
   <b>${context/creation}</b> by <b>${context/creator}</b>, last
-  changed <b>${context/activity}</b>.">activity info
+  changed <b>${context/activity}</b> by <b>${context/actor}</b>.">activity info
 </p>
 
 <table class="files" tal:condition="context/files">

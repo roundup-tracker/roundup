@@ -3,8 +3,8 @@ doing before the next release:
 
 - sessions, otks and indexing in RDBMSes
 - add tests for group-by-multilink so I finally implement it for the RDBMSes
-- full coverage analysis for unit tests
 - s/getnode/getitem in backends (and s/Node/Item)
-- activity_by meta-property
+- have rdbms backends look up the journal for actor if it's not set
+- ensure index creation is triggered by the version 1->2 update
 
 - migrate to numeric ID values (fixes bug 817217)

@@ -3,6 +3,8 @@ are given with the most recent entry first.
 
 200?-??-?? 0.7.0
 Feature:
+- added new "actor" automatic property (indicates user who cause the last
+  "activity"
 - simple support for collision detection (sf rfe 648763)
 - support confirming registration by replying to the email (sf bug 763668)
 - support setgid and running on port < 1024 (sf patch 777528)

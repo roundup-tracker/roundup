@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.15 2004-03-12 04:09:00 richard Exp $ 
+# $Id: db_test_base.py,v 1.16 2004-03-15 05:50:20 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -42,6 +42,8 @@ def setupSchema(db, create, module):
     db.post_init()
     if create:
         user.create(username="admin", roles='Admin',
+            password=password.Password('sekrit'))
+        user.create(username="fred", roles='User',
             password=password.Password('sekrit'))
         status.create(name="unread")
         status.create(name="in-progress")
@@ -82,6 +84,30 @@ class DBTest(MyTestCase):
 
     def testRefresh(self):
         self.db.refresh_database()
+
+    #
+    # automatic properties (well, the two easy ones anyway)
+    #
+    def testCreatorProperty(self):
+        id1 = self.db.issue.create()
+        self.db.commit()
+        self.db.close()
+        self.db = self.module.Database(config, 'fred')
+        setupSchema(self.db, 0, self.module)
+        i = self.db.issue
+        id2 = i.create()
+        self.assertNotEqual(id1, id2)
+        self.assertNotEqual(i.get(id1, 'creator'), i.get(id2, 'creator'))
+
+    def testActorProperty(self):
+        id1 = self.db.issue.create()
+        self.db.commit()
+        self.db.close()
+        self.db = self.module.Database(config, 'fred')
+        setupSchema(self.db, 0, self.module)
+        i = self.db.issue
+        i.set(id1, title='asfasd')
+        self.assertNotEqual(i.get(id1, 'creator'), i.get(id1, 'actor'))
 
     #
     # basic operations
@@ -417,6 +443,7 @@ class DBTest(MyTestCase):
         ar(KeyError, self.db.status.create, creation=1)
         ar(KeyError, self.db.status.create, creator=1)
         ar(KeyError, self.db.status.create, activity=1)
+        ar(KeyError, self.db.status.create, actor=1)
         # invalid property name
         ar(KeyError, self.db.status.create, foo='foo')
         # key name clash
@@ -891,7 +918,7 @@ class DBTest(MyTestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+        self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
             'nosy', 'status', 'superseder', 'title'])
         self.assertEqual(self.db.issue.get('1', "fixer"), None)
@@ -905,7 +932,7 @@ class DBTest(MyTestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+        self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'foo', 'id', 'messages',
             'nosy', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
@@ -920,7 +947,7 @@ class DBTest(MyTestCase):
         props = self.db.issue.getprops()
         keys = props.keys()
         keys.sort()
-        self.assertEqual(keys, ['activity', 'assignedto', 'creation',
+        self.assertEqual(keys, ['activity', 'actor', 'assignedto', 'creation',
             'creator', 'deadline', 'files', 'fixer', 'foo', 'id', 'messages',
             'nosy', 'status', 'superseder'])
         self.assertEqual(self.db.issue.list(), ['1'])
@@ -963,6 +990,8 @@ class SchemaTest(MyTestCase):
             activity=String())
         self.assertRaises(ValueError, self.module.Class, self.db, "a",
             creator=String())
+        self.assertRaises(ValueError, self.module.Class, self.db, "a",
+            actor=String())
 
     def init_a(self):
         self.db = self.module.Database(config, 'admin')

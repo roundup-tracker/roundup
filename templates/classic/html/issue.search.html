@@ -87,6 +87,17 @@
   <td>&nbsp;</td>
 </tr>
 
+<tr tal:define="name string:actor">
+  <th>Actor:</th>
+  <td metal:use-macro="search_select">
+    <option metal:fill-slot="extra_options"
+            tal:attributes="value request/user/id">done by me</option>
+  </td>
+  <td metal:use-macro="column_input"></td>
+  <td metal:use-macro="sort_input"></td>
+  <td>&nbsp;</td>
+</tr>
+
 <tr tal:define="name string:priority;
                 db_klass string:priority;
                 db_content string:name;">

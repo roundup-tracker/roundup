@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.136 2004-03-12 05:36:26 richard Exp $
+#$Id: back_anydbm.py,v 1.137 2004-03-15 05:50:20 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -264,6 +264,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # calling code's node assumptions)
             node = node.copy()
             node['creator'] = self.getuid()
+            node['actor'] = self.getuid()
             node['creation'] = node['activity'] = date.Date()
 
         self.newnodes.setdefault(classname, {})[nodeid] = 1
@@ -281,6 +282,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # calling code's node assumptions)
         node = node.copy()
         node['activity'] = date.Date()
+        node['actor'] = self.getuid()
 
         # can't set without having already loaded the node
         self.cache[classname][nodeid] = node
@@ -731,10 +733,10 @@ class Class(hyperdb.Class):
         or a ValueError is raised.  The keyword arguments in 'properties'
         must map names to property objects, or a TypeError is raised.
         '''
-        if (properties.has_key('creation') or properties.has_key('activity')
-                or properties.has_key('creator')):
-            raise ValueError, '"creation", "activity" and "creator" are '\
-                'reserved'
+        for name in 'creation activity creator actor'.split():
+            if properties.has_key(name):
+                raise ValueError, '"creation", "activity", "creator" and '\
+                    '"actor" are reserved'
 
         self.classname = classname
         self.properties = properties
@@ -1010,6 +1012,8 @@ class Class(hyperdb.Class):
             creation = None
         if d.has_key('activity'):
             del d['activity']
+        if d.has_key('actor'):
+            del d['actor']
         self.db.addjournal(self.classname, newid, 'create', {}, creator,
             creation)
         return newid
@@ -1063,7 +1067,27 @@ class Class(hyperdb.Class):
             journal = self.db.getjournal(self.classname, nodeid)
             if journal:
                 num_re = re.compile('^\d+$')
-                value = self.db.getjournal(self.classname, nodeid)[0][2]
+                value = journal[0][2]
+                if num_re.match(value):
+                    return value
+                else:
+                    # old-style "username" journal tag
+                    try:
+                        return self.db.user.lookup(value)
+                    except KeyError:
+                        # user's been retired, return admin
+                        return '1'
+            else:
+                return self.db.getuid()
+        if propname == 'actor':
+            if d.has_key('actor'):
+                return d['actor']
+            if not self.do_journal:
+                raise ValueError, 'Journalling is disabled for this class'
+            journal = self.db.getjournal(self.classname, nodeid)
+            if journal:
+                num_re = re.compile('^\d+$')
+                value = journal[-1][2]
                 if num_re.match(value):
                     return value
                 else:
@@ -1901,6 +1925,7 @@ class Class(hyperdb.Class):
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
             d['creator'] = hyperdb.Link('user')
+            d['actor'] = hyperdb.Link('user')
         return d
 
     def addprop(self, **properties):

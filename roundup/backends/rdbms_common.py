@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.78 2004-03-12 05:36:26 richard Exp $
+# $Id: rdbms_common.py,v 1.79 2004-03-15 05:50:20 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -188,6 +188,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # version 1 doesn't have the OTK, session and indexing in the
             # database
             self.create_version_2_tables()
+            # version 1 also didn't have the actor column
+            self.add_actor_column()
         else:
             return 0
 
@@ -210,7 +212,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             "properties" is a list of (name, prop) where prop may be an
             instance of a hyperdb "type" _or_ a string repr of that type.
         '''
-        cols = ['_activity', '_creator', '_creation']
+        cols = ['_actor', '_activity', '_creator', '_creation']
         mls = []
         # add the multilinks separately
         for col, prop in properties:
@@ -240,62 +242,64 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if __debug__:
             print >>hyperdb.DEBUG, 'update_class FIRING'
 
+        # detect key prop change for potential index change
+        keyprop_changes = 0
+        if new_spec[0] != old_spec[0]:
+            keyprop_changes = {'remove': old_spec[0], 'add': new_spec[0]}
+
         # detect multilinks that have been removed, and drop their table
         old_has = {}
-        for name,prop in old_spec[1]:
+        for name, prop in old_spec[1]:
             old_has[name] = 1
-            if new_has(name) or not isinstance(prop, Multilink):
+            if new_has(name):
                 continue
-            # it's a multilink, and it's been removed - drop the old
-            # table. First drop indexes.
-            self.drop_multilink_table_indexes(spec.classname, ml)
-            sql = 'drop table %s_%s'%(spec.classname, prop)
+
+            if isinstance(prop, Multilink):
+                # first drop indexes.
+                self.drop_multilink_table_indexes(spec.classname, ml)
+
+                # now the multilink table itself
+                sql = 'drop table %s_%s'%(spec.classname, prop)
+            else:
+                # if this is the key prop, drop the index first
+                if old_spec[0] == prop:
+                    self.drop_class_table_key_index(spec.classname, prop)
+                    del keyprop_changes['remove']
+
+                # drop the column
+                sql = 'alter table _%s drop column _%s'%(spec.classname, prop)
+
             if __debug__:
                 print >>hyperdb.DEBUG, 'update_class', (self, sql)
             self.cursor.execute(sql)
         old_has = old_has.has_key
 
-        # now figure how we populate the new table
-        fetch = ['_activity', '_creation', '_creator']
-        properties = spec.getprops()
-        for propname,x in new_spec[1]:
-            prop = properties[propname]
-            if isinstance(prop, Multilink):
-                if force or not old_has(propname):
-                    # we need to create the new table
-                    self.create_multilink_table(spec, propname)
-            elif old_has(propname):
-                # we copy this col over from the old table
-                fetch.append('_'+propname)
+        # if we didn't remove the key prop just then, but the key prop has
+        # changed, we still need to remove the old index
+        if keyprop_changes.has_key('remove'):
+            self.drop_class_table_key_index(spec.classname,
+                keyprop_changes['remove'])
 
-        # select the data out of the old table
-        fetch.append('id')
-        fetch.append('__retired__')
-        fetchcols = ','.join(fetch)
-        cn = spec.classname
-        sql = 'select %s from _%s'%(fetchcols, cn)
-        if __debug__:
-            print >>hyperdb.DEBUG, 'update_class', (self, sql)
-        self.cursor.execute(sql)
-        olddata = self.cursor.fetchall()
-
-        # TODO: update all the other index dropping code
-        self.drop_class_table_indexes(cn, old_spec[0])
-
-        # drop the old table
-        self.cursor.execute('drop table _%s'%cn)
-
-        # create the new table
-        self.create_class_table(spec)
-
-        if olddata:
-            # do the insert
-            args = ','.join([self.arg for x in fetch])
-            sql = 'insert into _%s (%s) values (%s)'%(cn, fetchcols, args)
+        # add new columns
+        for propname, x in new_spec[1]:
+            if old_has(propname):
+                continue
+            sql = 'alter table _%s add column _%s varchar(255)'%(
+                spec.classname, propname)
             if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata[0])
-            for entry in olddata:
-                self.cursor.execute(sql, tuple(entry))
+                print >>hyperdb.DEBUG, 'update_class', (self, sql)
+            self.cursor.execute(sql)
+
+            # if the new column is a key prop, we need an index!
+            if new_spec[0] == propname:
+                self.create_class_table_key_index(spec.classname, propname)
+                del keyprop_changes['add']
+
+        # if we didn't add the key prop just then, but the key prop has
+        # changed, we still need to add the new index
+        if keyprop_changes.has_key('add'):
+            self.create_class_table_key_index(spec.classname,
+                keyprop_changes['add'])
 
         return 1
 
@@ -352,10 +356,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # drop the old table indexes first
         l = ['_%s_id_idx'%cn, '_%s_retired_idx'%cn]
         if key:
-            # key prop too?
             l.append('_%s_%s_idx'%(cn, key))
 
-        # TODO: update all the other index dropping code
         table_name = '_%s'%cn
         for index_name in l:
             if not self.sql_index_exists(table_name, index_name):
@@ -364,6 +366,28 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if __debug__:
                 print >>hyperdb.DEBUG, 'drop_index', (self, index_sql)
             self.cursor.execute(index_sql)
+
+    def create_class_table_key_index(self, cn, key):
+        ''' create the class table for the given spec
+        '''
+        if __debug__:
+            print >>hyperdb.DEBUG, 'update_class setting keyprop %r'% \
+                key
+        index_sql3 = 'create index _%s_%s_idx on _%s(_%s)'%(cn, key,
+            cn, key)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'create_index', (self, index_sql3)
+        self.cursor.execute(index_sql3)
+
+    def drop_class_table_key_index(self, cn, key):
+        table_name = '_%s'%cn
+        index_name = '_%s_%s_idx'%(cn, key)
+        if not self.sql_index_exists(table_name, index_name):
+            return
+        sql = 'drop index '+index_name
+        if __debug__:
+            print >>hyperdb.DEBUG, 'drop_index', (self, sql)
+        self.cursor.execute(sql)
 
     def create_journal_table(self, spec):
         ''' create the journal table for a class given the spec and 
@@ -380,11 +404,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
     def create_journal_table_indexes(self, spec):
         # index on nodeid
-        index_sql = 'create index %s_journ_idx on %s__journal(nodeid)'%(
+        sql = 'create index %s_journ_idx on %s__journal(nodeid)'%(
                         spec.classname, spec.classname)
         if __debug__:
-            print >>hyperdb.DEBUG, 'create_index', (self, index_sql)
-        self.cursor.execute(index_sql)
+            print >>hyperdb.DEBUG, 'create_index', (self, sql)
+        self.cursor.execute(sql)
 
     def drop_journal_table_indexes(self, classname):
         index_name = '%s_journ_idx'%classname
@@ -601,7 +625,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # calling code's node assumptions)
             node = node.copy()
             node['creation'] = node['activity'] = date.Date()
-            node['creator'] = self.getuid()
+            node['actor'] = node['creator'] = self.getuid()
 
         # default the non-multilink columns
         for col, prop in cl.properties.items():
@@ -657,6 +681,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # add the special props
         values = values.copy()
         values['activity'] = date.Date()
+        values['actor'] = self.getuid()
 
         # make db-friendly
         values = self.serialise(classname, values)
@@ -1065,10 +1090,10 @@ class Class(hyperdb.Class):
         or a ValueError is raised.  The keyword arguments in 'properties'
         must map names to property objects, or a TypeError is raised.
         '''
-        if (properties.has_key('creation') or properties.has_key('activity')
-                or properties.has_key('creator')):
-            raise ValueError, '"creation", "activity" and "creator" are '\
-                'reserved'
+        for name in 'creation activity creator actor'.split():
+            if properties.has_key(name):
+                raise ValueError, '"creation", "activity", "creator" and '\
+                    '"actor" are reserved'
 
         self.classname = classname
         self.properties = properties
@@ -1132,8 +1157,10 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise DatabaseError, 'Database open read-only'
 
-        if propvalues.has_key('creation') or propvalues.has_key('activity'):
-            raise KeyError, '"creation" and "activity" are reserved'
+        if propvalues.has_key('creator') or propvalues.has_key('actor') or \
+             propvalues.has_key('creation') or propvalues.has_key('activity'):
+            raise KeyError, '"creator", "actor", "creation" and '\
+                '"activity" are reserved'
 
         # new node's id
         newid = self.db.newid(self.classname)
@@ -1358,6 +1385,8 @@ class Class(hyperdb.Class):
             creation = None
         if d.has_key('activity'):
             del d['activity']
+        if d.has_key('actor'):
+            del d['actor']
         self.db.addjournal(self.classname, newid, 'create', {}, creator,
             creation)
         return newid
@@ -1391,6 +1420,11 @@ class Class(hyperdb.Class):
         if propname == 'creator':
             if d.has_key('creator'):
                 return d['creator']
+            else:
+                return self.db.getuid()
+        if propname == 'actor':
+            if d.has_key('actor'):
+                return d['actor']
             else:
                 return self.db.getuid()
 
@@ -1433,8 +1467,10 @@ class Class(hyperdb.Class):
         if not propvalues:
             return propvalues
 
-        if propvalues.has_key('creation') or propvalues.has_key('activity'):
-            raise KeyError, '"creation" and "activity" are reserved'
+        if propvalues.has_key('creation') or propvalues.has_key('creator') or \
+                propvalues.has_key('actor') or propvalues.has_key('activity'):
+            raise KeyError, '"creation", "creator", "actor" and '\
+                '"activity" are reserved'
 
         if propvalues.has_key('id'):
             raise KeyError, '"id" is reserved'
@@ -2175,6 +2211,7 @@ class Class(hyperdb.Class):
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
             d['creator'] = hyperdb.Link('user')
+            d['actor'] = hyperdb.Link('user')
         return d
 
     def addprop(self, **properties):
@@ -2345,7 +2382,8 @@ class IssueClass(Class, roundupdb.IssueClass):
         '''The newly-created class automatically includes the "messages",
         "files", "nosy", and "superseder" properties.  If the 'properties'
         dictionary attempts to specify any of these properties or a
-        "creation" or "activity" property, a ValueError is raised.
+        "creation", "creator", "activity" or "actor" property, a ValueError
+        is raised.
         '''
         if not properties.has_key('title'):
             properties['title'] = hyperdb.String(indexme='yes')

@@ -51,6 +51,13 @@ add::
         p = db.security.getPermission('View', cl)
         db.security.addPermissionToRole('User', p)
 
+0.7.0 New "actor" property
+--------------------------
+
+Roundup's database has a new per-item property "actor" which reflects the
+user performing the last "actvitiy". See the classic template for ways to
+integrate this new property into your interface.
+
 
 0.7.0 Extending the cgi interface
 ---------------------------------

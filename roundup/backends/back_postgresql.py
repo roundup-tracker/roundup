@@ -115,6 +115,13 @@ class Database(rdbms_common.Database):
             's_last_use FLOAT(20), s_user VARCHAR(255))')
         self.cursor.execute('CREATE INDEX sessions_key_idx ON sessions(s_key)')
 
+    def add_actor_column(self):
+        # update existing tables to have the new actor column
+        tables = self.database_schema['tables']
+        for name in tables.keys():
+            self.cursor.execute('ALTER TABLE _%s add __actor '
+                'VARCHAR(255)'%name)
+
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)
 
@@ -140,6 +147,7 @@ class Database(rdbms_common.Database):
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
 
         self.cursor.execute(sql)
+        self.create_class_table_indexes(spec)
         return cols, mls
 
     def create_journal_table(self, spec):
@@ -151,6 +159,7 @@ class Database(rdbms_common.Database):
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
 
         self.cursor.execute(sql)
+        self.create_journal_table_indexes(spec)
 
     def create_multilink_table(self, spec, ml):
         sql = '''CREATE TABLE "%s_%s" (linkid VARCHAR(255),
@@ -160,6 +169,7 @@ class Database(rdbms_common.Database):
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
 
         self.cursor.execute(sql)
+        self.create_multilink_table_indexes(spec, ml)
 
 class Class(rdbms_common.Class):
     pass

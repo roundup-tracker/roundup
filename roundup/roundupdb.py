@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.100 2004-03-05 00:08:09 richard Exp $
+# $Id: roundupdb.py,v 1.101 2004-03-15 05:50:19 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -408,7 +408,7 @@ class IssueClass:
         for key in oldvalues.keys():
             if key in ['files','messages']:
                 continue
-            if key in ('activity', 'creator', 'creation'):
+            if key in ('actor', 'activity', 'creator', 'creation'):
                 continue
             # not all keys from oldvalues might be available in database
             # this happens when property was deleted
