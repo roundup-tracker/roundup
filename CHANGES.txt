@@ -18,6 +18,8 @@ are given with the most recent entry first.
 - homogenise newlines in CGI text submissions (sf bug 614072)
 - merged Zope Collector #372 fix from ZPT CVS trunk
 - fixed history to display username instead of userid
+- shipped templates didn't import all hyperdb types in dbinit.py
+- fixed bug in Interval serialisation
 
 
 2002-10-02 0.5.0
