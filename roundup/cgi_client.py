@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.140 2002-07-14 23:17:15 richard Exp $
+# $Id: cgi_client.py,v 1.141 2002-07-17 12:39:10 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -193,6 +193,29 @@ function help_window(helpurl, width, height) {
                 _('Unassigned <a href="issue?assignedto=-1&status=-1,unread,deferred,chatting,need-eg,in-progress,testing,done-cbb&:sort=-activity&:filter=status,assignedto&:columns=id,activity,status,title,assignedto&:group=priority&show_customization=1">Issues</a>')
             ]
 
+        if userid:
+            # add any personal queries to the menu
+            try:
+                queries = self.db.getclass('query')
+            except KeyError:
+                # no query class
+                queries = self.instance.dbinit.Class(self.db,
+                                                    "query",
+                                                    klass=hyperdb.String(),
+                                                    name=hyperdb.String(),
+                                                    url=hyperdb.String())
+                queries.setkey('name')
+#queries.disableJournalling()
+            try:
+                qids = self.db.getclass('user').get(userid, 'queries')
+            except KeyError, e:
+                #self.db.getclass('user').addprop(queries=hyperdb.Multilink('query'))
+                qids = []
+            for qid in qids:
+                links.append('<a href=%s?%s>%s</a>' % (queries.get(qid, 'klass'),
+                                                       queries.get(qid, 'url'),
+                                                       queries.get(qid, 'name')))
+                
         # if they're logged in, include links to their information, and the
         # ability to add an issue
         if user_name not in ('', 'anonymous'):
@@ -222,7 +245,7 @@ function help_window(helpurl, width, height) {
         admin_links = ''
         if user_name == 'admin':
             links.append(_('<a href="list_classes">Class List</a>'))
-            links.append(_('<a href="user">User List</a>'))
+            links.append(_('<a href="user?:sort=username">User List</a>'))
             links.append(_('<a href="newuser">Add User</a>'))
 
         # add the search links
@@ -251,11 +274,14 @@ function help_window(helpurl, width, height) {
 <body bgcolor=#ffffff>
 %(message)s
 <table width=100%% border=0 cellspacing=0 cellpadding=2>
-<tr class="location-bar"><td><big><strong>%(title)s</strong></big></td>
-<td align=right valign=bottom>%(user_name)s</td></tr>
-<tr class="location-bar">
-<td align=left>%(links)s</td>
-<td align=right>%(user_info)s</td>
+ <tr class="location-bar">
+  <td><big><strong>%(title)s</strong></big></td>
+  <td align=right valign=bottom>%(user_name)s</td>
+ </tr>
+ <tr class="location-bar">
+  <td align=left>%(links)s</td>
+  <td align=right>%(user_info)s</td>
+ </tr>
 </table><br>
 ''')%locals())
 
@@ -330,14 +356,17 @@ function help_window(helpurl, width, height) {
             x.append('%s%s' % (desc, colnm))
         return x
     
-    def index_filterspec(self, filter):
+    def index_filterspec(self, filter, classname=None):
         ''' pull the index filter spec from the form
 
         Links and multilinks want to be lists - the rest are straight
         strings.
         '''
+        if classname is None:
+            classname = self.classname
+        klass = self.db.getclass(classname)
         filterspec = {}
-        props = self.db.classes[self.classname].getprops()
+        props = klass.getprops()
         for colnm in filter:
             widget = ':%s_fs' % colnm
             try:
@@ -486,6 +515,34 @@ function help_window(helpurl, width, height) {
         else:
             startwith = 0
 
+        if self.form.has_key('Query') and self.form['Query'].value == 'Save':
+            # format a query string
+            qd = {}
+            qd[':sort'] = ','.join(map(urllib.quote, sort))
+            qd[':group'] = ','.join(map(urllib.quote, group))
+            qd[':filter'] = ','.join(map(urllib.quote, filter))
+            qd[':columns'] = ','.join(map(urllib.quote, columns))
+            for k, l in filterspec.items():
+                qd[urllib.quote(k)] = ','.join(map(urllib.quote, l))
+            url = '&'.join([k+'='+v for k,v in qd.items()])
+            url += '&:pagesize=%s' % pagesize
+            if search_text:
+                url += '&search_text=%s' % search_text
+
+            # create a query
+            d = {}
+            d['name'] = self.form[':name'].value
+            d['klass'] = self.form[':classname'].value
+            d['url'] = url
+            qid = self.db.getclass('query').create(**d)
+
+            # and add it to the user's query multilink
+            uid = self.getuid()
+            usercl = self.db.getclass('user')
+            queries = usercl.get(uid, 'queries')
+            queries.append(qid)
+            usercl.set(uid, queries=queries)
+            
         index = htmltemplate.IndexTemplate(self, self.instance.TEMPLATES, cn)
         try:
             index.render(filterspec, search_text, filter, columns, sort, 
@@ -665,6 +722,56 @@ function help_window(helpurl, width, height) {
     showmsg = shownode
     searchissue = searchnode
 
+    def showquery(self):
+        queries = self.db.getclass(self.classname)
+        if self.form.keys():
+            sort = self.index_sort()
+            group = self.index_arg(':group')
+            filter = self.index_arg(':filter')
+            columns = self.index_arg(':columns')
+            filterspec = self.index_filterspec(filter, queries.get(self.nodeid, 'klass'))
+            if self.form.has_key('search_text'):
+                search_text = self.form['search_text'].value
+            else:
+                search_text = ''
+            if self.form.has_key(':pagesize'):
+                pagesize = int(self.form[':pagesize'].value)
+            else:
+                pagesize = 50
+            # format a query string
+            qd = {}
+            qd[':sort'] = ','.join(map(urllib.quote, sort))
+            qd[':group'] = ','.join(map(urllib.quote, group))
+            qd[':filter'] = ','.join(map(urllib.quote, filter))
+            qd[':columns'] = ','.join(map(urllib.quote, columns))
+            for k, l in filterspec.items():
+                qd[urllib.quote(k)] = ','.join(map(urllib.quote, l))
+            url = '&'.join([k+'='+v for k,v in qd.items()])
+            url += '&:pagesize=%s' % pagesize
+            if search_text:
+                url += '&search_text=%s' % search_text
+            qname = self.form['name'].value
+            chgd = []
+            if qname != queries.get(self.nodeid, 'name'):
+                chgd.append('name')
+            if url != queries.get(self.nodeid, 'url'):
+                chgd.append('url')
+            if chgd:
+                queries.set(self.nodeid, name=qname, url=url)
+                message = _('%(changes)s edited ok')%{'changes': ', '.join(chgd)}
+            else:
+                message = _('nothing changed')
+        else:
+            message = None
+        nm = queries.get(self.nodeid, 'name')
+        self.pagehead('%s: %s'%(self.classname.capitalize(), nm), message)
+
+        # use the template to display the item
+        item = htmltemplate.ItemTemplate(self, self.instance.TEMPLATES,
+            self.classname)
+        item.render(self.nodeid)
+        self.pagefoot()
+        
     def _changenode(self, props):
         ''' change the node based on the contents of the form
         '''
@@ -954,7 +1061,7 @@ function help_window(helpurl, width, height) {
 
         if self.user not in ('admin', node_user):
             raise Unauthorised
-
+        
         #
         # perform any editing
         #
@@ -1497,6 +1604,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.140  2002/07/14 23:17:15  richard
+# cleaned up structure
+#
 # Revision 1.139  2002/07/14 06:14:40  richard
 # Some more TODOs
 #

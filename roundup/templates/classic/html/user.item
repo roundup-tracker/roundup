@@ -1,4 +1,4 @@
-<!-- $Id: user.item,v 1.3 2002-02-15 07:08:44 richard Exp $-->
+<!-- $Id: user.item,v 1.4 2002-07-17 12:39:11 gmcm Exp $-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -39,6 +39,13 @@
 <tr bgcolor="ffffea">
     <td>&nbsp;</td>
     <td class="form-text"><display call="submit()"></td>
+</tr>
+
+<tr class="strong-header">
+    <td colspan=2><b>Queries</b></td>
+</tr>
+<tr>
+    <td colspan=2><display call="list('queries')"></td>
 </tr>
 
 <tr class="strong-header">

@@ -166,11 +166,11 @@ class _Database(hyperdb.Database):
         return self.__RW == 0
     def getWriteAccess(self):
         if self.journaltag is not None and self.__RW == 0:
-            now = time.time
-            start = now()
+            #now = time.time
+            #start = now()
             self._db = None
             #print "closing the file took %2.2f secs" % (now()-start)
-            start = now()
+            #start = now()
             self._db = metakit.storage(self.dbnm, 1)
             self.__RW = 1
             self.hist = self._db.view('history')
@@ -504,15 +504,18 @@ class Class:    # no, I'm not going to subclass the existing!
         # first setkey for this run
         self.keyname = propname
         iv = self.db._db.view('_%s' % self.classname)
-        if self.db.fastopen or iv.structure():
+        if self.db.fastopen and iv.structure():
             return
         # very first setkey ever
+        self.db.getWriteAccess()
+        self.db.dirty = 1
         iv = self.db._db.getas('_%s[k:S,i:I]' % self.classname)
         iv = iv.ordered(1)
         #XXX
 #        print "setkey building index"
         for row in self.getview():
             iv.append(k=getattr(row, propname), i=row.id)
+        self.db.commit()
     def getkey(self):
         return self.keyname
     def lookup(self, keyvalue):
@@ -601,7 +604,10 @@ class Class:    # no, I'm not going to subclass the existing!
             if self.ruprops.has_key(key):
                 raise ValueError, "%s is already a property of %s" % (key, self.classname)
         self.ruprops.update(properties)
+        self.db.getWriteAccess()
+        self.db.fastopen = 0
         view = self.__getview()
+        self.db.commit()
     # ---- end of ping's spec
     def filter(self, search_matches, filterspec, sort, group):
         # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
@@ -821,10 +827,10 @@ class Class:    # no, I'm not going to subclass the existing!
     def __getview(self):
         db = self.db._db
         view = db.view(self.classname)
-        if self.db.fastopen:
+        mkprops = view.structure()
+        if mkprops and self.db.fastopen:
             return view.ordered(1)
         # is the definition the same?
-        mkprops = view.structure()
         for nm, rutyp in self.ruprops.items():
             for mkprop in mkprops:
                 if mkprop.name == nm:
@@ -832,15 +838,16 @@ class Class:    # no, I'm not going to subclass the existing!
             else:
                 mkprop = None
             if mkprop is None:
-                #print "%s missing prop %s (%s)" % (self.classname, nm, rutyp.__class__.__name__)
+                print "%s missing prop %s (%s)" % (self.classname, nm, rutyp.__class__.__name__)
                 break
             if _typmap[rutyp.__class__] != mkprop.type:
-                #print "%s - prop %s (%s) has wrong mktyp (%s)" % (self.classname, nm, rutyp.__class__.__name__, mkprop.type)
+                print "%s - prop %s (%s) has wrong mktyp (%s)" % (self.classname, nm, rutyp.__class__.__name__, mkprop.type)
                 break
         else:
             return view.ordered(1)
         # need to create or restructure the mk view
         # id comes first, so MK will order it for us
+        self.db.getWriteAccess()
         self.db.dirty = 1
         s = ["%s[id:I" % self.classname]
         for nm, rutyp in self.ruprops.items():
@@ -849,7 +856,8 @@ class Class:    # no, I'm not going to subclass the existing!
             if mktyp == 'V':
                 s[-1] += ('[fid:I]')
         s.append('_isdel:I,activity:I,creation:I,creator:I]')
-        v = db.getas(','.join(s))
+        v = self.db._db.getas(','.join(s))
+        self.db.commit()
         return v.ordered(1)
     def getview(self, RW=0):
         if RW and self.db.isReadOnly():

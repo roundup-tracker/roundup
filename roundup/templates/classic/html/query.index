@@ -1,0 +1,13 @@
+<tr>
+  <td>
+    <property name="name">
+      <display call="link('name')">
+    </property>
+  </td>
+  <td>
+    <property name="klass">
+      <display call="plain('klass')">
+    </property>
+  </td>
+</tr>
+

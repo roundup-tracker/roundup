@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.98 2002-07-10 00:17:46 richard Exp $
+# $Id: htmltemplate.py,v 1.99 2002-07-17 12:39:10 gmcm Exp $
 
 __doc__ = """
 Template engine.
@@ -182,7 +182,6 @@ class TemplateFunctions:
         '''
         if not self.nodeid and self.form is None and self.filterspec is None:
             return _('[Field: not called from item]')
-
         if size is None:
             size = 30
 
@@ -190,7 +189,6 @@ class TemplateFunctions:
 
         # get the value
         value = self.determine_value(property)
-
         # now display
         if (isinstance(propclass, hyperdb.String) or
                 isinstance(propclass, hyperdb.Date) or
@@ -796,6 +794,32 @@ class TemplateFunctions:
             value = cgi.escape(value)
         return value
 
+    def do_filterspec(self, classprop, urlprop):
+        cl = self.db.getclass(self.classname)
+        qs = cl.get(self.nodeid, urlprop)
+        classname = cl.get(self.nodeid, classprop)
+        all_columns = self.db.getclass(classname).getprops().keys()
+        filterspec = {}
+        query = cgi.parse_qs(qs)
+        for k,v in query.items():
+            query[k] = v[0].split(',')
+        pagesize = query.get(':pagesize',['25'])[0]
+        for k,v in query.items():
+            if k[0] != ':':
+                filterspec[k] = v
+        ixtmplt = IndexTemplate(self.client, self.templates, classname)
+        qform = '<form onSubmit="return submit_once()" action="%s%s">\n'%(self.classname,self.nodeid)
+        qform += ixtmplt.filter_form(query.get('search_text', ''),
+                                     query.get(':filter', []),
+                                     query.get(':columns', []),
+                                     query.get(':group', []),
+                                     all_columns,
+                                     query.get(':sort',[]),
+                                     filterspec,
+                                     pagesize)
+        ixtmplt.clear()
+        return qform + '</table>\n'
+        
 
 #
 #   INDEX TEMPLATES
@@ -965,7 +989,7 @@ class IndexTemplate(TemplateFunctions):
                                 l.append(value)
                         w('<tr class="section-bar">'
                         '<td align=middle colspan=%s>'
-                        '<strong>%s</strong></td></tr>'%(
+                        '<strong>%s</strong></td></tr>\n'%(
                             len(columns), ', '.join(l)))
                         old_group = this_group
 
@@ -977,7 +1001,7 @@ class IndexTemplate(TemplateFunctions):
                     self.node_matches(matches[nodeid], len(columns))
                 self.nodeid = None
 
-        w('</table>')
+        w('</table>\n')
         # the previous and next links
         if nodeids:
             baseurl = self.buildurl(filterspec, search_text, filter, columns, sort, group, pagesize)
@@ -991,7 +1015,7 @@ class IndexTemplate(TemplateFunctions):
             else:
                 nexturl = ""
             if prevurl or nexturl:
-                w('<table width="100%%"><tr><td width="50%%" align="center">%s</td><td width="50%%" align="center">%s</td></tr></table>' % (prevurl, nexturl))
+                w('<table width="100%%"><tr><td width="50%%" align="center">%s</td><td width="50%%" align="center">%s</td></tr></table>\n' % (prevurl, nexturl))
 
         # display the filter section
         if (show_display_form and hasattr(self.instance, 'FILTER_POSITION') and
@@ -1018,7 +1042,7 @@ class IndexTemplate(TemplateFunctions):
                 message_links.append('<a href="%(msgpath)s">%(lab)s</a>'
                     %locals())
             w(_('<tr class="row-hilite"><td colspan="%s">'
-                '&nbsp;&nbsp;Matched messages: %s</td></tr>')%(
+                '&nbsp;&nbsp;Matched messages: %s</td></tr>\n')%(
                     colspan, ', '.join(message_links)))
 
         if match.has_key('files'):
@@ -1028,12 +1052,11 @@ class IndexTemplate(TemplateFunctions):
                 file_links.append('<a href="%(filepath)s">%(filename)s</a>'
                     %locals())
             w(_('<tr class="row-hilite"><td colspan="%s">'
-                '&nbsp;&nbsp;Matched files: %s</td></tr>')%(
+                '&nbsp;&nbsp;Matched files: %s</td></tr>\n')%(
                     colspan, ', '.join(file_links)))
 
-
-    def filter_section(self, search_text, filter, columns, group, all_columns, sort, filterspec,
-                       pagesize, startwith):
+    def filter_form(self, search_text, filter, columns, group, all_columns, sort, filterspec,
+                       pagesize):
 
         sortspec = {}
         for i in range(len(sort)):
@@ -1045,57 +1068,57 @@ class IndexTemplate(TemplateFunctions):
             sortspec[colnm] = '%d%s' % (i+1, mod)
             
         startwith = 0
-        w = self.client.write
+        rslt = []
+        w = rslt.append
 
         # display the filter section
-        w(  '<br>\n')
-        w(  '<table border=0 cellspacing=0 cellpadding=0>\n')
-        w(  '<tr class="list-header">\n')
-        w(_(' <th align="left" colspan="7">Filter specification...</th>\n'))
-        w(  '</tr>\n')
+        w(  '<br>')
+        w(  '<table border=0 cellspacing=0 cellpadding=1>')
+        w(  '<tr class="list-header">')
+        w(_(' <th align="left" colspan="7">Filter specification...</th>'))
+        w(  '</tr>')
         # see if we have any indexed properties
         if self.classname in self.db.config.HEADER_SEARCH_LINKS:
         #if self.properties.has_key('messages') or self.properties.has_key('files'):
-            w(  '<tr class="location-bar">\n')
-            w(  ' <td align="right" class="form-label"><b>Search Terms</b></td>\n')
-            w(  ' <td>&nbsp</td>\n')
-            w(  ' <td colspan=5 class="form-text"><input type="text" name="search_text" value="%s" size="50"></td>\n' % search_text)
-            w(  '</tr>\n')
-        w(  '<tr class="location-bar">\n')
-        w(  ' <th align="center" width="20%">&nbsp;</th>\n')
-        w(_(' <th align="center" width="10%">Show</th>\n'))
-        w(_(' <th align="center" width="10%">Group</th>\n'))
-        w(_(' <th align="center" width="10%">Sort</th>\n'))
-        w(_(' <th colspan="3" align="center">Condition</th>\n'))
-        w(  '</tr>\n')
+            w(  '<tr class="location-bar">')
+            w(  ' <td align="right" class="form-label"><b>Search Terms</b></td>')
+            w(  ' <td colspan=6 class="form-text">&nbsp;&nbsp;&nbsp;<input type="text" name="search_text" value="%s" size="50"></td>' % search_text)
+            w(  '</tr>')
+        w(  '<tr class="location-bar">')
+        w(  ' <th align="center" width="20%">&nbsp;</th>')
+        w(_(' <th align="center" width="10%">Show</th>'))
+        w(_(' <th align="center" width="10%">Group</th>'))
+        w(_(' <th align="center" width="10%">Sort</th>'))
+        w(_(' <th colspan="3" align="center">Condition</th>'))
+        w(  '</tr>')
         
         for nm in all_columns:
             propdescr = self.properties.get(nm, None)
             if not propdescr:
                 print "hey sysadmin - %s is not a property of %r" % (nm, self.classname)
                 continue
-            w(  '<tr class="location-bar">\n')
-            w(_(' <td align="right" class="form-label"><b>%s</b></td>\n' % nm.capitalize()))
+            w(  '<tr class="location-bar">')
+            w(_(' <td align="right" class="form-label"><b>%s</b></td>' % nm.capitalize()))
             # show column - can't show multilinks
             if isinstance(propdescr, hyperdb.Multilink):
-                w(' <td></td>\n')
+                w(' <td></td>')
             else:
                 checked = columns and nm in columns or 0
                 checked = ('', 'checked')[checked]
-                w(' <td align="center" class="form-text"><input type="checkbox" name=":columns" value="%s" %s></td>\n' % (nm, checked) )
+                w(' <td align="center" class="form-text"><input type="checkbox" name=":columns" value="%s" %s></td>' % (nm, checked) )
             # can only group on Link 
             if isinstance(propdescr, hyperdb.Link):
                 checked = group and nm in group or 0
                 checked = ('', 'checked')[checked]
-                w(' <td align="center" class="form-text"><input type="checkbox" name=":group" value="%s" %s></td>\n' % (nm, checked) )
+                w(' <td align="center" class="form-text"><input type="checkbox" name=":group" value="%s" %s></td>' % (nm, checked) )
             else:
-                w(' <td></td>\n')
+                w(' <td></td>')
             # sort - no sort on Multilinks
             if isinstance(propdescr, hyperdb.Multilink):
-                w('<td></td>\n')
+                w('<td></td>')
             else:
                 val = sortspec.get(nm, '')
-                w('<td align="center" class="form-text"><input type="text" name=":%s_ss" size="3" value="%s"></td>\n' % (nm,val))
+                w('<td align="center" class="form-text"><input type="text" name=":%s_ss" size="3" value="%s"></td>' % (nm,val))
             # condition
             val = ''
             if isinstance(propdescr, hyperdb.Link):
@@ -1113,27 +1136,55 @@ class IndexTemplate(TemplateFunctions):
                 xtra = ""
                 val = filterspec.get(nm, '')
             else:
-                w('<td></td><td></td><td></td></tr>\n')
+                w('<td></td><td></td><td></td></tr>')
                 continue
             checked = filter and nm in filter or 0
             checked = ('', 'checked')[checked]
-            w(  ' <td class="form-text"><input type="checkbox" name=":filter" value="%s" %s></td>\n' % (nm, checked))
-            w(_(' <td class="form-label" nowrap>%s</td><td class="form-text" nowrap><input type="text" name=":%s_fs" value="%s" size=50>%s</td>\n' % (op, nm, val, xtra)))
-            w(  '</tr>\n')
-        w('<tr class="location-bar">\n')
-	w(' <td colspan=7><hr></td>\n')
-	w('</tr>\n')
-	w('<tr class="location-bar">\n')
-	w(_(' <td align="right" class="form-label">Pagesize</td>\n'))
-	w(' <td colspan=2 align="center" class="form-text"><input type="text" name=":pagesize" size="3" value="%s"></td>\n' % pagesize)
-	w(' <td colspan=4></td>\n')
-	w('</tr>\n')
-	w('<tr class="location-bar">\n')
-	w(_(' <td align="right" class="form-label">Start With</td>\n'))
-	w(' <td colspan=2 align="center" class="form-text"><input type="text" name=":startwith" size="3" value="%s"></td>\n' % startwith)
-	w(' <td colspan=3 align="center" valign="center"><input type="submit" name="Query" value="Redisplay"></td>\n')
-	w(' <td></td>\n')
-	w('</tr>\n')
+            w(  ' <td class="form-text"><input type="checkbox" name=":filter" value="%s" %s></td>' % (nm, checked))
+            w(_(' <td class="form-label" nowrap>%s</td><td class="form-text" nowrap><input type="text" name=":%s_fs" value="%s" size=50>%s</td>' % (op, nm, val, xtra)))
+            w(  '</tr>')
+        w('<tr class="location-bar">')
+        w(' <td colspan=7><hr></td>')
+        w('</tr>')
+        w('<tr class="location-bar">')
+        w(_(' <td align="right" class="form-label">Pagesize</td>'))
+        w(' <td colspan=2 align="center" class="form-text"><input type="text" name=":pagesize" size="3" value="%s"></td>' % pagesize)
+        w(' <td colspan=4></td>')
+        w('</tr>')
+        w('<tr class="location-bar">')
+        w(_(' <td align="right" class="form-label">Start With</td>'))
+        w(' <td colspan=2 align="center" class="form-text"><input type="text" name=":startwith" size="3" value="%s"></td>' % startwith)
+        w(' <td colspan=3></td>')
+        w(' <td></td>')
+        w('</tr>')
+
+        return '\n'.join(rslt)
+    
+    def filter_section(self, search_text, filter, columns, group, all_columns, sort, filterspec,
+                       pagesize, startwith):
+
+        w = self.client.write        
+        w(self.filter_form(search_text, filter, columns, group, all_columns,
+                           sort, filterspec, pagesize))
+        w(' <tr class="location-bar">\n')
+        w('  <td colspan=7><hr></td>\n')
+        w(' </tr>\n')
+        w(' <tr class="location-bar">\n')
+        w('  <td>&nbsp;</td>\n')
+        w('  <td colspan=6><input type="submit" name="Query" value="Redisplay"></td>\n')
+        w(' </tr>\n')
+        if self.db.getclass('user').getprops().has_key('queries'):
+            w(' <tr class="location-bar">\n')
+            w('  <td colspan=7><hr></td>\n')
+            w(' </tr>\n')
+            w(' <tr class="location-bar">\n')
+            w('  <td align=right class="form-label">Name</td>\n')
+            w('  <td colspan=6><input type="text" name=":name" value=""></td>\n')
+            w(' </tr>\n')
+            w(' <tr class="location-bar">\n')
+            w('  <td>&nbsp;</td><input type="hidden" name=":classname" value="%s">\n' % self.classname)
+            w('  <td colspan=6><input type="submit" name="Query" value="Save"></td>\n')
+            w(' </tr>\n')
         w('</table>\n')
 
     def sortby(self, sort_name, filterspec, columns, filter, group, sort, pagesize, startwith):
@@ -1229,7 +1280,7 @@ class ItemTemplate(TemplateFunctions):
         
     def render(self, nodeid):
         self.nodeid = nodeid
-
+        
         if (self.properties.has_key('type') and
                 self.properties.has_key('content')):
             pass
@@ -1290,6 +1341,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.98  2002/07/10 00:17:46  richard
+#  . added sorting of checklist HTML display
+#
 # Revision 1.97  2002/07/09 05:20:09  richard
 #  . added email display function - mangles email addrs so they're not so easily
 #    scraped from the web
