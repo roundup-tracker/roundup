@@ -3,6 +3,8 @@ are given with the most recent entry first.
 
 2003-??-?? 0.5.7
 - fixed Interval maths (sf bug 665357)
+- fixed sqlite rollback/caching bug (sf bug 689383)
+
 
 2003-02-27 0.5.6
 - fixed templating filter function arguments (sf bug 678911)

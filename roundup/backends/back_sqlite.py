@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.8 2002-12-12 09:31:04 richard Exp $
+# $Id: back_sqlite.py,v 1.8.2.1 2003-03-06 05:46:57 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -77,6 +77,9 @@ class Database(Database):
             if method == self.doStoreFile:
                 self.rollbackStoreFile(*args)
         self.transactions = []
+
+        # clear the cache
+        self.clearCache()
 
     def __repr__(self):
         return '<roundlite 0x%x>'%id(self)
