@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.46 2003-03-23 06:07:05 richard Exp $
+# $Id: admin.py,v 1.47 2003-03-23 09:37:20 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -801,18 +801,18 @@ Command help:
         for spec in prop_names:
             if ':' in spec:
                 name, width = spec.split(':')
-               if width == '':
+                if width == '':
                     props.append((name, len(spec)))
-               else:
+                else:
                     props.append((name, int(width)))
             else:
                # this is going to be slow
                maxlen = len(spec)
                for nodeid in cl.list():
-                    curlen = len(str(cl.get(nodeid, spec)))
+                   curlen = len(str(cl.get(nodeid, spec)))
                    if curlen > maxlen:
                        maxlen = curlen
-                props.append((spec, maxlen))
+               props.append((spec, maxlen))
                
         # now display the heading
         print ' '.join([name.capitalize().ljust(width) for name,width in props])
