@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.115 2003-05-09 01:47:50 richard Exp $
+# $Id: client.py,v 1.116 2003-05-09 03:32:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -8,7 +8,7 @@ import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
 import binascii, Cookie, time, random, MimeWriter, smtplib, socket, quopri
 import stat, rfc822, string
 
-from roundup import roundupdb, date, hyperdb, password
+from roundup import roundupdb, date, hyperdb, password, token
 from roundup.i18n import _
 from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
@@ -1323,8 +1323,8 @@ You should then receive another email with the new password.
                     continue
                 if isinstance(props[key], hyperdb.String):
                     v = self.form[key].value
-                    l = wcre.split(v)
-                    if len(l) > 1:
+                    l = token.token_split(v)
+                    if len(l) > 1 or l[0] != v:
                         self.form.value.remove(self.form[key])
                         # replace the single value with the split list
                         for v in l:

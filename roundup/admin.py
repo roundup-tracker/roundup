@@ -16,12 +16,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.52 2003-04-17 07:33:08 richard Exp $
+# $Id: admin.py,v 1.53 2003-05-09 03:32:41 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
 
-import sys, os, getpass, getopt, re, UserDict, shlex, shutil, rfc822
+import sys, os, getpass, getopt, re, UserDict, shutil, rfc822
 try:
     import csv
 except ImportError:
