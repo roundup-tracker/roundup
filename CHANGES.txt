@@ -48,9 +48,10 @@ Fixed:
 2004-10-?? 0.7.10
 Fixed:
 - reset ID counters if the database is cleared (thanks William)
+- apply IE caching "fix" to automatically serve up all pages expired
 
 
-2004-10-?? 0.7.9
+2004-10-26 0.7.9
 Feature:
 - DateHTMLProperty.field() accepts format string (thanks Wil Cooley)
 

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.210 2004-11-24 05:16:15 a1s Exp $
+# $Id: client.py,v 1.211 2004-12-03 22:19:41 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -247,10 +247,13 @@ class Client:
             # pages with messages added expire right now
             # simple views may be cached for a small amount of time
             # TODO? make page expire time configurable
-            if self.error_message or self.ok_message:
-                date = time.time() - 1
-            else:
-                date = time.time() + 5
+            # <rj> always expire pages, as IE just doesn't seem to do the
+            # right thing here :(
+            date = time.time() - 1
+            #if self.error_message or self.ok_message:
+            #    date = time.time() - 1
+            #else:
+            #    date = time.time() + 5
             self.additional_headers['Expires'] = rfc822.formatdate(date)
 
             # render the content
