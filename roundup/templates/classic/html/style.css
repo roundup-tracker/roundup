@@ -3,10 +3,22 @@ body.body {
   font-family: sans-serif, Arial, Helvetica;
   color: #333333;
 }
-a:hover { text-decoration: underline; }
-a:link { text-decoration: none; }
-a { text-decoration: none; }
 
+/* generic hyperlink style */
+a[href]:hover {
+ text-decoration: underline;
+ color: blue;
+}
+a[href]:link {
+ text-decoration: none;
+ color: blue;
+}
+a[href] {
+ text-decoration: none;
+ color: blue;
+}
+
+/* main page body container */
 table.body {
   border: 0;
   padding: 0;
@@ -49,6 +61,7 @@ td.content {
   padding: 1px;
 }
 
+/* feedback - ok and error messages */
 p.ok-message {
   background-color: #22bb22;
   padding: 5 5 5 5;

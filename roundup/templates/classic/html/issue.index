@@ -25,7 +25,7 @@ You are not allowed to view this page.
   <tr tal:attributes="class python:['normal', 'alt'][repeat['i'].even()]">
    <td tal:condition="request/show/priority" tal:content="i/priority"></td>
    <td tal:condition="request/show/id" tal:content="i/id"></td>
-   <td tal:condition="request/show/activity"
+   <td nowrap tal:condition="request/show/activity"
        tal:content="i/activity/reldate"></td>
    <td tal:condition="request/show/topic" tal:content="i/topic"></td>
    <td tal:condition="request/show/title">

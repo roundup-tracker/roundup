@@ -33,9 +33,9 @@
        tal:condition="python:request.user.hasPermission('View', 'issue')">
    <b>Issues</b><br>
    <a tal:condition="python:request.user.hasPermission('Edit', 'issue')"
-      href="issue?:template=item">New Issue<br></a>
-   <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,topic,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1">Unassigned Issues</a><br>
-   <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,topic,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">All Issues</a><br>
+      href="issue?:template=item">Create New<br></a>
+   <a href="issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=-1">Show Unassigned</a><br>
+   <a href="issue?:sort=-activity&:group=priority&:filter=status&:columns=id,activity,title,creator,assignedto,status&status=-1,1,2,3,4,5,6,7">Show All</a><br>
    <a href="issue?:template=search">Search Issues</a>
   </p>
 
@@ -66,7 +66,7 @@
    
   <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
    <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
-   <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,topic,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
+   <a tal:attributes="href string:issue?:sort=-activity&:group=priority&:filter=status,assignedto&:columns=id,activity,title,creator,status&status=-1,1,2,3,4,5,6,7&assignedto=${request/user/id}">My Issues</a><br>
    <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
    <a tal:attributes="href python:request.indexargs_href('',
        {':action':'logout'})">Logout</a>
