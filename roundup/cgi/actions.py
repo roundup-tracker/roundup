@@ -1,8 +1,8 @@
-#$Id: actions.py,v 1.45 2005-02-15 00:23:30 richard Exp $
+#$Id: actions.py,v 1.46 2005-02-15 23:45:29 richard Exp $
 
-import re, cgi, StringIO, urllib, Cookie, time, random
+import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
-from roundup import hyperdb, token, date, password, csv
+from roundup import hyperdb, token, date, password
 from roundup.i18n import _
 import roundup.exceptions
 from roundup.cgi import exceptions, templating
@@ -507,7 +507,7 @@ class EditItemAction(EditCommon):
     def detectCollision(self, user_activity, node_activity):
         '''Check for a collision and return the list of props we edited
         that conflict.'''
-        if user_activity < node_activity:
+        if user_activity and user_activity < node_activity:
             props, links = self.client.parsePropsFromForm()
             key = (self.classname, self.nodeid)
             # we really only collide for direct prop edit conflicts
