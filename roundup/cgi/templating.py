@@ -1,4 +1,4 @@
-import sys, cgi, urllib, os, re, os.path, time, errno
+import sys, cgi, urllib, os, re, os.path, time, errno, mimetypes
 
 from roundup import hyperdb, date, rcsv
 from roundup.i18n import _
@@ -116,7 +116,8 @@ class Templates:
 
         # compile the template
         self.templates[src] = pt = RoundupPageTemplate()
-        pt.write(open(src).read())
+        # use pt_edit so we can pass the content_type guess too
+        pt.pt_edit(open(src).read(), mimetypes.guess_type(filename))
         pt.id = filename
         pt.mtime = time.time()
         return pt

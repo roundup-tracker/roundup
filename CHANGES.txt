@@ -13,6 +13,7 @@ Fixed:
 - applied CSV fix for python2.3 (sf bug 790363)
 - fixed form padding in LHS menu (sf bug 790502)
 - fixed upgrading docs for timezones (sf bug 790498)
+- set the content type on page templates (can have XML templates now)
 
 
 2003-08-08 0.6.0
