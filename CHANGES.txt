@@ -12,6 +12,7 @@ Fixed:
 - disabled file logging in Roundup test suite (sf bug 1155649)
 - return original string if message issue xref isn't valid
 - fix nosyreaction.py to stop it setting the nosy list unnecessarily
+  (see doc/upgrading.txt for how to fix in your trackers)
 
 
 2005-03-03 0.8.2
