@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.13 2002-09-23 08:17:05 richard Exp $
+# $Id: rdbms_common.py,v 1.14 2002-09-23 08:24:51 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -462,10 +462,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         cl = self.classes[classname]
         cols, mls = self.determine_columns(cl.properties.items())
 
-        # add the special props
-        node = node.copy()
-        node['creation'] = node['activity'] = date.Date()
-        node['creator'] = self.curuserid
+        # we'll be supplied these props if we're doing an import
+        if not node.has_key('creator'):
+            # add in the "calculated" properties (dupe so we don't affect
+            # calling code's node assumptions)
+            node = node.copy()
+            node['creation'] = node['activity'] = date.Date()
+            node['creator'] = self.curuserid
 
         # default the non-multilink columns
         for col, prop in cl.properties.items():
