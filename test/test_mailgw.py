@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.6 2002-01-21 10:05:48 rochecompaan Exp $
+# $Id: test_mailgw.py,v 1.7 2002-01-22 11:54:45 rochecompaan Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -141,6 +141,7 @@ This is a followup
 ----------
 assignedto:  -> mary
 nosy: +mary, john
+status: unread -> chatting
 ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
@@ -178,6 +179,9 @@ mary <mary@test> added the comment:
 
 This is a second followup
 
+
+----------
+status: unread -> chatting
 ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
@@ -196,6 +200,16 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2002/01/21 10:05:48  rochecompaan
+# Feature:
+#  . the mail gateway now responds with an error message when invalid
+#    values for arguments are specified for link or multilink properties
+#  . modified unit test to check nosy and assignedto when specified as
+#    arguments
+#
+# Fixed:
+#  . fixed setting nosy as argument in subject line
+#
 # Revision 1.5  2002/01/15 00:12:40  richard
 # #503340 ] creating issue with [asignedto=p.ohly]
 #

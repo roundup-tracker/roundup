@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.55 2002-01-21 10:05:47 rochecompaan Exp $
+$Id: mailgw.py,v 1.56 2002-01-22 11:54:45 rochecompaan Exp $
 '''
 
 
@@ -580,9 +580,10 @@ not find a text/plain part to use.
                 except KeyError:
                     pass
                 else:
+                    current_status = cl.get(nodeid, 'status')
                     if (not props.has_key('status') and
-                            properties['status'] == unread_id or
-                            properties['status'] == resolved_id):
+                            current_status == unread_id or
+                            current_status == resolved_id):
                         props['status'] = chatting_id
 
             # add nosy in arguments to issue's nosy list
@@ -753,6 +754,16 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.55  2002/01/21 10:05:47  rochecompaan
+# Feature:
+#  . the mail gateway now responds with an error message when invalid
+#    values for arguments are specified for link or multilink properties
+#  . modified unit test to check nosy and assignedto when specified as
+#    arguments
+#
+# Fixed:
+#  . fixed setting nosy as argument in subject line
+#
 # Revision 1.54  2002/01/16 09:14:45  grubert
 #  . if the attachment has no name, name it unnamed, happens with tnefs.
 #
