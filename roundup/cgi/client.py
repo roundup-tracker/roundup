@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.20 2002-09-06 22:54:51 richard Exp $
+# $Id: client.py,v 1.21 2002-09-09 00:45:06 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1069,10 +1069,8 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         must be supplied or a ValueError will be raised.
     '''
     required = []
-    print form.keys()
     if form.has_key(':required'):
         value = form[':required']
-        print 'required', value
         if isinstance(value, type([])):
             required = [i.value.strip() for i in value]
         else:

@@ -7,15 +7,15 @@
  <th>Email address</th>
  <th>Phone number</th>
 </tr>
-<tr tal:repeat="u user/list"
-    tal:attributes="class python:['row-normal', 'row-alt'][repeat['u'].even()]">
+<tr tal:repeat="user context/list"
+    tal:attributes="class python:['row-normal', 'row-alt'][repeat['user'].even()]">
  <td valign="top">
-  <a tal:attributes="href string:user${u/id}"
-     tal:content="u/username">username</a>
+  <a tal:attributes="href string:user${user/id}"
+     tal:content="user/username">username</a>
  </td>
- <td valign="top" tal:content="u/realname">realname</td>
- <td valign="top" tal:content="u/organisation">organisation</td>
- <td valign="top" tal:content="python:u.address.email()">address</td>
- <td valign="top" tal:content="u/phone">phone</td>
+ <td valign="top" tal:content="user/realname">realname</td>
+ <td valign="top" tal:content="user/organisation">organisation</td>
+ <td valign="top" tal:content="python:user.address.email()">address</td>
+ <td valign="top" tal:content="user/phone">phone</td>
 </tr>
 </table>

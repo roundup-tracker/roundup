@@ -123,26 +123,13 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         Interrogate the client to set up the various template variables to
         be available:
 
-        *class*
-          The current class of node being displayed as an HTMLClass
-          instance.
-        *item*
-          The current node from the database, if we're viewing a specific
-          node, as an HTMLItem instance. If it doesn't exist, then we're
-          on a new item page.
-        (*classname*)
-          this is one of two things:
-
-          1. the *item* is also available under its classname, so a *user*
-             node would also be available under the name *user*. This is
-             also an HTMLItem instance.
-          2. if there's no *item* then the current class is available
-             through this name, thus "user/name" and "user/name/menu" will
-             still work - the latter will pull information from the form
-             if it can.
-        *form*
-          The current CGI form information as a mapping of form argument
-          name to value
+        *context*
+         this is one of three things:
+         1. None - we're viewing a "home" page
+         2. The current class of item being displayed. This is an HTMLClass
+            instance.
+         3. The current item from the database, if we're viewing a specific
+            item, as an HTMLItem instance.
         *request*
           Includes information about the current request, including:
            - the url
@@ -150,20 +137,14 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
              ``properties``, etc) parsed out of the form. 
            - methods for easy filterspec link generation
            - *user*, the current user node as an HTMLItem instance
+           - *form*, the current CGI form information as a FieldStorage
         *instance*
           The current instance
         *db*
           The current database, through which db.config may be reached.
-
-        Maybe also:
-
-        *modules*
-          python modules made available (XXX: not sure what's actually in
-          there tho)
     '''
     def getContext(self, client, classname, request):
         c = {
-             'klass': HTMLClass(client, classname),
              'options': {},
              'nothing': None,
              'request': request,
@@ -173,10 +154,9 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
         }
         # add in the item if there is one
         if client.nodeid:
-            c['item'] = HTMLItem(client, classname, client.nodeid)
-            c[classname] = c['item']
+            c['context'] = HTMLItem(client, classname, client.nodeid)
         else:
-            c[classname] = c['klass']
+            c['context'] = HTMLClass(client, classname)
         return c
 
     def render(self, client, classname, request, **options):
@@ -237,11 +217,15 @@ class HTMLClass:
         ''' return an HTMLProperty instance
         '''
         #print 'getitem', (self, item)
-        if item == 'creator':
-            return HTMLUser(self.client, 'user', client.userid)
 
-        if not self.props.has_key(item):
-            raise KeyError, item
+        # we don't exist
+        if item == 'id':
+            return None
+        if item == 'creator':
+            # but we will be created by this user...
+            return HTMLUser(self.client, 'user', self.client.userid)
+
+        # get the property
         prop = self.props[item]
 
         # look up the correct HTMLProperty class
@@ -398,8 +382,8 @@ class HTMLItem:
         #print 'getitem', (self, item)
         if item == 'id':
             return self.nodeid
-        if not self.props.has_key(item):
-            raise KeyError, item
+
+        # get the property
         prop = self.props[item]
 
         # get the value, handling missing values

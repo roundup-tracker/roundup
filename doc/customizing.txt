@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.19 $
+:Version: $Revision: 1.20 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -591,6 +591,9 @@ control on to the instance interfaces.Client class which handles the rest of
 the access through its main() method. This means that you can do pretty much
 anything you want as a web interface to your instance.
 
+Figuring out what is displayed
+::::::::::::::::::::::::::::::
+
 Most customisation of the web view can be done by modifying the templates in
 the instance **html** directory. There are several types of files in there:
 
@@ -615,6 +618,9 @@ user.register
 style.css
   a static file that is served up as-is
 
+How requests are processed
+::::::::::::::::::::::::::
+
 The basic processing of a web request proceeds as follows:
 
 1. figure out who we are, defaulting to the "anonymous" user
@@ -635,6 +641,9 @@ In some situations, exceptions occur:
   granted for the action to take place
 - NotFound       (raised wherever it needs to be)
   this exception percolates up to the CGI interface that called the client
+
+Determining web context
+:::::::::::::::::::::::
 
 To determine the "context" of a request, we look at the URL and the special
 request variable ``:template``. The URL path after the instance identifier
@@ -679,8 +688,14 @@ which defaults to:
 - only classname suplied:          "index"
 - full item designator supplied:   "item"
 
-Actions are triggered by using a ``:action`` CGI variable, where the value is
-one of:
+
+Performing actions in web requests
+::::::::::::::::::::::::::::::::::
+
+When a user requests a web page, they may optionally also request for an
+action to take place. As described in `how requests are processed`_, the
+action is performed before the requested page is generated. Actions are
+triggered by using a ``:action`` CGI variable, where the value is one of:
 
 login
  Attempt to log a user in.
@@ -910,6 +925,83 @@ TALES - TAL Expression Syntax
    equivalent to ``item/status/checklist``, assuming that ``checklist`` is
    a method.
 
+Information available to templates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following variables are available to templates.
+
+.. taken from roundup.cgi.templating.RoundupPageTemplate docstring
+
+*context*
+  The current context. This is either None, a wrapper around a
+  hyperdb class (an HTMLClass) or a wrapper around a hyperdb item (an
+  HTMLItem).
+*request*
+  Includes information about the current request, including:
+   - the url
+   - the current index information (``filterspec``, ``filter`` args,
+     ``properties``, etc) parsed out of the form. 
+   - methods for easy filterspec link generation
+   - *user*, the current user node as an HTMLItem instance
+   - *form*
+     The current CGI form information as a mapping of form argument
+     name to value
+*instance*
+  The current instance
+*db*
+  The current database, through which db.config may be reached.
+
+The context variable
+::::::::::::::::::
+
+The *context* variable is one of three things based on the current context
+(see `determining web context`_ for how we figure this out):
+
+1. if we're looking at a "home" page, then it's None
+2. if we're looking at a specific hyperdb class, it's an HTMLClass instance
+3. if we're looking at a specific hyperdb item, it's an HTMLItem instance
+
+If the context is not None, we can access the properties of the class or item.
+The only real difference between cases 2 and 3 above are:
+
+1. the properties may have a real value behind them, and this will appear if
+   the property is displayed through ``context/property`` or
+   ``context/property/field``.
+2. the context's "id" property will be a false value in the second case, but
+   a real, or true value in the third. Thus we can determine whether we're
+   looking at a real item from the hyperdb by testing "context/id".
+
+
+The request variable
+::::::::::::::::::::
+
+The request variable is packed with information about the current request.
+
+.. taken from roundup.cgi.templating.HTMLRequest docstring
+
+=========== ================================================================
+Variable    Holds
+=========== ================================================================
+form        the CGI form as a cgi.FieldStorage
+env         the CGI environment variables
+url         the current URL path for this request
+base        the base URL for this instance
+user        a HTMLUser instance for this user
+classname   the current classname (possibly None)
+template    the current template (suffix, also possibly None)
+form        the current CGI form variables in a FieldStorage
+**Index  page specific variables (indexing arguments)**
+columns     dictionary of the columns to display in an index page
+show        a convenience access to columns - request/show/colname will
+              be true if the columns should be displayed, false otherwise
+sort        index sort column (direction, column name)
+group       index grouping property (direction, column name)
+filter      properties to filter the index on
+filterspec  values to filter the index on
+search_text text to perform a full-text search on for an index
+----------- ----------------------------------------------------------------
+
+
 Displaying Properties
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -931,11 +1023,11 @@ An index view specifier (URL fragment) looks like this (whitespace has been
 added for clarity)::
 
      /issue?status=unread,in-progress,resolved&
-             topic=security,ui&
-             :group=+priority&
-             :sort=-activity&
-             :filters=status,topic&
-             :columns=title,status,fixer
+            topic=security,ui&
+            :group=+priority&
+            :sort=-activity&
+            :filters=status,topic&
+            :columns=title,status,fixer
 
 The index view is determined by two parts of the specifier: the layout part and
 the filter part. The layout part consists of the query parameters that begin
@@ -957,10 +1049,6 @@ are grouped by priority, arranged in ascending order; and within groups, sorted
 by activity, arranged in descending order. The filter section shows filters for
 the "status" and "topic" properties, and the table includes columns for the
 "title", "status", and "fixer" properties.
-
-Associated with each item class is a default layout specifier. The layout
-specifier in the above example is the default layout to be provided with the
-default bug-tracker schema described above in section 4.4.
 
 Filtering of indexes
 ::::::::::::::::::::

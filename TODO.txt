@@ -53,7 +53,7 @@ pending admin: have roundup-admin "set" command be applicable to all items
                in a class
 
 bug: request.url is incorrect in cgi-bin environments
-
+bug: query editing not translated to new templating
 
 done web: Re-enable link backrefs from messages (feature request #568714)
 done web: have the page layout (header/footer) be templatable

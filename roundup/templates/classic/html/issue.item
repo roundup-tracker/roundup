@@ -7,35 +7,35 @@
 <table border=0 cellspacing=0 cellpadding=2 class="form">
 <tr>
  <th nowrap>Title</th>
- <td colspan=3 class="form-text" tal:content="structure python:issue.title.field(size=60)">title</td>
+ <td colspan=3 class="form-text" tal:content="structure python:context.title.field(size=60)">title</td>
 </tr>
 
 <tr class="form">
  <th nowrap>Priority</th>
- <td class="form-text" tal:content="structure issue/priority/menu">priority</td>
+ <td class="form-text" tal:content="structure context/priority/menu">priority</td>
  <th nowrap>Status</th>
- <td class="form-text" tal:content="structure issue/status/menu">status</td>
+ <td class="form-text" tal:content="structure context/status/menu">status</td>
 </tr>
 
 <tr class="form">
  <th nowrap>Superseder</th>
  <td>
-  <span tal:replace="structure python:issue.superseder.field(showid=1, size=20)" />
+  <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
   <span tal:replace="structure python:db.issue.classhelp('id,title', label='list', width=500)" />
-  <span tal:condition="issue/superseder">
-   <br>View: <span tal:replace="structure python:issue.superseder.link(showid=1)" />
+  <span tal:condition="context/superseder">
+   <br>View: <span tal:replace="structure python:context.superseder.link(showid=1)" />
   </span>
  </td>
  <th nowrap>Nosy List</th>
  <td>
-  <span tal:replace="structure issue/nosy/field" />
+  <span tal:replace="structure context/nosy/field" />
   <span tal:replace="structure python:db.user.classhelp('username,realname,address,phone', label='list', width=500)" />
  </td>
 </tr>
 
 <tr class="form">
  <th nowrap>Assigned To</th>
- <td class="form-text" tal:content="structure issue/assignedto/menu">
+ <td class="form-text" tal:content="structure context/assignedto/menu">
   assignedto menu
  </td>
  <td>&nbsp;</td>
@@ -58,18 +58,20 @@
 
 <tr class="form">
  <td>&nbsp;</td>
- <td colspan=3 class="form-text" tal:content="structure issue/submit">
+ <td colspan=3 class="form-text" tal:content="structure context/submit">
   submit button will go here
  </td>
 </tr>
 </table>
 
-<span tal:condition="exists:item" tal:content="structure string:Created on <b>${issue/creation}</b> by <b>${issue/creator/username}</b>, last changed <b>${issue/activity}</b>.">activity info</span>
+<span tal:condition="context/id" tal:content="structure string:Created on
+<b>${context/creation}</b> by <b>${context/creator/username}</b>, last
+changed <b>${context/activity}</b>.">activity info</span>
 
-<tal:block tal:condition="exists:item">
- <table class="messages" tal:condition="issue/messages">
+<tal:block tal:condition="context/id">
+ <table class="messages" tal:condition="context/messages">
   <tr><th colspan=2 class="header">Messages</th></tr>
-  <tal:block tal:repeat="msg issue/messages/reverse">
+  <tal:block tal:repeat="msg context/messages/reverse">
    <tr>
     <th tal:content="string:Author: ${msg/author}">author</th>
     <th tal:content="string:Date: ${msg/date}">date</th>
@@ -80,10 +82,10 @@
   </tal:block>
  </table>
 
- <table class="files" tal:condition="issue/files">
+ <table class="files" tal:condition="context/files">
   <tr><th colspan="2" class="header">Files</th></tr>
   <tr><th>File name</th><th>Uploaded</th></tr>
-  <tr tal:repeat="file issue/files">
+  <tr tal:repeat="file context/files">
    <td>
     <a tal:attributes="href string:file${file/id}/${file/name}"
        tal:content="file/name">dld link</a>
@@ -97,7 +99,7 @@
 
  <table class="history">
   <tr><th colspan="2" class="header">History</th></tr>
-  <tr><td colspan="2" tal:content="structure issue/history">history</td></tr>
+  <tr><td colspan="2" tal:content="structure context/history">history</td></tr>
  </table>
 </tal:block>
 

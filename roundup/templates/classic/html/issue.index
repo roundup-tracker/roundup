@@ -59,7 +59,7 @@
    <td>
     <select name=":sort">
      <option value="">- nothing -</option>
-     <option tal:repeat="col klass/properties"
+     <option tal:repeat="col context/properties"
              tal:attributes="value col/name;
                              selected python:col.name == request.sort[1]"
              tal:content="col/name">column</option>
@@ -75,7 +75,7 @@
    <td>
     <select name=":group">
      <option value="">- nothing -</option>
-     <option tal:repeat="col klass/properties"
+     <option tal:repeat="col context/properties"
              tal:attributes="value col/name;
                              selected python:col.name == request.group[1]"
              tal:content="col/name">column</option>

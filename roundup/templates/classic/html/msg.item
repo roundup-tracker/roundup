@@ -3,28 +3,28 @@
 
 <tr bgcolor="ffffea">
  <td width=1% nowrap align=right><span class="form-label">Author</span></td>
- <td class="form-text" tal:content="msg/author"></td>
+ <td class="form-text" tal:content="context/author"></td>
 </tr>
 
 <tr bgcolor="ffffea">
  <td width=1% nowrap align=right><span class="form-label">Recipients</span></td>
- <td class="form-text" tal:content="msg/recipients"></td>
+ <td class="form-text" tal:content="context/recipients"></td>
 </tr>
 
 <tr bgcolor="ffffea">
  <td width=1% nowrap align=right><span class="form-label">Date</span></td>
- <td class="form-text" tal:content="msg/date"></td>
+ <td class="form-text" tal:content="context/date"></td>
 </tr>
 
 <tr bgcolor="ffeaff">
  <td colspan=2 class="form-text">
-  <pre tal:content="msg/content"></pre>
+  <pre tal:content="context/content"></pre>
  </td>
 </tr>
 
 <property name="files">
 <tr class="strong-header"><td colspan=2><b>Files</b></td></tr>
-<tr tal:repeat="file msg/files">
+<tr tal:repeat="file context/files">
  <td>
   <a tal:attributes="href string:file${file/id}/${file/name}"
      tal:content="file/name">dld link</a>
@@ -37,6 +37,6 @@
 </property>
 
 <tr class="history-header"><td colspan=2><b>History</b></td><tr>
-<tr><td colspan="2" tal:content="structure msg/history">history</td></tr>
+<tr><td colspan="2" tal:content="structure context/history">history</td></tr>
 
 </table>

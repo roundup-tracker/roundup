@@ -1,7 +1,7 @@
 <!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
 <tal:block tal:define="
     editok python:request.user.hasPermission('Edit') or
-           user.id == request.user.id;
+           context.id == request.user.id;
     viewok python:request.user.hasPermission('View')">
 
 <span tal:condition="python:not (viewok or editok)">
@@ -16,52 +16,52 @@ You are not allowed to view this page.
 <table class="form">
  <tr>
   <th>Name</th>
-  <td tal:content="structure user/realname/field">realname</td>
+  <td tal:content="structure context/realname/field">realname</td>
  </tr>
  <tr>
   <th>Login Name</th>
-  <td tal:content="structure user/username/field">username</td>
+  <td tal:content="structure context/username/field">username</td>
  </tr>
  <tr>
   <th>Login Password</th>
-  <td tal:content="structure user/password/field">password</td>
+  <td tal:content="structure context/password/field">password</td>
  </tr>
  <tr tal:condition="python:request.user.hasPermission('Web Roles')">
   <th>Roles</th>
-  <td tal:condition="exists:item"
-      tal:content="structure user/roles/field">roles</td>
-  <td tal:condition="not:exists:item">
+  <td tal:condition="item/created"
+      tal:content="structure context/roles/field">roles</td>
+  <td tal:condition="not:item/created">
    <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
   </td>
  </tr>
  <tr>
   <th>Phone</th>
-  <td tal:content="structure user/phone/field">phone</td>
+  <td tal:content="structure context/phone/field">phone</td>
  </tr>
  <tr>
   <th>Organisation</th>
-  <td tal:content="structure user/organisation/field">organisation</td>
+  <td tal:content="structure context/organisation/field">organisation</td>
  </tr>
  <tr>
   <th>E-mail address</th>
-  <td tal:content="structure user/address/field">address</td>
+  <td tal:content="structure context/address/field">address</td>
  </tr>
  <tr>
   <th>Alternate E-mail addresses<br>One address per line</th>
-  <td tal:content="structure user/alternate_addresses/multiline">alternate_addresses</td>
+  <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
  </tr>
 
  <tr>
   <td>&nbsp;</td>
-  <td tal:content="structure user/submit">submit button here</td>
+  <td tal:content="structure context/submit">submit button here</td>
  </tr>
 </table>
 </form>
 
-<tal:block tal:condition="exists:item">
- <table class="otherinfo" tal:condition="user/queries">
+<tal:block tal:condition="item/created">
+ <table class="otherinfo" tal:condition="context/queries">
   <tr><th class="header">Queries</th></tr>
-  <tr tal:repeat="query user/queries">
+  <tr tal:repeat="query context/queries">
    <td tal:content="query">query</td>
   </tr>
  </table>
@@ -69,7 +69,7 @@ You are not allowed to view this page.
  <table class="otherinfo">
   <tr><th class="header">History</th></tr>
   <tr>
-   <td tal:content="structure user/history">history</td>
+   <td tal:content="structure context/history">history</td>
   </tr>
  </table>
 </tal:block>
@@ -78,23 +78,23 @@ You are not allowed to view this page.
 
 <table class="form" tal:condition="python:viewok and not editok">
  <tr>
-  <th colspan=2 class="header" tal:content="user/realname">realname</th>
+  <th colspan=2 class="header" tal:content="context/realname">realname</th>
  </tr>
  <tr>
   <th>Login Name</th>
-  <td tal:content="user/username">username</td>
+  <td tal:content="context/username">username</td>
  </tr>
  <tr>
   <th>Phone</th>
-  <td tal:content="user/phone">phone</td>
+  <td tal:content="context/phone">phone</td>
  </tr>
  <tr>
   <th>Organisation</th>
-  <td tal:content="user/organisation">organisation</td>
+  <td tal:content="context/organisation">organisation</td>
  </tr>
  <tr>
   <th>E-mail address</th>
-  <td tal:content="user/address/email">address</td>
+  <td tal:content="context/address/email">address</td>
  </tr>
 </table>
 

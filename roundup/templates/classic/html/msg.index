@@ -1,6 +1,6 @@
 <table class="messages" tal:condition="request/filter">
  <tr><th colspan=2 class="header">Messages</th></tr>
- <tal:block tal:repeat="msg issue/messages/reverse">
+ <tal:block tal:repeat="msg context/list">
   <tr>
    <th tal:content="string:Author: ${msg/author}">author</th>
    <th tal:content="string:Date: ${msg/date}">date</th>

@@ -1,5 +1,5 @@
 <!-- dollarId: file.index,v 1.4 2002/01/23 05:10:27 richard Exp dollar-->
-<tr tal:repeat="file class/list">
+<tr tal:repeat="file context/list">
  <td tal:condition="display/properties/name">
   <a href="" tal:attributes="href string:file${file/id}/${file/name}">dld link</a>
  </td>
