@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.161.2.11 $
+:Version: $Revision: 1.161.2.12 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -4055,6 +4055,16 @@ First up, we create the new Role and Permission structure in
     db.security.addPermissionToRole('Provisional User', 'Web Access')
     db.security.addPermissionToRole('Provisional User', 'Email Access')
 
+    # make sure they can view & edit their own user record
+    def own_record(db, userid, itemid):
+        '''Determine whether the userid matches the item being accessed.'''
+        return userid == itemid
+    p = db.security.addPermission(name='View', klass='user', check=own_record,
+        description="User is allowed to view their own user details")
+    db.security.addPermissionToRole('Provisional User', p)
+    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
+        description="User is allowed to edit their own user details")
+    db.security.addPermissionToRole('Provisional User', p)
 
 Then, in ``config.ini``, we change the Role assigned to newly-registered
 users, replacing the existing ``'User'`` values::
