@@ -522,7 +522,8 @@ class HTMLItem(HTMLPermissions):
                 if isinstance(prop, HTMLProperty):
                     current[prop_n] = prop.plain()
                     # make link if hrefable
-                    if isinstance(self._props[prop_n], hyperdb.Link):
+                    if (self._props.has_key(prop_n) and
+                            isinstance(self._props[prop_n], hyperdb.Link)):
                         classname = self._props[prop_n].classname
                         if os.path.exists(os.path.join(self._db.config.TEMPLATES, classname + '.item')):
                             current[prop_n] = '<a href="%s%s">%s</a>'%(classname,
