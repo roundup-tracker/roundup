@@ -1,15 +1,19 @@
-#$Id: sessions.py,v 1.3 2002-09-10 00:11:50 richard Exp $
+#$Id: sessions.py,v 1.4 2003-02-25 10:19:32 richard Exp $
 '''
 This module defines a very basic store that's used by the CGI interface
-to store session information.
+to store session and one-time-key information.
+
+Yes, it's called "sessions" - because originally it only defined a session
+class. It's now also used for One Time Key handling too.
+
 '''
 
 import anydbm, whichdb, os, marshal
 
-class Sessions:
-    ''' Back onto an anydbm store.
+class BasicDatabase:
+    ''' Provide a nice encapsulation of an anydbm store.
 
-        Keys are session id strings, values are marshalled data.
+        Keys are id strings, values are automatically marshalled data.
     '''
     def __init__(self, config):
         self.config = config
@@ -18,7 +22,7 @@ class Sessions:
         os.umask(0002)
 
     def clear(self):
-        path = os.path.join(self.dir, 'sessions')
+        path = os.path.join(self.dir, self.name)
         if os.path.exists(path):
             os.remove(path)
         elif os.path.exists(path+'.db'):    # dbm appends .db
@@ -38,26 +42,33 @@ class Sessions:
             db_type = 'dbm'
         return db_type
 
-    def get(self, sessionid, value):
+    def get(self, infoid, value):
         db = self.opendb('c')
         try:
-            if db.has_key(sessionid):
-                values = marshal.loads(db[sessionid])
+            if db.has_key(infoid):
+                values = marshal.loads(db[infoid])
             else:
                 return None
             return values.get(value, None)
         finally:
             db.close()
 
-    def set(self, sessionid, **newvalues):
+    def getall(self, infoid):
         db = self.opendb('c')
         try:
-            if db.has_key(sessionid):
-                values = marshal.loads(db[sessionid])
+            return marshal.loads(db[infoid])
+        finally:
+            db.close()
+
+    def set(self, infoid, **newvalues):
+        db = self.opendb('c')
+        try:
+            if db.has_key(infoid):
+                values = marshal.loads(db[infoid])
             else:
                 values = {}
             values.update(newvalues)
-            db[sessionid] = marshal.dumps(values)
+            db[infoid] = marshal.dumps(values)
         finally:
             db.close()
 
@@ -68,11 +79,11 @@ class Sessions:
         finally:
             db.close()
 
-    def destroy(self, sessionid):
+    def destroy(self, infoid):
         db = self.opendb('c')
         try:
-            if db.has_key(sessionid):
-                del db[sessionid]
+            if db.has_key(infoid):
+                del db[infoid]
         finally:
             db.close()
 
@@ -81,7 +92,7 @@ class Sessions:
            eccentricities.
         '''
         # figure the class db type
-        path = os.path.join(os.getcwd(), self.dir, 'sessions')
+        path = os.path.join(os.getcwd(), self.dir, self.name)
         db_type = self.determine_db_type(path)
 
         # new database? let anydbm pick the best dbm
@@ -94,3 +105,10 @@ class Sessions:
 
     def commit(self):
         pass
+
+class Sessions(BasicDatabase):
+    name = 'sessions'
+
+class OneTimeKeys(BasicDatabase):
+    name = 'otks'
+

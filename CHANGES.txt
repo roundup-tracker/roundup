@@ -59,6 +59,8 @@ are given with the most recent entry first.
 - re-worked detectors initialisation - woohoo, no more cross-importing!
 - can now configure CC to author only for messages creating issues (sf
   feature 625808)
+- registration is now a two-step process, with confirmation from the email
+  address supplied in the registration form
 
 
 2003-??-?? 0.5.6

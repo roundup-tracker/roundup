@@ -1568,37 +1568,48 @@ env: %(env)s
         return '\n'.join(l)
 
     def indexargs_url(self, url, args):
-        ''' embed the current index args in a URL '''
+        ''' Embed the current index args in a URL
+        '''
         sc = self.special_char
         l = ['%s=%s'%(k,v) for k,v in args.items()]
-        if self.columns and not args.has_key(':columns'):
+
+        # pull out the special values (prefixed by @ or :)
+        specials = {}
+        for key in args.keys():
+            if key[0] in '@:':
+                specials[key[1:]] = args[key]
+
+        # ok, now handle the specials we received in the request
+        if self.columns and not specials.has_key('columns'):
             l.append(sc+'columns=%s'%(','.join(self.columns)))
-        if self.sort[1] is not None and not args.has_key(':sort'):
+        if self.sort[1] is not None and not specials.has_key('sort'):
             if self.sort[0] == '-':
                 val = '-'+self.sort[1]
             else:
                 val = self.sort[1]
             l.append(sc+'sort=%s'%val)
-        if self.group[1] is not None and not args.has_key(':group'):
+        if self.group[1] is not None and not specials.has_key('group'):
             if self.group[0] == '-':
                 val = '-'+self.group[1]
             else:
                 val = self.group[1]
             l.append(sc+'group=%s'%val)
-        if self.filter and not args.has_key(':filter'):
+        if self.filter and not specials.has_key('filter'):
             l.append(sc+'filter=%s'%(','.join(self.filter)))
+        if self.search_text and not specials.has_key('search_text'):
+            l.append(sc+'search_text=%s'%self.search_text)
+        if not specials.has_key('pagesize'):
+            l.append(sc+'pagesize=%s'%self.pagesize)
+        if not specials.has_key('startwith'):
+            l.append(sc+'startwith=%s'%self.startwith)
+
+        # finally, the remainder of the filter args in the request
         for k,v in self.filterspec.items():
             if not args.has_key(k):
                 if type(v) == type([]):
                     l.append('%s=%s'%(k, ','.join(v)))
                 else:
                     l.append('%s=%s'%(k, v))
-        if self.search_text and not args.has_key(':search_text'):
-            l.append(sc+'search_text=%s'%self.search_text)
-        if not args.has_key(':pagesize'):
-            l.append(sc+'pagesize=%s'%self.pagesize)
-        if not args.has_key(':startwith'):
-            l.append(sc+'startwith=%s'%self.startwith)
         return '%s?%s'%(url, '&'.join(l))
     indexargs_href = indexargs_url
 

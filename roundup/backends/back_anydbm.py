@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.104 2003-02-18 01:57:38 richard Exp $
+#$Id: back_anydbm.py,v 1.105 2003-02-25 10:19:31 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -26,7 +26,7 @@ serious bugs, and is not available)
 import whichdb, anydbm, os, marshal, re, weakref, string, copy
 from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
-from sessions import Sessions
+from sessions import Sessions, OneTimeKeys
 from roundup.indexer import Indexer
 from roundup.backends import locking
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
@@ -68,6 +68,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.transactions = []
         self.indexer = Indexer(self.dir)
         self.sessions = Sessions(self.config)
+        self.otks = OneTimeKeys(self.config)
         self.security = security.Security(self)
         # ensure files are group readable and writable
         os.umask(0002)

@@ -1,19 +1,18 @@
-# $Id: client.py,v 1.96 2003-02-20 07:13:14 richard Exp $
+# $Id: client.py,v 1.97 2003-02-25 10:19:32 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
 """
 
 import os, os.path, cgi, StringIO, urlparse, re, traceback, mimetypes, urllib
-import binascii, Cookie, time, random
+import binascii, Cookie, time, random, MimeWriter, smtplib, socket, quopri
 
 from roundup import roundupdb, date, hyperdb, password
 from roundup.i18n import _
-
 from roundup.cgi.templating import Templates, HTMLRequest, NoTemplate
 from roundup.cgi import cgitb
-
 from roundup.cgi.PageTemplates import PageTemplate
+from roundup.rfc2822 import encode_header
 
 class HTTPException(Exception):
       pass
@@ -103,6 +102,8 @@ class Client:
     FV_TEMPLATE = re.compile(r'[@:]template')
     FV_OK_MESSAGE = re.compile(r'[@:]ok_message')
     FV_ERROR_MESSAGE = re.compile(r'[@:]error_message')
+
+    FV_QUERYNAME = re.compile(r'[@:]queryname')
 
     # edit form variable handling (see unit tests)
     FV_LABELS = r'''
@@ -236,8 +237,8 @@ class Client:
         except SendStaticFile, file:
             self.serve_static_file(str(file))
         except Unauthorised, message:
-            self.classname=None
-            self.template=''
+            self.classname = None
+            self.template = ''
             self.error_message.append(message)
             self.write(self.renderContext())
         except NotFound:
@@ -275,7 +276,7 @@ class Client:
         sessions = self.db.sessions
 
         # look up the user session cookie
-        cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
+        cookie = Cookie.SimpleCookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
 
         # bump the "revision" of the cookie since the format changed
@@ -454,6 +455,7 @@ class Client:
         ('editCSV',  'editCSVAction'),
         ('new',      'newItemAction'),
         ('register', 'registerAction'),
+        ('confrego', 'confRegoAction'),
         ('login',    'loginAction'),
         ('logout',   'logout_action'),
         ('search',   'searchAction'),
@@ -461,7 +463,7 @@ class Client:
         ('show',     'showAction'),
     )
     def handle_action(self):
-        ''' Determine whether there should be an _action called.
+        ''' Determine whether there should be an Action called.
 
             The action is defined by the form variable :action which
             identifies the method on this object to call. The four basic
@@ -469,33 +471,31 @@ class Client:
              "edit"      -> self.editItemAction
              "new"       -> self.newItemAction
              "register"  -> self.registerAction
+             "confrego"  -> self.confRegoAction
              "login"     -> self.loginAction
              "logout"    -> self.logout_action
              "search"    -> self.searchAction
              "retire"    -> self.retireAction
         '''
-        if not self.form.has_key(':action'):
+        if self.form.has_key(':action'):
+            action = self.form[':action'].value.lower()
+        elif self.form.has_key('@action'):
+            action = self.form['@action'].value.lower()
+        else:
             return None
         try:
             # get the action, validate it
-            action = self.form[':action'].value
             for name, method in self.actions:
                 if name == action:
                     break
             else:
                 raise ValueError, 'No such action "%s"'%action
-
             # call the mapped action
             getattr(self, method)()
         except Redirect:
             raise
         except Unauthorised:
             raise
-        except:
-            self.db.rollback()
-            s = StringIO.StringIO()
-            traceback.print_exc(None, s)
-            self.error_message.append('<pre>%s</pre>'%cgi.escape(s.getvalue()))
 
     def write(self, content):
         if not self.headers_done:
@@ -651,18 +651,16 @@ class Client:
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
 
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     def registerAction(self):
         '''Attempt to create a new user based on the contents of the form
         and then set the cookie.
 
         return 1 on successful login
         '''
-        # create the new user
-        cl = self.db.user
-
         # parse the props from the form
         try:
-            props = self.parsePropsFromForm()
+            props = self.parsePropsFromForm()[0][('user', None)]
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -671,19 +669,125 @@ class Client:
         if not self.registerPermission(props):
             raise Unauthorised, _("You do not have permission to register")
 
+        try:
+            self.db.user.lookup(props['username'])
+            self.error_message.append('Error: A user with the username "%s" '
+                'already exists'%props['username'])
+            return
+        except KeyError:
+            pass
+
+        # generate the one-time-key and store the props for later
+        otk = ''.join([random.choice(self.chars) for x in range(32)])
+        for propname, proptype in self.db.user.getprops().items():
+            value = props.get(propname, None)
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                props[propname] = str(value)
+            elif isinstance(proptype, hyperdb.Interval):
+                props[propname] = str(value)
+            elif isinstance(proptype, hyperdb.Password):
+                props[propname] = str(value)
+        self.db.otks.set(otk, **props)
+
+        # send email to the user's email address
+        message = StringIO.StringIO()
+        writer = MimeWriter.MimeWriter(message)
+        tracker_name = self.db.config.TRACKER_NAME
+        s = 'Complete your registration to %s'%tracker_name
+        writer.addheader('Subject', encode_header(s))
+        writer.addheader('To', props['address'])
+        writer.addheader('From', roundupdb.straddr((tracker_name,
+            self.db.config.ADMIN_EMAIL)))
+        writer.addheader('Date', time.strftime("%a, %d %b %Y %H:%M:%S +0000",
+            time.gmtime()))
+        # add a uniquely Roundup header to help filtering
+        writer.addheader('X-Roundup-Name', tracker_name)
+        # avoid email loops
+        writer.addheader('X-Roundup-Loop', 'hello')
+        writer.addheader('Content-Transfer-Encoding', 'quoted-printable')
+        body = writer.startbody('text/plain; charset=utf-8')
+
+        # message body, encoded quoted-printable
+        content = StringIO.StringIO('''
+To complete your registration of the user "%(name)s" with %(tracker)s,
+please visit the following URL:
+
+   http://localhost:8001/test/?@action=confrego&otk=%(otk)s
+'''%{'name': props['username'], 'tracker': tracker_name, 'url': self.base,
+        'otk': otk})
+        quopri.encode(content, body, 0)
+
+        # now try to send the message
+        try:
+            # send the message as admin so bounces are sent there
+            # instead of to roundup
+            smtp = smtplib.SMTP(self.db.config.MAILHOST)
+            smtp.sendmail(self.db.config.ADMIN_EMAIL, [props['address']],
+                message.getvalue())
+        except socket.error, value:
+            self.error_message.append("Error: couldn't send "
+                "confirmation email: mailhost %s"%value)
+            return
+        except smtplib.SMTPException, value:
+            self.error_message.append("Error: couldn't send "
+                "confirmation email: %s"%value)
+            return
+
+        # commit changes to the database
+        self.db.commit()
+
+        # redirect to the "you're almost there" page
+        raise Redirect, '%s?:template=rego_step1_done'%self.base
+
+    def registerPermission(self, props):
+        ''' Determine whether the user has permission to register
+
+            Base behaviour is to check the user has "Web Registration".
+        '''
+        # registration isn't allowed to supply roles
+        if props.has_key('roles'):
+            return 0
+        if self.db.security.hasPermission('Web Registration', self.userid):
+            return 1
+        return 0
+
+    def confRegoAction(self):
+        ''' Grab the OTK, use it to load up the new user details
+        '''
+        # pull the rego information out of the otk database
+        otk = self.form['otk'].value
+        props = self.db.otks.getall(otk)
+        for propname, proptype in self.db.user.getprops().items():
+            value = props.get(propname, None)
+            if value is None:
+                pass
+            elif isinstance(proptype, hyperdb.Date):
+                props[propname] = date.Date(value)
+            elif isinstance(proptype, hyperdb.Interval):
+                props[propname] = date.Interval(value)
+            elif isinstance(proptype, hyperdb.Password):
+                props[propname] = password.Password()
+                props[propname].unpack(value)
+
         # re-open the database as "admin"
         if self.user != 'admin':
             self.opendb('admin')
-            
+
         # create the new user
         cl = self.db.user
-        try:
+# XXX we need to make the "default" page be able to display errors!
+#        try:
+        if 1:
             props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
-            self.userid = cl.create(**props['user'])
+            self.userid = cl.create(**props)
+            # clear the props from the otk database
+            self.db.otks.destroy(otk)
             self.db.commit()
-        except (ValueError, KeyError), message:
-            self.error_message.append(message)
-            return
+#        except (ValueError, KeyError), message:
+#            self.error_message.append(str(message))
+#            return
 
         # log the new user in
         self.user = cl.get(self.userid, 'username')
@@ -702,20 +806,8 @@ class Client:
         message = _('You are now registered, welcome!')
 
         # redirect to the item's edit page
-        raise Redirect, '%s%s%s?+ok_message=%s'%(
-            self.base, self.classname, self.userid,  urllib.quote(message))
-
-    def registerPermission(self, props):
-        ''' Determine whether the user has permission to register
-
-            Base behaviour is to check the user has "Web Registration".
-        '''
-        # registration isn't allowed to supply roles
-        if props.has_key('roles'):
-            return 0
-        if self.db.security.hasPermission('Web Registration', self.userid):
-            return 1
-        return 0
+        raise Redirect, '%suser%s?@ok_message=%s'%(
+            self.base, self.userid,  urllib.quote(message))
 
     def editItemAction(self):
         ''' Perform an edit of an item in the database.
@@ -723,16 +815,18 @@ class Client:
            See parsePropsFromForm and _editnodes for special variables
         '''
         # parse the props from the form
-        if 1:
+# XXX reinstate exception handling
 #        try:
+        if 1:
             props, links = self.parsePropsFromForm()
 #        except (ValueError, KeyError), message:
 #            self.error_message.append(_('Error: ') + str(message))
 #            return
 
         # handle the props
-        if 1:
+# XXX reinstate exception handling
 #        try:
+        if 1:
             message = self._editnodes(props, links)
 #        except (ValueError, KeyError, IndexError), message:
 #            self.error_message.append(_('Error: ') + str(message))
@@ -832,8 +926,6 @@ class Client:
         ''' Use the props in all_props to perform edit and creation, then
             use the link specs in all_links to do linking.
         '''
-#        print '='*75
-#        print 'ALL_PROPS', all_props
         # figure dependencies and re-work links
         deps = {}
         links = {}
@@ -848,10 +940,6 @@ class Client:
                 deps.setdefault((cn, nodeid), []).append(value)
                 links.setdefault(value, []).append((cn, nodeid, propname))
 
-#        print '*'*75
-#        print 'LINKS', links
-#        print 'DEPS', deps
-
         # figure chained dependencies ordering
         order = []
         done = {}
@@ -862,12 +950,10 @@ class Client:
                 if done.has_key(needed):
                     continue
                 tlist = deps.get(needed, [])
-#                print 'SOLVING', needed, tlist
                 for target in tlist:
                     if not done.has_key(target):
                         break
                 else:
-#                    print 'DONE', needed
                     done[needed] = 1
                     order.append(needed)
                     change = 1
@@ -1060,10 +1146,16 @@ class Client:
                 _('You do not have permission to search %s' %self.classname))
 
         # add a faked :filter form variable for each filtering prop
-# XXX migrate to new : @ + 
         props = self.db.classes[self.classname].getprops()
+        queryname = ''
         for key in self.form.keys():
-            if not props.has_key(key): continue
+            # special vars
+            if self.FV_QUERYNAME.match(key):
+                queryname = self.form[key].value.strip()
+                continue
+
+            if not props.has_key(key):
+                continue
             if isinstance(self.form[key], type([])):
                 # search for at least one entry which is not empty
                 for minifield in self.form[key]:
@@ -1073,32 +1165,30 @@ class Client:
                     continue
             else:
                 if not self.form[key].value: continue
-            self.form.value.append(cgi.MiniFieldStorage(':filter', key))
+            self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
         # handle saving the query params
-        if self.form.has_key(':queryname'):
-            queryname = self.form[':queryname'].value.strip()
-            if queryname:
-                # parse the environment and figure what the query _is_
-                req = HTMLRequest(self)
-                url = req.indexargs_href('', {})
+        if queryname:
+            # parse the environment and figure what the query _is_
+            req = HTMLRequest(self)
+            url = req.indexargs_href('', {})
 
-                # handle editing an existing query
-                try:
-                    qid = self.db.query.lookup(queryname)
-                    self.db.query.set(qid, klass=self.classname, url=url)
-                except KeyError:
-                    # create a query
-                    qid = self.db.query.create(name=queryname,
-                        klass=self.classname, url=url)
+            # handle editing an existing query
+            try:
+                qid = self.db.query.lookup(queryname)
+                self.db.query.set(qid, klass=self.classname, url=url)
+            except KeyError:
+                # create a query
+                qid = self.db.query.create(name=queryname,
+                    klass=self.classname, url=url)
 
-                    # and add it to the user's query multilink
-                    queries = self.db.user.get(self.userid, 'queries')
-                    queries.append(qid)
-                    self.db.user.set(self.userid, queries=queries)
+                # and add it to the user's query multilink
+                queries = self.db.user.get(self.userid, 'queries')
+                queries.append(qid)
+                self.db.user.set(self.userid, queries=queries)
 
-                # commit the query change to the database
-                self.db.commit()
+            # commit the query change to the database
+            self.db.commit()
 
     def searchPermission(self):
         ''' Determine whether the user has permission to search this class.
@@ -1152,12 +1242,18 @@ class Client:
         return 1
 
 
-    def showAction(self):
-        ''' Show a node
+    def showAction(self, typere=re.compile('[@:]type'),
+            numre=re.compile('[@:]number')):
+        ''' Show a node of a particular class/id
         '''
-# XXX allow : @ +
-        t = self.form[':type'].value
-        n = self.form[':number'].value
+        t = n = ''
+        for key in self.form.keys():
+            if typere.match(key):
+                t = self.form[key].value.strip()
+            elif numre.match(key):
+                n = self.form[key].value.strip()
+        if not t:
+            raise ValueError, 'Invalid %s number'%t
         url = '%s%s%s'%(self.db.config.TRACKER_WEB, t, n)
         raise Redirect, url
 

@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.34 2003-02-18 01:57:39 richard Exp $
+# $Id: rdbms_common.py,v 1.35 2003-02-25 10:19:32 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -33,7 +33,7 @@ from roundup.backends import locking
 # support
 from blobfiles import FileStorage
 from roundup.indexer import Indexer
-from sessions import Sessions
+from sessions import Sessions, OneTimeKeys
 
 # number of rows to keep in memory
 ROW_CACHE_SIZE = 100
@@ -53,6 +53,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.classes = {}
         self.indexer = Indexer(self.dir)
         self.sessions = Sessions(self.config)
+        self.otks = OneTimeKeys(self.config)
         self.security = security.Security(self)
 
         # additional transaction support for external files and the like

@@ -29,6 +29,7 @@ pending mailgw    Use in-reply-to for determining message lineage when subject
                   line lets us down
 pending mailgw    Allow different brackets delimiting [issueNNN] in Subject
 pending email     email sig could use a "remove me from this list"
+                  <URL>/<designator>?:remove:nosy=me
 pending project   switch to a Roundup instance for Roundup bug/feature tracking
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies

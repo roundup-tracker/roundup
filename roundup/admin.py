@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.37 2003-02-15 23:19:01 kedder Exp $
+# $Id: admin.py,v 1.38 2003-02-25 10:19:31 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -328,7 +328,8 @@ Command help:
         # XXX perform a unit test based on the user's selections
 
         # install!
-        init.install(tracker_home, template, backend)
+        init.install(tracker_home, template)
+        init.write_select_db(tracker_home, backend)
 
         print _('''
  You should now edit the tracker configuration file:

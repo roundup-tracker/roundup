@@ -30,7 +30,7 @@
 '''
 from roundup import hyperdb, date, password, roundupdb, security
 import metakit
-from sessions import Sessions
+from sessions import Sessions, OneTimeKeys
 import re, marshal, os, sys, weakref, time, calendar
 from roundup import indexer
 import locking
@@ -60,6 +60,7 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self._db = self.__open()
         self.indexer = Indexer(self.config.DATABASE, self._db)
         self.sessions = Sessions(self.config)
+        self.otks = OneTimeKeys(self.config)
         self.security = security.Security(self)
 
         os.umask(0002)
