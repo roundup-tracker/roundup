@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.69 2003-02-08 15:31:28 kedder Exp $ 
+# $Id: test_db.py,v 1.70 2003-02-15 14:26:38 kedder Exp $ 
 
 import unittest, os, shutil, time
 
@@ -65,6 +65,15 @@ class config:
     ANONYMOUS_REGISTER = 'deny'     # either 'deny' or 'allow'
     MESSAGES_TO_AUTHOR = 'no'       # either 'yes' or 'no'
     EMAIL_SIGNATURE_POSITION = 'bottom'
+    # Mysql connection data
+    MYSQL_DBHOST = 'localhost'
+    MYSQL_DBUSER = 'rounduptest'
+    MYSQL_DBPASSWORD = 'rounduptest'
+    MYSQL_DBNAME = 'rounduptest'
+    MYSQL_DATABASE = (MYSQL_DBHOST, MYSQL_DBUSER, MYSQL_DBPASSWORD, MYSQL_DBNAME)
+
+class nodbconfig(config):
+    MYSQL_DATABASE = (config.MYSQL_DBHOST, config.MYSQL_DBUSER, config.MYSQL_DBPASSWORD)
 
 class anydbmDBTestCase(MyTestCase):
     def setUp(self):
@@ -715,32 +724,22 @@ class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         self.db = gadfly.Database(config)
         setupSchema(self.db, 0, gadfly)
 
-
-# XXX to fix the mysql tests...
-# From: Andrey Lebedev <andrey@micro.lt>
-# I believe we can DROP DATABASE <dbname> and then CREATE DATABASE
-# <dbname>.. it's an easiest way. This will work if db user has all
-# privileges on database. 
-# Another way - to perform "SHOW TABLES" SQL and then perform DROP TABLE
-# <tblname> on each table...
 class mysqlDBTestCase(anydbmDBTestCase):
     def setUp(self):
         from roundup.backends import mysql
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
-        config.MYSQL_DATABASE = ('localhost', 'rounduptest', 'rounduptest',
-            'rounduptest')
         os.makedirs(config.DATABASE + '/files')
-        # open database for cleaning
-        self.db = mysql.Database(config, 'admin')
-        self.db.sql("DROP DATABASE %s" % config.MYSQL_DATABASE[1])
-        self.db.sql("CREATE DATABASE %s" % config.MYSQL_DATABASE[1])
-        self.db.close()
         # open database for testing
-        self.db = mysql.Database(config, 'admin')
-        
+        self.db = mysql.Database(config, 'admin')       
         setupSchema(self.db, 1, mysql)
+         
+    def tearDown(self):
+        from roundup.backends import mysql
+        self.db.close()
+        mysql.nuke(config)
+        anydbmDBTestCase.tearDown(self)
 
 class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):
@@ -748,17 +747,15 @@ class mysqlReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
         # remove previous test, ignore errors
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
-        config.MYSQL_DATABASE = ('localhost', 'rounduptest', 'rounduptest',
-            'rounduptest')
         os.makedirs(config.DATABASE + '/files')
-        # open database for cleaning
-        self.db = mysql.Database(config, 'admin')
-        self.db.sql("DROP DATABASE %s" % config.MYSQL_DATABASE[1])
-        self.db.sql("CREATE DATABASE %s" % config.MYSQL_DATABASE[1])
-        self.db.close()
-        # open database for testing
         self.db = mysql.Database(config)
         setupSchema(self.db, 0, mysql)
+
+    def tearDown(self):
+        from roundup.backends import mysql
+        self.db.close()
+        mysql.nuke(config)
+        anydbmReadOnlyDBTestCase.tearDown(self)
 
 class sqliteDBTestCase(anydbmDBTestCase):
     def setUp(self):
@@ -865,9 +862,27 @@ def suite():
     from roundup import backends
     p = []
     if hasattr(backends, 'mysql'):
-        p.append('mysql')
-        l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
-        l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
+        from roundup.backends import mysql
+        try:
+            # Check if we can run mysql tests
+            import MySQLdb
+            db = mysql.Database(nodbconfig, 'admin')
+            db.conn.select_db(config.MYSQL_DBNAME)
+            db.sql("SHOW TABLES");
+            tables = db.sql_fetchall()
+            if tables:
+                # Database should be empty. We don't dare to delete any data
+                raise DatabaseError, "(Database %s contains tables)" % config.MYSQL_DBNAME
+            db.sql("DROP DATABASE IF EXISTS %s" % config.MYSQL_DBNAME)
+            db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
+            db.close()
+        except (MySQLdb.ProgrammingError, DatabaseError), msg:
+            print "Warning! Mysql tests will not be performed", msg
+            print "See doc/mysql.txt for more details."
+        else:
+            p.append('mysql')
+            l.append(unittest.makeSuite(mysqlDBTestCase, 'test'))
+            l.append(unittest.makeSuite(mysqlReadOnlyDBTestCase, 'test'))
     #return unittest.TestSuite(l)
 
     if hasattr(backends, 'gadfly'):

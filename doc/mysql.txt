@@ -1,0 +1,44 @@
+=============
+MySQL Backend
+=============
+
+This is notes about mysql backend for roundup issue tracker.
+
+
+Prerequisites
+=============
+
+To use MySQL as backend for storing roundup data, you should additionally
+install:
+
+    1. MySQL RDBMS 3.23.34 or higher - http://www.mysql.com. Your MySQL
+       installation should support Berkeley DB (BDB) tabes for transaction
+       support.
+    2. Python interface to mysql - http://sourceforge.net/projects/mysql-python
+
+
+How to run mysql tests?
+=======================
+
+Roundup tests expect empty database available for use. There are two ways how to
+provide it:
+
+    1. If you have root permissions on mysql server, you can create necessary
+       database using this SQL sequence:
+
+       CREATE DATABASE rounduptest
+       GRANT ALL PRIVILEGES ON rounduptest TO rounduptest@localhost IDENTIFIED BY 'rounduptest'
+       FLUSH PRIVILEGES
+
+    2. If your administrator has provided you with database connection info, you
+       can modify MYSQL_* constants in test/test_db.py with corresponding
+       values.
+
+Note, that mysql database should not contain any tables. Tests will not dare to
+drop database with data.
+
+
+    Andrey Lebedev <andrey@micro.lt>
+
+
+ vim: et tw=80

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev
+# Copyright (c) 2003 Martynas Sklyzmantas, Andrey Lebedev <andrey@micro.lt>
 #
 # This module is free software, and you may redistribute it and/or modify
 # under the same terms as Python, so long as this copyright message and
@@ -29,6 +29,9 @@ class Database(Database):
         self.sql("BEGIN")
         try:
             self.database_schema = self.load_dbschema()
+        except MySQLdb.OperationalError, message:
+            if message[0] != ER.NO_DB_ERROR:
+                raise
         except MySQLdb.ProgrammingError, message:
             if message[0] != ER.NO_SUCH_TABLE:
                 raise DatabaseError, message
@@ -171,7 +174,7 @@ class MysqlClass:
             self.db.sql(query, vals)
             l += [x[0] for x in self.db.sql_fetchall()]
         if __debug__:
-            print >>hyperdb.DEBUG, 'find ... ', l
+            print >>hyperdb.DEBUG, 'find ... ', l            #db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
 
         # Remove duplicated ids
         d = {}
@@ -188,3 +191,9 @@ class IssueClass(MysqlClass, rdbms_common.IssueClass):
 class FileClass(MysqlClass, rdbms_common.FileClass):
     pass
 
+def nuke(config):
+    """ Clear all database contents and drop database itself"""
+    # Connect to db
+    db = Database(config, 'admin')
+    db.sql("DROP DATABASE %s" % config.MYSQL_DBNAME)
+    db.sql("CREATE DATABASE %s" % config.MYSQL_DBNAME)
