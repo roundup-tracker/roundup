@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.69.2.2 2002-09-03 02:55:26 richard Exp $
+# $Id: hyperdb.py,v 1.69.2.3 2002-09-03 03:28:26 richard Exp $
 
 __doc__ = """
 Hyperdatabase implementation, especially field types.
@@ -397,7 +397,7 @@ class Class:
                 raise KeyError, '"%s" has no property "%s"'%(self.classname,
                     key)
 
-            if isinstance(prop, Link):
+            if value is not None and isinstance(prop, Link):
                 if type(value) != type(''):
                     raise ValueError, 'link value must be String'
                 link_class = self.properties[key].classname
@@ -589,16 +589,18 @@ class Class:
             if isinstance(prop, Link):
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
-                if type(value) != type(''):
-                    raise ValueError, 'link value must be String'
-                if not num_re.match(value):
+                if value is not None and not isinstance(value, type('')):
+                    raise ValueError, 'property "%s" link value be a string'%(
+                        key)
+                if isinstance(value, type('')) and not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
                         raise IndexError, 'new property "%s": %s not a %s'%(
                             key, value, self.properties[key].classname)
 
-                if not self.db.hasnode(link_class, value):
+                if (value is not None and
+                        not self.db.getclass(link_class).hasnode(value)):
                     raise IndexError, '%s has no node %s'%(link_class, value)
 
                 if self.properties[key].do_journal:
@@ -1188,6 +1190,9 @@ def Choice(name, db, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.69.2.2  2002/09/03 02:55:26  richard
+# bug in multilink meant changes might not be detected correctly
+#
 # Revision 1.69.2.1  2002/07/10 06:30:47  richard
 #  . #571170 ] gdbm deadlock
 #
