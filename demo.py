@@ -2,9 +2,9 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.13 2004-07-27 01:59:27 richard Exp $
+# $Id: demo.py,v 1.14 2004-07-27 02:34:14 richard Exp $
 
-import sys, os, string, re, urlparse
+import sys, os, string, re, urlparse, ConfigParser
 import shutil, socket, errno, BaseHTTPServer
 from glob import glob
 
@@ -84,10 +84,9 @@ def run_demo():
             backend = sys.argv[1]
         install_demo(home, backend)
 
-    f = open(os.path.join(home, 'config.ini'), 'r')
-    url = re.search(r'^web\s*=\s*(http.+/)$', f.read(),
-        re.M|re.I).group(1)
-    f.close()
+    cfg = ConfigParser.ConfigParser()
+    cfg.read(os.path.join(home, 'config.ini'))
+    url = cfg.get('tracker', 'web')
     hostname, port = urlparse.urlparse(url)[1].split(':')
     port = int(port)
 
