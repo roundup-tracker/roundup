@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.67 $
+:Version: $Revision: 1.68 $
 
 .. contents::
 
@@ -97,8 +97,8 @@ installation:
    UNIX machine and want to restrict local access to roundup
 6. `additional language codecs`_
 
-For information about how Roundup installs, see the `maintenance
-documentation`_.
+For information about how Roundup installs, see the `administration
+guide`_.
 
 
 Basic Installation Steps
@@ -263,7 +263,7 @@ database.
 
 You may set your tracker up with the anydbm backend (which is guaranteed to be
 available) and switch to one of the other backends at any time using the
-instructions in the `maintenance documentation`_.
+instructions in the `administration guide`_.
 
 
 Configure a Web Interface
@@ -446,7 +446,7 @@ http://cjkpython.berlios.de/
 Maintenance
 ===========
 
-Read the separate `maintenance documentation`_ for information about how to
+Read the separate `administration guide`_ for information about how to
 perform common maintenance tasks with Roundup.
 
 
@@ -580,7 +580,7 @@ Next: `User Guide`_
 .. _`customisation documentation`: customizing.html
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
-.. _`maintenance documentation`: maintenance.html
+.. _`administration guide`: admin_guide.html
 .. _sqlite: http://www.hwaci.com/sw/sqlite/
 .. _metakit: http://www.equi4.com/metakit/
 

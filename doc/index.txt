@@ -10,7 +10,7 @@ Contents
 - `Frequently Asked Questions`_
 - `User Guide`_
 - Configuring and `Customising Roundup`_
-- `Maintaining Roundup Trackers`_
+- `Administering Roundup Trackers`_
 - `Roundup's Design`_ (original_)
 - `Developing Roundup`_ 
 - Contact_
@@ -112,7 +112,7 @@ See COPYING.txt in the software distribution for the licensing terms.
 .. _`Frequently Asked Questions`: FAQ.html
 .. _`User Guide`: user_guide.html
 .. _`Customising Roundup`: customizing.html
-.. _`Maintaining Roundup Trackers`: maintenance.html
+.. _`Administering Roundup Trackers`: admin_guide.html
 .. _`Roundup's Design`: design.html
 .. _`Developing Roundup`: developers.html
 .. _original: spec.html

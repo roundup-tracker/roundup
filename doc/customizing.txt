@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.110 $
+:Version: $Revision: 1.111 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -22,7 +22,7 @@ Customisation of Roundup can take one of six forms:
 2. database, or `tracker schema`_ changes
 3. "definition" class `database content`_ changes
 4. behavioural changes, through detectors_
-5. `access controls`_
+5. `security / access controls`_
 6. change the `web interface`_
 
 The third case is special because it takes two distinctly different forms
@@ -592,8 +592,8 @@ See "`adding a new field to the classic schema`_" for an example that
 requires database content changes.
 
 
-Access Controls
-===============
+Security / Access Controls
+==========================
 
 A set of Permissions is built into the security module by default:
 

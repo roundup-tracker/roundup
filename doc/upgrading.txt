@@ -3,7 +3,8 @@ Upgrading to newer versions of Roundup
 ======================================
 
 Please read each section carefully and edit your tracker home files
-accordingly.
+accordingly. Note that there is informaiton about upgrade procedures in the
+`administration guide`_.
 
 .. contents::
 
@@ -13,13 +14,9 @@ Migrating from 0.6 to 0.7
 0.7.0 Getting the current user id
 ---------------------------------
 
-Removed Database.curuserid attribute. Any code referencing this attribute should
-be replaced with a call to Database.getuid().
+Removed Database.curuserid attribute. Any code referencing this attribute
+should be replaced with a call to Database.getuid().
 
-0.7 creates indexes when using RDBMS backends. The yet-to-be-written
-'refreshdb' roundup-admin command will create most indexes, but you 
-might still need to create an index "create index ids_name_idx on 
-ids(name)".
 
 0.7.0 ZRoundup changes
 ----------------------
@@ -922,3 +919,4 @@ copy.
 
 .. _`customisation documentation`: customizing.html
 .. _`security documentation`: security.html
+.. _`administration guide`: admin.html

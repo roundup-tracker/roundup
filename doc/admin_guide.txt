@@ -1,8 +1,8 @@
-============================
-Maintaining Roundup Trackers
-============================
+====================
+Administration Guide
+====================
 
-:Version: $Revision: 1.3 $
+:Version: $Revision: 1.1 $
 
 .. contents::
 
@@ -39,6 +39,42 @@ There's two "installations" that we talk about when using Roundup:
    both choosing your "tracker home" and the DATABASE variable in
    config.py.
 
+
+Users and Security
+==================
+
+Roundup holds its own user database which primarily contains a username,
+password and email address for the user. Roundup *must* have its own user
+listing, in order to maintain internal consistency of its data. It is a
+relatively simple exercise to update this listing on a regular basis, or on
+demand, so that it matches an external listing (eg. unix passwd file, LDAP,
+etc.)
+
+Roundup identifies users in a number of ways:
+
+1. Through the web, users may be identified by either HTTP Basic
+   Authentication or cookie authentication. If you are running the web
+   server (roundup-server) through another HTTP server (eg. apache or IIS)
+   then that server may require HTTP Basic Authentication, and it will pass
+   the ``REMOTE_USER`` variable through to Roundup. If this variable is not
+   present, then Roundup defaults to using its own cookie-based login
+   mechanism.
+2. In email messages handled by roundup-mailgw, users are identified by the
+   From address in the message.
+
+In both cases, Roundup's behaviour when dealing with unknown users is
+controlled by Permissions defined in the "SECURITY SETTINGS" section of the
+tracker's ``dbinit.py`` module:
+
+Web Registration
+  If granted to the Anonymous Role, then anonymous users will be able to
+  register through the web.
+Email Registration
+  If granted to the Anonymous Role, then email messages from unknown users
+  will result in those users being registered with the tracker.
+
+More information about how to customise your tracker's security settings
+may be found in the `customisation documentation`_.
 
 Tasks
 =====
@@ -123,4 +159,5 @@ moved using the above steps) then you'll need to:
 Back to `Table of Contents`_
 
 .. _`Table of Contents`: index.html
+.. _`customisation documentation`: customizing.html
 
