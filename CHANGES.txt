@@ -1,7 +1,7 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2001-xx-xx - 0.2.7
+2001-??-?? - 0.2.7
 Feature:
  . Text searches are now case insensitive. All forms of text search use
    regular expressions now.
@@ -14,6 +14,10 @@ Fixed:
  . Reverted back to sending change messages to the web editor of a node so
    that the change note message is actually genrated.
  . CGI interface wasn't generating correct change messages.
+ . Notes entered during a change are saved to the messages list even if
+   there's no nosy list. No message is generated if there's no nosy list and
+   there's no change note (since it would just duplicates the journal).
+
 
 2001-08-08 - 0.2.6
 Note:
