@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.2 2002-09-18 07:04:37 richard Exp $
+# $Id: back_sqlite.py,v 1.3 2002-09-19 02:37:41 richard Exp $
 __doc__ = '''
 See https://pysqlite.sourceforge.net/ for pysqlite info
 '''
@@ -127,81 +127,4 @@ class Database(Database):
             else:
                 d[k] = v
         return d
-
-class Class(Class):
-    _marker = []
-    def get(self, nodeid, propname, default=_marker, cache=1):
-        '''Get the value of a property on an existing node of this class.
-
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.  'propname' must be the name of a property
-        of this class or a KeyError is raised.
-
-        'cache' indicates whether the transaction cache should be queried
-        for the node. If the node has been modified and you need to
-        determine what its values prior to modification are, you need to
-        set cache=0.
-        '''
-        if propname == 'id':
-            return nodeid
-
-        if propname == 'creation':
-            if not self.do_journal:
-                raise ValueError, 'Journalling is disabled for this class'
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                return self.db.getjournal(self.classname, nodeid)[0][1]
-            else:
-                # on the strange chance that there's no journal
-                return date.Date()
-        if propname == 'activity':
-            if not self.do_journal:
-                raise ValueError, 'Journalling is disabled for this class'
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                return self.db.getjournal(self.classname, nodeid)[-1][1]
-            else:
-                # on the strange chance that there's no journal
-                return date.Date()
-        if propname == 'creator':
-            if not self.do_journal:
-                raise ValueError, 'Journalling is disabled for this class'
-            journal = self.db.getjournal(self.classname, nodeid)
-            if journal:
-                name = self.db.getjournal(self.classname, nodeid)[0][2]
-            else:
-                return None
-            try:
-                return self.db.user.lookup(name)
-            except KeyError:
-                # the journaltag user doesn't exist any more
-                return None
-
-        # get the property (raises KeyErorr if invalid)
-        prop = self.properties[propname]
-
-        # get the node's dict
-        d = self.db.getnode(self.classname, nodeid) #, cache=cache)
-
-        if not d.has_key(propname):
-            if default is self._marker:
-                if isinstance(prop, Multilink):
-                    return []
-                else:
-                    return None
-            else:
-                return default
-
-        # special handling for some types
-        if isinstance(prop, Multilink):
-            # don't pass our list to other code
-            return d[propname][:]
-        elif d[propname] is None:
-            # always return None right now, no conversion
-            return None
-        elif isinstance(prop, Boolean) or isinstance(prop, Number):
-            # turn Booleans and Numbers into integers
-            return int(d[propname])
-
-        return d[propname]
 

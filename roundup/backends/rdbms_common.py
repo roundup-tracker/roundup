@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.2 2002-09-18 07:04:38 richard Exp $
+# $Id: rdbms_common.py,v 1.3 2002-09-19 02:37:41 richard Exp $
 
 # standard python modules
 import sys, os, time, re, errno, weakref, copy
@@ -52,6 +52,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         ''' Fetch a single row. If there's nothing to fetch, return None.
         '''
         raise NotImplemented
+
+    def sql_stringquote(self, value):
+        ''' Quote the string so it's safe to put in the 'sql quotes'
+        '''
+        return re.sub("'", "''", str(value))
 
     def save_dbschema(self, cursor, schema):
         ''' Save the schema definition that the database currently implements
@@ -1588,6 +1593,10 @@ class Class(hyperdb.Class):
             "sort" and "group" are (dir, prop) where dir is '+', '-' or None
                                and prop is a prop name or None
             "search_matches" is {nodeid: marker}
+
+            The filter must match all properties specificed - but if the
+            property value to match is a list, any one of the values in the
+            list may match for that property to match.
         '''
         cn = self.classname
 
@@ -1599,6 +1608,7 @@ class Class(hyperdb.Class):
         a = self.db.arg
         for k, v in filterspec.items():
             propclass = props[k]
+            # now do other where clause stuff
             if isinstance(propclass, Multilink):
                 tn = '%s_%s'%(cn, k)
                 frum.append(tn)
@@ -1607,9 +1617,35 @@ class Class(hyperdb.Class):
                     where.append('id=%s.nodeid and %s.linkid in (%s)'%(tn,tn,s))
                     args = args + v
                 else:
-                    where.append('id=%s.nodeid and %s.linkid = %s'%(tn, tn,
-                        self.arg))
+                    where.append('id=%s.nodeid and %s.linkid = %s'%(tn, tn, a))
                     args.append(v)
+            elif isinstance(propclass, String):
+                if not isinstance(v, type([])):
+                    v = [v]
+
+                # Quote the bits in the string that need it and then embed
+                # in a "substring" search. Note - need to quote the '%' so
+                # they make it through the python layer happily
+                v = ['%%'+self.db.sql_stringquote(s)+'%%' for s in v]
+
+                # now add to the where clause
+                where.append(' or '.join(["_%s LIKE '%s'"%(k, s) for s in v]))
+                # note: args are embedded in the query string now
+            elif isinstance(propclass, Link):
+                if isinstance(v, type([])):
+                    if '-1' in v:
+                        v.remove('-1')
+                        xtra = ' or _%s is NULL'%k
+                    s = ','.join([a for x in v])
+                    where.append('(_%s in (%s)%s)'%(k, s, xtra))
+                    args = args + v
+                else:
+                    if v == '-1':
+                        v = None
+                        where.append('_%s is NULL'%k)
+                    else:
+                        where.append('_%s=%s'%(k, a))
+                        args.append(v)
             else:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
@@ -1626,9 +1662,20 @@ class Class(hyperdb.Class):
             where.append('id in (%s)'%s)
             args = args + v
 
-        # figure the order by clause
+        # "grouping" is just the first-order sorting in the SQL fetch
+        # can modify it...)
         orderby = []
         ordercols = []
+        if group[0] is not None and group[1] is not None:
+            if group[0] != '-':
+                orderby.append('_'+group[1])
+                ordercols.append('_'+group[1])
+            else:
+                orderby.append('_'+group[1]+' desc')
+                ordercols.append('_'+group[1])
+
+        # now add in the sorting
+        group = ''
         if sort[0] is not None and sort[1] is not None:
             direction, colname = sort
             if direction != '-':
@@ -1637,6 +1684,10 @@ class Class(hyperdb.Class):
                     ordercols.append('max(%s__journal.date) as activity'%cn)
                     frum.append('%s__journal'%cn)
                     where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
+                    # we need to group by id
+                    group = ' group by id'
+                elif colname == 'id':
+                    orderby.append(colname)
                 else:
                     orderby.append('_'+colname)
                     ordercols.append('_'+colname)
@@ -1646,46 +1697,42 @@ class Class(hyperdb.Class):
                     ordercols.append('max(%s__journal.date) as activity'%cn)
                     frum.append('%s__journal'%cn)
                     where.append('%s__journal.nodeid = _%s.id'%(cn, cn))
+                    # we need to group by id
+                    group = ' group by id'
+                elif colname == 'id':
+                    orderby.append(colname+' desc')
+                    ordercols.append(colname)
                 else:
                     orderby.append('_'+colname+' desc')
                     ordercols.append('_'+colname)
 
-        # figure the group by clause
-        groupby = []
-        groupcols = []
-        if group[0] is not None and group[1] is not None:
-            if group[0] != '-':
-                groupby.append('_'+group[1])
-                groupcols.append('_'+group[1])
-            else:
-                groupby.append('_'+group[1]+' desc')
-                groupcols.append('_'+group[1])
-
         # construct the SQL
         frum = ','.join(frum)
-        where = ' and '.join(where)
+        if where:
+            where = ' where ' + (' and '.join(where))
+        else:
+            where = ''
         cols = ['id']
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))
         else:
             order = ''
-        if 0: #groupby:
-            cols = cols + groupcols
-            group = ' group by %s'%(','.join(groupby))
-        else:
-            group = ''
         cols = ','.join(cols)
-        sql = 'select %s from %s where %s%s%s'%(cols, frum, where, order,
-            group)
+        sql = 'select %s from %s %s%s%s'%(cols, frum, where, group, order)
         args = tuple(args)
         if __debug__:
             print >>hyperdb.DEBUG, 'filter', (self, sql, args)
         cursor = self.db.conn.cursor()
+        print (sql, args)
         cursor.execute(sql, args)
+        l = cursor.fetchall()
+        print l
 
-        # return the IDs
-        return [row[0] for row in cursor.fetchall()]
+        # return the IDs (the first column)
+        # XXX The filter(None, l) bit is sqlite-specific... if there's _NO_
+        # XXX matches to a fetch, it returns NULL instead of nothing!?!
+        return filter(None, [row[0] for row in l])
 
     def count(self):
         '''Get the number of nodes in this class.

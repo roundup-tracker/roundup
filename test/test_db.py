@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.49 2002-09-18 07:04:39 richard Exp $ 
+# $Id: test_db.py,v 1.50 2002-09-19 02:37:41 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -476,6 +476,40 @@ class anydbmDBTestCase(MyTestCase):
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {'1': {}})
 
+    def filteringSetup(self):
+        for user in (
+                {'username': 'bleep'},
+                {'username': 'blop'},
+                {'username': 'blorp'}):
+            self.db.user.create(**user)
+        iss = self.db.issue
+        for issue in (
+                {'title': 'issue one', 'status': '2'},
+                {'title': 'issue two', 'status': '1'},
+                {'title': 'issue three', 'status': '1', 'nosy': ['1','2']}):
+            self.db.issue.create(**issue)
+        self.db.commit()
+        return self.assertEqual, self.db.issue.filter
+
+    def testFilteringString(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'title': 'issue one'}, ('+','id'), (None,None)), ['1'])
+        ae(filt(None, {'title': 'issue'}, ('+','id'), (None,None)),
+            ['1','2','3'])
+
+    def testFilteringLink(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'status': '1'}, ('+','id'), (None,None)), ['2','3'])
+
+    def testFilteringMultilink(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'nosy': '2'}, ('+','id'), (None,None)), ['3'])
+
+    def testFilteringMany(self):
+        ae, filt = self.filteringSetup()
+        ae(filt(None, {'nosy': '2', 'status': '1'}, ('+','id'), (None,None)),
+            ['3'])
+
 class anydbmReadOnlyDBTestCase(MyTestCase):
     def setUp(self):
         from roundup.backends import anydbm
@@ -678,7 +712,21 @@ def suite():
          unittest.makeSuite(anydbmDBTestCase, 'test'),
          unittest.makeSuite(anydbmReadOnlyDBTestCase, 'test')
     ]
-#    return unittest.TestSuite(l)
+    #return unittest.TestSuite(l)
+
+    try:
+        import sqlite
+        l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
+        l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
+    except:
+        print 'sqlite module not found, skipping gadfly DBTestCase'
+
+    try:
+        import gadfly
+        l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
+        l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
+    except:
+        print 'gadfly module not found, skipping gadfly DBTestCase'
 
     try:
         import bsddb
@@ -693,20 +741,6 @@ def suite():
         l.append(unittest.makeSuite(bsddb3ReadOnlyDBTestCase, 'test'))
     except:
         print 'bsddb3 module not found, skipping bsddb3 DBTestCase'
-
-    try:
-        import gadfly
-        l.append(unittest.makeSuite(gadflyDBTestCase, 'test'))
-        l.append(unittest.makeSuite(gadflyReadOnlyDBTestCase, 'test'))
-    except:
-        print 'gadfly module not found, skipping gadfly DBTestCase'
-
-    try:
-        import sqlite
-        l.append(unittest.makeSuite(sqliteDBTestCase, 'test'))
-        l.append(unittest.makeSuite(sqliteReadOnlyDBTestCase, 'test'))
-    except:
-        print 'sqlite module not found, skipping gadfly DBTestCase'
 
     try:
         import metakit

@@ -445,7 +445,7 @@ class HTMLItem(HTMLPermissions):
     def __getitem__(self, item):
         ''' return an HTMLProperty instance
         '''
-       #print 'HTMLItem.getitem', (self, item)
+        #print 'HTMLItem.getitem', (self, item)
         if item == 'id':
             return self._nodeid
 

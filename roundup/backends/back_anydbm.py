@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.80 2002-09-17 23:59:59 richard Exp $
+#$Id: back_anydbm.py,v 1.81 2002-09-19 02:37:41 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1499,6 +1499,10 @@ class Class(hyperdb.Class):
             "sort" and "group" are (dir, prop) where dir is '+', '-' or None
                                and prop is a prop name or None
             "search_matches" is {nodeid: marker}
+
+            The filter must match all properties specificed - but if the
+            property value to match is a list, any one of the values in the
+            list may match for that property to match.
         '''
         cn = self.classname
 

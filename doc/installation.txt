@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.23 $
+:Version: $Revision: 1.24 $
 
 .. contents::
 
@@ -35,20 +35,40 @@ holds issues which have priorities and statuses. Each issue may also have a
 set of messages which are disseminated to the issue's list of nosy users.
 
 
-Extended Template
------------------
+Backends
+--------
 
-The extended template adds additional information to issues: product,
-platform, version, targetversion and supportcall.
-There is an additional class for
-handling support calls, which includes a time log, customername, rate and
-source.
+The actual storage of Roundup tracker information is handled by backends.
+There's several to choose from, each with benefits and limitations:
 
-The priorty class has different default entries too: "fatal-bug", "bug",
-"usability" and "feature".
+**anydbm**
+  This backend is guaranteed to work on any system that Python runs on. It
+  will generally choose the best *dbm backend that is available on your system
+  (from the list dbhash, gdbm, dbm, dumbdbm). It is the least scaleable of all
+  backends, but performs well enough for a smallish tracker (a couple of
+  thousand issues, under fifty users, ...).
+**bsddb**
+  This effectively the same as anydbm, but uses the bsddb backend. This allows
+  it to gain some performance and scaling benefits.
+**bsddb3**
+  Again, this effectively the same as anydbm, but uses the bsddb3 backend.
+  This allows it to gain some performance and scaling benefits.
+**sqlite**
+  This uses the SQLite embedded RDBMS to provide a fast, scaleable backend.
+  There are no limitations.
+**gadfly**
+  This is a proof-of-concept relational database backend, not really intended
+  for actual production use, although it can be. It uses the Gadfly RDBMS
+  to store data. It is unable to perform string searches due to gadfly not
+  having a LIKE operation. It should scale well, assuming a client/server
+  setup is used.
+**metakit**
+  This backend is implemented over the metakit storage system, using Mk4Py as
+  the interface. It scales much better than the *dbm backends, but has some
+  missing features:
 
-Users of this template will want to change the contents of the product
-class as soon as the tracker is created.
+  - you may not unset properties once they are set
+  - journal retrieval is not implemented 
 
 
 Prerequisites

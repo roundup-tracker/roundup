@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.39 2002-09-18 06:33:06 richard Exp $
+# $Id: client.py,v 1.40 2002-09-19 02:37:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -473,19 +473,6 @@ class Client:
         '''
         self.userid = self.db.user.lookup('anonymous')
         self.user = 'anonymous'
-
-    def logout(self):
-        ''' Make us really anonymous - nuke the cookie too
-        '''
-        self.make_user_anonymous()
-
-        # construct the logout cookie
-        now = Cookie._getdate()
-        path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
-            ''))
-        self.additional_headers['Set-Cookie'] = \
-           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)
-        self.login()
 
     def opendb(self, user):
         ''' Open the database.
