@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.6 2003-10-25 11:41:06 jlgijsbers Exp $
+# $Id: demo.py,v 1.7 2003-11-06 14:24:57 jlgijsbers Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -91,6 +91,7 @@ def run_demo():
 3. Re-start the server by running "python demo.py" again.
 4. Re-initialise the server by running "python demo.py nuke".''' % url
 
+    sys.argv = sys.argv[:1]
     roundup_server.run(port, success_message)
 
 if __name__ == '__main__':
