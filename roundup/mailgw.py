@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.69 2002-05-06 23:37:21 richard Exp $
+$Id: mailgw.py,v 1.70 2002-05-06 23:40:07 richard Exp $
 '''
 
 
@@ -823,6 +823,7 @@ def parseContent(content, keep_citations, keep_body,
             # ditch the stupid Outlook quoting of the entire original message
             break
 
+
         # and add the section to the output
         l.append(section)
     # we only set content for those who want to delete cruft from the
@@ -833,6 +834,10 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.69  2002/05/06 23:37:21  richard
+# Tweaking the signature deletion from mail messages.
+# Added nuking of the "-----Original Message-----" crap from Outlook.
+#
 # Revision 1.68  2002/05/02 07:56:34  richard
 # . added option to automatically add the authors and recipients of messages
 #   to the nosy lists with the options ADD_AUTHOR_TO_NOSY (default 'new') and
