@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.25 2001-10-11 00:17:51 richard Exp $
+# $Id: hyperdb.py,v 1.26 2001-10-16 03:48:01 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -644,15 +644,6 @@ class Class:
                 elif t == 2 and not v.search(node[k]):
                     # RE search
                     break
-#                elif t == 3 and node[k][:len(v)] != v:
-#                    # start anchored
-#                    break
-#                elif t == 4 and node[k][-len(v):] != v:
-#                    # end anchored
-#                    break
-#                elif t == 5 and node[k].find(v) == -1:
-#                    # substring search
-#                    break
                 elif t == 6 and node[k] != v:
                     # straight value comparison for the other types
                     break
@@ -849,6 +840,12 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/10/11 00:17:51  richard
+# Reverted a change in hyperdb so the default value for missing property
+# values in a create() is None and not '' (the empty string.) This obviously
+# breaks CSV import/export - the string 'None' will be created in an
+# export/import operation.
+#
 # Revision 1.24  2001/10/10 03:54:57  richard
 # Added database importing and exporting through CSV files.
 # Uses the csv module from object-craft for exporting if it's available.

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.28 2001-10-13 00:07:39 richard Exp $
+# $Id: roundup-admin,v 1.29 2001-10-16 03:48:01 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -233,9 +233,9 @@ def do_set(db, args, comma_sep=0):
 
 def do_find(db, args, comma_sep=0):
     '''Usage: find classname propname=value ...
-    Find the nodes of the given class with a given property value.
+    Find the nodes of the given class with a given link property value.
 
-    Find the nodes of the given class with a given property value. The
+    Find the nodes of the given class with a given link property value. The
     value may be either the nodeid of the linked node, or its key value.
     '''
     classname = args[0]
@@ -245,8 +245,12 @@ def do_find(db, args, comma_sep=0):
     propname, value = args[1].split('=')
     num_re = re.compile('^\d+$')
     if not num_re.match(value):
-        propcl = cl.properties[propname].classname
-        propcl = db.getclass(propcl)
+        propcl = cl.properties[propname]
+	if (not isinstance(propcl, hyperdb.Link) and not
+                isinstance(type, hyperdb.Multilink)):
+            print 'You may only "find" link properties'
+            return 1
+        propcl = db.getclass(propcl.classname)
         value = propcl.lookup(value)
 
     # now do the find
@@ -597,6 +601,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2001/10/13 00:07:39  richard
+# More help in admin tool.
+#
 # Revision 1.27  2001/10/11 23:43:04  richard
 # Implemented the comma-separated printing option in the admin tool.
 # Fixed a typo (more of a vim-o actually :) in mailgw.
