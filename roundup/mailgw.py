@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.53 2002-01-16 07:20:54 richard Exp $
+$Id: mailgw.py,v 1.54 2002-01-16 09:14:45 grubert Exp $
 '''
 
 
@@ -538,6 +538,8 @@ not find a text/plain part to use.
         #
         files = []
         for (name, mime_type, data) in attachments:
+            if not name:
+                name = "unnamed"
             files.append(self.db.file.create(type=mime_type, name=name,
                 content=data))
 
@@ -747,6 +749,9 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.53  2002/01/16 07:20:54  richard
+# simple help command for mailgw
+#
 # Revision 1.52  2002/01/15 00:12:40  richard
 # #503340 ] creating issue with [asignedto=p.ohly]
 #
