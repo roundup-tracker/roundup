@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.41 2001-11-15 10:26:01 richard Exp $
+# $Id: htmltemplate.py,v 1.42 2001-11-21 03:40:54 richard Exp $
 
 import os, re, StringIO, urllib, cgi, errno
 
@@ -51,7 +51,18 @@ class TemplateFunctions:
             return '[Field: not called from item]'
         propclass = self.properties[property]
         if self.nodeid:
-            value = self.cl.get(self.nodeid, property)
+            # make sure the property is a valid one
+            # TODO: this tests, but we should handle the exception
+            prop_test = self.cl.getprops()[property]
+
+            # get the value for this property
+            try:
+                value = self.cl.get(self.nodeid, property)
+            except KeyError:
+                # a KeyError here means that the node doesn't have a value
+                # for the specified property
+                if isinstance(propclass, hyperdb.Multilink): value = []
+                else: value = ''
         else:
             # TODO: pull the value from the form
             if isinstance(propclass, hyperdb.Multilink): value = []
@@ -850,6 +861,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.41  2001/11/15 10:26:01  richard
+#  . missing "return" in filter_section (thanks Roch'e Compaan)
+#
 # Revision 1.40  2001/11/03 01:56:51  richard
 # More HTML compliance fixes. This will probably fix the Netscape problem
 # too.
