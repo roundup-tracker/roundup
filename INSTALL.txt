@@ -28,12 +28,15 @@ If there are errors, please let us know!
 Installing the Software
 -----------------------
 
-1. "./setup.py install"
-2. At present, the programs aren't installed, so you will need to copy:
-      roundup-admin
-      roundup-mailgw
-      roundup-server
-   to /usr/local/bin if you wish to have them installed.
+1. Run:
+
+      python setup.py install
+
+2. If you want the scripts installed, also run the following command. If
+   you would prefer the scripts installed in somewhere other than
+   /usr/local/bin, add "--install-dir=<dir>" to the command.
+
+      python setup.py install_scripts
 
 
 
@@ -42,7 +45,7 @@ Initial Setup
 
 Instance
 --------
-Try "./roundup-admin init" :)
+Run "./roundup-admin init". This initialises a roundup instance.
 
 Roundup is configurable using a localconfig.py file in the instance home.
 It may have the following variable declarations:
