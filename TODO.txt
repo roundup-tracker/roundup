@@ -32,5 +32,6 @@ pending  better help message for mailgw
          feature request #558562
 pending  Navigating around the issues
          feature request #559149
+pending  Allow multiple email addresses at one mailgw, with different default
+         classes and property values
 ongoing  any bugs
-
