@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.198 2004-11-11 21:10:05 richard Exp $
+# $Id: client.py,v 1.199 2004-11-11 21:11:41 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -641,26 +641,26 @@ class Client:
             return cgitb.pt_html(i18n=self.translator)
 
     # these are the actions that are available
-    actions = {
-        'edit':        EditItemAction,
-        'editcsv':     EditCSVAction,
-        'new':         NewItemAction,
-        'register':    RegisterAction,
-        'confrego':    ConfRegoAction,
-        'passrst':     PassResetAction,
-        'login':       LoginAction,
-        'logout':      LogoutAction,
-        'search':      SearchAction,
-        'retire':      RetireAction,
-        'show':        ShowAction,
-        'export_csv':  ExportCSVAction,
-    }
+    actions = (
+        ('edit',        EditItemAction),
+        ('editcsv',     EditCSVAction),
+        ('new',         NewItemAction),
+        ('register',    RegisterAction),
+        ('confrego',    ConfRegoAction),
+        ('passrst',     PassResetAction),
+        ('login',       LoginAction),
+        ('logout',      LogoutAction),
+        ('search',      SearchAction),
+        ('retire',      RetireAction),
+        ('show',        ShowAction),
+        ('export_csv',  ExportCSVAction),
+    )
     def handle_action(self):
         ''' Determine whether there should be an Action called.
 
             The action is defined by the form variable :action which
             identifies the method on this object to call. The actions
-            are defined in the "actions" dictionary on this class.
+            are defined in the "actions" sequence on this class.
 
             Actions may return a page (by default HTML) to return to the
             user, bypassing the usual template rendering.
@@ -678,17 +678,12 @@ class Client:
                 # tracker-defined action
                 action_klass = self.instance.cgi_actions[action]
             else:
-                if isinstance(self.actions, type({})):
-                    if not self.actions.has_key(action):
-                        raise ValueError, 'No such action "%s"'%action
-                    action_class = self.actions[action]
+                # go with a default
+                for name, action_klass in self.actions:
+                    if name == action:
+                        break
                 else:
-                    # backwards-compatible sequence
-                    for name, action_klass in self.actions:
-                        if name == action:
-                            break
-                    else:
-                        raise ValueError, 'No such action "%s"'%action
+                    raise ValueError, 'No such action "%s"'%action
 
             # call the mapped action
             if isinstance(action_klass, type('')):
