@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.85 2003-04-24 07:19:58 richard Exp $
+# $Id: roundupdb.py,v 1.86 2003-04-27 02:24:37 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -133,23 +133,27 @@ class IssueClass:
         # anonymous
         if (users.get(authid, 'username') != 'anonymous' and
                 not r.has_key(authid)):
-            if self.db.config.MESSAGES_TO_AUTHOR == 'yes':
-                # always CC the author of the message
-                sendto.append(authid)
-                recipients.append(authid)
-            elif self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues:
-                # only CC the author if the issue is new
-                sendto.append(authid)
-                recipients.append(authid)
+            if (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
+                (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues)):
+                # make sure they have an address
+                add = users.get(authid, 'address')
+                if add:
+                    # send it to them
+                    sendto.append(add)
+                    recipients.append(authid)
+
         r[authid] = 1
 
         # now deal with cc people.
         for cc_userid in cc :
             if r.has_key(cc_userid):
                 continue
-            # send it to them
-            sendto.append(cc_userid)
-            recipients.append(cc_userid)
+            # make sure they have an address
+            add = users.get(cc_userid, 'address')
+            if add:
+                # send it to them
+                sendto.append(add)
+                recipients.append(cc_userid)
 
         # now figure the nosy people who weren't recipients
         nosy = self.get(nodeid, whichnosy)
@@ -161,9 +165,12 @@ class IssueClass:
                 continue
             # make sure they haven't seen the message already
             if not r.has_key(nosyid):
-                # send it to them
-                sendto.append(nosyid)
-                recipients.append(nosyid)
+                # make sure they have an address
+                add = users.get(nosyid, 'address')
+                if add:
+                    # send it to them
+                    sendto.append(add)
+                    recipients.append(nosyid)
 
         # generate a change note
         if oldvalues:
@@ -173,9 +180,6 @@ class IssueClass:
 
         # we have new recipients
         if sendto:
-            # map userids to addresses
-            sendto = [users.get(i, 'address') for i in sendto]
-
             # update the message's recipients list
             messages.set(msgid, recipients=recipients)
 
