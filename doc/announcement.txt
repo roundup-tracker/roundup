@@ -1,20 +1,13 @@
-I'm proud to release this 7th major feature release of Roundup.
+This release fixes some bugs in the initial 0.7 release of Roundup:
 
-Version 0.7 introduces far too many features to list here so I've put
-together a What's New page:
-
-  http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
-
-Some highlights:
-
-- added postgresql backend
-- trackers using postgresql or mysql backends may have many users
-- new "actor" automatic property (user who caused the last "activity")
-- RDBMS backends have data typed columns and indexes on several columns
-- registration may be concluded by replying to the confirmation email
-- HTML templating permission checks are greatly simplified
-- database exports now include full journals
-- IMAP support in the mail gateway
+- several temp files made it into the source distribution (sf bug 949243)
+- typo in roundup/instance.py
+- missing CRLF var in rfc822.py (sf patch 949471)
+- fix user creation page
+- have roundup server pass though the cause of a "403 Forbidden" response
+- fix schema mutation in sqlite backends (thanks Tamer Fahmy)
+- make popup Javascript IE 5.0 friendly (thanks Marlon van den Berg)
+- fix RDBMS import (thanks Tamer Fahmy)
 
 Known issues:
 

@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64 2004-05-05 02:05:43 richard Exp $
+# $Id: setup.py,v 1.64.2.1 2004-05-10 01:55:10 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -217,21 +217,16 @@ from Ka-Ping Yee in the Software Carpentry "Track" design competition.
 If you're upgrading from an older version of Roundup you *must* follow
 the "Software Upgrade" guidelines given in the maintenance documentation.
 
-This release introduces far too many features to list here so I've put
-together a What's New page:
+This release fixes some bugs in the previous release:
 
-  http://roundup.sourceforge.net/doc-0.7/whatsnew-0.7.html
-
-Some highlights:
-
-- added postgresql backend
-- trackers using postgresql or mysql backends may have many users
-- new "actor" automatic property (user who caused the last "activity")
-- RDBMS backends have data typed columns and indexes on several columns
-- registration may be concluded by replying to the confirmation email
-- HTML templating permission checks are greatly simplified
-- database exports now include full journals
-- IMAP support in the mail gateway
+- several temp files made it into the source distribution (sf bug 949243)
+- typo in roundup/instance.py
+- missing CRLF var in rfc822.py (sf patch 949471)
+- fix user creation page
+- have roundup server pass though the cause of a "403 Forbidden" response
+- fix schema mutation in sqlite backends (thanks Tamer Fahmy)
+- make popup Javascript IE 5.0 friendly (thanks Marlon van den Berg)
+- fix RDBMS import (thanks Tamer Fahmy)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
