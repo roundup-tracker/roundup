@@ -180,7 +180,7 @@ class Database(rdbms_common.Database):
         self.cursor.execute(sql, (table_name, index_name))
         return self.cursor.fetchone()[0]
 
-    def create_class_table(self, spec, create_sequence=True):
+    def create_class_table(self, spec, create_sequence=1):
         if create_sequence:
             sql = 'CREATE SEQUENCE _%s_ids'%spec.classname
             if __debug__:
