@@ -26,7 +26,7 @@
    <form method="POST" action="">
     <input size="10" name="__login_name"><br>
     <input size="10" type="password" name="__login_password"><br>
-    <input type="submit" name="@action" value="login">
+    <input type="submit" name="@action" value="Login" i18n:attributes="value">
     <span tal:replace="structure request/indexargs_form" />
    </form>
    <a tal:condition="python:request.user.hasPermission('Web Registration')"
