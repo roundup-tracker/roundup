@@ -13,6 +13,35 @@ steps.
 
 .. contents::
 
+Migrating from 0.7.10
+=============================
+
+0.7.10 Security assertions
+--------------------------
+
+Some security assertions were missing in relation to stored query editing.
+You should edit the following tal statements into the ``page.html`` template:
+
+   <p class="classblock">
+    <b>Your Queries</b> (<a href="query?@template=edit">edit</a>)<br>
+
+becomes::
+
+   <p class="classblock"
+      tal:condition="python:request.user.hasPermission('View', 'query')">
+     <b>Your Queries</b> (<a href="query?@template=edit">edit</a>)<br>
+
+And the ``issue.search.html`` template:
+
+  <tr>
+  <th>Query name**:</th>
+
+becomes::
+
+  <tr tal:condition="python:request.user.hasPermission('Edit', 'query')">
+  <th>Query name**:</th>
+
+
 Migrating from 0.7.2 to 0.7.3
 =============================
 

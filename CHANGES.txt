@@ -8,7 +8,8 @@ Fixed:
 - fix typo (sf patch 1076629)
 - fix hyperlinking of items (sf bug 1080251)
 - fix roundup-admin find command handling of Multilinks
-- fix some security assertions (sf bug 1085481)
+- fix some security assertions (sf bug 1085481) (see doc/upgrading.txt for
+  notes)
 
 
 2004-10-26 0.7.9
