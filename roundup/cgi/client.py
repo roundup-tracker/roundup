@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.60 2002-12-10 06:01:59 richard Exp $
+# $Id: client.py,v 1.61 2002-12-10 23:39:40 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1238,6 +1238,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
         elif isinstance(proptype, hyperdb.Link):
             # see if it's the "no selection" choice
             if value == '-1':
+                # if we're creating, just don't include this property
+                if not nodeid:
+                    continue
                 value = None
             else:
                 # handle key values

@@ -19,6 +19,7 @@ are given with the most recent entry first.
 - detect and break email loops (sf bug 640854)
 - finished of handling of retired flag in filter() (sf bug 635260)
 - allow StringHTMLProperty in MultilinkHTMLProperty test to work
+- don't set explicit None Link properties in web create
 
 
 2002-11-07 0.5.2
