@@ -2,7 +2,7 @@
 Roundup FAQ
 ===========
 
-:Version: $Revision: 1.20 $
+:Version: $Revision: 1.21 $
 
 .. contents::
 
@@ -118,9 +118,9 @@ This is based upon the template markup language in Zope called, oddly
 enough "Zope Page Templates". There's documentation in the Roundup
 customisation_ documentation. For more information have a look at:
 
-   http://www.zope.org/Documentation/Books/ZopeBook/current/contents
+   http://www.zope.org/Documentation/Books/ZopeBook/2_6Edition/ 
 
-specifically chapter 5 "Using Zope Page Templates" and chapter 9 "Advanced
+specifically chapter 10 "Using Zope Page Templates" and chapter 14 "Advanced
 Page Templates".
 
 
