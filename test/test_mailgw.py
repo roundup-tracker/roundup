@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.63 2003-12-04 23:34:25 richard Exp $
+# $Id: test_mailgw.py,v 1.64 2004-01-20 00:11:51 richard Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -20,7 +20,7 @@ SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
 
 from roundup.mailgw import MailGW, Unauthorized, uidFromAddress, \
     parseContent, IgnoreLoop, IgnoreBulk
-from roundup import init, instance, rfc2822
+from roundup import init, instance, rfc2822, __version__
 
 
 class Message(rfc822.Message):
@@ -39,18 +39,25 @@ class DiffHelper:
         del new['date'], old['date']
 
         if not new == old:
-            res = ['Generated message not correct (diff follows):']
+            res = []
 
             for key in new.keys():
-                if new[key] != old[key]:
+                if key.lower() == 'x-roundup-version':
+                    # version changes constantly, so handle it specially
+                    if new[key] != __version__:
+                        res.append('  %s: %s != %s' % (key, __version__,
+                            new[key]))
+                elif new[key] != old[key]:
                     res.append('  %s: %s != %s' % (key, old[key], new[key]))
-            
+
             body_diff = self.compareStrings(new.fp.read(), old.fp.read())
             if body_diff:
                 res.append('')
                 res.extend(body_diff)
 
-            raise AssertionError, '\n'.join(res)
+            if res:
+                res.insert(0, 'Generated message not correct (diff follows):')
+                raise AssertionError, '\n'.join(res)
     
     def compareStrings(self, s2, s1):
         '''Note the reversal of s2 and s1 - difflib.SequenceMatcher wants
@@ -119,7 +126,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
-    def _send_mail(self, message):
+    def _handle_mail(self, message):
         handler = self.instance.MailGW(self.instance, self.db)
         handler.trapExceptions = 0
         return handler.main(StringIO(message))
@@ -132,11 +139,12 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             f.close()
 
     def testEmptyMessage(self):
-        nodeid = self._send_mail('''Content-Type: text/plain;
+        nodeid = self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
 Cc: richard@test
+Reply-To: chef@bork.bork.bork
 Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
 
@@ -145,7 +153,7 @@ Subject: [issue] Testing...
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
 
     def doNewIssue(self):
-        nodeid = self._send_mail('''Content-Type: text/plain;
+        nodeid = self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -166,7 +174,7 @@ This is a test submission of a new issue.
 
     def testNewIssueNosy(self):
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        nodeid = self._send_mail('''Content-Type: text/plain;
+        nodeid = self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -182,7 +190,7 @@ This is a test submission of a new issue.
         self.assertEqual(l, [self.chef_id, self.richard_id])
 
     def testAlternateAddress(self):
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: John Doe <john.doe@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -197,7 +205,7 @@ This is a test submission of a new issue.
             "user created when it shouldn't have been")
 
     def testNewIssueNoClass(self):
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -212,7 +220,7 @@ This is a test submission of a new issue.
     def testNewIssueAuthMsg(self):
         # TODO: fix the damn config - this is apalling
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -263,7 +271,7 @@ _______________________________________________________________________
 
     def testSimpleFollowup(self):
         self.doNewIssue()
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -304,7 +312,7 @@ _______________________________________________________________________
     def testFollowup(self):
         self.doNewIssue()
 
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -351,7 +359,7 @@ _______________________________________________________________________
 
     def testFollowupTitleMatch(self):
         self.doNewIssue()
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -394,7 +402,7 @@ _______________________________________________________________________
     def testFollowupNosyAuthor(self):
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -438,7 +446,7 @@ _______________________________________________________________________
     def testFollowupNosyRecipients(self):
         self.doNewIssue()
         self.db.config.ADD_RECIPIENTS_TO_NOSY = 'yes'
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -483,7 +491,7 @@ _______________________________________________________________________
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -526,7 +534,7 @@ _______________________________________________________________________
     def testFollowupNoNosyAuthor(self):
         self.doNewIssue()
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -568,7 +576,7 @@ _______________________________________________________________________
     def testFollowupNoNosyRecipients(self):
         self.doNewIssue()
         self.instance.config.ADD_RECIPIENTS_TO_NOSY = 'no'
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -611,7 +619,7 @@ _______________________________________________________________________
     def testFollowupEmptyMessage(self):
         self.doNewIssue()
 
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -631,7 +639,7 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
     def testNosyRemove(self):
         self.doNewIssue()
 
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -666,7 +674,7 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 '''
-        self.assertRaises(Unauthorized, self._send_mail, message)
+        self.assertRaises(Unauthorized, self._handle_mail, message)
         m = self.db.user.list()
         m.sort()
         self.assertEqual(l, m)
@@ -674,14 +682,14 @@ This is a test submission of a new issue.
         # now with the permission
         p = self.db.security.getPermission('Email Registration')
         self.db.security.role['anonymous'].permissions=[p]
-        self._send_mail(message)
+        self._handle_mail(message)
         m = self.db.user.list()
         m.sort()
         self.assertNotEqual(l, m)
 
     def testEnc01(self):
         self.doNewIssue()
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -726,7 +734,7 @@ _______________________________________________________________________
 
     def testMultipartEnc01(self):
         self.doNewIssue()
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -777,7 +785,7 @@ _______________________________________________________________________
 
     def testContentDisposition(self):
         self.doNewIssue()
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -810,7 +818,7 @@ xxxxxx
     def testFollowupStupidQuoting(self):
         self.doNewIssue()
 
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -868,7 +876,7 @@ This is a followup
 
         messages = self.db.issue.get(nodeid, 'messages')
 
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -919,7 +927,7 @@ This is a followup
     def testRegistrationConfirmation(self):
         otk = "Aj4euk4LZSAdwePohj90SME5SpopLETL"
         self.db.otks.set(otk, username='johannes', __time='')
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -934,7 +942,7 @@ This is a test confirmation of registration.
 
     def testFollowupOnNonIssue(self):
         self.db.keyword.create(name='Foo')
-        self._send_mail('''Content-Type: text/plain;
+        self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -946,7 +954,7 @@ Subject: [keyword1] Testing... [name=Bar]
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
     def testResentFrom(self):
-        nodeid = self._send_mail('''Content-Type: text/plain;
+        nodeid = self._handle_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 Resent-From: mary <mary@test>
@@ -965,7 +973,7 @@ This is a test submission of a new issue.
 
 
     def testDejaVu(self):
-        self.assertRaises(IgnoreLoop, self._send_mail,
+        self.assertRaises(IgnoreLoop, self._handle_mail,
             '''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
@@ -979,7 +987,7 @@ Hi, I've been mis-configured to loop messages back to myself.
 ''')
 
     def testItsBulkStupid(self):
-        self.assertRaises(IgnoreBulk, self._send_mail,
+        self.assertRaises(IgnoreBulk, self._handle_mail,
             '''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
