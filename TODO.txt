@@ -51,5 +51,7 @@ pending web       allow multilink selections to select a "none" element to allow
 
 bug     web       request.url is incorrect in cgi-bin environments
 bug     web       do something about file.newitem
+bug     mailgw    some f*ked mailers QUOTE their Re; "Re: "[issue1] bla blah""
+bug     docs      need to mention somewhere how sorting works
 ======= ========= =============================================================
 

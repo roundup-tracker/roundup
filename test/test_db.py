@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.46 2002-09-13 08:20:13 richard Exp $ 
+# $Id: test_db.py,v 1.47 2002-09-16 08:04:46 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -575,10 +575,6 @@ class gadflyDBTestCase(anydbmDBTestCase):
         id1 = self.db.issue.create(title="spam", status='1')
         id2 = self.db.issue.create(title="eggs", status='2')
         self.assertNotEqual(id1, id2)
-
-    def testNewProperty(self):
-        # gadfly doesn't have an ALTER TABLE command :(
-        pass
 
 class gadflyReadOnlyDBTestCase(anydbmReadOnlyDBTestCase):
     def setUp(self):

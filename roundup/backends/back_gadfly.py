@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.20 2002-09-15 23:06:20 richard Exp $
+# $Id: back_gadfly.py,v 1.21 2002-09-16 08:04:46 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -148,14 +148,19 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 klass.index(nodeid)
         self.indexer.save_index()
 
-    def determine_columns(self, spec):
+    def determine_columns(self, properties):
         ''' Figure the column names and multilink properties from the spec
+
+            "properties" is a list of (name, prop) where prop may be an
+            instance of a hyperdb "type" _or_ a string repr of that type.
         '''
         cols = []
         mls = []
         # add the multilinks separately
-        for col, prop in spec.properties.items():
+        for col, prop in properties:
             if isinstance(prop, Multilink):
+                mls.append(col)
+            elif isinstance(prop, type('')) and prop.find('Multilink') != -1:
                 mls.append(col)
             else:
                 cols.append('_'+col)
@@ -165,9 +170,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def update_class(self, spec, dbspec):
         ''' Determine the differences between the current spec and the
             database version of the spec, and update where necessary
-
-            NOTE that this doesn't work for adding/deleting properties!
-             ... until gadfly grows an ALTER TABLE command, it's not going to!
         '''
         spec_schema = spec.schema()
         if spec_schema == dbspec:
@@ -197,29 +199,54 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # now compare
         for propname in spec_propnames:
             prop = spec_props[propname]
-            if __debug__:
-                print >>hyperdb.DEBUG, 'update_class ...', `prop`
             if dbspec_props.has_key(propname) and prop==dbspec_props[propname]:
                 continue
             if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', `prop`
+                print >>hyperdb.DEBUG, 'update_class ADD', (propname, prop)
 
             if not dbspec_props.has_key(propname):
                 # add the property
                 if isinstance(prop, Multilink):
-                    sql = 'create table %s_%s (linkid varchar, nodeid '\
-                        'varchar)'%(spec.classname, prop)
-                    if __debug__:
-                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
-                    cursor.execute(sql)
-                else:
-                    # XXX gadfly doesn't have an ALTER TABLE command
-                    raise NotImplementedError
-                    sql = 'alter table _%s add column (_%s varchar)'%(
-                        spec.classname, propname)
-                    if __debug__:
-                        print >>hyperdb.DEBUG, 'update_class', (self, sql)
-                    cursor.execute(sql)
+                    # all we have to do here is create a new table, easy!
+                    self.create_multilink_table(cursor, spec, propname)
+                    continue
+
+                # no ALTER TABLE, so we:
+                # 1. pull out the data, including an extra None column
+                oldcols, x = self.determine_columns(dbspec[1])
+                oldcols.append('id')
+                oldcols.append('__retired__')
+                cn = spec.classname
+                sql = 'select %s,? from _%s'%(','.join(oldcols), cn)
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql, None)
+                cursor.execute(sql, (None,))
+                olddata = cursor.fetchall()
+
+                # 2. drop the old table
+                cursor.execute('drop table _%s'%cn)
+
+                # 3. create the new table
+                cols, mls = self.create_class_table(cursor, spec)
+                # ensure the new column is last
+                cols.remove('_'+propname)
+                assert oldcols == cols, "Column lists don't match!"
+                cols.append('_'+propname)
+
+                # 4. populate with the data from step one
+                s = ','.join(['?' for x in cols])
+                scols = ','.join(cols)
+                sql = 'insert into _%s (%s) values (%s)'%(cn, scols, s)
+
+                # GAH, nothing had better go wrong from here on in... but
+                # we have to commit the drop...
+                self.conn.commit()
+
+                # we're safe to insert now
+                if __debug__:
+                    print >>hyperdb.DEBUG, 'update_class', (self, sql, olddata)
+                cursor.execute(sql, olddata)
+
             else:
                 # modify the property
                 if __debug__:
@@ -232,7 +259,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if spec_props.has_key(propname):
                 continue
             if __debug__:
-                print >>hyperdb.DEBUG, 'update_class', `prop`
+                print >>hyperdb.DEBUG, 'update_class REMOVE', `prop`
 
             # delete the property
             if isinstance(prop, Multilink):
@@ -241,32 +268,52 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     print >>hyperdb.DEBUG, 'update_class', (self, sql)
                 cursor.execute(sql)
             else:
-                # XXX gadfly doesn't have an ALTER TABLE command
-                raise NotImplementedError
-                sql = 'alter table _%s delete column _%s'%(spec.classname,
-                    propname)
-                if __debug__:
-                    print >>hyperdb.DEBUG, 'update_class', (self, sql)
-                cursor.execute(sql)
+                # no ALTER TABLE, so we:
+                # 1. pull out the data, excluding the removed column
+                oldcols, x = self.determine_columns(spec.properties.items())
+                oldcols.append('id')
+                oldcols.append('__retired__')
+                # remove the missing column
+                oldcols.remove('_'+propname)
+                cn = spec.classname
+                sql = 'select %s from _%s'%(','.join(oldcols), cn)
+                cursor.execute(sql, (None,))
+                olddata = sql.fetchall()
 
-    def create_class(self, spec):
-        ''' Create a database table according to the given spec.
+                # 2. drop the old table
+                cursor.execute('drop table _%s'%cn)
+
+                # 3. create the new table
+                cols, mls = self.create_class_table(self, cursor, spec)
+                assert oldcols != cols, "Column lists don't match!"
+
+                # 4. populate with the data from step one
+                qs = ','.join(['?' for x in cols])
+                sql = 'insert into _%s values (%s)'%(cn, s)
+                cursor.execute(sql, olddata)
+
+    def create_class_table(self, cursor, spec):
+        ''' create the class table for the given spec
         '''
-        cols, mls = self.determine_columns(spec)
+        cols, mls = self.determine_columns(spec.properties.items())
 
         # add on our special columns
         cols.append('id')
         cols.append('__retired__')
 
-        cursor = self.conn.cursor()
-
         # create the base table
-        cols = ','.join(['%s varchar'%x for x in cols])
-        sql = 'create table _%s (%s)'%(spec.classname, cols)
+        scols = ','.join(['%s varchar'%x for x in cols])
+        sql = 'create table _%s (%s)'%(spec.classname, scols)
         if __debug__:
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         cursor.execute(sql)
 
+        return cols, mls
+
+    def create_journal_table(self, cursor, spec):
+        ''' create the journal table for a class given the spec and 
+            already-determined cols
+        '''
         # journal table
         cols = ','.join(['%s varchar'%x
             for x in 'nodeid date tag action params'.split()])
@@ -275,13 +322,26 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'create_class', (self, sql)
         cursor.execute(sql)
 
+    def create_multilink_table(self, cursor, spec, ml):
+        ''' Create a multilink table for the "ml" property of the class
+            given by the spec
+        '''
+        sql = 'create table %s_%s (linkid varchar, nodeid varchar)'%(
+            spec.classname, ml)
+        if __debug__:
+            print >>hyperdb.DEBUG, 'create_class', (self, sql)
+        cursor.execute(sql)
+
+    def create_class(self, spec):
+        ''' Create a database table according to the given spec.
+        '''
+        cursor = self.conn.cursor()
+        cols, mls = self.create_class_table(cursor, spec)
+        self.create_journal_table(cursor, spec)
+
         # now create the multilink tables
         for ml in mls:
-            sql = 'create table %s_%s (linkid varchar, nodeid varchar)'%(
-                spec.classname, ml)
-            if __debug__:
-                print >>hyperdb.DEBUG, 'create_class', (self, sql)
-            cursor.execute(sql)
+            self.create_multilink_table(cursor, spec, ml)
 
         # ID counter
         sql = 'insert into ids (name, num) values (?,?)'
@@ -421,7 +481,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'addnode', (self, classname, nodeid, node)
         # gadfly requires values for all non-multilink columns
         cl = self.classes[classname]
-        cols, mls = self.determine_columns(cl)
+        cols, mls = self.determine_columns(cl.properties.items())
 
         # default the non-multilink columns
         for col, prop in cl.properties.items():
@@ -513,7 +573,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             print >>hyperdb.DEBUG, 'getnode', (self, classname, nodeid)
         # figure the columns we're fetching
         cl = self.classes[classname]
-        cols, mls = self.determine_columns(cl)
+        cols, mls = self.determine_columns(cl.properties.items())
         scols = ','.join(cols)
 
         # perform the basic property fetch

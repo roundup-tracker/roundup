@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.41 $
+:Version: $Revision: 1.42 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1887,7 +1887,7 @@ Setting up a "wizard" (or "druid") for controlled adding of issues
       <input type="hidden" name=":action" value="page1submit">
 
       <strong>Category:</strong>
-      <span tal:replace="structure context/category/menu" />
+      <tal:block tal:replace="structure context/category/menu" />
       <input type="submit" value="Continue">
     </form>
 
