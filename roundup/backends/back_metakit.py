@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.80 2004-07-20 22:56:18 richard Exp $
+# $Id: back_metakit.py,v 1.81 2004-07-20 23:24:26 richard Exp $
 '''Metakit backend for Roundup, originally by Gordon McMillan.
 
 Known Current Bugs:
@@ -83,6 +83,9 @@ class _Database(hyperdb.Database, roundupdb.Database):
         self._db = self.__open()
         self.indexer = Indexer(self.config.DATABASE, self._db)
         self.security = security.Security(self)
+
+        self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
+            'filtering': 0}
 
         os.umask(0002)
 
@@ -1189,10 +1192,8 @@ class Class(hyperdb.Class):
         property value to match is a list, any one of the values in the
         list may match for that property to match.
         '''        
-        # search_matches is None or a set (dict of {nodeid: {propname:[nodeid,...]}})
-        # filterspec is a dict {propname:value}
-        # sort and group are (dir, prop) where dir is '+', '-' or None
-        #                    and prop is a prop name or None
+        if __debug__:
+            start_t = time.time()
 
         timezone = self.db.getUserTimezone()
 
@@ -1227,10 +1228,14 @@ class Class(hyperdb.Class):
                 # transform keys to ids
                 u = []
                 for item in value:
-                    try:
-                        item = int(item)
-                    except (TypeError, ValueError):
-                        item = int(self.db.getclass(prop.classname).lookup(item))
+                    if item is None:
+                        item = -1
+                    else:
+                        try:
+                            item = int(item)
+                        except (TypeError, ValueError):
+                            linkcl = self.db.getclass(prop.classname)
+                            item = int(linkcl.lookup(item))
                     if item == -1:
                         item = 0
                     u.append(item)
@@ -1300,12 +1305,10 @@ class Class(hyperdb.Class):
             else:
                 where[propname] = str(value)
         v = self.getview()
-        #print "filter start at  %s" % time.time() 
         if where:
             where_higherbound = where.copy()
             where_higherbound.update(wherehigh)
             v = v.select(where, where_higherbound)
-        #print "filter where at  %s" % time.time() 
 
         if mlcriteria:
             # multilink - if any of the nodeids required by the
@@ -1321,8 +1324,6 @@ class Class(hyperdb.Class):
                 return 0
             iv = v.filter(ff)
             v = v.remapwith(iv)
-
-        #print "filter mlcrit at %s" % time.time() 
         
         if orcriteria:
             def ff(row, crit=orcriteria):
@@ -1335,7 +1336,6 @@ class Class(hyperdb.Class):
             iv = v.filter(ff)
             v = v.remapwith(iv)
         
-        #print "filter orcrit at %s" % time.time() 
         if regexes:
             def ff(row, r=regexes):
                 for propname, regex in r.items():
@@ -1346,7 +1346,6 @@ class Class(hyperdb.Class):
             
             iv = v.filter(ff)
             v = v.remapwith(iv)
-        #print "filter regexs at %s" % time.time() 
         
         if sort or group:
             sortspec = []
@@ -1381,7 +1380,6 @@ class Class(hyperdb.Class):
                     rev.append(prop)
                 sortspec.append(prop)
             v = v.sortrev(sortspec, rev)[:] #XXX Metakit bug
-        #print "filter sort   at %s" % time.time() 
             
         rslt = []
         for row in v:
@@ -1391,6 +1389,10 @@ class Class(hyperdb.Class):
                     rslt.append(id)
             else:
                 rslt.append(id)
+
+        if __debug__:
+            self.db.stats['filtering'] += (time.time() - start_t)
+
         return rslt
     
     def hasnode(self, nodeid):

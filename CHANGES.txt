@@ -38,6 +38,7 @@ Fixed:
   backends treated Multilink matches like all other data types - matching
   any of the Multilink argument list is good enough. The latter behaviour
   is implemented across the board now.
+- fix metakit handling of filter on Link==None
 
 
 2004-06-24 0.7.5

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.101 2004-07-14 01:12:25 richard Exp $
+# $Id: hyperdb.py,v 1.102 2004-07-20 23:24:26 richard Exp $
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -91,7 +91,7 @@ class Boolean:
     def __repr__(self):
         'more useful for dumps'
         return '<%s>' % self.__class__
-    
+
 class Number:
     """An object designating a numeric property"""
     def __repr__(self):

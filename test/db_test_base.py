@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: db_test_base.py,v 1.41 2004-07-20 22:59:53 richard Exp $ 
+# $Id: db_test_base.py,v 1.42 2004-07-20 23:24:27 richard Exp $ 
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -838,10 +838,10 @@ class DBTest(MyTestCase):
         for issue in (
                 {'title': 'issue one', 'status': '2', 'assignedto': '1',
                     'foo': date.Interval('1:10'), 'priority': '3',
-                    'deadline': date.Date('2003-01-01.00:00')},
+                    'deadline': date.Date('2003-02-16.22:50')},
                 {'title': 'issue two', 'status': '1', 'assignedto': '2',
                     'foo': date.Interval('1d'), 'priority': '3',
-                    'deadline': date.Date('2003-02-16.22:50')},
+                    'deadline': date.Date('2003-01-01.00:00')},
                 {'title': 'issue three', 'status': '1', 'priority': '2',
                     'nosy': ['1','2'], 'deadline': date.Date('2003-02-18')},
                 {'title': 'non four', 'status': '3',
@@ -905,20 +905,20 @@ class DBTest(MyTestCase):
     def testFilteringRange(self):
         ae, filt = self.filteringSetup()
         # Date ranges
-        ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['2','3'])
-        ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['2','3'])
-        ae(filt(None, {'deadline': '; 2003-02-16'}), ['1'])
+        ae(filt(None, {'deadline': 'from 2003-02-10 to 2003-02-23'}), ['1','3'])
+        ae(filt(None, {'deadline': '2003-02-10; 2003-02-23'}), ['1','3'])
+        ae(filt(None, {'deadline': '; 2003-02-16'}), ['2'])
         # Lets assume people won't invent a time machine, otherwise this test
         # may fail :)
-        ae(filt(None, {'deadline': 'from 2003-02-16'}), ['2', '3', '4'])
-        ae(filt(None, {'deadline': '2003-02-16;'}), ['2', '3', '4'])
+        ae(filt(None, {'deadline': 'from 2003-02-16'}), ['1', '3', '4'])
+        ae(filt(None, {'deadline': '2003-02-16;'}), ['1', '3', '4'])
         # year and month granularity
         ae(filt(None, {'deadline': '2002'}), [])
         ae(filt(None, {'deadline': '2003'}), ['1', '2', '3'])
         ae(filt(None, {'deadline': '2004'}), ['4'])
-        ae(filt(None, {'deadline': '2003-02'}), ['2', '3'])
+        ae(filt(None, {'deadline': '2003-02'}), ['1', '3'])
         ae(filt(None, {'deadline': '2003-03'}), [])
-        ae(filt(None, {'deadline': '2003-02-16'}), ['2'])
+        ae(filt(None, {'deadline': '2003-02-16'}), ['1'])
         ae(filt(None, {'deadline': '2003-02-17'}), [])
         # Interval ranges
         ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
@@ -947,32 +947,33 @@ class DBTest(MyTestCase):
         ae(filt(None, {}, ('-','nosy'), (None,None)), ['3', '4', '1', '2'])
 
     def testFilteringDateSort(self):
-        # '1': '2003-01-01.00:00'
-        # '2': '2003-02-16.22:50'
+        # '1': '2003-02-16.22:50'
+        # '2': '2003-01-01.00:00'
         # '3': '2003-02-18'
         # '4': '2004-03-08'
         ae, filt = self.filteringSetup()
         # ascending
-        ae(filt(None, {}, ('+','deadline'), (None,None)), ['1', '2', '3', '4'])
+        ae(filt(None, {}, ('+','deadline'), (None,None)), ['2', '1', '3', '4'])
         # descending
-        ae(filt(None, {}, ('-','deadline'), (None,None)), ['4', '3', '2', '1'])
+        ae(filt(None, {}, ('-','deadline'), (None,None)), ['4', '3', '1', '2'])
 
     def testFilteringDateSortPriorityGroup(self):
-        # '1': '2003-01-01.00:00'  1 => 2
-        # '2': '2003-02-16.22:50'  3 => 1
+        # '1': '2003-02-16.22:50'  1 => 2
+        # '2': '2003-01-01.00:00'  3 => 1
         # '3': '2003-02-18'        2 => 3
         # '4': '2004-03-08'        1 => 2
         ae, filt = self.filteringSetup()
+
         # ascending
         ae(filt(None, {}, ('+','deadline'), ('+','priority')),
-            ['1', '2', '3', '4'])
+            ['2', '1', '3', '4'])
         ae(filt(None, {}, ('-','deadline'), ('+','priority')),
-            ['2', '1', '4', '3'])
+            ['1', '2', '4', '3'])
         # descending
         ae(filt(None, {}, ('+','deadline'), ('-','priority')),
-            ['3', '4', '1', '2'])
+            ['3', '4', '2', '1'])
         ae(filt(None, {}, ('-','deadline'), ('-','priority')),
-            ['4', '3', '2', '1'])
+            ['4', '3', '1', '2'])
 
 # XXX add sorting tests for other types
 # XXX test auditors and reactors
