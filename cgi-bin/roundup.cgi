@@ -5,7 +5,7 @@
 # under the same terms as Python, so long as this copyright message and
 # disclaimer are retained in their original form.
 #
-# IN NO EVENT SHALL THE BIZAR SOFTWARE PTY LTD BE LIABLE TO ANY PARTY FOR
+# IN NO EVENT SHALL BIZAR SOFTWARE PTY LTD BE LIABLE TO ANY PARTY FOR
 # DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
 # OUT OF THE USE OF THIS CODE, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup.cgi,v 1.9 2001-08-07 00:15:51 richard Exp $
+# $Id: roundup.cgi,v 1.10 2001-08-07 00:24:42 richard Exp $
 
 # python version check
 import sys
@@ -123,6 +123,10 @@ sys.stdout, sys.stderr = out, err
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/08/07 00:15:51  richard
+# Added the copyright/license notice to (nearly) all files at request of
+# Bizar Software.
+#
 # Revision 1.8  2001/08/05 07:43:52  richard
 # Instances are now opened by a special function that generates a unique
 # module name for the instances on import time.
