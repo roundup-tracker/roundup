@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.35 2002-09-16 05:33:58 richard Exp $
+# $Id: client.py,v 1.36 2002-09-16 06:39:12 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -297,6 +297,8 @@ class Client:
         if m:
             self.classname = m.group(1)
             self.nodeid = m.group(2)
+            if not self.db.getclass(self.classname).hasnode(self.nodeid):
+                raise NotFound, '%s/%s'%(self.classname, self.nodeid)
             # with a designator, we default to item view
             self.template = 'item'
         else:
