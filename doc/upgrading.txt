@@ -16,7 +16,10 @@ Migrating from 0.6 to 0.7
 Removed Database.curuserid attribute. Any code referencing this attribute should
 be replaced with a call to Database.getuid().
 
-
+0.7 creates indexes when using RDBMS backends. The yet-to-be-written
+'refreshdb' roundup-admin command will create most indexes, but you 
+might still need to create an index "create index ids_name_idx on 
+ids(name)".
 
 Migrating from 0.6.x to 0.6.3
 =============================
