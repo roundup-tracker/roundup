@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.23 $
+:Version: $Revision: 1.24 $
 
 .. contents::
 
@@ -26,6 +26,11 @@ class with the number to create a unique label, so that user 1 (who,
 incidentally, is *always* the "admin" user) is referred to as "user1".
 Issue number 315 is referred to as "issue315". We call that label the
 item's *designator*.
+
+Items in the database are never deleted, they're just "retired". You
+can still refer to them by ID - hence removing an item won't break
+references to the item. It's just that the item won't appear in any
+listings.
 
 
 Accessing the Tracker
@@ -472,6 +477,10 @@ is queried to determine if they get a nosy list copy of the message too.
 
 Mail gateway script command line
 --------------------------------
+
+Usage::
+
+  roundup-mailgw [[-C class] -S field=value]* <instance home> [method]
 
 The roundup mail gateway may be called in one of three ways:
 
