@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.52 2003-09-15 19:35:53 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.53 2003-09-15 19:37:28 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -997,7 +997,6 @@ This is a test confirmation of registration.
 def suite():
     l = [unittest.makeSuite(MailgwTestCase),
     ]
-    l = [MailgwTestCase("testUserAlternateLookup")]
     return unittest.TestSuite(l)
 
 
