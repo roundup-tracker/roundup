@@ -42,6 +42,7 @@ Fixed:
 - fixed editing of message contents
 - loosened the detection of issue cross-references in messages
 - open CSV files in "universal newline" mode
+- s/Modifed/Modified (thanks donfu)
 
 
 2004-10-15 0.7.8
