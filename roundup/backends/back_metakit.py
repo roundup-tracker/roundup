@@ -499,7 +499,7 @@ class Class:
 
                 if not rmvd and not adds:
                     del propvalues[key]
-                    
+
             elif isinstance(prop, hyperdb.String):
                 if value is not None and type(value) != _STRINGTYPE:
                     raise TypeError, 'new property "%s" not a string'%key
