@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# $Id: roundup-reminder,v 1.7 2004-02-11 00:00:01 richard Exp $
+# $Id: roundup-reminder,v 1.8 2004-02-11 00:21:46 richard Exp $
 
 '''
 Simple script that emails all users of a tracker with the issues that
@@ -31,7 +31,7 @@ TODO: possibly make this more general and configurable...
 
 import sys, cStringIO, MimeWriter, smtplib
 from roundup import instance, date
-from roundup.mailgw import openSMTPConnection
+from roundup.mailer import SMTPConnection
 
 # open the instance
 if len(sys.argv) != 2:
@@ -164,7 +164,7 @@ and click on "My Issues". Do NOT respond to this message.
     writer.lastpart()
 
     # all done, send!
-    smtp = openSMTPConnection(db.config)
+    smtp = SMTPConnection(db.config)
     smtp.sendmail(db.config.ADMIN_EMAIL, address, message.getvalue())
 
 # vim: set filetype=python ts=4 sw=4 et si
