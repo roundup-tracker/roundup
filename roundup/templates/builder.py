@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: builder.py,v 1.3 2002-09-13 04:27:04 richard Exp $
+# $Id: builder.py,v 1.4 2002-09-13 04:39:12 richard Exp $
 import os, sys, glob, errno, re
 
 __doc__ = """
@@ -73,6 +73,8 @@ def installHtmlBase(template, installDir):
 #    print "installing from", htmlbase.__file__, "into", installDir
     modulecontents = dir(htmlbase)
     for mangledfile in modulecontents:
+        if mangledfile.startswith('__') and mangledfile.endswith('__'):
+            continue
         filename = re.sub('DOT', '.', mangledfile)
         outfile = os.path.join(installDir, filename)
         outfd = open(outfile, 'w')
@@ -87,45 +89,4 @@ if __name__ == "__main__":
     else:
         print "Usage: %s <template directory>"%sys.argv[0]
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.2  2002/09/05 23:39:13  richard
-# Fixed instance installation ... moved the htmlbase module into templates
-# and call it <template>_htmlbase.py ... no more try/except in instance __init__!
-# Added :required to form handling.
-# Handle multiple values for single form items with decent error report.
-#
-# Revision 1.1  2002/08/16 04:25:03  richard
-# cleanup: moved templatebuilder into templates.builder
-#
-# Revision 1.14  2002/02/05 09:59:05  grubert
-#  . makeHtmlBase: re.sub under python 2.2 did not replace '.', string.replace does it.
-#
-# Revision 1.13  2001/11/22 15:46:42  jhermann
-# Added module docstrings to all modules.
-#
-# Revision 1.12  2001/11/14 21:35:21  richard
-#  . users may attach files to issues (and support in ext) through the web now
-#
-# Revision 1.11  2001/08/07 00:24:42  richard
-# stupid typo
-#
-# Revision 1.10  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.9  2001/08/01 05:06:10  richard
-# htmlbase doesn't have extraneous $Foo$ in it any more
-#
-# Revision 1.8  2001/07/30 08:12:17  richard
-# Added time logging and file uploading to the templates.
-#
-# Revision 1.7  2001/07/30 00:06:52  richard
-# Hrm - had IOError instead of OSError. Not sure why there's two. Ho hum.
-#
-# Revision 1.6  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si
