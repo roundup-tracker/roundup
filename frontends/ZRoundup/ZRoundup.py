@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.9 2002-07-04 01:25:22 dman13 Exp $
+# $Id: ZRoundup.py,v 1.10 2002-09-04 02:05:19 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -45,7 +45,7 @@ from AccessControl import ModuleSecurityInfo
 modulesecurity = ModuleSecurityInfo()
 
 import roundup.instance
-from roundup import cgi_client
+from roundup.cgi import NotFound
 
 modulesecurity.declareProtected('View management screens',
     'manage_addZRoundupForm')
@@ -191,7 +191,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
             # and call roundup to do something 
             client.main()
             return ''
-        except cgi_client.NotFound:
+        except NotFound:
             raise 'NotFound', self.REQUEST.URL
             pass
         except:
@@ -208,6 +208,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/07/04 01:25:22  dman13
+# fixed #576086 (dumb copying mistake)
+#
 # Revision 1.8  2002/06/16 01:01:42  dman13
 # remove CR characters embedded in messages (ZRoundup)
 #
