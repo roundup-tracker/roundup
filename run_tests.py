@@ -358,6 +358,7 @@ class PathInit:
         # Hack sys.path
         self.cwd = os.getcwd()
         sys.path.insert(0, os.path.join(self.cwd, self.libdir))
+        print sys.path
         # Hack again for external products.
         global functional
         kind = functional and "functional" or "unit"
@@ -538,7 +539,8 @@ def gui_runner(files, test_filter):
 
     suites = ", ".join(suites)
     minimal = (GUI == "minimal")
-    unittestgui.main(suites, minimal)
+    # unittestgui apparently doesn't take the minimal flag anymore
+    unittestgui.main(suites)
 
 class TrackRefs:
     """Object to track reference counts across test runs."""
