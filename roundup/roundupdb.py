@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.106 2004-04-05 06:13:42 richard Exp $
+# $Id: roundupdb.py,v 1.107 2004-04-18 06:13:48 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -123,7 +123,7 @@ class IssueClass:
 
     # XXX "bcc" is an optional extra here...
     def nosymessage(self, nodeid, msgid, oldvalues, whichnosy='nosy',
-            from_address=None, cc=[]): #, bcc=[]):
+            from_address=None, cc=[], bcc=[]):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -138,15 +138,16 @@ class IssueClass:
         recipients = self.db.msg.safeget(msgid, 'recipients', [])
         
         sendto = []
+        bcc_sendto = []
         seen_message = {}
         for recipient in recipients:
             seen_message[recipient] = 1
 
-        def add_recipient(userid):
+        def add_recipient(userid, to):
             # make sure they have an address
             address = self.db.user.get(userid, 'address')
             if address:
-                sendto.append(address)
+                to.append(address)
                 recipients.append(userid)
 
         def good_recipient(userid):
@@ -161,7 +162,7 @@ class IssueClass:
         if (good_recipient(authid) and
             (self.db.config.MESSAGES_TO_AUTHOR == 'yes' or
              (self.db.config.MESSAGES_TO_AUTHOR == 'new' and not oldvalues))):
-            add_recipient(authid)
+            add_recipient(authid, sendto)
         
         if authid:
             seen_message[authid] = 1
@@ -169,7 +170,12 @@ class IssueClass:
         # now deal with the nosy and cc people who weren't recipients.
         for userid in cc + self.get(nodeid, whichnosy):
             if good_recipient(userid):
-                add_recipient(userid)        
+                add_recipient(userid, sendto)        
+
+        # now deal with bcc people.
+        for userid in bcc:
+            if good_recipient(userid):
+                add_recipient(userid, bcc_sendto)
 
         if oldvalues:
             note = self.generateChangeNote(nodeid, oldvalues)
@@ -178,15 +184,17 @@ class IssueClass:
 
         # If we have new recipients, update the message's recipients
         # and send the mail.
-        if sendto:
+        if sendto or bcc_sendto:
             if msgid:
                 self.db.msg.set(msgid, recipients=recipients)
-            self.send_message(nodeid, msgid, note, sendto, from_address)
+            self.send_message(nodeid, msgid, note, sendto, from_address,
+                bcc_sendto)
 
     # backwards compatibility - don't remove
     sendmessage = nosymessage
 
-    def send_message(self, nodeid, msgid, note, sendto, from_address=None):
+    def send_message(self, nodeid, msgid, note, sendto, from_address=None,
+            bcc_sendto=[]):
         '''Actually send the nominated message from this node to the sendto
            recipients, with the note appended.
         '''
@@ -328,7 +336,7 @@ class IssueClass:
             body = writer.startbody('text/plain; charset=%s'%charset)
             body.write(content_encoded)
 
-        mailer.smtp_send(sendto, message)
+        mailer.smtp_send(sendto + bcc_sendto, message)
 
     def email_signature(self, nodeid, msgid):
         ''' Add a signature to the e-mail with some useful information
