@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.9 2004-07-26 05:59:45 a1s Exp $
+# $Id: configuration.py,v 1.10 2004-07-26 09:13:17 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -296,6 +296,9 @@ class FilePathOption(Option):
 
     """
 
+    class_description = "The path may be either absolute" \
+        " or relative to the tracker home."
+
     def get(self):
         _val = Option.get(self)
         if _val and not os.path.isabs(_val):
@@ -366,9 +369,10 @@ class NullableOption(Option):
 
 class NullableFilePathOption(NullableOption, FilePathOption):
 
-    # .get() is from FilePathOption,
+    # .get() and class_description are from FilePathOption,
     get = FilePathOption.get
-    # everything else - from NullableOption (inheritance order)
+    class_description = FilePathOption.class_description
+    # everything else taken from NullableOption (inheritance order)
 
 ### Main configuration layout.
 # Config is described as a sequence of sections,
@@ -381,12 +385,12 @@ class NullableFilePathOption(NullableOption, FilePathOption):
 # compatibility - new options should *not* have aliases!
 SETTINGS = (
     ("main", (
-        (FilePathOption, "database", "db", "Database directory path"),
+        (FilePathOption, "database", "db", "Database directory path."),
         (FilePathOption, "templates", "html",
-            "Path to the HTML templates directory"),
+            "Path to the HTML templates directory."),
         (MailAddressOption, "admin_email", "roundup-admin",
             "Email address that roundup will complain to"
-            " if it runs into trouble"),
+            " if it runs into trouble."),
         (MailAddressOption, "dispatcher_email", "roundup-admin",
             "The 'dispatcher' is a role that can get notified\n"
             "of new items to the database.\n"
@@ -400,14 +404,14 @@ SETTINGS = (
             "\"Foo Bar EMAIL_FROM_TAG\" <issue_tracker@tracker.example>"),
         (Option, "new_web_user_roles", "User",
             "Roles that a user gets when they register"
-            " with Web User Interface\n"
+            " with Web User Interface.\n"
             "This is a comma-separated string of role names"
-            " (e.g. 'Admin,User')"),
+            " (e.g. 'Admin,User')."),
         (Option, "new_email_user_roles", "User",
             "Roles that a user gets when they register"
-            " with Email Gateway\n"
+            " with Email Gateway.\n"
             "This is a comma-separated string of role names"
-            " (e.g. 'Admin,User')"),
+            " (e.g. 'Admin,User')."),
         (Option, "error_messages_to", "user",
             # XXX This description needs better wording,
             #   with explicit allowed values list.
@@ -429,7 +433,7 @@ SETTINGS = (
     )),
     ("tracker", (
         (Option, "name", "Roundup issue tracker",
-            "A descriptive name for your roundup instance"),
+            "A descriptive name for your roundup instance."),
         (Option, "web", NODEFAULT,
             "The web address that the tracker is viewable at.\n"
             "This will be included in information"
@@ -438,7 +442,7 @@ SETTINGS = (
             "that is required to get to the home page of the tracker.\n"
             "You MUST include a trailing '/' in the URL."),
         (MailAddressOption, "email", "issue_tracker",
-            "Email address that mail to roundup should go to"),
+            "Email address that mail to roundup should go to."),
     )),
     ("logging", (
         (FilePathOption, "config", "",
@@ -459,26 +463,26 @@ SETTINGS = (
         (Option, "domain", NODEFAULT, "Domain name used for email addresses."),
         (Option, "host", NODEFAULT,
             "SMTP mail host that roundup will use to send mail"),
-        (Option, "username", "", "SMTP login name\n"
+        (Option, "username", "", "SMTP login name.\n"
             "Set this if your mail host requires authenticated access.\n"
             "If username is not empty, password (below) MUST be set!"),
-        (Option, "password", NODEFAULT, "SMTP login password\n"
+        (Option, "password", NODEFAULT, "SMTP login password.\n"
             "Set this if your mail host requires authenticated access."),
         (BooleanOption, "tls", "no",
             "If your SMTP mail host provides or requires TLS\n"
-            "(Transport Layer Security) then set this option to 'yes'"),
+            "(Transport Layer Security) then set this option to 'yes'."),
         (NullableFilePathOption, "tls_keyfile", "",
             "If TLS is used, you may set this option to the name\n"
-            "of a PEM formatted file that contains your private key"),
+            "of a PEM formatted file that contains your private key."),
         (NullableFilePathOption, "tls_certfile", "",
             "If TLS is used, you may set this option to the name\n"
-            "of a PEM formatted certificate chain file"),
+            "of a PEM formatted certificate chain file."),
         (Option, "charset", "utf-8",
             "Character set to encode email headers with.\n"
             "We use utf-8 by default, as it's the most flexible.\n"
             "Some mail readers (eg. Eudora) can't cope with that,\n"
             "so you might need to specify a more limited character set\n"
-            "(eg. iso-8859-1)",
+            "(eg. iso-8859-1).",
             ["EMAIL_CHARSET"]),
         (FilePathOption, "debug", "",
             "Setting this option makes Roundup to write all outgoing email\n"
@@ -504,11 +508,11 @@ SETTINGS = (
             ["MAIL_DEFAULT_CLASS"]),
     )),
     ("nosy", (
-        (BooleanOption, "messages_to_author", "no",
-            "Send nosy messages to the author of the message",
+        (RunDetectorOption, "messages_to_author", "no",
+            "Send nosy messages to the author of the message.",
             ["MESSAGES_TO_AUTHOR"]),
         (Option, "signature_position", "bottom",
-            "Where to place the email signature\n"
+            "Where to place the email signature.\n"
             "Allowed values: top, bottom, none",
             ["EMAIL_SIGNATURE_POSITION"]),
         (RunDetectorOption, "add_author", "new",
