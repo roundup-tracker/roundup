@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.32 2004-07-03 17:17:47 a1s Exp $
+#$Id: actions.py,v 1.33 2004-07-06 11:29:12 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random
 
@@ -408,7 +408,7 @@ class _EditAction(Action):
 
                 # and some nice feedback for the user
                 if props:
-                    info = ', '.join(props.keys())
+                    info = ', '.join(map(self._, props.keys()))
                     m.append(
                         self._('%(class)s %(id)s %(properties)s edited ok')
                         % {'class':cn, 'id':nodeid, 'properties':info})
