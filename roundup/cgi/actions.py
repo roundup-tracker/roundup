@@ -143,8 +143,9 @@ class SearchAction(Action):
 
             # and add it to the user's query multilink
             queries = self.db.user.get(self.userid, 'queries')
-            queries.append(qid)
-            self.db.user.set(self.userid, queries=queries)
+            if qid not in queries:
+                queries.append(qid)
+                self.db.user.set(self.userid, queries=queries)
 
             # commit the query change to the database
             self.db.commit()
