@@ -14,7 +14,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: ZRoundup.py,v 1.10 2002-09-04 02:05:19 richard Exp $
+# $Id: ZRoundup.py,v 1.11 2002-09-04 02:11:00 richard Exp $
 #
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
@@ -45,7 +45,7 @@ from AccessControl import ModuleSecurityInfo
 modulesecurity = ModuleSecurityInfo()
 
 import roundup.instance
-from roundup.cgi import NotFound
+from roundup.cgi.client import NotFound
 
 modulesecurity.declareProtected('View management screens',
     'manage_addZRoundupForm')
@@ -208,6 +208,9 @@ modulesecurity.apply(globals())
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/09/04 02:05:19  richard
+# new cgi client here too
+#
 # Revision 1.9  2002/07/04 01:25:22  dman13
 # fixed #576086 (dumb copying mistake)
 #
