@@ -50,11 +50,10 @@ class Database(Database):
     arg = '%s'
 
     # Backend for MySQL to use.
-    # InnoDB is faster, but has a bug in its rollback machinery that causes
-    # some selects in subsequent transactions to fail. BDB does not have
-    # this bug, but is apparently much slower.
-    #mysql_backend = 'InnoDB'
-    mysql_backend = 'BDB'
+    # InnoDB is faster, but if you're running <4.0.16 then you'll need to
+    # use BDB to pass all unit tests.
+    mysql_backend = 'InnoDB'
+    #mysql_backend = 'BDB'
     
     def sql_open_connection(self):
         db = getattr(self.config, 'MYSQL_DATABASE')
