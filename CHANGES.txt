@@ -35,6 +35,7 @@ Feature:
    scraped from the web
  . added sorting of checklist HTML display
  . switched to using a session-based web login
+ . made mailgw handle set and modify operations on multilinks (bug #579094)
 
 
 2002-06-24 0.4.2

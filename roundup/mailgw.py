@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.75 2002-07-09 01:21:24 richard Exp $
+$Id: mailgw.py,v 1.76 2002-07-10 06:39:37 richard Exp $
 '''
 
 
@@ -445,6 +445,12 @@ Subject was: "%s"
                         curvalue = []
 
                     # handle each add/remove in turn
+                    # keep an extra list for all items that are
+                    # definitely in the new list (in case of e.g.
+                    # <propname>=A,+B, which should replace the old
+                    # list with A,B)
+                    set = 0
+                    newvalue = []
                     for item in value.split(','):
                         item = item.strip()
 
@@ -455,6 +461,8 @@ Subject was: "%s"
                             item = item[1:]
                         elif item.startswith('+'):
                             item = item[1:]
+                        else:
+                            set = 1
 
                         # look up the value
                         try:
@@ -473,11 +481,16 @@ Subject was: "%s"
                                     'for %s.'%(item, propname))
                                 continue
                         else:
+                            newvalue.append(item)
                             if item not in curvalue:
                                 curvalue.append(item)
 
-                    # that's it, set the new Multilink property value
-                    props[propname] = curvalue
+                    # that's it, set the new Multilink property value,
+                    # or overwrite it completely
+                    if set:
+                        props[propname] = newvalue
+                    else:
+                        props[propname] = curvalue
 
             # handle any errors parsing the argument list
             if errors:
@@ -771,6 +784,10 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.75  2002/07/09 01:21:24  richard
+# Added ability for unit tests to turn off exception handling in mailgw so
+# that exceptions are reported earlier (and hence make sense).
+#
 # Revision 1.74  2002/05/29 01:16:17  richard
 # Sorry about this huge checkin! It's fixing a lot of related stuff in one go
 # though.
