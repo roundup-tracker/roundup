@@ -1,0 +1,68 @@
+=================================================
+SC-Track Roundup 0.5.4 - an issue tracking system
+=================================================
+
+This is a bugfix release for version 0.5.x - if you're upgrading from before
+0.5, you *must* read doc/upgrading.txt!
+
+Unfortunately, the Zope frontend for Roundup is currently broken, with no
+fix in the forseeable future.
+
+Roundup requires python 2.1.3 or later for correct operation. Users of the
+sqlite backend are encouraged to upgrade sqlite to version 2.7.3.
+
+We've had a good crack at bugs (thanks to all who contributed!):
+
+- key the templates cache off full path, not filename
+- implemented whole-database locking
+- hyperlinking of special text (url, email, item designator) in messages
+- fixed time default in date.py
+- fixed error in cgi/templates.py (sf bug 652089)
+- fixed handling of missing password (sf bug 655632)
+- applied patches for handling Outlook quirks (thanks Andrey Lebedev)
+  (multipart/alternative, "fw" and content-type "name")
+- fire auditors and reactors in rdbms retire (thanks Sheila King)
+- better match for mailgw help "command" text
+- handle :add: better in cgi form parsing (sf bug 663235)
+- handle all-whitespace multilink values in forms (sf bug 663855)
+- fixed searching on date / interval fields (sf bug 658157)
+- fixed form elements names in search form to allow grouping and sorting 
+  on "creation" field
+- display of saved queries is now performed correctly
+
+Source and documentation is available at the website:
+     http://roundup.sourceforge.net/
+Release Info (via download page):
+     http://sourceforge.net/projects/roundup
+Mailing lists - the place to ask questions:
+     http://sourceforge.net/mail/?group_id=31577
+
+
+About Roundup
+=============
+
+Roundup is a simple-to-use and -install issue-tracking system with 
+command-line, web and e-mail interfaces. It is based on the winning design 
+from Ka-Ping Yee in the Software Carpentry "Track" design competition.
+
+Note: Ping is not responsible for this project. The contact for this project 
+is richard@users.sourceforge.net.
+
+Roundup manages a number of issues (with flexible properties such as 
+"description", "priority", and so on) and provides the ability to:
+
+(a) submit new issues,
+(b) find and edit existing issues, and
+(c) discuss issues with other participants.
+
+The system will facilitate communication among the participants by managing
+discussions and notifying interested parties when issues are edited. One of
+the major design goals for Roundup that it be simple to get going. Roundup
+is therefore usable "out of the box" with any python 2.1+ installation. It
+doesn't even need to be "installed" to be operational, though a
+disutils-based install script is provided.
+
+It comes with two issue tracker templates (a classic bug/feature tracker and
+a minimal skeleton) and six database back-ends (anydbm, bsddb, bsddb3, sqlite,
+metakit and gadfly). 
+

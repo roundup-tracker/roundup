@@ -1,0 +1,40 @@
+===========
+Roundup FAQ
+===========
+
+:Version: $Revision: 1.11 $
+
+NOTE: This is just a grabbag, most of this should go into documentation.
+
+.. contents::
+
+
+Installation
+------------
+
+Living without a mailserver.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove the nosy reactor, means delete the tracker file
+'detectors/nosyreactor.py'.
+
+
+Rights issues (MISSING)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Different jobs run under different users.
+
+* Standalone roundup-server is started by whome ?
+
+* Running cgi under apache.
+
+* roundup-mailgw called via .forward from MTA, or running a cron job
+  fetching via pop.
+
+
+-----------------
+
+Back to `Table of Contents`_
+
+.. _`Table of Contents`: index.html
+
