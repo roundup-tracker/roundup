@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.14 2002-09-10 01:07:06 richard Exp $
+#$Id: nosyreaction.py,v 1.1 2003-04-17 03:26:38 richard Exp $
 
 from roundup import roundupdb, hyperdb
 

@@ -1,4 +1,4 @@
-#$Id: messagesummary.py,v 1.1 2003-02-13 21:14:27 richard Exp $
+#$Id: messagesummary.py,v 1.1 2003-04-17 03:26:38 richard Exp $
 
 from roundup.mailgw import parseContent
 

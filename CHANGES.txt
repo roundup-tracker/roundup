@@ -59,6 +59,9 @@ Feature:
 - added command-line functionality for roundup-adming (sf feature 687664)
 - added nicer popup windows for topic, nosy, etc (has add/remove buttons)
   thanks Gus Gollings
+- HTML templating files now have a .html extension
+- Roundup templates are now distributed much more sanely, allowing for
+  3rd-party templates.
 
 
 Fixed:

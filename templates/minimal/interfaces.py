@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.2 2002-10-11 01:26:43 richard Exp $
+# $Id: interfaces.py,v 1.1 2003-04-17 03:27:27 richard Exp $
 
 from roundup import mailgw 
 from roundup.cgi import client

@@ -1,0 +1,8 @@
+Name: minimal
+Description: This is an empty tracker - it must be customised for it to be
+             useful! It only defines the bare minimum of information - the
+             user database and the two default users (admin and anonymous).
+             The rest is entirely up to you! Not recommended for first-time
+             Roundup users (it's easier to tweak the Classic tracker).
+Intended-For: Roundup experts who need a clean slate to start with.
+

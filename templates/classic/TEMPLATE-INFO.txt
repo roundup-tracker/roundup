@@ -1,0 +1,7 @@
+Name: classic
+Description: This is a generic issue tracker that may be used to track bugs,
+             feature requests, project issues or any number of other types
+             of issues. Most users of Roundup will find that this template
+             suits them, with perhaps a few customisations.
+Intended-For: All first-time Roundup users
+

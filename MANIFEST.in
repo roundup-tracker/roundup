@@ -1,4 +1,4 @@
-recursive-include roundup *.* home* page*
+recursive-include roundup *.*
 recursive-include frontends *.*
 recursive-include scripts *.* *-*
 recursive-include tools *.*
@@ -6,8 +6,10 @@ recursive-include cgi-bin *.cgi
 recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt *.css *.1
 recursive-include detectors *.py
+recursive-include templates *.* home* page*
 recursive-exclude roundup *.pyc *.pyo .cvsignore
 recursive-exclude frontends *.pyc *.pyo .cvsignore
+recursive-exclude templates *.pyc *.pyo .cvsignore
 include run_tests *.txt
 exclude BUILD.txt I18N_PROGRESS.txt TODO.txt
 exclude doc/security.txt doc/templating.txt

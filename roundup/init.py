@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.25 2003-02-25 10:19:31 richard Exp $
+# $Id: init.py,v 1.26 2003-04-17 03:37:58 richard Exp $
 
 __doc__ = """
 Init (create) a roundup instance.
@@ -58,8 +58,8 @@ def install(instance_home, template):
     '''Install an instance using the named template and backend.
 
     instance_home - the directory to place the instance data in
-    template - the template to use in creating the instance data
-    backend - the database to use to store the instance data
+    template      - the directory holding the template to use in creating
+                    the instance data
 
     The instance_home directory will be created using the files found in
     the named template (roundup.templates.<name>). A standard instance_home
@@ -82,19 +82,9 @@ def install(instance_home, template):
         . detectors/
           - the auditor and reactor modules for this instance
 
-    The html directory is typically extracted from the htmlbase module in
-    the template.
     '''
-    # first, copy the template dir over
-    from roundup.templates import builder
-
-    # copy the roundup.templates.<template> package contents to the instance dir
-    template_dir = os.path.split(__file__)[0]
-    template_name = template
-    template = os.path.join(template_dir, 'templates', template)
+    # At the moment, it's just a copy
     copytree(template, instance_home)
-
-    builder.installHtmlBase(template_name, instance_home)
 
 
 def write_select_db(instance_home, backend):

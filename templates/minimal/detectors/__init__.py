@@ -15,27 +15,23 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: interfaces.py,v 1.16 2002-10-11 01:26:43 richard Exp $
+#$Id: __init__.py,v 1.1 2003-04-17 03:27:56 richard Exp $
 
-from roundup import mailgw 
-from roundup.cgi import client
+import sys, os, imp
 
-class Client(client.Client): 
-    ''' derives basic CGI implementation from the standard module, 
-        with any specific extensions 
-    ''' 
-    pass
-
-class TemplatingUtils:
-    ''' Methods implemented on this class will be available to HTML templates
-        through the 'utils' variable.
+def init(db):
+    ''' execute the init functions of all the modules in this directory
     '''
-    pass
-
-class MailGW(mailgw.MailGW): 
-    ''' derives basic mail gateway implementation from the standard module, 
-        with any specific extensions 
-    ''' 
-    pass
+    this_dir = os.path.split(__file__)[0]
+    for file in os.listdir(this_dir):
+        path = os.path.join(this_dir, file)
+        name, ext = os.path.splitext(file)
+        if name == '__init__':
+            continue
+        if ext == '.py':
+            module = imp.load_module(name, open(path), file,
+                ('.py', 'r', imp.PY_SOURCE))
+            print (name, open(path), file, module)
+            module.init(db)
 
 # vim: set filetype=python ts=4 sw=4 et si

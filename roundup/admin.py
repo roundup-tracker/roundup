@@ -16,12 +16,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.50 2003-03-27 05:23:39 richard Exp $
+# $Id: admin.py,v 1.51 2003-04-17 03:37:57 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
 
-import sys, os, getpass, getopt, re, UserDict, shlex, shutil
+import sys, os, getpass, getopt, re, UserDict, shlex, shutil, rfc822
 try:
     import csv
 except ImportError:
@@ -278,10 +278,43 @@ Command help:
                     print line
         return 0
 
+    def listTemplates(self):
+        ''' List all the available templates.
+
+            Look in three places:
+                <prefix>/share/roundup/templates
+                <__file__>/../templates
+                current dir
+        '''
+        # OK, try <prefix>/share/roundup/templates
+        # -- this module (roundup.admin) will be installed in something
+        # _like_ /usr/lib/python2.2/site-packages/roundup/admin.py, and
+        # we're interested in where the "lib" directory is - ie. the /usr/
+        # part
+        path = __file__
+        for i in range(5):
+            path = os.path.dirname(path)
+        tdir = os.path.join(path, 'share', 'roundup', 'templates')
+        if os.path.isdir(tdir):
+            templates = listTemplates(tdir)
+        else:
+            templates = {}
+
+        # OK, now try as if we're in the roundup source distribution
+        # directory, so this module will be in .../roundup-*/roundup/admin.py
+        # and we're interested in the .../roundup-*/ part.
+        path = __file__
+        for i in range(2):
+            path = os.path.dirname(path)
+        tdir = os.path.join(path, 'templates')
+        if os.path.isdir(tdir):
+            templates.update(listTemplates(tdir))
+
+        return templates
+
     def help_initopts(self):
-        import roundup.templates
-        templates = roundup.templates.listTemplates()
-        print _('Templates:'), ', '.join(templates)
+        templates = self.listTemplates()
+        print _('Templates:'), ', '.join(templates.keys())
         import roundup.backends
         backends = roundup.backends.__all__
         print _('Back ends:'), ', '.join(backends)
@@ -312,12 +345,11 @@ Command help:
                 ' does not exist')%locals()
 
         # select template
-        import roundup.templates
-        templates = roundup.templates.listTemplates()
+        templates = self.listTemplates()
         template = len(args) > 1 and args[1] or ''
-        if template not in templates:
-            print _('Templates:'), ', '.join(templates)
-        while template not in templates:
+        if not templates.has_key(template):
+            print _('Templates:'), ', '.join(templates.keys())
+        while not templates.has_key(template):
             template = raw_input(_('Select template [classic]: ')).strip()
             if not template:
                 template = 'classic'
@@ -335,7 +367,7 @@ Command help:
         # XXX perform a unit test based on the user's selections
 
         # install!
-        init.install(tracker_home, template)
+        init.install(tracker_home, templates[template]['path'])
         init.write_select_db(tracker_home, backend)
 
         print _('''
@@ -1376,6 +1408,28 @@ Date format is "YYYY-MM-DD" eg:
         finally:
             if self.db:
                 self.db.close()
+
+
+def listTemplates(dir):
+    ''' List all the Roundup template directories in a given directory.
+
+        Find all the dirs that contain a TEMPLATE-INFO.txt and parse it.
+
+        Return a list of dicts of info about the templates.
+    '''
+    ret = {}
+    for idir in os.listdir(dir):
+        idir = os.path.join(dir, idir)
+        ti = os.path.join(idir, 'TEMPLATE-INFO.txt')
+        if os.path.isfile(ti):
+            m = rfc822.Message(open(ti))
+            ti = {}
+            ti['name'] = m['name']
+            ti['description'] = m['description']
+            ti['intended-for'] = m['intended-for']
+            ti['path'] = idir
+            ret[m['name']] = ti
+    return ret
 
 if __name__ == '__main__':
     tool = AdminTool()

@@ -15,23 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.2 2003-02-20 07:04:55 richard Exp $
+# $Id: __init__.py,v 1.1 2003-04-17 03:27:27 richard Exp $
 
-import sys, os, imp
-
-def init(db):
-    ''' execute the init functions of all the modules in this directory
-    '''
-    this_dir = os.path.split(__file__)[0]
-    for file in os.listdir(this_dir):
-        path = os.path.join(this_dir, file)
-        name, ext = os.path.splitext(file)
-        if name == '__init__':
-            continue
-        if ext == '.py':
-            module = imp.load_module(name, open(path), file,
-                ('.py', 'r', imp.PY_SOURCE))
-            print (name, open(path), file, module)
-            module.init(db)
+import config
+from dbinit import open, init
+from interfaces import Client, MailGW
 
 # vim: set filetype=python ts=4 sw=4 et si

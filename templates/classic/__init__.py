@@ -15,18 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.5 2002-09-10 01:07:06 richard Exp $
+# $Id: __init__.py,v 1.1 2003-04-17 03:26:03 richard Exp $
 
-import os
-
-def listTemplates():
-    t_dir = os.path.split(__file__)[0]
-    l = []
-    for entry in os.listdir(t_dir):
-        # this isn't strictly necessary - the CVS dir won't be distributed
-        if entry == 'CVS': continue
-        if os.path.isdir(os.path.join(t_dir, entry)):
-            l.append(entry)
-    return l
+import config
+from dbinit import open, init
+from interfaces import Client, MailGW
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -38,9 +38,9 @@ class Templates:
             if os.path.isdir(filename): continue
             if '.' in filename:
                 name, extension = filename.split('.')
-                self.getTemplate(name, extension)
+                self.get(name, extension)
             else:
-                self.getTemplate(filename, None)
+                self.get(filename, None)
 
     def get(self, name, extension=None):
         ''' Interface to get a template, possibly loading a compiled template.
@@ -66,27 +66,31 @@ class Templates:
             filename = name
 
         src = os.path.join(self.dir, filename)
+        if not os.path.exists(src):
+            filename = filename + '.html'
+            src = os.path.join(self.dir, filename)
+            if not os.path.exists(src):
+                if not extension:
+                    raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
+
+                # try for a generic template
+                generic = '_generic.%s'%extension
+                src = os.path.join(self.dir, generic)
+                if not os.path.exists(src):
+                    generic = '_generic.%s.html'%extension
+                    src = os.path.join(self.dir, generic)
+                    if not os.path.exists(src):
+                        raise NoTemplate, 'No template file exists for '\
+                            'templating "%s" with template "%s" (neither '\
+                            '"%s" nor "%s")'%(name, extension, filename,
+                            generic)
+                filename = generic
+
         try:
             stime = os.stat(src)[os.path.stat.ST_MTIME]
         except os.error, error:
             if error.errno != errno.ENOENT:
                 raise
-            if not extension:
-                raise NoTemplate, 'Template file "%s" doesn\'t exist'%name
-
-            # try for a generic template
-            generic = '_generic.%s'%extension
-            src = os.path.join(self.dir, generic)
-            try:
-                stime = os.stat(src)[os.path.stat.ST_MTIME]
-            except os.error, error:
-                if error.errno != errno.ENOENT:
-                    raise
-                # nicer error
-                raise NoTemplate, 'No template file exists for templating '\
-                    '"%s" with template "%s" (neither "%s" nor "%s")'%(name,
-                    extension, filename, generic)
-            filename = generic
 
         if self.templates.has_key(src) and \
                 stime < self.templates[src].mtime:

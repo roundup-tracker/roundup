@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.47 2003-04-17 01:14:10 richard Exp $
+# $Id: setup.py,v 1.48 2003-04-17 03:37:57 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -30,8 +30,6 @@ if sys.version < '2.2.3':
     from distutils.dist import DistributionMetadata
     DistributionMetadata.classifiers = None
     DistributionMetadata.download_url = None
-
-from roundup.templates.builder import makeHtmlBase
 
 
 #############################################################################
@@ -124,26 +122,11 @@ def scriptname(path):
 ### Main setup stuff
 #############################################################################
 
-def isTemplateDir(dir):
-    return dir[0] != '.' and dir != 'CVS' and os.path.isdir(dir) \
-        and os.path.isfile(os.path.join(dir, '__init__.py'))
-
-# use that function to list all the templates
-templates = map(os.path.basename, filter(isTemplateDir,
-    glob(os.path.join('roundup', 'templates', '*'))))
-
-def buildTemplates():
-    for template in templates:
-        tdir = os.path.join('roundup', 'templates', template)
-        makeHtmlBase(tdir)
-
 def main():
     # build list of scripts from their implementation modules
     roundup_scripts = map(scriptname, glob('roundup/scripts/[!_]*.py'))
 
     # template munching
-    templates = map(os.path.basename, filter(isTemplateDir,
-        glob(os.path.join('roundup', 'templates', '*'))))
     packagelist = [
         'roundup',
         'roundup.cgi',
@@ -151,8 +134,7 @@ def main():
         'roundup.cgi.TAL',
         'roundup.cgi.ZTUtils',
         'roundup.backends',
-        'roundup.scripts',
-        'roundup.templates'
+        'roundup.scripts'
     ]
     installdatafiles = [
         ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
@@ -163,23 +145,23 @@ def main():
         installdatafiles.append(('man/man1', ['doc/roundup-admin.1',
             'doc/roundup-mailgw.1', 'doc/roundup-server.1']))
 
-    # munge the template HTML into the htmlbase module
-    buildTemplates()
-
-    # add the templates to the setup packages and data files lists
-    for template in templates:
-        tdir = os.path.join('roundup', 'templates', template)
-
-        # add the template package and subpackage
-        packagelist.append('roundup.templates.%s' % template)
-        packagelist.append('roundup.templates.%s.detectors' % template)
-
+    # add the templates to the data files lists
+    from roundup.admin import listTemplates
+    templates = [t['path'] for t in listTemplates('.').values()]
+    for tdir in templates:
         # scan for data files
-        tfiles = glob(os.path.join(tdir, 'html', '*'))
-        tfiles = filter(os.path.isfile, tfiles)
-        installdatafiles.append(
-            ('share/roundup/templates/%s/html' % template, tfiles)
-        )
+        for idir in '. detectors html'.split():
+            idir = os.path.join(tdir, idir)
+            tfiles = []
+            for f in os.listdir(idir):
+                if f.startswith('.'):
+                    continue
+                ifile = os.path.join(idir, f)
+                if os.path.isfile(ifile):
+                    tfiles.append(ifile)
+            installdatafiles.append(
+                (os.path.join('share', 'roundup', idir), tfiles)
+            )
 
     # perform the setup action
     from roundup import __version__
@@ -233,7 +215,7 @@ def install_demo():
         if error.errno != errno.ENOENT:
             raise
     from roundup import init, instance, password
-    init.install(home, 'classic')
+    init.install(home, os.path.join('templates', 'classic'))
     # don't have email flying around
     os.remove(os.path.join(home, 'detectors', 'nosyreaction.py'))
     init.write_select_db(home, 'anydbm')

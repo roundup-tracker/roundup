@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: __init__.py,v 1.8 2003-02-24 04:12:15 richard Exp $
+#$Id: __init__.py,v 1.1 2003-04-17 03:26:38 richard Exp $
 
 import sys, os, imp
 
