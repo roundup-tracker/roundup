@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.55 2003-06-23 08:05:30 neaj Exp $
+# $Id: admin.py,v 1.56 2003-08-26 00:06:55 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1143,16 +1143,6 @@ Command help:
             cl = self.get_class(classname)
             p = csv.parser(field_sep=':')
             file_props = p.parse(f.readline())
-
-# XXX we don't _really_ need to do this...
-#            properties = cl.getprops()
-#            propnames = properties.keys()
-#            propnames.sort()
-#            m = file_props[:]
-#            m.sort()
-#            if m != propnames:
-#                raise UsageError, _('Import file doesn\'t define the same '
-#                    'properties as "%(arg0)s".')%{'arg0': args[0]}
 
             # loop through the file and create a node for each entry
             maxid = 1
