@@ -1,4 +1,4 @@
-<!-- $Id: user.index,v 1.1 2001-07-23 04:21:20 richard Exp $-->
+<!-- $Id: user.index,v 1.2 2002-07-09 05:29:51 richard Exp $-->
 <tr>
     <property name="username">
         <td><display call="link('username')"></td>
@@ -10,7 +10,7 @@
         <td><display call="plain('organisation')"></td>
     </property>
     <property name="address">
-        <td><display call="plain('address')"></td>
+        <td><display call="email('address')"></td>
     </property>
     <property name="phone">
         <td><display call="plain('phone')"></td>
