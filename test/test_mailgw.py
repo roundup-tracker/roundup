@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.58 2003-11-03 18:34:03 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.59 2003-11-03 19:08:41 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -110,6 +110,11 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         except OSError, error:
             if error.errno not in (errno.ENOENT, errno.ESRCH): raise
 
+    def _send_mail(self, message):
+        handler = self.instance.MailGW(self.instance, self.db)
+        handler.trapExceptions = 0
+        return handler.main(StringIO(message))
+        
     def _get_mail(self):
         f = open(SENDMAILDEBUG)
         try:
@@ -118,7 +123,7 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
             f.close()
 
     def testEmptyMessage(self):
-        message = StringIO('''Content-Type: text/plain;
+        nodeid = self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -127,14 +132,11 @@ Message-Id: <dummy_test_message_id>
 Subject: [issue] Testing...
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        nodeid = handler.main(message)
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
 
     def doNewIssue(self):
-        message = StringIO('''Content-Type: text/plain;
+        nodeid = self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -144,9 +146,6 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        nodeid = handler.main(message)
         assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
@@ -158,7 +157,7 @@ This is a test submission of a new issue.
 
     def testNewIssueNosy(self):
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        message = StringIO('''Content-Type: text/plain;
+        nodeid = self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -168,16 +167,13 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        nodeid = handler.main(message)
         assert not os.path.exists(SENDMAILDEBUG)
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4'])
 
     def testAlternateAddress(self):
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: John Doe <john.doe@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -186,16 +182,13 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 ''')
-        userlist = self.db.user.list()
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
+        userlist = self.db.user.list()        
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(userlist, self.db.user.list(),
             "user created when it shouldn't have been")
 
     def testNewIssueNoClass(self):
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -205,13 +198,12 @@ Subject: Testing...
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         assert not os.path.exists(SENDMAILDEBUG)
 
     def testNewIssueAuthMsg(self):
-        message = StringIO('''Content-Type: text/plain;
+        # TODO: fix the damn config - this is apalling
+        self.db.config.MESSAGES_TO_AUTHOR = 'yes'
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -220,12 +212,6 @@ Subject: [issue] Testing... [nosy=mary; assignedto=richard]
 
 This is a test submission of a new issue.
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        # TODO: fix the damn config - this is apalling
-        self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, mary@test, richard@test
@@ -268,7 +254,7 @@ _______________________________________________________________________
 
     def testSimpleFollowup(self):
         self.doNewIssue()
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -278,9 +264,6 @@ Subject: [issue1] Testing...
 
 This is a second followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -312,7 +295,7 @@ _______________________________________________________________________
     def testFollowup(self):
         self.doNewIssue()
 
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -322,9 +305,6 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4', '5', '6'])
@@ -361,7 +341,7 @@ _______________________________________________________________________
 
     def testFollowupTitleMatch(self):
         self.doNewIssue()
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -371,10 +351,6 @@ Subject: Re: Testing... [assignedto=mary; nosy=+john]
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, mary@test
@@ -408,7 +384,7 @@ _______________________________________________________________________
     def testFollowupNosyAuthor(self):
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -418,9 +394,6 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
 
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
@@ -455,7 +428,7 @@ _______________________________________________________________________
     def testFollowupNosyRecipients(self):
         self.doNewIssue()
         self.db.config.ADD_RECIPIENTS_TO_NOSY = 'yes'
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -466,10 +439,6 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
@@ -504,7 +473,7 @@ _______________________________________________________________________
         self.doNewIssue()
         self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -514,10 +483,6 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, john@test, richard@test
@@ -551,7 +516,7 @@ _______________________________________________________________________
     def testFollowupNoNosyAuthor(self):
         self.doNewIssue()
         self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -561,10 +526,6 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -597,7 +558,7 @@ _______________________________________________________________________
     def testFollowupNoNosyRecipients(self):
         self.doNewIssue()
         self.instance.config.ADD_RECIPIENTS_TO_NOSY = 'no'
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
 To: issue_tracker@your.tracker.email.domain.example
@@ -608,10 +569,6 @@ Subject: [issue1] Testing...
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
@@ -644,7 +601,7 @@ _______________________________________________________________________
     def testFollowupEmptyMessage(self):
         self.doNewIssue()
 
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -653,9 +610,6 @@ In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
         self.assertEqual(l, ['3', '4', '5', '6'])
@@ -666,7 +620,7 @@ Subject: [issue1] Testing... [assignedto=mary; nosy=+john]
     def testNosyRemove(self):
         self.doNewIssue()
 
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -675,9 +629,6 @@ In-Reply-To: <dummy_test_message_id>
 Subject: [issue1] Testing... [nosy=-richard]
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         l = self.db.issue.get('1', 'nosy')
         l.sort()
         self.assertEqual(l, ['3'])
@@ -695,7 +646,7 @@ Subject: [issue1] Testing... [nosy=-richard]
         self.db.security.hasPermission('Email Registration', anonid)
         l = self.db.user.list()
         l.sort()
-        s = '''Content-Type: text/plain;
+        message = '''Content-Type: text/plain;
   charset="iso-8859-1"
 From: fubar <fubar@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -704,10 +655,7 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 '''
-        message = StringIO(s)
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        self.assertRaises(Unauthorized, handler.main, message)
+        self.assertRaises(Unauthorized, self._send_mail, message)
         m = self.db.user.list()
         m.sort()
         self.assertEqual(l, m)
@@ -715,17 +663,14 @@ This is a test submission of a new issue.
         # now with the permission
         p = self.db.security.getPermission('Email Registration')
         self.db.security.role['anonymous'].permissions=[p]
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        message = StringIO(s)
-        handler.main(message)
+        self._send_mail(message)
         m = self.db.user.list()
         m.sort()
         self.assertNotEqual(l, m)
 
     def testEnc01(self):
         self.doNewIssue()
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -739,9 +684,6 @@ Content-Transfer-Encoding: quoted-printable
 A message with encoding (encoded oe =F6)
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -773,7 +715,7 @@ _______________________________________________________________________
 
     def testMultipartEnc01(self):
         self.doNewIssue()
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -794,9 +736,6 @@ Content-Transfer-Encoding: quoted-printable
 A message with first part encoded (encoded oe =F6)
 
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork, richard@test
@@ -827,7 +766,7 @@ _______________________________________________________________________
 
     def testContentDisposition(self):
         self.doNewIssue()
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: mary <mary@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -852,9 +791,6 @@ xxxxxx
 
 --bCsyhTFzCvuiizWE--
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
         messages = self.db.issue.get('1', 'messages')
         messages.sort()
         file = self.db.msg.get(messages[-1], 'files')[0]
@@ -863,7 +799,7 @@ xxxxxx
     def testFollowupStupidQuoting(self):
         self.doNewIssue()
 
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -873,10 +809,6 @@ Subject: Re: "[issue1] Testing... "
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.compareMessages(self._get_mail(),
 '''FROM: roundup-admin@your.tracker.email.domain.example
 TO: chef@bork.bork.bork
@@ -925,7 +857,7 @@ This is a followup
 
         messages = self.db.issue.get(nodeid, 'messages')
 
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -940,10 +872,6 @@ Blah blah wrote:
 
 This is a followup
 ''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         # figure the new message id
         newmessages = self.db.issue.get(nodeid, 'messages')
         for msg in messages:
@@ -980,7 +908,7 @@ This is a followup
     def testRegistrationConfirmation(self):
         otk = "Aj4euk4LZSAdwePohj90SME5SpopLETL"
         self.db.otks.set(otk, username='johannes', __time='')
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
 To: issue_tracker@your.tracker.email.domain.example
@@ -991,15 +919,11 @@ Subject: Re: Complete your registration to Roundup issue tracker
 
 This is a test confirmation of registration.
 ''' % otk)
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-
         self.db.user.lookup('johannes')
 
     def testFollowupOnNonIssue(self):
         self.db.keyword.create(name='Foo')
-        message = StringIO('''Content-Type: text/plain;
+        self._send_mail('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard <richard@test>
 To: issue_tracker@your.tracker.email.domain.example
@@ -1007,11 +931,7 @@ Message-Id: <followup_dummy_id>
 In-Reply-To: <dummy_test_message_id>
 Subject: [keyword1] Testing... [name=Bar]
 
-''')
-        handler = self.instance.MailGW(self.instance, self.db)
-        handler.trapExceptions = 0
-        handler.main(message)
-        
+''')        
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
     
 def test_suite():
