@@ -1,4 +1,4 @@
-# $Id: cgi_client.py,v 1.5 2001-07-28 08:16:52 richard Exp $
+# $Id: cgi_client.py,v 1.6 2001-07-29 04:04:00 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback
 
@@ -120,21 +120,27 @@ class Client:
             filterspec[key] = l
         return filterspec
 
+
+    default_index_sort = ['-activity']
+    default_index_group = ['priority']
+    default_index_filter = []
+    default_index_columns = ['activity','status','title']
+    default_index_filterspec = {'status': ['1', '2', '3', '4', '5', '6', '7']}
     def index(self):
         ''' put up an index
         '''
         self.classname = 'issue'
         if self.form.has_key(':sort'): sort = self.index_arg(':sort')
-        else: sort=['-activity']
+        else: sort = self.default_index_sort
         if self.form.has_key(':group'): group = self.index_arg(':group')
-        else: group=['priority']
+        else: group = self.default_index_group
         if self.form.has_key(':filter'): filter = self.index_arg(':filter')
-        else: filter = []
+        else: filter = self.default_index_filter
         if self.form.has_key(':columns'): columns = self.index_arg(':columns')
-        else: columns=['activity','status','title']
+        else: columns = self.default_index_columns
         filterspec = self.index_filterspec()
         if not filterspec:
-            filterspec['status'] = ['1', '2', '3', '4', '5', '6', '7']
+            filterspec = self.default_index_filterspec
         return self.list(columns=columns, filter=filter, group=group,
             sort=sort, filterspec=filterspec)
 
@@ -155,7 +161,7 @@ class Client:
 
         '''
         cn = self.classname
-        self.pagehead('Index: %s'%cn)
+        self.pagehead('Index of %s'%cn)
         if sort is None: sort = self.index_arg(':sort')
         if group is None: group = self.index_arg(':group')
         if filter is None: filter = self.index_arg(':filter')
@@ -490,6 +496,9 @@ class Client:
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/07/28 08:16:52  richard
+# New issue form handles lack of note better now.
+#
 # Revision 1.4  2001/07/28 00:34:34  richard
 # Fixed some non-string node ids.
 #
