@@ -1,8 +1,8 @@
-===================
+icing
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.44 $
+:Version: $Revision: 1.45 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -634,10 +634,10 @@ the tracker **html** directory. There are several types of files in there:
 **page**
   This template usually defines the overall look of your tracker. When you
   view an issue, it appears inside this template. When you view an index, it
-  also appears inside this template. This template defines a macro which is
-  used by almost all other templates as a wrapper for their content, using its
-  "content" slot. It will also define the "head_title" and "body_title" slots
-  to allow setting of the page title.
+  also appears inside this template. This template defines a macro called
+  "icing" which is used by almost all other templates as a coating for their
+  content, using its "content" slot. It will also define the "head_title"
+  and "body_title" slots to allow setting of the page title.
 **home**
   the default page displayed when no other page is indicated by the user
 **home.classlist**
@@ -670,8 +670,11 @@ and it won't affect your users using the "issue.item" template.
 How the templates work
 ----------------------
 
-Roundup's templates consist of special attributes on your template tags. These
-attributes form the Template Attribute Language, or TAL. The basic tag
+Basic Templating Actions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup's templates consist of special attributes on your template tags.
+These attributes form the Template Attribute Language, or TAL. The basic tag
 commands are:
 
 **tal:define="variable expression; variable expression; ..."**
@@ -760,8 +763,12 @@ commands on it). This is useful for making arbitrary blocks of HTML
 conditional or repeatable (very handy for repeating multiple table rows,
 which would othewise require an illegal tag placement to effect the repeat).
 
+
+Templating Expressions
+~~~~~~~~~~~~~~~~~~~~~~
+
 The expressions you may use in the attibute values may be one of the following
-three forms:
+forms:
 
 **Path Expressions** - eg. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the path
@@ -789,8 +796,17 @@ three forms:
    equivalent to ``item/status/checklist``, assuming that ``checklist`` is
    a method.
 
-Tag macros, which are used in forming the basic structure of your pages,
-are handled with the following commands:
+Template Macros
+~~~~~~~~~~~~~~~
+
+Macros are used in Roundup to save us from repeating the same common page
+stuctures over and over. The most common (and probably only) macro you'll use
+is the "icing" macro defined in the "page" template.
+
+Macros are generated and used inside your templates using special attributes
+similar to the `basic templating actions`_. In this case though, the
+attributes belong to the Macro Expansion Template Attribute Language, or
+METAL. The macro commands are:
 
 **metal:define-macro="macro name"**
   Define that the tag and its contents are now a macro that may be inserted
@@ -803,7 +819,7 @@ are handled with the following commands:
   defines a macro called "page" using the ``<html>`` tag and its contents.
   Once defined, macros are stored on the template they're defined on in the
   ``macros`` attribute. You can access them later on through the ``templates``
-  variable, eg. the most common ``templates/page/macros/page`` to access the
+  variable, eg. the most common ``templates/page/macros/icing`` to access the
   "page" macro of the "page" template.
 
 **metal:use-macro="path expression"**
@@ -811,7 +827,7 @@ are handled with the following commands:
   will replace the current tag with the identified macro contents. For
   example::
 
-   <tal:block metal:use-macro="templates/page/macros/page">
+   <tal:block metal:use-macro="templates/page/macros/icing">
     ...
    </tal:block>
 
@@ -821,7 +837,7 @@ are handled with the following commands:
 **metal:define-slot="slot name"** and **metal:fill-slot="slot name"**
   To define *dynamic* parts of the macro, you define "slots" which may be 
   filled when the macro is used with a *use-macro* command. For example, the
-  ``templates/page/macros/page`` macro defines a slot like so::
+  ``templates/page/macros/icing`` macro defines a slot like so::
 
     <title metal:define-slot="head_title">title goes here</title>
 
@@ -832,6 +848,10 @@ are handled with the following commands:
 
   where the tag that fills the slot completely replaces the one defined as
   the slot in the macro.
+
+Note that you may not mix METAL and TAL commands on the same tag, but TAL
+commands may be used freely inside METAL-using tags (so your *fill-slots*
+tags may have all manner of TAL inside them).
 
 
 Information available to templates
@@ -1629,7 +1649,7 @@ from which files by looking for these comments::
 Next we need to add in the METAL macro stuff so we get the normal page
 trappings::
 
- <tal:block metal:use-macro="templates/page/macros/page">
+ <tal:block metal:use-macro="templates/page/macros/icing">
   <title metal:fill-slot="head_title">Category editing</title>
   <td class="page-header-top" metal:fill-slot="body_title">
    <h2>Category editing</h2>
@@ -1686,7 +1706,7 @@ Finally we finish off the tags we used at the start to do the METAL stuff::
 So putting it all together, and closing the table and form we get::
 
  <!-- category.item -->
- <tal:block metal:use-macro="templates/page/macros/page">
+ <tal:block metal:use-macro="templates/page/macros/icing">
   <title metal:fill-slot="head_title">Category editing</title>
   <td class="page-header-top" metal:fill-slot="body_title">
    <h2>Category editing</h2>
