@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.148 2002-07-30 16:09:11 gmcm Exp $
+# $Id: cgi_client.py,v 1.149 2002-07-30 20:04:38 gmcm Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -709,22 +709,26 @@ function help_window(helpurl, width, height) {
         # don't try to set properties if the user has just logged in
         if keys and not self.form.has_key('__login_name'):
             try:
-                props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
-                # make changes to the node
-                self._changenode(props)
-                # handle linked nodes 
-                self._post_editnode(self.nodeid)
-                # and some nice feedback for the user
-                if props:
-                    message = _('%(changes)s edited ok')%{'changes':
-                        ', '.join(props.keys())}
-                elif self.form.has_key('__note') and self.form['__note'].value:
-                    message = _('note added')
-                elif (self.form.has_key('__file') and
-                        self.form['__file'].filename):
-                    message = _('file added')
+                userid = self.db.user.lookup(self.user)
+                if not self.db.security.hasPermission('Edit', userid):
+                    message = _('You do not have permission to edit %s' %cn)
                 else:
-                    message = _('nothing changed')
+                    props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+                    # make changes to the node
+                    self._changenode(props)
+                    # handle linked nodes 
+                    self._post_editnode(self.nodeid)
+                    # and some nice feedback for the user
+                    if props:
+                        message = _('%(changes)s edited ok')%{'changes':
+                            ', '.join(props.keys())}
+                    elif self.form.has_key('__note') and self.form['__note'].value:
+                        message = _('note added')
+                    elif (self.form.has_key('__file') and
+                            self.form['__file'].filename):
+                        message = _('file added')
+                    else:
+                        message = _('nothing changed')
             except:
                 self.db.rollback()
                 s = StringIO.StringIO()
@@ -911,7 +915,7 @@ function help_window(helpurl, width, height) {
                 if type(value) != type([]): value = [value]
                 for value in value:
                     designator, property = value.split(':')
-                    link, nodeid = roundupdb.splitDesignator(designator)
+                    link, nodeid = hyperdb.splitDesignator(designator)
                     link = self.db.classes[link]
                     # take a dupe of the list so we're not changing the cache
                     value = link.get(nodeid, property)[:]
@@ -922,7 +926,7 @@ function help_window(helpurl, width, height) {
                 if type(value) != type([]): value = [value]
                 for value in value:
                     designator, property = value.split(':')
-                    link, nodeid = roundupdb.splitDesignator(designator)
+                    link, nodeid = hyperdb.splitDesignator(designator)
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
@@ -1370,7 +1374,7 @@ function help_window(helpurl, width, height) {
         self.db.sessions.set(self.session, user=user, last_use=time.time())
 
         # and commit immediately
-        self.db.commit()
+        self.db.sessions.commit()
 
         # expire us in a long, long time
         expire = Cookie._getdate(86400*365)
@@ -1446,7 +1450,6 @@ function help_window(helpurl, width, height) {
 
             # get the session key from the cookie
             self.session = cookie['roundup_user'].value
-
             # get the user from the session
             try:
                 # update the lifetime datestamp
@@ -1459,7 +1462,7 @@ function help_window(helpurl, width, height) {
         # sanity check on the user still being valid
         try:
             self.db.user.lookup(user)
-        except KeyError:
+        except (KeyError, TypeError):
             user = 'anonymous'
 
         # make sure the anonymous user is valid if we're using it
@@ -1692,6 +1695,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.148  2002/07/30 16:09:11  gmcm
+# Simple optimization.
+#
 # Revision 1.147  2002/07/30 08:22:38  richard
 # Session storage in the hyperdb was horribly, horribly inefficient. We use
 # a simple anydbm wrapper now - which could be overridden by the metakit

@@ -19,7 +19,6 @@ class _Database(hyperdb.Database):
         self.config = config
         self.journaltag = journaltag
         self.classes = {}
-        self._classes = []
         self.dirty = 0
         self.lockfile = None
         self._db = self.__open()
