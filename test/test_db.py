@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_db.py,v 1.60 2002-10-10 07:18:03 richard Exp $ 
+# $Id: test_db.py,v 1.61 2002-10-10 08:04:46 richard Exp $ 
 
 import unittest, os, shutil, time
 
@@ -81,76 +81,103 @@ class anydbmDBTestCase(MyTestCase):
         setupSchema(self.db2, 0, anydbm)
 
     def testStringChange(self):
-        # test set & retrieve
-        self.db.issue.create(title="spam", status='1')
-        self.assertEqual(self.db.issue.get('1', 'title'), 'spam')
+        for commit in (0,1):
+            # test set & retrieve
+            nid = self.db.issue.create(title="spam", status='1')
+            self.assertEqual(self.db.issue.get(nid, 'title'), 'spam')
 
-        # change and make sure we retrieve the correct value
-        self.db.issue.set('1', title='eggs')
-        self.assertEqual(self.db.issue.get('1', 'title'), 'eggs')
+            # change and make sure we retrieve the correct value
+            self.db.issue.set(nid, title='eggs')
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, 'title'), 'eggs')
 
-        # do some commit stuff
-        self.db.commit()
-        self.assertEqual(self.db.issue.get('1', 'title'), 'eggs')
-        self.db.issue.create(title="spam", status='1')
-        self.db.commit()
-        self.assertEqual(self.db.issue.get('2', 'title'), 'spam')
-        self.db.issue.set('2', title='ham')
-        self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
-        self.db.commit()
-        self.assertEqual(self.db.issue.get('2', 'title'), 'ham')
-
-        # make sure we can unset
-        self.db.issue.set('1', title=None)
-        self.assertEqual(self.db.issue.get('1', "title"), None)
+    def testStringUnset(self):
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, 'title'), 'spam')
+            # make sure we can unset
+            self.db.issue.set(nid, title=None)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "title"), None)
 
     def testLinkChange(self):
-        self.db.issue.create(title="spam", status='1')
-        self.assertEqual(self.db.issue.get('1', "status"), '1')
-        self.db.issue.set('1', status='2')
-        self.assertEqual(self.db.issue.get('1', "status"), '2')
-        self.db.issue.set('1', status=None)
-        self.assertEqual(self.db.issue.get('1', "status"), None)
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "status"), '1')
+            self.db.issue.set(nid, status='2')
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "status"), '2')
+
+    def testLinkUnset(self):
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            if commit: self.db.commit()
+            self.db.issue.set(nid, status=None)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "status"), None)
 
     def testMultilinkChange(self):
-        u1 = self.db.user.create(username='foo')
-        u2 = self.db.user.create(username='bar')
-        self.db.issue.create(title="spam", nosy=[u1])
-        self.assertEqual(self.db.issue.get('1', "nosy"), [u1])
-        self.db.issue.set('1', nosy=[])
-        self.assertEqual(self.db.issue.get('1', "nosy"), [])
-        self.db.issue.set('1', nosy=[u1,u2])
-        self.assertEqual(self.db.issue.get('1', "nosy"), [u1,u2])
+        for commit in (0,1):
+            u1 = self.db.user.create(username='foo%s'%commit)
+            u2 = self.db.user.create(username='bar%s'%commit)
+            nid = self.db.issue.create(title="spam", nosy=[u1])
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1])
+            self.db.issue.set(nid, nosy=[])
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [])
+            self.db.issue.set(nid, nosy=[u1,u2])
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "nosy"), [u1,u2])
 
     def testDateChange(self):
-        self.db.issue.create(title="spam", status='1')
-        a = self.db.issue.get('1', "deadline")
-        self.db.issue.set('1', deadline=date.Date())
-        b = self.db.issue.get('1', "deadline")
-        self.db.commit()
-        self.assertNotEqual(a, b)
-        self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
-        self.db.issue.set('1', deadline=date.Date())
-        self.db.issue.set('1', deadline=None)
-        self.assertEqual(self.db.issue.get('1', "deadline"), None)
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            a = self.db.issue.get(nid, "deadline")
+            if commit: self.db.commit()
+            self.db.issue.set(nid, deadline=date.Date())
+            b = self.db.issue.get(nid, "deadline")
+            if commit: self.db.commit()
+            self.assertNotEqual(a, b)
+            self.assertNotEqual(b, date.Date('1970-1-1 00:00:00'))
+
+    def testDateUnset(self):
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            self.db.issue.set(nid, deadline=date.Date())
+            if commit: self.db.commit()
+            self.assertNotEqual(self.db.issue.get(nid, "deadline"), None)
+            self.db.issue.set(nid, deadline=None)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "deadline"), None)
 
     def testIntervalChange(self):
-        nid = self.db.issue.create(title="spam", status='1')
-        self.db.commit()
-        a = self.db.issue.get(nid, "foo")
-        i = date.Interval('-1d')
-        self.db.issue.set(nid, foo=i)
-        self.db.commit()
-        self.assertNotEqual(self.db.issue.get(nid, "foo"), a)
-        self.assertEqual(i, self.db.issue.get(nid, "foo"))
-        j = date.Interval('1y')
-        self.db.issue.set(nid, foo=j)
-        self.db.commit()
-        self.assertNotEqual(self.db.issue.get(nid, "foo"), i)
-        self.assertEqual(j, self.db.issue.get(nid, "foo"))
-        self.db.issue.set(nid, foo=None)
-        self.db.commit()
-        self.assertEqual(self.db.issue.get(nid, "foo"), None)
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            if commit: self.db.commit()
+            a = self.db.issue.get(nid, "foo")
+            i = date.Interval('-1d')
+            self.db.issue.set(nid, foo=i)
+            if commit: self.db.commit()
+            self.assertNotEqual(self.db.issue.get(nid, "foo"), a)
+            self.assertEqual(i, self.db.issue.get(nid, "foo"))
+            j = date.Interval('1y')
+            self.db.issue.set(nid, foo=j)
+            if commit: self.db.commit()
+            self.assertNotEqual(self.db.issue.get(nid, "foo"), i)
+            self.assertEqual(j, self.db.issue.get(nid, "foo"))
+
+    def testIntervalUnset(self):
+        for commit in (0,1):
+            nid = self.db.issue.create(title="spam", status='1')
+            self.db.issue.set(nid, foo=date.Interval('-1d'))
+            if commit: self.db.commit()
+            self.assertNotEqual(self.db.issue.get(nid, "foo"), None)
+            self.db.issue.set(nid, foo=None)
+            if commit: self.db.commit()
+            self.assertEqual(self.db.issue.get(nid, "foo"), None)
 
     def testBooleanChange(self):
         userid = self.db.user.create(username='foo', assignable=1)
