@@ -1,5 +1,15 @@
 """Implements the API used in the HTML templating for the web interface.
 """
+
+todo = '''
+- Most methods should have a "default" arg to supply a value 
+  when none appears in the hyperdb or request. 
+- Multilink property additions: change_note and new_upload
+- Add class.find() too
+- NumberHTMLProperty should support numeric operations
+- HTMLProperty should have an isset() method
+'''
+
 __docformat__ = 'restructuredtext'
 
 from __future__ import nested_scopes
@@ -900,6 +910,15 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
         # use our fabricated request
         return pt.render(self._client, req.classname, req)
 
+    def download_url(self):
+        ''' Assume that this item is a FileClass and that it has a name
+        and content. Construct a URL for the download of the content.
+        '''
+        name = self._klass.get(self._nodeid, 'name')
+        url = '%s%s/%s'%(self._classname, self._nodeid, name)
+        return urllib.quote(url)
+
+
 class HTMLUserPermission:
 
     def is_edit_ok(self):
@@ -994,6 +1013,10 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         if isinstance(other, HTMLProperty):
             return cmp(self._value, other._value)
         return cmp(self._value, other)
+
+    def isset(self):
+        '''Is my _value None?'''
+        return self._value is None
 
     def is_edit_ok(self):
         ''' Is the user allowed to Edit the current class?
@@ -1526,6 +1549,10 @@ class MultilinkHTMLProperty(HTMLProperty):
             value is a string first, not a HTMLProperty.
         '''
         return str(value) in self._value
+
+    def isset(self):
+        '''Is my _value []?'''
+        return self._value == []
 
     def reverse(self):
         ''' return the list in reverse order
@@ -2083,4 +2110,12 @@ class TemplatingUtils:
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
         return Batch(self.client, sequence, size, start, end, orphan,
             overlap)
+
+    def url_quote(self, url):
+        '''URL-quote the supplied text.'''
+        return urllib.quote(url)
+
+    def html_quote(self, html):
+        '''HTML-quote the supplied text.'''
+        return cgi.escape(url)
 

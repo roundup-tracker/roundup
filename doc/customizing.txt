@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.131 $
+:Version: $Revision: 1.132 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1602,6 +1602,8 @@ hasPermission   specific to the "user" class - determine whether the
 is_edit_ok      is the user allowed to Edit the current item?
 is_view_ok      is the user allowed to View the current item?
 is_retired      is the item retired?
+download_url    generates a url-quoted link for download of FileClass
+                item contents (ie. file<id>/<name>)
 =============== ========================================================
 
 Note that if you have a property of the same name as one of the above
@@ -1713,6 +1715,7 @@ menu        only on Link and Multilink properties - render a form select
             list for this property
 reverse     only on Multilink properties - produce a list of the linked
             items in reverse order
+isset       returns True if the property has been set to a value
 =========== ================================================================
 
 All of the above functions perform checks for permissions required to
@@ -1862,6 +1865,8 @@ as described below.
 Method          Description
 =============== ========================================================
 Batch           return a batch object using the supplied list
+url_quote       quote some text as safe for a URL (ie. space, %, ...)
+html_quote      quote some text as safe in HTML (ie. <, >, ...)
 =============== ========================================================
 
 You may add additional utility methods by writing them in your tracker

@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.40 2004-04-02 06:38:42 richard Exp $
+$Id: roundup_server.py,v 1.41 2004-04-05 00:51:45 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -31,6 +31,11 @@ import BaseHTTPServer, socket, errno
 from roundup.cgi import cgitb, client
 import roundup.instance
 from roundup.i18n import _
+
+try:
+    import signal
+except:
+    signal = None
 
 #
 ##  Configuration
@@ -60,17 +65,16 @@ LOGFILE = None
 
 import zlib, base64
 favico = zlib.decompress(base64.decodestring('''
-eJztkTlM2lEcgD9aoEqL0FqFIhahKFIsPbWtLcUeWuxBCxZb6kLi0oE4GDcHj0Tj6mDiYDQmJg4m
-6uDGxCYhgsFIjFFjdNLBI94Rsf96dXNp0snv5R3f7/fe7yXvgUhoSiXCmMIvCWQC+UIXQuRwHD+P
-oaEhBgYG6O/vp7e3l56eHjo6Omhvb6elpYWmpiYaGhqor6+nuroar9eLx+PB5XKRTCZJJBLs7u6y
-vb3N5uYma2tr2Gw2VlZWWF5eZmFhgfn5eebm5rBYLMzMzGA2m5mensZkMjE1NUU8HicWi6HT6Rgf
-HycSiaBSqRgdHUWhUCCXy5FIJIyMjCASiRgeHmZwcJC+vj66u7vp6uqis7OTtrY2WltbaW5uprGx
-kbq6Ompra6mpqcHv9+Pz+XC73TidTg4PDzk4OGB/fx+Hw8He3h47OztsbW2xsbHB+vo6q6urLC0t
-sbi4iNVqZXZ2FqPRyOTkJAaDgYmJCaLRKFqtlrGxMTQaDeFwmFAoRDAYRCaTEQgEkEqliMXic//h
-ggv+N3bHldKK1Mp8u/Kt/Qh16v0i8WO10vO0LEvQm9ce2SSFwuKS4WGBMFmv2qruPn+n0xdlXb4u
-eHnKPfih/Zb5Ruo4On/LfVz4pfK4nj272PLHC+2nKJ+RY/6pO/OSV8ZyhenDmd/4XCX7aH7hPPXc
-L+aCtNtpotO03JtTnKE/2+56oq7MsP+l7EG25tOd3Iqvr08C6bl52ap09feTG0v079X6PKem9Mj+
-9f1+A74o1JM=
+eJztjr1PmlEUh59XgVoshdYPWorFIhaRFq0t9pNq37b60lYSTRzcTFw6GAfj5gDYaF0dTB0MxMSE
+gQQd3FzKJiEC0UCIUUN1M41pV2JCXySg/0ITn5tfzvmdc+85FwT56HSc81UJjXJsk1UsNcsSqCk1
+BS64lK+vr7OyssLJyQl2ux2j0cjU1BQajYZIJEIwGMRms+H3+zEYDExOTjI2Nsbm5iZWqxWv18vW
+1hZDQ0Ok02kmJiY4Ojpienqa3d1dxsfHUSqVeDwe5ufnyeVyrK6u4nK5ODs7Y3FxEYfDwdzcHCaT
+icPDQ5LJJIIgMDIyQj6fZ39/n+3tbdbW1pAkiYWFBWZmZtjb2yMejzM8PEwgEMDn85HNZonFYqjV
+asLhMMvLy2QyGfR6PaOjowwODmKxWDg+PkalUhEKhSgUCiwtLWE2m9nZ2UGhULCxscHp6SmpVIpo
+NMrs7CwHBwdotVoSiQRXXPG/IzY7RHtt922xjFRb01H1XhKfPBNbi/7my7rrLXJ88eppvxwEfV3f
+NY3Y6exofVdsV3+2wnPFDdPjB83n7xuVpcFvygPbGwxF31LZIKrQDfR2Xvh7lmrX654L/7bvlnng
+bn3Zuj8M9Hepux6VfZtW1yA6K7cfGqVu8TL325u+fHTb71QKbk+7TZQ+lTc6RcnpqW8qmVQBoj/g
+23eo0sr/NIGvB37K+lOWXMvJ+uWFeKGU/03Cb7n3D4M3wxI=
 '''.strip()))
 
 class RoundupRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):

@@ -103,7 +103,7 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
  <tr><th>File name</th><th>Uploaded</th><th>Type</th><th>Edit</th></tr>
  <tr tal:repeat="file context/files">
   <td>
-   <a tal:attributes="href string:file${file/id}/${file/name}"
+   <a tal:attributes="href file/download_url"
       tal:content="file/name">dld link</a>
   </td>
   <td>

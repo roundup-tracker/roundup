@@ -3,7 +3,9 @@ are given with the most recent entry first.
 
 2004-??-?? 0.7.0
 Feature:
-- added a favicon (with crappy white background)
+- added a favicon
+- added url_quote and html_quote methods to the utils object
+- added isset method to HTMLProperty
 
 Fixed:
 - CSV export was busted (as was any action returning a result)
@@ -12,6 +14,8 @@ Fixed:
 - MySQL and Postgresql use BOOL/BOOLEAN for Boolean types
 - OTK generation was busted (thanks Stuart D. Gathman)
 - export and import now include journals (incompatible with export < 0.7)
+- added "download_url" method to generate a correctly quoted URL for file
+  download links (sf bug 927745)
 
 
 2004-03-27 0.7.0b2

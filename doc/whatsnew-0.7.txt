@@ -217,6 +217,27 @@ The stylesheet includes printer settings now too, so printed pages
 don't include the sidebar.
 
 
+Quoting of URLs and HTML
+------------------------
+
+Templates that wish to offer file downloads may now use a new
+``download_url`` method:
+
+ <tr tal:repeat="file context/files">
+  <td>
+   <a tal:attributes="href file/download_url"
+      tal:content="file/name">dld link</a>
+  </td>
+ ...
+
+The ``download_url`` method looks up the file's "id" and "name" and
+generates a correctly-quoted URL.
+
+Additionally, users wishing to URL- or HTML- quote text in their templates
+may use the new ``utils.url_quote(url)`` and ``utils.html_quote(html)``
+methods.
+
+
 Email Interface
 ===============
 
