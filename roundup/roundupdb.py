@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.102 2004-03-19 04:47:59 richard Exp $
+# $Id: roundupdb.py,v 1.103 2004-03-22 00:15:34 richard Exp $
 
 """Extending hyperdb with types specific to issue-tracking.
 """
@@ -349,7 +349,7 @@ class IssueClass:
             self.db.config.TRACKER_EMAIL))
 
         line = '_' * max(len(web)+2, len(email))
-        return '%s\n%s\n<%s>\n%s'%(line, email, web, line)
+        return '\n%s\n%s\n<%s>\n%s'%(line, email, web, line)
 
 
     def generateCreateNote(self, nodeid):
