@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.48 2003-04-17 03:37:57 richard Exp $
+# $Id: setup.py,v 1.49 2003-04-19 05:03:54 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -147,7 +147,7 @@ def main():
 
     # add the templates to the data files lists
     from roundup.admin import listTemplates
-    templates = [t['path'] for t in listTemplates('.').values()]
+    templates = [t['path'] for t in listTemplates('templates').values()]
     for tdir in templates:
         # scan for data files
         for idir in '. detectors html'.split():
