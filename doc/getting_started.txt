@@ -2,7 +2,7 @@
 Getting Started
 ===============
 
-:Version: $Revision: 1.4 $
+:Version: $Revision: 1.5 $
 
 .. contents::
 
@@ -166,7 +166,7 @@ Apache:
 	  SetEnv ROUNDUP_LOG "/var/log/roundup.log"
 	  SetEnv ROUNDUP_INSTANCE_HOMES "Default=/usr/local/share/roundup/instances/Default"
 	  SetEnv ROUNDUP_DEBUG "0"
-	  
+
   7. On Windows, write a batch file "roundup.bat" similar to the one below and
      place it into your cgi-bin directory::
       

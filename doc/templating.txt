@@ -2,7 +2,7 @@
 HTML Templating Mechanisms
 ==========================
 
-:Version: $Revision: 1.12 $
+:Version: $Revision: 1.13 $
 
 Current Situation and Issues
 ============================
@@ -138,8 +138,9 @@ I'm envisaging an infrastructure layer where each template has the following
 "root level" (that is, directly accessible in the TALES namespace) variables
 defined:
 
-*class*
-  The current class of node being displayed as an HTMLClass instance
+*klass*
+  The current class of node being displayed as an HTMLClass instance. Name is
+  mangled so it can be used in Python expressions.
 
 *item*
   The current node from the database, if we're viewing a specific node, as an
@@ -183,7 +184,7 @@ defined:
 *modules*
   python modules made available (XXX: not sure what's actually in there tho)
 
-Accesses through a class (either through *class* or *db.<classname>*)::
+Accesses through a class (either through *klass* or *db.<classname>*)::
 
     class HTMLClass:
         def __getattr__(self, attr):

@@ -2,7 +2,7 @@
 Installing Roundup
 ==================
 
-:Version: $Revision: 1.15 $
+:Version: $Revision: 1.16 $
 
 .. contents::
 
@@ -181,9 +181,7 @@ Python -- see `testing your python`_.
        10 * * * * /opt/roundup/bin/roundup-mailgw
                 /opt/roundup/instances/support /var/mail/support
 
-6. TODO (mention perms)
-
-7. Test the email gateway.  Under most flavors of UNIX, this
+6. Test the email gateway.  Under most flavors of UNIX, this
    can be done by::
 
      echo test | mail -s '[issue] test' support@YOUR_DOMAIN_HERE
