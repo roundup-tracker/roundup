@@ -1693,7 +1693,6 @@ class MultilinkIterator:
         self.client = client
         self.values = values
         self.id = -1
-        self.cl = self.client.db.getclass(self.classname)
     def next(self):
         '''Return the next item, but skip inaccessible items.'''
         check = self.client.db.security.hasPermission
