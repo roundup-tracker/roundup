@@ -3,6 +3,7 @@ are given with the most recent entry first.
 
 ???? 0.4.4?
 Fixed:
+ . #596155 ] bug with multilink
  . #600699 ] documentation in doc/getting_started.txt
  . #600700 ] doc/upgrading.txt: no info about 0.4.3
  . #603696 ] Mail followup not inserted

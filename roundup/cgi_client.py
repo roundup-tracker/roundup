@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.129.2.3 2002-09-02 21:49:04 richard Exp $
+# $Id: cgi_client.py,v 1.129.2.4 2002-09-02 21:57:11 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -1342,13 +1342,16 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
                             'value': value, 'classname': link}
         elif isinstance(proptype, hyperdb.Multilink):
             value = form[key]
-            if hasattr(value, 'value'):
-                # Quite likely to be a FormItem instance
-                value = value.value
             if not isinstance(value, type([])):
+                if hasattr(value, 'value'):
+                    value = value.value
                 value = [i.strip() for i in value.split(',')]
             else:
-                value = [i.strip() for i in value]
+                if value and hasattr(value[0], 'value'):
+                    # an array of (Mini)FieldStorages
+                    value = [i.value.strip() for i in value]
+                else:
+                    value = [i.strip() for i in value]
             link = cl.properties[key].classname
             l = []
             for entry in map(str, value):
@@ -1382,6 +1385,9 @@ def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.129.2.3  2002/09/02 21:49:04  richard
+# backported fix to CGI form handling from 0.5
+#
 # Revision 1.129.2.2  2002/07/22 22:06:45  richard
 # . #535868 ] Anonymous User Login
 #    Hrm, I re-read the intention of the web/email login stuff, and realised
