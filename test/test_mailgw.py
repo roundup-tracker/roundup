@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.49 2003-09-07 13:08:08 jlgijsbers Exp $
+# $Id: test_mailgw.py,v 1.50 2003-09-07 18:27:47 jlgijsbers Exp $
 
 import unittest, tempfile, os, shutil, errno, imp, sys, difflib, rfc822
 
@@ -25,13 +25,7 @@ class Message(rfc822.Message):
     def __eq__(self, other):
         del self['date'], other['date']
 
-        self.headers.sort()
-        other.headers.sort()
-
-        self.rewindbody()
-        other.rewindbody()
-
-        return (self.headers == other.headers and
+        return (self.dict == other.dict and
                 self.fp.read() == other.fp.read()) 
 
 # TODO: Do a semantic diff instead of a straight text diff when a test fails.
