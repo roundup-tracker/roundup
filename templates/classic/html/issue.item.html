@@ -98,30 +98,9 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
   changed <b>${context/activity}</b>.">activity info
 </p>
 
-<table class="messages" tal:condition="context/messages">
- <tr><th colspan="4" class="header">Messages</th></tr>
- <tal:block tal:repeat="msg context/messages/reverse">
-  <tr>
-   <th><a tal:attributes="href string:msg${msg/id}"
-          tal:content="string:msg${msg/id}"></a></th>
-   <th tal:content="string:Author: ${msg/author}">author</th>
-   <th tal:content="string:Date: ${msg/date}">date</th>
-   <th>
-    <a tal:condition="context/is_edit_ok"
-       tal:attributes="href string:issue${context/id}?@remove@messages=${msg/id}&@action=edit">remove</a>
-   </th>
-  </tr>
-  <tr>
-   <td colspan="4" class="content">
-    <pre tal:content="structure msg/content/hyperlinked">content</pre>
-   </td>
-  </tr>
- </tal:block>
-</table>
-
 <table class="files" tal:condition="context/files">
- <tr><th colspan="2" class="header">Files</th></tr>
- <tr><th>File name</th><th>Uploaded</th></tr>
+ <tr><th colspan="4" class="header">Files</th></tr>
+ <tr><th>File name</th><th>Uploaded</th><th>Type</th><th>Edit</th></tr>
  <tr tal:repeat="file context/files">
   <td>
    <a tal:attributes="href string:file${file/id}/${file/name}"
@@ -131,7 +110,36 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
    <span tal:content="file/creator">creator's name</span>,
    <span tal:content="file/creation">creation date</span>
   </td>
+  <td tal:content="file/type" />
+  <td><a tal:condition="file/is_edit_ok"
+          tal:attributes="href string:file${file/id}">edit</a>
+  </td>
  </tr>
+</table>
+
+<table class="messages" tal:condition="context/messages">
+ <tr><th colspan="4" class="header">Messages</th></tr>
+ <tal:block tal:repeat="msg context/messages/reverse">
+  <tr>
+   <th><a tal:attributes="href string:msg${msg/id}"
+          tal:content="string:msg${msg/id} (view)"></a></th>
+   <th tal:content="string:Author: ${msg/author}">author</th>
+   <th tal:content="string:Date: ${msg/date}">date</th>
+   <th>
+    <form style="padding:0" tal:condition="context/is_edit_ok"
+          tal:attributes="action string:issue${context/id}">
+     <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
+     <input type="hidden" name="@action" value="edit">
+     <input type="submit" value="remove">
+    </form>
+   </th>
+  </tr>
+  <tr>
+   <td colspan="4" class="content">
+    <pre tal:content="structure msg/content/hyperlinked">content</pre>
+   </td>
+  </tr>
+ </tal:block>
 </table>
 
 <tal:block tal:condition="context/id" tal:replace="structure context/history" />
