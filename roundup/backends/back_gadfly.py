@@ -1,4 +1,4 @@
-# $Id: back_gadfly.py,v 1.10 2002-09-03 06:08:50 richard Exp $
+# $Id: back_gadfly.py,v 1.11 2002-09-03 22:11:50 richard Exp $
 __doc__ = '''
 About Gadfly
 ============
@@ -108,7 +108,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.database_schema = cursor.fetchone()[0]
 
     def __repr__(self):
-        return '<radfly 0x%x>'%id(self)
+        return '<roundfly 0x%x>'%id(self)
 
     def post_init(self):
         ''' Called once the schema initialisation has finished.
@@ -1758,6 +1758,9 @@ class IssueClass(Class, roundupdb.IssueClass):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/09/03 06:08:50  richard
+# oops
+#
 # Revision 1.9  2002/09/03 05:46:21  richard
 # handle disappearing users for journaltags
 #
