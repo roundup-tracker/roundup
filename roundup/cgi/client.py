@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.147 2003-11-21 21:59:05 jlgijsbers Exp $
+# $Id: client.py,v 1.148 2003-11-21 22:22:32 jlgijsbers Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -18,27 +18,27 @@ from roundup.mailgw import uidFromAddress
 from roundup.mailer import Mailer, MessageSendError
 
 class HTTPException(Exception):
-      pass
-class  Unauthorised(HTTPException):
-       pass
-class  NotFound(HTTPException):
-       pass
-class  Redirect(HTTPException):
-       pass
-class  NotModified(HTTPException):
-       pass
+    pass
+class Unauthorised(HTTPException):
+    pass
+class NotFound(HTTPException):
+    pass
+class Redirect(HTTPException):
+    pass
+class NotModified(HTTPException):
+    pass
 
 # used by a couple of routines
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 class FormError(ValueError):
-    ''' An "expected" exception occurred during form parsing.
+    """ An "expected" exception occurred during form parsing.
         - ie. something we know can go wrong, and don't want to alarm the
           user with
 
         We trap this at the user interface level and feed back a nice error
         to the user.
-    '''
+    """
     pass
 
 class SendFile(Exception):
@@ -287,13 +287,12 @@ class Client:
             self.write(cgitb.html())
 
     def clean_sessions(self):
-        ''' Age sessions, remove when they haven't been used for a week.
+        """Age sessions, remove when they haven't been used for a week.
         
-            Do it only once an hour.
+        Do it only once an hour.
 
-            Note: also cleans One Time Keys, and other "session" based
-            stuff.
-        '''
+        Note: also cleans One Time Keys, and other "session" based stuff.
+        """
         sessions = self.db.sessions
         last_clean = sessions.get('last_clean', 'last_use') or 0
 
@@ -315,7 +314,7 @@ class Client:
             sessions.set('last_clean', last_use=time.time())
 
     def determine_user(self):
-        ''' Determine who the user is
+        '''Determine who the user is.
         '''
         # open the database as admin
         self.opendb('admin')
@@ -362,7 +361,7 @@ class Client:
         self.opendb(self.user)
 
     def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
-        ''' Determine the context of this page from the URL:
+        """ Determine the context of this page from the URL:
 
             The URL path after the instance identifier is examined. The path
             is generally only one entry long.
@@ -397,7 +396,7 @@ class Client:
              self.classname  - the class to display, can be None
              self.template   - the template to render the current context with
              self.nodeid     - the nodeid of the class we're displaying
-        '''
+        """
         # default the optional variables
         self.classname = None
         self.nodeid = None
@@ -595,9 +594,10 @@ class Client:
             self.headers_sent = headers
 
     def set_cookie(self, user):
-        ''' Set up a session cookie for the user and store away the user's
-            login info against the session.
-        '''
+        """Set up a session cookie for the user.
+
+        Also store away the user's login info against the session.
+        """
         # TODO generate a much, much stronger session key ;)
         self.session = binascii.b2a_base64(repr(random.random())).strip()
 
@@ -883,7 +883,8 @@ Your password is now: %(password)s
             if not self.standard_message([address], subject, body):
                 return
 
-            self.ok_message.append('Password reset and email sent to %s'%address)
+            self.ok_message.append('Password reset and email sent to %s' %
+                                   address)
             return
 
         # no OTK, so now figure the user
@@ -953,13 +954,13 @@ You should then receive another email with the new password.
     newItemAction = editItemAction
 
     def editItemPermission(self, props):
-        ''' Determine whether the user has permission to edit this item.
+        """Determine whether the user has permission to edit this item.
 
-            Base behaviour is to check the user can edit this class. If we're
-            editing the "user" class, users are allowed to edit their own
-            details. Unless it's the "roles" property, which requires the
-            special Permission "Web Roles".
-        '''
+        Base behaviour is to check the user can edit this class. If we're
+        editing the"user" class, users are allowed to edit their own details.
+        Unless it's the "roles" property, which requires the special Permission
+        "Web Roles".
+        """
         # if this is a user node and the user is editing their own node, then
         # we're OK
         has = self.db.security.hasPermission
@@ -1116,12 +1117,12 @@ You should then receive another email with the new password.
     # More actions
     #
     def editCSVAction(self):
-        ''' Performs an edit of all of a class' items in one go.
+        """ Performs an edit of all of a class' items in one go.
 
             The "rows" CGI var defines the CSV-formatted entries for the
             class. New nodes are identified by the ID 'X' (or any other
             non-existent ID) and removed lines are retired.
-        '''
+        """
         # this is per-class only
         if not self.editCSVPermission():
             self.error_message.append(
@@ -1366,7 +1367,7 @@ You should then receive another email with the new password.
         raise Redirect, url
 
     def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
-        ''' Item properties and their values are edited with html FORM
+        """ Item properties and their values are edited with html FORM
             variables and their values. You can:
 
             - Change the value of some property of the current item.
@@ -1506,7 +1507,7 @@ You should then receive another email with the new password.
             doesn't result in any changes would return {('issue','123'): {}})
             The id may be None, which indicates that an item should be
             created.
-        '''
+        """
         # some very useful variables
         db = self.db
         form = self.form
@@ -1835,10 +1836,10 @@ You should then receive another email with the new password.
         for (cn, id), props in all_props.items():
             if isinstance(self.db.classes[cn], hyperdb.FileClass):
                 if id == '-1':
-                      if not props.get('content', ''):
-                            del all_props[(cn, id)]
+                    if not props.get('content', ''):
+                        del all_props[(cn, id)]
                 elif props.has_key('content') and not props['content']:
-                      raise FormError, _('File is empty')
+                    raise FormError, _('File is empty')
         return all_props, all_links
 
 def extractFormList(value):
