@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.141 2004-04-07 01:12:25 richard Exp $
+#$Id: back_anydbm.py,v 1.142 2004-04-25 22:19:15 richard Exp $
 '''This module defines a backend that saves the hyperdatabase in a
 database chosen by anydbm. It is guaranteed to always be available in python
 versions >2.1.1 (the dumbdbm fallback in 2.1.1 and earlier has several
@@ -33,7 +33,7 @@ try:
 except AssertionError:
     print "WARNING: you should upgrade to python 2.1.3"
 
-import whichdb, os, marshal, re, weakref, string, copy
+import whichdb, os, marshal, re, weakref, string, copy, time
 from roundup import hyperdb, date, password, roundupdb, security
 from blobfiles import FileStorage
 from sessions_dbm import Sessions, OneTimeKeys
@@ -74,6 +74,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.dir = config.DATABASE
         self.classes = {}
         self.cache = {}         # cache of nodes loaded or created
+        self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
+            'filtering': 0}
         self.dirtynodes = {}    # keep track of the dirty nodes by class
         self.newnodes = {}      # keep track of the new nodes by class
         self.destroyednodes = {}# keep track of the destroyed nodes by class
@@ -314,9 +316,12 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if __debug__:
                 print >>hyperdb.TRACE, 'get %s %s cached'%(classname,
                     nodeid)
+                self.stats['cache_hits'] += 1
             return cache_dict[nodeid]
 
         if __debug__:
+            self.stats['cache_misses'] += 1
+            start_t = time.time()
             print >>hyperdb.TRACE, 'get %s %s'%(classname, nodeid)
 
         # get from the database and save in the cache
@@ -339,6 +344,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # store off in the cache dict
         if cache:
             cache_dict[nodeid] = res
+
+        if __debug__:
+            self.stats['get_items'] += (time.time() - start_t)
 
         return res
 
@@ -1579,6 +1587,9 @@ class Class(hyperdb.Class):
         is a Multilink, in which case the item's property list must
         match the filterspec list.
         """
+        if __debug__:
+            start_t = time.time()
+
         cn = self.classname
 
         # optimise filterspec
@@ -1826,7 +1837,10 @@ class Class(hyperdb.Class):
             return cmp(a[0], b[0])
 
         l.sort(sortfun)
-        return [i[0] for i in l]
+        l = [i[0] for i in l]
+        if __debug__:
+            self.db.stats['filtering'] += (time.time() - start_t)
+        return l
 
     def count(self):
         '''Get the number of nodes in this class.

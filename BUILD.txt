@@ -21,14 +21,18 @@ running:
 7.  python setup.py sdist
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
-8.  unpack the new dist file in /tmp then a) run_test.py and b) demo.py
+8. unpack the new dist file in /tmp then a) run_test.py and b) demo.py
     with all available Python versions.
+9.  python setup.py bdist_rpm
+10. python setup.py bdist_wininst
 
 So, those commands in a nice, cut'n'pasteable form::
 
  python setup.py clean --all
  python setup.py sdist --manifest-only
  python setup.py sdist --quiet
+ python setup.py bdist_rpm
+ python setup.py bdist_wininst
  python2.3 setup.py register
 
 

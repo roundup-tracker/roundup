@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.93 2004-04-22 22:17:34 richard Exp $
+# $Id: rdbms_common.py,v 1.94 2004-04-25 22:19:15 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -76,6 +76,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # (classname, nodeid) = row
         self.cache = {}
         self.cache_lru = []
+        self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
+            'filtering': 0}
 
         # database lock
         self.lockfile = None
@@ -831,8 +833,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             # push us back to the top of the LRU
             self.cache_lru.remove(key)
             self.cache_lru.insert(0, key)
+            if __debug__:
+                self.stats['cache_hits'] += 1
             # return the cached information
             return self.cache[key]
+
+        if __debug__:
+            self.stats['cache_misses'] += 1
+            start_t = time.time()
 
         # figure the columns we're fetching
         cl = self.classes[classname]
@@ -879,6 +887,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache_lru.insert(0, key)
         if len(self.cache_lru) > ROW_CACHE_SIZE:
             del self.cache[self.cache_lru.pop()]
+
+        if __debug__:
+            self.stats['get_items'] += (time.time() - start_t)
 
         return node
 
@@ -1938,6 +1949,9 @@ class Class(hyperdb.Class):
         if search_matches == {}:
             return []
 
+        if __debug__:
+            start_t = time.time()
+
         cn = self.classname
 
         timezone = self.db.getUserTimezone()
@@ -2116,6 +2130,8 @@ class Class(hyperdb.Class):
         l = [str(row[0]) for row in l]
 
         if not mlsort:
+            if __debug__:
+                self.db.stats['filtering'] += (time.time() - start_t)
             return l
 
         # ergh. someone wants to sort by a multilink.
@@ -2134,7 +2150,12 @@ class Class(hyperdb.Class):
                     return cmp(a[1][i], b[1][i])
             r.sort(sortfun)
             i += 1
-        return [i[0] for i in r]
+        r = [i[0] for i in r]
+
+        if __debug__:
+            self.db.stats['filtering'] += (time.time() - start_t)
+
+        return r
 
     def count(self):
         '''Get the number of nodes in this class.

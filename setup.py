@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.62 2004-04-18 06:21:20 richard Exp $
+# $Id: setup.py,v 1.63 2004-04-25 22:19:14 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -147,6 +147,7 @@ def check_manifest():
         n = len(manifest)
         print '\n*** SOURCE ERROR: There are files missing (%d/%d found)!'%(
             n-len(err), n)
+        print 'Missing:', '\nMissing: '.join(err)
         sys.exit(1)
 
 

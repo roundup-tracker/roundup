@@ -507,6 +507,9 @@ class MysqlClass:
         if search_matches == {}:
             return []
 
+        if __debug__:
+            start_t = time.time()
+
         cn = self.classname
 
         timezone = self.db.getUserTimezone()
@@ -687,6 +690,8 @@ class MysqlClass:
         l = [str(row[0]) for row in l]
 
         if not mlsort:
+            if __debug__:
+                self.db.stats['filtering'] += (time.time() - start_t)
             return l
 
         # ergh. someone wants to sort by a multilink.
@@ -705,7 +710,12 @@ class MysqlClass:
                     return cmp(a[1][i], b[1][i])
             r.sort(sortfun)
             i += 1
-        return [i[0] for i in r]
+        r = [i[0] for i in r]
+
+        if __debug__:
+            self.db.stats['filtering'] += (time.time() - start_t)
+
+        return r
 
 class Class(MysqlClass, rdbms_common.Class):
     pass

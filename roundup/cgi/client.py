@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.172 2004-04-22 22:16:36 richard Exp $
+# $Id: client.py,v 1.173 2004-04-25 22:19:15 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -519,7 +519,14 @@ class Client:
             result = pt.render(self, None, None, **args)
             self.additional_headers['Content-Type'] = pt.content_type
             if os.environ.get('CGI_SHOW_TIMING', ''):
-                s = '<p>Time elapsed: %fs</p></body>'%(time.time()-self.start)
+                s = '<p>Time elapsed: %fs</p>'%(time.time()-self.start)
+                if hasattr(self.db, 'stats'):
+                    s += '''<p>Cache hits: %(cache_hits)d,
+                        misses %(cache_misses)d.
+                        Loading items: %(get_items)f secs.
+                        Filtering: %(filtering)f secs.
+                        </p>'''%self.db.stats
+                s += '</body>'
                 result = result.replace('</body>', s)
             return result
         except templating.NoTemplate, message:
