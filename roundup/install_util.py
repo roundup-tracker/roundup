@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: install_util.py,v 1.2 2001-11-12 22:37:13 richard Exp $
+# $Id: install_util.py,v 1.3 2001-11-12 22:38:48 richard Exp $
 
 import os, sha
 
@@ -37,6 +37,7 @@ def checkDigest(filename):
         fingerprint = fingerprint.replace('-->', '')
         fingerprint = fingerprint.strip()
     elif lines[-1][:8] == "/* SHA: ":
+        # handle css files
         fingerprint = lines[-1][8:]
         fingerprint = fingerprint.replace('*/', '')
         fingerprint = fingerprint.strip()
@@ -76,7 +77,7 @@ class DigestFile:
         elif ext in [".py", ".sh", ".conf", ".cgi", '']:
             self.file.write("#SHA: %s\n" % (self.digest.hexdigest(),))
         elif ext in [".css"]:
-            self.file.write("/* SHA: %s %/\n" % (self.digest.hexdigest(),))
+            self.file.write("/* SHA: %s */\n" % (self.digest.hexdigest(),))
 
         self.file.close()
 
@@ -108,6 +109,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/12 22:37:13  richard
+# Handle all the various file formats in roundup
+#
 # Revision 1.1  2001/11/12 22:26:32  jhermann
 # Added install utils (digest calculation)
 #
