@@ -310,7 +310,10 @@ class HTMLClass(HTMLPermissions):
             return None
 
         # get the property
-        prop = self._props[item]
+        try:
+            prop = self._props[item]
+        except KeyError:
+            raise KeyError, 'No such property "%s" on %s'%(item, self.classname)
 
         # look up the correct HTMLProperty class
         form = self._client.form
