@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.51 2002-01-14 02:20:15 richard Exp $
+$Id: mailgw.py,v 1.52 2002-01-15 00:12:40 richard Exp $
 '''
 
 
@@ -323,6 +323,7 @@ Subject was: "%s"
         args = m.group('args')
         if args:
             for prop in string.split(args, ';'):
+                # extract the property name and value
                 try:
                     key, value = prop.split('=')
                 except ValueError, message:
@@ -332,6 +333,8 @@ Subject argument list not of form [arg=value,value,...;arg=value,value...]
 
 Subject was: "%s"
 '''%(message, subject)
+
+                # ensure it's a valid property name
                 key = key.strip()
                 try:
                     proptype =  properties[key]
@@ -341,6 +344,8 @@ Subject argument list refers to an invalid property: "%s"
 
 Subject was: "%s"
 '''%(key, subject)
+
+                # convert the string value to a real property value
                 if isinstance(proptype, hyperdb.String):
                     props[key] = value.strip()
                 if isinstance(proptype, hyperdb.Password):
@@ -368,23 +373,17 @@ Subject was: "%s"
                 elif isinstance(proptype, hyperdb.Link):
                     link = self.db.classes[proptype.classname]
                     propkey = link.labelprop(default_to_id=1)
-                    try:
-                        props[key] = link.get(value.strip(), propkey)
-                    except:
-                        props[key] = link.lookup(value.strip())
+                    props[key] = value
                 elif isinstance(proptype, hyperdb.Multilink):
-                    link = self.db.classes[proptype.classname]
-                    propkey = link.labelprop(default_to_id=1)
-                    l = [x.strip() for x in value.split(',')]
-                    for item in l:
-                        try:
-                            v = link.get(item, propkey)
-                        except:
-                            v = link.lookup(item)
+                    # get the linked class
+                    linkcl = self.db.classes[proptype.classname]
+                    propkey = linkcl.labelprop(default_to_id=1)
+                    for item in value.split(','):
+                        item = item.split()
                         if props.has_key(key):
-                            props[key].append(v)
+                            props[key].append(item)
                         else:
-                            props[key] = [v]
+                            props[key] = [item]
 
         #
         # handle the users
@@ -649,10 +648,12 @@ There was a problem with the message you sent:
 
             # add assignedto to the nosy list
             if properties.has_key('assignedto') and props.has_key('assignedto'):
-                try:
-                    assignedto = self.db.user.lookup(props['assignedto'])
-                except KeyError:
-                    raise MailUsageError, '''
+                assignedto = props['assignedto']
+                if not re.match('^\d+$', assignedto):
+                    try:
+                        assignedto = self.db.user.lookup(assignedto)
+                    except KeyError:
+                        raise MailUsageError, '''
 There was a problem with the message you sent:
    Assignedto user '%s' doesn't exist
 '''%props['assignedto']
@@ -730,6 +731,15 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.51  2002/01/14 02:20:15  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.50  2002/01/11 22:59:01  richard
 #  . #502342 ] pipe interface
 #

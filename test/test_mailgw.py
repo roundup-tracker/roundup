@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.4 2002-01-14 07:12:15 richard Exp $
+# $Id: test_mailgw.py,v 1.5 2002-01-15 00:12:40 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys
 
@@ -67,7 +67,7 @@ This is a test submission of a new issue.
 From: Chef <chef@bork.bork.bork
 To: issue_tracker@fill.me.in.
 Message-Id: <dummy_test_message_id>
-Subject: [issue] Testing...
+Subject: [issue] Testing... [assignedto=richard]
 
 This is a test submission of a new issue.
 ''')
@@ -78,10 +78,10 @@ This is a test submission of a new issue.
 
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
-TO: chef@bork.bork.bork
+TO: chef@bork.bork.bork, richard@test
 Content-Type: text/plain
 Subject: [issue1] Testing...
-To: chef@bork.bork.bork
+To: chef@bork.bork.bork, richard@test
 From: Chef <issue_tracker@fill.me.in.>
 Reply-To: Roundup issue tracker <issue_tracker@fill.me.in.>
 MIME-Version: 1.0
@@ -92,11 +92,18 @@ New submission from Chef <chef@bork.bork.bork>:
 
 This is a test submission of a new issue.
 
+
+----------
+assignedto: richard
+messages: 1
+nosy: Chef, richard
+status: unread
+title: Testing...
 ___________________________________________________
 "Roundup issue tracker" <issue_tracker@fill.me.in.>
 http://some.useful.url/issue1
 ___________________________________________________
-''', 'Generated message not correct')
+''')
 
     def testFollowup(self):
         self.testNewIssue()
@@ -111,7 +118,6 @@ Subject: [issue1] Testing...
 This is a followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
-        # TODO: fix the damn config - this is apalling
         handler.main(message)
 
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
@@ -150,7 +156,6 @@ Subject: [issue1] Testing...
 This is a second followup
 ''')
         handler = self.instance.MailGW(self.instance, self.db)
-        # TODO: fix the damn config - this is apalling
         handler.main(message)
         self.assertEqual(open(os.environ['SENDMAILDEBUG']).read(),
 '''FROM: roundup-admin@fill.me.in.
@@ -180,12 +185,16 @@ class ExtMailgwTestCase(MailgwTestCase):
 
 def suite():
     l = [unittest.makeSuite(MailgwTestCase, 'test'),
-        unittest.makeSuite(ExtMailgwTestCase, 'test')]
+        unittest.makeSuite(ExtMailgwTestCase, 'test')
+    ]
     return unittest.TestSuite(l)
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2002/01/14 07:12:15  richard
+# removed file writing from tests...
+#
 # Revision 1.3  2002/01/14 02:20:15  richard
 #  . changed all config accesses so they access either the instance or the
 #    config attriubute on the db. This means that all config is obtained from
