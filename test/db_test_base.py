@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.55.2.1 2005-01-03 03:23:38 richard Exp $
+# $Id: db_test_base.py,v 1.55.2.2 2005-01-04 01:33:04 richard Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -706,6 +706,10 @@ class DBTest(MyTestCase):
             {i2: {}})
         self.assertEquals(self.db.indexer.search(['flebble'], self.db.issue),
             {i1: {}, i2: {}})
+
+        # test AND'ing of search terms
+        self.assertEquals(self.db.indexer.search(['frooz', 'flebble'],
+            self.db.issue), {i2: {}})
 
         # unindexed stopword
         self.assertEquals(self.db.indexer.search(['the'], self.db.issue), {})

@@ -1,4 +1,4 @@
-# $Id: back_sqlite.py,v 1.36.2.1 2004-12-14 23:23:35 richard Exp $
+# $Id: back_sqlite.py,v 1.36.2.2 2005-01-04 01:33:03 richard Exp $
 '''Implements a backend for SQLite.
 
 See https://pysqlite.sourceforge.net/ for pysqlite info
@@ -25,6 +25,10 @@ def db_nuke(config):
 class Database(rdbms_common.Database):
     # char to use for positional arguments
     arg = '%s'
+
+    # used by some code to switch styles of query
+    implements_intersect = 1
+
     hyperdb_to_sql_datatypes = {
         hyperdb.String : 'VARCHAR(255)',
         hyperdb.Date   : 'VARCHAR(30)',
