@@ -2,7 +2,7 @@
 Security Mechanisms
 ===================
 
-:Version: $Revision: 1.9 $
+:Version: $Revision: 1.10 $
 
 Current situation
 =================
@@ -174,62 +174,101 @@ A permission module defines::
             - permissions (PermissionClass Multilink)
         '''
 
-    def hasClassPermission(db, classname, permission, userid):
-        ''' Look through all the Roles, and hence Permissions, and see if
-            "permission" is there for the specified classname.
+    class Security:
+        def __init__(self, db):
+            ''' Initialise the permission and role classes, and add in the
+                base roles (for admin user).
+            '''
+            # use a weak ref to avoid circularity
+            self.db = weakref.proxy(db)
 
-        '''
+            # create the permission class instance (we only need one))
+            self.permission = PermissionClass(db, "permission")
 
-    def hasNodePermission(db, classname, nodeid, userid, properties):
-        ''' Check the named properties of the given node to see if the userid
-            appears in them. If it does, then the user is granted this
-            permission check.
+            # create the role class instance (we only need one)
+            self.role = RoleClass(db, "role")
 
-            'propspec' consists of a list of property names. The property
-            names must be the name of a property of classname, or a
-            KeyError is raised.  That property must be a Link or Multilink
-            property, or a TypeError is raised.
+            # the default Roles
+            self.addRole(name="User", description="A regular user, no privs")
+            self.addRole(name="Admin", description="An admin user, full privs")
+            self.addRole(name="No Rego",
+                description="A user who can't register")
 
-            If the property is a Link, the userid must match the property
-            value. If the property is a Multilink, the userid must appear
-            in the Multilink list.
-        '''
+            ee = self.addPermission(name="Edit",
+                description="User may edit everthing")
+            self.addPermissionToRole('Admin', ee)
+            ae = self.addPermission(name="Assign",
+                description="User may be assigned to anything")
+            self.addPermissionToRole('Admin', ae)
+
+        def hasClassPermission(self, db, classname, permission, userid):
+            ''' Look through all the Roles, and hence Permissions, and see if
+                "permission" is there for the specified classname.
+
+            '''
+
+        def hasNodePermission(self, db, classname, nodeid, userid, properties):
+            ''' Check the named properties of the given node to see if the
+                userid appears in them. If it does, then the user is granted
+                this permission check.
+
+                'propspec' consists of a list of property names. The property
+                names must be the name of a property of classname, or a
+                KeyError is raised.  That property must be a Link or Multilink
+                property, or a TypeError is raised.
+
+                If the property is a Link, the userid must match the property
+                value. If the property is a Multilink, the userid must appear
+                in the Multilink list.
+            '''
+
+        def addPermission(self, **propspec):
+            ''' Create a new Permission with the properties defined in
+                'propspec'
+            '''
+
+        def addRole(self, **propspec):
+            ''' Create a new Role with the properties defined in 'propspec'
+            '''
+
+        def addPermissionToRole(self, rolename, permissionid):
+            ''' Add the permission to the role's permission list.
+
+                'rolename' is the name of the role to add 'permissionid'.
+            '''
+
+Modules such as ``cgi_client.py`` and ``mailgw.py`` define their own
+permissions like so (this example is ``cgi_client.py``)::
+
+    # XXX GAH. If the permissions are instance-db-specific then this can't
+    # work!
+    from roundup import permission
+
+    # create some Permissions
+    newid = permission.addPermission(name="Web Access",
+        description="User may use the web interface")
+    permission.addToRole('User', newid)
+    permission.addToRole('No Rego', newid)
+    newid = permission.addPermission(name="Web Registration",
+        description="User may register through the web")
+    permission.addToRole('User', newid)
+    # XXX GAH!
 
 The instance dbinit module then has in ``open()``::
 
-    perm = permission.PermissionClass(db, "permission")
-    role = permission.RoleClass(db, "role")
+    # open the database - it must be modified to init the Security class
+    # from permissions.py as db.security
+    db = Database(instance_config, name)
 
-    # create some Permissions
-    wa = perm.create(name="Web Access",
-                    description="User may use the web interface")
-    wr = perm.create(name="Web Registration",
-                    description="User may register through the web")
-
-    ma = perm.create(name="Mail Access",
-                    description="User may use the email interface")
-    mr = perm.create(name="Mail Registration",
-                    description="User may register through email")
-
-    ee = perm.create(name="Edit",
-                    description="User may edit everthing")
-    ei = perm.create(name="Edit", classname="issue",
+    # add some extra permissions and associate them with roles
+    ei = db.security.addPermission(name="Edit", classname="issue",
                     description="User is allowed to edit issues")
-
-    ae = perm.create(name="Assign",
-                    description="User may be assigned to anything")
-    ai = perm.create(name="Assign", classname="issue",
+    db.security.addPermissionToRole('User', ei)
+    ai = db.security.addPermission(name="Assign", classname="issue",
                     description="User may be assigned to issues")
+    db.security.addPermissionToRole('User', ei)
 
-    # create some Roles that use the Permissions
-    role.create(name="User", description="A regular user, no privs",
-                permissions=[wa, wr, ma, mr, ei, ai])
-    role.create(name="Admin", description="An admin user, full privs",
-                permissions=[ee, ae])
-    role.create(name="No Rego", description="A user who can't register",
-                permissions=[wa, ma])
-
-in ``init()``::
+In the dbinit ``init()``::
 
     r = db.getclass('role').lookup('Admin')
     user.create(username="admin", password=Password(adminpw),
@@ -243,10 +282,11 @@ in ``init()``::
 Then in the code that matters, calls to ``hasPermission`` are made to
 determine if the user has permission to perform some action::
 
-    if security.hasClassPermission('issue', 'Edit', self.user):
+    if db.security.hasClassPermission('issue', 'Edit', self.user):
         # all ok
 
-    if security.hasNodePermission('issue', nodeid, self.user, ['assignedto']):
+    if db.security.hasNodePermission('issue', nodeid, self.user,
+            ['assignedto']):
         # all ok
 
 The htmltemplate will implement a new tag, <permission> which has the form::
