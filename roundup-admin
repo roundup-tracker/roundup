@@ -16,17 +16,17 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup-admin,v 1.55 2001-12-17 03:52:47 richard Exp $
+# $Id: roundup-admin,v 1.56 2001-12-31 05:09:20 richard Exp $
 
 # python version check
 from roundup import version_check
 
-import sys, os, getpass, getopt, re, UserDict
+import sys, os, getpass, getopt, re, UserDict, shlex
 try:
     import csv
 except ImportError:
     csv = None
-from roundup import date, hyperdb, roundupdb, init, password
+from roundup import date, hyperdb, roundupdb, init, password, token
 import roundup.instance
 
 class CommandDict(UserDict.UserDict):
@@ -930,7 +930,7 @@ Command help:
             ret = 1
         return ret
 
-    def interactive(self, ws_re=re.compile(r'\s+')):
+    def interactive(self):
         '''Run in an interactive mode
         '''
         print 'Roundup {version} ready for input.'
@@ -947,7 +947,7 @@ Command help:
                 print 'exit...'
                 break
             if not command: continue
-            args = ws_re.split(command)
+            args = token.token_split(command)
             if not args: continue
             if args[0] in ('quit', 'exit'): break
             self.run_command(args)
@@ -1000,6 +1000,13 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.55  2001/12/17 03:52:47  richard
+# Implemented file store rollback. As a bonus, the hyperdb is now capable of
+# storing more than one file per node - if a property name is supplied,
+# the file is called designator.property.
+# I decided not to migrate the existing files stored over to the new naming
+# scheme - the FileClass just doesn't specify the property name.
+#
 # Revision 1.54  2001/12/15 23:09:23  richard
 # Some cleanups in roundup-admin, also made it work again...
 #
