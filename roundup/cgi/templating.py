@@ -338,7 +338,7 @@ class HTMLClass(HTMLPermissions):
 
         return klass(self._client, self.classname, itemid)
 
-    def properties(self):
+    def properties(self, sort=1):
         ''' Return HTMLProperty for all of this class' properties.
         '''
         l = []
@@ -351,6 +351,8 @@ class HTMLClass(HTMLPermissions):
                 if isinstance(prop, klass):
                     l.append(htmlklass(self._client, self._classname, '',
                         prop, name, value, self._anonymous))
+        if sort:
+            l.sort(lambda a,b:cmp(a._name, b._name))
         return l
 
     def list(self):

@@ -68,6 +68,7 @@ Feature:
   Note: requires python 2.2+
 - added Windows Service mode for roundup-server when daemonification is
   attempted on Windows.
+- sort HTMLClass.properties results by name (sf feature 724738)
 
 Fixed:
 - applied unicode patch. All data is stored in utf-8. Incoming messages
