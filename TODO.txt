@@ -30,7 +30,7 @@ pending  mailgw: Allow multiple email addresses at one gw with different default
                    vmbugs: "|roundup-mailgw /instances/dev component=voicemail"
 pending  project: switch to a Roundup instance for Roundup bug/feature tracking
 active   security: finish doc/security.txt
-pending  security: implement and use the new logical control mechanisms
+active   security: implement and use the new logical control mechanisms
 pending  security: at least an LDAP user database implementation
 pending  security: authenticate over a secure connection
 pending  security: use digital signatures in mailgw
