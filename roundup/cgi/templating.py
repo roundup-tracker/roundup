@@ -1398,13 +1398,13 @@ class LinkHTMLProperty(HTMLProperty):
         else:
             k = linkcl.getkey()
             if k:
-                label = linkcl.get(self._value, k)
+                value = linkcl.get(self._value, k)
             else:
-                label = self._value
-            value = cgi.escape(str(self._value))
+                value = self._value
+            value = cgi.escape(str(value))
             value = '&quot;'.join(value.split('"'))
         return '<input name="%s" value="%s" size="%s">'%(self._formname,
-            label, size)
+            value, size)
 
     def menu(self, size=None, height=None, showid=0, additional=[],
             sort_on=None, **conditions):

@@ -7,6 +7,7 @@ Feature:
 
 Fixed:
 - Boolean HTML templating was broken
+- Link HTML templating field() was broken
 
 
 2004-03-24 0.7.0b1
