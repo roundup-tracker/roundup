@@ -24,6 +24,7 @@ Fixed:
  . #516883 ] mail interface + ANONYMOUS_REGISTER
  . #516854 ] "My Issues" and redisplay
  . #517906 ] Attribute order in "View customisation"
+ . #514854 ] History: "User" is always ticket creator
 
 
 2002-01-24 - 0.4.0
