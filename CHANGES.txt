@@ -49,6 +49,9 @@ are given with the most recent entry first.
 - fixed error in indexargs_url (thanks Patrick Ohly)
 - fixed getnode (sf bug 684531)
 - included UN*X manual pages from Bastian Kleineidam
+- implemented extension to form parsing to allow editing of multiple items
+  and creation of multiple items (but only one per class)
+- the colon ":" special form variable designator may now be any of : + @
 
 
 2003-??-?? 0.5.6

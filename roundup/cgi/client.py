@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.78 2003-02-12 00:00:28 richard Exp $
+# $Id: client.py,v 1.79 2003-02-12 06:41:58 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -78,7 +78,30 @@ class Client:
 
      Once a user logs in, they are assigned a session. The Client instance
      keeps the nodeid of the session as the "session" attribute.
+
+
+    Special form variables:
+     Note that in various places throughout this code, special form
+     variables of the form :<name> are used. The colon (":") part may
+     actually be one of several characters from the set:
+
+       : @ + 
+
     '''
+
+    # special form variables
+    FV_TEMPLATE = re.compile(r'[@+:]template')
+    FV_OK_MESSAGE = re.compile(r'[@+:]ok_message')
+    FV_ERROR_MESSAGE = re.compile(r'[@+:]error_message')
+    FV_REQUIRED = re.compile(r'[@+:]required')
+    FV_LINK = re.compile(r'[@+:]link')
+    FV_MULTILINK = re.compile(r'[@+:]multilink')
+    FV_NOTE = re.compile(r'[@+:]note')
+    FV_FILE = re.compile(r'[@+:]file')
+    FV_ADD = re.compile(r'([@+:])add\1')
+    FV_REMOVE = re.compile(r'([@+:])remove\1')
+    FV_CONFIRM = re.compile(r'.+[@+:]confirm')
+    FV_SPLITTER = re.compile(r'[@+:]')
 
     def __init__(self, instance, request, env, form=None):
         hyperdb.traceMark()
@@ -118,6 +141,7 @@ class Client:
         # before the first write
         self.additional_headers = {}
         self.response_code = 200
+
 
     def main(self):
         ''' Wrap the real main in a try/finally so we always close off the db.
@@ -300,11 +324,21 @@ class Client:
         self.classname = None
         self.nodeid = None
 
+        # see if a template or messages are specified
+        template_override = ok_message = error_message = None
+        for key in self.form.keys():
+            if self.FV_TEMPLATE.match(key):
+                template_override = self.form[key].value
+            elif self.FV_OK_MESSAGE.match(key):
+                ok_message = self.form[key].value
+            elif self.FV_ERROR_MESSAGE.match(key):
+                error_message = self.form[key].value
+
         # determine the classname and possibly nodeid
         path = self.path.split('/')
         if not path or path[0] in ('', 'home', 'index'):
-            if self.form.has_key(':template'):
-                self.template = self.form[':template'].value
+            if template_override is not None:
+                self.template = template_override
             else:
                 self.template = ''
             return
@@ -336,14 +370,14 @@ class Client:
             raise NotFound, self.classname
 
         # see if we have a template override
-        if self.form.has_key(':template'):
-            self.template = self.form[':template'].value
+        if template_override is not None:
+            self.template = template_override
 
         # see if we were passed in a message
-        if self.form.has_key(':ok_message'):
-            self.ok_message.append(self.form[':ok_message'].value)
-        if self.form.has_key(':error_message'):
-            self.error_message.append(self.form[':error_message'].value)
+        if ok_message:
+            self.ok_message.append(ok_message)
+        if error_message:
+            self.error_message.append(error_message)
 
     def serve_file(self, designator, dre=re.compile(r'([^\d]+)(\d+)')):
         ''' Serve the file from the content property of the designated item.
@@ -602,7 +636,7 @@ class Client:
 
         # parse the props from the form
         try:
-            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+            props = self.parsePropsFromForm()
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -618,7 +652,6 @@ class Client:
         # create the new user
         cl = self.db.user
         try:
-            props = parsePropsFromForm(self.db, cl, self.form)
             props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
             self.userid = cl.create(**props)
             self.db.commit()
@@ -643,7 +676,7 @@ class Client:
         message = _('You are now registered, welcome!')
 
         # redirect to the item's edit page
-        raise Redirect, '%s%s%s?:ok_message=%s'%(
+        raise Redirect, '%s%s%s?+ok_message=%s'%(
             self.base, self.classname, self.userid,  urllib.quote(message))
 
     def registerPermission(self, props):
@@ -675,20 +708,11 @@ class Client:
              "files" property. Attach the file to the message created from
              the :note if it's supplied.
 
-            :required=property,property,...
-             The named properties are required to be filled in the form.
-
-            :remove:<propname>=id(s)
-             The ids will be removed from the multilink property.
-            :add:<propname>=id(s)
-             The ids will be added to the multilink property.
-
+           See parsePropsFromForm for more special variables
         '''
-        cl = self.db.classes[self.classname]
-
         # parse the props from the form
         try:
-            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+            props = self.parsePropsFromForm()
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -717,15 +741,11 @@ class Client:
         if props:
             message = _('%(changes)s edited ok')%{'changes':
                 ', '.join(props.keys())}
-        elif self.form.has_key(':note') and self.form[':note'].value:
-            message = _('note added')
-        elif (self.form.has_key(':file') and self.form[':file'].filename):
-            message = _('file added')
         else:
             message = _('nothing changed')
 
         # redirect to the item's edit page
-        raise Redirect, '%s%s%s?:ok_message=%s'%(self.base, self.classname,
+        raise Redirect, '%s%s%s?+ok_message=%s'%(self.base, self.classname,
             self.nodeid,  urllib.quote(message))
 
     def editItemPermission(self, props):
@@ -758,11 +778,9 @@ class Client:
             This follows the same form as the editItemAction, with the same
             special form values.
         '''
-        cl = self.db.classes[self.classname]
-
         # parse the props from the form
         try:
-            props = parsePropsFromForm(self.db, cl, self.form, self.nodeid)
+            props = self.parsePropsFromForm()
         except (ValueError, KeyError), message:
             self.error_message.append(_('Error: ') + str(message))
             return
@@ -820,7 +838,7 @@ class Client:
 
         # redirect to the new item's page
         raise Redirect, '%s%s%s?:ok_message=%s'%(self.base, self.classname,
-            nid,  urllib.quote(message))
+            nid, urllib.quote(message))
 
     def newItemPermission(self, props):
         ''' Determine whether the user has permission to create (edit) this
@@ -1192,6 +1210,323 @@ class Client:
                     link = self.db.classes[link]
                     link.set(nodeid, **{property: nid})
 
+    def parsePropsFromForm(self, num_re=re.compile('^\d+$')):
+        ''' Pull properties for the given class out of the form.
+
+            If a ":required" parameter is supplied, then the names
+            property values must be supplied or a ValueError will be raised.
+
+            Other special form values:
+             :remove:<propname>=id(s)
+              The ids will be removed from the multilink property.
+             :add:<propname>=id(s)
+              The ids will be added to the multilink property.
+
+            Note: the colon may be one of:  : @ +
+
+            Any of the form variables may be prefixed with a classname or
+            designator.
+
+            The return from this method is a dict of 
+                classname|designator: properties
+
+        '''
+        # some very useful variables
+        db = self.db
+        form = self.form
+
+        if not hasattr(self, 'FV_CLASSSPEC'):
+            # generate the regexp for detecting
+            # <classname|designator>[@:+]property
+            classes = '|'.join(db.classes.keys())
+            self.FV_CLASSSPEC = re.compile(r'(%s)[@+:](.+)$'%classes)
+            self.FV_ITEMSPEC = re.compile(r'(%s)(\d+)[@+:](.+)$'%classes)
+
+        # these indicate the default class / item
+        default_cn = self.classname
+        default_cl = self.db.classes[default_cn]
+        default_nodeid = str(self.nodeid or '')
+
+        # we'll store info about the individual class/item edit in these
+        all_required = {}       # one entry per class/item
+        all_props = {}          # one entry per class/item
+        all_propdef = {}        # note - only one entry per class
+
+        # we should always return something, even empty, for the context
+        all_props[default_cn+default_nodeid] = {}
+
+        keys = form.keys()
+        timezone = db.getUserTimezone()
+
+        for key in keys:
+            # see if this value modifies a different class/item to the default
+            m = self.FV_CLASSSPEC.match(key)
+            if m:
+                # we got a classname
+                cn = m.group(1)
+                cl = self.db.classes[cn]
+                nodeid = ''
+                propname = m.group(2)
+            else:
+                m = self.FV_ITEMSPEC.match(key)
+                if m:
+                    # we got a designator
+                    cn = m.group(1)
+                    cl = self.db.classes[cn]
+                    nodeid = m.group(2)
+                    propname = m.group(3)
+                else:
+                    # default
+                    cn = default_cn
+                    cl = default_cl
+                    nodeid = default_nodeid
+                    propname = key
+
+            # the thing this value relates to is...
+            this = cn+nodeid
+
+            # get more info about the class, and the current set of
+            # form props for it
+            if not all_propdef.has_key(cn):
+                all_propdef[cn] = cl.getprops()
+            propdef = all_propdef[cn]
+            if not all_props.has_key(this):
+                all_props[this] = {}
+            props = all_props[this]
+
+            # detect the special ":required" variable
+            if self.FV_REQUIRED.match(key):
+                value = form[key]
+                if isinstance(value, type([])):
+                    required = [i.value.strip() for i in value]
+                else:
+                    required = [i.strip() for i in value.value.split(',')]
+                all_required[this] = required
+                continue
+
+            # get the required values list
+            if not all_required.has_key(this):
+                all_required[this] = []
+            required = all_required[this]
+
+            # see if we're performing a special multilink action
+            mlaction = 'set'
+            if self.FV_REMOVE.match(propname):
+                propname = propname[8:]
+                mlaction = 'remove'
+            elif self.FV_ADD.match(propname):
+                propname = propname[5:]
+                mlaction = 'add'
+
+            # does the property exist?
+            if not propdef.has_key(propname):
+                if mlaction != 'set':
+                    raise ValueError, 'You have submitted a %s action for'\
+                        ' the property "%s" which doesn\'t exist'%(mlaction,
+                        propname)
+                continue
+            proptype = propdef[propname]
+
+            # Get the form value. This value may be a MiniFieldStorage or a list
+            # of MiniFieldStorages.
+            value = form[key]
+
+            # handle unpacking of the MiniFieldStorage / list form value
+            if isinstance(proptype, hyperdb.Multilink):
+                # multiple values are OK
+                if isinstance(value, type([])):
+                    # it's a list of MiniFieldStorages
+                    value = [i.value.strip() for i in value]
+                else:
+                    # it's a MiniFieldStorage, but may be a comma-separated list
+                    # of values
+                    value = [i.strip() for i in value.value.split(',')]
+
+                # filter out the empty bits
+                value = filter(None, value)
+            else:
+                # multiple values are not OK
+                if isinstance(value, type([])):
+                    raise ValueError, 'You have submitted more than one value'\
+                        ' for the %s property'%propname
+                # we've got a MiniFieldStorage, so pull out the value and strip
+                # surrounding whitespace
+                value = value.value.strip()
+
+            # handle by type now
+            if isinstance(proptype, hyperdb.Password):
+                if not value:
+                    # ignore empty password values
+                    continue
+                for key in keys:
+                    if self.FV_CONFIRM.match(key):
+                        confirm = form[key]
+                        break
+                else:
+                    raise ValueError, 'Password and confirmation text do '\
+                        'not match'
+                if isinstance(confirm, type([])):
+                    raise ValueError, 'You have submitted more than one value'\
+                        ' for the %s property'%propname
+                if value != confirm.value:
+                    raise ValueError, 'Password and confirmation text do '\
+                        'not match'
+                value = password.Password(value)
+
+            elif isinstance(proptype, hyperdb.Link):
+                # see if it's the "no selection" choice
+                if value == '-1' or not value:
+                    # if we're creating, just don't include this property
+                    if not nodeid:
+                        continue
+                    value = None
+                else:
+                    # handle key values
+                    link = proptype.classname
+                    if not num_re.match(value):
+                        try:
+                            value = db.classes[link].lookup(value)
+                        except KeyError:
+                            raise ValueError, _('property "%(propname)s": '
+                                '%(value)s not a %(classname)s')%{
+                                'propname': propname, 'value': value,
+                                'classname': link}
+                        except TypeError, message:
+                            raise ValueError, _('you may only enter ID values '
+                                'for property "%(propname)s": %(message)s')%{
+                                'propname': propname, 'message': message}
+            elif isinstance(proptype, hyperdb.Multilink):
+                # perform link class key value lookup if necessary
+                link = proptype.classname
+                link_cl = db.classes[link]
+                l = []
+                for entry in value:
+                    if not entry: continue
+                    if not num_re.match(entry):
+                        try:
+                            entry = link_cl.lookup(entry)
+                        except KeyError:
+                            raise ValueError, _('property "%(propname)s": '
+                                '"%(value)s" not an entry of %(classname)s')%{
+                                'propname': propname, 'value': entry,
+                                'classname': link}
+                        except TypeError, message:
+                            raise ValueError, _('you may only enter ID values '
+                                'for property "%(propname)s": %(message)s')%{
+                                'propname': propname, 'message': message}
+                    l.append(entry)
+                l.sort()
+
+                # now use that list of ids to modify the multilink
+                if mlaction == 'set':
+                    value = l
+                else:
+                    # we're modifying the list - get the current list of ids
+                    if props.has_key(propname):
+                        existing = props[propname]
+                    elif nodeid:
+                        existing = cl.get(nodeid, propname, [])
+                    else:
+                        existing = []
+
+                    # now either remove or add
+                    if mlaction == 'remove':
+                        # remove - handle situation where the id isn't in
+                        # the list
+                        for entry in l:
+                            try:
+                                existing.remove(entry)
+                            except ValueError:
+                                raise ValueError, _('property "%(propname)s": '
+                                    '"%(value)s" not currently in list')%{
+                                    'propname': propname, 'value': entry}
+                    else:
+                        # add - easy, just don't dupe
+                        for entry in l:
+                            if entry not in existing:
+                                existing.append(entry)
+                    value = existing
+                    value.sort()
+
+            # other types should be None'd if there's no value
+            elif value:
+                if isinstance(proptype, hyperdb.String):
+                    # fix the CRLF/CR -> LF stuff
+                    value = fixNewlines(value)
+                elif isinstance(proptype, hyperdb.Date):
+                    value = date.Date(value, offset=timezone)
+                elif isinstance(proptype, hyperdb.Interval):
+                    value = date.Interval(value)
+                elif isinstance(proptype, hyperdb.Boolean):
+                    value = value.lower() in ('yes', 'true', 'on', '1')
+                elif isinstance(proptype, hyperdb.Number):
+                    value = float(value)
+            else:
+                # if we're creating, just don't include this property
+                if not nodeid:
+                    continue
+                value = None
+
+            # get the old value
+            if nodeid:
+                try:
+                    existing = cl.get(nodeid, propname)
+                except KeyError:
+                    # this might be a new property for which there is
+                    # no existing value
+                    if not propdef.has_key(propname):
+                        raise
+
+                # make sure the existing multilink is sorted
+                if isinstance(proptype, hyperdb.Multilink):
+                    existing.sort()
+
+                # "missing" existing values may not be None
+                if not existing:
+                    if isinstance(proptype, hyperdb.String) and not existing:
+                        # some backends store "missing" Strings as empty strings
+                        existing = None
+                    elif isinstance(proptype, hyperdb.Number) and not existing:
+                        # some backends store "missing" Numbers as 0 :(
+                        existing = 0
+                    elif isinstance(proptype, hyperdb.Boolean) and not existing:
+                        # likewise Booleans
+                        existing = 0
+
+                # if changed, set it
+                if value != existing:
+                    props[propname] = value
+            else:
+                # don't bother setting empty/unset values
+                if value is None:
+                    continue
+                elif isinstance(proptype, hyperdb.Multilink) and value == []:
+                    continue
+                elif isinstance(proptype, hyperdb.String) and value == '':
+                    continue
+
+                props[propname] = value
+
+            # register this as received if required?
+            if propname in required and value is not None:
+                required.remove(propname)
+
+        # see if all the required properties have been supplied
+        s = []
+        for thing, required in all_required.items():
+            if not required:
+                continue
+            if len(required) > 1:
+                p = 'properties'
+            else:
+                p = 'property'
+            s.append('Required %s %s %s not supplied'%(thing, p,
+                ', '.join(required)))
+        if s:
+            raise ValueError, '\n'.join(s)
+
+        return all_props
+
 def fixNewlines(text):
     ''' Homogenise line endings.
 
@@ -1201,238 +1536,3 @@ def fixNewlines(text):
     '''
     text = text.replace('\r\n', '\n')
     return text.replace('\r', '\n')
-
-def parsePropsFromForm(db, cl, form, nodeid=0, num_re=re.compile('^\d+$')):
-    ''' Pull properties for the given class out of the form.
-
-        If a ":required" parameter is supplied, then the names property values
-        must be supplied or a ValueError will be raised.
-
-        Other special form values:
-         :remove:<propname>=id(s)
-          The ids will be removed from the multilink property.
-         :add:<propname>=id(s)
-          The ids will be added to the multilink property.
-    '''
-    required = []
-    if form.has_key(':required'):
-        value = form[':required']
-        if isinstance(value, type([])):
-            required = [i.value.strip() for i in value]
-        else:
-            required = [i.strip() for i in value.value.split(',')]
-
-    props = {}
-    keys = form.keys()
-    properties = cl.getprops()
-    timezone = db.getUserTimezone()
-
-    for key in keys:
-        # see if we're performing a special multilink action
-        mlaction = 'set'
-        if key.startswith(':remove:'):
-            propname = key[8:]
-            mlaction = 'remove'
-        elif key.startswith(':add:'):
-            propname = key[5:]
-            mlaction = 'add'
-        else:
-            propname = key
-
-        # does the property exist?
-        if not properties.has_key(propname):
-            if mlaction != 'set':
-                raise ValueError, 'You have submitted a %s action for'\
-                    ' the property "%s" which doesn\'t exist'%(mlaction,
-                    propname)
-            continue
-        proptype = properties[propname]
-
-        # Get the form value. This value may be a MiniFieldStorage or a list
-        # of MiniFieldStorages.
-        value = form[key]
-
-        # handle unpacking of the MiniFieldStorage / list form value
-        if isinstance(proptype, hyperdb.Multilink):
-            # multiple values are OK
-            if isinstance(value, type([])):
-                # it's a list of MiniFieldStorages
-                value = [i.value.strip() for i in value]
-            else:
-                # it's a MiniFieldStorage, but may be a comma-separated list
-                # of values
-                value = [i.strip() for i in value.value.split(',')]
-
-            # filter out the empty bits
-            value = filter(None, value)
-        else:
-            # multiple values are not OK
-            if isinstance(value, type([])):
-                raise ValueError, 'You have submitted more than one value'\
-                    ' for the %s property'%propname
-            # we've got a MiniFieldStorage, so pull out the value and strip
-            # surrounding whitespace
-            value = value.value.strip()
-
-        # handle by type now
-        if isinstance(proptype, hyperdb.Password):
-            if not value:
-                # ignore empty password values
-                continue
-            if not form.has_key('%s:confirm'%propname):
-                raise ValueError, 'Password and confirmation text do not match'
-            confirm = form['%s:confirm'%propname]
-            if isinstance(confirm, type([])):
-                raise ValueError, 'You have submitted more than one value'\
-                    ' for the %s property'%propname
-            if value != confirm.value:
-                raise ValueError, 'Password and confirmation text do not match'
-            value = password.Password(value)
-
-        elif isinstance(proptype, hyperdb.Link):
-            # see if it's the "no selection" choice
-            if value == '-1' or not value:
-                # if we're creating, just don't include this property
-                if not nodeid:
-                    continue
-                value = None
-            else:
-                # handle key values
-                link = proptype.classname
-                if not num_re.match(value):
-                    try:
-                        value = db.classes[link].lookup(value)
-                    except KeyError:
-                        raise ValueError, _('property "%(propname)s": '
-                            '%(value)s not a %(classname)s')%{
-                            'propname': propname, 'value': value,
-                            'classname': link}
-                    except TypeError, message:
-                        raise ValueError, _('you may only enter ID values '
-                            'for property "%(propname)s": %(message)s')%{
-                            'propname': propname, 'message': message}
-        elif isinstance(proptype, hyperdb.Multilink):
-            # perform link class key value lookup if necessary
-            link = proptype.classname
-            link_cl = db.classes[link]
-            l = []
-            for entry in value:
-                if not entry: continue
-                if not num_re.match(entry):
-                    try:
-                        entry = link_cl.lookup(entry)
-                    except KeyError:
-                        raise ValueError, _('property "%(propname)s": '
-                            '"%(value)s" not an entry of %(classname)s')%{
-                            'propname': propname, 'value': entry,
-                            'classname': link}
-                    except TypeError, message:
-                        raise ValueError, _('you may only enter ID values '
-                            'for property "%(propname)s": %(message)s')%{
-                            'propname': propname, 'message': message}
-                l.append(entry)
-            l.sort()
-
-            # now use that list of ids to modify the multilink
-            if mlaction == 'set':
-                value = l
-            else:
-                # we're modifying the list - get the current list of ids
-                if props.has_key(propname):
-                    existing = props[propname]
-                elif nodeid:
-                    existing = cl.get(nodeid, propname, [])
-                else:
-                    existing = []
-
-                # now either remove or add
-                if mlaction == 'remove':
-                    # remove - handle situation where the id isn't in the list
-                    for entry in l:
-                        try:
-                            existing.remove(entry)
-                        except ValueError:
-                            raise ValueError, _('property "%(propname)s": '
-                                '"%(value)s" not currently in list')%{
-                                'propname': propname, 'value': entry}
-                else:
-                    # add - easy, just don't dupe
-                    for entry in l:
-                        if entry not in existing:
-                            existing.append(entry)
-                value = existing
-                value.sort()
-
-        # other types should be None'd if there's no value
-        elif value:
-            if isinstance(proptype, hyperdb.String):
-                # fix the CRLF/CR -> LF stuff
-                value = fixNewlines(value)
-            elif isinstance(proptype, hyperdb.Date):
-                value = date.Date(value, offset=timezone)
-            elif isinstance(proptype, hyperdb.Interval):
-                value = date.Interval(value)
-            elif isinstance(proptype, hyperdb.Boolean):
-                value = value.lower() in ('yes', 'true', 'on', '1')
-            elif isinstance(proptype, hyperdb.Number):
-                value = float(value)
-        else:
-            # if we're creating, just don't include this property
-            if not nodeid:
-                continue
-            value = None
-
-        # get the old value
-        if nodeid:
-            try:
-                existing = cl.get(nodeid, propname)
-            except KeyError:
-                # this might be a new property for which there is no existing
-                # value
-                if not properties.has_key(propname):
-                    raise
-
-            # make sure the existing multilink is sorted
-            if isinstance(proptype, hyperdb.Multilink):
-                existing.sort()
-
-            # "missing" existing values may not be None
-            if not existing:
-                if isinstance(proptype, hyperdb.String) and not existing:
-                    # some backends store "missing" Strings as empty strings
-                    existing = None
-                elif isinstance(proptype, hyperdb.Number) and not existing:
-                    # some backends store "missing" Numbers as 0 :(
-                    existing = 0
-                elif isinstance(proptype, hyperdb.Boolean) and not existing:
-                    # likewise Booleans
-                    existing = 0
-
-            # if changed, set it
-            if value != existing:
-                props[propname] = value
-        else:
-            # don't bother setting empty/unset values
-            if value is None:
-                continue
-            elif isinstance(proptype, hyperdb.Multilink) and value == []:
-                continue
-            elif isinstance(proptype, hyperdb.String) and value == '':
-                continue
-
-            props[propname] = value
-
-        # register this as received if required?
-        if propname in required and value is not None:
-            required.remove(propname)
-
-    # see if all the required properties have been supplied
-    if required:
-        if len(required) > 1:
-            p = 'properties'
-        else:
-            p = 'property'
-        raise ValueError, 'Required %s %s not supplied'%(p, ', '.join(required))
-
-    return props
-
