@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: __init__.py,v 1.30 2004-11-18 15:50:37 a1s Exp $
+# $Id: __init__.py,v 1.31 2004-11-20 11:31:42 a1s Exp $
 
 '''Container for the hyperdb storage backend implementations.
 '''
@@ -60,7 +60,8 @@ def have_backend(name):
         return 1
     except ImportError, e:
         global _modules
-        if not str(e).startswith('No module named %s' % _modules[name]):
+        if not str(e).startswith('No module named %s'
+                % _modules.get(name, name)):
             raise
     return 0
 
