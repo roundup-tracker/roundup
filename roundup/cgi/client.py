@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.204 2004-11-21 13:27:03 a1s Exp $
+# $Id: client.py,v 1.205 2004-11-21 21:55:03 richard Exp $
 
 """WWW request handler (also used in the stand-alone server).
 """
@@ -219,9 +219,6 @@ class Client:
             self.determine_user()
 
             # figure out the context and desired content template
-            # do this first so we don't authenticate for static files
-            # Note: this method opens the database as "admin" in order to
-            # perform context checks
             self.determine_context()
 
             # possibly handle a form submit action (may change self.classname
@@ -432,6 +429,28 @@ class Client:
         # reopen the database as the correct user
         self.opendb(self.user)
 
+    def opendb(self, username):
+        ''' Open the database and set the current user.
+
+        Opens a database once. On subsequent calls only the user is set on
+        the database object the instance.optimize is set. If we are in
+        "Development Mode" (cf. roundup_server) then the database is always
+        re-opened.
+        '''
+        # don't do anything if the db is open and the user has not changed
+        if hasattr(self, 'db') and self.db.isCurrentUser(username):
+            return
+
+        # open the database or only set the user
+        if not hasattr(self, 'db'):
+            self.db = self.instance.open(username)
+        else:
+            if self.instance.optimize:
+                self.db.setCurrentUser(username)
+            else:
+                self.db.close()
+                self.db = self.instance.open(username)
+
     def determine_context(self, dre=re.compile(r'([^\d]+)0*(\d+)')):
         """Determine the context of this page from the URL:
 
@@ -510,9 +529,6 @@ class Client:
                 # send the file identified by the designator in path[0]
                 raise SendFile, path[0]
 
-        # we need the db for further context stuff - open it as admin
-        self.opendb('admin')
-
         # see if we got a designator
         m = dre.match(self.classname)
         if m:
@@ -544,7 +560,6 @@ class Client:
             raise NotFound, str(designator)
         classname, nodeid = m.group(1), m.group(2)
 
-        self.opendb('admin')
         klass = self.db.getclass(classname)
 
         # make sure we have the appropriate properties
@@ -821,28 +836,6 @@ class Client:
         '''
         self.userid = self.db.user.lookup('anonymous')
         self.user = 'anonymous'
-
-    def opendb(self, username):
-        ''' Open the database and set the current user.
-
-        Opens a database once. On subsequent calls only the user is set on
-        the database object the instance.optimize is set. If we are in
-        "Development Mode" (cf. roundup_server) then the database is always
-        re-opened.
-        '''
-        # don't do anything if the db is open and the user has not changed
-        if hasattr(self, 'db') and self.db.isCurrentUser(username):
-            return
-
-        # open the database or only set the user
-        if not hasattr(self, 'db'):
-            self.db = self.instance.open(username)
-        else:
-            if self.instance.optimize:
-                self.db.setCurrentUser(username)
-            else:
-                self.db.close()
-                self.db = self.instance.open(username)
 
     def standard_message(self, to, subject, body, author=None):
         '''Send a standard email message from Roundup.
