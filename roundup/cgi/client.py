@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.30 2002-09-12 06:05:34 richard Exp $
+# $Id: client.py,v 1.31 2002-09-12 07:00:41 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -141,6 +141,12 @@ class Client:
             # and self.template, and may also append error/ok_messages)
             self.handle_action()
             # now render the page
+
+            # we don't want clients caching our dynamic pages
+            self.additional_headers['Cache-Control'] = 'no-cache'
+            self.additional_headers['Pragma'] = 'no-cache'
+            self.additional_headers['Expires'] = 'Thu, 1 Jan 1970 00:00:00 GMT'
+
             if self.form.has_key(':contentonly'):
                 # just the content
                 self.write(self.content())
@@ -409,7 +415,10 @@ class Client:
             headers = {'Content-Type':'text/html'}
         if response is None:
             response = self.response_code
+
+        # update with additional info
         headers.update(self.additional_headers)
+
         if not headers.has_key('Content-Type'):
             headers['Content-Type'] = 'text/html'
         self.request.send_response(response)
