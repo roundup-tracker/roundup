@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.11 2001-10-04 02:12:42 richard Exp $
+# $Id: roundupdb.py,v 1.12 2001-10-04 02:16:15 richard Exp $
 
 import re, os, smtplib, socket
 
@@ -125,7 +125,7 @@ class Class(hyperdb.Class):
         "protected" flag is true, we include protected properties - those
         which may not be modified.
         """
-        d = hyperdb.Class.getprops(self).copy()
+        d = hyperdb.Class.getprops(self, protected=protected).copy()
         if protected:
             d['creation'] = hyperdb.Date()
             d['activity'] = hyperdb.Date()
@@ -186,7 +186,7 @@ class FileClass(Class):
             we include protected properties - those which may not be
             modified.
         '''
-        d = Class.getprops(self).copy()
+        d = Class.getprops(self, protected=protected).copy()
         if protected:
             d['content'] = hyperdb.String()
         return d
@@ -289,6 +289,14 @@ Roundup issue tracker
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/10/04 02:12:42  richard
+# Added nicer command-line item adding: passing no arguments will enter an
+# interactive more which asks for each property in turn. While I was at it, I
+# fixed an implementation problem WRT the spec - I wasn't raising a
+# ValueError if the key property was missing from a create(). Also added a
+# protected=boolean argument to getprops() so we can list only the mutable
+# properties (defaults to yes, which lists the immutables).
+#
 # Revision 1.10  2001/08/07 00:24:42  richard
 # stupid typo
 #
