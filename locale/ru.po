@@ -1,7 +1,7 @@
 # Russian message file for Roundup Issue Tracker
 # alexander smishlajev <alex@tycobka.lv>, 2004
 #
-# $Id: ru.po,v 1.8 2005-03-03 10:00:40 a1s Exp $
+# $Id: ru.po,v 1.9 2005-03-29 16:04:56 a1s Exp $
 #
 # roundup.pot revision 1.12
 #
@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Roundup 0.7.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2005-03-03 11:54+0200\n"
-"PO-Revision-Date: 2005-03-03 11:59FLE Standard Time\n"
+"PO-Revision-Date: 2005-03-29 19:01+0300\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -1667,7 +1667,7 @@ msgstr "заглавие"
 
 #: ../roundup/roundupdb.py:142
 msgid "assignedto"
-msgstr "назначено"
+msgstr "исполнитель"
 
 #: ../roundup/roundupdb.py:142
 msgid "priority"
@@ -2304,7 +2304,7 @@ msgstr "Автор"
 
 #: ../templates/classic/html/issue.index.html:25
 msgid "Assigned&nbsp;To"
-msgstr "Назначено"
+msgstr "Исполнитель"
 
 #: ../templates/classic/html/issue.index.html:91
 msgid "Download as CSV"
@@ -2370,7 +2370,7 @@ msgstr "Рассылка извещений"
 
 #: ../templates/classic/html/issue.item.html:69
 msgid "Assigned To"
-msgstr "Назначено"
+msgstr "Исполнитель"
 
 #: ../templates/classic/html/issue.item.html:71
 msgid "Topics"
@@ -2534,11 +2534,11 @@ msgstr "не закрыт"
 
 #: ../templates/classic/html/issue.search.html:143
 msgid "Assigned to:"
-msgstr "Назначено:"
+msgstr "Исполнитель:"
 
 #: ../templates/classic/html/issue.search.html:146
 msgid "assigned to me"
-msgstr "назначено мне"
+msgstr "поручено мне"
 
 #: ../templates/classic/html/issue.search.html:148
 msgid "unassigned"
