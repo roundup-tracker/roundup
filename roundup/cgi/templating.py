@@ -344,8 +344,8 @@ class HTMLClass(HTMLPermissions):
                 else:
                     value = None
                 if isinstance(prop, klass):
-                    l.append(htmlklass(self._client, '', prop, name, value,
-                        self._anonymous))
+                    l.append(htmlklass(self._client, self._classname, '',
+                        prop, name, value, self._anonymous))
         return l
 
     def list(self):
