@@ -2,7 +2,7 @@
 Developing Roundup
 ==================
 
-:Version: $Revision: 1.9 $
+:Version: $Revision: 1.10 $
 
 Note: the intended audience of this document is the developers of the core
 Roundup code. If you just wish to alter some behaviour of your Roundup
@@ -195,6 +195,11 @@ of translation completeness.  For example, string ``</ol></body></html>``
 script) has no human readable parts at all, and needs no translations.
 Such strings are left untranslated in PO files, and are reported
 as such by PO status checkers (e.g. ``msgfmt --statistics``).
+
+Need some note about i18n in TAL here... this link has good info:
+
+  http://plone.org/documentation/howto/I18nForDevelopers
+
 
 Command Line Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~

@@ -14,6 +14,7 @@ Feature:
 Fixed:
 - re-acquire the OTK manager when we re-open the database
 - mailgw handler can close the database on us
+- fixed grouping by a NULL Link value
 
 
 2004-05-28 0.7.3
