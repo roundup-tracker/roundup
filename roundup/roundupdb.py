@@ -15,13 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.32 2001-12-15 23:48:35 richard Exp $
+# $Id: roundupdb.py,v 1.33 2001-12-16 10:53:37 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
 """
 
-import re, os, smtplib, socket
+import re, os, smtplib, socket, copy
 import mimetools, MimeWriter, cStringIO
 import base64, mimetypes
 
@@ -107,7 +107,9 @@ class Class(hyperdb.Class):
             raise KeyError, '"creation" and "activity" are reserved'
         for audit in self.auditors['set']:
             audit(self.db, self, nodeid, propvalues)
-        oldvalues = self.db.getnode(self.classname, nodeid)
+        # take a copy of the node dict so that the subsequent set
+        # operation doesn't modify the oldvalues structure
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
         hyperdb.Class.set(self, nodeid, **propvalues)
         for react in self.reactors['set']:
             react(self.db, self, nodeid, oldvalues)
@@ -504,6 +506,10 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2001/12/15 23:48:35  richard
+# Added ROUNDUPDBSENDMAILDEBUG so one can test the sendmail method without
+# actually sending mail :)
+#
 # Revision 1.31  2001/12/15 19:24:39  rochecompaan
 #  . Modified cgi interface to change properties only once all changes are
 #    collected, files created and messages generated.

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.17 2001-12-14 23:42:57 richard Exp $
+#$Id: back_anydbm.py,v 1.18 2001-12-16 10:53:38 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -188,7 +188,7 @@ class Database(hyperdb.Database):
         self.transactions.append((self._doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None):
-        ''' add the specified node to its class's db
+        ''' get a node from the database
         '''
         if DEBUG:
             print 'getnode', (self, classname, nodeid, cldb)
@@ -207,7 +207,7 @@ class Database(hyperdb.Database):
         return res
 
     def hasnode(self, classname, nodeid, db=None):
-        ''' add the specified node to its class's db
+        ''' determine if the database has a given node
         '''
         if DEBUG:
             print 'hasnode', (self, classname, nodeid, cldb)
@@ -338,6 +338,11 @@ class Database(hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.17  2001/12/14 23:42:57  richard
+#yuck, a gdbm instance tests false :(
+#I've left the debugging code in - it should be removed one day if we're ever
+#_really_ anal about performace :)
+#
 #Revision 1.16  2001/12/12 03:23:14  richard
 #Cor blimey this anydbm/whichdb stuff is yecchy. Turns out that whichdb
 #incorrectly identifies a dbm file as a dbhash file on my system. This has
