@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.64.2.1 2004-05-10 01:55:10 richard Exp $
+# $Id: setup.py,v 1.64.2.2 2004-05-16 23:44:32 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -219,14 +219,16 @@ the "Software Upgrade" guidelines given in the maintenance documentation.
 
 This release fixes some bugs in the previous release:
 
-- several temp files made it into the source distribution (sf bug 949243)
-- typo in roundup/instance.py
-- missing CRLF var in rfc822.py (sf patch 949471)
-- fix user creation page
-- have roundup server pass though the cause of a "403 Forbidden" response
-- fix schema mutation in sqlite backends (thanks Tamer Fahmy)
-- make popup Javascript IE 5.0 friendly (thanks Marlon van den Berg)
-- fix RDBMS import (thanks Tamer Fahmy)
+- anydbm sorting with None values (sf bug 952853)
+- roundup-server -g option not recognised (sf bug 952310)
+- HTML templating isset() inverted (sf bug 951779)
+- otks manager missing (sf bug 952931)
+- mention DEFAULT_TIMEZONE requirement in upgrading doc (sf bug 952932)
+- fix DateHTMLProperty so local() can override user timezone (sf bug
+  953678)
+- fix anydbm sort/group direction handling, and make RDBMS sort/group use
+  Link'ed "order" properties (sf bug 953148)
+- fix Interval editing (sf bug 954891)
 ''',
         author = "Richard Jones",
         author_email = "richard@users.sourceforge.net",
