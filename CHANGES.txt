@@ -1,7 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
-2002-06- 0.4.2
+2002-??-?? 0.4.3
+Fixed:
+ . installation instructions now mention "python2" in "testing your python".
+
+
+2002-06-24 0.4.2
 Fixed:
  . Cleaned up the hyperdb unit tests.
  . Applied patch from Andrew W. Nosenko to give nicer Unauthorised message
