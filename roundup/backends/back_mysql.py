@@ -520,10 +520,12 @@ class MysqlClass:
         where = []
         args = []
         a = self.db.arg
+        mlfilt = False
         for k, v in filterspec.items():
             propclass = props[k]
             # now do other where clause stuff
             if isinstance(propclass, Multilink):
+                mlfilt = True
                 tn = '%s_%s'%(cn, k)
                 if v in ('-1', ['-1']):
                     # only match rows that have count(linkid)=0 in the
@@ -671,7 +673,12 @@ class MysqlClass:
             where = ' where ' + (' and '.join(where))
         else:
             where = ''
-        cols = ['distinct(id)']
+        if mlfilt:
+            # we're joining tables on the id, so we will get dupes if we
+            # don't distinct()
+            cols = ['distinct(id)']
+        else:
+            cols = ['id']
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))

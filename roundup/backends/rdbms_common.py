@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.94 2004-04-25 22:19:15 richard Exp $
+# $Id: rdbms_common.py,v 1.95 2004-04-26 20:59:25 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1962,10 +1962,12 @@ class Class(hyperdb.Class):
         where = []
         args = []
         a = self.db.arg
+        mlfilt = False      # are we joining with Multilink tables?
         for k, v in filterspec.items():
             propclass = props[k]
             # now do other where clause stuff
             if isinstance(propclass, Multilink):
+                mlfilt = True
                 tn = '%s_%s'%(cn, k)
                 if v in ('-1', ['-1']):
                     # only match rows that have count(linkid)=0 in the
@@ -2107,7 +2109,12 @@ class Class(hyperdb.Class):
             where = ' where ' + (' and '.join(where))
         else:
             where = ''
-        cols = ['distinct(id)']
+        if mlfilt:
+            # we're joining tables on the id, so we will get dupes if we
+            # don't distinct()
+            cols = ['distinct(id)']
+        else:
+            cols = ['id']
         if orderby:
             cols = cols + ordercols
             order = ' order by %s'%(','.join(orderby))
