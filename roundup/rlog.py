@@ -98,7 +98,7 @@ class BasicLogger:
                     level = num
         self.level = level
     def write(self, level, message):
-        message = '%s %s %s'%(time.strftime('%Y-%m-%d %H:%M:%D'),
+        message = '%s %s %s\n'%(time.strftime('%Y-%m-%d %H:%M:%D'),
             BasicLogging.NAMES[level], message)
         self._write(message)
     def _write(self, text):
