@@ -1,0 +1,249 @@
+<html><head>
+<title>Roundup: an Issue-Tracking System for Knowledge Workers</title>
+</head><body>
+
+<h1 align=center>Roundup</h1>
+<h3 align=center>An Issue-Tracking System for Knowledge Workers</h3>
+
+<h2>Contents</h2>
+
+<ul>
+    <li><a href="overview.html">Overview</a> (Initial submission to SC Track)
+<li><a href="#installation">Installation</a>
+    <ul>
+        <li><a href="#requires">Prerequisites</a>
+        <li><a href="#getting">Getting Roundup</a>
+        <li><a href="#installing">Installing Roundup</a>
+    </ul>
+<li><a href="#starting">Getting Started</a>
+    <ul>
+        <li><a href="#instance">The Instance</a>
+        <li><a href="#startcmd">Command Line Tool</a>
+        <li><a href="#startweb">E-Mail Interface</a>
+        <li><a href="#startweb">Web Interface</a>
+        <li><a href="#users">Users</a>
+        <li><a href="#issues">Issues</a>
+    </ul>
+<li><a href="#admin">Administration</a>
+    <ul>
+        <li><a href="#cmd">Command Line Tool</a>
+        <li><a href="#web">Web Interface</a>
+        <li><a href="#mail">E-Mail Gateway</a>
+    </ul>
+<li><a href="spec.html">Roundup's Design Document</a> ("Implementation Guide")
+<li><a href="#ack">Acknowledgements</a>
+</ul>
+
+<p><hr>
+<h2><a name="installation">Installation</a></h2>
+
+
+<h3><a name="requires">Prerequisites</a></h3>
+
+<dl>
+    <dt>Either:
+    <dd>Python 2.0 with pydoc installed. See http://www.lfw.org/ for pydoc.
+    <dt>or
+    <dd>Python 2.1 or later
+</dl>
+
+Download the latest version from
+<a href="http://www.python.org/">http://www.python.org/</a>.
+
+
+
+<h3><a name="getting">Getting Roundup</a></h3>
+
+Download the latest version from
+<a href="http://roundup.sf.net/">http://roundup.sf.net/</a>.
+
+
+<h3><a name="installing">Installing Roundup</a></h3>
+
+<ol>
+    <li>Run:
+    <br><tt>python setup.py install</tt>
+    <li>If you would prefer the scripts installed in somewhere other than
+    <tt>/usr/local/bin</tt>, add <tt>"--install-scripts=&lt;dir&gt;"</tt>
+    to the command:
+    <br><tt>python setup.py install --install-scripts=&lt;dir&gt;</tt>
+    <li>The command:
+    <br><tt>python setup.py install --help</tt>
+    <br>gives all the options available for installation.
+</ol>
+
+
+<p><hr>
+<h2><a name="starting">Getting Started</a></h2>
+
+The following instructions assume that you have installed roundup. If you
+haven't, you may still proceed - just preface all commands with "./"
+ie. "./roundup-admin init".
+
+
+<h3><a name="instance">The Instance</a></h3>
+
+We'll be referring to the term "instance" a lot from now on. An instance is
+a directory in your filesystem that is where all the information about a
+live issue tracker database is stored. The data that is entered as issues,
+the users who access the database and the definition of the database itself
+all reside there:
+<ol>
+    <li><strong>Hyperdatabase</strong>
+    <br>This is the lowest component of Roundup and is where all the
+    issues, users, file attachments and messages are stored.
+    <li><strong>Database schema</strong>
+    <br>This describes the content of the hyperdatabase - what fields are
+    stored for issues, what user information, etc. Being stored in the
+    instance, this allows it to be customised for a particular application.
+    It also means that changes in the Roundup core code do not affect a
+    running instance.
+    <li><strong>Web Interface</strong>
+    <br>The web interface templates are defined in the instance too - and
+    the actual CGI interface class is defined (mostly using base classes in
+    the Roundup core code) so it, like the database, may be customised for
+    each instance in use.
+</ol>
+
+Instances are created using the <tt>roundup-admin</tt> tool.
+
+<h3><a name="startcmd">Command Line Tool</a></h3>
+
+To initiliase a new instance, run <tt>roundup-admin init</tt>. You will be
+asked a series of questions:
+
+<ol>
+    <li>Instance home directory
+    <li>Schema to use
+    <li>Database back-end to use
+    <li>Administration user "admin" password.
+</ol>
+
+Roundup is configurable using a localconfig.py file in the instance home.
+It may have the following variable declarations:
+  
+<ol>
+    <li>MAILHOST
+    <br>The SMTP mail host that roundup will use to send mail
+    <li>MAIL_DOMAIN
+    <br>The domain name used for email addresses
+</ol>
+
+Any further configuration should be possible by editing the instance home's
+__init__.py directly.
+<p>
+The email addresses used by the system by default are:
+
+<ol>
+    <li>issue_tracker@MAIL_DOMAIN
+    <br>submissions of issues
+    <li>roundup-admin@MAIL_DOMAIN
+    <br>roundup's internal use (problems, etc)
+</ol>
+
+<em>Note:</em>
+We run the instance as group "issue_tracker" and add the mail and web user
+("mail" and "apache" on our RedHat 7.1 system) to that group, as well as
+any admin people.
+
+
+<h3><a name="startweb">E-Mail Interface</a></h3>
+Set up a mail alias called "issue_tracker" as:
+<blockquote>
+    <tt>|/usr/bin/python /usr/local/bin/roundup-mailgw
+        &lt;instance_home&gt;</tt>
+</blockquote>
+
+In some installations (e.g. RedHat 6.2 I think) you'll need to set up smrsh
+so sendmail will accept the pipe command. In that case, symlink
+/etc/smrsh/roundup-mailgw to /usr/local/bin/roundup-mailgw and change the
+command to:
+<blockquote>
+    <tt>|roundup-mailgw &lt;instance_home&gt;</tt>
+</blockquote>
+
+To test the mail gateway on unix systems, try:
+
+<blockquote>
+    <tt>echo test |mail -s '[issue] test' issue_tracker@your.domain</tt>
+</blockquote>
+
+
+
+<h3><a name="startweb">Web Interface</a></h3>
+This software will work through apache or stand-alone.
+<p>
+<strong>Stand-alone:</strong>
+<ol>
+    <li>Edit roundup-server at the top - ROUNDUP_INSTANCE_HOMES needs to know
+    about your instance. *** command-line option
+    <li><tt>roundup-server [hostname port]</tt>   (hostname may be "")
+    <li>Load up the page <tt>/&lt;instance name&gt;/index</tt> where
+     instance name is the
+     name you nominated in <tt>ROUNDUP_INSTANCE_HOMES</tt>.
+*** command-line option
+</ol>
+
+<strong>Apache:</strong>
+<ol>
+    <li>Make sure roundup.cgi is executable. Edit it at the top -
+    ROUNDUP_INSTANCE_HOMES needs to know about your instance.
+    <li>Edit your <tt>/etc/httpd/conf/httpd.conf</tt> and make sure that the
+        <tt>/home/httpd/html/roundup/roundup.cgi</tt> script will be treated as a CGI
+    script.
+    <li>Add the following to your <tt>/etc/httpd/conf/httpd.conf</tt>:
+<pre>
+------8<------- snip here ------8<-------
+RewriteEngine on
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule ^/roundup/roundup.cgi(.*) /home/httpd/html/roundup/roundup.cgi$1 [e=HTTP_CGI_AUTHORIZATION:%1,t=application/x-httpd-cgi,l]
+------8<------- snip here ------8<-------
+</pre>
+   note: the RewriteRule must be on one line - no breaks
+   <li>Re-start your apache to re-load the config
+   <li>Load up the page <tt>/roundup/roundup.cgi/&lt;instance name&gt;/index</tt> where
+    instance name is the name you nominated in ROUNDUP_INSTANCE_HOMES.
+</ol>
+
+
+<h3><a name="users">Users</a></h3>
+To add users, use one of the following interfaces:
+
+<ol>
+    <li>On the web, access the URL <tt>.../&lt;instance name&gt;/newuser</tt>
+    to bring up a form which may be used to add a new user.
+    <li>On the command-line, use:
+    <br><tt>roundup-admin -i &lt;instance home&gt; create user
+        username=bozo password=bozo address=richard@clown.org</tt>
+    <br>Supply the admin username and password. roundup-admin will print the
+    id of the new user.
+    <li>Any e-mail sent to roundup from an address that doesn't match an
+    existing user in the database will result in a new user entry being
+    created for that user.
+</ol>
+
+
+
+<h3><a name="issues">Issues</a></h3>
+To add issues, use one of the following interfaces:
+
+<ol>
+    <li>On the web, access the URL <tt>.../&lt;instance name&gt;/newissue</tt>
+    to bring up a form which may be used to add a new issue.
+    <li>On the command-line, use:
+    <br><tt>roundup-admin -i &lt;instance home&gt; create issue
+        title="test issue"</tt>
+    <br>Supply the admin username and password. roundup-admin will print the
+    id of the new issue.
+    <li>Any e-mail sent to roundup with the subject line containing [issue]
+    will automatically created a new issue in the database using the
+    contents of the e-mail.
+</ol>
+
+<p><hr>
+<h2><a name="ack">Acknowledgements</a></h2>
+
+Go Ping, you rock! Also, go Bizar Software for letting me implement this
+system on their time.
+
+</body></html>
