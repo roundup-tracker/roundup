@@ -2,39 +2,41 @@
 <table class="form">
 
 <tr>
- <td nowrap>Author</td>
+ <th nowrap>Author</th>
  <td tal:content="context/author"></td>
 </tr>
 
 <tr>
- <td nowrap>Recipients</td>
+ <th nowrap>Recipients</th>
  <td tal:content="context/recipients"></td>
 </tr>
 
 <tr>
- <td nowrap>Date</td>
+ <th nowrap>Date</th>
  <td tal:content="context/date"></td>
 </tr>
-
-<tr>
- <td colspan=2><pre tal:content="context/content"></pre></td>
-</tr>
-
- <table class="files" tal:condition="context/files">
-  <tr><th colspan="2" class="header">Files</th></tr>
-  <tr><th>File name</th><th>Uploaded</th></tr>
-  <tr tal:repeat="file context/files">
-   <td>
-    <a tal:attributes="href string:file${file/id}/${file/name}"
-       tal:content="file/name">dld link</a>
-   </td>
-   <td>
-    <span tal:content="file/creator">creator's name</span>,
-    <span tal:content="file/creation">creation date</span>
-   </td>
-  </tr>
- </table>
-
- <tal:block tal:replace="structure context/history" />
-
 </table>
+
+<table class="messages">
+ <tr><th colspan=2 class="header">Content</th></tr>
+ <tr>
+  <td colspan=2><pre tal:content="context/content"></pre></td>
+ </tr>
+</table>
+
+<table class="files" tal:condition="context/files">
+ <tr><th colspan="2" class="header">Files</th></tr>
+ <tr><th>File name</th><th>Uploaded</th></tr>
+ <tr tal:repeat="file context/files">
+  <td>
+   <a tal:attributes="href string:file${file/id}/${file/name}"
+      tal:content="file/name">dld link</a>
+  </td>
+  <td>
+   <span tal:content="file/creator">creator's name</span>,
+   <span tal:content="file/creation">creation date</span>
+  </td>
+ </tr>
+</table>
+
+<tal:block tal:replace="structure context/history" />
