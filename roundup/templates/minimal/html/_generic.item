@@ -1,0 +1,56 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title"
+       tal:content="python:context._classname.capitalize()+' editing'"></title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2 tal:content="python:context._classname.capitalize()+' editing'"></h2>
+</td>
+<td class="content" metal:fill-slot="content">
+
+<span tal:condition="python:not (context.is_view_ok() or context.is_edit_ok())">
+You are not allowed to view this page.
+</span>
+
+<form method="POST" onSubmit="return submit_once()"
+      enctype="multipart/form-data" tal:condition="context/is_edit_ok">
+
+<input type="hidden" name=":template" value="item">
+<input type="hidden" name=":required" value="title">
+
+<table class="form">
+
+<tr tal:repeat="prop python:db[context._classname].properties()">
+ <tal:block tal:condition="python:prop._name not in ('id', 'creator',
+                                  'creation', 'activity')">
+  <th tal:content="prop/_name"></th>
+  <td tal:content="structure python:context[prop._name].field()"></td>
+ </tal:block>
+</tr>
+<tr>
+ <td>&nbsp;</td>
+ <td colspan=3 tal:content="structure context/submit">
+  submit button will go here
+ </td>
+</tr>
+</table>
+
+</form>
+
+<table class="form" tal:condition="context/is_only_view_ok">
+
+<tr tal:repeat="prop python:db[context._classname].properties()">
+ <tal:block tal:condition="python:prop._name not in ('id', 'creator',
+                                  'creation', 'activity')">
+  <th tal:content="prop/_name"></th>
+  <td tal:content="structure python:context[prop._name].field()"></td>
+ </tal:block>
+</tr>
+</table>
+
+
+<tal:block tal:condition="python:context.id and context.is_view_ok()">
+ <tal:block tal:replace="structure context/history" />
+</tal:block>
+
+</td>
+
+</tal:block>

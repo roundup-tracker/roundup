@@ -1,0 +1,29 @@
+<!-- dollarId: user.index,v 1.3 2002/07/09 05:29:51 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title">User listing</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>User listing</h2>
+</td>
+<td class="content" metal:fill-slot="content">
+
+<span tal:condition="not:context/is_view_ok">
+You are not allowed to view this page.
+</span>
+
+<table width="100%" tal:condition="context/is_view_ok" class="list">
+<tr>
+ <th>Username</th>
+ <th>Email address</th>
+</tr>
+<tr tal:repeat="user context/list"
+    tal:attributes="class python:['row-normal', 'row-alt'][repeat['user'].even()]">
+ <td>
+  <a tal:attributes="href string:user${user/id}"
+     tal:content="user/username">username</a>
+ </td>
+ <td tal:content="python:user.address.email()">address</td>
+</tr>
+</table>
+</td>
+
+</tal:block>

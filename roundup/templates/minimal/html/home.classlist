@@ -1,0 +1,25 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title">List of classes</title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2>List of classes</h2>
+</td>
+<td class="content" metal:fill-slot="content">
+<table class="classlist">
+
+<tal:block tal:repeat="cl db/classes">
+ <tr>
+  <th class="header" colspan="2" align="left">
+   <a tal:attributes="href string:${cl/classname}"
+      tal:content="python:cl.classname.capitalize()">classname</a>
+  </th>
+ </tr>
+ <tr tal:repeat="prop cl/properties">
+  <th tal:content="prop/_name">name</th>
+  <td tal:content="prop/_prop">type</td>
+ </tr>
+</tal:block>
+
+</table>
+</td>
+
+</tal:block>

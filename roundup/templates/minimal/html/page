@@ -1,0 +1,68 @@
+<html metal:define-macro="icing">
+<head>
+<title metal:define-slot="head_title">title goes here</title>
+
+<link rel="stylesheet" type="text/css" href="_file/style.css">
+
+<script tal:replace="structure request/base_javascript">
+</script>
+
+</head>
+<body class="body" marginwidth="0" marginheight="0">
+
+<table class="body">
+
+<tr>
+ <td class="page-header-left">&nbsp;</td>
+ <td class="page-header-top" metal:define-slot="body_title"><h2>name</h2></td>
+</tr>
+
+<tr>
+ <td rowspan="2" valign="top" nowrap class="sidebar">
+  <p class="userblock" tal:condition="python:request.user.username=='anonymous'">
+   <form method="POST" action="">
+    <input size="10" name="__login_name"><br>
+    <input size="10" type="password" name="__login_password"><br>
+    <input type="submit" name=":action" value="login">
+    <span tal:replace="structure request/indexargs_form" />
+   </form>
+   <a href="user?:template=register">Register</a>
+  </p>
+
+  <p class="userblock" tal:condition="python:request.user.username != 'anonymous'">
+   <b>Hello,</b><br><b tal:content="request/user/username">username</b><br>
+   <a tal:attributes="href string:user${request/user/id}">My Details</a><br>
+   <a tal:attributes="href python:request.indexargs_href('',
+       {':action':'logout'})">Logout</a>
+  </p>
+
+  <p class="classblock"
+       tal:condition="python:request.user.username != 'anonymous'">
+   <b>Administration</b><br>
+   <a tal:condition="python:request.user.hasPermission('Edit', None)"
+      href="home?:template=classlist">Class List</a><br>
+   <a tal:condition="python:request.user.hasPermission('View', 'user')
+                            or request.user.hasPermission('Edit', 'user')"
+      href="user" >User List</a><br>
+   <a tal:condition="python:request.user.hasPermission('Edit', 'user')"
+      href="user?:template=item">Add User</a>
+  </p>
+ </td>
+ <td>
+  <p tal:condition="options/error_message | nothing" class="error-message"
+     tal:repeat="m options/error_message" tal:content="structure m">error</p>
+  <p tal:condition="options/ok_message | nothing" class="ok-message"
+     tal:repeat="m options/ok_message" tal:content="structure m">error</p>
+ </td>
+</tr>
+<tr>
+ <td class="content" metal:define-slot="content">Page content goes here</td>
+</tr>
+
+</table>
+
+<pre tal:condition="request/form/debug | nothing" tal:content="request">
+</pre>
+
+</body>
+</html>

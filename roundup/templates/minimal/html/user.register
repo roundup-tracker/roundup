@@ -1,0 +1,82 @@
+<!-- dollarId: user.item,v 1.7 2002/08/16 04:29:04 richard Exp dollar-->
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title"
+       tal:content="string:Registering with ${db/config/TRACKER_NAME}"></title>
+<td class="page-header-top" metal:fill-slot="body_title">
+ <h2 tal:content="string:Registering with ${db/config/TRACKER_NAME}"></h2>
+</td>
+<td class="content" metal:fill-slot="content">
+
+<tal:block tal:define=" editok python:request.user.username=='anonymous' and
+           request.user.hasPermission('Web Registration')">
+
+<span tal:condition="python:not editok">
+You are not allowed to view this page.
+</span>
+
+<tal:block tal:condition="editok">
+<form method="POST" onSubmit="return submit_once()" enctype="multipart/form-data">
+<input type="hidden" name=":template" value="register">
+<input type="hidden" name=":required" value="username">
+<input type="hidden" name=":required" value="password">
+<input type="hidden" name=":required" value="address">
+
+<table class="form">
+ <tr>
+  <th>Name</th>
+  <td tal:content="structure context/realname/field">realname</td>
+ </tr>
+ <tr>
+  <th>Login Name</th>
+  <td tal:content="structure context/username/field">username</td>
+ </tr>
+ <tr>
+  <th>Login Password</th>
+  <td tal:content="structure context/password/field">password</td>
+ </tr>
+ <tr>
+  <th>Confirm Password</th>
+  <td tal:content="structure context/password/confirm">password</td>
+ </tr>
+ <tr tal:condition="python:request.user.hasPermission('Web Roles')">
+  <th>Roles</th>
+  <td tal:condition="exists:item"
+      tal:content="structure context/roles/field">roles</td>
+  <td tal:condition="not:exists:item">
+   <input name="roles" tal:attributes="value db/config/NEW_WEB_USER_ROLES">
+  </td>
+ </tr>
+ <tr>
+  <th>Phone</th>
+  <td tal:content="structure context/phone/field">phone</td>
+ </tr>
+ <tr>
+  <th>Organisation</th>
+  <td tal:content="structure context/organisation/field">organisation</td>
+ </tr>
+ <tr>
+  <th>E-mail address</th>
+  <td tal:content="structure context/address/field">address</td>
+ </tr>
+ <tr>
+  <th>Alternate E-mail addresses<br>One address per line</th>
+  <td tal:content="structure context/alternate_addresses/multiline">alternate_addresses</td>
+ </tr>
+
+ <tr>
+  <td>&nbsp;</td>
+  <td>
+   <input type="hidden" name=":action" value="register">
+   <input type="submit" name="submit" value="Register">
+  </td>
+ </tr>
+</table>
+</form>
+
+</tal:block>
+
+</tal:block>
+
+</td>
+
+</tal:block>
