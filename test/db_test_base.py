@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: db_test_base.py,v 1.45 2004-09-26 12:17:42 a1s Exp $
+# $Id: db_test_base.py,v 1.46 2004-09-26 13:25:55 a1s Exp $
 
 import unittest, os, shutil, errno, imp, sys, time, pprint
 
@@ -1377,7 +1377,7 @@ class ClassicInitTest(unittest.TestCase):
         tracker.init(password.Password('sekrit'))
 
         # and open the database
-        db = self.db = tracker.open()
+        db = self.db = tracker.open('test')
 
         # check the basics of the schema and initial data set
         l = db.priority.list()
