@@ -1,4 +1,4 @@
-# $Id: back_metakit.py,v 1.44 2003-03-26 06:36:11 richard Exp $
+# $Id: back_metakit.py,v 1.45 2003-03-26 10:44:00 richard Exp $
 '''
    Metakit backend for Roundup, originally by Gordon McMillan.
 
@@ -17,7 +17,7 @@
       Interval  ''    convert to None
       Number    0     ambiguious :( - do nothing
       Boolean   0     ambiguious :( - do nothing
-      Link      ''    convert to None
+      Link      0     convert to None
       Multilink []    actually, mk can handle this one ;)
       Passowrd  ''    convert to None
       ========= ===== ====================================================
@@ -821,6 +821,8 @@ class Class:
         for propname, ids in propspec:
             if type(ids) is _STRINGTYPE:
                 ids = {int(ids):1}
+            elif ids is None:
+                ids = {0:1}
             else:
                 d = {}
                 for id in ids.keys():

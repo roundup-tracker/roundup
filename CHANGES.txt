@@ -53,6 +53,7 @@ Feature:
 - more lenient date input and addition Interval input support (sf bug 677764)
 - roundup mailgw now handles apop
 - implemented ability to search for multilink properties with no value
+- Class.find() may now find unset Links (sf bug 700620)
 
 
 Fixed:

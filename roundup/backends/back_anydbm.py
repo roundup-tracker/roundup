@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.116 2003-03-26 05:30:23 richard Exp $
+#$Id: back_anydbm.py,v 1.117 2003-03-26 10:43:59 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1462,23 +1462,23 @@ class Class(hyperdb.Class):
 
     # change from spec - allows multiple props to match
     def find(self, **propspec):
-        '''Get the ids of nodes in this class which link to the given nodes.
+        '''Get the ids of items in this class which link to the given items.
 
-        'propspec' consists of keyword args propname=nodeid or
-                   propname={nodeid:1, }
+        'propspec' consists of keyword args propname=itemid or
+                   propname={itemid:1, }
         'propname' must be the name of a property in this class, or a
                    KeyError is raised.  That property must be a Link or
                    Multilink property, or a TypeError is raised.
 
-        Any node in this class whose 'propname' property links to any of the
-        nodeids will be returned. Used by the full text indexing, which knows
+        Any item in this class whose 'propname' property links to any of the
+        itemids will be returned. Used by the full text indexing, which knows
         that "foo" occurs in msg1, msg3 and file7, so we have hits on these
         issues:
 
             db.issue.find(messages={'1':1,'3':1}, files={'7':1})
         '''
         propspec = propspec.items()
-        for propname, nodeids in propspec:
+        for propname, itemids in propspec:
             # check the prop is OK
             prop = self.properties[propname]
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
@@ -1489,24 +1489,26 @@ class Class(hyperdb.Class):
         l = []
         try:
             for id in self.getnodeids(db=cldb):
-                node = self.db.getnode(self.classname, id, db=cldb)
-                if node.has_key(self.db.RETIRED_FLAG):
+                item = self.db.getnode(self.classname, id, db=cldb)
+                if item.has_key(self.db.RETIRED_FLAG):
                     continue
-                for propname, nodeids in propspec:
-                    # can't test if the node doesn't have this property
-                    if not node.has_key(propname):
+                for propname, itemids in propspec:
+                    # can't test if the item doesn't have this property
+                    if not item.has_key(propname):
                         continue
-                    if type(nodeids) is type(''):
-                        nodeids = {nodeids:1}
+                    if type(itemids) is not type({}):
+                        itemids = {itemids:1}
+
+                    # grab the property definition and its value on this item
                     prop = self.properties[propname]
-                    value = node[propname]
-                    if isinstance(prop, Link) and nodeids.has_key(value):
+                    value = item[propname]
+                    if isinstance(prop, Link) and itemids.has_key(value):
                         l.append(id)
                         break
                     elif isinstance(prop, Multilink):
                         hit = 0
                         for v in value:
-                            if nodeids.has_key(v):
+                            if itemids.has_key(v):
                                 l.append(id)
                                 hit = 1
                                 break

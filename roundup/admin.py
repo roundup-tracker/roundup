@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.47 2003-03-23 09:37:20 richard Exp $
+# $Id: admin.py,v 1.48 2003-03-26 10:43:58 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -541,7 +541,9 @@ Command help:
         # number
         for propname, value in props.items():
             num_re = re.compile('^\d+$')
-            if not num_re.match(value):
+            if value == '-1':
+                props[propname] = None
+            elif not num_re.match(value):
                 # get the property
                 try:
                     property = cl.properties[propname]
