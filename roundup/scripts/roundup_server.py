@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.25 2003-08-12 01:11:43 richard Exp $
+$Id: roundup_server.py,v 1.26 2003-08-12 01:14:11 richard Exp $
 """
 
 # python version check
@@ -316,7 +316,7 @@ options:
  -l: sets a filename to log to (instead of stdout)
  -d: run the server in the background and on UN*X write the server's PID
      to the nominated file. Note: on Windows the PID argument is needed,
-     but ignored.
+     but ignored. The -l option *must* be specified if this option is.
  -N: log client machine names in access log instead of IP addresses (much
      slower)
 
@@ -404,6 +404,9 @@ def run():
             elif opt == '-l': logfile = abspath(arg)
             elif opt == '-h': usage()
             elif opt == '-N': RoundupRequestHandler.LOG_IPADDRESS = 0
+
+        if pidfile and not logfile:
+            raise ValueError, _("logfile *must* be specified if pidfile is")
 
         if hasattr(os, 'getuid'):
             # if root, setuid to the running user
