@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.67 $
+:Version: $Revision: 1.68 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -1223,7 +1223,9 @@ There are several methods available on these wrapper objects:
 Method      Description
 =========== =================================================================
 plain       render a "plain" representation of the property
-field       render a form edit field for the property
+field       render an appropriate form edit field for the property - for most
+            types this is a text entry box, but for Booleans it's a tri-state
+            yes/no/neither selection.
 stext       only on String properties - render the value of the
             property as StructuredText (requires the StructureText module
             to be installed separately)
