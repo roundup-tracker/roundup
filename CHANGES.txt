@@ -1,6 +1,10 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2004-??-?? 0.7.7
+Fixed:
+- ZRoundup's search interface works now (sf bug 994957)
+
 2004-07-21 0.7.6
 Fixed:
 - rdbms backend full text search failure after import (sf bug 980314)
