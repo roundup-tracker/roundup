@@ -11,6 +11,21 @@ accordingly. Note that there is information about upgrade procedures in the
 Migrating from 0.6 to 0.7
 =========================
 
+0.7.0 Added CSV export action
+-----------------------------
+
+A new action has been added which exports the current index page or search
+result as a comma-separated-value (CSV) file.
+
+To use it, add this to your "index" templates:
+
+<a tal:attributes="href python:request.indexargs_url('issue',
+            {'@action':'csv_export'})">Download as CSV</a>
+
+Making sure that the ``'issue'`` part matches the class name of the page
+you're editing.
+
+
 0.7.0 Typed columns in MySQL backend
 ------------------------------------
 
