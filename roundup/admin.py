@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.69 2004-05-14 20:01:16 a1s Exp $
+# $Id: admin.py,v 1.70 2004-05-14 22:43:33 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -131,7 +131,7 @@ Help:
         self.help_commands()
 
     def help_commands(self):
-        ''' List the commands available with their precise help.
+        ''' List the commands available with their help summary.
         '''
         print _('Commands:'),
         commands = ['']
