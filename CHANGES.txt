@@ -21,6 +21,7 @@ Feature:
 2004-??-?? 0.7.7
 Fixed:
 - ZRoundup's search interface works now (sf bug 994957)
+- fixed history display when "ascending"
 
 
 2004-07-21 0.7.6
