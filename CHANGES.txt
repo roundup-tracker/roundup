@@ -8,6 +8,8 @@ are given with the most recent entry first.
 - fixed time default in date.py
 - fixed error in cgi/templates.py (sf bug 652089)
 - fixed handling of missing password (sf bug 655632)
+- applied patches for handling Outlook quirks (thanks Andrey Lebedev)
+  (multipart/alternative, "fw" and content-type "name")
 
 
 2002-12-11 0.5.3

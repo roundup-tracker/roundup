@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.102 2002-12-11 01:52:20 richard Exp $
+$Id: mailgw.py,v 1.103 2002-12-27 23:54:05 richard Exp $
 '''
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
@@ -134,7 +134,7 @@ class Message(mimetools.Message):
         s.seek(0)
         return Message(s)
 
-subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fwd|re|aw)\W\s*)*'
+subject_re = re.compile(r'(?P<refwd>\s*\W?\s*(fw|fwd|re|aw)\W\s*)*'
     r'\s*(?P<quote>")?(\[(?P<classname>[^\d\s]+)(?P<nodeid>\d+)?\])?'
     r'\s*(?P<title>[^[]+)?"?(\[(?P<args>.+?)\])?', re.I)
 
@@ -737,13 +737,29 @@ Subject was: "%s"
                     name = mailmess.getheader('subject')
                     part.fp.seek(i)
                     attachments.append((name, 'message/rfc822', part.fp.read()))
+                elif subtype == 'multipart/alternative':
+                    # Search for text/plain in message with attachment and
+                    # alternative text representation
+                    part.getPart()
+                    while 1:
+                        # get the next part
+                        subpart = part.getPart()
+                        if subpart is None:
+                            break
+                        # parse it
+                        if subpart.gettype() == 'text/plain' and not content:
+                            content = self.get_part_data_decoded(subpart) 
                 else:
                     # try name on Content-Type
-                    name = part.getparam('name').strip()
+                    name = part.getparam('name')
+                    if name:
+                        name = name.strip()
                     if not name:
                         disp = part.getheader('content-disposition', None)
                         if disp:
-                            name = disp.getparam('filename').strip()
+                            name = disp.getparam('filename')
+                            if name:
+                                name = name.strip()
                     # this is just an attachment
                     data = self.get_part_data_decoded(part) 
                     attachments.append((name, part.gettype(), data))
@@ -892,7 +908,7 @@ def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         eol=re.compile(r'[\r\n]+'), 
         signature=re.compile(r'^[>|\s]*[-_]+\s*$'),
-        original_message=re.compile(r'^[>|\s]*-----Original Message-----$')):
+        original_msg=re.compile(r'^[>|\s]*-----\s?Original Message\s?-----$')):
     ''' The message body is divided into sections by blank lines.
         Sections where the second and all subsequent lines begin with a ">"
         or "|" character are considered "quoting sections". The first line of
@@ -946,7 +962,7 @@ def parseContent(content, keep_citations, keep_body,
         elif signature.match(lines[0]) and 2 <= len(lines) <= 10:
             # lose any signature
             break
-        elif original_message.match(lines[0]):
+        elif original_msg.match(lines[0]):
             # ditch the stupid Outlook quoting of the entire original message
             break
 
