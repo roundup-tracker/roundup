@@ -2,7 +2,7 @@
 User Guide
 ==========
 
-:Version: $Revision: 1.17 $
+:Version: $Revision: 1.18 $
 
 .. contents::
 
@@ -35,6 +35,102 @@ You may access your tracker through one of three ways:
 
 The last is usually only used by administrators. Most users will use the web
 and email interfaces. All three are explained below.
+
+
+Searching in your Tracker
+-------------------------
+
+All interfaces to your tracker use the same format for sepcifying search
+parameters.
+
+String and Numeric properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These fields just take a simple text value, like ``topic=It's broken``.
+
+Boolean properties
+~~~~~~~~~~~~~~~~~~
+
+These fields take a value which indicates "yes"/"no", "true"/"false",
+"1"/"0" or "on"/"off".
+
+Constrained (link and multilink) properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fields like "Assigned To" and "Topics" hold references to items in other
+classes ("user" and "keyword" in those two cases.)
+
+We use a comma-separated list of values to indicated which values of "user"
+or "keyword" are interesting. The values may be either numeric ids or the
+names of items. The special value "-1" may be used to match items where the
+property is not set. For example, the following searches on the issues:
+
+``assignedto=richard,george``
+  match issues which are assigned to richard or george.
+``assignedto=-1``
+  match issues that are not assigned to a user.
+``assignedto=2,3,40``
+  match issues that are assigned to users 2, 3 or 40.
+``topic=user interface``
+  match issues with the keyword "user interface" in their topic list
+``topic=web interface,email interface``
+  match issues with the keyword "web interface" or "email interface" in
+  their topic list
+``topic=-1``
+  match issues with no topics set
+
+
+Date properties
+~~~~~~~~~~~~~~~
+
+Some fields in the search page (e.g. "Activity" or "Creation date") hold
+dates.  A plain date entered as a search field will match that date exactly
+in the database.  We may also accept ranges of dates. You can specify range
+of dates in one of two formats:
+
+1. English syntax::
+
+    [[From] <value>][ To <value>]
+
+   Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
+
+2. "Geek" syntax::
+
+    [<value>][; <value>]
+
+Either first or second ``<value>`` can be omitted in both syntaxes.
+
+For example, if you enter string "from 9:00" to "Creation date" field,
+roundup will find  all issues, that were created today since 9 AM.
+
+Searching of "-2m; -1m" on activity field gives you issues which were
+active between period of time since 2 months up-till month ago.
+
+Other possible examples (consider local time is Sat Mar  8 22:07:48 2003)::
+
+	>>> Range("from 2-12 to 4-2")
+	<Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
+	
+	>>> Range("18:00 TO +2m")
+	<Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
+	
+	>>> Range("12:00")
+	<Range from 2003-03-08.12:00:00 to None>
+	
+	>>> Range("tO +3d")
+	<Range from None to 2003-03-11.20:07:48>
+	
+	>>> Range("2002-11-10; 2002-12-12")
+	<Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
+
+	>>> Range("; 20:00 +1d")
+	<Range from None to 2003-03-09.20:00:00>
+
+
+Interval properties
+~~~~~~~~~~~~~~~~~~~
+
+XXX explain...
 
 
 Web Interface
@@ -103,56 +199,13 @@ occurs) you'll get something like:
 Searching Page
 --------------
 
-XXX: some information about how searching works
-
-Some fields in the search page (e.g. "Activity" or "Creation date") accept
-ranges of dates. You can specify range of dates in one of two formats:
-
-1. Native english syntax::
-
-    [[From] <value>][ To <value>]
-
-   Keywords "From" and "To" are case insensitive. Keyword "From" is optional.
-
-2. "Geek" syntax::
-
-    [<value>][; <value>]
-
-Either first or second ``<value>`` can be omitted in both syntaxes.
-
-For example:
-
-if you enter string "from 9:00" to "Creation date" field, roundup
-will find  all issues, that were created today since 9 AM.
-
-Searching of "-2m; -1m" on activity field gives you issues, which were
-active between period of time since 2 months up-till month ago.
-
-Other possible examples (consider local time is Sat Mar  8 22:07:48 EET 2003):
-
-	>>> Range("from 2-12 to 4-2")
-	<Range from 2003-02-12.00:00:00 to 2003-04-02.00:00:00>
-	
-	>>> Range("18:00 TO +2m")
-	<Range from 2003-03-08.18:00:00 to 2003-05-08.20:07:48>
-	
-	>>> Range("12:00")
-	<Range from 2003-03-08.12:00:00 to None>
-	
-	>>> Range("tO +3d")
-	<Range from None to 2003-03-11.20:07:48>
-	
-	>>> Range("2002-11-10; 2002-12-12")
-	<Range from 2002-11-10.00:00:00 to 2002-12-12.00:00:00>
-
-	>>> Range("; 20:00 +1d")
-	<Range from None to 2003-03-09.20:00:00>
-
+see `searching in your tracker`_ for an explanation of how the searching
+works.
 
 Under the covers
-----------------
+~~~~~~~~~~~~~~~~
 
-Index views may be modified by the following arguments:
+The searching page converts your selections into the following arguments:
 
 ========== =============================================================
 Argument   Description
@@ -168,6 +221,17 @@ Argument   Description
 propname   selects the values the item properties given by propname
            must have (very basic search/filter).
 ========== =============================================================
+
+You may manually write URLS that contain these arguments, like so (whitespace
+has been added for clarity)::
+
+    /issue?status=unread,in-progress,resolved&
+        topic=security,ui&
+        :group=priority&
+        :sort=-activity&
+        :filters=status,topic&
+        :columns=title,status,fixer
+
 
 Access Controls
 ---------------

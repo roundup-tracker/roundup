@@ -1187,8 +1187,6 @@ See the `customisation`_ documentation for the complete list.
 Index Views
 ~~~~~~~~~~~
 
-XXX The following needs to be clearer
-
 An index view contains two sections: a filter section
 and an index section.
 The filter section provides some widgets for selecting
