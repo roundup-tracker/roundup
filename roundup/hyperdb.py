@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.16 2001-08-15 23:43:18 richard Exp $
+# $Id: hyperdb.py,v 1.17 2001-08-16 06:59:58 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -571,20 +571,7 @@ class Class:
                     # simple glob searching
                     v = v.replace('?', '.')
                     v = v.replace('*', '.*?')
-                    v = re.compile(v)
-                    l.append((2, k, v))
-                elif v[0] == '^':
-                    # start-anchored
-                    if v[-1] == '$':
-                        # _and_ end-anchored
-                        l.append((6, k, v[1:-1]))
-                    l.append((3, k, v[1:]))
-                elif v[-1] == '$':
-                    # end-anchored
-                    l.append((4, k, v[:-1]))
-                else:
-                    # substring
-                    l.append((5, k, v))
+                    l.append((2, k, re.compile(v, re.I)))
             else:
                 l.append((6, k, v))
         filterspec = l
@@ -615,15 +602,15 @@ class Class:
                 elif t == 2 and not v.search(node[k]):
                     # RE search
                     break
-                elif t == 3 and node[k][:len(v)] != v:
-                    # start anchored
-                    break
-                elif t == 4 and node[k][-len(v):] != v:
-                    # end anchored
-                    break
-                elif t == 5 and node[k].find(v) == -1:
-                    # substring search
-                    break
+#                elif t == 3 and node[k][:len(v)] != v:
+#                    # start anchored
+#                    break
+#                elif t == 4 and node[k][-len(v):] != v:
+#                    # end anchored
+#                    break
+#                elif t == 5 and node[k].find(v) == -1:
+#                    # substring search
+#                    break
                 elif t == 6 and node[k] != v:
                     # straight value comparison for the other types
                     break
@@ -807,6 +794,10 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/08/15 23:43:18  richard
+# Fixed some isFooTypes that I missed.
+# Refactored some code in the CGI code.
+#
 # Revision 1.15  2001/08/12 06:32:36  richard
 # using isinstance(blah, Foo) now instead of isFooType
 #
