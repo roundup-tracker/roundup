@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2004-??-?? 0.6.5
 Fixed:
 - mailgw handling of subject-line errors
+- allow serving of non-"file"-Class file content (eg. paper_file)
 
 
 2003-12-17 0.6.4

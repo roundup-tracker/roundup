@@ -16,7 +16,7 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-'''
+"""
 An e-mail gateway for Roundup.
 
 Incoming messages are examined for multiple parts:
@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.126.2.1 2003-12-19 01:51:56 richard Exp $
+$Id: mailgw.py,v 1.126.2.2 2004-01-07 22:44:44 richard Exp $
 """
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.130.2.3 2003-10-24 09:31:13 jlgijsbers Exp $
+# $Id: client.py,v 1.130.2.4 2004-01-07 22:44:44 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -469,14 +469,12 @@ class Client:
         if not m:
             raise NotFound, str(designator)
         classname, nodeid = m.group(1), m.group(2)
-        if classname != 'file':
-            raise NotFound, designator
 
         # we just want to serve up the file named
         self.opendb('admin')
-        file = self.db.file
-        self.additional_headers['Content-Type'] = file.get(nodeid, 'type')
-        self.write(file.get(nodeid, 'content'))
+        klass = self.db.getclass(classname)
+        self.additional_headers['Content-Type'] = klass.get(nodeid, 'type')
+        self.write(klass.get(nodeid, 'content'))
 
     def serve_static_file(self, file):
         ims = None
