@@ -16,7 +16,7 @@
 
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Priority</span></td>
-    <td class="form-text"><display call="field('priority')"></td>
+    <td class="form-text"><display call="menu('priority')"></td>
     <td width=1% nowrap align=right><span class="form-label">Status</span></td>
     <td class="form-text"><display call="menu('status')"></td>
 </tr>
@@ -30,7 +30,7 @@
 
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Assigned To</span></td>
-    <td class="form-text"><display call="field('assignedto')"></td>
+    <td class="form-text"><display call="menu('assignedto')"></td>
     <td>&nbsp;</td>
     <td>&nbsp;</td>
 </tr>
