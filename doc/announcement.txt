@@ -1,4 +1,4 @@
-            Roundup 0.2.7 - an issue tracking system
+            Roundup [version] - an issue tracking system
 
 This is a bugfix release.
 
