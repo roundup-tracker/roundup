@@ -7,6 +7,11 @@ Feature:
 - added support for HTTP charset selection
 
 
+2004-05-?? 0.7.3
+Fixed:
+- add "checked" to truth values for Boolean input
+
+
 2004-05-?? 0.7.2
 Fixed:
 - anydbm sorting with None values (sf bug 952853)
