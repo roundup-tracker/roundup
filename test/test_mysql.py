@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_mysql.py,v 1.8 2004-03-18 01:58:46 richard Exp $ 
+# $Id: test_mysql.py,v 1.9 2004-03-24 06:18:59 richard Exp $ 
 
 import unittest, os, shutil, time, imp
 
@@ -90,6 +90,7 @@ class mysqlSessionTest(mysqlOpener, RDBMSTest):
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'mysql'):
+        print "Skipping mysql tests"
         return suite
 
     from roundup.backends import mysql

@@ -499,7 +499,7 @@ class NewItemAction(_EditAction):
         '''
         # parse the props from the form
         try:
-            props, links = self.client.parsePropsFromForm(create=True)
+            props, links = self.client.parsePropsFromForm(create=1)
         except (ValueError, KeyError), message:
             self.client.error_message.append(_('Error: ') + str(message))
             return
@@ -671,7 +671,7 @@ class RegisterAction(Action):
 
         Return 1 on successful login.
         """
-        props = self.client.parsePropsFromForm(create=True)[0][('user', None)]
+        props = self.client.parsePropsFromForm(create=1)[0][('user', None)]
 
         # registration isn't allowed to supply roles
         if props.has_key('roles'):

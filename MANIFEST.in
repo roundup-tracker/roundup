@@ -8,7 +8,7 @@ recursive-include doc *.html *.png *.txt *.css *.1
 recursive-include detectors *.py
 recursive-include templates *.* home* page*
 global-exclude .cvsignore *.pyc *.pyo
-include run_tests *.txt demo.py
+include run_tests.py *.txt demo.py
 exclude BUILD.txt I18N_PROGRESS.txt TODO.txt
 exclude doc/security.txt doc/templating.txt
 

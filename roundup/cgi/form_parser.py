@@ -34,7 +34,7 @@ class FormParser:
         self.classname = client.classname
         self.nodeid = client.nodeid
       
-    def parse(self, create=False, num_re=re.compile('^\d+$')):
+    def parse(self, create=0, num_re=re.compile('^\d+$')):
         """ Item properties and their values are edited with html FORM
             variables and their values. You can:
 

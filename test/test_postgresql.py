@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_postgresql.py,v 1.6 2004-03-18 01:58:46 richard Exp $ 
+# $Id: test_postgresql.py,v 1.7 2004-03-24 06:18:59 richard Exp $ 
 
 import unittest
 
@@ -28,13 +28,13 @@ from db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 config.POSTGRESQL_DATABASE = {'database': 'rounduptest'}
 
 from roundup import backends
-from roundup.backends.back_postgresql import db_nuke, db_create, db_exists
 
 class postgresqlOpener:
     if hasattr(backends, 'postgresql'):
         from roundup.backends import postgresql as module
 
     def setUp(self):
+        #from roundup.backends.back_postgresql import db_nuke
         #db_nuke(config, 1)
         pass
 
@@ -43,6 +43,7 @@ class postgresqlOpener:
 
     def nuke_database(self):
         # clear out the database - easiest way is to nuke and re-create it
+        from roundup.backends.back_postgresql import db_nuke
         db_nuke(config)
 
 class postgresqlDBTest(postgresqlOpener, DBTest):
@@ -104,9 +105,11 @@ class postgresqlSessionTest(postgresqlOpener, RDBMSTest):
 def test_suite():
     suite = unittest.TestSuite()
     if not hasattr(backends, 'postgresql'):
+        print "Skipping mysql tests"
         return suite
 
     # make sure we start with a clean slate
+    from roundup.backends.back_postgresql import db_nuke
     db_nuke(config, 1)
 
     # TODO: Check if we can run postgresql tests
