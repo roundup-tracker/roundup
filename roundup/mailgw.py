@@ -74,7 +74,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.149 2004-04-20 22:01:12 richard Exp $
+$Id: mailgw.py,v 1.150 2004-05-25 00:43:01 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -240,7 +240,12 @@ class Message(mimetools.Message):
     # General multipart handling:
     #   Take the first text/plain part, anything else is considered an 
     #   attachment.
-    # multipart/mixed: multiple "unrelated" parts.
+    # multipart/mixed:
+    #   Multiple "unrelated" parts.
+    # multipart/Alternative (rfc 1521):
+    #   Like multipart/mixed, except that we'd only want one of the
+    #   alternatives. Generally a top-level part from MUAs sending HTML
+    #   mail - there will be a text/plain version.
     # multipart/signed (rfc 1847): 
     #   The control information is carried in the second of the two 
     #   required body parts.
@@ -251,12 +256,9 @@ class Message(mimetools.Message):
     #   ACTION: Not handleable as the content is encrypted.
     # multipart/related (rfc 1872, 2112, 2387):
     #   The Multipart/Related content-type addresses the MIME
-    #   representation of compound objects.
-    #   ACTION: Default. If we are lucky there is a text/plain.
-    #   TODO: One should use the start part and look for an Alternative
-    #   that is text/plain.
-    # multipart/Alternative (rfc 1872, 1892):
-    #   only in "related" ?
+    #   representation of compound objects, usually HTML mail with embedded
+    #   images. Usually appears as an alternative.
+    #   ACTION: Default, if we must.
     # multipart/report (rfc 1892):
     #   e.g. mail system delivery status reports.
     #   ACTION: Default. Could be ignored or used for Delivery Notification 
