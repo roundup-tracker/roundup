@@ -1,0 +1,7 @@
+recursive-include roundup *.py *.txt *.item *.index *.css *.filter
+recursive-include cgi-bin *.cgi
+recursive-include test *.py *.txt
+recursive-include doc *.*
+include roundup-*
+include *.txt
+
