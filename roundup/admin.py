@@ -16,14 +16,15 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.85.2.1 2005-02-15 00:22:23 richard Exp $
+# $Id: admin.py,v 1.85.2.2 2005-02-16 14:16:51 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
 __docformat__ = 'restructuredtext'
 
-import sys, os, getpass, getopt, re, UserDict, shutil, rfc822
-from roundup import date, hyperdb, roundupdb, init, password, token, csv
+import csv, getopt, getpass, os, re, shutil, sys, UserDict
+
+from roundup import date, hyperdb, roundupdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import CoreConfig
