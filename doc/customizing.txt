@@ -2,7 +2,7 @@
 Customising Roundup
 ===================
 
-:Version: $Revision: 1.93.2.3 $
+:Version: $Revision: 1.93.2.4 $
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
@@ -300,6 +300,41 @@ of ``'setkey'``)::
         status=Link("status"), assignedto=Link("user"),
         priority=Link("priority"))
     issue.setkey('title')
+
+
+What you can't do to the schema
+-------------------------------
+
+You must never:
+
+**Remove the users class**
+  This class is the only *required* class in Roundup. Similarly, its
+  username, password and address properties must never be removed.
+
+**Change the type of a property**
+  Property types must *never* be changed - the database simply doesn't take
+  this kind of action into account. Note that you can't just remove a
+  property and re-add it as a new type either. If you wanted to make the
+  assignedto property a Multilink, you'd need to create a new property
+  assignedto_list and remove the old assignedto property.
+
+
+What you can do to the schema
+-----------------------------
+
+Your schema may be changed at any time before or after the tracker has been
+initialised (or used). You may:
+
+**Add new properties to classes, or add whole new classes**
+  This is painless and easy to do - there are generally no repurcussions
+  from adding new information to a tracker's schema.
+
+**Remove properties**
+  Removing properties is a little more tricky - you need to make sure that
+  the property is no longer used in the `web interface`_ *or* by the
+  detectors_.
+
+
 
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
