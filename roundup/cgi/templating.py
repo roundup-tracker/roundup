@@ -1210,6 +1210,9 @@ class NumberHTMLProperty(HTMLProperty):
         '''
         self.view_check()
 
+        if self._value is None:
+            return ''
+
         return str(self._value)
 
     def field(self, size=30):

@@ -16,6 +16,8 @@ Fixed:
 - don't wrap query.item.html in a <span> (thanks Roch'e Compaan)
 - TAL expressions like 'request/show/whatever' return True
   if the request does not contain explicit @columns list
+- NumberHTMLProperty should return '' not "None" if not set (thanks
+  William)
 
 
 2004-10-15 0.7.8
