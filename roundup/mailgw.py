@@ -72,7 +72,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.156 2004-09-29 07:05:57 a1s Exp $
+$Id: mailgw.py,v 1.157 2004-09-29 08:30:24 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -915,15 +915,15 @@ not find a text/plain part to use.
 Mail message was rejected by a detector.
 %s
 '''%error
-                # attach the message to the node
-                if nodeid:
-                    # add the message to the node's list
-                    messages = cl.get(nodeid, 'messages')
-                    messages.append(message_id)
-                    props['messages'] = messages
-                else:
-                    # pre-load the messages list
-                    props['messages'] = [message_id]
+            # attach the message to the node
+            if nodeid:
+                # add the message to the node's list
+                messages = cl.get(nodeid, 'messages')
+                messages.append(message_id)
+                props['messages'] = messages
+            else:
+                # pre-load the messages list
+                props['messages'] = [message_id]
 
         #
         # perform the node change / create
