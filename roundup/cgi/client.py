@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.12 2002-09-05 01:27:42 richard Exp $
+# $Id: client.py,v 1.13 2002-09-05 04:46:36 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -192,22 +192,34 @@ class Client:
         self.opendb(self.user)
 
     def determine_context(self, dre=re.compile(r'([^\d]+)(\d+)')):
-        ''' Determine the context of this page:
+        ''' Determine the context of this page from the URL:
 
-             home              (default if no url is given)
-             classname
-             designator        (classname and nodeid)
+            The URL path after the instance identifier is examined. The path
+            is generally only one entry long.
 
-            The desired template to be rendered is also determined There
-            are two exceptional contexts:
+            - if there is no path, then we are in the "home" context.
+            * if the path is "_file", then the additional path entry
+              specifies the filename of a static file we're to serve up
+              from the instance "html" directory. Raises a SendStaticFile
+              exception.
+            - if there is something in the path (eg "issue"), it identifies
+              the tracker class we're to display.
+            - if the path is an item designator (eg "issue123"), then we're
+              to display a specific item.
+            * if the path starts with an item designator and is longer than
+              one entry, then we're assumed to be handling an item of a
+              FileClass, and the extra path information gives the filename
+              that the client is going to label the download with (ie
+              "file123/image.png" is nicer to download than "file123"). This
+              raises a SendFile exception.
 
-             _file            - serve up a static file
-             path len > 1     - serve up a FileClass content
-                                (the additional path gives the browser a
-                                 nicer filename to save as)
+            Both of the "*" types of contexts stop before we bother to
+            determine the template we're going to use. That's because they
+            don't actually use templates.
 
             The template used is specified by the :template CGI variable,
             which defaults to:
+
              only classname suplied:          "index"
              full item designator supplied:   "item"
 
