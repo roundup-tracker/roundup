@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: init.py,v 1.22 2002-09-05 23:39:12 richard Exp $
+# $Id: init.py,v 1.23 2002-09-09 23:55:19 richard Exp $
 
 __doc__ = """
 Init (create) a roundup instance.
@@ -65,7 +65,7 @@ def install(instance_home, template, backend):
     The instance_home directory will be created using the files found in
     the named template (roundup.templates.<name>). A standard instance_home
     contains:
-        . instance_config.py
+        . config.py
           - simple configuration of things like the email address for the
             mail gateway, the mail domain, the mail host, ...
         . dbinit.py and select_db.py
@@ -113,81 +113,4 @@ def initialise(instance_home, adminpw):
     instance = roundup.instance.open(instance_home)
     instance.init(password.Password(adminpw))
 
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.21  2002/08/16 04:25:03  richard
-# cleanup: moved templatebuilder into templates.builder
-#
-# Revision 1.20  2002/07/14 02:05:53  richard
-# . all storage-specific code (ie. backend) is now implemented by the backends
-#
-# Revision 1.19  2002/05/23 01:14:20  richard
-#  . split instance initialisation into two steps, allowing config changes
-#    before the database is initialised.
-#
-# Revision 1.18  2001/11/22 15:46:42  jhermann
-# Added module docstrings to all modules.
-#
-# Revision 1.17  2001/11/12 23:17:38  jhermann
-# Code using copyDigestedFile() that passes unit tests
-#
-# Revision 1.16  2001/10/09 07:25:59  richard
-# Added the Password property type. See "pydoc roundup.password" for
-# implementation details. Have updated some of the documentation too.
-#
-# Revision 1.15  2001/08/07 00:24:42  richard
-# stupid typo
-#
-# Revision 1.14  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.13  2001/08/06 01:20:00  richard
-# Added documentaion.
-#
-# Revision 1.12  2001/08/05 07:43:52  richard
-# Instances are now opened by a special function that generates a unique
-# module name for the instances on import time.
-#
-# Revision 1.11  2001/08/04 22:42:43  richard
-# Fixed sf.net bug #447671 - typo
-#
-# Revision 1.10  2001/08/03 01:28:33  richard
-# Used the much nicer load_package, pointed out by Steve Majewski.
-#
-# Revision 1.9  2001/08/03 00:59:34  richard
-# Instance import now imports the instance using imp.load_module so that
-# we can have instance homes of "roundup" or other existing python package
-# names.
-#
-# Revision 1.8  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.7  2001/07/28 07:59:53  richard
-# Replaced errno integers with their module values.
-# De-tabbed templatebuilder.py
-#
-# Revision 1.6  2001/07/24 11:18:25  anthonybaxter
-# oops. left a print in
-#
-# Revision 1.5  2001/07/24 10:54:11  anthonybaxter
-# oops. Html.
-#
-# Revision 1.4  2001/07/24 10:46:22  anthonybaxter
-# Added templatebuilder module. two functions - one to pack up the html base,
-# one to unpack it. Packed up the two standard templates into htmlbases.
-# Modified __init__ to install them.
-#
-# __init__.py magic was needed for the rather high levels of wierd import magic.
-# Reducing level of import magic == (good, future)
-#
-# Revision 1.3  2001/07/23 08:45:28  richard
-# ok, so now "./roundup-admin init" will ask questions in an attempt to get a
-# workable instance_home set up :)
-# _and_ anydbm has had its first test :)
-#
-# Revision 1.2  2001/07/22 12:09:32  richard
-# Final commit of Grande Splite
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.24 2002-09-09 23:38:41 richard Exp $
+# $Id: client.py,v 1.25 2002-09-09 23:55:19 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -310,12 +310,13 @@ class Client:
         # we just want to serve up the file named
         mt = mimetypes.guess_type(str(file))[0]
         self.header({'Content-Type': mt})
-        self.write(open(os.path.join(self.instance.TEMPLATES, file)).read())
+        self.write(open(os.path.join(self.instance.config.TEMPLATES,
+            file)).read())
 
     def renderTemplate(self, name, extension, **kwargs):
         ''' Return a PageTemplate for the named page
         '''
-        pt = getTemplate(self.instance.TEMPLATES, name, extension)
+        pt = getTemplate(self.instance.config.TEMPLATES, name, extension)
         # XXX handle PT rendering errors here more nicely
         try:
             # let the template render figure stuff out
@@ -563,7 +564,7 @@ class Client:
         cl = self.db.user
         try:
             props = parsePropsFromForm(self.db, cl, self.form)
-            props['roles'] = self.instance.NEW_WEB_USER_ROLES
+            props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
             self.userid = cl.create(**props)
             self.db.commit()
         except ValueError, message:
@@ -1010,7 +1011,7 @@ class Client:
         # handle the messageid
         # TODO: handle inreplyto
         messageid = "<%s.%s.%s@%s>"%(time.time(), random.random(),
-            self.classname, self.instance.MAIL_DOMAIN)
+            self.classname, self.instance.config.MAIL_DOMAIN)
 
         # now create the message, attaching the files
         content = '\n'.join(m)

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.25 2002-07-29 00:56:06 richard Exp $
+# $Id: test_mailgw.py,v 1.26 2002-09-09 23:55:29 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -119,7 +119,7 @@ This is a test submission of a new issue.
         self.doNewIssue()
 
     def testNewIssueNosy(self):
-        self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.instance.config.ADD_AUTHOR_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
@@ -375,7 +375,7 @@ _________________________________________________________________________
 
     def testFollowupNosyAuthor(self):
         self.doNewIssue()
-        self.db.config.ADD_AUTHOR_TO_NOSY = self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
@@ -422,7 +422,7 @@ _________________________________________________________________________
 
     def testFollowupNosyRecipients(self):
         self.doNewIssue()
-        self.db.config.ADD_RECIPIENTS_TO_NOSY = self.instance.ADD_RECIPIENTS_TO_NOSY = 'yes'
+        self.db.config.ADD_RECIPIENTS_TO_NOSY = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
@@ -470,7 +470,7 @@ _________________________________________________________________________
 
     def testFollowupNosyAuthorAndCopy(self):
         self.doNewIssue()
-        self.db.config.ADD_AUTHOR_TO_NOSY = self.instance.ADD_AUTHOR_TO_NOSY = 'yes'
+        self.db.config.ADD_AUTHOR_TO_NOSY = 'yes'
         self.db.config.MESSAGES_TO_AUTHOR = 'yes'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
@@ -518,7 +518,7 @@ _________________________________________________________________________
 
     def testFollowupNoNosyAuthor(self):
         self.doNewIssue()
-        self.instance.ADD_AUTHOR_TO_NOSY = 'no'
+        self.instance.config.ADD_AUTHOR_TO_NOSY = 'no'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: john@test
@@ -564,7 +564,7 @@ _________________________________________________________________________
 
     def testFollowupNoNosyRecipients(self):
         self.doNewIssue()
-        self.instance.ADD_RECIPIENTS_TO_NOSY = 'no'
+        self.instance.config.ADD_RECIPIENTS_TO_NOSY = 'no'
         message = cStringIO.StringIO('''Content-Type: text/plain;
   charset="iso-8859-1"
 From: richard@test
@@ -781,6 +781,10 @@ def suite():
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2002/07/29 00:56:06  richard
+# Removed the unnecessary volatiledb and the related complications. Security
+# much simpler and self-contained now.
+#
 # Revision 1.24  2002/07/26 08:27:00  richard
 # Very close now. The cgi and mailgw now use the new security API. The two
 # templates have been migrated to that setup. Lots of unit tests. Still some

@@ -15,41 +15,10 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: __init__.py,v 1.6 2002-09-05 23:39:14 richard Exp $
+# $Id: __init__.py,v 1.7 2002-09-09 23:55:19 richard Exp $
 
-import sys
-from instance_config import *
-from dbinit import *
-from interfaces import *
+import config
+from dbinit import open, init
+from interfaces import Client, MailGW
 
-# 
-# $Log: not supported by cvs2svn $
-# Revision 1.5  2001/08/07 00:24:43  richard
-# stupid typo
-#
-# Revision 1.4  2001/08/07 00:15:51  richard
-# Added the copyright/license notice to (nearly) all files at request of
-# Bizar Software.
-#
-# Revision 1.3  2001/07/29 07:01:39  richard
-# Added vim command to all source so that we don't get no steenkin' tabs :)
-#
-# Revision 1.2  2001/07/24 10:46:22  anthonybaxter
-# Added templatebuilder module. two functions - one to pack up the html base,
-# one to unpack it. Packed up the two standard templates into htmlbases.
-# Modified __init__ to install them.
-#
-# __init__.py magic was needed for the rather high levels of wierd import magic.
-# Reducing level of import magic == (good, future)
-#
-# Revision 1.1  2001/07/23 23:28:43  richard
-# Adding the classic template
-#
-# Revision 1.3  2001/07/23 23:16:01  richard
-# Split off the interfaces (CGI, mailgw) into a separate file from the DB stuff.
-#
-# Revision 1.2  2001/07/23 04:33:21  anthonybaxter
-# split __init__.py into 2. dbinit and instance_config.
-#
-#
 # vim: set filetype=python ts=4 sw=4 et si

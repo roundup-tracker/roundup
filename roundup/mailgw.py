@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.81 2002-08-19 00:21:56 richard Exp $
+$Id: mailgw.py,v 1.82 2002-09-09 23:55:19 richard Exp $
 '''
 
 
@@ -192,7 +192,7 @@ class MailGW:
                 m = self.bounce_message(message, sendto, m)
             except:
                 # bounce the message back to the sender with the error message
-                sendto = [sendto[0][1], self.instance.ADMIN_EMAIL]
+                sendto = [sendto[0][1], self.instance.config.ADMIN_EMAIL]
                 m = ['']
                 m.append('An unexpected error occurred during the processing')
                 m.append('of your message. The tracker administrator is being')
@@ -205,7 +205,7 @@ class MailGW:
                 m = self.bounce_message(message, sendto, m)
         else:
             # very bad-looking message - we don't even know who sent it
-            sendto = [self.instance.ADMIN_EMAIL]
+            sendto = [self.instance.config.ADMIN_EMAIL]
             m = ['Subject: badly formed message from mail gateway']
             m.append('')
             m.append('The mail gateway retrieved a message which has no From:')
@@ -218,11 +218,13 @@ class MailGW:
         # now send the message
         if SENDMAILDEBUG:
             open(SENDMAILDEBUG, 'w').write('From: %s\nTo: %s\n%s\n'%(
-                self.instance.ADMIN_EMAIL, ', '.join(sendto), m.getvalue()))
+                self.instance.config.ADMIN_EMAIL, ', '.join(sendto),
+                    m.getvalue()))
         else:
             try:
-                smtp = smtplib.SMTP(self.instance.MAILHOST)
-                smtp.sendmail(self.instance.ADMIN_EMAIL, sendto, m.getvalue())
+                smtp = smtplib.SMTP(self.instance.config.MAILHOST)
+                smtp.sendmail(self.instance.config.ADMIN_EMAIL, sendto,
+                    m.getvalue())
             except socket.error, value:
                 raise MailGWError, "Couldn't send error email: "\
                     "mailhost %s"%value
@@ -238,8 +240,8 @@ class MailGW:
         msg = cStringIO.StringIO()
         writer = MimeWriter.MimeWriter(msg)
         writer.addheader('Subject', subject)
-        writer.addheader('From', '%s <%s>'% (self.instance.INSTANCE_NAME,
-                                            self.instance.ISSUE_TRACKER_EMAIL))
+        writer.addheader('From', '%s <%s>'% (self.instance.config.INSTANCE_NAME,
+            self.instance.config.ISSUE_TRACKER_EMAIL))
         writer.addheader('To', ','.join(sendto))
         writer.addheader('MIME-Version', '1.0')
         part = writer.startmultipartbody('mixed')
@@ -318,8 +320,8 @@ class MailGW:
             if classname is None:
                 # no classname, fallback on the default
                 if hasattr(self.instance, 'MAIL_DEFAULT_CLASS') and \
-                        self.instance.MAIL_DEFAULT_CLASS:
-                    classname = self.instance.MAIL_DEFAULT_CLASS
+                        self.instance.config.MAIL_DEFAULT_CLASS:
+                    classname = self.instance.config.MAIL_DEFAULT_CLASS
                 else:
                     # fail
                     m = None
@@ -560,7 +562,7 @@ Unknown address: %s
 
         # now update the recipients list
         recipients = []
-        tracker_email = self.instance.ISSUE_TRACKER_EMAIL.lower()
+        tracker_email = self.instance.config.ISSUE_TRACKER_EMAIL.lower()
         for recipient in message.getaddrlist('to') + message.getaddrlist('cc'):
             r = recipient[1].strip().lower()
             if r == tracker_email or not r:
@@ -582,7 +584,7 @@ Unknown address: %s
         # generate a messageid if there isn't one
         if not messageid:
             messageid = "<%s.%s.%s%s@%s>"%(time.time(), random.random(),
-                classname, nodeid, self.instance.MAIL_DOMAIN)
+                classname, nodeid, self.instance.config.MAIL_DOMAIN)
 
         #
         # now handle the body - find the message
@@ -854,6 +856,9 @@ def parseContent(content, keep_citations, keep_body,
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.81  2002/08/19 00:21:56  richard
+# grant email access to admin too ;)
+#
 # Revision 1.80  2002/08/01 00:56:22  richard
 # Added the web access and email access permissions, so people can restrict
 # access to users who register through the email interface (for example).

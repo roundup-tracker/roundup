@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.23 2002-08-19 02:53:27 richard Exp $
+# $Id: admin.py,v 1.24 2002-09-09 23:55:18 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -301,7 +301,7 @@ Command help:
 
         print _('''
  You should now edit the instance configuration file:
-   %(instance_config_file)s
+   %(config_file)s
  ... at a minimum, you must set MAILHOST, MAIL_DOMAIN and ADMIN_EMAIL.
 
  If you wish to modify the default schema, you should also edit the database
@@ -309,7 +309,7 @@ Command help:
    %(database_config_file)s
  ... see the documentation on customizing for more information.
 ''')%{
-    'instance_config_file': os.path.join(instance_home, 'instance_config.py'),
+    'config_file': os.path.join(instance_home, 'config.py'),
     'database_config_file': os.path.join(instance_home, 'dbinit.py')
 }
         return 0
@@ -1146,6 +1146,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/08/19 02:53:27  richard
+# full database export and import is done
+#
 # Revision 1.22  2002/08/16 04:26:42  richard
 # moving towards full database export
 #
