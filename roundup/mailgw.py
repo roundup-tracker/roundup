@@ -73,7 +73,7 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.37 2001-11-28 21:55:35 richard Exp $
+$Id: mailgw.py,v 1.38 2001-12-01 07:17:50 richard Exp $
 '''
 
 
@@ -355,6 +355,8 @@ Subject was: "%s"
         self.db.close()
         self.db = self.instance.open(username)
 
+        self.handle_message(author, username, 
+
         # re-get the class with the new database connection
         cl = self.db.getclass(classname)
 
@@ -516,6 +518,8 @@ Subject was: "%s"
 There was a problem with the message you sent:
    %s
 '''%message
+            # commit the changes to the DB
+            self.db.commit()
         else:
             # If just an item class name is found there, we attempt to create a
             # new item of that class with its "messages" property initialized to
@@ -553,6 +557,9 @@ There was a problem with the message you sent:
 There was a problem with the message you sent:
    %s
 '''%message
+
+            # commit the new node(s) to the DB
+            self.db.commit()
 
 def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
         eol=re.compile(r'[\r\n]+'), signature=re.compile(r'^[>|\s]*[-_]+\s*$')):
@@ -594,6 +601,12 @@ def parseContent(content, blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.37  2001/11/28 21:55:35  richard
+#  . login_action and newuser_action return values were being ignored
+#  . Woohoo! Found that bloody re-login bug that was killing the mail
+#    gateway.
+#  (also a minor cleanup in hyperdb)
+#
 # Revision 1.36  2001/11/26 22:55:56  richard
 # Feature:
 #  . Added INSTANCE_NAME to configuration - used in web and email to identify

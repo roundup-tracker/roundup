@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.72 2001-11-30 20:47:58 rochecompaan Exp $
+# $Id: cgi_client.py,v 1.73 2001-12-01 07:17:50 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -617,6 +617,8 @@ class Client:
             raise Unauthorised
 
     def login(self, message=None, newuser_form=None, action='index'):
+        '''Display a login page.
+        '''
         self.pagehead(_('Login to roundup'), message)
         self.write(_('''
 <table>
@@ -634,9 +636,10 @@ class Client:
         if self.user is None and self.ANONYMOUS_REGISTER == 'deny':
             self.write('</table>')
             self.pagefoot()
-            return 1
+            return
         values = {'realname': '', 'organisation': '', 'address': '',
-            'phone': '', 'username': '', 'password': '', 'confirm': ''}
+            'phone': '', 'username': '', 'password': '', 'confirm': '',
+            'action': action}
         if newuser_form is not None:
             for key in newuser_form.keys():
                 values[key] = newuser_form[key].value
@@ -645,6 +648,7 @@ class Client:
 <tr><td colspan=2 class="strong-header">New User Registration</td></tr>
 <tr><td colspan=2><em>marked items</em> are optional...</td></tr>
 <form action="newuser_action" method=POST>
+<input type="hidden" name="__destination_url" value="%(action)s">
 <tr><td align=right><em>Name: </em></td>
     <td><input name="realname" value="%(realname)s"></td></tr>
 <tr><td align=right><em>Organisation: </em></td>
@@ -667,8 +671,14 @@ class Client:
         self.pagefoot()
 
     def login_action(self, message=None):
+        '''Attempt to log a user in and set the cookie
+
+        returns 0 if a page is generated as a result of this call, and
+        1 if not (ie. the login is successful
+        '''
         if not self.form.has_key('__login_name'):
-            return self.login(message=_('Username required'))
+            self.login(message=_('Username required'))
+            return 0
         self.user = self.form['__login_name'].value
         if self.form.has_key('__login_password'):
             password = self.form['__login_password'].value
@@ -681,18 +691,44 @@ class Client:
             name = self.user
             self.make_user_anonymous()
             action = self.form['__destination_url'].value
-            return self.login(message=_('No such user "%(name)s"')%locals(),
-                              action=action)
+            self.login(message=_('No such user "%(name)s"')%locals(),
+                action=action)
+            return 0
 
         # and that the password is correct
         pw = self.db.user.get(uid, 'password')
-        if password != self.db.user.get(uid, 'password'):
+        if password != pw:
             self.make_user_anonymous()
             action = self.form['__destination_url'].value
-            return self.login(message=_('Incorrect password'), action=action)
+            self.login(message=_('Incorrect password'), action=action)
+            return 0
 
         self.set_cookie(self.user, password)
-        return None     # make it explicit
+        return 1
+
+    def newuser_action(self, message=None):
+        '''Attempt to create a new user based on the contents of the form
+        and then set the cookie.
+
+        return 1 on successful login
+        '''
+        # re-open the database as "admin"
+        self.db.close()
+        self.db = self.instance.open('admin')
+
+        # TODO: pre-check the required fields and username key property
+        cl = self.db.user
+        try:
+            props, dummy = parsePropsFromForm(self.db, cl, self.form)
+            uid = cl.create(**props)
+        except ValueError, message:
+            action = self.form['__destination_url'].value
+            self.login(message, action=action)
+            return 0
+        self.user = cl.get(uid, 'username')
+        password = cl.get(uid, 'password')
+        self.set_cookie(self.user, self.form['password'].value)
+        return 1
 
     def set_cookie(self, user, password):
         # construct the cookie
@@ -723,31 +759,33 @@ class Client:
         self.header({'Set-Cookie':
             'roundup_user=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
             path)})
-        return self.login()
+        self.login()
 
-    def newuser_action(self, message=None):
-        ''' create a new user based on the contents of the form and then
-        set the cookie
-        '''
-        # re-open the database as "admin"
-        self.db.close()
-        self.db = self.instance.open('admin')
-
-        # TODO: pre-check the required fields and username key property
-        cl = self.db.user
-        try:
-            props, dummy = parsePropsFromForm(self.db, cl, self.form)
-            uid = cl.create(**props)
-        except ValueError, message:
-            return self.login(message, newuser_form=self.form)
-        self.user = cl.get(uid, 'username')
-        password = cl.get(uid, 'password')
-        self.set_cookie(self.user, self.form['password'].value)
-        return None    # make the None explicit
 
     def main(self):
+        '''Wrap the database accesses so we can close the database cleanly
+        '''
         # determine the uid to use
         self.db = self.instance.open('admin')
+        try:
+            self.main_user()
+        finally:
+            self.db.close()
+
+        # re-open the database for real, using the user
+        self.db = self.instance.open(self.user)
+        try:
+            self.main_action()
+        except:
+            self.db.close()
+            raise
+        self.db.commit()
+        self.db.close()
+
+
+    def main_user(self):
+        '''Figure out who the user is
+        '''
         cookie = Cookie.Cookie(self.env.get('HTTP_COOKIE', ''))
         user = 'anonymous'
         if (cookie.has_key('roundup_user') and
@@ -775,11 +813,12 @@ class Client:
             self.make_user_anonymous()
         else:
             self.user = user
-        self.db.close()
 
-        # re-open the database for real, using the user
-        self.db = self.instance.open(self.user)
 
+    def main_action(self):
+        '''Check for appropriate access permission, and then perform the
+        action the users specifies
+        '''
         # now figure which function to call
         path = self.split_path
 
@@ -796,15 +835,15 @@ class Client:
 
         # everyone is allowed to try to log in
         if action == 'login_action':
-            # do the login
-            ret = self.login_action()
-            if ret is not None:
-                return ret
+            # try to login
+            if not self.login_action():
+                return
             # figure the resulting page
             action = self.form['__destination_url'].value
             if not action:
                 action = 'index'
-            return self.do_action(action)
+            self.do_action(action)
+            return
 
         # allow anonymous people to register
         if action == 'newuser_action':
@@ -812,40 +851,46 @@ class Client:
             # register, then spit up the login form
             if self.ANONYMOUS_REGISTER == 'deny' and self.user is None:
                 if action == 'login':
-                    return self.login()         # go to the index after login
+                    self.login()         # go to the index after login
                 else:
-                    return self.login(action=action)
-            # add the user
-            ret = self.newuser_action()
-            if ret is not None:
-                return ret
+                    self.login(action=action)
+                return
+            # try to add the user
+            if not self.newuser_action():
+                return
             # figure the resulting page
             action = self.form['__destination_url'].value
             if not action:
                 action = 'index'
-            return self.do_action(action)
 
         # no login or registration, make sure totally anonymous access is OK
-        if self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
+        elif self.ANONYMOUS_ACCESS == 'deny' and self.user is None:
             if action == 'login':
-                return self.login()             # go to the index after login
+                self.login()             # go to the index after login
             else:
-                return self.login(action=action)
+                self.login(action=action)
+            return
 
         # just a regular action
-        return self.do_action(action)
+        self.do_action(action)
 
     def do_action(self, action, dre=re.compile(r'([^\d]+)(\d+)'),
             nre=re.compile(r'new(\w+)')):
+        '''Figure the user's action and do it.
+        '''
         # here be the "normal" functionality
         if action == 'index':
-            return self.index()
+            self.index()
+            return
         if action == 'list_classes':
-            return self.classes()
+            self.classes()
+            return
         if action == 'login':
-            return self.login()
+            self.login()
+            return
         if action == 'logout':
-            return self.logout()
+            self.logout()
+            return
         m = dre.match(action)
         if m:
             self.classname = m.group(1)
@@ -862,7 +907,8 @@ class Client:
                 func = getattr(self, 'show%s'%self.classname)
             except AttributeError:
                 raise NotFound
-            return func()
+            func()
+            return
         m = nre.match(action)
         if m:
             self.classname = m.group(1)
@@ -870,16 +916,14 @@ class Client:
                 func = getattr(self, 'new%s'%self.classname)
             except AttributeError:
                 raise NotFound
-            return func()
+            func()
+            return
         self.classname = action
         try:
             self.db.getclass(self.classname)
         except KeyError:
             raise NotFound
-        return self.list()
-
-    def __del__(self):
-        self.db.close()
+        self.list()
 
 
 class ExtendedClient(Client): 
@@ -1027,6 +1071,14 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.72  2001/11/30 20:47:58  rochecompaan
+# Links in page header are now consistent with default sort order.
+#
+# Fixed bugs:
+#     - When login failed the list of issues were still rendered.
+#     - User was redirected to index page and not to his destination url
+#       if his first login attempt failed.
+#
 # Revision 1.71  2001/11/30 20:28:10  rochecompaan
 # Property changes are now completely traceable, whether changes are
 # made through the web or by email

@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: dbinit.py,v 1.10 2001-11-26 22:55:56 richard Exp $
+# $Id: dbinit.py,v 1.11 2001-12-01 07:17:50 richard Exp $
 
 import os
 
@@ -123,11 +123,23 @@ def init(adminpw):
     user = db.getclass('user')
     user.create(username="admin", password=adminpw, 
                                   address=instance_config.ADMIN_EMAIL)
-
+    db.commit()
     db.close()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/11/26 22:55:56  richard
+# Feature:
+#  . Added INSTANCE_NAME to configuration - used in web and email to identify
+#    the instance.
+#  . Added EMAIL_SIGNATURE_POSITION to indicate where to place the roundup
+#    signature info in e-mails.
+#  . Some more flexibility in the mail gateway and more error handling.
+#  . Login now takes you to the page you back to the were denied access to.
+#
+# Fixed:
+#  . Lots of bugs, thanks Roché and others on the devel mailing list!
+#
 # Revision 1.9  2001/10/30 00:54:45  richard
 # Features:
 #  . #467129 ] Lossage when username=e-mail-address

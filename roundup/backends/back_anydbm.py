@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.11 2001-11-21 02:34:18 richard Exp $
+#$Id: back_anydbm.py,v 1.12 2001-12-01 07:17:50 richard Exp $
 
 import anydbm, os, marshal
 from roundup import hyperdb, date, password
@@ -24,7 +24,14 @@ from roundup import hyperdb, date, password
 # Now the database
 #
 class Database(hyperdb.Database):
-    """A database for storing records containing flexible data types."""
+    """A database for storing records containing flexible data types.
+
+    Transaction stuff TODO:
+        . check the timestamp of the class file and nuke the cache if it's
+          modified. Do some sort of conflict checking on the dirty stuff.
+        . perhaps detect write collisions (related to above)?
+
+    """
 
     def __init__(self, storagelocator, journaltag=None):
         """Open a hyperdatabase given a specifier to some storage.
@@ -41,8 +48,10 @@ class Database(hyperdb.Database):
         """
         self.dir, self.journaltag = storagelocator, journaltag
         self.classes = {}
+        self.cache = {}         # cache of nodes loaded or created
+        self.dirtynodes = {}    # keep track of the dirty nodes by class
+        self.newnodes = {}      # keep track of the new nodes by class
         self.transactions = []
-
     #
     # Classes
     #
@@ -95,39 +104,70 @@ class Database(hyperdb.Database):
     def addnode(self, classname, nodeid, node):
         ''' add the specified node to its class's db
         '''
-        db = self.getclassdb(classname, 'c')
-        # now save the marshalled data
-        db[nodeid] = marshal.dumps(node)
-        db.close()
-    setnode = addnode
+        self.newnodes.setdefault(classname, {})[nodeid] = 1
+        self.cache.setdefault(classname, {})[nodeid] = node
+        self.savenode(classname, nodeid, node)
+
+    def setnode(self, classname, nodeid, node):
+        ''' change the specified node
+        '''
+        self.dirtynodes.setdefault(classname, {})[nodeid] = 1
+        # can't set without having already loaded the node
+        self.cache[classname][nodeid] = node
+        self.savenode(classname, nodeid, node)
+
+    def savenode(self, classname, nodeid, node):
+        ''' perform the saving of data specified by the set/addnode
+        '''
+        self.transactions.append((self._doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, cldb=None):
         ''' add the specified node to its class's db
         '''
+        # try the cache
+        cache = self.cache.setdefault(classname, {})
+        if cache.has_key(nodeid):
+            return cache[nodeid]
+
+        # get from the database and save in the cache
         db = cldb or self.getclassdb(classname)
         if not db.has_key(nodeid):
             raise IndexError, nodeid
         res = marshal.loads(db[nodeid])
         if not cldb: db.close()
+        cache[nodeid] = res
         return res
 
     def hasnode(self, classname, nodeid, cldb=None):
         ''' add the specified node to its class's db
         '''
+        # try the cache
+        cache = self.cache.setdefault(classname, {})
+        if cache.has_key(nodeid):
+            return 1
+
+        # not in the cache - check the database
         db = cldb or self.getclassdb(classname)
         res = db.has_key(nodeid)
         if not cldb: db.close()
         return res
 
     def countnodes(self, classname, cldb=None):
+        # include the new nodes not saved to the DB yet
+        count = len(self.newnodes.get(classname, {}))
+
+        # and count those in the DB
         db = cldb or self.getclassdb(classname)
-        return len(db.keys())
+        count = count + len(db.keys())
         if not cldb: db.close()
-        return res
+        return count
 
     def getnodeids(self, classname, cldb=None):
+        # start off with the new nodes
+        res = self.newnodes.get(classname, {}).keys()
+
         db = cldb or self.getclassdb(classname)
-        res = db.keys()
+        res = res + db.keys()
         if not cldb: db.close()
         return res
 
@@ -142,17 +182,8 @@ class Database(hyperdb.Database):
             'link' or 'unlink' -- 'params' is (classname, nodeid, propname)
             'retire' -- 'params' is None
         '''
-        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
-            params)
-        db = anydbm.open(os.path.join(self.dir, 'journals.%s'%classname), 'c')
-        if db.has_key(nodeid):
-            s = db[nodeid]
-            l = marshal.loads(db[nodeid])
-            l.append(entry)
-        else:
-            l = [entry]
-        db[nodeid] = marshal.dumps(l)
-        db.close()
+        self.transactions.append((self._doSaveJournal, (classname, nodeid,
+            action, params)))
 
     def getjournal(self, classname, nodeid):
         ''' get the journal for id
@@ -175,9 +206,10 @@ class Database(hyperdb.Database):
         return res
 
     def close(self):
-        ''' Close the Database - we must release the circular refs so that
-            we can be del'ed and the underlying anydbm connections closed
-            cleanly.
+        ''' Close the Database.
+        
+            Commit all data to the database and release circular refs so
+            the database is closed cleanly.
         '''
         self.classes = {}
 
@@ -189,18 +221,50 @@ class Database(hyperdb.Database):
         ''' Commit the current transactions.
         '''
         # lock the DB
-        for action, classname, entry in self.transactions:
-            # write the node, figure what's changed for the journal.
-            pass
+        for method, args in self.transactions:
+            print method.__name__, args
+            # TODO: optimise this, duh!
+            method(*args)
         # unlock the DB
+
+        # all transactions committed, back to normal
+        self.cache = {}
+        self.dirtynodes = {}
+        self.newnodes = {}
+        self.transactions = []
+
+    def _doSaveNode(self, classname, nodeid, node):
+        db = self.getclassdb(classname, 'c')
+        # now save the marshalled data
+        db[nodeid] = marshal.dumps(node)
+        db.close()
+
+    def _doSaveJournal(self, classname, nodeid, action, params):
+        entry = (nodeid, date.Date().get_tuple(), self.journaltag, action,
+            params)
+        db = anydbm.open(os.path.join(self.dir, 'journals.%s'%classname), 'c')
+        if db.has_key(nodeid):
+            s = db[nodeid]
+            l = marshal.loads(db[nodeid])
+            l.append(entry)
+        else:
+            l = [entry]
+        db[nodeid] = marshal.dumps(l)
+        db.close()
 
     def rollback(self):
         ''' Reverse all actions from the current transaction.
         '''
+        self.cache = {}
+        self.dirtynodes = {}
+        self.newnodes = {}
         self.transactions = []
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.11  2001/11/21 02:34:18  richard
+#Added a target version field to the extended issue schema
+#
 #Revision 1.10  2001/10/09 23:58:10  richard
 #Moved the data stringification up into the hyperdb.Class class' get, set
 #and create methods. This means that the data is also stringified for the

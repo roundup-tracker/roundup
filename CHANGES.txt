@@ -10,12 +10,17 @@ Feature:
  . Some more flexibility in the mail gateway and more error handling.
  . Login now takes you to the page you back to the were denied access to.
  . Admin user now can has a user index link on their web interface.
+ . We now have basic transaction support. Information is only written to
+   the database when the commit() method is called. Only the anydbm backend
+   is modified in this way - neither of the bsddb backends have been.
 
 Fixed:
  . Lots of bugs, thanks Roché and others on the devel mailing list!
  . login_action and newuser_action return values were being ignored
  . Woohoo! Found that bloody re-login bug that was killing the mail
    gateway.
+ . Fixed login/registration forwarding the user to the right page (or not,
+   on a failure)
 
 
 2001-11-23 - 0.3.0 
