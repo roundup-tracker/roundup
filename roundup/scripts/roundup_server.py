@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.69 2004-10-29 20:39:31 a1s Exp $
+$Id: roundup_server.py,v 1.70 2004-10-30 08:23:51 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -430,7 +430,7 @@ else:
 
     class RoundupService(win32serviceutil.ServiceFramework):
 
-        _svc_name_ = "Roundup Bug Tracker"
+        _svc_name_ = "roundup"
         _svc_display_name_ = "Roundup Bug Tracker"
 
         running = 0
@@ -476,11 +476,9 @@ def usage(message=''):
         os_part = \
 ""''' -c <Command>  Windows Service options.
                If you want to run the server as a Windows Service, you
-               must configure the rest of the options by changing the
-               constants of this program.  You will at least configure
-               one tracker in the TRACKER_HOMES variable.  This option
-               is mutually exclusive from the rest.  Typing
-               "roundup-server -c help" shows Windows Services
+               must use configuration file to specify tracker homes.
+               Logfile option is required to run Roundup Tracker service.
+               Typing "roundup-server -c help" shows Windows Services
                specifics.'''
     else:
         os_part = ""''' -u <UID>      runs the Roundup web server as this UID
@@ -494,24 +492,42 @@ def usage(message=''):
     print _('''%(message)sUsage: roundup-server [options] [name=tracker home]*
 
 Options:
- -v            prints the Roundup version number and exits
- -C <fname>    use configuration file
- -n <name>     sets the host name of the Roundup web server instance
- -p <port>     sets the port to listen on (default: %(port)s)
+ -v            print the Roundup version number and exit
+ -h            print this text and exit
+ -S            create or update configuration file and exit
+ -C <fname>    use configuration file <fname>
+ -n <name>     set the host name of the Roundup web server instance
+ -p <port>     set the port to listen on (default: %(port)s)
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)
 %(os_part)s
 
+Long options:
+ --version          print the Roundup version number and exit
+ --help             print this text and exit
+ --save-config      create or update configuration file and exit
+ --config <fname>   use configuration file <fname>
+ All settings of the [main] section of the configuration file
+ also may be specified in form --<name>=<value>
+
 Examples:
+
+ roundup-server -S -C /opt/roundup/etc/roundup-server.ini \\
+    -n localhost -p 8917 -l /var/log/roundup.log \\
+    support=/var/spool/roundup-trackers/support
+
  roundup-server -C /opt/roundup/etc/roundup-server.ini
 
  roundup-server support=/var/spool/roundup-trackers/support
 
  roundup-server -d /var/run/roundup.pid -l /var/log/roundup.log \\
-     support=/var/spool/roundup-trackers/support
+    support=/var/spool/roundup-trackers/support
 
 Configuration file format:
-   See the "admin_guide" in the Roundup "doc" directory.
+   Roundup Server configuration file has common .ini file format.
+   Configuration file created with 'roundup-server -S' contains
+   detailed explanations for each option.  Please see that file
+   for option descriptions.
 
 How to use "name=tracker home":
    These arguments set the tracker home(s) to use. The name is how the
@@ -582,7 +598,7 @@ def run(port=undefined, success_message=None):
     # if running in windows service mode, don't do any other stuff
     if ("-c", "") in optlist:
         # acquire command line options recognized by service
-        short_options = "c:C:"
+        short_options = "cC:"
         long_options = ["config"]
         for (long_name, short_name) in config.OPTIONS.items():
             short_options += short_name
