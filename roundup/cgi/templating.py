@@ -196,6 +196,7 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
                 pass
 
         c = {
+             'context': None,
              'options': {},
              'nothing': None,
              'request': request,
