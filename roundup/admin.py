@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: admin.py,v 1.32 2002-09-24 01:36:04 richard Exp $
+# $Id: admin.py,v 1.33 2002-09-26 07:39:21 richard Exp $
 
 import sys, os, getpass, getopt, re, UserDict, shlex, shutil
 try:
@@ -397,7 +397,7 @@ Command help:
         return 0
 
 
-    def do_set(self, args):
+    def do_set(self, args, pwre = re.compile(r'{(\w+)}(.+)')):
         '''Usage: set [items] property=value property=value ...
         Set the given properties of one or more items(s).
 
@@ -447,7 +447,15 @@ Command help:
                 elif isinstance(proptype, hyperdb.String):
                     continue
                 elif isinstance(proptype, hyperdb.Password):
-                    props[key] = password.Password(value)
+                    m = pwre.match(value)
+                    if m:
+                        # password is being given to us encrypted
+                        p = password.Password()
+                        p.scheme = m.group(1)
+                        p.password = m.group(2)
+                        props[key] = p
+                    else:
+                        props[key] = password.Password(value)
                 elif isinstance(proptype, hyperdb.Date):
                     try:
                         props[key] = date.Date(value)
@@ -469,6 +477,7 @@ Command help:
             try:
                 apply(cl.set, (itemid, ), props)
             except (TypeError, IndexError, ValueError), message:
+                import traceback; traceback.print_exc()
                 raise UsageError, message
         return 0
 

@@ -15,21 +15,33 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.5 2002-09-10 00:18:20 richard Exp $
+# $Id: password.py,v 1.6 2002-09-26 07:39:21 richard Exp $
 
 __doc__ = """
 Password handling (encoding, decoding).
 """
 
-import sha, re
+import sha, re, string
+try:
+    import crypt:
+except:
+    crypt = None
+    pass
 
-def encodePassword(plaintext, scheme):
+def encodePassword(plaintext, scheme, other=None):
     '''Encrypt the plaintext password.
     '''
     if scheme == 'SHA':
         s = sha.sha(plaintext).hexdigest()
+    elif scheme == 'crypt' and crypt is not None:
+        if other is not None:
+            salt = other[:2]
+        else:
+            saltchars = './0123456789'+string.letters
+            salt = random.choice(saltchars) + random.choice(saltchars)
+        s = crypt.crypt(plaintext, salt)
     elif scheme == 'plaintext':
-        pass
+        s = plaintext
     else:
         raise ValueError, 'Unknown encryption scheme "%s"'%scheme
     return s
@@ -60,8 +72,10 @@ class Password:
     default_scheme = 'SHA'        # new encryptions use this scheme
     pwre = re.compile(r'{(\w+)}(.+)')
 
-    def __init__(self, plaintext=None):
+    def __init__(self, plaintext=None, scheme=None):
         '''Call setPassword if plaintext is not None.'''
+        if scheme is None:
+            scheme = self.default_scheme
         if plaintext is not None:
             self.password = encodePassword(plaintext, self.default_scheme)
             self.scheme = self.default_scheme
@@ -82,22 +96,25 @@ class Password:
             self.password = encodePassword(encrypted, self.default_scheme)
             self.scheme = self.default_scheme
 
-    def setPassword(self, plaintext):
+    def setPassword(self, plaintext, scheme=None):
         '''Sets encrypts plaintext.'''
-        self.password = encodePassword(plaintext, self.scheme)
+        if scheme is None:
+            scheme = self.default_scheme
+        self.password = encodePassword(plaintext, scheme)
 
     def __cmp__(self, other):
         '''Compare this password against another password.'''
         # check to see if we're comparing instances
         if isinstance(other, Password):
             if self.scheme != other.scheme:
-                return
+                return cmp(self.scheme, other.scheme)
             return cmp(self.password, other.password)
 
         # assume password is plaintext
         if self.password is None:
             raise ValueError, 'Password not set'
-        return cmp(self.password, encodePassword(other, self.scheme))
+        return cmp(self.password, encodePassword(other, self.scheme,
+            self.password))
 
     def __str__(self):
         '''Stringify the encrypted password for database storage.'''
@@ -106,7 +123,15 @@ class Password:
         return '{%s}%s'%(self.scheme, self.password)
 
 def test():
+    # SHA
     p = Password('sekrit')
+    assert p == 'sekrit'
+    assert p != 'not sekrit'
+    assert 'sekrit' == p
+    assert 'not sekrit' != p
+
+    # crypt
+    p = Password('sekrit', 'crypt')
     assert p == 'sekrit'
     assert p != 'not sekrit'
     assert 'sekrit' == p
