@@ -162,6 +162,7 @@ to::
 
 noting that your definition of the nosy Multilink will override the normal one.
 
+
 0.5.0 User schema changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -296,6 +297,30 @@ dbinit open() function. Add it like this::
 
 You may verify the setup of Permissions and Roles using the new
 "``roundup-admin security``" command.
+
+
+0.5.0 User changes
+~~~~~~~~~~~~~~~~~~
+
+To support all those schema changes, you'll need to massage your user database
+a little too, to:
+
+1. make sure there's an "anonymous" user - this user is mandatory now and is
+   the one that unknown users are logged in as.
+2. make sure all users have at least one Role.
+
+If you don't have the "anonymous" user, create it now with the command::
+
+  roundup-admin create user username=anonymous roles=Anonymous
+
+making sure the capitalisation is the same as above. Once you've done that,
+you'll need to set the roles property on all users to a reasonable default.
+The admin user should get "Admin", the anonymous user "Anonymous"
+and all other users "User". The ``fixroles.py`` script in the tools directory
+will do this. Run it like so (where python is your python 2+ binary)::
+
+  python tools/fixroles.py -i <instance home>
+
 
 
 0.5.0 CGI interface changes
