@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.104 2003-03-09 22:57:47 richard Exp $
+# $Id: client.py,v 1.105 2003-03-17 04:26:24 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -815,17 +815,16 @@ please visit the following URL:
         # create the new user
         cl = self.db.user
 # XXX we need to make the "default" page be able to display errors!
-#        try:
-        if 1:
+        try:
             props['roles'] = self.instance.config.NEW_WEB_USER_ROLES
             del props['__time']
             self.userid = cl.create(**props)
             # clear the props from the otk database
             self.db.otks.destroy(otk)
             self.db.commit()
-#        except (ValueError, KeyError), message:
-#            self.error_message.append(str(message))
-#            return
+        except (ValueError, KeyError), message:
+            self.error_message.append(str(message))
+            return
 
         # log the new user in
         self.user = cl.get(self.userid, 'username')
@@ -866,17 +865,16 @@ please visit the following URL:
             newpw = ''.join([random.choice(self.chars) for x in range(8)])
 
             cl = self.db.user
-    # XXX we need to make the "default" page be able to display errors!
-    #        try:
-            if 1:
+# XXX we need to make the "default" page be able to display errors!
+            try:
                 # set the password
                 cl.set(uid, password=password.Password(newpw))
                 # clear the props from the otk database
                 self.db.otks.destroy(otk)
                 self.db.commit()
-    #        except (ValueError, KeyError), message:
-    #            self.error_message.append(str(message))
-    #            return
+            except (ValueError, KeyError), message:
+                self.error_message.append(str(message))
+                return
 
             # user info
             address = self.db.user.get(uid, 'address')
@@ -944,22 +942,18 @@ You should then receive another email with the new password.
            See parsePropsFromForm and _editnodes for special variables
         '''
         # parse the props from the form
-# XXX reinstate exception handling
-#        try:
-        if 1:
+        try:
             props, links = self.parsePropsFromForm()
-#        except (ValueError, KeyError), message:
-#            self.error_message.append(_('Error: ') + str(message))
-#            return
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
 
         # handle the props
-# XXX reinstate exception handling
-#        try:
-        if 1:
+        try:
             message = self._editnodes(props, links)
-#        except (ValueError, KeyError, IndexError), message:
-#            self.error_message.append(_('Error: ') + str(message))
-#            return
+        except (ValueError, KeyError, IndexError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
 
         # commit now that all the tricky stuff is done
         self.db.commit()
@@ -999,34 +993,27 @@ You should then receive another email with the new password.
             special form values.
         '''
         # parse the props from the form
-# XXX reinstate exception handling
-#        try:
-        if 1:
+        try:
             props, links = self.parsePropsFromForm()
-#        except (ValueError, KeyError), message:
-#            self.error_message.append(_('Error: ') + str(message))
-#            return
+        except (ValueError, KeyError), message:
+            self.error_message.append(_('Error: ') + str(message))
+            return
 
         # handle the props - edit or create
-# XXX reinstate exception handling
-#        try:
-        if 1:
-            # create the context here
-#            cn = self.classname
-#            nid = self._createnode(cn, props[(cn, None)])
-#            del props[(cn, None)]
-
+        try:
             # when it hits the None element, it'll set self.nodeid
-            messages = self._editnodes(props, links) #, {(cn, None): nid})
+            messages = self._editnodes(props, links)
 
-#        except (ValueError, KeyError, IndexError), message:
-#            # these errors might just be indicative of user dumbness
-#            self.error_message.append(_('Error: ') + str(message))
-#            return
+        except (ValueError, KeyError, IndexError), message:
+            # these errors might just be indicative of user dumbness
+            self.error_message.append(_('Error: ') + str(message))
+            return
 
         # commit now that all the tricky stuff is done
         self.db.commit()
 
+        print '%s%s%s?@ok_message=%s'%(self.base, self.classname,
+            self.nodeid, urllib.quote(messages))
         # redirect to the new item's page
         raise Redirect, '%s%s%s?@ok_message=%s'%(self.base, self.classname,
             self.nodeid, urllib.quote(messages))
