@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.74 2001-12-02 05:06:16 richard Exp $
+# $Id: cgi_client.py,v 1.75 2001-12-04 01:25:08 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -341,6 +341,7 @@ class Client:
                 else:
                     message = _('nothing changed')
             except:
+                self.db.rollback()
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
@@ -399,6 +400,7 @@ class Client:
                 message = _('%(changes)s edited ok')%{'changes':
                     ', '.join(changed)}
             except:
+                self.db.rollback()
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
@@ -560,6 +562,7 @@ class Client:
                 # and some nice feedback for the user
                 message = _('%(classname)s created ok')%{'classname': cn}
             except:
+                self.db.rollback()
                 s = StringIO.StringIO()
                 traceback.print_exc(None, s)
                 message = '<pre>%s</pre>'%cgi.escape(s.getvalue())
@@ -1068,6 +1071,20 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.74  2001/12/02 05:06:16  richard
+# . We now use weakrefs in the Classes to keep the database reference, so
+#   the close() method on the database is no longer needed.
+#   I bumped the minimum python requirement up to 2.1 accordingly.
+# . #487480 ] roundup-server
+# . #487476 ] INSTALL.txt
+#
+# I also cleaned up the change message / post-edit stuff in the cgi client.
+# There's now a clearly marked "TODO: append the change note" where I believe
+# the change note should be added there. The "changes" list will obviously
+# have to be modified to be a dict of the changes, or somesuch.
+#
+# More testing needed.
+#
 # Revision 1.73  2001/12/01 07:17:50  richard
 # . We now have basic transaction support! Information is only written to
 #   the database when the commit() method is called. Only the anydbm
