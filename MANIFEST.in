@@ -3,7 +3,7 @@ recursive-include frontends *.py *.txt *.dtml *.gif *.css *.html
 recursive-include cgi-bin *.cgi
 recursive-include test *.py *.txt
 recursive-include doc *.html *.png *.txt
-exclude doc/announcement.txt
+exclude doc/announcement.txt BUILD.txt I18N_PROGRESS.txt
 include roundup-*
 include run_tests *.txt
 
