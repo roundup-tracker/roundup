@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.101 2004-05-16 21:49:30 richard Exp $
+# $Id: rdbms_common.py,v 1.102 2004-05-23 23:24:47 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1991,16 +1991,12 @@ class Class(hyperdb.Class):
         "sort" and "group" are (dir, prop) where dir is '+', '-' or None
         and prop is a prop name or None
 
-        "search_matches" is {nodeid: marker}
+        "search_matches" is {nodeid: marker} or None
 
         The filter must match all properties specificed - but if the
         property value to match is a list, any one of the values in the
         list may match for that property to match.
         '''
-        # just don't bother if the full-text search matched diddly
-        if search_matches == {}:
-            return []
-
         if __debug__:
             start_t = time.time()
 
@@ -2198,6 +2194,8 @@ class Class(hyperdb.Class):
             # psycopg doesn't like empty args
             self.db.cursor.execute(sql)
         l = self.db.sql_fetchall()
+        if __debug__:
+            print >>hyperdb.DEBUG, '... matched', len(l)
 
         # return the IDs (the first column)
         # XXX numeric ids
