@@ -5,6 +5,10 @@ are given with the most recent entry first.
 Feature:
 - added "imapServer.py" script (sf patch 934567)
 
+2005-??-?? 0.8.1
+Fixed:
+- replaced MutlilinkIterator with multilinkGenerator (thanks Bob Ippolito)
+
 
 2005-01-16 0.8.0
 Fixed:
