@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.41 2002-07-10 00:21:45 richard Exp $
+#$Id: back_anydbm.py,v 1.42 2002-07-10 06:21:38 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -351,7 +351,8 @@ class Database(FileStorage, hyperdb.Database):
             journal = marshal.loads(db[nodeid])
         except KeyError:
             raise KeyError, 'no such %s %s'%(classname, nodeid)
-        db.close()
+        finally:
+            db.close()
         res = []
         for entry in journal:
             (nodeid, date_stamp, user, action, params) = entry
@@ -510,6 +511,9 @@ class Database(FileStorage, hyperdb.Database):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.41  2002/07/10 00:21:45  richard
+#explicit database closing
+#
 #Revision 1.40  2002/07/09 04:19:09  richard
 #Added reindex command to roundup-admin.
 #Fixed reindex on first access.
