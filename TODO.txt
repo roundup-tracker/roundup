@@ -51,6 +51,8 @@ pending web      rewritten documentation (can come after the beta though so
                  customisation doc
 pending web      allow multilink selections to select a "none" element to allow
                  people with broken browsers to select nothing?
+pending web      password edit fields should always appear in pairs - for
+                 confirmation
 pending dist     include the HTML in docs
 
 bug     web      request.url is incorrect in cgi-bin environments
