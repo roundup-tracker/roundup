@@ -23,6 +23,7 @@ Fixed:
  . plain rendering of links in the htmltemplate now generate a hyperlink to
    the linked node's page.
  . #503330 ] ANONYMOUS_REGISTER now applies to mail
+ . #503353 ] setting properties in initial email
 
 
 2002-01-08 - 0.4.0b1

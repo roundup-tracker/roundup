@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.39 2002-01-14 02:20:15 richard Exp $
+# $Id: roundupdb.py,v 1.40 2002-01-14 22:21:38 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -452,6 +452,38 @@ class IssueClass(Class):
         line = '_' * max(len(web), len(email))
         return '%s\n%s\n%s\n%s'%(line, email, web, line)
 
+    def generateCreateNote(self, nodeid):
+        """Generate a create note that lists initial property values
+        """
+        cn = self.classname
+        cl = self.db.classes[cn]
+        props = cl.getprops(protected=0)
+
+        # list the values
+        m = []
+        for propname, prop in props.items():
+            value = cl.get(nodeid, propname, None)
+            if isinstance(prop, hyperdb.Link):
+                link = self.db.classes[prop.classname]
+                if value:
+                    key = link.labelprop(default_to_id=1)
+                    if key:
+                        value = link.get(value, key)
+                else:
+                    value = ''
+            elif isinstance(prop, hyperdb.Multilink):
+                if value is None: value = []
+                l = []
+                link = self.db.classes[prop.classname]
+                key = link.labelprop(default_to_id=1)
+                if key:
+                    value = [link.get(entry, key) for entry in value]
+                value = ', '.join(value)
+            m.append('%s: %s'%(propname, value))
+        m.insert(0, '----------')
+        m.insert(0, '')
+        return '\n'.join(m)
+
     def generateChangeNote(self, nodeid, oldvalues):
         """Generate a change note that lists property changes
         """
@@ -529,6 +561,15 @@ class IssueClass(Class):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2002/01/14 02:20:15  richard
+#  . changed all config accesses so they access either the instance or the
+#    config attriubute on the db. This means that all config is obtained from
+#    instance_config instead of the mish-mash of classes. This will make
+#    switching to a ConfigParser setup easier too, I hope.
+#
+# At a minimum, this makes migration a _little_ easier (a lot easier in the
+# 0.5.0 switch, I hope!)
+#
 # Revision 1.38  2002/01/10 05:57:45  richard
 # namespace clobberation
 #

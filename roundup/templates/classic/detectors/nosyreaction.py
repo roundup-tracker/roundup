@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: nosyreaction.py,v 1.10 2002-01-11 23:22:29 richard Exp $
+#$Id: nosyreaction.py,v 1.11 2002-01-14 22:21:38 richard Exp $
 
 from roundup import roundupdb
 
@@ -39,6 +39,7 @@ def nosyreaction(db, cl, nodeid, oldvalues):
     if oldvalues is None:
         # the action was a create, so use all the messages in the create
         messages = cl.get(nodeid, 'messages')
+	change_note = cl.generateCreateNote(nodeid)
     elif oldvalues.has_key('messages'):
         # the action was a set (so adding new messages to an existing issue)
         m = {}
@@ -67,6 +68,14 @@ def init(db):
 
 #
 #$Log: not supported by cvs2svn $
+#Revision 1.10  2002/01/11 23:22:29  richard
+# . #502437 ] rogue reactor and unittest
+#   in short, the nosy reactor was modifying the nosy list. That code had
+#   been there for a long time, and I suspsect it was there because we
+#   weren't generating the nosy list correctly in other places of the code.
+#   We're now doing that, so the nosy-modifying code can go away from the
+#   nosy reactor.
+#
 #Revision 1.9  2001/12/15 19:24:39  rochecompaan
 # . Modified cgi interface to change properties only once all changes are
 #   collected, files created and messages generated.
