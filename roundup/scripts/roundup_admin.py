@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_admin.py,v 1.1 2002-01-29 19:53:08 jhermann Exp $
+# $Id: roundup_admin.py,v 1.2 2002-01-29 20:07:15 jhermann Exp $
 
 # python version check
 from roundup import version_check
@@ -26,11 +26,19 @@ from roundup.admin import AdminTool
 from roundup.i18n import _
 
 import sys
-tool = AdminTool()
-sys.exit(tool.main())
+
+def run():
+    tool = AdminTool()
+    sys.exit(tool.main())
+
+if __name__ == '__main__':
+    run()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/01/29 19:53:08  jhermann
+# Moved scripts from top-level dir to roundup.scripts subpackage
+#
 # Revision 1.61  2002/01/05 02:21:21  richard
 # fixes
 #

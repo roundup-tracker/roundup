@@ -16,14 +16,107 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.29 2002-01-23 06:05:36 richard Exp $
+# $Id: setup.py,v 1.30 2002-01-29 20:07:15 jhermann Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
+from distutils.command.build_scripts import build_scripts
 
+import sys, os, string
 from glob import glob
-import sys,os
+
 from roundup.templatebuilder import makeHtmlBase
+
+
+#############################################################################
+### Build script files
+#############################################################################
+
+class build_scripts_create(build_scripts):
+    """ Overload the build_scripts command and create the scripts
+        from scratch, depending on the target platform.
+
+        You have to define the name of your package in an inherited
+        class (due to the delayed instantiation of command classes
+        in distutils, this cannot be passed to __init__).
+
+        The scripts are created in an uniform scheme: they start the
+        run() function in the module
+
+            <packagename>.scripts.<mangled_scriptname>
+
+        The mangling of script names replaces '-' and '/' characters
+        with '-' and '.', so that they are valid module paths. 
+    """
+    package_name = None
+
+    def copy_scripts(self):
+        """ Create each script listed in 'self.scripts'
+        """
+        if not self.package_name:
+            raise Exception("You have to inherit build_scripts_create and"
+                " provide a package name")
+        
+        to_module = string.maketrans('-/', '_.')
+
+        self.mkpath(self.build_dir)
+        for script in self.scripts:
+            outfile = os.path.join(self.build_dir, os.path.basename(script))
+
+            #if not self.force and not newer(script, outfile):
+            #    self.announce("not copying %s (up-to-date)" % script)
+            #    continue
+
+            if self.dry_run:
+                self.announce("would create %s" % outfile)
+                continue
+
+            module = os.path.splitext(os.path.basename(script))[0]
+            module = string.translate(module, to_module)
+            script_vars = {
+                'python': os.path.normpath(sys.executable),
+                'package': self.package_name,
+                'module': module,
+            }
+
+            self.announce("creating %s" % outfile)
+            file = open(outfile, 'w')
+
+            try:
+                if sys.platform == "win32":
+                    file.write('@echo off\n'
+                        '%(python)s -c "from %(package)s.scripts.%(module)s import run; run()" %%$\n'
+                        % script_vars)
+                else:
+                    file.write('#! %(python)s\n'
+                        'from %(package)s.scripts.%(module)s import run\n'
+                        'run()\n'
+                        % script_vars)
+            finally:
+                file.close()
+
+
+class build_scripts_roundup(build_scripts_create):
+    package_name = 'roundup'
+
+
+def scriptname(path):
+    """ Helper for building a list of script names from a list of
+        module files.
+    """
+    script = os.path.splitext(os.path.basename(path))[0]
+    script = string.replace(script, '_', '-')
+    if sys.platform == "win32":
+        script = script + ".bat"
+    return script
+
+# build list of scripts from their implementation modules
+roundup_scripts = map(scriptname, glob('roundup/scripts/[!_]*.py'))
+
+
+#############################################################################
+### Main setup stuff
+#############################################################################
 
 def isTemplateDir(dir):
     return dir[0] != '.' and dir != 'CVS' and os.path.isdir(dir) \
@@ -34,6 +127,7 @@ templates = map(os.path.basename, filter(isTemplateDir,
 packagelist = [
     'roundup',
     'roundup.backends',
+    'roundup.scripts',
     'roundup.templates'
 ]
 installdatafiles = [
@@ -64,13 +158,22 @@ setup(
     author_email = "richard@users.sourceforge.net",
     url = 'http://sourceforge.net/projects/roundup/',
     packages = packagelist,
-    scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server'],
+
+    # Override certain command classes with our own ones
+    cmdclass = {
+        'build_scripts': build_scripts_roundup,
+    },
+    scripts = roundup_scripts,
+
     data_files =  installdatafiles
 )
 
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2002/01/23 06:05:36  richard
+# prep work for release
+#
 # Revision 1.28  2002/01/11 03:24:15  richard
 # minor changes for 0.4.0b2
 #

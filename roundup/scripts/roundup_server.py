@@ -18,7 +18,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.1 2002-01-29 19:53:08 jhermann Exp $
+$Id: roundup_server.py,v 1.2 2002-01-29 20:07:15 jhermann Exp $
 """
 
 # python version check
@@ -184,7 +184,7 @@ roundup-server [-n hostname] [-p port] [name=instance home]*
 ''')%locals()
     sys.exit(0)
 
-def main():
+def run():
     hostname = ''
     port = 8080
     try:
@@ -244,10 +244,13 @@ def main():
     httpd.serve_forever()
 
 if __name__ == '__main__':
-    main()
+    run()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/01/29 19:53:08  jhermann
+# Moved scripts from top-level dir to roundup.scripts subpackage
+#
 # Revision 1.25  2002/01/05 02:21:21  richard
 # fixes
 #

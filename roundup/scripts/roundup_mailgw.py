@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundup_mailgw.py,v 1.1 2002-01-29 19:53:08 jhermann Exp $
+# $Id: roundup_mailgw.py,v 1.2 2002-01-29 20:07:15 jhermann Exp $
 
 # python version check
 from roundup import version_check
@@ -172,12 +172,18 @@ def main(args):
 
     return usage(args, _('Error: The source must be either "mailbox" or "pop"'))
 
+def run():
+    sys.exit(main(sys.argv))
+
 # call main
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    run()
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2002/01/29 19:53:08  jhermann
+# Moved scripts from top-level dir to roundup.scripts subpackage
+#
 # Revision 1.21  2002/01/11 07:02:29  grubert
 # put an exception around: do_pop user and password entry to catch ctrl-c/d.
 #
