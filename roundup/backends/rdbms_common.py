@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.52 2003-03-26 10:44:03 richard Exp $
+# $Id: rdbms_common.py,v 1.53 2003-04-08 06:41:48 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1824,6 +1824,7 @@ class Class(hyperdb.Class):
             elif isinstance(propclass, Link):
                 if isinstance(v, type([])):
                     if '-1' in v:
+                        v = v[:]
                         v.remove('-1')
                         xtra = ' or _%s is NULL'%k
                     else:
