@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.95 2003-02-18 10:58:32 richard Exp $
+# $Id: client.py,v 1.96 2003-02-20 07:13:14 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -15,20 +15,31 @@ from roundup.cgi import cgitb
 
 from roundup.cgi.PageTemplates import PageTemplate
 
-class Unauthorised(ValueError):
-    pass
+class HTTPException(Exception):
+      pass
+class  Unauthorised(HTTPException):
+       pass
+class  NotFound(HTTPException):
+       pass
+class  Redirect(HTTPException):
+       pass
 
-class NotFound(ValueError):
-    pass
+# XXX actually _use_ FormError
+class FormError(ValueError):
+    ''' An "expected" exception occurred during form parsing.
+        - ie. something we know can go wrong, and don't want to alarm the
+          user with
 
-class Redirect(Exception):
+        We trap this at the user interface level and feed back a nice error
+        to the user.
+    '''
     pass
 
 class SendFile(Exception):
-    ' Sent a file from the database '
+    ''' Send a file from the database '''
 
 class SendStaticFile(Exception):
-    ' Send a static file from the instance html directory '
+    ''' Send a static file from the instance html directory '''
 
 def initialiseSecurity(security):
     ''' Create some Permissions and Roles on the security object
