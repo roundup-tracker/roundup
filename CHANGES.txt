@@ -4,6 +4,7 @@ are given with the most recent entry first.
 2004-??-?? 0.8.0b2
 Fixed:
 - note about how to run roundup demo in Windows
+- fix API for templating utils extensions - remove "utils" arg
 
 
 2004-12-08 0.8.0b1
