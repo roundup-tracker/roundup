@@ -53,9 +53,9 @@ pending admin: have "set" command be applicable to all items in a class
 pending admin: add "unset" command
 pending dist: include the HTML in docs
 
-bug: request.url is incorrect in cgi-bin environments
-bug: query editing not translated to new templating
-bug: document insance_config -> config
+bug web: request.url is incorrect in cgi-bin environments
+bug web: query editing not translated to new templating
+bug web: need to indicate that generated pages shouldn't be cached
 
 done web: Re-enable link backrefs from messages (feature request #568714)
 done web: have the page layout (header/footer) be templatable

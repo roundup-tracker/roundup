@@ -73,9 +73,8 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception. 
 
-$Id: mailgw.py,v 1.83 2002-09-10 00:18:20 richard Exp $
+$Id: mailgw.py,v 1.84 2002-09-10 02:37:27 richard Exp $
 '''
-
 
 import string, re, os, mimetools, cStringIO, smtplib, socket, binascii, quopri
 import time, random
@@ -319,7 +318,7 @@ class MailGW:
             classname = m.group('classname')
             if classname is None:
                 # no classname, fallback on the default
-                if hasattr(self.instance, 'MAIL_DEFAULT_CLASS') and \
+                if hasattr(self.instance.config, 'MAIL_DEFAULT_CLASS') and \
                         self.instance.config.MAIL_DEFAULT_CLASS:
                     classname = self.instance.config.MAIL_DEFAULT_CLASS
                 else:

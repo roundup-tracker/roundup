@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: test_mailgw.py,v 1.28 2002-09-10 01:27:13 richard Exp $
+# $Id: test_mailgw.py,v 1.29 2002-09-10 02:37:28 richard Exp $
 
 import unittest, cStringIO, tempfile, os, shutil, errno, imp, sys, difflib
 
@@ -80,11 +80,14 @@ class MailgwTestCase(unittest.TestCase, DiffHelper):
         self.instance = instance.open(self.dirname)
         # and open the database
         self.db = self.instance.open('sekrit')
-        self.db.user.create(username='Chef', address='chef@bork.bork.bork')
-        self.db.user.create(username='richard', address='richard@test')
-        self.db.user.create(username='mary', address='mary@test')
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            roles='User')
+        self.db.user.create(username='richard', address='richard@test',
+            roles='User')
+        self.db.user.create(username='mary', address='mary@test',
+            roles='User')
         self.db.user.create(username='john', address='john@test',
-            alternate_addresses='jondoe@test\njohn.doe@test')
+            alternate_addresses='jondoe@test\njohn.doe@test', roles='User')
 
     def tearDown(self):
         if os.path.exists(os.environ['SENDMAILDEBUG']):
@@ -319,7 +322,7 @@ This is a followup
 
 ----------
 assignedto:  -> mary
-nosy: +mary, john
+nosy: +john, mary
 status: unread -> chatting
 _________________________________________________________________________
 "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>
@@ -365,7 +368,7 @@ This is a followup
 
 ----------
 assignedto:  -> mary
-nosy: +mary, john
+nosy: +john, mary
 status: unread -> chatting
 _________________________________________________________________________
 "Roundup issue tracker" <issue_tracker@your.tracker.email.domain.example>

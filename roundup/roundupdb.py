@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.64 2002-09-10 00:18:20 richard Exp $
+# $Id: roundupdb.py,v 1.65 2002-09-10 02:37:28 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -405,6 +405,7 @@ class IssueClass:
                     else:
                         l.append(entry)
                 if l:
+                    l.sort()
                     change = '+%s'%(', '.join(l))
                     l = []
                 # check for removals
@@ -415,6 +416,7 @@ class IssueClass:
                     else:
                         l.append(entry)
                 if l:
+                    l.sort()
                     change += ' -%s'%(', '.join(l))
             else:
                 change = '%s -> %s'%(oldvalue, value)
