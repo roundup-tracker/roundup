@@ -831,7 +831,7 @@ class BooleanHTMLProperty(HTMLProperty):
     def plain(self):
         ''' Render a "plain" representation of the property
         '''
-        if self.value is None:
+        if self._value is None:
             return ''
         return self._value and "Yes" or "No"
 
