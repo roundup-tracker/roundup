@@ -1,5 +1,5 @@
 #! /usr/bin/python
-# $Id: roundup-admin,v 1.8 2001-07-30 02:37:07 richard Exp $
+# $Id: roundup-admin,v 1.9 2001-07-30 03:52:55 richard Exp $
 
 import sys
 if int(sys.version[0]) < 2:
@@ -303,6 +303,14 @@ def figureCommands():
             d[k[3:]] = v
     return d
 
+def printInitOptions():
+    import roundup.templates
+    templates = roundup.templates.listTemplates()
+    print 'Templates:', ', '.join(templates)
+    import roundup.backends
+    backends = roundup.backends.__all__
+    print 'Back ends:', ', '.join(backends)
+
 def main():
     opts, args = getopt.getopt(sys.argv[1:], 'i:u:hc')
 
@@ -343,6 +351,8 @@ def main():
                 usage('no such command "%s"'%args[1])
                 return 1
             print command.__doc__
+            if args[1] == 'init':
+                printInitOptions()
             return 0
         usage()
         return 0
@@ -394,6 +404,9 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/07/30 02:37:07  richard
+# Freshen is really broken. Commented out.
+#
 # Revision 1.7  2001/07/30 01:28:46  richard
 # Bugfixes
 #
