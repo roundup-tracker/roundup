@@ -1,7 +1,6 @@
 This file contains items that need doing before the next release:
 
 Required:
-- documentation of i18n: TAL tags for translation
 - implementing logging for roundup-server, including command-line switches
 - fix documentation referring to configuration (config.ini, mysql.txt and
   postgresql.txt)
