@@ -15,8 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# vim: ts=4 sw=4 expandtab
-#
 
 """An e-mail gateway for Roundup.
 
@@ -25,7 +23,7 @@ Incoming messages are examined for multiple parts:
    examined. The text/plain subparts are assembled to form the textual
    body of the message, to be stored in the file associated with a "msg"
    class node. Any parts of other types are each stored in separate files
-   and given "file" class nodes that are linked to the "msg" node. 
+   and given "file" class nodes that are linked to the "msg" node.
  . In a multipart/alternative message or part, we look for a text/plain
    subpart and ignore the other parts.
 
@@ -35,7 +33,7 @@ The "summary" property on message nodes is taken from the first non-quoting
 section in the message body. The message body is divided into sections by
 blank lines. Sections where the second and all subsequent lines begin with
 a ">" or "|" character are considered "quoting sections". The first line of
-the first non-quoting section becomes the summary of the message. 
+the first non-quoting section becomes the summary of the message.
 
 Addresses
 ---------
@@ -48,23 +46,23 @@ users is to create new users with no passwords and a username equal to the
 address. (The web interface does not permit logins for users with no
 passwords.) If we prefer to reject mail from outside sources, we can simply
 register an auditor on the "user" class that prevents the creation of user
-nodes with no passwords. 
+nodes with no passwords.
 
 Actions
 -------
 The subject line of the incoming message is examined to determine whether
 the message is an attempt to create a new item or to discuss an existing
 item. A designator enclosed in square brackets is sought as the first thing
-on the subject line (after skipping any "Fwd:" or "Re:" prefixes). 
+on the subject line (after skipping any "Fwd:" or "Re:" prefixes).
 
 If an item designator (class name and id number) is found there, the newly
 created "msg" node is added to the "messages" property for that item, and
-any new "file" nodes are added to the "files" property for the item. 
+any new "file" nodes are added to the "files" property for the item.
 
 If just an item class name is found there, we attempt to create a new item
 of that class with its "messages" property initialized to contain the new
 "msg" node and its "files" property initialized to contain any new "file"
-nodes. 
+nodes.
 
 Triggers
 --------
@@ -72,9 +70,9 @@ Both cases may trigger detectors (in the first case we are calling the
 set() method to add the message to the item's spool; in the second case we
 are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
-explanatory message given in the exception. 
+explanatory message given in the exception.
 
-$Id: mailgw.py,v 1.149.2.2 2004-09-14 22:03:42 richard Exp $
+$Id: mailgw.py,v 1.149.2.3 2004-09-29 08:47:59 a1s Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -211,7 +209,7 @@ class Message(mimetools.Message):
         data = None
         if encoding == 'base64':
             # BUG: is base64 really used for text encoding or
-            # are we inserting zip files here. 
+            # are we inserting zip files here.
             data = binascii.a2b_base64(self.fp.read())
         elif encoding == 'quoted-printable':
             # the quopri module wants to work with files
@@ -223,7 +221,7 @@ class Message(mimetools.Message):
         else:
             # take it as text
             data = self.fp.read()
-        
+
         # Encode message to unicode
         charset = rfc2822.unaliasCharset(self.getparam("charset"))
         if charset:
@@ -234,19 +232,19 @@ class Message(mimetools.Message):
         else:
             # Leave message content as is
             edata = data
-                
+
         return edata
 
     # General multipart handling:
-    #   Take the first text/plain part, anything else is considered an 
+    #   Take the first text/plain part, anything else is considered an
     #   attachment.
     # multipart/mixed: multiple "unrelated" parts.
-    # multipart/signed (rfc 1847): 
-    #   The control information is carried in the second of the two 
+    # multipart/signed (rfc 1847):
+    #   The control information is carried in the second of the two
     #   required body parts.
     #   ACTION: Default, so if content is text/plain we get it.
-    # multipart/encrypted (rfc 1847): 
-    #   The control information is carried in the first of the two 
+    # multipart/encrypted (rfc 1847):
+    #   The control information is carried in the first of the two
     #   required body parts.
     #   ACTION: Not handleable as the content is encrypted.
     # multipart/related (rfc 1872, 2112, 2387):
@@ -259,7 +257,7 @@ class Message(mimetools.Message):
     #   only in "related" ?
     # multipart/report (rfc 1892):
     #   e.g. mail system delivery status reports.
-    #   ACTION: Default. Could be ignored or used for Delivery Notification 
+    #   ACTION: Default. Could be ignored or used for Delivery Notification
     #   flagging.
     # multipart/form-data:
     #   For web forms only.
@@ -269,7 +267,7 @@ class Message(mimetools.Message):
         content_type = self.gettype()
         content = None
         attachments = []
-        
+
         if content_type == 'text/plain':
             content = self.getbody()
         elif content_type[:10] == 'multipart/':
@@ -282,7 +280,7 @@ class Message(mimetools.Message):
                     content = new_content
                 elif new_content:
                     attachments.append(part.as_attachment())
-                    
+
                 attachments.extend(new_attach)
         elif (parent_type == 'multipart/signed' and
               content_type == 'application/pgp-signature'):
@@ -306,7 +304,7 @@ class MailGW:
         (\[(?P<classname>[^\d\s]+)                    # [issue..
            (?P<nodeid>\d+)?                           # ..1234]
          \])?\s*
-        (?P<title>[^[]+)?                             # issue title 
+        (?P<title>[^[]+)?                             # issue title
         "?                                            # Trailing "
         (\[(?P<args>.+?)\])?                          # [prop=value]
         ''', re.IGNORECASE|re.VERBOSE)
@@ -476,7 +474,7 @@ class MailGW:
             server.pass_(password)
         numMessages = len(server.list()[1])
         for i in range(1, numMessages+1):
-            # retr: returns 
+            # retr: returns
             # [ pop response e.g. '+OK 459 octets',
             #   [ array of message lines ],
             #   number of octets ]
@@ -514,7 +512,7 @@ class MailGW:
         if not sendto:
             # very bad-looking message - we don't even know who sent it
             # XXX we should use a log file here...
-            
+
             sendto = [self.instance.config.ADMIN_EMAIL]
 
             m = ['Subject: badly formed message from mail gateway']
@@ -636,7 +634,7 @@ Emails to Roundup trackers must include a Subject: line!
                     subject = 'Your registration to %s is complete' % \
                               self.instance.config.TRACKER_NAME
                     sendto = [from_list[0][1]]
-                    self.mailer.standard_message(sendto, subject, '') 
+                    self.mailer.standard_message(sendto, subject, '')
                     return
                 elif self.default_class:
                     classname = self.default_class
@@ -865,7 +863,7 @@ Subject was: "%s"
 Roundup requires the submission to be plain text. The message parser could
 not find a text/plain part to use.
 '''
- 
+
         # figure how much we should muck around with the email body
         keep_citations = getattr(self.instance.config, 'EMAIL_KEEP_QUOTED_TEXT',
             'no') == 'yes'
@@ -873,11 +871,11 @@ not find a text/plain part to use.
             'no') == 'yes'
 
         # parse the body of the message, stripping out bits as appropriate
-        summary, content = parseContent(content, keep_citations, 
+        summary, content = parseContent(content, keep_citations,
             keep_body)
         content = content.strip()
 
-        # 
+        #
         # handle the attachments
         #
         if properties.has_key('files'):
@@ -902,7 +900,7 @@ not find a text/plain part to use.
                 # pre-load the files list
                 props['files'] = files
 
-        # 
+        #
         # create the message if there's a message body (content)
         #
         if (content and properties.has_key('messages')):
@@ -916,15 +914,15 @@ not find a text/plain part to use.
 Mail message was rejected by a detector.
 %s
 '''%error
-                # attach the message to the node
-                if nodeid:
-                    # add the message to the node's list
-                    messages = cl.get(nodeid, 'messages')
-                    messages.append(message_id)
-                    props['messages'] = messages
-                else:
-                    # pre-load the messages list
-                    props['messages'] = [message_id]
+            # attach the message to the node
+            if nodeid:
+                # add the message to the node's list
+                messages = cl.get(nodeid, 'messages')
+                messages.append(message_id)
+                props['messages'] = messages
+            else:
+                # pre-load the messages list
+                props['messages'] = [message_id]
 
         #
         # perform the node change / create
@@ -951,7 +949,7 @@ There was a problem with the message you sent:
 
         return nodeid
 
- 
+
 def setPropArrayFromString(self, cl, propString, nodeid=None):
     ''' takes string of form prop=value,value;prop2=value
         and returns (error, prop[..])
@@ -1051,13 +1049,13 @@ def uidFromAddress(db, address, create=1, **user_props):
 
 def parseContent(content, keep_citations, keep_body,
         blank_line=re.compile(r'[\r\n]+\s*[\r\n]+'),
-        eol=re.compile(r'[\r\n]+'), 
+        eol=re.compile(r'[\r\n]+'),
         signature=re.compile(r'^[>|\s]*-- ?$'),
         original_msg=re.compile(r'^[>|\s]*-----\s?Original Message\s?-----$')):
     ''' The message body is divided into sections by blank lines.
         Sections where the second and all subsequent lines begin with a ">"
         or "|" character are considered "quoting sections". The first line of
-        the first non-quoting section becomes the summary of the message. 
+        the first non-quoting section becomes the summary of the message.
 
         If keep_citations is true, then we keep the "quoting sections" in the
         content.
@@ -1131,4 +1129,4 @@ def parseContent(content, keep_citations, keep_body,
 
     return summary, content
 
-# vim: set filetype=python ts=4 sw=4 et si
+# vim: set filetype=python sts=4 sw=4 et si :
