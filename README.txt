@@ -75,14 +75,12 @@ roundup.py:
 hyperdb:
   . transaction support
 roundupdb:
-  . split the file storage into multiple files
+  . split the file storage into multiple dirs?
 roundup-mailgw:
   . errors as attachments
   . snip signatures?
 roundup-server:
   . check the source file timestamps before reloading
-date:
-  . blue Date.__sub__ needs food, badly
 cgi_client
   . searching
   . keep form fields in form on bad submission - only clear it if all ok
