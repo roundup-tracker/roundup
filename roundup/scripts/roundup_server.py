@@ -16,7 +16,7 @@
 # 
 """ HTTP Server that serves roundup.
 
-$Id: roundup_server.py,v 1.30 2003-10-25 11:20:17 jlgijsbers Exp $
+$Id: roundup_server.py,v 1.31 2003-10-25 11:41:06 jlgijsbers Exp $
 """
 
 # python version check
@@ -263,7 +263,7 @@ def daemonize(pidfile):
     os.dup2(devnull, 1)
     os.dup2(devnull, 2)
 
-def run():
+def run(port=8080, success_message=None):
     ''' Script entry point - handle args and figure out what to to.
     '''
     # time out after a minute if we can
@@ -272,7 +272,6 @@ def run():
         socket.setdefaulttimeout(60)
 
     hostname = ''
-    port = 8080
     pidfile = None
     logfile = None
     try:
@@ -368,7 +367,11 @@ def run():
         # appending, unbuffered
         sys.stdout = sys.stderr = open(logfile, 'a', 0)
 
-    print _('Roundup server started on %(address)s')%locals()
+    if success_message:
+        print success_message
+    else:
+        print _('Roundup server started on %(address)s')%locals()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 # 
-# $Id: demo.py,v 1.5 2003-07-28 23:17:50 richard Exp $
+# $Id: demo.py,v 1.6 2003-10-25 11:41:06 jlgijsbers Exp $
 
 import sys, os, string, re, urlparse
 import shutil, socket, errno, BaseHTTPServer
@@ -81,18 +81,17 @@ def run_demo():
     port = int(port)
 
     # ok, so start up the server
-    from roundup.scripts.roundup_server import RoundupRequestHandler
-    RoundupRequestHandler.TRACKER_HOMES = {'demo': home}
-    httpd = BaseHTTPServer.HTTPServer((hostname, port), RoundupRequestHandler)
-    print 'Server running - connect to:\n  %s'%url
-    print '1. Log in as "demo"/"demo" or "admin"/"admin".'
-    print '2. Hit Control-C to stop the server.'
-    print '3. Re-start the server by running "python demo.py" again.'
-    print '4. Re-initialise the server by running "python demo.py nuke".'
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        print 'Keyboard Interrupt: exiting'
+    from roundup.scripts import roundup_server
+    roundup_server.RoundupRequestHandler.TRACKER_HOMES = {'demo': home}
+
+    success_message = '''Server running - connect to:
+    %s
+1. Log in as "demo"/"demo" or "admin"/"admin".
+2. Hit Control-C to stop the server.
+3. Re-start the server by running "python demo.py" again.
+4. Re-initialise the server by running "python demo.py nuke".''' % url
+
+    roundup_server.run(port, success_message)
 
 if __name__ == '__main__':
     run_demo()
