@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.31 2001-11-12 22:01:06 richard Exp $
+# $Id: hyperdb.py,v 1.32 2001-11-21 03:11:28 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -295,9 +295,6 @@ class Class:
             raise IndexError
         num_re = re.compile('^\d+$')
         for key, value in propvalues.items():
-            if not node.has_key(key):
-                raise KeyError, key
-
             # check to make sure we're not duplicating an existing key
             if key == self.key and node[key] != value:
                 try:
@@ -307,6 +304,7 @@ class Class:
                 else:
                     raise ValueError, 'node with key "%s" exists'%value
 
+            # this will raise the KeyError if the property isn't valid
             prop = self.properties[key]
 
             if isinstance(prop, Link):
@@ -849,6 +847,9 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2001/11/12 22:01:06  richard
+# Fixed issues with nosy reaction and author copies.
+#
 # Revision 1.30  2001/11/09 10:11:08  richard
 #  . roundup-admin now handles all hyperdb exceptions
 #

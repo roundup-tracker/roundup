@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: cgi_client.py,v 1.57 2001-11-15 10:24:27 richard Exp $
+# $Id: cgi_client.py,v 1.58 2001-11-21 03:11:28 richard Exp $
 
 import os, cgi, pprint, StringIO, urlparse, re, traceback, mimetypes
 import binascii, Cookie, time
@@ -959,14 +959,26 @@ def parsePropsFromForm(db, cl, form, nodeid=0):
             l.sort()
             value = l
         props[key] = value
+
+        # get the old value
+        try:
+            existing = cl.get(nodeid, key)
+        except KeyError:
+            # this might be a new property for which there is no existing
+            # value
+            if not cl.properties.has_key(key): raise
+
         # if changed, set it
-        if nodeid and value != cl.get(nodeid, key):
+        if nodeid and value != existing:
             changed.append(key)
             props[key] = value
     return props, changed
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.57  2001/11/15 10:24:27  richard
+# handle the case where there is no file attached
+#
 # Revision 1.56  2001/11/14 21:35:21  richard
 #  . users may attach files to issues (and support in ext) through the web now
 #

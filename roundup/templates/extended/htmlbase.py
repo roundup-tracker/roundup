@@ -102,7 +102,7 @@ issueDOTindex = """<!-- dollarId: issue.index,v 1.3 2001/08/01 05:15:09 richard 
 </tr>
 """
 
-issueDOTitem = """<!-- dollarId: issue.item,v 1.5 2001/07/30 08:03:56 richard Exp dollar-->
+issueDOTitem = """<!-- dollarId: issue.item,v 1.7 2001/11/21 02:34:18 richard Exp dollar-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
@@ -117,10 +117,18 @@ issueDOTitem = """<!-- dollarId: issue.item,v 1.5 2001/07/30 08:03:56 richard Ex
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Product</span></td>
     <td class="form-text" valign=middle><display call="menu('product')">
-    version:<display call="field('version', 5)"></td>
-    <td width=1% nowrap align=right><span class="form-label">Platform</span></td>
-    <td class="form-text" valign=middle><display call="checklist('platform')"></td>
+    <span class="form-label">version:</span><display call="field('version', 5)"></td>
+    <td rowspan=2 width=1% nowrap align=right><span class="form-label">Platform</span></td>
+    <td rowspan=2 class="form-text" valign=middle><display call="checklist('platform')"></td>
 </tr>
+
+<tr bgcolor="ffffea">
+    <td width=1% nowrap align=right>&nbsp;</td>
+    <td align=left><span class="form-label">Target Version</span>
+     <display call="field('targetversion', 5)">
+    </td>
+</tr>
+
 
 <tr bgcolor="ffffea">
     <td width=1% nowrap align=right><span class="form-label">Created</span></td>
@@ -481,7 +489,7 @@ supportDOTindex = """<!-- dollarId: support.index,v 1.2 2001/08/01 05:15:09 rich
 </tr>
 """
 
-supportDOTitem = """<!-- dollarId: support.item,v 1.2 2001/07/30 08:03:56 richard Exp dollar-->
+supportDOTitem = """<!-- dollarId: support.item,v 1.3 2001/11/14 21:35:22 richard Exp dollar-->
 <table border=0 cellspacing=0 cellpadding=2>
 
 <tr class="strong-header">
