@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: htmltemplate.py,v 1.60 2002-01-17 08:48:19 grubert Exp $
+# $Id: htmltemplate.py,v 1.61 2002-01-17 23:04:53 richard Exp $
 
 __doc__ = """
 Template engine.
@@ -184,9 +184,9 @@ class TemplateFunctions:
             list.sort(sortfunc)
             l = []
             # map the id to the label property
-	    # TODO: allow reversion to the older <select> box style display
+            # TODO: allow reversion to the older <select> box style display
             if not showid:
-            	k = linkcl.labelprop()
+                k = linkcl.labelprop()
                 value = [linkcl.get(v, k) for v in value]
             if size is None:
                 size = '10'
@@ -439,41 +439,138 @@ class TemplateFunctions:
         return fp.getvalue()
 
     # XXX new function
-    def do_history(self, **args):
+    def do_history(self, direction='descending'):
         ''' list the history of the item
+
+            If "direction" is 'descending' then the most recent event will
+            be displayed first. If it is 'ascending' then the oldest event
+            will be displayed first.
         '''
         if self.nodeid is None:
             return _("[History: node doesn't exist]")
 
         l = ['<table width=100% border=0 cellspacing=0 cellpadding=2>',
             '<tr class="list-header">',
-            _('<td><span class="list-item"><strong>Date</strong></span></td>'),
-            _('<td><span class="list-item"><strong>User</strong></span></td>'),
-            _('<td><span class="list-item"><strong>Action</strong></span></td>'),
-            _('<td><span class="list-item"><strong>Args</strong></span></td>')]
+            _('<th align=left><span class="list-item">Date</span></th>'),
+            _('<th align=left><span class="list-item">User</span></th>'),
+            _('<th align=left><span class="list-item">Action</span></th>'),
+            _('<th align=left><span class="list-item">Args</span></th>'),
+            '</tr>']
 
-        for id, date, user, action, args in self.cl.history(self.nodeid):
-            date_s = str(date).replace("."," ")
-            arg_s = ""
-            if action=='link' and type(args)==type(()):
+        comments = {}
+        history = self.cl.history(self.nodeid)
+        if direction == 'descending':
+            history.reverse()
+        for id, evt_date, user, action, args in history:
+            date_s = str(evt_date).replace("."," ")
+            arg_s = ''
+            if action == 'link' and type(args) == type(()):
                 if len(args) == 3:
-                    arg_s += '<a href="%s%s">%s%s %s</a>'% (args[0],args[1],args[0],args[1],args[2])
+                    linkcl, linkid, key = args
+                    arg_s += '<a href="%s%s">%s%s %s</a>'%(linkcl, linkid,
+                        linkcl, linkid, key)
                 else:
                     arg_s = str(arg)
-            elif type(args)==type({}):
+
+            elif action == 'unlink' and type(args) == type(()):
+                if len(args) == 3:
+                    linkcl, linkid, key = args
+                    arg_s += '<a href="%s%s">%s%s %s</a>'%(linkcl, linkid,
+                        linkcl, linkid, key)
+                else:
+                    arg_s = str(arg)
+
+            elif type(args) == type({}):
+                cell = []
                 for k in args.keys():
-                    # special treatment of date, maybe links to files, authors, recipient ?
-                    if k=='superseder' and len(args[k])>0:
-                        arg_s += '<br />superseder: '
-                        for ssdr in args[k]:
-                            arg_s += '<a href="issue%s">issue%s</a>,'%(ssdr,ssdr)
+                    # try to get the relevant property and treat it
+                    # specially
+                    try:
+                        prop = self.properties[k]
+                    except:
+                        prop = None
+                    if prop is not None:
+                        if args[k] and (isinstance(prop, hyperdb.Multilink) or
+                                isinstance(prop, hyperdb.Link)):
+                            # figure what the link class is
+                            classname = prop.classname
+                            try:
+                                linkcl = self.db.classes[classname]
+                            except KeyError, message:
+                                labelprop = None
+                                comments[classname] = _('''The linked class
+                                    %(classname)s no longer exists''')%locals()
+                            labelprop = linkcl.labelprop()
+
+                        if isinstance(prop, hyperdb.Multilink) and \
+                                len(args[k]) > 0:
+                            ml = []
+                            for linkid in args[k]:
+                                label = classname + linkid
+                                # if we have a label property, try to use it
+                                # TODO: test for node existence even when
+                                # there's no labelprop!
+                                try:
+                                    if labelprop is not None:
+                                        label = linkcl.get(linkid, labelprop)
+                                except IndexError:
+                                    comments['no_link'] = _('''<strike>The
+                                        linked node no longer
+                                        exists</strike>''')
+                                    ml.append('<strike>%s</strike>'%label)
+                                else:
+                                    ml.append('<a href="%s%s">%s</a>'%(
+                                        classname, linkid, label))
+                            cell.append('%s:\n  %s'%(k, ',\n  '.join(ml)))
+                        elif isinstance(prop, hyperdb.Link) and args[k]:
+                            label = classname + args[k]
+                            # if we have a label property, try to use it
+                            # TODO: test for node existence even when
+                            # there's no labelprop!
+                            if labelprop is not None:
+                                try:
+                                    label = linkcl.get(args[k], labelprop)
+                                except IndexError:
+                                    comments['no_link'] = _('''<strike>The
+                                        linked node no longer
+                                        exists</strike>''')
+                                    cell.append(' <strike>%s</strike>,\n'%label)
+                            else:
+                                cell.append('  <a href="%s%s">%s</a>,\n'%(
+                                    classname, linkid, label))
+
+                        elif isinstance(prop, hyperdb.Date) and args[k]:
+                            d = date.Date(args[k])
+                            cell.append('%s: %s'%(k, str(d)))
+
+                        elif isinstance(prop, hyperdb.Interval) and args[k]:
+                            d = date.Interval(args[k])
+                            cell.append('%s: %s'%(k, str(d)))
+
+                        elif not args[k]:
+                            cell.append('%s: (no value)\n'%k)
+
+                        else:
+                            cell.append('%s: %s\n'%(k, str(args[k])))
                     else:
-                        arg_s += '%s: %s,'%(k,str(args[k]))
+                        # property no longer exists
+                        comments['no_exist'] = _('''<em>The indicated property
+                            no longer exists</em>''')
+                        cell.append('<em>%s: %s</em>\n'%(k, str(args[k])))
+                arg_s = '<br />'.join(cell)
             else:
-                arg_s = str(args)
-            # shouldnt _() be used ?
-            l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
-               date_s, user, action, arg_s))
+                # unkown event!!
+                comments['unknown'] = _('''<strong><em>This event is not
+                    handled by the history display!</em></strong>''')
+                arg_s = '<strong><em>' + str(args) + '</em></strong>'
+            date_s = date_s.replace(' ', '&nbsp;')
+            l.append('<tr><td valign=top>%s</td><td valign=top>%s</td>'
+                '<td valign=top>%s</td><td valign=top>%s</td></tr>'%(date_s,
+                user, action, arg_s))
+        if comments:
+            l.append(_('<tr><td colspan=4><strong>Note:</strong></td></tr>'))
+        for entry in comments.values():
+            l.append('<tr><td colspan=4>%s</td></tr>'%entry)
         l.append('</table>')
         return '\n'.join(l)
 
@@ -903,6 +1000,9 @@ class NewItemTemplate(TemplateFunctions):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2002/01/17 08:48:19  grubert
+#  . display superseder as html link in history.
+#
 # Revision 1.59  2002/01/17 07:58:24  grubert
 #  . display links a html link in history.
 #
