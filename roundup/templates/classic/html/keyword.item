@@ -1,7 +1,20 @@
 <!-- dollarId: keyword.item,v 1.3 2002/05/22 00:32:34 richard Exp dollar-->
 
+<table class="otherinfo">
+<tr><th colspan="4" class="header">Existing Keywords</th></tr>
+<tal:block tal:define="keywords db/keyword/list"
+           tal:repeat="start python:range(0, len(keywords), 4)">
+ <tr tal:define="batch python:utils.Batch('keyword', keywords, 4, start)">
+  <td tal:repeat="keyword batch" tal:content="keyword/name">
+   keyword goes here
+  </td>
+ </tr>
+</tal:block>
+<tr><td colspan="4" style="border-top: 1px solid gray">&nbsp;</td></tr>
+</table>
+
 <p class="help" tal:condition="not:context/id">
- Use this form to create a new keyword.
+ To create a new keyword, enter it below and click "Submit New Entry".
 </p>
 
 <form method="POST" onSubmit="return submit_once()"

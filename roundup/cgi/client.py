@@ -1,4 +1,4 @@
-# $Id: client.py,v 1.27 2002-09-10 12:44:42 richard Exp $
+# $Id: client.py,v 1.28 2002-09-11 23:54:25 richard Exp $
 
 __doc__ = """
 WWW request handler (also used in the stand-alone server).
@@ -99,6 +99,11 @@ class Client:
             # someone gave us a non-int debug level, turn it off
             self.debug = 0
 
+        # additional headers to send with the request - must be registered
+        # before the first write
+        self.additional_headers = {}
+        self.response_code = 200
+
     def main(self):
         ''' Process a request.
 
@@ -149,7 +154,9 @@ class Client:
             # the headers, otherwise the headers have been set before the
             # exception was raised
             if url:
-                self.header({'Location': url}, response=302)
+                self.additional_headers['Location'] = url
+                self.response_code = 302
+            self.write('Redirecting to <a href="%s">%s</a>'%(url, url))
         except SendFile, designator:
             self.serve_file(designator)
         except SendStaticFile, file:
@@ -303,13 +310,13 @@ class Client:
 
         # we just want to serve up the file named
         file = self.db.file
-        self.header({'Content-Type': file.get(nodeid, 'type')})
+        self.additional_headers['Content-Type'] = file.get(nodeid, 'type')
         self.write(file.get(nodeid, 'content'))
 
     def serve_static_file(self, file):
         # we just want to serve up the file named
         mt = mimetypes.guess_type(str(file))[0]
-        self.header({'Content-Type': mt})
+        self.additional_headers['Content-Type'] = mt
         self.write(open(os.path.join(self.instance.config.TEMPLATES,
             file)).read())
 
@@ -395,11 +402,14 @@ class Client:
             self.header()
         self.request.wfile.write(content)
 
-    def header(self, headers=None, response=200):
+    def header(self, headers=None, response=None):
         '''Put up the appropriate header.
         '''
         if headers is None:
             headers = {'Content-Type':'text/html'}
+        if response is None:
+            response = self.response_code
+        headers.update(self.additional_headers)
         if not headers.has_key('Content-Type'):
             headers['Content-Type'] = 'text/html'
         self.request.send_response(response)
@@ -433,8 +443,8 @@ class Client:
         # generate the cookie path - make sure it has a trailing '/'
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
             ''))
-        self.header({'Set-Cookie': 'roundup_user_2=%s; expires=%s; Path=%s;'%(
-            self.session, expire, path)})
+        self.additional_headers['Set-Cookie'] = \
+          'roundup_user_2=%s; expires=%s; Path=%s;'%(self.session, expire, path)
 
     def make_user_anonymous(self):
         ''' Make us anonymous
@@ -454,9 +464,8 @@ class Client:
         now = Cookie._getdate()
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
             ''))
-        self.header({'Set-Cookie':
-            'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now,
-            path)})
+        self.additional_headers['Set-Cookie'] = \
+           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)
         self.login()
 
     def opendb(self, user):
@@ -530,8 +539,8 @@ class Client:
         now = Cookie._getdate()
         path = '/'.join((self.env['SCRIPT_NAME'], self.env['TRACKER_NAME'],
             ''))
-        self.header(headers={'Set-Cookie':
-          'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)})
+        self.additional_headers['Set-Cookie'] = \
+           'roundup_user_2=deleted; Max-Age=0; expires=%s; Path=%s;'%(now, path)
 
         # Let the user know what's going on
         self.ok_message.append(_('You are logged out'))
@@ -578,7 +587,11 @@ class Client:
         self.set_cookie(self.user, password)
 
         # nice message
-        self.ok_message.append(_('You are now registered, welcome!'))
+        message = _('You are now registered, welcome!')
+
+        # redirect to the item's edit page
+        raise Redirect, '%s/%s%s?:ok_message=%s'%(
+            self.base, self.classname, self.userid,  urllib.quote(message))
 
     def registerPermission(self, props):
         ''' Determine whether the user has permission to register

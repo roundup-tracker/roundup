@@ -150,7 +150,8 @@ class RoundupPageTemplate(PageTemplate.PageTemplate):
              'request': request,
              'content': client.content,
              'db': HTMLDatabase(client),
-             'instance': client.instance
+             'instance': client.instance,
+             'utils': TemplatingUtils(client),
         }
         # add in the item if there is one
         if client.nodeid:
@@ -263,7 +264,6 @@ class HTMLClass:
                     value = []
                 else:
                     value = None
-            print (prop, value)
             return htmlklass(self._client, '', prop, item, value)
 
         # no good
@@ -1316,7 +1316,8 @@ class Batch(ZTUtils.Batch):
             if index + self.end < self.first: raise IndexError, index
             return self._sequence[index + self.end]
         
-        if index >= self.length: raise IndexError, index
+        if index >= self.length:
+            raise IndexError, index
 
         # move the last_item along - but only if the fetched index changes
         # (for some reason, index 0 is fetched twice)
@@ -1324,13 +1325,16 @@ class Batch(ZTUtils.Batch):
             self.last_item = self.current_item
             self.last_index = index
 
-        # wrap the return in an HTMLItem
-        if self.classname == 'user':
-            klass = HTMLUser
-        else:
-            klass = HTMLItem
-        self.current_item = klass(self.client, self.classname,
-            self._sequence[index+self.first])
+        item = self._sequence[index + self.first]
+        if not isinstance(item, HTMLItem):
+            # "item" is actually just an id - wrap the return in an HTMLItem
+            if self.classname == 'user':
+                klass = HTMLUser
+            else:
+                klass = HTMLItem
+            item = klass(self.client, self.classname, item)
+
+        self.current_item = item
         return self.current_item
 
     def propchanged(self, property):
@@ -1361,4 +1365,13 @@ class Batch(ZTUtils.Batch):
     def length(self):
         self.sequence_length = l = len(self._sequence)
         return l
+
+class TemplatingUtils:
+    ''' Utilities for templating
+    '''
+    def __init__(self, client):
+        self.client = client
+    def Batch(self, classname, l, size, start, end=0, orphan=0, overlap=0):
+        return Batch(self.client, classname, l, size, start, end, orphan,
+            overlap)
 

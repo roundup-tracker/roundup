@@ -12,8 +12,8 @@
 ##############################################################################
 __doc__='''Batch class, for iterating over a sequence in batches
 
-$Id: Batch.py,v 1.1 2002-09-05 00:37:09 richard Exp $'''
-__version__='$Revision: 1.1 $'[11:-2]
+$Id: Batch.py,v 1.2 2002-09-11 23:54:26 richard Exp $'''
+__version__='$Revision: 1.2 $'[11:-2]
 
 class LazyPrevBatch:
     def __of__(self, parent):
@@ -84,7 +84,7 @@ class Batch:
             return self._sequence[index + self.end]
         
         if index >= self.length: raise IndexError, index
-        return self._sequence[index+self.first]
+        return self._sequence[index + self.first]
 
     def __len__(self):
         return self.length
