@@ -82,7 +82,7 @@ You are not allowed to view this page.
 </table>
 
 <form method="GET" tal:attributes="action request/classname">
- <tal:block tal:replace="structure python:request.indexargs_form(sort=0, group=0)" />
+ 
  <table class="form">
   <tr tal:condition="batch">
    <th>Sort on:</th>
@@ -116,7 +116,11 @@ You are not allowed to view this page.
               tal:attributes="checked python:request.group[0] == '-'"> 
    </td>
   </tr>
-  <tr><td colspan="4"><input type="submit" value="Redisplay"></td></tr>
+  <tr><td colspan="4">
+              <input type="submit" value="Redisplay">
+              <tal:block tal:replace="structure
+                python:request.indexargs_form(sort=0, group=0)" />
+  </td></tr>
  </table>
 </form>
 

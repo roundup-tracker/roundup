@@ -1680,7 +1680,7 @@ env: %(env)s
 
     def base_javascript(self):
         return '''
-<script language="javascript">
+<script type="text/javascript">
 submitted = false;
 function submit_once() {
     if (submitted) {

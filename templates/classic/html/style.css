@@ -2,6 +2,7 @@
 body.body {
   font-family: sans-serif, Arial, Helvetica;
   color: #333333;
+  margin: 0px 0px 0px 0px;
 }
 a[href]:hover { color:blue; text-decoration: underline; }
 a[href]:link { color:blue; text-decoration: none; }
@@ -26,6 +27,7 @@ td.page-header-top {
 
 td.sidebar {
   padding: 1 0 0 1;
+  white-space: nowrap;
 }
 td.sidebar form {
      margin: 0 0 0 0;

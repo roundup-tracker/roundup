@@ -14,7 +14,7 @@
       //--></script>
       </tal:block>
   </head>
- <body class="body" marginwidth="0" marginheight="0" onload="resetList();">
+ <body class="body" onload="resetList();">
  <form name="frm_help" action=""
        tal:define="start python:int(request.form[':startwith'].value);
                    batch python:utils.Batch(context.list(), 500, start);
