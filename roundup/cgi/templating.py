@@ -858,7 +858,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                         comments['no_exist'] = self._(
                             "<em>The indicated property no longer exists</em>")
                         cell.append(self._('<em>%s: %s</em>\n')
-                            % (k, str(args[k])))
+                            % (self._(k), str(args[k])))
                         continue
 
                     if args[k] and (isinstance(prop, hyperdb.Multilink) or
@@ -913,7 +913,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                                     else:
                                         subml.append(label)
                             ml.append(sublabel + ', '.join(subml))
-                        cell.append('%s:\n  %s'%(k, ', '.join(ml)))
+                        cell.append('%s:\n  %s'%(self._(k), ', '.join(ml)))
                     elif isinstance(prop, hyperdb.Link) and args[k]:
                         label = classname + args[k]
                         # if we have a label property, try to use it
@@ -934,7 +934,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                                 old = '<a href="%s%s">%s</a>'%(classname, args[k], label)
                             else:
                                 old = label;
-                            cell.append('%s: %s' % (k,old))
+                            cell.append('%s: %s' % (self._(k), old))
                             if current.has_key(k):
                                 cell[-1] += ' -> %s'%current[k]
                                 current[k] = old
@@ -942,7 +942,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                     elif isinstance(prop, hyperdb.Date) and args[k]:
                         d = date.Date(args[k],
                             translator=self._client).local(timezone)
-                        cell.append('%s: %s'%(k, str(d)))
+                        cell.append('%s: %s'%(self._(k), str(d)))
                         if current.has_key(k):
                             cell[-1] += ' -> %s' % current[k]
                             current[k] = str(d)
@@ -950,34 +950,34 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
                     elif isinstance(prop, hyperdb.Interval) and args[k]:
                         val = str(date.Interval(args[k],
                             translator=self._client))
-                        cell.append('%s: %s'%(k, val))
+                        cell.append('%s: %s'%(self._(k), val))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.String) and args[k]:
                         val = cgi.escape(args[k])
-                        cell.append('%s: %s'%(k, val))
+                        cell.append('%s: %s'%(self._(k), val))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif isinstance(prop, hyperdb.Boolean) and args[k] is not None:
-                        val = args[k] and 'Yes' or 'No'
-                        cell.append('%s: %s'%(k, val))
+                        val = args[k] and ''"Yes" or ''"No"
+                        cell.append('%s: %s'%(self._(k), val))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = val
 
                     elif not args[k]:
                         if current.has_key(k):
-                            cell.append('%s: %s'%(k, current[k]))
+                            cell.append('%s: %s'%(self._(k), current[k]))
                             current[k] = '(no value)'
                         else:
-                            cell.append('%s: (no value)'%k)
+                            cell.append(self._('%s: (no value)')%self._(k))
 
                     else:
-                        cell.append('%s: %s'%(k, str(args[k])))
+                        cell.append('%s: %s'%(self._(k), str(args[k])))
                         if current.has_key(k):
                             cell[-1] += ' -> %s'%current[k]
                             current[k] = str(args[k])
@@ -995,7 +995,7 @@ class HTMLItem(HTMLInputMixin, HTMLPermissions):
             if dre.match(user):
                 user = self._db.user.get(user, 'username')
             l.append('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(
-                date_s, user, action, arg_s))
+                date_s, user, self._(action), arg_s))
         if comments:
             l.append(self._(
                 '<tr><td colspan=4><strong>Note:</strong></td></tr>'))
