@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: roundupdb.py,v 1.26 2001-12-05 14:26:44 rochecompaan Exp $
+# $Id: roundupdb.py,v 1.27 2001-12-10 21:02:53 richard Exp $
 
 __doc__ = """
 Extending hyperdb with types specific to issue-tracking.
@@ -439,7 +439,6 @@ class IssueClass(Class):
                 changed[key] = new_value
 
         # list the changes
-        m = ['','----------']
         for propname, value in changed.items():
             prop = cl.properties[propname]
             oldvalue = cl.get(nodeid, propname, None)
@@ -484,10 +483,17 @@ class IssueClass(Class):
                 if l:
                     change += ' -%s'%(', '.join(l))
             m.append('%s: %s'%(propname, change))
+        if m:
+            m.insert(0, '')
+            m.insert(0, '----------')
         return '\n'.join(m)
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2001/12/05 14:26:44  rochecompaan
+# Removed generation of change note from "sendmessage" in roundupdb.py.
+# The change note is now generated when the message is created.
+#
 # Revision 1.25  2001/11/30 20:28:10  rochecompaan
 # Property changes are now completely traceable, whether changes are
 # made through the web or by email
