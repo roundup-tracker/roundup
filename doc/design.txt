@@ -292,6 +292,9 @@ Here is the interface provided by the hyperdatabase::
     class Database:
         """A database for storing records containing flexible data
         types.
+
+        The id of the current user is available on the database as
+        'self.curuserid'.
         """
 
         def __init__(self, config, journaltag=None):
@@ -344,9 +347,6 @@ Here is the interface provided by the hyperdatabase::
                 users = self.db.user
                 messages = self.db.msg
                 files = self.db.file
-
-            The id of the current user is also available on the database
-            as 'self.db.curuserid'.
             """
 
         # Editing items:
