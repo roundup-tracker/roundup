@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.142.2.3 2005-01-13 05:05:12 richard Exp $
+# $Id: rdbms_common.py,v 1.142.2.4 2005-02-13 22:40:53 richard Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -2100,7 +2100,7 @@ class Class(hyperdb.Class):
 
                 # now add to the where clause
                 where.append('('
-                    +' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
+                    +' and '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
                     +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):

@@ -572,7 +572,7 @@ class MysqlClass:
 
                 # now add to the where clause
                 where.append('('
-                    +' or '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
+                    +' and '.join(["_%s._%s LIKE '%s'"%(cn, k, s) for s in v])
                     +')')
                 # note: args are embedded in the query string now
             elif isinstance(propclass, Link):

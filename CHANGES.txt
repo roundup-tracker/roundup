@@ -17,6 +17,7 @@ Fixed:
 - issue search page allows setting of no sorting / grouping (sf bug
   1119475)
 - better edit conflict handling (sf bug 1118790)
+- consistent text searching behaviour (AND everywhere) (sf bug 1101036)
 
 
 2005-01-13 0.8.0b2
