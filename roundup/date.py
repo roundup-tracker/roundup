@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.40 2002-12-18 00:15:53 richard Exp $
+# $Id: date.py,v 1.41 2003-02-07 01:01:25 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -461,6 +461,8 @@ class Interval:
             s = _('1/2 an hour')
         else:
             s = _('%(number)s/4 hour')%{'number': int(self.minute/15)}
+        if self.sign < 0: 
+            s = s + _(' ago')
         return s
 
     def get_tuple(self):

@@ -42,6 +42,7 @@ are given with the most recent entry first.
 - added warning filter for "FutureWarning: hex/oct constants > sys.maxint will
   return positive values..." (literal 0xffff0000 in portalocker.py)
 - fixed ZPT code generating SyntaxWarning for assignment to None
+- add "ago" to intervals in the past (sf bug 679232)
 
 
 2003-??-?? 0.5.6
