@@ -1491,7 +1491,7 @@ env: %(env)s
             else:
                 val = self.group[1]
             l.append(':group=%s'%val)
-        if self.filter and not args.has_key(':columns'):
+        if self.filter and not args.has_key(':filter'):
             l.append(':filter=%s'%(','.join(self.filter)))
         for k,v in self.filterspec.items():
             if not args.has_key(k):

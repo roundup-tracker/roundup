@@ -10,6 +10,9 @@ are given with the most recent entry first.
 - fixed roundup-reminder (sf bug 681042)
 - fixed int assumptions about Number values (sf bug 677762)
 - clarified licensing
+- another attempt to fix cookie misbehaviour - customise cookie name using
+  tracker name
+- fixed error in indexargs_url (thanks Patrick Ohly)
 
 
 2003-01-24 0.5.5
