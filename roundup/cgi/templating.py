@@ -950,6 +950,7 @@ class HTMLUserPermission:
         # may anonymous users register? (so, they need to be anonymous,
         # need the Web Rego permission, and not trying to view an item)
         rego = s.hasPermission('Web Registration', userid, self._classname)
+        rego = rego and self._client.template == 'register'
         if is_anonymous and rego and getattr(self, '_nodeid', None) is None:
             return 1
 
