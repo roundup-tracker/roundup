@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-#$Id: back_anydbm.py,v 1.93 2002-11-28 07:02:23 richard Exp $
+#$Id: back_anydbm.py,v 1.94 2002-12-11 01:03:38 richard Exp $
 '''
 This module defines a backend that saves the hyperdatabase in a database
 chosen by anydbm. It is guaranteed to always be available in python
@@ -1703,9 +1703,9 @@ class Class(hyperdb.Class):
                 if isinstance(propclass, String):
                     # clean up the strings
                     if av and av[0] in string.uppercase:
-                        av = an[prop] = av.lower()
+                        av = av.lower()
                     if bv and bv[0] in string.uppercase:
-                        bv = bn[prop] = bv.lower()
+                        bv = bv.lower()
                 if (isinstance(propclass, String) or
                         isinstance(propclass, Date)):
                     # it might be a string that's really an integer
