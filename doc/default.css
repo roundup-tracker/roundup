@@ -1,15 +1,15 @@
 /*
 :Author: David Goodger
 :Contact: goodger@users.sourceforge.net
-:date: $Date: 2004-03-26 06:11:32 $
-:version: $Revision: 1.11 $
+:date: $Date: 2004-04-18 23:12:06 $
+:version: $Revision: 1.12 $
 :copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 */
 
 a.target {
-  color: black }
+  color: blue }
 
 a.toc-backref {
   text-decoration: none ;
@@ -75,8 +75,15 @@ div.system-message p.system-message-title {
 div.topic {
   margin: 2em }
 
+h1 {
+  margin-top: 2em;
+  text-decoration: underline;
+}
+
 h1.title {
-  text-align: center }
+  text-align: center;
+  margin-top: .5em;
+}
 
 h2.subtitle {
   text-align: center }
