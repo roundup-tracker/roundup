@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.70 2004-05-14 22:43:33 richard Exp $
+# $Id: admin.py,v 1.71 2004-05-18 19:29:21 a1s Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -171,38 +171,39 @@ matches only one command, e.g. l == li == lis == list."""))
 
     def help_all(self):
         print _('''
-All commands (except help) require a tracker specifier. This is just the path
-to the roundup tracker you're working with. A roundup tracker is where
-roundup keeps the database and configuration file that defines an issue
-tracker. It may be thought of as the issue tracker's "home directory". It may
-be specified in the environment variable TRACKER_HOME or on the command
-line as "-i tracker".
+All commands (except help) require a tracker specifier. This is just
+the path to the roundup tracker you're working with. A roundup tracker
+is where roundup keeps the database and configuration file that defines
+an issue tracker. It may be thought of as the issue tracker's "home
+directory". It may be specified in the environment variable TRACKER_HOME
+or on the command line as "-i tracker".
 
 A designator is a classname and a nodeid concatenated, eg. bug1, user10, ...
 
 Property values are represented as strings in command arguments and in the
 printed results:
  . Strings are, well, strings.
- . Date values are printed in the full date format in the local time zone, and
-   accepted in the full format or any of the partial formats explained below.
+ . Date values are printed in the full date format in the local time zone,
+   and accepted in the full format or any of the partial formats explained
+   below.
  . Link values are printed as node designators. When given as an argument,
    node designators and key strings are both accepted.
- . Multilink values are printed as lists of node designators joined by commas.
-   When given as an argument, node designators and key strings are both
-   accepted; an empty string, a single node, or a list of nodes joined by
-   commas is accepted.
+ . Multilink values are printed as lists of node designators joined
+   by commas.  When given as an argument, node designators and key
+   strings are both accepted; an empty string, a single node, or a list
+   of nodes joined by commas is accepted.
 
 When property values must contain spaces, just surround the value with
 quotes, either ' or ". A single space may also be backslash-quoted. If a
-valuu must contain a quote character, it must be backslash-quoted or inside
+value must contain a quote character, it must be backslash-quoted or inside
 quotes. Examples:
            hello world      (2 tokens: hello, world)
            "hello world"    (1 token: hello world)
            "Roch'e" Compaan (2 tokens: Roch'e Compaan)
-           Roch\'e Compaan  (2 tokens: Roch'e Compaan)
+           Roch\\'e Compaan  (2 tokens: Roch'e Compaan)
            address="1 2 3"  (1 token: address=1 2 3)
-           \\               (1 token: \)
-           \n\r\t           (1 token: a newline, carriage-return and tab)
+           \\\\               (1 token: \\)
+           \\n\\r\\t           (1 token: a newline, carriage-return and tab)
 
 When multiple nodes are specified to the roundup get or roundup set
 commands, the specified properties are retrieved or set on all the listed
@@ -341,10 +342,10 @@ Command help:
         ""'''Usage: install [template [backend [admin password]]]
         Install a new Roundup tracker.
 
-        The command will prompt for the tracker home directory (if not supplied
-        through TRACKER_HOME or the -i option). The template, backend and admin
-        password may be specified on the command-line as arguments, in that
-        order.
+        The command will prompt for the tracker home directory
+        (if not supplied through TRACKER_HOME or the -i option).
+        The template, backend and admin password may be specified
+        on the command-line as arguments, in that order.
 
         The initialise command must be called after this command in order
         to initialise the tracker's database. You may edit the tracker's
@@ -406,8 +407,8 @@ Erase it? Y/N: """) % locals())
  ... at a minimum, you must set MAILHOST, TRACKER_WEB, MAIL_DOMAIN and
  ADMIN_EMAIL.
 
- If you wish to modify the default schema, you should also edit the database
- initialisation file:
+ If you wish to modify the default schema, you should also edit
+ the database initialisation file:
    %(database_config_file)s
  ... see the documentation on customizing for more information.
 ''')%{
@@ -475,7 +476,8 @@ Erase it? Y/N: """))
         ""'''Usage: get property designator[,designator]*
         Get the given property of one or more designator(s).
 
-        Retrieves the property value of the nodes specified by the designators.
+        Retrieves the property value of the nodes specified
+        by the designators.
         '''
         if len(args) < 2:
             raise UsageError, _('Not enough arguments supplied')
@@ -552,9 +554,9 @@ Erase it? Y/N: """))
         list of item designators (ie "designator[,designator,...]").
 
         This command sets the properties to the values for all designators
-        given. If the value is missing (ie. "property=") then the property is
-        un-set. If the property is a multilink, you specify the linked ids
-        for the multilink as comma-separated numbers (ie "1,2,3").
+        given. If the value is missing (ie. "property=") then the property
+        is un-set. If the property is a multilink, you specify the linked
+        ids for the multilink as comma-separated numbers (ie "1,2,3").
         '''
         if len(args) < 2:
             raise UsageError, _('Not enough arguments supplied')
@@ -602,8 +604,9 @@ Erase it? Y/N: """))
         ""'''Usage: find classname propname=value ...
         Find the nodes of the given class with a given link property value.
 
-        Find the nodes of the given class with a given link property value. The
-        value may be either the nodeid of the linked node, or its key value.
+        Find the nodes of the given class with a given link property value.
+        The value may be either the nodeid of the linked node, or its key
+        value.
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
@@ -785,13 +788,13 @@ Erase it? Y/N: """))
         List the instances of a class.
 
         Lists all instances of the given class. If the property is not
-        specified, the  "label" property is used. The label property is tried
-        in order: the key, "name", "title" and then the first property,
-        alphabetically.
+        specified, the  "label" property is used. The label property is
+        tried in order: the key, "name", "title" and then the first
+        property, alphabetically.
 
-        With -c, -S or -s print a list of item id's if no property specified.
-        If property specified, print list of that property for every class
-        instance.
+        With -c, -S or -s print a list of item id's if no property
+        specified.  If property specified, print list of that property
+        for every class instance.
         '''
         if len(args) > 2:
             raise UsageError, _('Too many arguments supplied')
@@ -838,9 +841,10 @@ Erase it? Y/N: """))
         List the instances of a class in tabular form.
 
         Lists all instances of the given class. If the properties are not
-        specified, all properties are displayed. By default, the column widths
-        are the width of the largest value. The width may be explicitly defined
-        by defining the property as "name:width". For example::
+        specified, all properties are displayed. By default, the column
+        widths are the width of the largest value. The width may be
+        explicitly defined by defining the property as "name:width".
+        For example::
 
           roundup> table priority id,name:10
           Id Name
@@ -977,8 +981,8 @@ Erase it? Y/N: """))
         ""'''Usage: retire designator[,designator]*
         Retire the node specified by designator.
 
-        This action indicates that a particular node is not to be retrieved by
-        the list or find commands, and its key value may be re-used.
+        This action indicates that a particular node is not to be retrieved
+        by the list or find commands, and its key value may be re-used.
         '''
         if len(args) < 1:
             raise UsageError, _('Not enough arguments supplied')
@@ -1072,8 +1076,8 @@ Erase it? Y/N: """))
 
     def do_import(self, args):
         ""'''Usage: import import_dir
-        Import a database from the directory containing CSV files, two per
-        class to import.
+        Import a database from the directory containing CSV files,
+        two per class to import.
 
         The files used in the import are:
 
@@ -1172,8 +1176,8 @@ Erase it? Y/N: """))
         ""'''Usage: reindex
         Re-generate a tracker's search indexes.
 
-        This will re-generate the search indexes for a tracker. This will
-        typically happen automatically.
+        This will re-generate the search indexes for a tracker.
+        This will typically happen automatically.
         '''
         self.db.indexer.force_reindex()
         self.db.reindex()
