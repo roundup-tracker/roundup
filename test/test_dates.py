@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: test_dates.py,v 1.13 2002-09-10 00:19:54 richard Exp $ 
+# $Id: test_dates.py,v 1.14 2002-10-11 01:25:40 richard Exp $ 
 
 import unittest, time
 
@@ -147,6 +147,15 @@ class DateTestCase(unittest.TestCase):
         ae(str(Interval(' - 1 d 2:50 ')), '- 1d 2:50')
         ae(str(Interval(' 14:00 ')), '+ 14:00')
         ae(str(Interval(' 0:04:33 ')), '+ 0:04:33')
+
+        # __add__
+        # XXX these are fairly arbitrary and need fixing once the __add__
+        # code handles the odd cases more correctly
+        ae(str(Interval('1y') + Interval('1y')), '+ 2y')
+        ae(str(Interval('1y') + Interval('1m')), '+ 1y 1m')
+        ae(str(Interval('1y') + Interval('2:40')), '+ 1y 2:40')
+        ae(str(Interval('1y') + Interval('- 1y')), '+')
+        ae(str(Interval('1y') + Interval('- 1m')), '+ 1y -1m')
 
 def suite():
    return unittest.makeSuite(DateTestCase, 'test')

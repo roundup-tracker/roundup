@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: date.py,v 1.34 2002-10-10 08:24:37 richard Exp $
+# $Id: date.py,v 1.35 2002-10-11 01:25:40 richard Exp $
 
 __doc__ = """
 Date, time and time interval handling.
@@ -353,6 +353,22 @@ class Interval:
         elif self.hour or self.minute:
             l.append('%d:%02d'%(self.hour, self.minute))
         return ' '.join(l)
+
+    def __add__(self, other):
+        if isinstance(other, Date):
+            # the other is a Date - produce a Date
+            return Date(other.addInterval(self))
+        elif isinstance(other, Interval):
+            # add the other Interval to this one
+            a = self.get_tuple()
+            b = other.get_tuple()
+            if b[0] < 0:
+                i = Interval([x-y for x,y in zip(a[1:],b[1:])])
+            else:
+                i = Interval([x+y for x,y in zip(a[1:],b[1:])])
+            return i
+        # nope, no idea what to do with this other...
+        raise TypeError, "Can't add %r"%other
 
     def set(self, spec, interval_re=re.compile('''
             \s*(?P<s>[-+])?         # + or -
