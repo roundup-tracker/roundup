@@ -1,60 +1,102 @@
-2002-02-05  eg
+Roundup FAQ
 
-NOTE: This is just a grabbag, most of this should go into
-  documentation.
+  '$Date: 2002-02-14 08:50:14 $'
+
+  NOTE: This is just a grabbag, most of this should go into documentation.
 
 Changing HTML layout
 
   Note changes to the files in html take place immediatly without
   restart, even when running roundup-server.
 
+  Displaying whole messages not only the summary
+
+    Modify instance/html/msg.index change::
+
+      <td><display call="plain('summary')"></td>
+
+    to::
+
+      <td><pre><display call="plain('content')"></pre></td>
+
+    displays the whole message not only the first line and 'pre'
+    prevents the browser from reformatting. 
+
+  Getting the nosy list picker instead of textfield.
+
+    In classic template there is plenty of space below the text field.
+    So one could modify instance/html/issue.item to use it.
+
+    At the file top set 'border=1' to see cell boundaries, then
+    replace::
+
+      <td class="form-text"><display call="field('nosy',size=20)"></td>
+  
+    by::
+
+      <td rowspan=5 class="form-text"><display call="menu('nosy',height=10)"></td>
+
+    and remove the last cell in the next four rows, either by deleting a cell
+    or by reducing colspan.
+
+  Want to see the issue id (the number) on the issue item display
+
+    The number is really a central information and not an internal one.
+
+    In file INSTANCE/html/issue.item displays the creator, so one could add
+    the number to it.::
+
+      <td class="form-text"><display call="reldate('creation', pretty=1)">
+          (<display call="plain('creator')">)</td>
+
+    to see::
+
+      <td class="form-text"><display call="reldate('creation', pretty=1)">
+          (issue<display call="plain('id')"> by <display call="plain('creator')">)</td>
+
+Installation
+
+  Living without a mailserver.
+
+    Remove the nosy reactor, means delete the file 'INSTANCE/detectors/nosyreactor.py'.
+
+  Rights issues (MISSING)
+
+    Different jobs run under different users.
+
+    * Standalone roundup-server is started by whome ?
+
+    * Running cgi under apache.
+
+    * roundup-mailgw called via .forward from MTA, or running a cron job
+      fetching via pop.
 
 
-Q: Displaying messages not only the summary
+Troubleshooting
 
-A: in instance/html/msg.index 
+  mailgw bouncing
 
-  change
-    <td><display call="plain('summary')"></td>
-  to
-    <td><pre><display call="plain('content')"></pre></td>
+    messages are bouncing with the following error message.::
 
-  displays the whole message not only the first line and <pre>
-  prevents the browser from reformatting. 
+      Command died with status 1:
+      "/usr/local/bin/python /usr/local/bin/roundup-mailgw /home/roundup".
+      Command output: Traceback (most recent call last):  
+        File "/usr/local/bin/roundup-mailgw", line 178, in ? sys.exit(main(sys.argv))
+        File "/usr/local/bin/roundup-mailgw", line 153, in main db =
+          instance.open('admin') AttributeError: '_roundup_instance_1' module 
+          has no attribute 'open'
 
+      
+    Happens when roundup-mailgw is called by a user that doesn't have
+    read/execute permissions to the instance_home directory and sub
+    directories.
 
+    An easy way to test whether it's a permissions problem, or some other mail
+    server configuration problem is to cat an email-formatted text file
+    directly to the roundup-mailgw script as the roundup user.::
 
-Q: Getting the nosy list picker instead of textfield.
+      cat issue.txt | /usr/local/bin/roundup-mailgw /home/roundup
 
-  In classic template there is plenty of space below the text field.
-
-A: in instance/html/issue.item
-
-  At the file top set border=1 to see cell boundaries.
-
-  replace
-    <td class="form-text"><display call="field('nosy',size=20)"></td>
-  by
-    <td rowspan=5 class="form-text"><display call="menu('nosy',height=10)"></td>
-
-  remove the last cell in the next four rows, either by deleting a cell
-  or by reducing colspan.
-
-
-
-Q: I wanted to see the issue id (the number) on the issue item display:
-
-A:
-  In file INSTANCE/html/issue.item change, showed e.g. "(anonymous)"
-    <td class="form-text"><display call="reldate('creation', pretty=1)">
-        (<display call="plain('creator')">)</td>
-
-  to to see "(
-    <td class="form-text"><display call="reldate('creation', pretty=1)">
-        (issue<display call="plain('id')"> by <display call="plain('creator')">)</td>
-
-Q: Living without a mailserver.
-
-A: Remove the nosy reactor - delete the file
-   <instance home>/detectors/nosyreactor.py
+    If that doesn't raise any errors, the problem is the permissions of the
+    MTA. 
 
