@@ -1,4 +1,4 @@
-# $Id: rdbms_common.py,v 1.55 2003-04-22 20:53:54 kedder Exp $
+# $Id: rdbms_common.py,v 1.56 2003-06-24 08:06:27 anthonybaxter Exp $
 ''' Relational database (SQL) backend common code.
 
 Basics:
@@ -1739,10 +1739,9 @@ class Class(hyperdb.Class):
             Set retired=None to get all nodes. Otherwise it'll get all the 
             retired or non-retired nodes, depending on the flag.
         '''
-        # flip the sense of the flag if we don't want all of them
+        # flip the sense of the 'retired' flag if we don't want all of them
         if retired is not None:
-            retired = not retired
-            args = (retired, )
+            args = (((retired==0) and 1) or 0, )
             sql = 'select id from _%s where __retired__ <> %s'%(self.classname,
                 self.db.arg)
         else:
