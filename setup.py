@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: setup.py,v 1.25 2001-11-21 23:42:54 richard Exp $
+# $Id: setup.py,v 1.26 2001-12-08 07:06:20 jhermann Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -29,33 +29,56 @@ print 'Running unit tests...'
 import test
 test.go()
 
-templates = 'classic', 'extended'
-packagelist = [ 'roundup', 'roundup.backends', 'roundup.templates' ]
-installdatafiles = []
 
-for t in templates:
-    makeHtmlBase(os.path.join('roundup', 'templates', t))
-    packagelist.append('roundup.templates.%s'%t)
-    packagelist.append('roundup.templates.%s.detectors'%t)
-    tfiles = glob(os.path.join('roundup','templates', t, 'html', '*'))
+def isTemplateDir(dir):
+    return dir[0] != '.' and dir != 'CVS' and os.path.isdir(dir) \
+        and os.path.isfile(os.path.join(dir, '__init__.py'))
+
+templates = map(os.path.basename, filter(isTemplateDir,
+    glob(os.path.join('roundup', 'templates', '*'))))
+packagelist = [
+    'roundup',
+    'roundup.backends',
+    'roundup.templates'
+]
+installdatafiles = [
+    ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
+] 
+
+for template in templates:
+    tdir = os.path.join('roundup', 'templates', template)
+    makeHtmlBase(tdir)
+
+    # add the template package and subpackage
+    packagelist.append('roundup.templates.%s' % template)
+    packagelist.append('roundup.templates.%s.detectors' % template)
+
+    # scan for data files
+    tfiles = glob(os.path.join(tdir, 'html', '*'))
     tfiles = filter(os.path.isfile, tfiles)
+    installdatafiles.append(
+        ('share/roundup/templates/%s/html' % template, tfiles)
+    )
 
 
-setup ( name = "roundup", 
-        version = "0.3.0",
-        description = "Roundup issue tracking system.",
-        author = "Richard Jones",
-        author_email = "richard@users.sourceforge.net",
-        url = 'http://sourceforge.net/projects/roundup/',
-        packages = packagelist,
-        scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server'],
-        data_files= [
-            ('share/roundup/cgi-bin', ['cgi-bin/roundup.cgi']),
-        ]
+setup(
+    name = "roundup", 
+    version = "0.3.0",
+    description = "Roundup issue tracking system.",
+    author = "Richard Jones",
+    author_email = "richard@users.sourceforge.net",
+    url = 'http://sourceforge.net/projects/roundup/',
+    packages = packagelist,
+    scripts = ['roundup-admin', 'roundup-mailgw', 'roundup-server'],
+    data_files =  installdatafiles
 )
+
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/11/21 23:42:54  richard
+# Some version number and documentation fixes.
+#
 # Revision 1.24  2001/11/06 22:32:15  jhermann
 # Install roundup.cgi to share/roundup
 #
