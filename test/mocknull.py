@@ -19,3 +19,5 @@ class MockNull:
     def __nonzero__(self): return 0
     def __str__(self): return ''
     def __repr__(self): return '<MockNull 0x%x>'%id(self)
+    def gettext(self, str): return str
+    _ = gettext
