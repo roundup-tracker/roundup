@@ -6,6 +6,7 @@ are given with the most recent entry first.
 - fixed sqlite rollback/caching bug (sf bug 689383)
 - fixed rdbms table update detection logic (sf bug 703297)
 - required String properties not being flagged (thanks Ajit George)
+- only look for CSV files when importing (thanks Dan Grassi)
 
 
 2003-02-27 0.5.6
