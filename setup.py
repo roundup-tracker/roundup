@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: setup.py,v 1.12 2001-08-03 02:51:06 richard Exp $
+# $Id: setup.py,v 1.13 2001-08-03 07:18:57 richard Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
@@ -30,7 +30,7 @@ for t in templates:
 
 
 setup ( name = "roundup", 
-        version = "0.2.5",
+        version = "0.2.6",
         description = "Roundup issue tracking system.",
         author = "Richard Jones",
         author_email = "richard@sourceforge.net",
@@ -41,6 +41,9 @@ setup ( name = "roundup",
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/08/03 02:51:06  richard
+# detect unit tests
+#
 # Revision 1.11  2001/08/03 01:54:58  richard
 # Started stuff off for the 0.2.5 release
 #

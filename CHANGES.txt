@@ -1,6 +1,12 @@
 This file contains the changes to the Roundup system over time. The entries
 are given with the most recent entry first.
 
+2001-08-?? - 0.2.6
+Fixed:
+ . Implemented correct mail splitting. Added unit tests. Also snips
+   signatures now too.
+
+
 2001-08-03 - 0.2.5
 Note:
  . The bsddb3 module has a bug that renders it non-functional. Users should
