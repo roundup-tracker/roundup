@@ -1,6 +1,6 @@
 # Roundup Issue Tracker configuration support
 #
-# $Id: configuration.py,v 1.18 2004-10-29 20:34:36 a1s Exp $
+# $Id: configuration.py,v 1.19 2004-10-30 11:26:37 a1s Exp $
 #
 __docformat__ = "restructuredtext"
 
@@ -493,7 +493,8 @@ SETTINGS = (
     ("mail", (
         (Option, "domain", NODEFAULT, "Domain name used for email addresses."),
         (Option, "host", NODEFAULT,
-            "SMTP mail host that roundup will use to send mail"),
+            "SMTP mail host that roundup will use to send mail",
+            ["MAILHOST"],),
         (Option, "username", "", "SMTP login name.\n"
             "Set this if your mail host requires authenticated access.\n"
             "If username is not empty, password (below) MUST be set!"),
