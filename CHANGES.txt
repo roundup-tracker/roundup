@@ -24,6 +24,8 @@ Fixed:
  . Fixed problem in link display when Link value is None.
  . Form handling in cgi client wasn't propogating through the previous
    query elements.
+ . Fixed sort arguments generated for column headings so sorting can be
+   changed now.
 
 
 2001-07-28 - 0.2.1
