@@ -11,6 +11,7 @@ requires python 2.1.2 or 2.2. 2.1.3 and 2.2.1 are recommended.
 
 Big stuff in this release:
 
+- online demo at http://mechanicalcat.net/cgi-bin/roundup.cgi
 - fast full-text searching of messages
 - other speedups
 - bsddb3 backend is re-enabled
