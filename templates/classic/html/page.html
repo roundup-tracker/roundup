@@ -188,10 +188,11 @@ See issue.search.html in the classic template for examples.
 
 <td metal:define-macro="search_checkboxes">
  <ul class="search-checkboxes"
-     tal:define="value python:request.form.getvalue(name)">
+     tal:define="value python:request.form.getvalue(name);
+                 values python:value and value.split(',') or []">
  <li tal:repeat="s python:db[db_klass].list()">
   <input type="checkbox" tal:attributes="name name; id string:$name-${s/id};
-    value s/id; checked python:value == s.id" />
+    value s/id; checked python:s.id in values" />
   <label tal:attributes="for string:$name-${s/id}"
          tal:content="python:s[db_content]" />
  </li>
