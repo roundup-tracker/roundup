@@ -18,8 +18,6 @@ pending hyperdb   migrate "id" property to be Number type
 pending hyperdb   multilink sorting by length is dumb
 pending hyperdb   lastchangedby auto-property giving last user to change an
                   item
-pending hyperdb   pysqlite and locks
-                  http://www.hwaci.com/sw/sqlite/c_interface.html
 pending tracker   split instance.open() into open() and login()
 pending mailgw    allow commands (feature request #556996)
                   like "help", "dump issue123" (would send all info about
@@ -31,8 +29,6 @@ pending mailgw    Use in-reply-to for determining message lineage when subject
                   line lets us down
 pending mailgw    Allow different brackets delimiting [issueNNN] in Subject
 pending email     email sig could use a "remove me from this list"
-pending messages  Snarf the first whole sentence, or full first line of
-                  messages for the summary - whichever is longer.
 pending project   switch to a Roundup instance for Roundup bug/feature tracking
 pending security  authenticate over a secure connection
 pending security  optionally auth with Basic HTTP auth instead of cookies
