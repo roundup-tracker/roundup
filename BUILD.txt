@@ -11,14 +11,15 @@ running:
 2. Edit roundup/__init__.py and doc/announcement.txt to reflect the new
    version and appropriate announcements. Add truncated announcement to
    setup.py description field.
-3. python setup.py clean --all
-4. Edit setup.py to ensure that all information therein (version, contact
+3. Tag the CVS with a release tag (ie. 'release-N-N-N')
+4. python setup.py clean --all
+5. Edit setup.py to ensure that all information therein (version, contact
    information etc) is correct.
-5. python setup.py sdist --manifest-only
-6. Check the MANIFEST to make sure that any new files are included. If
+6. python setup.py sdist --manifest-only
+7. Check the MANIFEST to make sure that any new files are included. If
    they are not, edit MANIFEST.in to include them. "Documentation" for
    MANIFEST.in may be found in disutils.filelist._parse_template_line.
-7. python setup.py sdist
+8. python setup.py sdist
    (if you find sdist a little verbose, add "--quiet" to the end of the
     command)
 
