@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: hyperdb.py,v 1.22 2001-10-09 07:25:59 richard Exp $
+# $Id: hyperdb.py,v 1.23 2001-10-09 23:58:10 richard Exp $
 
 # standard python modules
 import cPickle, re, string
@@ -206,6 +206,7 @@ class Class:
                 if not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'%key
 
+        # make sure there's data where there needs to be
         for key, prop in self.properties.items():
             if propvalues.has_key(key):
                 continue
@@ -215,6 +216,15 @@ class Class:
                 propvalues[key] = []
             else:
                 propvalues[key] = None
+
+        # convert all data to strings
+        for key, prop in self.properties.items():
+            if isinstance(prop, Date):
+                propvalues[key] = propvalues[key].get_tuple()
+            elif isinstance(prop, Interval):
+                propvalues[key] = propvalues[key].get_tuple()
+            elif isinstance(prop, Password):
+                propvalues[key] = str(propvalues[key])
 
         # done
         self.db.addnode(self.classname, newid, propvalues)
@@ -229,6 +239,18 @@ class Class:
         of this class or a KeyError is raised.
         """
         d = self.db.getnode(self.classname, nodeid)
+
+        # convert the marshalled data to instances
+        for key, prop in self.properties.items():
+            if isinstance(prop, Date):
+                d[key] = date.Date(d[key])
+            elif isinstance(prop, Interval):
+                d[key] = date.Interval(d[key])
+            elif isinstance(prop, Password):
+                p = password.Password()
+                p.unpack(d[key])
+                d[key] = p
+
         if propname == 'id':
             return nodeid
         if not d.has_key(propname) and default is not _marker:
@@ -359,14 +381,17 @@ class Class:
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
                     raise TypeError, 'new property "%s" not a Password'% key
+                propvalues[key] = value = str(value)
 
             elif isinstance(prop, Date):
                 if not isinstance(value, date.Date):
                     raise TypeError, 'new property "%s" not a Date'% key
+                propvalues[key] = value = value.get_tuple()
 
             elif isinstance(prop, Interval):
                 if not isinstance(value, date.Interval):
                     raise TypeError, 'new property "%s" not an Interval'% key
+                propvalues[key] = value = value.get_tuple()
 
             node[key] = value
 
@@ -814,6 +839,10 @@ def Choice(name, *options):
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 # Revision 1.21  2001/10/05 02:23:24  richard
 #  . roundup-admin create now prompts for property info if none is supplied
 #    on the command-line.

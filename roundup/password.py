@@ -15,7 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 # 
-# $Id: password.py,v 1.1 2001-10-09 07:25:59 richard Exp $
+# $Id: password.py,v 1.2 2001-10-09 23:58:10 richard Exp $
 
 import sha, re
 
@@ -75,7 +75,7 @@ class Password:
             self.password = m.group(2)
         else:
             # currently plaintext - encrypt
-            self.password = encodePassword(plaintext, self.default_scheme)
+            self.password = encodePassword(encrypted, self.default_scheme)
             self.scheme = self.default_scheme
 
     def setPassword(self, plaintext):
@@ -106,6 +106,10 @@ if __name__ == '__main__':
 
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2001/10/09 07:25:59  richard
+# Added the Password property type. See "pydoc roundup.password" for
+# implementation details. Have updated some of the documentation too.
+#
 #
 #
 # vim: set filetype=python ts=4 sw=4 et si
