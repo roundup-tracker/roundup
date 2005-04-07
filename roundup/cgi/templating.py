@@ -1708,7 +1708,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 display_value.sort(sortfun)
             except:
                 pass
-            self_value = display_value
+            self._value = display_value
 
     def __len__(self):
         ''' length of the multilink '''
