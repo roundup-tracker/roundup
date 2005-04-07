@@ -1622,7 +1622,7 @@ class LinkHTMLProperty(HTMLProperty):
                 label
             "sort_on" indicates the property to sort the list on as
                 (direction, property) where direction is '+' or '-'.
-            
+
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
             "filterspec" argument to a Class.filter() call.
@@ -1698,10 +1698,17 @@ class MultilinkHTMLProperty(HTMLProperty):
     def __init__(self, *args, **kwargs):
         HTMLProperty.__init__(self, *args, **kwargs)
         if self._value:
-            self._value = lookupIds(self._db, self._prop, self._value,
+            display_value = lookupIds(self._db, self._prop, self._value,
                 fail_ok=1)
             sortfun = make_sort_function(self._db, self._prop.classname)
-            self._value.sort(sortfun)
+            # sorting fails if the value contains
+            # items not yet stored in the database
+            # ignore these errors to preserve user input
+            try:
+                display_value.sort(sortfun)
+            except:
+                pass
+            self._value = display_value
 
     def __len__(self):
         ''' length of the multilink '''
@@ -1794,7 +1801,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 label
             "sort_on" indicates the property to sort the list on as
                 (direction, property) where direction is '+' or '-'.
-            
+
             The remaining keyword arguments are used as conditions for
             filtering the items in the list - they're passed as the
             "filterspec" argument to a Class.filter() call.
