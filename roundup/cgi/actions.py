@@ -1,4 +1,4 @@
-#$Id: actions.py,v 1.40.2.6 2005-02-15 23:42:36 richard Exp $
+#$Id: actions.py,v 1.40.2.7 2005-04-07 06:20:11 a1s Exp $
 
 import re, cgi, StringIO, urllib, Cookie, time, random, csv
 
@@ -845,11 +845,17 @@ class LogoutAction(Action):
         # construct the logout cookie
         now = Cookie._getdate()
         self.client.additional_headers['Set-Cookie'] = \
-           '%s=deleted; Max-Age=0; expires=%s; Path=%s;'%(self.client.cookie_name,
-            now, self.client.cookie_path)
+           '%s=deleted; Max-Age=0; expires=%s; Path=%s;' % (
+               self.client.cookie_name, now, self.client.cookie_path)
 
         # Let the user know what's going on
         self.client.ok_message.append(self._('You are logged out'))
+
+        # reset client context to render tracker home page
+        # instead of last viewed page (may be inaccessibe for anonymous)
+        self.client.classname = None
+        self.client.nodeid = None
+        self.client.template = None
 
 class LoginAction(Action):
     def handle(self):
