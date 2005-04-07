@@ -16,12 +16,14 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: setup.py,v 1.77.2.7 2005-03-03 22:12:35 richard Exp $
+# $Id: setup.py,v 1.77.2.8 2005-04-07 07:24:43 a1s Exp $
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform
-from distutils.command.build_scripts import build_scripts
+from distutils.file_util import write_file
+from distutils.command.bdist_rpm import bdist_rpm
 from distutils.command.build import build
+from distutils.command.build_scripts import build_scripts
 from distutils.command.build_py import build_py
 
 import sys, os, string
@@ -255,6 +257,30 @@ class build_roundup(build):
         self.build_message_files()
         build.run(self)
 
+class bdist_rpm_roundup(bdist_rpm):
+
+    def finalize_options(self):
+        bdist_rpm.finalize_options(self)
+        if self.install_script:
+            # install script is overridden.  skip default
+            return
+        # install script option must be file name.
+        # create the file in rpm build directory.
+        install_script = os.path.join(self.rpm_base, "install.sh")
+        self.mkpath(self.rpm_base)
+        self.execute(write_file, (install_script, [
+                ("%s setup.py install --root=$RPM_BUILD_ROOT "
+                    "--record=ROUNDUP_FILES") % self.python,
+                # allow any additional extension for man pages
+                # (rpm may compress them to .gz or .bz2)
+                # man page here is any file
+                # with single-character extension
+                # in man directory
+                "sed -e 's,\(/man/.*\..\)$,\\1*,' "
+                    "<ROUNDUP_FILES >INSTALLED_FILES",
+            ]), "writing '%s'" % install_script)
+        self.install_script = install_script
+
 #############################################################################
 ### Main setup stuff
 #############################################################################
@@ -368,6 +394,7 @@ the "Software Upgrade" guidelines given in the maintenance documentation.
             'build_scripts': build_scripts_roundup,
             'build_py': build_py_roundup,
             'build': build_roundup,
+            'bdist_rpm': bdist_rpm_roundup,
         },
         'scripts': roundup_scripts,
 
