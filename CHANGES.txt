@@ -13,6 +13,8 @@ Fixed:
 - return original string if message issue xref isn't valid
 - fix nosyreaction.py to stop it setting the nosy list unnecessarily
   (see doc/upgrading.txt for how to fix in your trackers)
+- after logout, always display tracker home page
+- web forms don't create new items if no item properties are set from UI
 
 
 2005-03-03 0.8.2
