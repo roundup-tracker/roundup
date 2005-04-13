@@ -16,7 +16,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
-# $Id: admin.py,v 1.90 2005-04-13 06:55:44 richard Exp $
+# $Id: admin.py,v 1.91 2005-04-13 07:01:05 richard Exp $
 
 '''Administration commands for maintaining Roundup trackers.
 '''
@@ -1126,7 +1126,7 @@ Erase it? Y/N: """))
             cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            f = open(os.path.join(dir, file), 'rU')
+            f = open(os.path.join(dir, file), 'r')
             reader = csv.reader(f, colon_separated)
             file_props = None
             maxid = 1
