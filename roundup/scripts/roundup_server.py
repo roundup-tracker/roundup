@@ -17,7 +17,7 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 
-$Id: roundup_server.py,v 1.78 2005-04-13 05:30:06 richard Exp $
+$Id: roundup_server.py,v 1.79 2005-04-13 06:12:12 richard Exp $
 """
 __docformat__ = 'restructuredtext'
 
@@ -263,7 +263,7 @@ def setgid(group):
         return
 
     # if root, setgid to the running user
-    if not os.getuid():
+    if os.getuid():
         print _('WARNING: ignoring "-g" argument, not root')
         return
 

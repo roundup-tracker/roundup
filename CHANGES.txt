@@ -25,6 +25,7 @@ Fixed:
 - send errors in the web interface to a logfile by default. Use the
   "debug" multiprocess mode (roundup-server) or the DEBUG_TO_CLIENT var
   (roundup.cgi) to have the errors appear in your browser
+- fix setgid typo (sf bug 1171346)
 
 
 2005-03-03 0.8.2
