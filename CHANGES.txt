@@ -23,6 +23,9 @@ Fixed:
 - fix setgid typo (sf bug 1171346)
 - fix faulty find_template filename facility (sf bug 1163629)
 - fix roundup-admin "export" so it creates the target dir if needed
+- "fix" roundup-admin "import" to not use "universal newline support" since
+  the csv module appears to have its own ideas about such things (sf bug
+  1163890)
 
 
 2005-03-03 0.8.2
